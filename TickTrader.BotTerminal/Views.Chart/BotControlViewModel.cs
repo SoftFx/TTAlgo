@@ -13,6 +13,7 @@ namespace TickTrader.BotTerminal
     internal class BotControlViewModel : PropertyChangedBase
     {
         private IShell _shell;
+        private BotManagerViewModel _botManager;
 
 
         public TradeBotModel Model { get; private set; }
@@ -37,10 +38,11 @@ namespace TickTrader.BotTerminal
         public event Action<BotControlViewModel> Closed = delegate { };
 
 
-        public BotControlViewModel(TradeBotModel model, IShell shell, bool runBot, bool openState)
+        public BotControlViewModel(TradeBotModel model, IShell shell, BotManagerViewModel botManager, bool runBot, bool openState)
         {
             Model = model;
             _shell = shell;
+            _botManager = botManager;
 
             model.StateChanged += BotStateChanged;
 
@@ -81,28 +83,12 @@ namespace TickTrader.BotTerminal
 
         public void OpenSettings()
         {
-            var key = $"BotSettings {Model.InstanceId}";
-
-            _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
-            {
-                var pSetup = new PluginSetupViewModel(Model);
-                pSetup.Closed += PluginSetupViewClosed;
-                return pSetup;
-            });
+            _botManager.OpenBotSetup(Model);
         }
 
         public void OpenChart()
         {
             _shell.ShowChart(Model.Setup.MainSymbol.Name, Model.Setup.SelectedTimeFrame.Convert());
-        }
-
-
-        private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)
-        {
-            if (dialogResult)
-            {
-                Model.Configurate(setupVM.Setup);
-            }
         }
 
         private void BotStateChanged(TradeBotModel model)

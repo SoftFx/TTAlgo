@@ -62,7 +62,7 @@
         </Style.Setters>
         <Style.Triggers>
             <DataTrigger Binding="{Binding State}" Value="Stopped">
-                <Setter Property="Fill" Value="Gray"/>
+                <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding State}" Value="Running">
                 <Setter Property="Fill" Value="Green"/>

@@ -23,7 +23,7 @@
         </Style.Setters>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Status}" Value="Offline">
-                <Setter Property="Fill" Value="Gray"/>
+                <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Connecting">
                 <Setter Property="Fill" Value="Yellow"/>
@@ -46,7 +46,7 @@
         </Style.Setters>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Status}" Value="Offline">
-                <Setter Property="Fill" Value="Gray"/>
+                <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Connecting">
                 <Setter Property="Fill" Value="Yellow"/>
@@ -63,7 +63,7 @@
     <Style x:Key="BotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
         <Style.Triggers>
             <DataTrigger Binding="{Binding State}" Value="Offline">
-                <Setter Property="Fill" Value="Gray"/>
+                <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding State}" Value="Starting">
                 <Setter Property="Fill" Value="Yellow"/>

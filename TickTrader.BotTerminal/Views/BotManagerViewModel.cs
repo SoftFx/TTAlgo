@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
             AlgoEnv = algoEnv;
             _preferences = storage.PreferencesStorage.StorageModel;
 
-            Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, false, false));
+            Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, this, false, false));
             Bots.Updated += BotsOnUpdated;
 
             ClientModel.Connected += ClientModelOnConnected;

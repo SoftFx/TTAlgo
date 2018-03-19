@@ -68,7 +68,7 @@
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Disconnecting..."/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Offline}">
-                <Setter TargetName="statusCircle" Property="Fill" Value="Gray"/>
+                <Setter TargetName="statusCircle" Property="Fill" Value="LightGray"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Offline"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.OfflineRetry}">

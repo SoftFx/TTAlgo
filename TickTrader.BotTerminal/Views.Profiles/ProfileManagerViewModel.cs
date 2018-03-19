@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanLoadProfile
         {
-            get { return _canLoadProfile; }
+            get { return _canLoadProfile && _profiles.Count > 0; }
             set
             {
                 _canLoadProfile = value;
@@ -65,6 +65,9 @@ namespace TickTrader.BotTerminal
 
         public async void LoadProfile(string name)
         {
+            if (name == null)
+                return;
+
             var currentSrc = new CancellationTokenSource();
 
             try
@@ -158,6 +161,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _profiles.Add(args.FilePath, args.ProfileName);
+                    NotifyOfPropertyChange(nameof(CanLoadProfile));
                 }
                 catch (Exception ex)
                 {
@@ -174,6 +178,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _profiles.Remove(args.FilePath);
+                    NotifyOfPropertyChange(nameof(CanLoadProfile));
                 }
                 catch (Exception ex)
                 {

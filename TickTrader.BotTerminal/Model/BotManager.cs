@@ -50,8 +50,7 @@ namespace TickTrader.BotTerminal
         {
             if (_bots.ContainsKey(botModel.InstanceId))
             {
-                _bots.Remove(botModel.InstanceId);
-                _bots.Add(botModel.InstanceId, botModel);
+                _bots[botModel.InstanceId] = botModel;
             }
         }
 
