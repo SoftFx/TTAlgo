@@ -405,7 +405,7 @@ namespace TickTrader.Algo.Common.Model
         {
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
-                r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
+                r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
                 r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
         }
 
@@ -445,6 +445,26 @@ namespace TickTrader.Algo.Common.Model
                     return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
                 logger.Error(ex);
                 return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
+            }
+        }
+
+        private OrderTimeInForce? GetTimeInForceReplace(OrderExecOptions? options, DateTime? expiration)
+        {
+            if (options != null)
+            {
+                if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel))
+                    return OrderTimeInForce.ImmediateOrCancel;
+                else if (expiration != null)
+                    return OrderTimeInForce.GoodTillDate;
+                else
+                    return null;
+            }
+            else
+            {
+                if (expiration != null)
+                    return OrderTimeInForce.GoodTillDate;
+                else
+                    return null;
             }
         }
 
