@@ -128,6 +128,7 @@ namespace TickTrader.BotTerminal
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
             CanDisconnect = cManager.IsLoggedIn && !ConnectionLock.IsLocked;
+            ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
