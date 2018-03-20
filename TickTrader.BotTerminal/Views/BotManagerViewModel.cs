@@ -190,9 +190,7 @@ namespace TickTrader.BotTerminal
 
         private void RestoreTradeBot(TradeBotStorageEntry entry)
         {
-            var catalogItem = AlgoEnv.Repo.AllPlugins.Where(
-                    (k, i) => i.Descriptor.Id == entry.DescriptorId &&
-                    i.FilePath == entry.PluginFilePath).Snapshot.FirstOrDefault().Value;
+            var catalogItem = AlgoEnv.Repo.AllPlugins.Where((k, i) => i.CanBeUseForSnapshot(entry)).Snapshot.FirstOrDefault().Value;
 
             if (catalogItem == null)
             {

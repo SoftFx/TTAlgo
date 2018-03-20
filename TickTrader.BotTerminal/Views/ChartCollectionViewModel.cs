@@ -50,7 +50,6 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(SelectedChartProxy));
         }
 
-
         public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
         {
             ActivateItem(new ChartViewModel(symbol, period, _shell, _clientModel, _algoEnv, _botManager));
@@ -120,6 +119,7 @@ namespace TickTrader.BotTerminal
                     {
                         return;
                     }
+
                     var item = new ChartViewModel(chart.Symbol, chart.SelectedPeriod, _shell, _clientModel, _algoEnv, _botManager);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);

@@ -22,11 +22,10 @@ namespace TickTrader.BotTerminal
 
         private AuthStorageModel authStorage;
         private EventJournal journal;
-        private Task initTask;
         private bool _loginFlag;
         private ClientModel.Data _client;
 
-        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
+        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal)
         {
             _client = client;
 
@@ -51,7 +50,7 @@ namespace TickTrader.BotTerminal
                 else if (IsFailedConnection(from, to))
                     journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
                 else if (IsUnexpectedDisconnect(from, to))
-                    journal.Error("{0}: connection to {1} lost [{2}]",  GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
+                    journal.Error("{0}: connection to {1} lost [{2}]", GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
 
                 logger.Debug("STATE {0}", to);
 
