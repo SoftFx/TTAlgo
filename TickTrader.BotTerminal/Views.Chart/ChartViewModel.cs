@@ -226,8 +226,7 @@ namespace TickTrader.BotTerminal
 
         private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
         {
-            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.Descriptor.Id == snapshot.DescriptorId &&
-                i.FilePath == snapshot.PluginFilePath).Snapshot.FirstOrDefault().Value;
+            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.CanBeUseForSnapshot(snapshot)).Snapshot.FirstOrDefault().Value;
             if (catalogItem == null)
             {
                 return null;
