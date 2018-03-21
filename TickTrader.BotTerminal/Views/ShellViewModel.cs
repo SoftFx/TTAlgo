@@ -275,7 +275,7 @@ namespace TickTrader.BotTerminal
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            ConnectLast();
+            ConnectLastOrConnectDefault();
             _botAgentManager.RestoreConnections();
         }
 
@@ -303,11 +303,13 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void ConnectLast()
+        private void ConnectLastOrConnectDefault()
         {
             var last = cManager.GetLast();
             if (last != null)
                 Connect(last);
+            else
+                Connect();
         }
 
         private async void LogStateLoop()
