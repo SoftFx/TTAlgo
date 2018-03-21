@@ -19,7 +19,12 @@ namespace TickTrader.Algo.Common.Model
         TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args);
     }
 
-    public interface ISymbolManager : IDynamicDictionarySource<string, SymbolModel>
+    public interface ISyncChannel<T>
+    {
+        void Send(object data);
+    }
+
+    public interface ISymbolManager : IVarSet<string, SymbolModel>
     {
         IFeedSubscription SubscribeAll();
     }

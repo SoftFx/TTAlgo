@@ -11,75 +11,141 @@ namespace TickTrader.Algo.Common.Model
 {
     public class EntityCache : EntityBase
     {
-        private IFeedServerApi _feedApi;
-        private ITradeServerApi _tradeApi;
-        private Property<AccountEntity> _accProperty;
-        private DynamicDictionary<string, SymbolEntity> _symbols;
-        private DynamicDictionary<string, CurrencyEntity> _currencies;
-        private DynamicDictionary<string, OrderEntity> _orders;
-        private DynamicDictionary<string, PositionEntity> _positions;
+        private readonly AccountModel _acc;
+        private readonly VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
+        private readonly VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
 
         public EntityCache()
         {
-            _accProperty = AddProperty<AccountEntity>();
-            _currencies = new DynamicDictionary<string, CurrencyEntity>();
-            _symbols = new DynamicDictionary<string, SymbolEntity>();
-            _orders = new DynamicDictionary<string, OrderEntity>();
-            _positions = new DynamicDictionary<string, PositionEntity>();
+            _acc = new AccountModel(_currencies, _symbols);
         }
 
-        public Var<AccountEntity> AccountInfo => _accProperty.Var;
-        public IDynamicDictionarySource<string, SymbolEntity> Symbols => _symbols;
-        public IDynamicDictionarySource<string, CurrencyEntity> Currencies => _currencies;
-        public IDynamicDictionarySource<string, OrderEntity> TradeRecords => _orders;
-        public IDynamicDictionarySource<string, PositionEntity> Positions => _positions;
+        public IVarSet<string, SymbolModel> Symbols => _symbols;
+        public IVarSet<string, CurrencyEntity> Currencies => _currencies;
+        public AccountModel Account => _acc;
 
-        internal async Task Load(ITradeServerApi tradeApi, IFeedServerApi feedApi)
+        internal void Clear()
         {
-            _tradeApi = tradeApi;
-            _feedApi = feedApi;
-
-            var getInfoTask = tradeApi.GetAccountInfo();
-            var getSymbolsTask = feedApi.GetSymbols();
-            var getCurrenciesTask = feedApi.GetCurrencies();
-            var getOrdersTask = tradeApi.GetTradeRecords();
-
-            await Task.WhenAll(getInfoTask, getSymbolsTask, getCurrenciesTask, getOrdersTask);
-
-            _accProperty.Value = getInfoTask.Result;
-
             _currencies.Clear();
-            foreach (var c in getCurrenciesTask.Result)
-                _currencies.Add(c.Name, c);
-
             _symbols.Clear();
-            foreach (var s in getSymbolsTask.Result)
-                _symbols.Add(s.Name, s);
+            Account.Clear();
+        }
 
-            _orders.Clear();
-            foreach (var o in getOrdersTask.Result)
-                _orders.Add(o.OrderId, o);
+        internal List<SymbolUpdate> GetMergeUpdate(IEnumerable<SymbolEntity> snapshot)
+        {
+            var updates = new List<SymbolUpdate>();
 
-            _positions.Clear();
-            if (_accProperty.Value.Type == Api.AccountTypes.Net)
+            foreach (var newSmb in snapshot)
+                updates.Add(new SymbolUpdate(newSmb, EntityCacheActions.Upsert));
+
+            var symbolsByName = snapshot.ToDictionary(s => s.Name);
+
+            foreach (var existingSmb in _symbols.Values)
             {
-                var fkdPositions = await tradeApi.GetPositions();
-                foreach (var p in fkdPositions)
-                    _positions.Add(p.Symbol, p);
+                if (!symbolsByName.ContainsKey(existingSmb.Name))
+                    updates.Add(new SymbolUpdate(existingSmb.Descriptor, EntityCacheActions.Remove));
+            }
+
+            return updates;
+        }
+
+        internal List<CurrencyUpdate> GetMergeUpdate(IEnumerable<CurrencyEntity> snapshot)
+        {
+            var updates = new List<CurrencyUpdate>();
+
+            foreach (var newCurr in snapshot)
+                updates.Add(new CurrencyUpdate(newCurr, EntityCacheActions.Upsert));
+
+            var currenciesByNAme = snapshot.ToDictionary(s => s.Name);
+
+            foreach (var existingCurr in _currencies.Values)
+            {
+                if (!currenciesByNAme.ContainsKey(existingCurr.Name))
+                    updates.Add(new CurrencyUpdate(existingCurr, EntityCacheActions.Remove));
+            }
+
+            return updates;
+        }
+
+        internal List<SymbolEntity> GetSymbolsCopy()
+        {
+            return _symbols.Values.Select(s => s.Descriptor).ToList();
+        }
+
+        internal List<CurrencyEntity> GetCurrenciesCopy()
+        {
+            return _currencies.Values.ToList();
+        }
+
+        internal EntityCacheUpdate GetAccSnapshot()
+        {
+            return _acc.GetSnapshotUpdate();
+        }
+
+        internal void ApplyQuote(QuoteEntity quote)
+        {
+            var smb = _symbols.GetOrDefault(quote.Symbol);
+            smb?.OnNewTick(quote);
+        }
+
+        [Serializable]
+        public class SymbolUpdate : EntityCacheUpdate
+        {
+            public SymbolUpdate(SymbolEntity symbol, EntityCacheActions action)
+            {
+                Symbol = symbol ?? throw new ArgumentNullException("symbol");
+                Action = action;
+            }
+
+            private SymbolEntity Symbol { get; }
+            public EntityCacheActions Action { get; }
+
+            public void Apply(EntityCache cache)
+            {
+                if (Action == EntityCacheActions.Upsert)
+                {
+                    if (cache._symbols.ContainsKey(Symbol.Name))
+                        cache._symbols[Symbol.Name].Update(Symbol);
+                    else
+                        cache._symbols.Add(Symbol.Name, new SymbolModel(Symbol, cache._currencies));
+                }
+                else
+                    cache._symbols.Remove(Symbol.Name);
             }
         }
 
-        internal void Close()
+        [Serializable]
+        public class CurrencyUpdate : EntityCacheUpdate
         {
-            if (_tradeApi != null)
+            public CurrencyUpdate(CurrencyEntity currency, EntityCacheActions action)
             {
-                _accProperty.Value = null;
-                _currencies.Clear();
-                _symbols.Clear();
-
-                _tradeApi = null;
-                _feedApi = null;
+                Currency = currency ?? throw new ArgumentNullException("currency");
+                Action = action;
             }
+
+            private CurrencyEntity Currency { get; }
+            private EntityCacheActions Action { get; }
+
+            public void Apply(EntityCache cache)
+            {
+                if (Action == EntityCacheActions.Upsert)
+                    cache._currencies[Currency.Name] = Currency;
+                else
+                    cache._currencies.Remove(Currency.Name);
+            }
+        }
+
+        [Serializable]
+        public class ClearAll : EntityCacheUpdate
+        {
+            public void Apply(EntityCache cache) => cache.Clear();
         }
     }
+
+    public interface EntityCacheUpdate
+    {
+        void Apply(EntityCache cache);
+    }
+
+    public enum EntityCacheActions { Upsert, Remove }
 }

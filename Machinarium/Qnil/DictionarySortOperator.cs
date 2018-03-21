@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class DictionarySortOperator<TKey, TValue, TBy> : OperatorBase, IDynamicListSource<TValue>, IReadOnlyList<TValue>
+    internal class DictionarySortOperator<TKey, TValue, TBy> : OperatorBase, IVarList<TValue>, IReadOnlyList<TValue>
     {
-        private IDynamicDictionarySource<TKey, TValue> src;
+        private IVarSet<TKey, TValue> src;
         private SortedList<Item> list;
         private Func<TKey, TValue, TBy> selector;
 
-        public DictionarySortOperator(IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TBy> bySelector, IComparer<TBy> comparer)
+        public DictionarySortOperator(IVarSet<TKey, TValue> src, Func<TKey, TValue, TBy> bySelector, IComparer<TBy> comparer)
         {
             this.src = src;
             this.selector = bySelector;

@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
 {
     internal class NotificationsViewModel : PropertyChangedBase
     {
-        private IAccountInfoProvider _accountInfo;
+        private AccountModel _accountInfo;
         private ConnectionManager _connectionModel;
         private INotificationCenter _notificationCenter;
         private PreferencesStorageModel _preferences;
@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
             private set { ToggleNotifications(value); }
         }
 
-        public NotificationsViewModel(INotificationCenter notificationCenter, IAccountInfoProvider accountInfo, ConnectionManager connectionManager, PersistModel storage)
+        public NotificationsViewModel(INotificationCenter notificationCenter, AccountModel accountInfo, ConnectionManager connectionManager, PersistModel storage)
         {
             _accountInfo = accountInfo;
             _connectionModel = connectionManager;
@@ -69,11 +69,11 @@ namespace TickTrader.BotTerminal
 
             if (enableSounds)
             {
-                _connectionModel.StateChanged += ConnectionStateChanged;
+                _connectionModel.ConnectionStateChanged += ConnectionStateChanged;
             }
             else
             {
-                _connectionModel.StateChanged -= ConnectionStateChanged;
+                _connectionModel.ConnectionStateChanged -= ConnectionStateChanged;
             }
 
             _notificationCenter.SoundNotification.Enabled = enableSounds;
@@ -87,13 +87,13 @@ namespace TickTrader.BotTerminal
 
             if (enableNotifications)
             {
-                _accountInfo.OrderUpdated += PopupNotificationOnOrderUpdated;
-                _accountInfo.PositionUpdated += PopupNotificationOnPositionUpdated;
+                //_accountInfo.OrderUpdated += PopupNotificationOnOrderUpdated;
+                //_accountInfo.PositionUpdated += PopupNotificationOnPositionUpdated;
             }
             else
             {
-                _accountInfo.OrderUpdated -= PopupNotificationOnOrderUpdated;
-                _accountInfo.PositionUpdated -= PopupNotificationOnPositionUpdated;
+                //_accountInfo.OrderUpdated -= PopupNotificationOnOrderUpdated;
+                //_accountInfo.PositionUpdated -= PopupNotificationOnPositionUpdated;
             }
 
             _notificationCenter.PopupNotification.Enabled = enableNotifications;

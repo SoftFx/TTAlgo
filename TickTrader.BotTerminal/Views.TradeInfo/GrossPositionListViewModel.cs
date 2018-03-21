@@ -13,17 +13,13 @@ namespace TickTrader.BotTerminal
 {
     class GrossPositionListViewModel : AccountBasedViewModel
     {
-        private SymbolCollectionModel _symbols;
-
-        public GrossPositionListViewModel(AccountModel model, SymbolCollectionModel symbols, ConnectionModel connection)
+        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, ConnectionModel.Handler connection)
             : base(model, connection)
         {
-            _symbols = symbols;
-
             Positions = model.Orders
                 .Where((id, order) => order.OrderType == OrderType.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, (SymbolModel)symbols.GetOrDefault(o.Symbol)))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol)))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
@@ -34,7 +30,7 @@ namespace TickTrader.BotTerminal
             return accType == AccountTypes.Gross;
         }
 
-        public IObservableListSource<OrderViewModel> Positions { get; private set; }
+        public IObservableList<OrderViewModel> Positions { get; private set; }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

@@ -22,24 +22,24 @@ namespace TickTrader.BotTerminal
 
         private AuthStorageModel authStorage;
         private EventJournal journal;
-        private Task initTask;
+        private bool _loginFlag;
+        private ClientModel.Data _client;
 
-        public ConnectionManager(PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
+        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal)
         {
+            _client = client;
+
             logger = NLog.LogManager.GetCurrentClassLogger();
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
             this.journal = journal;
-
-            initTask = InitCatalog(algoEnv.Repo);
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
 
             InitAuthData();
 
-            var connectionOptions = new ConnectionOptions() { EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs, LogsFolder = EnvService.Instance.LogFolder };
-            Connection = new ConnectionModel(connectionOptions, new DispatcherStateMachineSync());
+            Connection = client.Connection;
 
             Connection.StateChanged += (from, to) =>
             {
@@ -50,17 +50,12 @@ namespace TickTrader.BotTerminal
                 else if (IsFailedConnection(from, to))
                     journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
                 else if (IsUnexpectedDisconnect(from, to))
-                    journal.Error("{0}: connection to {1} lost [{2}]",  GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
+                    journal.Error("{0}: connection to {1} lost [{2}]", GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
 
                 logger.Debug("STATE {0}", to);
 
-                StateChanged?.Invoke(from, to);
+                ConnectionStateChanged?.Invoke(from, to);
             };
-        }
-
-        private async Task InitCatalog(PluginCatalog catalog)
-        {
-            await catalog.Init();
         }
 
         private bool IsConnected(ConnectionModel.States from, ConnectionModel.States to)
@@ -90,14 +85,17 @@ namespace TickTrader.BotTerminal
         }
 
         public ConnectionModel.States State => Connection.State;
-        public ConnectionModel Connection { get; private set; }
+        public ConnectionModel.Handler Connection { get; private set; }
+        public bool IsLoggedIn { get; private set; }
 
         public AccountAuthEntry Creds { get; private set; }
         public ObservableCollection<AccountAuthEntry> Accounts { get; private set; }
         public ObservableCollection<ServerAuthEntry> Servers { get; private set; }
 
         public event Action CredsChanged = delegate { };
-        public event Action<ConnectionModel.States, ConnectionModel.States> StateChanged = delegate { };
+        public event Action<ConnectionModel.States, ConnectionModel.States> ConnectionStateChanged;
+        public event Action LoggedIn;
+        public event Action LoggedOut;
 
         public AccountAuthEntry GetLast()
         {
@@ -124,14 +122,19 @@ namespace TickTrader.BotTerminal
             Creds = newCreds;
             CredsChanged();
 
+            _loginFlag = true;
+
             try
             {
-                await initTask;
-
                 var result = await Connection.Connect(login, password, server, useSfx, cToken);
 
                 if (result.Code == ConnectionErrorCodes.None)
+                {
                     SaveLogin(newCreds);
+                    SetLoggedIn(true);
+                }
+
+                _loginFlag = false;
 
                 return result;
             }
@@ -143,9 +146,27 @@ namespace TickTrader.BotTerminal
             Disconnect().Forget();
         }
 
-        public Task Disconnect()
+        public async Task Disconnect()
         {
-            return Connection.Disconnect();
+            await Connection.Disconnect();
+
+            if (!_loginFlag)
+            {
+                SetLoggedIn(false);
+                _client.ClearCache();
+            }
+        }
+
+        private void SetLoggedIn(bool value)
+        {
+            if (IsLoggedIn != value)
+            {
+                IsLoggedIn = value;
+                if (value)
+                    LoggedIn?.Invoke();
+                else
+                    LoggedOut?.Invoke();
+            }
         }
 
         private void InitAuthData()

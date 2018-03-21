@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using ActorSharp;
+using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
 using NLog;
@@ -31,7 +32,7 @@ namespace TickTrader.BotTerminal
         private SymbolManagerViewModel _smbManager;
         private CustomFeedStorage _userSymbols = new CustomFeedStorage();
 
-        public ShellViewModel()
+        public ShellViewModel(ClientModel.Data commonClient)
         {
             DisplayName = EnvService.Instance.ApplicationName;
 
@@ -45,19 +46,19 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             algoEnv = new AlgoEnvironment();
-            cManager = new ConnectionManager(storage, eventJournal, algoEnv);
-            clientModel = new TraderClientModel(cManager.Connection, eventJournal);
+            cManager = new ConnectionManager(commonClient, storage, eventJournal);
+            clientModel = new TraderClientModel(commonClient, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
             ConnectionLock = new UiLock();
             AlgoList = new AlgoListViewModel(algoEnv.Repo);
-            SymbolList = new SymbolListViewModel(clientModel.Symbols, this);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
-            Trade = new TradeInfoViewModel(clientModel);
+            Trade = new TradeInfoViewModel(clientModel, cManager);
 
-            TradeHistory = new TradeHistoryViewModel(clientModel);
+            TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
@@ -71,8 +72,10 @@ namespace TickTrader.BotTerminal
             CanConnect = true;
 
             UpdateCommandStates();
-            cManager.StateChanged += (o, n) => UpdateDisplayName();
-            cManager.StateChanged += (o, n) => UpdateCommandStates();
+            cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
+            cManager.ConnectionStateChanged += (o, n) => UpdateCommandStates();
+            cManager.LoggedIn += () => UpdateCommandStates();
+            cManager.LoggedOut += () => UpdateCommandStates();
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
 
             clientModel.Initializing += LoadConnectionProfile;
@@ -80,7 +83,7 @@ namespace TickTrader.BotTerminal
 
             storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
 
-            cManager.StateChanged += (f, t) =>
+            cManager.ConnectionStateChanged += (f, t) =>
             {
                 NotifyOfPropertyChange(nameof(ConnectionState));
                 NotifyOfPropertyChange(nameof(CurrentServerName));
@@ -124,7 +127,8 @@ namespace TickTrader.BotTerminal
         {
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
-            CanDisconnect = state == ConnectionModel.States.Online && !ConnectionLock.IsLocked;
+            CanDisconnect = cManager.IsLoggedIn && !ConnectionLock.IsLocked;
+            ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
@@ -255,7 +259,7 @@ namespace TickTrader.BotTerminal
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            ConnectLast();
+            ConnectLastOrConnectDefault();
         }
 
         private async void PrintSystemInfo()
@@ -282,11 +286,13 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void ConnectLast()
+        private void ConnectLastOrConnectDefault()
         {
             var last = cManager.GetLast();
             if (last != null)
                 Connect(last);
+            else
+                Connect();
         }
 
         private async void LogStateLoop()
@@ -362,7 +368,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo);
             wndManager.ShowDialog(loading, this);
         }
 

@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace Machinarium.Qnil
 {
-    internal class ObservableWrapper<T> : IObservableListSource<T>
+    internal class ObservableWrapper<T> : IObservableList<T>
     {
-        private IDynamicListSource<T> src;
+        private IVarList<T> src;
         private bool propogateDispose;
         private bool isDisposed;
 
-        public ObservableWrapper(IDynamicListSource<T> src, bool propogateDispose)
+        public ObservableWrapper(IVarList<T> src, bool propogateDispose)
         {
             this.src = src;
             this.propogateDispose = propogateDispose;

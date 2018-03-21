@@ -16,6 +16,7 @@ namespace TickTrader.Algo.Core
         public OrderCmdResultCodes ResultCode { get; set; }
         public string OperationId { get; set; }
         public bool IsCompleted => ResultCode == OrderCmdResultCodes.Ok;
+        public bool IsIoC => OrderCopy != null && OrderCopy.ImmediateOrCancel;
     }
 
     public enum OrderExecAction { Opened, Modified, Canceled, Closed, Filled, Expired, Rejected, Activated, DepositWithdraw }

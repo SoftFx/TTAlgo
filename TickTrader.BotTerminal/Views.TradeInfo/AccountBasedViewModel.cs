@@ -11,9 +11,9 @@ namespace TickTrader.BotTerminal
 {
     internal abstract class AccountBasedViewModel : PropertyChangedBase
     {
-        private ConnectionModel _connection;
+        private ConnectionModel.Handler _connection;
 
-        public AccountBasedViewModel(AccountModel model, ConnectionModel connection)
+        public AccountBasedViewModel(AccountModel model, ConnectionModel.Handler connection)
         {
             Account = model;
             _connection = connection;
@@ -25,7 +25,10 @@ namespace TickTrader.BotTerminal
         private void AccountTypeChanged()
         {
             var oldEnabled = IsEnabled;
-            IsEnabled = SupportsAccount(Account.Type.Value);
+            if (Account.Type != null)
+                IsEnabled = SupportsAccount(Account.Type.Value);
+            else
+                IsEnabled = false;
             if (oldEnabled != IsEnabled)
                 NotifyOfPropertyChange(nameof(IsEnabled));
         }

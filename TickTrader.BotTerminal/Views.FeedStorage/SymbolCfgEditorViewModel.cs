@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private VarContext _varContext = new VarContext();
 
-        public SymbolCfgEditorViewModel(CustomSymbol symbol, IObservableListSource<string> availableCurrencies, Predicate<string> symbolExistsFunc)
+        public SymbolCfgEditorViewModel(CustomSymbol symbol, IObservableList<string> availableCurrencies, Predicate<string> symbolExistsFunc)
         {
             if (symbol == null)
             {
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
         public Validable<string> ProfitCurr { get; }
         public IntValidable Digits { get; }
         public IValidable<string> DigitsStr { get; }
-        public IObservableListSource<string> AvailableCurrencies { get; }
+        public IObservableList<string> AvailableCurrencies { get; }
         public Property<string> Error { get; }
         public bool IsEditMode { get; }
         public bool IsAddMode => !IsEditMode;

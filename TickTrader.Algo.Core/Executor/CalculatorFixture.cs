@@ -26,6 +26,13 @@ namespace TickTrader.Algo.Core
             _state.Set(_context.Builder.Symbols);
             _state.Set(_context.Builder.Currencies);
 
+            foreach (var smb in _context.Builder.Symbols)
+            {
+                var rate = smb.LastQuote as QuoteEntity;
+                if (rate != null)
+                    _state.Update(rate);
+            }
+
             try
             {
                 acc = _context.Builder.Account;
@@ -46,7 +53,7 @@ namespace TickTrader.Algo.Core
 
         internal void UpdateRate(QuoteEntity entity)
         {
-            _state.Update(entity);
+            _state?.Update(entity);
         }
 
         public void Stop()

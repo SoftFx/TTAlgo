@@ -6,8 +6,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SoftFX.Extended;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common;
 
 namespace TickTrader.BotTerminal
 {
@@ -46,11 +46,11 @@ namespace TickTrader.BotTerminal
         #region Bindable Properties
 
         public bool IsEnabled { get; private set; }
-        public IObservableListSource<SymbolModel> Symbols { get; private set; }
+        public IObservableList<SymbolModel> Symbols { get; private set; }
         public List<decimal> PredefinedAmounts { get; private set; }
 
-        public RateDirectionTracker Bid { get; private set; }
-        public RateDirectionTracker Ask { get; private set; }
+        public RateDirectionTracker Bid => SelectedSymbol?.BidTracker;
+        public RateDirectionTracker Ask => SelectedSymbol?.AskTracker;
 
         public SymbolModel SelectedSymbol
         {
@@ -59,7 +59,7 @@ namespace TickTrader.BotTerminal
             {
                 this.selectedSymbol = value;
                 NotifyOfPropertyChange(nameof(SelectedSymbol));
-                PredefinedAmounts = selectedSymbol.PredefinedAmounts;
+                //PredefinedAmounts = selectedSymbol.PredefinedAmounts;
                 NotifyOfPropertyChange(nameof(PredefinedAmounts));
             }
         }
@@ -89,14 +89,6 @@ namespace TickTrader.BotTerminal
             IsEnabled = state == ConnectionModel.States.Online;
         }
 
-        public void OnRateUpdate(Quote tick)
-        {
-            if (tick.HasAsk)
-                Ask.Rate = tick.Ask;
-
-            if (tick.HasBid)
-                Ask.Rate = tick.Bid;
-        }
     }
 
     internal interface IOpenOrderDialogPage { }

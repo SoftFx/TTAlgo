@@ -116,14 +116,14 @@ namespace TickTrader.Algo.TestCollection.Bots
                     ? OrderType.StopLimit
                     : orderType;
                 realOrderType = (orderType == OrderType.Market) ? OrderType.Position : realOrderType;
-                VerifyOrder(someOrder.Id, realOrderType, orderSide, Volume, price, secondPrice, null, null, null, null,
-                    tag);
 
                 if (options == OrderExecOptions.ImmediateOrCancel && OrderType.Limit == orderType)
                 {
                     someOrder = null;
                     return;
                 }
+
+                VerifyOrder(someOrder.Id, realOrderType, orderSide, Volume, price, secondPrice, null, null, null, null, tag);
 
 
 
@@ -154,6 +154,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                     if (orderType != OrderType.Limit)
                         await TestModifyStopPrice(someOrder.Id, price, newPrice, isAsync, postTitle);
                 }
+
+                if (someOrder != null)
+                    await TestCancelOrder(someOrder.Id, orderSide, orderType, tag, false, isAsync);
             }
             catch (Exception e)
             {
@@ -163,8 +166,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             finally
             {
                 Volume = _defaultVolume;
-                if (someOrder != null)
-                    await TestCancelOrder(someOrder.Id, orderSide, orderType, tag, false, isAsync);
             }
         }
 
@@ -526,6 +527,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         {
             var order = Account.Orders[orderId];
+
             if (order.IsNull)
                 throw new ApplicationException("Verification failed - order #" + orderId + " does not exis in order collection");
 

@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class DictionaryToListOperator<TKey, TValue, TResult> : OperatorBase, IDynamicListSource<TResult>, IReadOnlyList<TResult>
+    internal class DictionaryToListOperator<TKey, TValue, TResult> : OperatorBase, IVarList<TResult>, IReadOnlyList<TResult>
     {
         private static readonly IEqualityComparer<TKey> Comparer = EqualityComparer<TKey>.Default;
 
-        private IDynamicDictionarySource<TKey, TValue> _src;
+        private IVarSet<TKey, TValue> _src;
         private List<ListItem> _list;
         private Func<TKey, TValue, TResult> _selector;
 
-        public DictionaryToListOperator(IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TResult> selector)
+        public DictionaryToListOperator(IVarSet<TKey, TValue> src, Func<TKey, TValue, TResult> selector)
         {
             _src = src;
             _selector = selector;

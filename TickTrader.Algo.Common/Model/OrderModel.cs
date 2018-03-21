@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderModel(ExecutionReport report, IOrderDependenciesResolver resolver)
         {
-            this.Id = report.OrderId;
+            this.Id = report.OrderId ?? "0";
             this.clientOrderId = report.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = report.Symbol;
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Common.Model
             Update(report);
         }
 
-        event Action<BL.IOrderModel> BL.IOrderModel.EssentialParametersChanged { add { } remove { } }
+        public event Action<BL.IOrderModel> EssentialParametersChanged;
 
         private double LotSize => symbolModel.LotSize;
 
@@ -395,6 +395,8 @@ namespace TickTrader.Algo.Common.Model
         public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
         public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
 
+        public OrderExecOptions ExecOptions { get; private set; }
+
         #endregion
 
         #region IOrderModel
@@ -437,7 +439,7 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        public OrderEntity ToAlgoOrder()
+        public OrderEntity GetEntity()
         {
             return new OrderEntity(Id)
             {
@@ -463,7 +465,8 @@ namespace TickTrader.Algo.Common.Model
                 LastFillVolume = LastFillAmount,
                 Swap = (double)(Swap ?? 0),
                 Commission = (double)(Commission ?? 0),
-                Expiration = Expiration
+                Expiration = Expiration,
+                Options = ExecOptions
             };
         }
 
@@ -486,6 +489,7 @@ namespace TickTrader.Algo.Common.Model
             this.TakeProfit = record.TakeProfit;
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
+            this.ExecOptions = record.Options;
             //if (record.ImmediateOrCancel)
             //{
             //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -494,18 +498,20 @@ namespace TickTrader.Algo.Common.Model
             //    this.LastFillPrice = record.Price;
             //    this.LastFillAmount = record.Volume;
             //}
+
+            EssentialParametersChanged?.Invoke(this);
         }
 
-        private void Update(ExecutionReport report)
+        internal void Update(ExecutionReport report)
         {
-            this.Amount = (decimal?)report.InitialVolume ?? 0M;
-            this.RemainingAmount = (decimal)report.LeavesVolume;
+            this.Amount = report.InitialVolume.ToDecimalSafe() ?? 0M;
+            this.RemainingAmount = report.LeavesVolume.ToDecimalSafe() ?? 0M;
             this.OrderType = report.OrderType;
             this.Side = report.OrderSide;
-            this.MaxVisibleVolume = (decimal?)report.MaxVisibleVolume;
-            this.Price = (decimal?)(report.OrderType == OrderType.Stop ? report.StopPrice : report.Price);
-            this.LimitPrice = (decimal?)(report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null);
-            this.StopPrice = (decimal?)report.StopPrice;
+            this.MaxVisibleVolume = report.MaxVisibleVolume.ToDecimalSafe();
+            this.Price = (report.OrderType == OrderType.Stop ? report.StopPrice : report.Price).ToDecimalSafe();
+            this.LimitPrice = (report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null).ToDecimalSafe();
+            this.StopPrice = report.StopPrice.ToDecimalSafe();
             this.Created = report.Created;
             this.Modified = report.Modified;
             this.Expiration = report.Expiration;
@@ -513,12 +519,17 @@ namespace TickTrader.Algo.Common.Model
             this.Tag = report.Tag;
             this.StopLoss = report.StopLoss;
             this.TakeProfit = report.TakeProfit;
-            this.Swap = (decimal)report.Swap;
-            this.Commission = (decimal)report.Commission;
+            this.Swap = report.Swap.ToDecimalSafe();
+            this.Commission = report.Commission.ToDecimalSafe();
             this.ExecPrice = report.AveragePrice;
             this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
+
+            if (report.ImmediateOrCancel)
+                ExecOptions = OrderExecOptions.ImmediateOrCancel;
+
+            EssentialParametersChanged?.Invoke(this);
         }
 
         private decimal? AmountToLots(decimal? volume)

@@ -9,16 +9,20 @@ namespace TickTrader.Algo.Core.Lib
 {
     public class CrossDomainCallback<T> : CrossDomainObject
     {
-        private Action<T> _callbackAction;
+        public CrossDomainCallback()
+        {
+        }
+
+        public Action<T> Action { get; set; }
 
         public CrossDomainCallback(Action<T> callbackAction)
         {
-            _callbackAction = callbackAction;
+            Action = callbackAction;
         }
 
         public void Invoke(T args)
         {
-            _callbackAction(args);
+            Action(args);
         }
     }
 }

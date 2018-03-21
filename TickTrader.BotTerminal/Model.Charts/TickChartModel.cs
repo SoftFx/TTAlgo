@@ -118,7 +118,7 @@ namespace TickTrader.BotTerminal
         {
             base.InitializePlugin(plugin);
 
-            var feedProvider = new PluginFeedProvider(ClientModel.Symbols, ClientModel.History, ClientModel.Currencies.Snapshot, new DispatcherSync());
+            var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.InitQuoteStrategy(feedProvider);
             plugin.Metadata = feedProvider;
         }

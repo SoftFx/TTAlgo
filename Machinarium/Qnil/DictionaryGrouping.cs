@@ -7,26 +7,26 @@ using System.Threading.Tasks;
 namespace Machinarium.Qnil
 {
     internal class DictionaryGrouping<TKey, TValue, TGrouping> : OperatorBase,
-        IDynamicDictionarySource<TGrouping, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>>
+        IVarSet<TGrouping, IVarGrouping<TKey, TValue, TGrouping>>
     {
         private static readonly IEqualityComparer<TGrouping> groupKeyComparer = EqualityComparer<TGrouping>.Default;
 
-        private DynamicDictionary<TGrouping, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>> groups
-            = new DynamicDictionary<TGrouping, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>>();
+        private VarDictionary<TGrouping, IVarGrouping<TKey, TValue, TGrouping>> groups
+            = new VarDictionary<TGrouping, IVarGrouping<TKey, TValue, TGrouping>>();
 
         private Dictionary<TKey, TGrouping> groupingIndex = new Dictionary<TKey, TGrouping>();
-        private IDynamicDictionarySource<TKey, TValue> src;
+        private IVarSet<TKey, TValue> src;
         private Func<TKey, TValue, TGrouping> selector;
 
-        public event DictionaryUpdateHandler<TGrouping, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>> Updated
+        public event DictionaryUpdateHandler<TGrouping, IVarGrouping<TKey, TValue, TGrouping>> Updated
         {
             add { groups.Updated += value; }
             remove { groups.Updated -= value; }
         }
 
-        public IReadOnlyDictionary<TGrouping, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>> Snapshot { get { return groups.Snapshot; } }
+        public IReadOnlyDictionary<TGrouping, IVarGrouping<TKey, TValue, TGrouping>> Snapshot { get { return groups.Snapshot; } }
 
-        public DictionaryGrouping(IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TGrouping> selector)
+        public DictionaryGrouping(IVarSet<TKey, TValue> src, Func<TKey, TValue, TGrouping> selector)
         {
             this.src = src;
             this.selector = selector;
@@ -51,7 +51,7 @@ namespace Machinarium.Qnil
 
         private Grouping GetOrAddGroup(TGrouping groupKey)
         {
-            IDynamicDictionaryGrouping<TKey, TValue, TGrouping> group;
+            IVarGrouping<TKey, TValue, TGrouping> group;
 
             if (!groups.TryGetValue(groupKey, out group))
             {
@@ -117,7 +117,7 @@ namespace Machinarium.Qnil
         {
         }
 
-        private class Grouping : DynamicDictionary<TKey, TValue>, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>
+        private class Grouping : VarDictionary<TKey, TValue>, IVarGrouping<TKey, TValue, TGrouping>
         {
             public Grouping(TGrouping groupKey)
             {

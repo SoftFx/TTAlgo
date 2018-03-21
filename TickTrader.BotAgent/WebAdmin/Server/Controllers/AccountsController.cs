@@ -7,9 +7,9 @@ using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using TickTrader.Algo.Common.Model;
-using TickTrader.BotAgent.BA.Info;
 using System.Net;
 using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.BotAgent.BA.Entities;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -29,7 +29,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         [HttpGet]
         public AccountDto[] Get()
         {
-            return _botAgent.Accounts.Select(a => a.ToDto()).ToArray();
+            return _botAgent.GetAccounts().Select(a => a.ToDto()).ToArray();
         }
 
         [HttpGet("{server}/{login}/[action]")]
@@ -37,7 +37,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var connErrorCode = _botAgent.GetAccountInfo(new AccountKey(WebUtility.UrlDecode(login), WebUtility.UrlDecode(server)), out ConnectionInfo info);
+                var connErrorCode = _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(login), WebUtility.UrlDecode(server)), out TradeMetadataInfo info);
 
                 if (connErrorCode == ConnectionErrorCodes.None)
                 {

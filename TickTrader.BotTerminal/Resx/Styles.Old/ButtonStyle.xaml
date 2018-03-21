@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:TickTrader.Algo.Common;assembly=TickTrader.Algo.Common"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <!--Base Button Template/Style-->
@@ -226,11 +227,11 @@
     <Style x:Key="SellButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
         <Setter Property="Template" Value="{StaticResource SellButtonTemplate}"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
+            <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static c:RateChangeDirections.Up}">
                 <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
                 <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
+            <DataTrigger Binding="{Binding SellTracker.Direction}" Value="{x:Static c:RateChangeDirections.Down}">
                 <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
                 <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
             </DataTrigger>
@@ -240,11 +241,11 @@
     <Style x:Key="BuyButtonStyle" TargetType="l:FlatButton" BasedOn="{StaticResource TrickyButton}">
         <Setter Property="Template" Value="{StaticResource BuyButtonTemplate}"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static l:RateChangeDirections.Up}">
+            <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static c:RateChangeDirections.Up}">
                 <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
                 <Setter Property="HighlightBackground" Value="{DynamicResource RateUpHighlightColor}"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static l:RateChangeDirections.Down}">
+            <DataTrigger Binding="{Binding BuyTracker.Direction}" Value="{x:Static c:RateChangeDirections.Down}">
                 <Setter Property="Background" Value="{DynamicResource RateDownColor}"/>
                 <Setter Property="HighlightBackground" Value="{DynamicResource RateDownHighlightColor}"/>
             </DataTrigger>

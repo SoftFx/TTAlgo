@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model
 
         void UpdateStatus(string status);
 
-        void LogStatus(string status);
+        void Trace(string status);
     }
 
 
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model
 
         public void Start()
         {
-            _writer.LogStatus("Bot started");
+            _writer.Trace("Bot started");
             _timer = new Timer(LogStatus, null, TimeSpan.FromMilliseconds(1000), TimeSpan.FromMinutes(1));
         }
 
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
                 _timer.Dispose();
                 _timer = null;
                 LogStatus(null);
-                _writer.LogStatus("Bot stopped");
+                _writer.Trace("Bot stopped");
             }
         }
 
@@ -106,7 +106,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (!string.IsNullOrWhiteSpace(_currentStatus))
                 {
-                    _writer.LogStatus(string.Join(Environment.NewLine, "Status snapshot", _currentStatus, ""));
+                    _writer.Trace(string.Join(Environment.NewLine, "Status snapshot", _currentStatus, ""));
                 }
             }
         }

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class SetToDicionaryOperator<TKey, TValue> : OperatorBase, IDynamicDictionarySource<TKey, TValue>
+    internal class SetToDicionaryOperator<TKey, TValue> : OperatorBase, IVarSet<TKey, TValue>
     {
         private Dictionary<TKey, TValue> _snapshot = new Dictionary<TKey, TValue>();
-        private IDynamicSetSource<TKey> _srcSet;
+        private IVarSet<TKey> _srcSet;
         private Func<TKey, TValue> _selector;
 
-        public SetToDicionaryOperator(IDynamicSetSource<TKey> srcSet, Func<TKey, TValue> selector)
+        public SetToDicionaryOperator(IVarSet<TKey> srcSet, Func<TKey, TValue> selector)
         {
             _srcSet = srcSet;
             _selector = selector;

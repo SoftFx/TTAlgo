@@ -1,7 +1,6 @@
 ﻿using Caliburn.Micro;
 using SciChart.Charting.ViewportManagers;
 using SciChart.Charting.Visuals.RenderableSeries;
-using SoftFX.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,6 +24,7 @@ using Machinarium.Qnil;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using System.Windows.Input;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -38,12 +38,12 @@ namespace TickTrader.BotTerminal
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
         private readonly IShell shell;
-        private readonly DynamicList<BotControlViewModel> bots = new DynamicList<BotControlViewModel>();
-        private readonly DynamicList<ChartModelBase> charts = new DynamicList<ChartModelBase>();
+        private readonly VarList<BotControlViewModel> bots = new VarList<BotControlViewModel>();
+        private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
         private PreferencesStorageModel _preferences;
 
-        public ChartViewModel(string symbol, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
+        public ChartViewModel(string symbol, string period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
             ChartWindowId = "Chart" + ++idSeed;
 
-            smb = (SymbolModel)clientModel.Symbols[symbol];
+            smb = clientModel.Symbols.GetOrDefault(symbol);
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();
@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
             periodActivatos.Add("S1", () => ActivateBarChart(TimeFrames.S1, "d MMMM yyyy HH:mm:ss"));
             periodActivatos.Add("Ticks", () => ActivateTickChart());
 
-            SelectedPeriod = periodActivatos.ElementAt(8);
+            SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
 
             CloseCommand = new GenericCommand(o => TryClose());
         }
@@ -218,7 +218,6 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            SelectedPeriod = AvailablePeriods.FirstOrDefault(p => p.Key == snapshot.SelectedPeriod);
             Chart.SelectedChartType = snapshot.SelectedChartType;
             Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
@@ -227,8 +226,7 @@ namespace TickTrader.BotTerminal
 
         private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
         {
-            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.Descriptor.Id == snapshot.DescriptorId &&
-                i.FilePath == snapshot.PluginFilePath).Snapshot.FirstOrDefault().Value;
+            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.CanBeUseForSnapshot(snapshot)).Snapshot.FirstOrDefault().Value;
             if (catalogItem == null)
             {
                 return null;
