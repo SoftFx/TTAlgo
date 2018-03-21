@@ -37,12 +37,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return new TradeBotDto()
             {
                 Id = bot.Id,
-                Account = bot. Account.ToDto(),
+                Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
                 PackageName = bot.Config.Plugin.PackageName,
                 BotName = bot.BotName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
+                Permissions = bot.Config.PluginConfig.Permissions.ToDto(),
             };
         }
 

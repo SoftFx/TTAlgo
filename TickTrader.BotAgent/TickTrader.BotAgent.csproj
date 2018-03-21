@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <None Remove="Properties\PublishProfiles\local.pubxml" />
-    <None Remove="WebAdmin\Client\admin\accounts\account-change-protocol.component.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -94,10 +93,6 @@
 
   <ItemGroup>
     <Folder Include="WebAdmin\wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="WebAdmin\Client\admin\accounts\account-change-protocol.component.ts" />
   </ItemGroup>
 
   <ItemGroup>
