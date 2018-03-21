@@ -50,9 +50,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void Open(string symbol)
+        public void Open(string symbol, string period = "M1")
         {
-            ActivateItem(new ChartViewModel(symbol, _shell, _clientModel, _algoEnv, _storage));
+            ActivateItem(new ChartViewModel(symbol, period, _shell, _clientModel, _algoEnv, _storage));
         }
 
         public void CloseItem(ChartViewModel chart)
@@ -100,7 +100,7 @@ namespace TickTrader.BotTerminal
                     {
                         return;
                     }
-                    var item = new ChartViewModel(chart.Symbol, _shell, _clientModel, _algoEnv, _storage);
+                    var item = new ChartViewModel(chart.Symbol, chart.SelectedPeriod, _shell, _clientModel, _algoEnv, _storage);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }

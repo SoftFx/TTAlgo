@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ProfileManagerViewModel
+    internal class ProfileManagerViewModel : PropertyChangedBase
     {
         private Logger _logger;
         private IProfileLoader _profileLoader;
@@ -20,9 +20,20 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _cancelLoadSrc;
         private ProfileRepository _profileRepo;
         private VarDictionary<string, string> _profiles;
+        private bool _canLoadProfile;
 
 
         public IObservableList<string> Profiles { get; }
+
+        public bool CanLoadProfile
+        {
+            get { return _canLoadProfile && _profiles.Count > 0; }
+            set
+            {
+                _canLoadProfile = value;
+                NotifyOfPropertyChange(nameof(CanLoadProfile));
+            }
+        }
 
 
         public ProfileManagerViewModel(IShell shell, PersistModel storage)
@@ -139,6 +150,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _profiles.Add(args.FilePath, args.ProfileName);
+                    NotifyOfPropertyChange(nameof(CanLoadProfile));
                 }
                 catch (Exception ex)
                 {
@@ -155,6 +167,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _profiles.Remove(args.FilePath);
+                    NotifyOfPropertyChange(nameof(CanLoadProfile));
                 }
                 catch (Exception ex)
                 {

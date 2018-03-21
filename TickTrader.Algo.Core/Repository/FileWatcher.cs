@@ -72,6 +72,11 @@ namespace TickTrader.Algo.Core.Repository
             item?.Dispose();
         }
 
+        public Task WaitReady()
+        {
+            return stateControl.AsyncWait(States.Ready);
+        }
+
         internal void CheckForChanges()
         {
             stateControl.PushEvent(Events.Rescan);
