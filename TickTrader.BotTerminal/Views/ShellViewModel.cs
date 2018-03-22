@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.BotTerminal.Controls;
 
 namespace TickTrader.BotTerminal
 {
@@ -69,6 +70,7 @@ namespace TickTrader.BotTerminal
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
             CanConnect = true;
+            DockManagerService = new DockManagerNotification();
 
             UpdateCommandStates();
             cManager.StateChanged += (o, n) => UpdateDisplayName();
@@ -91,6 +93,7 @@ namespace TickTrader.BotTerminal
             LogStateLoop();
 
             _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
+
         }
 
         private void OpenDefaultChart()
@@ -136,6 +139,16 @@ namespace TickTrader.BotTerminal
 
         public bool CanConnect { get; private set; }
         public bool CanDisconnect { get; private set; }
+
+        public void SaveLayout()
+        {
+            DockManagerService.SaveLayout();
+        }
+
+        public void LoadLayout()
+        {
+            DockManagerService.LoadLayout();
+        }
 
         public void Connect()
         {
@@ -228,6 +241,7 @@ namespace TickTrader.BotTerminal
         public ProfileManagerViewModel ProfileManager { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public WindowManager ToolWndManager => wndManager;
+        public DockManagerNotification DockManagerService { get; set; }
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
