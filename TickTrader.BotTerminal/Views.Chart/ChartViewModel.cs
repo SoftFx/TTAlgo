@@ -33,7 +33,6 @@ namespace TickTrader.BotTerminal
 
     class ChartViewModel : Screen, IDropHandler
     {
-        private static int idSeed;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly TraderClientModel clientModel;
         private readonly AlgoEnvironment algoEnv;
@@ -47,7 +46,7 @@ namespace TickTrader.BotTerminal
         private IVarList<BotControlViewModel> _botsBySymbol;
 
 
-        public ChartViewModel(string symbol, ChartPeriods period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
+        public ChartViewModel(string chartId, string symbol, ChartPeriods period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
@@ -56,7 +55,7 @@ namespace TickTrader.BotTerminal
             this.shell = shell;
             _botManager = botManager;
 
-            ChartWindowId = "Chart" + ++idSeed;
+            ChartWindowId = chartId;
 
             smb = clientModel.Symbols.GetOrDefault(symbol);
 
@@ -105,7 +104,7 @@ namespace TickTrader.BotTerminal
         private readonly Dictionary<ChartPeriods, System.Action> periodActivatos = new Dictionary<ChartPeriods, System.Action>();
         private KeyValuePair<ChartPeriods, System.Action> selectedPeriod;
 
-        public string ChartWindowId { get; private set; }
+        public string ChartWindowId { get; }
 
         public Dictionary<ChartPeriods, System.Action> AvailablePeriods => periodActivatos;
 
@@ -171,6 +170,7 @@ namespace TickTrader.BotTerminal
         {
             return new ChartStorageEntry
             {
+                Id = ChartWindowId,
                 Symbol = Symbol,
                 SelectedPeriod = SelectedPeriod.Key,
                 SelectedChartType = Chart.SelectedChartType,

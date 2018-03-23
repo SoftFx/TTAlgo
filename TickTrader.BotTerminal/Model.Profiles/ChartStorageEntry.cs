@@ -8,6 +8,9 @@ namespace TickTrader.BotTerminal
     internal class ChartStorageEntry
     {
         [DataMember]
+        public string Id { get; set; }
+
+        [DataMember]
         public string Symbol { get; set; }
 
         [DataMember(Name = "Period")]
@@ -32,6 +35,7 @@ namespace TickTrader.BotTerminal
         {
             return new ChartStorageEntry
             {
+                Id = Id,
                 Symbol = Symbol,
                 SelectedPeriod = SelectedPeriod,
                 SelectedChartType = SelectedChartType,

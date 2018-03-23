@@ -369,6 +369,7 @@ namespace TickTrader.BotTerminal
             {
                 Charts.SaveChartsSnapshot(profileStorage);
                 BotManager.SaveBotsSnapshot(profileStorage);
+                DockManagerService.SaveLayoutSnapshot(profileStorage);
             }
             catch (Exception ex)
             {
@@ -402,7 +403,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo, BotManager);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo, BotManager, DockManagerService);
             wndManager.ShowDialog(loading, this);
         }
 

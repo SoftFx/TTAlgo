@@ -15,15 +15,16 @@ namespace TickTrader.BotTerminal
             return new ProfileStorageModel
             {
                 SelectedChart = p.SelectedChart,
-                Charts = p.Charts.Select(ResolveChartVersion1).ToList(),
+                Charts = p.Charts.Select((c, i) => ResolveChartVersion1(c, $"Chart{i}")).ToList(),
                 Bots = p.Charts.Select(c => c.Bots.Select(b => ResolveTradeBotVersion1(b, c))).SelectMany(bots => bots).ToList(),
             };
         }
 
-        private static ChartStorageEntry ResolveChartVersion1(Ver1.ChartStorageEntry c)
+        private static ChartStorageEntry ResolveChartVersion1(Ver1.ChartStorageEntry c, string id)
         {
             return new ChartStorageEntry
             {
+                Id = id,
                 Symbol = c.Symbol,
                 SelectedPeriod = ParsePeriodVersion1(c.SelectedPeriod),
                 SelectedChartType = c.SelectedChartType,

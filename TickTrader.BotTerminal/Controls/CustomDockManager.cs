@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 {
     public class CustomDockManager : DockingManager
     {
-        private static ILogger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         private Dictionary<string, LayoutAnchorable> _anchorableViews;
 
@@ -58,11 +58,11 @@ namespace TickTrader.BotTerminal
         {
             _anchorableViews = new Dictionary<string, LayoutAnchorable>();
 
-            Loaded += OnDockManagerLoaded;
+            Loaded += (sender, args) => FindAnchorableViews();
         }
 
 
-        private void OnDockManagerLoaded(object sender, RoutedEventArgs args)
+        private void FindAnchorableViews()
         {
             foreach (var view in _anchorableViews.Values)
             {
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
             {
                 var layoutSerializer = new XmlLayoutSerializer(this);
                 layoutSerializer.Deserialize(stream);
-                UpdateViewsVisibility();
+                FindAnchorableViews();
             }
             catch (Exception ex)
             {

@@ -17,10 +17,11 @@ namespace TickTrader.BotTerminal
         private CancellationToken _token;
         private PluginCatalog _repo;
         private BotManagerViewModel _botManager;
+        private DockManagerService _dockManagerService;
 
 
         public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token,
-            PluginCatalog repo, BotManagerViewModel botManager)
+            PluginCatalog repo, BotManagerViewModel botManager, DockManagerService dockManagerService)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
@@ -28,6 +29,7 @@ namespace TickTrader.BotTerminal
             _token = token;
             _repo = repo;
             _botManager = botManager;
+            _dockManagerService = dockManagerService;
         }
 
         protected override void OnInitialize()
@@ -67,6 +69,10 @@ namespace TickTrader.BotTerminal
                 }
 
                 _charts.LoadChartsSnaphot(_profileManager.CurrentProfile, _token);
+
+                _token.ThrowIfCancellationRequested();
+
+                _dockManagerService.LoadLayoutSnapshot(_profileManager.CurrentProfile);
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

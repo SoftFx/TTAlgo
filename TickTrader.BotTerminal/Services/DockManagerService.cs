@@ -1,7 +1,9 @@
 ﻿using Caliburn.Micro;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace TickTrader.BotTerminal
 {
@@ -18,8 +20,11 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class DockManagerService : PropertyChangedBase, IDockManagerServiceProvider
+    internal class DockManagerService : PropertyChangedBase, IDockManagerServiceProvider
     {
+        private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+
         public const string Tab_Symbols = "Tab_Symbols";
         public const string Tab_Bots = "Tab_Bots";
         public const string Tab_Algo = "Tab_Algo";
@@ -139,17 +144,45 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void SaveLayout(Stream stream)
+        public void SaveLayoutSnapshot(ProfileStorageModel profileStorage)
         {
-            _saveLayoutEvent?.Invoke(stream);
+            try
+            {
+                using (var stream = new MemoryStream())
+                {
+                    _saveLayoutEvent?.Invoke(stream);
+                    profileStorage.Layout = Encoding.UTF8.GetString(stream.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to save layout snapshot");
+            }
         }
 
-        public void LoadLayout(Stream stream)
+        public void LoadLayoutSnapshot(ProfileStorageModel profileStorage)
         {
-            _loadLayoutEvent?.Invoke(stream);
+            try
+            {
+                if (profileStorage.Layout != null)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(profileStorage.Layout);
+                        stream.Write(bytes, 0, bytes.Length);
+                        stream.Seek(0, SeekOrigin.Begin);
+                        _loadLayoutEvent?.Invoke(stream);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load layout snapshot");
+            }
         }
 
-        public void ToggleView(string contentId)
+
+        private void ToggleView(string contentId)
         {
             _toggleViewEvent?.Invoke(contentId);
         }

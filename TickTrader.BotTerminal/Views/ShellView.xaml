@@ -232,7 +232,7 @@
                         <Style TargetType="{x:Type dkctrl:LayoutItem}">
                             <Setter Property="Title" Value="{Binding Model.DisplayName}" />
                             <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
-                            <Setter Property="ContentId" Value="{Binding Model.DisplayName}"/>
+                            <Setter Property="ContentId" Value="{Binding Model.ChartWindowId}"/>
                             <!--<Setter Property="CanClose" Value="{Binding Model.CanClose}" />-->
                         </Style>
                     </l:AvalonDockStyleSelector.DocumentStyle>
