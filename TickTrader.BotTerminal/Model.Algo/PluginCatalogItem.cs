@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,5 +23,22 @@ namespace TickTrader.BotTerminal
         public AlgoPluginDescriptor Descriptor { get { return Ref.Descriptor; } }
         public string DisplayName { get { return Descriptor.DisplayName; } }
         public string Category { get { return Descriptor.Category; } }
+
+        internal bool CanBeUseForSnapshot<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
+        {
+            return Descriptor.Id == snapshot.DescriptorId && IsPathEquivalent(snapshot.PluginFilePath);
+        }
+
+        private bool IsPathEquivalent(string snapshotPath)
+        {
+            if (FilePath == snapshotPath)
+                return true;
+
+            if (!snapshotPath.StartsWith(EnvService.Instance.AlgoCommonRepositoryFolder)
+                && snapshotPath.EndsWith(Key.FileName))
+                return true; // match cases when package was in local AlgoRepository, but BotTerminal was in different folder
+
+            return false;
+        }
     }
 }

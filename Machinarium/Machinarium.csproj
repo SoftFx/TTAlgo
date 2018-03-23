@@ -52,7 +52,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActorModel\Actor.cs" />
     <Compile Include="Collections\SortedList.cs" />
     <Compile Include="EntityModel\Field.cs" />
     <Compile Include="EntityModel\FieldExt.cs" />

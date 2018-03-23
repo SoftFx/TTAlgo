@@ -8,14 +8,14 @@ using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.Algo.Common.Lib
 {
-    public class SetSynchronizer<T> : IDynamicSetSource<T>
+    public class SetSynchronizer<T> : IVarSet<T>
     {
         private ISyncContext _sync;
-        private IDynamicSetSource<T> _srcCollection;
+        private IVarSet<T> _srcCollection;
         private HashSet<T> _collectionCopy;
         private bool _isDiposed;
 
-        public SetSynchronizer(IDynamicSetSource<T> srcCollection, ISyncContext sync)
+        public SetSynchronizer(IVarSet<T> srcCollection, ISyncContext sync)
         {
             _srcCollection = srcCollection;
             _collectionCopy = new HashSet<T>(srcCollection.Snapshot);

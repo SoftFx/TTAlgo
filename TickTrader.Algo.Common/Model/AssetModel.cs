@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Common.Model
         public decimal FreeAmount => Amount - Margin;
         public decimal LockedAmount => Margin;
 
-        public Algo.Core.AssetEntity ToAlgoAsset()
+        public Algo.Core.AssetEntity GetEntity()
         {
             return new Algo.Core.AssetEntity((double)amount, currency);
         }

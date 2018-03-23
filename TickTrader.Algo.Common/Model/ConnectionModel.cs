@@ -1,4 +1,5 @@
-﻿using Machinarium.ActorModel;
+﻿using ActorSharp;
+using ActorSharp.Lib;
 using Machinarium.State;
 //using SoftFX.Extended;
 using System;
@@ -15,14 +16,14 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class ConnectionModel
+    public class ConnectionModel : ActorPart, IStateMachineSync
     {
+        private StateMachine<States> _stateControl;
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<ConnectionModel>();
         public enum States { Offline, Connecting, Online, Disconnecting, OfflineRetry }
-        public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry }
+        public enum Events { LostConnection, ConnectFailed, Connected, DoneDisconnecting, OnRequest, OnRetry, StopRetryRequested }
+        //public enum DiconnectReasons { ConnectSequenceFailed, ClientRequest, LostConnection }
 
-        private StateMachine<States> _stateControl;
-        private IStateMachineSync _stateSync;
         private IServerInterop _interop;
         private CancellationTokenSource connectCancelSrc;
         private ConnectionOptions _options;
@@ -30,17 +31,23 @@ namespace TickTrader.Algo.Common.Model
         private ConnectRequest lastConnectRequest;
         private Request disconnectRequest;
         private bool wasConnected;
+        private bool wasInitFired;
+        private ActorEvent _initListeners = new ActorEvent();
+        private ActorEvent _deinitListeners = new ActorEvent();
+        private ActorEvent<StateInfo> _stateListeners = new ActorEvent<StateInfo>();
 
-        public ConnectionModel(ConnectionOptions options, IStateMachineSync stateSync = null)
+        public ConnectionModel(ConnectionOptions options)
         {
             _options = options;
 
-            Func<bool> canRecconect = () => wasConnected && LastErrorCode != ConnectionErrorCodes.BlockedAccount && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
+            Func<bool> canRecconect = () => _options.AutoReconnect && wasConnected
+                && LastErrorCode != ConnectionErrorCodes.BlockedAccount
+                && LastErrorCode != ConnectionErrorCodes.InvalidCredentials;
 
-            _stateControl = new StateMachine<States>(stateSync);
-            _stateSync = _stateControl.SyncContext;
+            _stateControl = new StateMachine<States>(this);
             _stateControl.AddTransition(States.Offline, () => connectRequest != null, States.Connecting);
             _stateControl.AddTransition(States.OfflineRetry, Events.OnRetry, canRecconect, States.Connecting);
+            _stateControl.AddTransition(States.OfflineRetry, Events.StopRetryRequested, States.Offline);
             _stateControl.AddTransition(States.Connecting, Events.Connected,
                 () => disconnectRequest != null || connectRequest != null || LastErrorCode != ConnectionErrorCodes.None, States.Disconnecting);
             _stateControl.AddTransition(States.Connecting, Events.Connected, States.Online);
@@ -52,50 +59,60 @@ namespace TickTrader.Algo.Common.Model
             _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, canRecconect, States.OfflineRetry);
             _stateControl.AddTransition(States.Disconnecting, Events.DoneDisconnecting, States.Offline);
 
-            _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 10000);
+            _stateControl.AddScheduledEvent(States.OfflineRetry, Events.OnRetry, 5000);
 
             _stateControl.OnEnter(States.Connecting, DoConnect);
-            _stateControl.OnEnter(States.Disconnecting, DoDisconnect);
-            _stateControl.OnEnter(States.Online, () =>
-            {
-                wasConnected = true;
-                Connected?.Invoke();
-            });
+            _stateControl.OnEnter(States.Disconnecting, () => DoDisconnect(canRecconect()));
 
             _stateControl.StateChanged += (f, t) =>
             {
+                ContextCheck();
+
                 StateChanged?.Invoke(f, t);
                 logger.Debug("STATE {0} ({1}:{2})", t, CurrentLogin, CurrentServer);
+
+                var stateInfo = new StateInfo();
+                stateInfo.State = t;
+                stateInfo.Login = CurrentLogin;
+                stateInfo.Server = CurrentServer;
+                stateInfo.Protocol = CurrentProtocol;
+                stateInfo.LastError = LastError;
+
+                _stateListeners.FireAndForget(stateInfo);
             };
 
             _stateControl.EventFired += e => logger.Debug("EVENT {0}", e);
         }
 
-        public IFeedServerApi FeedProxy => _interop.FeedApi;
-        public ITradeServerApi TradeProxy => _interop.TradeApi;
+        protected override void ActorInit()
+        {
+            Ref = this.GetRef();
+        }
+
+        public Ref<ConnectionModel> Ref { get; private set; }
+        internal IFeedServerApi FeedProxy => _interop.FeedApi;
+        internal ITradeServerApi TradeProxy => _interop.TradeApi;
         public ConnectionErrorInfo LastError { get; private set; }
         public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
         public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }
         public string CurrentLogin { get; private set; }
         public string CurrentServer { get; private set; }
         public string CurrentProtocol { get; private set; }
-        public bool IsConnecting => State == States.Connecting;
-        public bool IsOnline => State == States.Online;
-        public bool IsOffline => State == States.Offline || State == States.OfflineRetry;
-        public event Action Connecting = delegate { };
-        public event Action Connected = delegate { };
-        public event Action Disconnecting = delegate { };
-        public event Action Disconnected = delegate { };
-        public event AsyncEventHandler Initalizing; // main thread event
-        public event AsyncEventHandler Deinitalizing; // background thread event
+        public event Action InitProxies; // proxies are created but not yet started
+        public event Action DeinitProxies; // proxies are about to be stopped
+        public event AsyncEventHandler AsyncInitalizing; // part of connection process, called after proxies are connected
+        public event AsyncEventHandler AsyncDeinitalizing; // part of disconnection process, called before proxies are disconnected
+        public event AsyncEventHandler AsyncDisconnected; // part of disconnection process, called after proxies are disconnected
         public event Action<States, States> StateChanged;
 
         public States State => _stateControl.Current;
         public bool IsReconnecting { get; private set; }
 
-        public Task<ConnectionErrorInfo> Connect(string username, string password, string address, bool useSfxProtocol, CancellationToken cToken)
+        public Task<ConnectionErrorInfo> Connect(string username, string password, string address, bool useSfxProtocol)
         {
-            var request = new ConnectRequest(username, password, address, useSfxProtocol, cToken);
+            ContextCheck();
+
+            var request = new ConnectRequest(username, password, address, useSfxProtocol);
 
             _stateControl.ModifyConditions(() =>
             {
@@ -117,12 +134,21 @@ namespace TickTrader.Algo.Common.Model
 
         public Task Disconnect()
         {
+            ContextCheck();
+
             Task completion = null;
 
             _stateControl.ModifyConditions(() =>
             {
+                wasConnected = false;
+
                 if (State == States.Offline)
                     completion = Task.FromResult(ConnectionErrorCodes.None);
+                else if (State == States.OfflineRetry)
+                {
+                    _stateControl.PushEvent(Events.StopRetryRequested);
+                    completion = Task.FromResult(ConnectionErrorCodes.None);
+                }
                 else
                 {
                     if (connectRequest != null)
@@ -149,7 +175,7 @@ namespace TickTrader.Algo.Common.Model
 
         private void _interop_Disconnected(IServerInterop sender, ConnectionErrorInfo errInfo)
         {
-            _stateControl.ModifyConditions(() =>
+            ContextInvoke(() =>
             {
                 if (sender == _interop && (State == States.Online || State == States.Connecting))
                 {
@@ -161,6 +187,8 @@ namespace TickTrader.Algo.Common.Model
 
         private async void DoConnect()
         {
+            ContextCheck();
+
             var request = connectRequest;
             if (request == null)
             {
@@ -177,20 +205,15 @@ namespace TickTrader.Algo.Common.Model
                 connectRequest = null;
             }
 
+            connectCancelSrc = new CancellationTokenSource();
+            LastError = null;
+
+            CurrentLogin = request.Usermame;
+            CurrentServer = request.Address;
+            CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
+
             try
             {
-                connectCancelSrc = new CancellationTokenSource();
-                LastError = null;
-
-                CurrentLogin = request.Usermame;
-                CurrentServer = request.Address;
-                CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
-
-                request.CancelToken.Register(() =>
-                {
-                     // TO DO
-                });
-
                 if (request.UseSfx)
                     _interop = new SfxInterop(_options);
                 else
@@ -198,61 +221,69 @@ namespace TickTrader.Algo.Common.Model
 
                 _interop.Disconnected += _interop_Disconnected;
 
-                Connecting?.Invoke();
+                InitProxies?.Invoke();
 
-                var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token).ConfigureAwait(false);
+                var result = await _interop.Connect(request.Address, request.Usermame, request.Password, connectCancelSrc.Token);
                 if (result.Code != ConnectionErrorCodes.None)
                 {
-                    Disconnecting?.Invoke();
-                    await DisconnectProxy();
+                    await Deinitialize();
                     OnFailedConnect(request, result);
                     return;
                 }
                 else
                 {
-                    try
-                    {
-                        await _stateSync.Synchronized(() => Initalizing.InvokeAsync(this, connectCancelSrc.Token)).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex);
-                        await Deinitialize();
-                        await DisconnectProxy();
-                        OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
-                        return;
-                    }
-                    _interop.TradeApi.AllowTradeRequests();
+                    wasInitFired = true;
+                    await AsyncInitalizing.InvokeAsync(this, connectCancelSrc.Token);
+                    await _initListeners.Invoke();
                 }
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
+                await Deinitialize();
                 OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
                 return;
             }
 
+            wasConnected = true;
             _stateControl.PushEvent(Events.Connected);
             request.Complete(ConnectionErrorInfo.Ok);
         }
 
         private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
         {
-            _stateControl.ModifyConditions(() =>
-            {
-                LastError = erroInfo;
-                _stateControl.PushEvent(Events.ConnectFailed);
-            });
+            ContextCheck();
+
+            LastError = erroInfo;
+            _stateControl.PushEvent(Events.ConnectFailed);
 
             requets.Complete(erroInfo);
         }
 
-        private async Task DisconnectProxy()
+        private async Task Deinitialize()
         {
+            ContextCheck();
+
+            _interop.Disconnected -= _interop_Disconnected;
+
             try
             {
-                _interop.Disconnected -= _interop_Disconnected;
+                if (wasInitFired)
+                {
+                    await AsyncDeinitalizing.InvokeAsync(this);
+                    await _deinitListeners.Invoke();
+                }
+            }
+            catch (Exception ex) { logger.Error(ex); }
 
+            try
+            {
+                DeinitProxies?.Invoke();
+            }
+            catch (Exception ex) { logger.Error(ex); }
+
+            try
+            {
                 // wait proxy to stop
                 await _interop.Disconnect();
             }
@@ -260,43 +291,139 @@ namespace TickTrader.Algo.Common.Model
             {
                 logger.Error("Disconnection error: " + ex.Message);
             }
-        }
 
-        private async Task Deinitialize()
-        {
             try
             {
-                await _stateSync.Synchronized(() => Deinitalizing.InvokeAsync(this));
+                if (wasInitFired)
+                    await AsyncDisconnected.InvokeAsync(this, CancellationToken.None);
             }
             catch (Exception ex) { logger.Error(ex); }
+
+            wasInitFired = false;
         }
 
-        private async void DoDisconnect()
+        private async void DoDisconnect(bool canRecconect)
         {
-            _interop.TradeApi.DenyTradeRequests();
-
             await Deinitialize();
 
-            try
+            if (disconnectRequest != null)
             {
-                // fire disconnecting event
-                _stateSync.Synchronized(() => Disconnecting());
-            }
-            catch (Exception ex) { logger.Error(ex); }
+                disconnectRequest.Complete(ConnectionErrorInfo.Ok);
+                disconnectRequest = null;
+                wasConnected = false;
+                IsReconnecting = false;
+            };
 
-            await DisconnectProxy();
+            _stateControl.PushEvent(Events.DoneDisconnecting);
+        }
 
-            _stateControl.ModifyConditions(() =>
+        #region IStateMachineSync
+
+        void IStateMachineSync.Synchronized(Action syncAction)
+        {
+            ContextInvoke(syncAction);
+        }
+
+        T IStateMachineSync.Synchronized<T>(Func<T> syncAction)
+        {
+            T result = default(T);
+            ContextInvoke(() => result = syncAction());
+            return result;
+        }
+
+        #endregion
+
+        public class Handler : Handler<ConnectionModel>
+        {
+            private ActorCallback _initListener;
+            private ActorCallback _deinitListener;
+            private ActorCallback<StateInfo> _stateListener;
+
+            public Handler(Ref<ConnectionModel> actorRef) : base(actorRef) { }
+
+            public States State { get; private set; }
+            public bool IsConnecting => State == States.Connecting;
+            public bool IsOnline => State == States.Online;
+            public bool IsOffline => State == States.Offline || State == States.OfflineRetry;
+            public ConnectionErrorInfo LastError { get; private set; }
+            public ConnectionErrorCodes LastErrorCode => LastError?.Code ?? ConnectionErrorCodes.None;
+            public bool HasError { get { return LastErrorCode != ConnectionErrorCodes.None; } }
+            public bool IsReconnecting { get; private set; }
+            public string CurrentLogin { get; private set; }
+            public string CurrentServer { get; private set; }
+            public string CurrentProtocol { get; private set; }
+
+            public event AsyncEventHandler Initalizing;
+            public event AsyncEventHandler Deinitalizing;
+            //public event Action Connecting = delegate { };
+            public event Action Connected = delegate { };
+            //public event Action Disconnecting = delegate { };
+            public event Action Disconnected = delegate { };
+            public event Action<States, States> StateChanged;
+
+            public async virtual Task OpenHandler()
             {
-                if (disconnectRequest != null)
+                var handlerRef = this.GetRef();
+
+                _initListener = ActorCallback.CreateAsync(FireInitEvent);
+                _deinitListener = ActorCallback.CreateAsync(FireDeinitEvent);
+                _stateListener = ActorCallback.Create<StateInfo>(UpdateState);
+
+                State = await Actor.Call(a =>
                 {
-                    disconnectRequest.Complete(ConnectionErrorInfo.Ok);
-                    disconnectRequest = null;
-                    wasConnected = false;
-                    IsReconnecting = false;
-                };
-                _stateControl.PushEvent(Events.DoneDisconnecting);
-            });
+                    a._stateListeners.Add(_stateListener);
+                    a._initListeners.Add(_initListener);
+                    a._deinitListeners.Add(_deinitListener);
+                    return a.State;
+                });
+            }
+
+            public Task<ConnectionErrorInfo> Connect(string userName, string password, string address, bool useSfxProtocol, CancellationToken cToken)
+            {
+                return Actor.Call(a => a.Connect(userName, password, address, useSfxProtocol));
+            }
+
+            public Task Disconnect()
+            {
+                return Actor.Call(a => a.Disconnect());
+            }
+
+            public virtual Task CloseHandler()
+            {
+                return Actor.Call(a =>
+                {
+                    a._stateListeners.Remove(_stateListener);
+                    a._initListeners.Remove(_initListener);
+                    a._deinitListeners.Remove(_deinitListener);
+                });
+            }
+
+            private Task FireInitEvent()
+            {
+                return Initalizing.InvokeAsync(this, CancellationToken.None);
+            }
+
+            private Task FireDeinitEvent()
+            {
+                return Deinitalizing.InvokeAsync(this, CancellationToken.None);
+            }
+
+            private void UpdateState(StateInfo info)
+            {
+                var oldState = State;
+                State = info.State;
+                LastError = info.LastError;
+                CurrentLogin = info.Login;
+                CurrentServer = info.Server;
+                CurrentProtocol = info.Protocol;
+
+                StateChanged?.Invoke(oldState, State);
+
+                if (State == States.Online)
+                    Connected?.Invoke();
+                else if (State == States.Offline)
+                    Disconnected?.Invoke();
+            }
         }
 
         private class Request
@@ -318,25 +445,35 @@ namespace TickTrader.Algo.Common.Model
 
         private class ConnectRequest : Request
         {
-            public ConnectRequest(string username, string password, string address, bool useSfxProtocol, CancellationToken cToken)
+            public ConnectRequest(string username, string password, string address, bool useSfxProtocol)
             {
                 Usermame = username;
                 Password = password;
                 Address = address;
                 UseSfx = useSfxProtocol;
-                CancelToken = cToken;
+                //CancelToken = cToken;
             }
 
             public string Usermame { get; }
             public string Password { get; }
             public string Address { get; }
             public bool UseSfx { get; }
-            public CancellationToken CancelToken { get; }
+            //public CancellationToken CancelToken { get; }
+        }
+
+        private class StateInfo
+        {
+            public States State { get; set; }
+            public ConnectionErrorInfo LastError { get; set; }
+            public string Login { get; set; }
+            public string Server { get; set; }
+            public string Protocol { get; set; }
         }
     }
 
     public class ConnectionOptions
     {
+        public bool AutoReconnect { get; set; }
         public bool EnableLogs { get; set; }
         public string LogsFolder { get; set; }
     }

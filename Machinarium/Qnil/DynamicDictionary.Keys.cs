@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    partial class DynamicDictionary<TKey, TValue>
+    partial class VarDictionary<TKey, TValue>
     {
-        private class KeyCollection : IDynamicSetSource<TKey>
+        private class KeyCollection : IVarSet<TKey>
         {
             public KeyCollection(IEnumerable<TKey> snapshot)
             {

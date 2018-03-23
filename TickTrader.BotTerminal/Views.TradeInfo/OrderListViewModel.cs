@@ -15,24 +15,20 @@ namespace TickTrader.BotTerminal
 {
     class OrderListViewModel : AccountBasedViewModel
     {
-        private SymbolCollectionModel _symbols;
-
-        public OrderListViewModel(AccountModel model, SymbolCollectionModel symbols, ConnectionModel connection)
+        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, ConnectionModel.Handler connection)
             : base(model, connection)
         {
-            _symbols = symbols;
-
             Orders = model.Orders
                 .Where((id, order) => order.OrderType != OrderType.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, (SymbolModel)symbols.GetOrDefault(o.Symbol)))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol)))
                 .AsObservable();
 
             Orders.CollectionChanged += OrdersCollectionChanged;
             Account.AccountTypeChanged += () => NotifyOfPropertyChange(nameof(IsGrossAccount));
         }
 
-        public IObservableListSource<OrderViewModel> Orders { get; private set; }
+        public IObservableList<OrderViewModel> Orders { get; private set; }
         public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
 
         private void OrdersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

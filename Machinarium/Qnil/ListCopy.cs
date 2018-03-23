@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ListCopy<T> : OperatorBase, IDynamicListSource<T>, IReadOnlyList<T>
+    internal class ListCopy<T> : OperatorBase, IVarList<T>, IReadOnlyList<T>
     {
-        private IDynamicListSource<T> src;
+        private IVarList<T> src;
         private List<T> innerList;
         private bool propogateDispose;
 
-        public ListCopy(IDynamicListSource<T> src, bool propogateDispose)
+        public ListCopy(IVarList<T> src, bool propogateDispose)
         {
             this.src = src;
             this.innerList = new List<T>(src.Snapshot);

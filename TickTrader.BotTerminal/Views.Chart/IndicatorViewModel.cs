@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
@@ -19,8 +20,8 @@ namespace TickTrader.BotTerminal
             _chart = chart;
             ChartWindowId = windowId;
             Model = indicator;
-            Series = new DynamicList<IRenderableSeriesViewModel>();
-            Panes = new DynamicList<IndicatorPaneViewModel>();
+            Series = new VarList<IRenderableSeriesViewModel>();
+            Panes = new VarList<IndicatorPaneViewModel>();
             Precision = 0;
 
             foreach (OutputSetup output in indicator.Setup.Outputs.Where(o => o.Target == OutputTargets.Overlay))
@@ -42,8 +43,8 @@ namespace TickTrader.BotTerminal
 
         public IndicatorModel Model { get; private set; }
         public string DisplayName { get { return Model.InstanceId; } }
-        public DynamicList<IRenderableSeriesViewModel> Series { get; private set; }
-        public DynamicList<IndicatorPaneViewModel> Panes { get; private set; }
+        public VarList<IRenderableSeriesViewModel> Series { get; private set; }
+        public VarList<IndicatorPaneViewModel> Panes { get; private set; }
         public string ChartWindowId { get; private set; }
         public int Precision { get; private set; }
 

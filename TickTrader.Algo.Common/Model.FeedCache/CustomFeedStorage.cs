@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Common.Model
     public class CustomFeedStorage : FeedCache
     {
         private ICollectionStorage<Guid, CustomSymbol> _metadataStorage;
-        private DynamicDictionary<string, CustomSymbol> _symbols = new DynamicDictionary<string, CustomSymbol>();
+        private VarDictionary<string, CustomSymbol> _symbols = new VarDictionary<string, CustomSymbol>();
 
         public override void Start(string dbFolder)
         {
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public IDynamicDictionarySource<string, CustomSymbol> GetSymbolsSyncCopy(ISyncContext context)
+        public IVarSet<string, CustomSymbol> GetSymbolsSyncCopy(ISyncContext context)
         {
             lock (SyncObj) return new DictionarySyncrhonizer<string, CustomSymbol>(_symbols, context);
         }

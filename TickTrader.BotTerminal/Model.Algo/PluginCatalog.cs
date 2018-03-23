@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
         private static readonly Guid NoRepositoryId = Guid.Empty;
         private List<AlgoRepository> repositories = new List<AlgoRepository>();
         private Dictionary<AlgoRepository, Guid> repositoryToIdMap = new Dictionary<AlgoRepository, Guid>();
-        private DynamicDictionary<PluginCatalogKey, PluginCatalogItem> plugins = new DynamicDictionary<PluginCatalogKey, PluginCatalogItem>();
+        private VarDictionary<PluginCatalogKey, PluginCatalogItem> plugins = new VarDictionary<PluginCatalogKey, PluginCatalogItem>();
 
         public PluginCatalog()
         {
@@ -31,9 +31,9 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
         }
 
-        public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> Indicators { get; private set; }
-        public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> BotTraders { get; private set; }
-        public IDynamicDictionarySource<PluginCatalogKey, PluginCatalogItem> AllPlugins { get { return plugins; } }
+        public IVarSet<PluginCatalogKey, PluginCatalogItem> Indicators { get; private set; }
+        public IVarSet<PluginCatalogKey, PluginCatalogItem> BotTraders { get; private set; }
+        public IVarSet<PluginCatalogKey, PluginCatalogItem> AllPlugins { get { return plugins; } }
 
         //public event Action<PluginCatalogItem> PluginBeingReplaced;
         //public event Action<PluginCatalogItem> PluginBeingRemoved;
@@ -65,9 +65,9 @@ namespace TickTrader.BotTerminal
                 Add(d);
         }
 
-        public Task Init()
+        public Task WaitInit()
         {
-            return Task.WhenAll(repositories.Select(r => r.Init()));
+            return Task.WhenAll(repositories.Select(r => r.WaitInit()));
         }
 
         private void Rep_Added(AlgoRepositoryEventArgs args)

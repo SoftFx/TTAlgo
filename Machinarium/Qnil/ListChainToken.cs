@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class ListChainToken<T> : IDynamicListSource<T>
+    internal class ListChainToken<T> : IVarList<T>
     {
-        private IDynamicListSource<T> src;
+        private IVarList<T> src;
 
-        public ListChainToken(IDynamicListSource<T> src)
+        public ListChainToken(IVarList<T> src)
         {
             this.src = src;
         }
 
-        public IDynamicListSource<T> Src { get { return src; } }
+        public IVarList<T> Src { get { return src; } }
         public IReadOnlyList<T> Snapshot { get { return src.Snapshot; } }
         public event ListUpdateHandler<T> Updated { add { src.Updated += value; } remove { src.Updated -= value; } }
 

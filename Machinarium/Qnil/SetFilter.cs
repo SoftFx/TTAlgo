@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    internal class SetFilter<T> : OperatorBase, IDynamicSetSource<T>, IEnumerable<T>
+    internal class SetFilter<T> : OperatorBase, IVarSet<T>, IEnumerable<T>
     {
-        private IDynamicSetSource<T> src;
+        private IVarSet<T> src;
         private Predicate<T> condition;
 
-        public SetFilter(IDynamicSetSource<T> src, Predicate<T> condition)
+        public SetFilter(IVarSet<T> src, Predicate<T> condition)
         {
             this.src = src;
             this.condition = condition;

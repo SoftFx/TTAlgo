@@ -13,6 +13,7 @@ using TickTrader.Algo.Core.Lib;
 using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Lib;
 using SoftFX.Extended.Reports;
+using ActorSharp;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -39,6 +40,9 @@ namespace TickTrader.Algo.Common.Model
         public IFeedServerApi FeedApi => this;
         public ITradeServerApi TradeApi => this;
 
+        public bool AutoAccountInfo => true;
+        public bool AutoSymbols => true;
+
         public FdkInterop(ConnectionOptions options)
         {
             _options = options;
@@ -64,6 +68,8 @@ namespace TickTrader.Algo.Common.Model
             _connectEvent = new TaskCompletionSource<ConnectionErrorInfo>();
 
             _feedProxy.Tick += (s, e) => Tick?.Invoke(FdkConvertor.Convert(e.Tick));
+            _feedProxy.SymbolInfo += (s, e) => SymbolInfo?.Invoke(FdkConvertor.Convert(e.Information));
+            _feedProxy.CurrencyInfo += (s, e) => CurrencyInfo?.Invoke(FdkConvertor.Convert(e.Information));
             _tradeProxy.PositionReport += (s, a) => PositionReport?.Invoke(FdkConvertor.Convert(a.Report));
             _tradeProxy.ExecutionReport += (s, a) => ExecutionReport?.Invoke(FdkConvertor.Convert(a.Report));
             _tradeProxy.BalanceOperation += (s, a) => BalanceOperation?.Invoke(FdkConvertor.Convert(a.Data));
@@ -72,7 +78,7 @@ namespace TickTrader.Algo.Common.Model
             _feedProxy.Start();
             _tradeProxy.Start();
 
-            var result = await _connectEvent.Task;
+            var result =  await _connectEvent.Task;
 
             if (result.Code == ConnectionErrorCodes.None)
             {
@@ -269,13 +275,19 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        private Exception Convert(Exception fdkException)
+        {
+            if (fdkException is AggregateException)
+                return Convert((AggregateException)fdkException).InnerException;
+
+            return new InteropException(fdkException.Message, ConnectionErrorCodes.NetworkError);
+        }
+
         #region IFeedServerApi
 
         public event Action<QuoteEntity> Tick;
-        public event Action<PositionEntity> PositionReport;
-        public event Action<ExecutionReport> ExecutionReport;
-        public event Action<TradeReportEntity> TradeTransactionReport;
-        public event Action<BalanceOperationReport> BalanceOperation;
+        public event Action<SymbolEntity[]> SymbolInfo;
+        public event Action<CurrencyEntity[]> CurrencyInfo;
 
         public CurrencyEntity[] Currencies => _feedProxy.Cache.Currencies.Select(FdkConvertor.Convert).ToArray();
         public SymbolEntity[] Symbols => _feedProxy.Cache.Symbols.Select(FdkConvertor.Convert).ToArray();
@@ -290,9 +302,13 @@ namespace TickTrader.Algo.Common.Model
             return Task.FromResult(Symbols);
         }
 
-        public Task SubscribeToQuotes(string[] symbols, int depth)
+        public Task<QuoteEntity[]> SubscribeToQuotes(string[] symbols, int depth)
         {
-            return requestProcessor.EnqueueTask(() => _feedProxy.Server.SubscribeToQuotes(symbols, depth));
+            return requestProcessor.EnqueueTask(() =>
+            {
+                _feedProxy.Server.SubscribeToQuotes(symbols, depth);
+                return new QuoteEntity[0];
+            });
         }
 
         public Task<QuoteEntity[]> GetQuoteSnapshot(string[] symbols, int depth)
@@ -300,19 +316,8 @@ namespace TickTrader.Algo.Common.Model
             return Task.FromResult(new QuoteEntity[0]);
         }
 
-        public void AllowTradeRequests()
+        public void DownloadBars(BlockingChannel<BarEntity> stream, string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
         {
-            _executor?.Start();
-        }
-
-        public void DenyTradeRequests()
-        {
-            _executor?.Stop();
-        }
-
-        public IAsyncEnumerator<Slice<BarEntity>> DownloadBars(string symbol, DateTime from, DateTime to, BarPriceType priceType, TimeFrames barPeriod)
-        {
-            var buffer = new BarSliceBuffer(from, to);
             var fdkPriceType = FdkConvertor.Convert(priceType);
             var fdkBarPeriod = FdkConvertor.ToBarPeriod(barPeriod);
 
@@ -321,21 +326,14 @@ namespace TickTrader.Algo.Common.Model
                 try
                 {
                     var bars = _feedProxy.Server.GetBarsHistory(symbol, fdkPriceType, fdkBarPeriod, from, to);
-                    foreach (var page in bars.ConvertAndFilter(from).SplitIntoPages(2000))
-                    {
-                        if (!buffer.Write(page))
-                            break;
-                    }
-                    buffer.CompleteWrite();
-                    buffer.Dispose();
+                    stream.WriteAll(bars.ConvertAndFilter(from));
+                    stream.Close();
                 }
                 catch (Exception ex)
                 {
-                    buffer.SetFailed(ex);
+                    stream.Close(ex);
                 }
             });
-
-            return buffer;
         }
 
         public Task<BarEntity[]> DownloadBarPage(string symbol, DateTime from, int count, BarPriceType priceType, TimeFrames barPeriod)
@@ -345,15 +343,22 @@ namespace TickTrader.Algo.Common.Model
 
             return requestProcessor.EnqueueTask(() =>
             {
-                var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
-                var barArray = FdkConvertor.Convert(result.Bars).ToArray();
-                if (count < 0)
-                    Array.Reverse(barArray);
-                return barArray;
+                try
+                {
+                    var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
+                    var barArray = FdkConvertor.Convert(result.Bars).ToArray();
+                    if (count < 0)
+                        Array.Reverse(barArray);
+                    return barArray;
+                }
+                catch (Exception ex)
+                {
+                    throw Convert(ex);
+                }
             });
         }
 
-        public IAsyncEnumerator<Slice<QuoteEntity>> DownloadQuotes(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
             throw new NotImplementedException();
         }
@@ -378,17 +383,16 @@ namespace TickTrader.Algo.Common.Model
         #region ITradeServerApi
 
         public AccountEntity AccountInfo => FdkConvertor.Convert(_tradeProxy.Cache.AccountInfo);
-        public OrderEntity[] TradeRecords => _tradeProxy.Cache.TradeRecords.Select(FdkConvertor.Convert).ToArray();
         public PositionEntity[] Positions => _tradeProxy.Cache.Positions.Select(FdkConvertor.Convert).ToArray();
+
+        public event Action<PositionEntity> PositionReport;
+        public event Action<ExecutionReport> ExecutionReport;
+        public event Action<TradeReportEntity> TradeTransactionReport;
+        public event Action<BalanceOperationReport> BalanceOperation;
 
         public Task<AccountEntity> GetAccountInfo()
         {
             return Task.FromResult(AccountInfo);
-        }
-
-        public Task<OrderEntity[]> GetTradeRecords()
-        {
-            return Task.FromResult(TradeRecords);
         }
 
         public Task<PositionEntity[]> GetPositions()
@@ -396,111 +400,77 @@ namespace TickTrader.Algo.Common.Model
             return Task.FromResult(Positions);
         }
 
-        public IAsyncEnumerator<TradeReportEntity[]> GetTradeHistory(DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeRecords(BlockingChannel<OrderEntity> rxStream)
         {
-            return new StreamDownloader(_tradeProxy.Server, from, to, skipCancelOrders);
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    foreach (var order in _tradeProxy.Cache.TradeRecords)
+                        rxStream.Write(FdkConvertor.Convert(order));
+
+                    rxStream.Close();
+                }
+                catch(Exception ex)
+                {
+                    rxStream.Close(ex);
+                }
+            });
         }
 
-        public Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
+        public void GetTradeHistory(BlockingChannel<TradeReportEntity> txStream,  DateTime? from, DateTime? to, bool skipCancelOrders)
         {
-            return _executor?.SendOpenOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    using (var fdkStream = _tradeProxy.Server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, skipCancelOrders))
+                    {
+
+                        while (!fdkStream.EndOfStream)
+                        {
+                            var report = FdkConvertor.Convert(fdkStream.Item);
+                            if (!txStream.Write(report))
+                                break;
+                            fdkStream.Next();
+                        }
+
+                        txStream.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var aggeEx = ex as AggregateException;
+                    if (aggeEx == null || !(aggeEx.InnerException is TaskCanceledException))
+                        txStream.Close(ex);
+                }
+            });
         }
 
-        public Task<OrderCmdResultCodes> SendCancelOrder(CancelOrderRequest request)
+        public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
         {
-            return _executor?.SendCancelOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
+            return _executor.SendOpenOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
+        public Task<OrderInteropResult> SendCancelOrder(CancelOrderRequest request)
         {
-            return _executor?.SendModifyOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
+            return _executor.SendCancelOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
+        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
         {
-            return _executor?.SendCloseOrder(request) ?? Task.FromResult(OrderCmdResultCodes.ConnectionError);
+            return _executor.SendModifyOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
+        {
+            return _executor.SendCloseOrder(request)
+                .ContinueWith(t => new OrderInteropResult(t.Result), TaskContinuationOptions.ExecuteSynchronously);
         }
 
         #endregion
-
-        private class StreamDownloader : CrossDomainObject, IAsyncEnumerator<TradeReportEntity[]>
-        {
-            private BufferBlock<object> _asyncBlock;
-            private Task _downloadTask;
-            private CancellationTokenSource _stopSrc = new CancellationTokenSource();
-
-            public TradeReportEntity[] Current { get; private set; }
-
-            public StreamDownloader(DataTradeServer server, DateTime? from, DateTime? to, bool skipCancelOrders)
-            {
-                var asynBlockOptions = new DataflowBlockOptions() { BoundedCapacity = 2, CancellationToken = _stopSrc.Token };
-                _asyncBlock = new BufferBlock<object>(asynBlockOptions);
-
-                _downloadTask = Task.Run(() =>
-                {
-                    const int bufferSize = 500;
-                    List<TradeReportEntity> pageBuffer = new List<TradeReportEntity>(bufferSize);
-                    StreamIterator<TradeTransactionReport> stream = null;
-
-                    try
-                    {
-                        stream = server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, skipCancelOrders);
-
-                        while (!stream.EndOfStream && !_stopSrc.Token.IsCancellationRequested)
-                        {
-                            var report = FdkConvertor.Convert(stream.Item);
-                            pageBuffer.Add(report);
-
-                            if (pageBuffer.Count == bufferSize)
-                            {
-                                _asyncBlock.SendAsync(pageBuffer.ToArray(), _stopSrc.Token).Wait();
-                                pageBuffer.Clear();
-                            }
-
-                            stream.Next();
-                        }
-
-                        if (pageBuffer.Count > 0 && !_stopSrc.IsCancellationRequested)
-                            _asyncBlock.SendAsync(pageBuffer.ToArray());
-
-                        _asyncBlock.SendAsync(null);
-                    }
-                    catch (Exception ex)
-                    {
-                        var aggeEx = ex as AggregateException;
-                        if (aggeEx == null || !(aggeEx.InnerException is TaskCanceledException))
-                            _asyncBlock.SendAsync(ex);
-                    }
-                    _asyncBlock.Complete();
-                    if (stream != null)
-                        stream.Dispose();
-                });
-            }
-
-            public override void Dispose()
-            {
-                _stopSrc.Cancel();
-                _downloadTask.Wait();
-                try
-                {
-                    _asyncBlock.Completion.Wait();
-                }
-                catch (Exception) { };
-
-                base.Dispose();
-            }
-
-            public async Task<bool> Next()
-            {
-                var result = await _asyncBlock.ReceiveAsync().ConfigureAwait(false);
-                if (result is Exception)
-                {
-                    var ex = (Exception)result;
-                    throw new Exception(ex.Message, ex);
-                }
-                Current = (TradeReportEntity[])result;
-                return Current != null;
-            }
-        }
     }
 }

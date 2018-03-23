@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ProfileManagerViewModel
+    internal class ProfileManagerViewModel : PropertyChangedBase
     {
         private Logger _logger;
         private IProfileLoader _profileLoader;
@@ -19,10 +19,21 @@ namespace TickTrader.BotTerminal
         private ProfileManager _profileManager;
         private CancellationTokenSource _cancelLoadSrc;
         private ProfileRepository _profileRepo;
-        private DynamicDictionary<string, string> _profiles;
+        private VarDictionary<string, string> _profiles;
+        private bool _canLoadProfile;
 
 
-        public IObservableListSource<string> Profiles { get; }
+        public IObservableList<string> Profiles { get; }
+
+        public bool CanLoadProfile
+        {
+            get { return _canLoadProfile && _profiles.Count > 0; }
+            set
+            {
+                _canLoadProfile = value;
+                NotifyOfPropertyChange(nameof(CanLoadProfile));
+            }
+        }
 
 
         public ProfileManagerViewModel(IShell shell, PersistModel storage)
@@ -32,7 +43,7 @@ namespace TickTrader.BotTerminal
             _wndManager = shell.ToolWndManager;
             _profileManager = storage.ProfileManager;
 
-            _profiles = new DynamicDictionary<string, string>();
+            _profiles = new VarDictionary<string, string>();
             Profiles = _profiles.OrderBy((k, v) => v).Chain().AsObservable();
 
             StartRepository();
@@ -139,6 +150,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _profiles.Add(args.FilePath, args.ProfileName);
+                    NotifyOfPropertyChange(nameof(CanLoadProfile));
                 }
                 catch (Exception ex)
                 {
@@ -155,6 +167,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _profiles.Remove(args.FilePath);
+                    NotifyOfPropertyChange(nameof(CanLoadProfile));
                 }
                 catch (Exception ex)
                 {

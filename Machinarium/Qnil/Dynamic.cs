@@ -9,7 +9,7 @@ namespace Machinarium.Qnil
 {
     public static class Dynamic
     {
-        public static IDynamicListSource<TResult> Select<TSource, TResult>(this IDynamicListSource<TSource> src, Func<TSource, TResult> selector)
+        public static IVarList<TResult> Select<TSource, TResult>(this IVarList<TSource> src, Func<TSource, TResult> selector)
         {
             var chain = src as ListChainToken<TSource>;
 
@@ -19,17 +19,17 @@ namespace Machinarium.Qnil
             return new ListSelector<TSource, TResult>(src, selector, false);
         }
 
-        public static IDynamicDictionarySource<TKey, TValue> TransformToDicionary<TKey, TValue>(this IDynamicSetSource<TKey> src, Func<TKey, TValue> selector)
+        public static IVarSet<TKey, TValue> TransformToDicionary<TKey, TValue>(this IVarSet<TKey> src, Func<TKey, TValue> selector)
         {
             return new SetToDicionaryOperator<TKey, TValue>(src, selector);
         }
 
-        public static IDynamicListSource<TResult> TransformToList<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> transformFunc)
+        public static IVarList<TResult> TransformToList<TSource, TResult>(this IVarSet<TSource> src, Func<TSource, TResult> transformFunc)
         {
             return new SetToListOperator<TSource, TResult>(src, transformFunc);
         }
 
-        public static IDynamicListSource<T> TransformToList<T>(this IDynamicSetSource<T> src)
+        public static IVarList<T> TransformToList<T>(this IVarSet<T> src)
         {
             return new SetToListOperator<T, T>(src, v => v);
         }
@@ -44,7 +44,7 @@ namespace Machinarium.Qnil
         /// <param name="src">Source dynamic collection.</param>
         /// <param name="transformFunc">Transform function applied tp each source element. </param>
         /// <returns></returns>
-        public static IDynamicSetSource<TResult> Transform<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> transformFunc)
+        public static IVarSet<TResult> Transform<TSource, TResult>(this IVarSet<TSource> src, Func<TSource, TResult> transformFunc)
         {
             return new SetTransformOperator<TSource, TResult>(src, transformFunc);
         }
@@ -59,12 +59,12 @@ namespace Machinarium.Qnil
         /// <param name="src"></param>
         /// <param name="selector"></param>
         /// <returns></returns>
-        public static IDynamicSetSource<TResult> Select<TSource, TResult>(this IDynamicSetSource<TSource> src, Func<TSource, TResult> selector)
+        public static IVarSet<TResult> Select<TSource, TResult>(this IVarSet<TSource> src, Func<TSource, TResult> selector)
         {
             return new SetTransformOperator<TSource, TResult>(src, selector);
         }
 
-        public static IDynamicListSource<T> Where<T>(this IDynamicListSource<T> src, Predicate<T> condition)
+        public static IVarList<T> Where<T>(this IVarList<T> src, Predicate<T> condition)
         {
             var chain = src as ListChainToken<T>;
 
@@ -74,12 +74,12 @@ namespace Machinarium.Qnil
             return new ListFilter<T>(src, condition, false);
         }
 
-        public static IDynamicSetSource<T> Where<T>(this IDynamicSetSource<T> src, Predicate<T> condition)
+        public static IVarSet<T> Where<T>(this IVarSet<T> src, Predicate<T> condition)
         {
             return new SetFilter<T>(src, condition);
         }
 
-        public static IDynamicListSource<T> ToList<T>(this IDynamicListSource<T> src)
+        public static IVarList<T> ToList<T>(this IVarList<T> src)
         {
             var chain = src as ListChainToken<T>;
 
@@ -89,17 +89,17 @@ namespace Machinarium.Qnil
             return new ListCopy<T>(src, false);
         }
 
-        public static IDynamicListSource<TResult> TransformToList<TKey, TValue, TResult>(this IDynamicDictionarySource<TKey, TValue> src, Func<TKey, TValue, TResult> transformFunc)
+        public static IVarList<TResult> TransformToList<TKey, TValue, TResult>(this IVarSet<TKey, TValue> src, Func<TKey, TValue, TResult> transformFunc)
         {
             return new DictionaryToListOperator<TKey, TValue, TResult>(src, transformFunc);
         }
 
-        public static IDynamicListSource<TValue> TransformToList<TKey, TValue>(this IDynamicDictionarySource<TKey, TValue> src)
+        public static IVarList<TValue> TransformToList<TKey, TValue>(this IVarSet<TKey, TValue> src)
         {
             return new DictionaryToListOperator<TKey, TValue, TValue>(src, (k, v) => v);
         }
 
-        public static IObservableListSource<T> AsObservable<T>(this IDynamicListSource<T> src)
+        public static IObservableList<T> AsObservable<T>(this IVarList<T> src)
         {
             var chain = src as ListChainToken<T>;
 
@@ -109,42 +109,42 @@ namespace Machinarium.Qnil
             return new ObservableWrapper2<T>(src, false);
         }
 
-        public static IObservableListSource<T> AsObservable<T>(this IDynamicSetSource<T> src)
+        public static IObservableList<T> AsObservable<T>(this IVarSet<T> src)
         {
             return new SetObservableCollection<T>(src, false);
         }
 
-        public static IDynamicListSource<T> Chain<T>(this IDynamicListSource<T> src)
+        public static IVarList<T> Chain<T>(this IVarList<T> src)
         {
             return new ListChainToken<T>(src);
         }
 
-        public static IDynamicListSource<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> src,
-            Func<TSource, IDynamicListSource<TResult>> selector)
+        public static IVarList<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> src,
+            Func<TSource, IVarList<TResult>> selector)
         {
             var srcAdapter = new ListAdapter<TSource>(src.ToList());
             return new ListComposition<TSource, TResult>(srcAdapter, selector, true);
         }
 
-        public static IDynamicListSource<T> Combine<T>(params IDynamicListSource<T>[] collections)
+        public static IVarList<T> Combine<T>(params IVarList<T>[] collections)
         {
-            var srcAdapter = new ListAdapter<IDynamicListSource<T>>(collections);
-            return new ListComposition<IDynamicListSource<T>, T>(srcAdapter, c => c, false);
+            var srcAdapter = new ListAdapter<IVarList<T>>(collections);
+            return new ListComposition<IVarList<T>, T>(srcAdapter, c => c, false);
         }
 
-        public static IDynamicListSource<T> CombineChained<T>(params IDynamicListSource<T>[] collections)
+        public static IVarList<T> CombineChained<T>(params IVarList<T>[] collections)
         {
-            var srcAdapter = new ListAdapter<IDynamicListSource<T>>(collections);
-            return new ListComposition<IDynamicListSource<T>, T>(srcAdapter, c => c, true);
+            var srcAdapter = new ListAdapter<IVarList<T>>(collections);
+            return new ListComposition<IVarList<T>, T>(srcAdapter, c => c, true);
         }
 
-        public static IDynamicSetSource<T> Union<T>(params IDynamicSetSource<T>[] sets)
+        public static IVarSet<T> Union<T>(params IVarSet<T>[] sets)
         {
             return new SetUnionOperator<T>(sets);
         }
 
-        public static IDynamicListSource<TResult> SelectMany<TSource, TResult>(this IDynamicListSource<TSource> src,
-            Func<TSource, IDynamicListSource<TResult>> selector)
+        public static IVarList<TResult> SelectMany<TSource, TResult>(this IVarList<TSource> src,
+            Func<TSource, IVarList<TResult>> selector)
         {
             var chain = src as ListChainToken<TSource>;
 
@@ -154,84 +154,84 @@ namespace Machinarium.Qnil
             return new ListComposition<TSource, TResult>(src, selector, false);
         }
 
-        public static IDynamicListSource<TResult> SelectMany<TSource, TResult>(this IDynamicListSource<TSource> src,
+        public static IVarList<TResult> SelectMany<TSource, TResult>(this IVarList<TSource> src,
             Func<TSource, IEnumerable<TResult>> selector)
         {
             var token = src as ListChainToken<TSource>;
 
-            IDynamicListSource<TSource> trueSrc = token == null ? src : token.Src;
+            IVarList<TSource> trueSrc = token == null ? src : token.Src;
             bool proporgate = token != null;
 
-            Func<TSource, IDynamicListSource<TResult>> wrappingSelector = c => new ListAdapter<TResult>(selector(c).ToList());
+            Func<TSource, IVarList<TResult>> wrappingSelector = c => new ListAdapter<TResult>(selector(c).ToList());
 
             return new ListComposition<TSource, TResult>(trueSrc, wrappingSelector, proporgate);
         }
 
-        public static IDynamicListSource<T> AsDynamic<T>(this IEnumerable<T> src)
+        public static IVarList<T> AsDynamic<T>(this IEnumerable<T> src)
         {
             return new ListAdapter<T>(src.ToList());
         }
 
-        public static IDynamicDictionarySource<TKey, TValue> Where<TKey, TValue>(this IDynamicDictionarySource<TKey, TValue> src,
+        public static IVarSet<TKey, TValue> Where<TKey, TValue>(this IVarSet<TKey, TValue> src,
             Func<TKey, TValue, bool> condition)
         {
             return new DictionaryFilter<TKey, TValue>(src, condition);
         }
 
-        public static IDynamicDictionarySource<TKey, TResult> Select<TKey, TSource, TResult>(
-            this IDynamicDictionarySource<TKey, TSource> src,
+        public static IVarSet<TKey, TResult> Select<TKey, TSource, TResult>(
+            this IVarSet<TKey, TSource> src,
             Func<TKey, TSource, TResult> selector)
         {
             return new DictionarySelector<TKey, TSource, TResult>(src, selector);
         }
 
-        public static IDynamicListSource<TValue> OrderBy<TKey, TValue, TBy>(
-            this IDynamicDictionarySource<TKey, TValue> src,
+        public static IVarList<TValue> OrderBy<TKey, TValue, TBy>(
+            this IVarSet<TKey, TValue> src,
             Func<TKey, TValue, TBy> orderPropSelector)
         {
             return OrderBy(src, orderPropSelector, Comparer<TBy>.Default);
         }
 
-        public static IDynamicListSource<TValue> OrderBy<TKey, TValue, TBy>(
-            this IDynamicDictionarySource<TKey, TValue> src,
+        public static IVarList<TValue> OrderBy<TKey, TValue, TBy>(
+            this IVarSet<TKey, TValue> src,
             Func<TKey, TValue, TBy> orderPropSelector, IComparer<TBy> comparer)
         {
             return new DictionarySortOperator<TKey, TValue, TBy>(src, orderPropSelector, comparer);
         }
 
-        public static IDynamicDictionarySource<TKey, TValue> SelectMany<TKey, TValue, TSource>(
+        public static IVarSet<TKey, TValue> SelectMany<TKey, TValue, TSource>(
             this IEnumerable<TSource> src,
-            Func<TSource, IDynamicDictionarySource<TKey, TValue>> selector)
+            Func<TSource, IVarSet<TKey, TValue>> selector)
         {
             var compositionSrc = new DictionaryComposition<TKey, TValue>.StaticCompositionSource<TSource>(src, selector);
             return new DictionaryComposition<TKey, TValue>(compositionSrc);
         }
 
-        public static IDynamicDictionarySource<TKey, TValue> SelectMany<TKey, TValue, TSource>(
-            this IDynamicListSource<TSource> src,
-            Func<TSource, IDynamicDictionarySource<TKey, TValue>> selector)
+        public static IVarSet<TKey, TValue> SelectMany<TKey, TValue, TSource>(
+            this IVarList<TSource> src,
+            Func<TSource, IVarSet<TKey, TValue>> selector)
         {
             var compositionSrc = new DictionaryComposition<TKey, TValue>.ListCompositionSource<TSource>(src, selector);
             return new DictionaryComposition<TKey, TValue>(compositionSrc);
         }
 
-        public static IDynamicDictionarySource<TKey, TValue> Combine<TKey, TValue>(
-            params IDynamicDictionarySource<TKey, TValue>[] dictionaries)
+        public static IVarSet<TKey, TValue> Combine<TKey, TValue>(
+            params IVarSet<TKey, TValue>[] dictionaries)
         {
             var compositionSrc = new DictionaryComposition<TKey, TValue>
-                .StaticCompositionSource<IDynamicDictionarySource<TKey, TValue>>(dictionaries, i => i);
+                .StaticCompositionSource<IVarSet<TKey, TValue>>(dictionaries, i => i);
             return new DictionaryComposition<TKey, TValue>(compositionSrc);
         }
 
-        public static IDynamicDictionarySource<TGrouping, IDynamicDictionaryGrouping<TKey, TValue, TGrouping>>
+        public static IVarSet<TGrouping, IVarGrouping<TKey, TValue, TGrouping>>
             GroupBy<TKey, TValue, TGrouping>(
-            this IDynamicDictionarySource<TKey, TValue> src,
+            this IVarSet<TKey, TValue> src,
             Func<TKey, TValue, TGrouping> groupingKeySelector)
         {
             return new DictionaryGrouping<TKey, TValue, TGrouping>(src, groupingKeySelector);
         }
 
-        public static void EnableAutodispose<TKey, TVal>(this IDynamicDictionarySource<TKey, TVal> src)
+        public static void EnableAutodispose<TKey, TVal>(this IVarSet<TKey, TVal> src)
             where TVal : IDisposable
         {
             src.Updated += a =>
@@ -248,18 +248,11 @@ namespace Machinarium.Qnil
             };
         }
 
-        // <summary>
-        /// Note: Supplied collection must be empty!
-        /// Note: You should not update supplied collection in any other way or from any other source!
-        /// </summary>
-        //public static IDisposable ConnectTo<T>(this IDynamicListSource<T> src, IList target)
-        //{
-        //    var chain = src as ListChainToken<T>;
-
-        //    if (chain != null)
-        //        return new ListConnector<T>(chain.Src, target) { PropogateDispose = true };
-
-        //    return new ListConnector<T>(src, target);
-        //}
+        public static TValue GetOrDefault<Tkey, TValue>(this IVarSet<Tkey, TValue> set, Tkey key)
+        {
+            TValue val;
+            set.Snapshot.TryGetValue(key, out val);
+            return val;
+        }
     }
 }

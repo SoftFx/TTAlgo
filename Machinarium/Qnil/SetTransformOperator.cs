@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Machinarium.Qnil
 {
-    class SetTransformOperator<TIn, TOut> : OperatorBase, IDynamicSetSource<TOut>
+    class SetTransformOperator<TIn, TOut> : OperatorBase, IVarSet<TOut>
     {
         private Dictionary<TIn, TOut> _snapshot = new Dictionary<TIn, TOut>();
-        private IDynamicSetSource<TIn> _srcSet;
+        private IVarSet<TIn> _srcSet;
         private Func<TIn, TOut> _selector;
 
-        public SetTransformOperator(IDynamicSetSource<TIn> srcSet, Func<TIn, TOut> selector)
+        public SetTransformOperator(IVarSet<TIn> srcSet, Func<TIn, TOut> selector)
         {
             _srcSet = srcSet;
             _selector = selector;

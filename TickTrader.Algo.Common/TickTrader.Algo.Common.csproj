@@ -38,11 +38,11 @@
     <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.3.0\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net, Version=1.32.0.3, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.32.1106\lib\net40\SoftFX.Extended.Net.dll</HintPath>
+    <Reference Include="SoftFX.Extended.Net, Version=1.33.0.1, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.33.1127\lib\net40\SoftFX.Extended.Net.dll</HintPath>
     </Reference>
     <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.32.1106\lib\net40\SoftFX.Lrp.dll</HintPath>
+      <HintPath>..\packages\SoftFX.FDK.1.33.1127\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -85,7 +85,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\HistoryFilesPackage.cs" />
-    <Compile Include="Entitites\Slice.cs" />
+    <Compile Include="Entities\EntityUpdate.cs" />
+    <Compile Include="Entities\Slice.cs" />
     <Compile Include="Fdk.Serializers\BarFormatter.cs" />
     <Compile Include="Fdk.Serializers\ByteArrayBuilder.cs" />
     <Compile Include="Fdk.Serializers\Crc32HashExtension.cs" />
@@ -96,10 +97,11 @@
     <Compile Include="Fdk.Serializers\ISerializer.cs" />
     <Compile Include="Fdk.Serializers\TextSerializer.cs" />
     <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
+    <Compile Include="Lib\ActorSharpExt.cs" />
     <Compile Include="Lib\AsyncEvent.cs" />
-    <Compile Include="Lib\AsyncLock.cs" />
     <Compile Include="Lib\BotIdHelper.cs" />
     <Compile Include="Lib\CollectionsExt.cs" />
+    <Compile Include="Lib\ConvertionExtentions.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\DictionarySyncrhonizer.cs" />
     <Compile Include="Lib\EnumerableExt.cs" />
@@ -120,7 +122,9 @@
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
     <Compile Include="Model.Interop\FdkInterop.cs" />
-    <Compile Include="Model.Interop\SliceBuffer.cs" />
+    <Compile Include="Model.Interop\OrderInteropResult.cs" />
+    <Compile Include="Model.Interop\SfxTaskAdapter.cs" />
+    <Compile Include="Model.Interop\TimeSlicer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
     <Compile Include="Model.Interop\SfxInterop.cs" />
     <Compile Include="Model.Setup\BarBasedPluginSetup.cs" />
@@ -158,15 +162,20 @@
     <Compile Include="Model\AggregatedOrderType.cs" />
     <Compile Include="Model\PluginFeedProvider.cs" />
     <Compile Include="Model\PluginTradeApiProvider.cs" />
+    <Compile Include="Model\PluginTradeInfoProvider.cs" />
     <Compile Include="Model\PositionModel.cs" />
     <Compile Include="Model\QuoteDistributor.cs" />
-    <Compile Include="Model\SymbolCollection.cs" />
+    <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\SymbolModel.cs" />
-    <Compile Include="Model\ClientCore.cs" />
+    <Compile Include="Model\ClientModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj">
+      <Project>{7d6b7bba-586c-4a69-a368-6bf9b87026b2}</Project>
+      <Name>ActorSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using ActorSharp;
+using NLog;
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -10,33 +11,36 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.BotAgent.BA.Builders;
+using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
+using TickTrader.BotAgent.Extensions;
 using TickTrader.BotAgent.Infrastructure;
 
 namespace TickTrader.BotAgent.BA.Models
 {
     [DataContract(Name = "tradeBot", Namespace = "")]
-    public class TradeBotModel : ITradeBot
+    public class TradeBotModel
     {
-        private ILogger _log;
-        private ILoggerFactory _loggerFactory;
-        private object _syncObj;
+        private static readonly ILogger _log = LogManager.GetLogger(nameof(ServerModel));
+
         private ClientModel _client;
         private Task _stopTask;
         private PluginExecutor executor;
-        private BotLog _botLog;
+        private BotLog.ControlHandler _botLog;
         private AlgoData _algoData;
         private AlgoPluginRef _ref;
         private BotListenerProxy _botListener;
         private PackageStorage _packageRepo;
+        private TaskCompletionSource<object> _startedEvent;
+        private bool _closed;
 
-        public TradeBotModel(TradeBotModelConfig config)
+        public TradeBotModel(string id, PluginKey key, TradeBotConfig config)
         {
-            Id = config.InstanceId;
+            Id = id;
             Config = config.PluginConfig;
-            PackageName = config.Plugin.PackageName;
-            Descriptor =  config.Plugin.DescriptorId;
+            PackageName = key.PackageName;
+            Descriptor = key.DescriptorId;
             Isolated = config.Isolated;
             Permissions = config.Permissions;
         }
@@ -60,9 +64,11 @@ namespace TickTrader.BotAgent.BA.Models
         public PackageModel Package { get; private set; }
         public Exception Fault { get; private set; }
         public string FaultMessage { get; private set; }
-        public IAccount Account => _client;
-        public IBotLog Log => _botLog;
+        public AccountKey Account => _client.GetKey();
+        public Ref<BotLog> LogRef => _botLog.Ref;
         public string BotName => _ref?.DisplayName;
+        public AlgoPluginRef AlgoRef => _ref;
+        public PluginKey PluginId => new PluginKey(PackageName, Descriptor);
 
         public IAlgoData AlgoData => _algoData;
 
@@ -70,13 +76,9 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, ILoggerFactory logFactory, object syncObj, PackageStorage packageRepo, IAlgoGuiMetadata tradeMetadata, string workingFolder)
+        public void Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
         {
-            _syncObj = syncObj;
             _client = client;
-
-            _loggerFactory = logFactory;
-            _log = _loggerFactory.CreateLogger<TradeBotModel>();
 
             if (Permissions == null)
                 Permissions = new DefaultPermissionsBuilder().Build();
@@ -87,164 +89,114 @@ namespace TickTrader.BotAgent.BA.Models
             _packageRepo.PackageChanged += _packageRepo_PackageChanged;
             _client.StateChanged += Client_StateChanged;
 
-            _botLog = new BotLog(Id, syncObj);
+            _botLog = new BotLog.ControlHandler(Id);
 
-            _algoData = new AlgoData(workingFolder, syncObj);
+            _algoData = new AlgoData(workingFolder);
 
             if (IsRunning && State != BotStates.Broken)
                 Start();
         }
 
-        public void Configurate(TradeBotModelConfig config)
+        public void ChangeBotConfig(TradeBotConfig config)
         {
-            lock (_syncObj)
+            CheckShutdownFlag();
+
+            if (State == BotStates.Broken)
+                return;
+
+            if (IsStopped())
             {
-                if (State == BotStates.Broken)
-                    return;
-
-                if (IsStopped())
-                {
-                    Config = config.PluginConfig;
-                    Isolated = config.Isolated;
-                    Permissions = config.Permissions;
-                    ConfigurationChanged?.Invoke(this);
-                }
-                else
-                    throw new InvalidStateException("Make sure that the bot is stopped before installing a new configuration");
+                Config = config.PluginConfig;
+                Isolated = config.Isolated;
+                Permissions = config.Permissions;
+                ConfigurationChanged?.Invoke(this);
             }
-
+            else
+                throw new InvalidStateException("Make sure that the bot is stopped before installing a new configuration");
         }
 
         private void Client_StateChanged(ClientModel client)
         {
-            lock (_syncObj)
+            if (client.ConnectionState == ConnectionStates.Online)
             {
-                if (client.ConnectionState == ConnectionStates.Online)
-                {
-                    if (State == BotStates.Starting)
-                        StartExecutor();
-                    else if (State == BotStates.Reconnecting)
-                        ChangeState(BotStates.Online);
-                }
-                else if (client.ConnectionState == ConnectionStates.Disconnecting || client.ConnectionState == ConnectionStates.Offline)
-                {
-                    if (State == BotStates.Online && client.IsReconnecting)
-                        ChangeState(BotStates.Reconnecting, client.Connection.HasError ? client.Connection.LastErrorCode.ToString() : null);
-                    if ((State == BotStates.Online || State == BotStates.Starting || State == BotStates.Reconnecting) && !client.IsReconnectionPossible)
-                        StopInternal(client.Connection.LastErrorCode.ToString());
-                }
+                if (State == BotStates.Starting)
+                    StartExecutor();
+                else if (State == BotStates.Reconnecting)
+                    ChangeState(BotStates.Online);
+            }
+            else
+            {
+                if (State == BotStates.Online)
+                    ChangeState(BotStates.Reconnecting, client.ErrorText);
             }
         }
 
-        public void ClearLog()
+        public Task ClearLog()
         {
-            lock (_syncObj)
-            {
-                foreach (var file in Log.Files)
-                {
-                    try
-                    {
-                        Log.DeleteFile(file.Name);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.LogWarning(0, ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
-                    }
-                }
-                try
-                {
-                    if (Directory.Exists(Log.Folder))
-                        Directory.Delete(Log.Folder);
-                }
-                catch { }
-            }
+            return _botLog.Clear();
         }
 
         public void ClearWorkingFolder()
         {
-            lock (_syncObj)
-            {
-                foreach (var file in AlgoData.Files)
-                {
-                    try
-                    {
-                        AlgoData.DeleteFile(file.Name);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.LogWarning(0, ex, "Could not delete file \"{0}\" of bot \"{1}\"", file.Name, Id);
-                    }
-                }
-                try
-                {
-                    if (Directory.Exists(AlgoData.Folder))
-                        Directory.Delete(AlgoData.Folder);
-                }
-                catch { }
-            }
+            AlgoData.Clear();
         }
 
         public void Start()
         {
-            lock (_syncObj)
-            {
-                if (State == BotStates.Broken)
-                    throw new InvalidStateException("Trade bot is broken!");
+            CheckShutdownFlag();
 
-                if (!IsStopped())
-                    throw new InvalidStateException("Trade bot has been already started!");
+            if (State == BotStates.Broken)
+                throw new InvalidStateException("Trade bot is broken!");
 
-                SetRunning(true);
-                Package.IncrementRef();
+            if (!IsStopped())
+                throw new InvalidStateException("Trade bot has been already started!");
 
-                ChangeState(BotStates.Starting);
+            SetRunning(true);
+            Package.IncrementRef();
 
-                if (_client.ConnectionState == ConnectionStates.Online)
-                    StartExecutor();
-            }
+            ChangeState(BotStates.Starting);
+
+            if (_client.ConnectionState == ConnectionStates.Online)
+                StartExecutor();
         }
 
         public Task StopAsync()
         {
-            return StopInternal();
+            CheckShutdownFlag();
+
+            return DoStop(null);
         }
 
-        private Task StopInternal(string error = null, bool isExecutorStopped = false)
+        public Task Shutdown()
         {
-            lock (_syncObj)
-            {
-                if (IsStopped())
-                    return Task.FromResult(true);
-
-                if (State != BotStates.Stopping)
-                    _stopTask = DoStop(error, isExecutorStopped);
-
-                return _stopTask;
-            }
+            _closed = true;
+            return DoStop(null);
         }
 
-        private async Task DoStop(string error, bool isExecutorStopped)
+        public void Remove(bool cleanLog = false, bool cleanAlgoData = false)
         {
-            bool hasError = error != null;
+            _client.RemoveBot(Id, cleanLog, cleanAlgoData);
+        }
 
+        private void OnBotExited()
+        {
+            DoStop(null).Forget();
+        }
+
+        private Task DoStop(string error)
+        {
             SetRunning(false);
 
-            if (State == BotStates.Online || State == BotStates.Reconnecting)
+            if (State == BotStates.Offline || State == BotStates.Faulted)
+                return Task.CompletedTask;
+
+            if (State == BotStates.Online || State == BotStates.Reconnecting || State == BotStates.Starting)
             {
-                if (!isExecutorStopped)
-                {
-                    ChangeState(BotStates.Stopping);
-                    await Task.Factory.StartNew(() => executor?.Stop());
-                }
-                _botListener?.Stop();
-                DisposeExecutor();
+                ChangeState(BotStates.Stopping);
+                _stopTask = StopExecutor();
             }
 
-            lock (_syncObj)
-            {
-                ChangeState(hasError ? BotStates.Faulted : BotStates.Offline, error);
-                OnStop();
-            }
+            return _stopTask;
         }
 
         public void Dispose()
@@ -263,10 +215,15 @@ namespace TickTrader.BotAgent.BA.Models
             return task == null || task.IsCompleted || task.IsFaulted || task.IsCanceled;
         }
 
-        private void StartExecutor()
+        private async void StartExecutor()
         {
+            _startedEvent = new TaskCompletionSource<object>();
+
             try
             {
+                if (executor != null)
+                    throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
+
                 executor = _ref.CreateExecutor();
 
                 if (!(Config is BarBasedConfig))
@@ -277,7 +234,7 @@ namespace TickTrader.BotAgent.BA.Models
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
-                var feedAdapter = new PluginFeedProvider(_client.Symbols, _client.FeedHistory, _client.Currencies.Snapshot, new SyncAdapter(_syncObj));
+                var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
                 executor.MainSymbolCode = setupModel.MainSymbol;
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
@@ -285,47 +242,61 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.InitSlidingBuffering(1024);
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
-                executor.AccInfoProvider = _client.Account;
-                executor.TradeExecutor = _client.TradeApi;
-                executor.TradeHistoryProvider = new TradeHistoryProvider(_client.Connection);
+                executor.AccInfoProvider = _client.PluginTradeInfo;
+                executor.TradeExecutor = _client.PluginTradeApi;
+                //executor.TradeHistoryProvider =  new TradeHistoryProvider(_client.Connection);
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.Isolated = Isolated;
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
-                _botListener = new BotListenerProxy(executor, () => StopInternal(null, true), _botLog);
+                _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
 
                 executor.Start();
                 _botListener.Start();
 
-                lock (_syncObj) ChangeState(BotStates.Online);
+                ChangeState(BotStates.Online);
             }
             catch (Exception ex)
             {
-                lock (_syncObj)
-                {
-                    Fault = ex;
-                    StopInternal(ex.Message, true);
-                }
+                Fault = ex;
+                if (State != BotStates.Stopping)
+                    await StopExecutor(ex.Message);
             }
+
+            _startedEvent.SetResult(null);
+        }
+
+        private async Task StopExecutor(string error = null)
+        {
+            if (_startedEvent != null)
+                await (_startedEvent.Task);
+
+            bool hasError = error != null;
+
+            await Task.Factory.StartNew(() => executor?.Stop());
+
+            _botListener?.Stop();
+            DisposeExecutor();
+
+            ChangeState(hasError ? BotStates.Faulted : BotStates.Offline, error);
+            OnStop();
         }
 
         private void DisposeExecutor()
         {
             _botListener?.Dispose();
             executor?.Dispose();
+            executor = null;
         }
 
         private void OnExecutorStopped(string err = null)
         {
-            lock (_syncObj)
+            if (State == BotStates.Online)
             {
-                if (State == BotStates.Online)
-                {
-                    SetRunning(false);
-                    ChangeState(BotStates.Offline, err);
-                    DisposeExecutor();
-                }
+                SetRunning(false);
+                ChangeState(BotStates.Offline, err);
+                DisposeExecutor();
             }
         }
 
@@ -337,16 +308,16 @@ namespace TickTrader.BotAgent.BA.Models
             }
             catch (Exception ex)
             {
-                _log.LogError("TradeBotModel.OnStopped() failed! {0}", ex);
+                _log.Error(ex, "TradeBotModel.OnStopped() failed! {0}");
             }
         }
 
         private void ChangeState(BotStates newState, string errorMessage = null)
         {
             if (string.IsNullOrWhiteSpace(errorMessage))
-                _log.LogInformation("TradeBot '{0}' State: {1}", Id, newState);
+                _log.Info("TradeBot '{0}' State: {1}", Id, newState);
             else
-                _log.LogWarning("TradeBot '{0}' State: {1} Error: {2}", Id, newState, errorMessage);
+                _log.Warn("TradeBot '{0}' State: {1} Error: {2}", Id, newState, errorMessage);
             State = newState;
             FaultMessage = errorMessage;
             StateChanged?.Invoke(this);
@@ -382,7 +353,7 @@ namespace TickTrader.BotAgent.BA.Models
                 ChangeState(BotStates.Offline, null);
         }
 
-        private void _packageRepo_PackageChanged(IPackage pckg, ChangeAction action)
+        private void _packageRepo_PackageChanged(PackageModel pckg, ChangeAction action)
         {
             if (pckg.NameEquals(PackageName))
                 UpdatePackage();
@@ -390,11 +361,16 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void Abort()
         {
-            lock(_syncObj)
-            {
-                if (State == BotStates.Stopping)
-                    executor?.Abort();
-            }
+            CheckShutdownFlag();
+
+            if (State == BotStates.Stopping)
+                executor?.Abort();
+        }
+
+        private void CheckShutdownFlag()
+        {
+            if (_closed)
+                throw new InvalidOperationException("Server is shutting down!");
         }
     }
 }

@@ -254,11 +254,11 @@ namespace TickTrader.Algo.Common.Model
             return new PositionExecReport()
             {
                 ExecAction = action,
-                PositionInfo = ToAlgoPosition()
+                PositionInfo = GetEntity()
             };
         }
 
-        internal PositionEntity ToAlgoPosition()
+        internal PositionEntity GetEntity()
         {
             return new PositionEntity
             {

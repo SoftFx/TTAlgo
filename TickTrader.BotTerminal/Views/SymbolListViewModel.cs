@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,11 +15,11 @@ namespace TickTrader.BotTerminal
     {
         public static string ClassName { get { return "SymbolListViewModel"; } }
 
-        private IDynamicListSource<SymbolViewModel> viewModelCollection;
+        private IVarList<SymbolViewModel> viewModelCollection;
 
-        public SymbolListViewModel(SymbolCollectionModel symbolCollection, IShell shell)
+        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell)
         {
-            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, shell)).OrderBy((k, v) => k);
+            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, distributor, shell)).OrderBy((k, v) => k);
 
             Symbols = viewModelCollection.AsObservable();
             SelectedSymbol = AddProperty<SymbolViewModel>();
@@ -30,7 +31,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        public IObservableListSource<SymbolViewModel> Symbols { get; }
+        public IObservableList<SymbolViewModel> Symbols { get; }
         public Property<SymbolViewModel> SelectedSymbol { get; }
     }
 }

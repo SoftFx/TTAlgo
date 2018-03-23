@@ -61,17 +61,26 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void ValidateVolume()
         {
-            if (Volume.HasValue && Volume <= 0)
+            if (Volume.HasValue)
             {
-                Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
-                Exit();
-                throw new Exception("Ivalid parameter. Volume cannot be negative.");
-            }
-            else if (Volume.HasValue && Volume < Symbol.MinTradeVolume)
-            {
-                Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
-                Exit();
-                throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                if (Volume <= 0)
+                {
+                    Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
+                    Exit();
+                    throw new Exception("Ivalid parameter. Volume cannot be negative.");
+                }
+                var order = Account.Orders[OrderId];
+                if (order?.IsNull ?? true)
+                    return;
+                var symbol = Symbols[order.Symbol];
+                if (symbol?.IsNull ?? true)
+                    return;
+                else if (Volume < symbol.MinTradeVolume)
+                {
+                    Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                    Exit();
+                    throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                }
             }
         }
     }

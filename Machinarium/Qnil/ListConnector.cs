@@ -9,10 +9,10 @@ namespace Machinarium.Qnil
 {
     internal class ListConnector<T> : OperatorBase
     {
-        private IDynamicListSource<T> src;
+        private IVarList<T> src;
         private IList target;
 
-        public ListConnector(IDynamicListSource<T> src, IList target)
+        public ListConnector(IVarList<T> src, IList target)
         {
             this.src = src;
             this.target = target;

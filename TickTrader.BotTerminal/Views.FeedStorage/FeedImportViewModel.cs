@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         private VarContext _context = new VarContext();
         private List<FeedImporter> _importers = new List<FeedImporter>();
 
-        public FeedImportViewModel(IDynamicListSource<ManagedCustomSymbol> symbols, ManagedCustomSymbol initialSymbol)
+        public FeedImportViewModel(IVarList<ManagedCustomSymbol> symbols, ManagedCustomSymbol initialSymbol)
         {
             _importers.Add(new CsvFeedImporter());
 
@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
         public Property<ManagedCustomSymbol> SelectedSymbol { get; }
         public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
-        public IObservableListSource<ManagedCustomSymbol> Symbols { get; }
+        public IObservableList<ManagedCustomSymbol> Symbols { get; }
         public BoolVar CanImport { get; }
         public BoolVar CanCancel { get; }
         public BoolVar IsInputEnabled { get; }
