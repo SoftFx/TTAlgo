@@ -18,6 +18,8 @@ namespace TickTrader.BotTerminal
 {
     class JournalViewModel : PropertyChangedBase
     {
+        public static string ClassName { get { return "JournalViewModel"; } }
+
         private EventJournal eventJournal;
         private string filterString;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();

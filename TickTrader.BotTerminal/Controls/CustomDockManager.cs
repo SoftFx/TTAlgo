@@ -12,18 +12,19 @@ namespace TickTrader.BotTerminal.Controls
 {
     public class CustomDockManager : DockingManager
     {
-        public static readonly DependencyProperty LoadSaveNotificationProperty =
-            DependencyProperty.Register("LoadSaveNotification", typeof(DockManagerNotification), typeof(CustomDockManager), new PropertyMetadata(null, OnLoadSaveNotificationPropertyChanged));
+        public static readonly DependencyProperty ManagerNotificationProperty =
+            DependencyProperty.Register("ManagerNotification", typeof(DockManagerNotification), typeof(CustomDockManager), new PropertyMetadata(null, OnManagerNotificationPropertyChanged));
 
-        public DockManagerNotification LoadSaveNotification
+        public DockManagerNotification ManagerNotification
         {
-            get { return (DockManagerNotification)GetValue(LoadSaveNotificationProperty); }            
-            set { SetValue(LoadSaveNotificationProperty, value); }
+            get { return (DockManagerNotification)GetValue(ManagerNotificationProperty); }            
+            set { SetValue(ManagerNotificationProperty, value); }
         }
 
-        private static void OnLoadSaveNotificationPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnManagerNotificationPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var value = e.NewValue as DockManagerNotification;
+
             value.SaveLayoutEvent += () =>
             {
                 XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer((CustomDockManager)d);
@@ -41,18 +42,27 @@ namespace TickTrader.BotTerminal.Controls
                     layoutSerializer.Deserialize(reader);
                 }
             };
+
+            value.ShowHiddenTabEvent += (o) =>
+            {
+                var hiddenTabs = ((CustomDockManager)d).Layout.Hidden.Where(obj => { return obj.ContentId.Equals(o); });
+                if(hiddenTabs.Count() != 0)
+                    hiddenTabs.First().Show();
+            };
         }
 
         public CustomDockManager()
         {
             
         }
+
     }
 
     public class DockManagerNotification
     {
         public event Action SaveLayoutEvent = delegate { };
         public event Action LoadLayoutEvent = delegate { };
+        public event Action<string> ShowHiddenTabEvent = delegate { };
 
         public void SaveLayout()
         {
@@ -62,6 +72,11 @@ namespace TickTrader.BotTerminal.Controls
         public void LoadLayout()
         {
             LoadLayoutEvent();
+        }
+
+        public void ShowHiddenTab(string tab)
+        {
+            ShowHiddenTabEvent(tab);
         }
     }
 }

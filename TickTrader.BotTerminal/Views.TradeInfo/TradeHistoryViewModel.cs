@@ -20,8 +20,9 @@ namespace TickTrader.BotTerminal
 {
     internal class TradeHistoryViewModel : PropertyChangedBase
     {
-        private const int CleanUpDelay = 200;
+        public static string ClassName { get { return "TradeHistoryViewModel"; } }
 
+        private const int CleanUpDelay = 200;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 

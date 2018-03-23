@@ -9,6 +9,8 @@ namespace TickTrader.BotTerminal
 {
     class TradeInfoViewModel: PropertyChangedBase
     {
+        public static string ClassName { get { return "TradeInfoViewModel"; } }
+
         public TradeInfoViewModel(TraderClientModel clientModel)
         {
             var netPositions = new NetPositionListViewModel(clientModel.Account, clientModel.Symbols, clientModel.Connection);

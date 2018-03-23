@@ -16,6 +16,22 @@
             <Separator/>
             <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
+
+        <MenuItem Header="Views" >
+            <MenuItem Header="{l:Resx Tab_Trade}" 
+                      Tag="{x:Static l:TradeInfoViewModel.ClassName}"
+                      cal:Message.Attach="ShowHiddenTab($source)"/>
+            <MenuItem Header="{l:Resx Tab_History}" 
+                      Tag="{x:Static l:TradeHistoryViewModel.ClassName}" 
+                      cal:Message.Attach="ShowHiddenTab($source)" />
+            <MenuItem Header="{l:Resx Tab_Journal}" 
+                      Tag="{x:Static l:JournalViewModel.ClassName}" 
+                      cal:Message.Attach="ShowHiddenTab($source)"/>
+            <MenuItem Header="{l:Resx Tab_BotJournal}" 
+                      Tag="{x:Static l:BotJournalViewModel.ClassName}" 
+                      cal:Message.Attach="ShowHiddenTab($source)"/>
+        </MenuItem>
+
         <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
@@ -211,7 +227,7 @@
         <custctrl:CustomDockManager x:Name="DockManager" Grid.Row="1" 
                                     DocumentsSource="{Binding Charts.Items}"
                                     ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" Margin="5,0,5,4" 
-                                    LoadSaveNotification="{Binding DockManagerService, Mode=TwoWay}">
+                                    ManagerNotification="{Binding DockManagerService, Mode=TwoWay}">
 
             <custctrl:CustomDockManager.LayoutItemContainerStyleSelector>
                 <l:AvalonDockStyleSelector>
@@ -312,12 +328,12 @@
                 <dk:LayoutPanel Orientation="Horizontal">
                     <dk:LayoutPanel DockMinWidth="200" DockWidth="290" Orientation="Vertical">
                         <dk:LayoutAnchorablePane>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="False" ContentId="Tab_Symbols">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="False" ContentId="{x:Static l:SymbolListViewModel.ClassName}">
                                 <ContentControl cal:View.Model="{Binding SymbolList}" />
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
                         <dk:LayoutAnchorablePane>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" ContentId="Tab_Algo">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" ContentId="{x:Static l:AlgoListViewModel.ClassName}">
                                 <ContentControl cal:View.Model="{Binding AlgoList}" />
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
@@ -327,16 +343,16 @@
                             <dk:LayoutDocumentPane/>
                         </dk:LayoutDocumentPaneGroup>
                         <dk:LayoutAnchorablePane DockHeight="300" DockMinHeight="150">
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Trade}" ContentId="Tab_Trade">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Trade}" ContentId="{x:Static l:TradeInfoViewModel.ClassName}">
                                 <ContentControl cal:View.Model="{Binding Trade}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_History}" ContentId="Tab_History">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_History}" ContentId="{x:Static l:TradeHistoryViewModel.ClassName}">
                                 <ContentControl cal:View.Model="{Binding TradeHistory}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Journal}" ContentId="Tab_Journal">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Journal}" ContentId="{x:Static l:JournalViewModel.ClassName}">
                                 <ContentControl cal:View.Model="{Binding Journal}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}" ContentId="Tab_BotJournal">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}" ContentId="{x:Static l:BotJournalViewModel.ClassName}">
                                 <ContentControl cal:View.Model="{Binding BotJournal}"/>
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>

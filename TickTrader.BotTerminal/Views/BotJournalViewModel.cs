@@ -14,6 +14,8 @@ namespace TickTrader.BotTerminal
 {
     class BotJournalViewModel : PropertyChangedBase
     {
+        public static string ClassName { get { return "BotJournalViewModel"; } }
+
         private BotJournal _botJournal;
         private BotMessageFilter _botJournalFilter = new BotMessageFilter();
         private ObservableCollection<BotNameFilterEntry> _botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();

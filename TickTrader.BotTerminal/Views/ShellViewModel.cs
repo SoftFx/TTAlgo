@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
@@ -148,6 +149,11 @@ namespace TickTrader.BotTerminal
         public void LoadLayout()
         {
             DockManagerService.LoadLayout();
+        }
+
+        public void ShowHiddenTab(MenuItem menu)
+        {
+            DockManagerService.ShowHiddenTab(menu.Tag.ToString());
         }
 
         public void Connect()

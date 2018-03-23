@@ -12,6 +12,8 @@ namespace TickTrader.BotTerminal
 {
     internal class SymbolListViewModel : EntityBase
     {
+        public static string ClassName { get { return "SymbolListViewModel"; } }
+
         private IDynamicListSource<SymbolViewModel> viewModelCollection;
 
         public SymbolListViewModel(SymbolCollectionModel symbolCollection, IShell shell)
