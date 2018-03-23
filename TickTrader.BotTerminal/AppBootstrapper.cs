@@ -72,6 +72,11 @@ namespace TickTrader.BotTerminal
 
                 return fe.DataContext;
             });
+
+            MessageBinder.SpecialValues.Add("$tag", context =>
+            {
+                return context.Source.Tag;
+            });
         }
 
         private void ConfigureGlobalWpfExceptionHandling()

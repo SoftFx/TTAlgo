@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
@@ -78,6 +79,7 @@ namespace TickTrader.BotTerminal
             Journal = new JournalViewModel(eventJournal);
             BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
             CanConnect = true;
+            DockManagerService = new DockManagerService();
 
             UpdateCommandStates();
             cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
@@ -102,6 +104,7 @@ namespace TickTrader.BotTerminal
             LogStateLoop();
 
             _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
+
         }
 
         private void OpenDefaultChart()
@@ -247,6 +250,7 @@ namespace TickTrader.BotTerminal
         public BotListViewModel BotList { get; }
         public WindowManager ToolWndManager => wndManager;
         public BotManagerViewModel BotManager { get; }
+        public DockManagerService DockManagerService { get; set; }
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
@@ -370,6 +374,11 @@ namespace TickTrader.BotTerminal
             {
                 logger.Error(ex, "Failed to save profile snapshot");
             }
+        }
+
+        public void ShowHiddenTab(object contentId)
+        {
+            DockManagerService.ShowHiddenTab(contentId.ToString());
         }
 
         #region OrderUi implementation
