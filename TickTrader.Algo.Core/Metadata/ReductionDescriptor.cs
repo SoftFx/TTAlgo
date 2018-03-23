@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Core.Metadata
             return descriptors;
         }
 
+        public string Id { get; private set; }
         public string DisplayName { get; private set; }
         public Type ClassType { get; private set; }
         public ReductionType Type { get; private set; }
@@ -51,6 +52,8 @@ namespace TickTrader.Algo.Core.Metadata
             var refs = algoCustomType.Assembly.GetReferencedAssemblies();
             var apiref = refs.FirstOrDefault(a => a.Name == "TickTrader.Algo.Api");
             ApiVersion = apiref?.Version;
+
+            Id = algoCustomType.FullName;
 
             DisplayName = reductionAttr.DisplayName;
             if (string.IsNullOrEmpty(DisplayName))
