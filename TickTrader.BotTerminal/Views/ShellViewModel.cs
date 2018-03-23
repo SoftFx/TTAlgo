@@ -376,11 +376,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void ShowHiddenTab(object contentId)
-        {
-            DockManagerService.ShowHiddenTab(contentId.ToString());
-        }
-
         #region OrderUi implementation
 
         public void OpenMarkerOrder(string symbol)

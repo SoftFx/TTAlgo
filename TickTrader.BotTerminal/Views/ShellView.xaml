@@ -16,28 +16,21 @@
             <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
 
-        <MenuItem Header="View" >
-            <MenuItem Header="{l:Resx Tab_Symbols}" 
-                      Tag="{x:Static l:DockManagerService.Tab_Symbols}"
-                      cal:Message.Attach="ShowHiddenTab($tag)"/>
+        <MenuItem Header="View" DataContext="{Binding DockManagerService}">
+            <MenuItem Header="{l:Resx Tab_Symbols}"
+                      IsCheckable="True" IsChecked="{Binding IsSymbolsOpened}"/>
             <MenuItem Header="{l:Resx Tab_Bots}" 
-                      Tag="{x:Static l:DockManagerService.Tab_Bots}"
-                      cal:Message.Attach="ShowHiddenTab($tag)"/>
+                      IsCheckable="True" IsChecked="{Binding IsBotsOpened}"/>
             <MenuItem Header="{l:Resx Tab_Algo}" 
-                      Tag="{x:Static l:DockManagerService.Tab_Algo}"
-                      cal:Message.Attach="ShowHiddenTab($tag)"/>
+                      IsCheckable="True" IsChecked="{Binding IsAlgoOpened}"/>
             <MenuItem Header="{l:Resx Tab_Trade}" 
-                      Tag="{x:Static l:DockManagerService.Tab_Trade}"
-                      cal:Message.Attach="ShowHiddenTab($tag)"/>
+                      IsCheckable="True" IsChecked="{Binding IsTradeOpened}"/>
             <MenuItem Header="{l:Resx Tab_History}" 
-                      Tag="{x:Static l:DockManagerService.Tab_History}"
-                      cal:Message.Attach="ShowHiddenTab($tag)" />
+                      IsCheckable="True" IsChecked="{Binding IsHistoryOpened}"/>
             <MenuItem Header="{l:Resx Tab_Journal}" 
-                      Tag="{x:Static l:DockManagerService.Tab_Journal}"
-                      cal:Message.Attach="ShowHiddenTab($tag)"/>
+                      IsCheckable="True" IsChecked="{Binding IsJournalOpened}"/>
             <MenuItem Header="{l:Resx Tab_BotJournal}" 
-                      Tag="{x:Static l:DockManagerService.Tab_BotJournal}"
-                      cal:Message.Attach="ShowHiddenTab($tag)"/>
+                      IsCheckable="True" IsChecked="{Binding IsBotJournalOpened}"/>
         </MenuItem>
 
         <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
