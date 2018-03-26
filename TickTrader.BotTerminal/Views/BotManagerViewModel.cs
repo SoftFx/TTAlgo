@@ -39,7 +39,6 @@ namespace TickTrader.BotTerminal
             _preferences = storage.PreferencesStorage.StorageModel;
 
             Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, this, false, false));
-            Bots.Updated += BotsOnUpdated;
 
             ClientModel.Connected += ClientModelOnConnected;
         }
@@ -123,6 +122,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void CloseBot(string instanceId)
+        {
+            _botManagerModel.RemoveBot(instanceId);
+        }
+
         public void CloseAllBots(CancellationToken token)
         {
             foreach (var instanceId in _botManagerModel.Bots.Snapshot.Keys.ToList())
@@ -173,19 +177,6 @@ namespace TickTrader.BotTerminal
         private void BotClosed(BotControlViewModel sender)
         {
             _botManagerModel.RemoveBot(sender.Model.InstanceId);
-        }
-
-        private void BotsOnUpdated(ListUpdateArgs<BotControlViewModel> args)
-        {
-            if (args.Action == DLinqAction.Insert)
-            {
-                args.NewItem.Closed += BotClosed;
-            }
-            if (args.Action == DLinqAction.Remove)
-            {
-                args.OldItem.Closed -= BotClosed;
-                args.OldItem.Dispose();
-            }
         }
 
         private void RestoreTradeBot(TradeBotStorageEntry entry)

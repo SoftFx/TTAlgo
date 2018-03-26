@@ -35,9 +35,6 @@ namespace TickTrader.BotTerminal
         public bool CanOpenChart => Model.PluginRef.Descriptor.SetupMainSymbol;
 
 
-        public event Action<BotControlViewModel> Closed = delegate { };
-
-
         public BotControlViewModel(TradeBotModel model, IShell shell, BotManagerViewModel botManager, bool runBot, bool openState)
         {
             Model = model;
@@ -57,11 +54,6 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void Dispose()
-        {
-            Model.StateChanged -= BotStateChanged;
-        }
-
         public async void StartStop()
         {
             if (Model.State == BotModelStates.Running)
@@ -72,8 +64,8 @@ namespace TickTrader.BotTerminal
 
         public void Close()
         {
-            Model.Remove();
-            Closed(this);
+            _botManager.CloseBot(Model.InstanceId);
+            Model.StateChanged -= BotStateChanged;
         }
 
         public void OpenState()

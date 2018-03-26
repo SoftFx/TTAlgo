@@ -58,6 +58,7 @@ namespace TickTrader.BotTerminal
         {
             if (_bots.TryGetValue(instanceId, out var botModel))
             {
+                botModel.Remove();
                 _bots.Remove(instanceId);
                 AlgoEnv.IdProvider.RemovePlugin(instanceId);
                 botModel.StateChanged -= StateChanged;
