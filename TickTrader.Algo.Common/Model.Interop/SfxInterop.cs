@@ -719,7 +719,7 @@ namespace TickTrader.Algo.Common.Model
                 UserTag = record.Tag,
                 RemainingVolume = record.LeavesVolume,
                 RequestedVolume = record.InitialVolume,
-                Expiration = record.Expiration,
+                Expiration = record.Expiration?.ToLocalTime(),
                 MaxVisibleVolume = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
                 Options = GetOptions(record),
@@ -753,7 +753,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 OrderId = report.OrderId,
                 TradeRequestId = operationId,
-                Expiration = report.Expiration,
+                Expiration = report.Expiration?.ToLocalTime(),
                 Created = report.Created,
                 Modified = report.Modified,
                 RejectReason = Convert(report.RejectReason, report.Text ?? ""),
