@@ -65,9 +65,9 @@ namespace TickTrader.BotTerminal
                 Add(d);
         }
 
-        public Task Init()
+        public Task WaitInit()
         {
-            return Task.WhenAll(repositories.Select(r => r.Init()));
+            return Task.WhenAll(repositories.Select(r => r.WaitInit()));
         }
 
         private void Rep_Added(AlgoRepositoryEventArgs args)

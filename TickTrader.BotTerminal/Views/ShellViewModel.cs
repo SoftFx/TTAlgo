@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             algoEnv = new AlgoEnvironment();
-            cManager = new ConnectionManager(commonClient, storage, eventJournal, algoEnv);
+            cManager = new ConnectionManager(commonClient, storage, eventJournal);
             clientModel = new TraderClientModel(commonClient, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
 
@@ -128,6 +128,7 @@ namespace TickTrader.BotTerminal
             var state = cManager.State;
             CanConnect = !ConnectionLock.IsLocked;
             CanDisconnect = cManager.IsLoggedIn && !ConnectionLock.IsLocked;
+            ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
@@ -258,7 +259,7 @@ namespace TickTrader.BotTerminal
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            ConnectLast();
+            ConnectLastOrConnectDefault();
         }
 
         private async void PrintSystemInfo()
@@ -285,11 +286,13 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void ConnectLast()
+        private void ConnectLastOrConnectDefault()
         {
             var last = cManager.GetLast();
             if (last != null)
                 Connect(last);
+            else
+                Connect();
         }
 
         private async void LogStateLoop()
@@ -365,7 +368,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo);
             wndManager.ShowDialog(loading, this);
         }
 
