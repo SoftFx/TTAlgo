@@ -297,12 +297,9 @@ namespace TickTrader.Algo.Common.Model
         private OrderUpdateAction OnIocFilled(ExecutionReport report)
         {
             if (accType == AccountTypes.Cash)
-            {
                 report.OrderType = OrderType.Market;
-                return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
-            }
-            else
-                return OnOrderUpdated(report, OrderExecAction.Filled);
+
+            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
         }
 
         private OrderUpdateAction OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
