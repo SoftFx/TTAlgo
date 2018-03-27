@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.FDK.Common;
 using FDK2 = TickTrader.FDK.Common;
@@ -318,8 +319,17 @@ namespace TickTrader.Algo.Common.Model
             if (state != null)
             {
                 var src = (TaskCompletionSource<T>)state;
-                src.SetException(ex);
+                src.SetException(Convert(ex));
             }
+        }
+
+        private static Exception Convert(Exception ex)
+        {
+            if (ex is RejectException)
+                return new InteropException(ex.Message, ConnectionErrorCodes.RejectedByServer);
+            if (ex is FDK2.TimeoutException)
+                return new InteropException(ex.Message, ConnectionErrorCodes.Timeout);
+            return ex;
         }
 
         #endregion
