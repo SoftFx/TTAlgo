@@ -203,7 +203,7 @@ namespace TickTrader.Algo.Common.Model
             double? takeProfit, string comment, string tag, int? magic)
         {
             var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
-            client.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime, stopLoss, takeProfit, comment, tag, magic);
+            client.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic);
             return taskSrc.Task;
         }
 
