@@ -41,7 +41,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn SortMemberPath="Time" 
                                     Binding="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"
-                                    SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
+                                    SortDirection="Descending" Header="{l:Resx Journal_Time}" Width="Auto"/>
                 <DataGridTextColumn Header="Bot" Width="*" Binding="{Binding Bot}"
                                     CellStyle="{DynamicResource DataGridCellStyle_RightAligned}"/>
                 <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">
