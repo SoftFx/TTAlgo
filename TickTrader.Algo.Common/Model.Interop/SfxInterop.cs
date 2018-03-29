@@ -420,7 +420,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<SFX.ExecutionReport>> operationDef)
+        private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<List<SFX.ExecutionReport>>> operationDef)
             where TReq : OrderRequest
         {
             var operationId = request.OperationId;
@@ -457,7 +457,7 @@ namespace TickTrader.Algo.Common.Model
                 else if (expiration != null)
                     return OrderTimeInForce.GoodTillDate;
                 else
-                    return null;
+                    return OrderTimeInForce.GoodTillCancel;
             }
             else
             {
@@ -736,11 +736,11 @@ namespace TickTrader.Algo.Common.Model
             return OrderExecOptions.None;
         }
 
-        private static ExecutionReport[] ConvertToEr(SFX.ExecutionReport[] reports, string operationId = null)
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId = null)
         {
-            var result = new ExecutionReport[reports.Length];
-            for (int i = 0; i < reports.Length; i++)
-                result[i] = ConvertToEr(reports[i], operationId);
+            var result = new List<ExecutionReport>(reports.Count);
+            for (int i = 0; i < reports.Count; i++)
+                result.Add(ConvertToEr(reports[i], operationId));
             return result;
         }
 
@@ -1092,5 +1092,5 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #endregion
-    }
+    }    
 }

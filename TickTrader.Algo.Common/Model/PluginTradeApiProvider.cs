@@ -66,8 +66,11 @@ namespace TickTrader.Algo.Common.Model
 
         private void SendReports(OrderInteropResult result)
         {
-            if (result.Report != null)
-                OnExclusiveReport?.Invoke(result.Report);
+            if (result.Reports != null)
+            {
+                foreach(var rep in result.Reports)
+                    OnExclusiveReport?.Invoke(rep);
+            }
         }
 
         public class Handler : CrossDomainObject, ITradeExecutor

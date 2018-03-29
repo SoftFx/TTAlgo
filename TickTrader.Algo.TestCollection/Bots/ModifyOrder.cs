@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -50,11 +51,14 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
+            if (string.IsNullOrWhiteSpace(OrderId))
+                OrderId = Account.Orders.FirstOrDefault()?.Id;
+
             var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
                 ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options);
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
-                Status.WriteLine(ToObjectPropertiesString(typeof(Order), result.ResultingOrder));
+                Status.WriteLine(ToObjectPropertiesString(result.ResultingOrder));
 
             Exit();
         }

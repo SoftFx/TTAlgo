@@ -150,20 +150,20 @@ namespace TickTrader.Algo.Common.Model
             client.PositionsResultEvent += (c, d, r) => SetCompleted(d, r);
             client.PositionsErrorEvent += (c, d, ex) => SetFailed<Position[]>(d, ex);
 
-            client.NewOrderResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.NewOrderErrorEvent += (c, d, ex) => SetFailed<FDK2.ExecutionReport>(d, ex);
+            client.NewOrderResultEvent += (c, d, r) => SetOrderResult(d, r);
+            client.NewOrderErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
 
-            client.CancelOrderResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.CancelOrderErrorEvent += (c, d, ex) => SetFailed<FDK2.ExecutionReport>(d, ex);
+            client.CancelOrderResultEvent += (c, d, r) => SetOrderResult(d, r);
+            client.CancelOrderErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
 
-            client.ReplaceOrderResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.ReplaceOrderErrorEvent += (c, d, ex) => SetFailed<FDK2.ExecutionReport>(d, ex);
+            client.ReplaceOrderResultEvent += (c, d, r) => SetOrderResult(d, r);
+            client.ReplaceOrderErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
 
-            client.ClosePositionResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.ClosePositionErrorEvent += (c, d, ex) => SetFailed<FDK2.ExecutionReport>(d, ex);
+            client.ClosePositionResultEvent += (c, d, r) => SetOrderResult(d, r);
+            client.ClosePositionErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
 
-            client.ClosePositionByResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.ClosePositionByErrorEvent += (c, d, ex) => SetFailed<FDK2.ExecutionReport>(d, ex);
+            client.ClosePositionByResultEvent += (c, d, r) => SetOrderResult(d, r);
+            client.ClosePositionByErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
         }
 
         public static Task ConnectAsync(this FDK.OrderEntry.Client client, string address)
@@ -199,41 +199,41 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<FDK2.ExecutionReport> NewOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string symbol, OrderType type, OrderSide side,
+        public static Task<List<FDK2.ExecutionReport>> NewOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic)
         {
-            var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
+            var taskSrc = new OrderResultSource();
             client.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic);
             return taskSrc.Task;
         }
 
-        public static Task<FDK2.ExecutionReport> CancelOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId)
+        public static Task<List<FDK2.ExecutionReport>> CancelOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId)
         {
-            var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
+            var taskSrc = new OrderResultSource();
             client.CancelOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId);
             return taskSrc.Task;
         }
 
-        public static Task<FDK2.ExecutionReport> ReplaceOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
+        public static Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
             OrderSide side, double newQty, double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic)
         {
-            var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
-            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, false, qty, comment, tag, magic);
+            var taskSrc = new OrderResultSource();
+            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, true, qty, comment, tag, magic);
             return taskSrc.Task;
         }
 
-        public static Task<FDK2.ExecutionReport> ClosePositionAsync(this FDK.OrderEntry.Client client, string clientOrderId, string orderId, double? qty)
+        public static Task<List<FDK2.ExecutionReport>> ClosePositionAsync(this FDK.OrderEntry.Client client, string clientOrderId, string orderId, double? qty)
         {
-            var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
+            var taskSrc = new OrderResultSource();
             client.ClosePositionAsync(taskSrc, clientOrderId, orderId, qty);
             return taskSrc.Task;
         }
 
-        public static Task<FDK2.ExecutionReport> ClosePositionByAsync(this FDK.OrderEntry.Client client, string clientOrderId, string orderId, string byOrderId)
+        public static Task<List<FDK2.ExecutionReport>> ClosePositionByAsync(this FDK.OrderEntry.Client client, string clientOrderId, string orderId, string byOrderId)
         {
-            var taskSrc = new TaskCompletionSource<FDK2.ExecutionReport>();
+            var taskSrc = new OrderResultSource();
             client.ClosePositionByAsync(taskSrc, clientOrderId, orderId, byOrderId);
             return taskSrc.Task;
         }
@@ -294,10 +294,28 @@ namespace TickTrader.Algo.Common.Model
             SetCompleted<object>(state, null);
         }
 
-        private static void SetCompleted(object state, FDK2.ExecutionReport result)
+        private static void SetOrderResult(object state, FDK2.ExecutionReport result)
         {
-            if (result.Last)
-                SetCompleted<FDK2.ExecutionReport>(state, result);
+            ((OrderResultSource)state).OnReport(result);
+        }
+
+        private static void SetOrderFail(object state, Exception ex)
+        {
+            ((OrderResultSource)state).SetException(Convert(ex));
+        }
+
+        private class OrderResultSource : TaskCompletionSource<List<FDK2.ExecutionReport>>
+        {
+            private List<FDK2.ExecutionReport> _reports = new List<FDK2.ExecutionReport>();
+
+            public void OnReport(FDK2.ExecutionReport report)
+            {
+                System.Diagnostics.Debug.WriteLine("rep #" + report.OrderId + " last=" + report.Last);
+
+                _reports.Add(report);
+                if (report.Last)
+                    SetResult(_reports);
+            }
         }
 
         private static void SetCompleted<T>(object state, T result)

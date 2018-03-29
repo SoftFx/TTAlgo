@@ -430,6 +430,7 @@ namespace TickTrader.Algo.Common.Model
                 {
                     order = cache.Account.Orders.GetOrDefault(_report.OrderId);
                     cache.Account.orders.Remove(_report.OrderId);
+                    order?.Update(_report);
                 }
                 else if (_entityAction == OrderEntityAction.Updated)
                 {

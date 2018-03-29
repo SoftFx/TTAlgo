@@ -47,7 +47,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null);
             Status.WriteLine($"ResultCode = {res.ResultCode}");
             if (res.ResultingOrder != null)
-                Status.WriteLine(ToObjectPropertiesString(typeof(Order), res.ResultingOrder));
+                Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
 
             Exit();
         }
