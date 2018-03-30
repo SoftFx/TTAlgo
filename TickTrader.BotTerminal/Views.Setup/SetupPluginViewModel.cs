@@ -14,7 +14,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginSetupViewModel : Screen, IWindowModel
+    internal class SetupPluginViewModel : Screen, IWindowModel
     {
         private Logger _logger;
         private bool _dlgResult;
@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
         private IAlgoSetupContext _setupContext;
 
 
-        public PluginSetupModel Setup { get; }
+        public PluginSetupViewModel Setup { get; }
 
         public PluginCatalogItem PluginItem { get; private set; }
 
@@ -49,16 +49,16 @@ namespace TickTrader.BotTerminal
         public string PluginType { get; }
 
 
-        public event Action<PluginSetupViewModel, bool> Closed = delegate { };
+        public event Action<SetupPluginViewModel, bool> Closed = delegate { };
 
 
-        private PluginSetupViewModel()
+        private SetupPluginViewModel()
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             RunBot = true;
         }
 
-        public PluginSetupViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupContext setupContext) : this()
+        public SetupPluginViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupContext setupContext) : this()
         {
             _catalog = algoEnv.Repo;
             PluginItem = item;
@@ -74,11 +74,11 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public PluginSetupViewModel(TradeBotModel bot) : this()
+        public SetupPluginViewModel(TradeBotModel bot) : this()
         {
             Bot = bot;
-            Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupModel;
-            PluginType = GetPluginTypeDisplayName(Setup.Descriptor);
+            Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupViewModel;
+            PluginType = GetPluginTypeDisplayName(Setup.Metadata);
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
             Setup.ValidityChanged += Validate;
             Validate();
 
-            _logger.Debug($"Init {Setup.Descriptor.DisplayName} "
+            _logger.Debug($"Init {Setup.Metadata.DisplayName} "
                  + Setup.Parameters.Count() + " params "
                  + Setup.Inputs.Count() + " inputs "
                  + Setup.Outputs.Count() + " outputs ");

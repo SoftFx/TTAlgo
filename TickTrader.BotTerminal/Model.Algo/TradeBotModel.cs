@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
         public event System.Action<TradeBotModel> ConfigurationChanged = delegate { };
 
 
-        public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host, WindowStorageModel stateSettings)
+        public TradeBotModel(SetupPluginViewModel pSetup, IAlgoPluginHost host, WindowStorageModel stateSettings)
             : base(pSetup, host)
         {
             host.Journal.RegisterBotLog(InstanceId);
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
-        new internal void Configurate(PluginSetupModel setup)
+        new internal void Configurate(PluginSetupViewModel setup)
         {
             if (State != BotModelStates.Stopped)
                 return;

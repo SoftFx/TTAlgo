@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
 
         public void AddPlugin(PluginModel plugin)
         {
-            if (plugin.Setup.Descriptor.AlgoLogicType == AlgoTypes.Robot)
+            if (plugin.Setup.Metadata.AlgoLogicType == AlgoTypes.Robot)
             {
                 _bots.Add(plugin.InstanceId, 1);
             }

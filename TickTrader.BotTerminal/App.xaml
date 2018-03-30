@@ -46,7 +46,8 @@
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotControlView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
-                <ResourceDictionary Source="Views.Chart/PluginSetupView.xaml" />
+
+                <ResourceDictionary Source="Views.Setup/SetupPluginView.xaml" />
                 
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
                 

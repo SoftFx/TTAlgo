@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Common.Model.Setup;
 
-namespace TickTrader.Algo.Common.Model.Setup
+namespace TickTrader.BotTerminal
 {
-    public class FileParamSetupModel : ParameterSetupModel
+    public class FileParamSetupViewModel : ParameterSetupViewModel
     {
         private string _filePath;
 
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             set
             {
                 _filePath = value;
-                NotifyPropertyChanged(nameof(FilePath));
+                NotifyOfPropertyChange(nameof(FilePath));
                 var fileName = "";
                 try
                 {
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (ArgumentException) { }
                 FileName = fileName;
-                NotifyPropertyChanged(nameof(FileName));
+                NotifyOfPropertyChange(nameof(FileName));
 
                 if (IsRequired && string.IsNullOrWhiteSpace(FileName))
                     Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public FileParamSetupModel(ParameterDescriptor descriptor)
+        public FileParamSetupViewModel(ParameterMetadataInfo descriptor)
             : base(descriptor)
         {
             DefaultFile = descriptor.DefaultValue as string ?? string.Empty;
@@ -65,11 +65,6 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override string ToString()
         {
             return $"{DisplayName}: {FilePath}";
-        }
-
-        public override object GetValueToApply()
-        {
-            return new FileEntity(FilePath);
         }
 
         public override void Reset()

@@ -63,7 +63,7 @@ namespace TickTrader.BotTerminal
     {
         private OutputFixture<Marker> buffer;
 
-        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetupModel setup)
+        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetupViewModel setup)
         {
             this.buffer = buffer;
 

@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Descriptor.SetupMainSymbol);
+            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Metadata.SetupMainSymbol);
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -177,7 +177,7 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = Chart.IsCrosshairEnabled,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    DescriptorId = i.Model.Setup.Descriptor.Id,
+                    DescriptorId = i.Model.Setup.Metadata.Id,
                     PluginFilePath = i.Model.PluginFilePath,
                     Config = i.Model.Setup.Save(),
                 }).ToList(),
@@ -196,14 +196,14 @@ namespace TickTrader.BotTerminal
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
         }
 
-        private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
+        private SetupPluginViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
         {
             var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.CanBeUseForSnapshot(snapshot)).Snapshot.FirstOrDefault().Value;
             if (catalogItem == null)
             {
                 return null;
             }
-            var setupModel = new PluginSetupViewModel(algoEnv, catalogItem, Chart);
+            var setupModel = new SetupPluginViewModel(algoEnv, catalogItem, Chart);
             if (snapshot.Config != null)
             {
                 setupModel.Setup.Load(snapshot.Config);
@@ -221,7 +221,7 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Indicator)
+            if (setupModel.Setup.Metadata.AlgoLogicType != AlgoTypes.Indicator)
             {
                 logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not an indicator!");
             }
@@ -246,7 +246,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var model = new PluginSetupViewModel(algoEnv, item, Chart);
+                var model = new SetupPluginViewModel(algoEnv, item, Chart);
                 if (!model.Setup.CanBeSkipped)
                     shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
@@ -260,24 +260,24 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void AttachPlugin(PluginSetupViewModel setupModel)
+        private void AttachPlugin(SetupPluginViewModel setupModel)
         {
             if (setupModel == null)
             {
                 return;
             }
 
-            switch (setupModel.Setup.Descriptor.AlgoLogicType)
+            switch (setupModel.Setup.Metadata.AlgoLogicType)
             {
                 case AlgoTypes.Indicator:
                     Chart.AddIndicator(setupModel);
                     break;
                 default:
-                    throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.AlgoLogicType}'");
+                    throw new Exception($"Unknown plugin type '{setupModel.Setup.Metadata.AlgoLogicType}'");
             }
         }
 
-        void AlgoSetupClosed(PluginSetupViewModel setupModel, bool dlgResult)
+        void AlgoSetupClosed(SetupPluginViewModel setupModel, bool dlgResult)
         {
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)

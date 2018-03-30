@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new PluginSetupViewModel(AlgoEnv, item, context ?? _botManagerModel);
+                var model = new SetupPluginViewModel(AlgoEnv, item, context ?? _botManagerModel);
                 _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 model.Closed += AlgoSetupClosed;
             }
@@ -66,7 +66,7 @@ namespace TickTrader.BotTerminal
 
                 _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
                 {
-                    var pSetup = new PluginSetupViewModel(model);
+                    var pSetup = new SetupPluginViewModel(model);
                     pSetup.Closed += AlgoSetupClosed;
                     return pSetup;
                 });
@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.Bots = _botManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
-                    DescriptorId = b.Setup.Descriptor.Id,
+                    DescriptorId = b.Setup.Metadata.Id,
                     PluginFilePath = b.PluginFilePath,
                     Started = b.State == BotModelStates.Running,
                     Config = b.Setup.Save(),
@@ -144,7 +144,7 @@ namespace TickTrader.BotTerminal
             Connected?.Invoke();
         }
 
-        private void AlgoSetupClosed(PluginSetupViewModel setupModel, bool dlgResult)
+        private void AlgoSetupClosed(SetupPluginViewModel setupModel, bool dlgResult)
         {
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
@@ -160,7 +160,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void AddBot(PluginSetupViewModel setupModel)
+        private void AddBot(SetupPluginViewModel setupModel)
         {
             var bot = new TradeBotModel(setupModel, this, new WindowStorageModel { Width = 300, Height = 300 });
             _botManagerModel.AddBot(bot);
@@ -168,7 +168,7 @@ namespace TickTrader.BotTerminal
                 bot.Start();
         }
 
-        private void UpdateBot(PluginSetupViewModel setupModel)
+        private void UpdateBot(SetupPluginViewModel setupModel)
         {
             setupModel.Bot.Configurate(setupModel.Setup);
             _botManagerModel.UpdateBot(setupModel.Bot);
@@ -194,7 +194,7 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            var setupModel = new PluginSetupViewModel(AlgoEnv, catalogItem, _botManagerModel);
+            var setupModel = new SetupPluginViewModel(AlgoEnv, catalogItem, _botManagerModel);
             setupModel.RunBot = entry.Started && _preferences.RestartBotsOnStartup;
             if (entry.Config != null)
             {

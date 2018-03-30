@@ -211,7 +211,7 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsLocked = delegate { };
         public event System.Action ParamsUnlocked = delegate { };
 
-        public void AddIndicator(PluginSetupViewModel setup)
+        public void AddIndicator(SetupPluginViewModel setup)
         {
             var indicator = CreateIndicator(setup);
             indicators.Add(indicator);
@@ -235,7 +235,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel CreateIndicator(PluginSetupViewModel setup);
+        protected abstract IndicatorModel CreateIndicator(SetupPluginViewModel setup);
         protected abstract void ApplyUpdate(QuoteEntity update);
 
         protected void Support(SelectableChartTypes chartType)

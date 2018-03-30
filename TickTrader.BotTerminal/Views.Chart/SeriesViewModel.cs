@@ -54,14 +54,14 @@ namespace TickTrader.BotTerminal
         //    return null;
         //}
 
-        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetupModel outputSetup)
+        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetupViewModel outputSetup)
         {
             var seriesData = model.GetOutputSeries(outputSetup.Id);
 
             if (outputSetup is ColoredLineOutputSetupModel)
                 return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupModel)outputSetup);
-            else if (outputSetup is MarkerSeriesOutputSetupModel)
-                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupModel)outputSetup);
+            else if (outputSetup is MarkerSeriesOutputSetupViewModel)
+                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupViewModel)outputSetup);
 
             return null;
         }
@@ -121,7 +121,7 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException("Unsupported plot type: " + plotType);
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupModel outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupViewModel outputSetup)
         {
             var viewModel = new LineRenderableSeriesViewModel();
             viewModel.DataSeries = seriesData;

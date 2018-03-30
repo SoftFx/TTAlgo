@@ -23,13 +23,13 @@ namespace TickTrader.BotTerminal
 
         public string PluginFilePath { get; }
 
-        public PluginSetupModel Setup { get; private set; }
+        public PluginSetupViewModel Setup { get; private set; }
 
         public string InstanceId => Setup.InstanceId;
 
         public IAlgoPluginHost Host => _host;
 
-        public PluginModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
+        public PluginModel(SetupPluginViewModel pSetup, IAlgoPluginHost host)
         {
             _host = host;
             Setup = pSetup.Setup;
@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected void Configurate(PluginSetupModel setup)
+        protected void Configurate(PluginSetupViewModel setup)
         {
             Setup = setup;
 

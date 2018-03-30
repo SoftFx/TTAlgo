@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
         private bool IsStopping { get; set; }
 
 
-        public IndicatorModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
+        public IndicatorModel(SetupPluginViewModel pSetup, IAlgoPluginHost host)
             : base(pSetup, host)
         {
             host.StartEvent += Host_StartEvent;
@@ -61,10 +61,10 @@ namespace TickTrader.BotTerminal
                     var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
-                else if (outputSetup is MarkerSeriesOutputSetupModel)
+                else if (outputSetup is MarkerSeriesOutputSetupViewModel)
                 {
                     var buffer = executor.GetOutput<Marker>(outputSetup.Id);
-                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetupModel)outputSetup);
+                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetupViewModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
             }

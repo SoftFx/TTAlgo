@@ -446,7 +446,7 @@
 
     <!-- Old Template  -->
 
-    <ControlTemplate x:Key="PluginSetupView.Old">
+    <ControlTemplate x:Key="SetupPluginView.Old">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -514,13 +514,13 @@
 
     <!-- Button Style  (Classic) -->
 
-    <Style x:Key="PluginSetupView.Classic.DlgButtonStyle" TargetType="Button">
+    <Style x:Key="SetupPluginView.Classic.DlgButtonStyle" TargetType="Button">
         <Setter Property="Margin" Value="5"/>
     </Style>
 
     <!-- Classic Template  -->
 
-    <ControlTemplate x:Key="PluginSetupView.Classic">
+    <ControlTemplate x:Key="SetupPluginView.Classic">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -590,10 +590,10 @@
                 </Grid.ColumnDefinitions>
                 <Button Content="Ok" Grid.Column="0"
                         cal:Message.Attach="Ok"
-                        Style="{StaticResource PluginSetupView.Classic.DlgButtonStyle}"/>
+                        Style="{StaticResource SetupPluginView.Classic.DlgButtonStyle}"/>
                 <Button Content="Cancel"
                         cal:Message.Attach="Cancel"
-                        Style="{StaticResource PluginSetupView.Classic.DlgButtonStyle}"
+                        Style="{StaticResource SetupPluginView.Classic.DlgButtonStyle}"
                         Grid.Column="1"/>
             </Grid>
         </Grid>
@@ -638,7 +638,7 @@
 
     <!-- Common Style -->
 
-    <Style x:Key="PluginSetupViewStyle.Common" TargetType="Window">
+    <Style x:Key="SetupPluginViewStyle.Common" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
@@ -648,8 +648,8 @@
 
     <!-- Old Style -->
 
-    <Style x:Key="PluginSetupViewStyle" TargetType="Window" BasedOn="{StaticResource PluginSetupViewStyle.Common}">
-        <Setter Property="Template" Value="{StaticResource PluginSetupView.Old}"/>
+    <Style x:Key="SetupPluginViewStyle" TargetType="Window" BasedOn="{StaticResource SetupPluginViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource SetupPluginView.Old}"/>
         <Setter Property="MinHeight" Value="340"/>
         <Setter Property="MaxHeight" Value="600"/>
         <Setter Property="Height" Value="Auto" />
@@ -690,8 +690,8 @@
 
     <!-- Classic Style  -->
 
-    <Style x:Key="PluginSetupViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource PluginSetupViewStyle.Common}">
-        <Setter Property="Template" Value="{StaticResource PluginSetupView.Classic}"/>
+    <Style x:Key="SetupPluginViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource SetupPluginViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource SetupPluginView.Classic}"/>
         <Setter Property="Height" Value="Auto"/>
         <Setter Property="Width" Value="380"/>
         <Setter Property="ResizeMode" Value="NoResize"/>

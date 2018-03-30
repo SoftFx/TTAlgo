@@ -104,7 +104,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)
+        protected override IndicatorModel CreateIndicator(SetupPluginViewModel setup)
         {
             return new IndicatorModel(setup, this);
         }

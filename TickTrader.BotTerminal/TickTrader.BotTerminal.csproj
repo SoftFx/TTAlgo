@@ -454,6 +454,35 @@
     </Compile>
     <Compile Include="Views.Protocol\BotAgentLoginDialogViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentViewModel.cs" />
+    <Compile Include="Views.Setup\AlgoSetupFactory.cs" />
+    <Compile Include="Views.Setup\Extensions.cs" />
+    <Compile Include="Views.Setup\IndicatorSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\BarToBarInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\BarToDoubleInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\InputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\MappedInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\QuoteInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\QuoteToBarInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\QuoteToDoubleInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Mappings\AskBarMappings.cs" />
+    <Compile Include="Views.Setup\Mappings\BidBarMappings.cs" />
+    <Compile Include="Views.Setup\Mappings\DefaultReductions.cs" />
+    <Compile Include="Views.Setup\Mappings\FullBarToBarMapping.cs" />
+    <Compile Include="Views.Setup\Mappings\FullBarToDoubleMapping.cs" />
+    <Compile Include="Views.Setup\Mappings\QuoteToBarMapping.cs" />
+    <Compile Include="Views.Setup\Mappings\QuoteToDoubleMapping.cs" />
+    <Compile Include="Views.Setup\Mappings\SymbolMapping.cs" />
+    <Compile Include="Views.Setup\Mappings\SymbolMappingsCollection.cs" />
+    <Compile Include="Views.Setup\Outputs\ColoredLineOutputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Outputs\MarkerSeriesOutputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Outputs\OutputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\EnumParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\FileParamSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\GenericParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\ParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\PluginSetupViewModel.cs" />
+    <Compile Include="Views.Setup\PropertySetupViewModel.cs" />
+    <Compile Include="Views.Setup\TradeBotSetupViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>
@@ -479,7 +508,7 @@
     </Compile>
     <Compile Include="Views\ChartCollectionViewModel.cs" />
     <Compile Include="Views.Chart\ChartViewModel.cs" />
-    <Compile Include="Views.Chart\PluginSetupViewModel.cs" />
+    <Compile Include="Views.Setup\SetupPluginViewModel.cs" />
     <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
@@ -970,7 +999,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\PluginSetupView.xaml">
+    <Page Include="Views.Setup\SetupPluginView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

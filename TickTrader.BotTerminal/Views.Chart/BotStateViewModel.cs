@@ -68,13 +68,13 @@ namespace TickTrader.BotTerminal
 
             _wndManager.OpenOrActivateWindow(key, () =>
             {
-                var pSetup = new PluginSetupViewModel(Bot);
-                pSetup.Closed += PluginSetupViewClosed;
+                var pSetup = new SetupPluginViewModel(Bot);
+                pSetup.Closed += SetupPluginViewClosed;
                 return pSetup;
             });
         }
 
-        private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)
+        private void SetupPluginViewClosed(SetupPluginViewModel setupVM, bool dialogResult)
         {
             if (dialogResult)
             {
@@ -117,8 +117,8 @@ namespace TickTrader.BotTerminal
             res.Add("------------ Permissions ------------");
             res.Add(Bot.Setup.Permissions.ToString());
             res.Add("------------ Plugin Info ------------");
-            res.Add($"Name: {Bot.Setup.Descriptor.UserDisplayName}");
-            res.Add($"Version: {Bot.Setup.Descriptor.Version}");
+            res.Add($"Name: {Bot.Setup.Metadata.UserDisplayName}");
+            res.Add($"Version: {Bot.Setup.Metadata.Version}");
             res.Add($"File Path: {Bot.PluginFilePath}");
             if (Bot.Setup.HasParams)
             {
