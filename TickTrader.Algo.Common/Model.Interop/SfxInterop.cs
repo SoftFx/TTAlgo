@@ -87,6 +87,12 @@ namespace TickTrader.Algo.Common.Model
             catch (AggregateException aex)
             {
                 var ex = aex.InnerExceptions.First();
+                if (ex is LoginException)
+                {
+                    var code = ((LoginException)ex).LogoutReason;
+                    return new ConnectionErrorInfo(Convert(code), ex.Message);
+                }
+
                 return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
             }
             catch (Exception ex)
@@ -1089,6 +1095,21 @@ namespace TickTrader.Algo.Common.Model
                 case Api.BarPriceType.Bid: return PriceType.Bid;
             }
             throw new NotImplementedException("Unsupported price type: " + priceType);
+        }
+
+        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        {
+            switch (fdkCode)
+            {
+                case LogoutReason.BlockedAccount: return ConnectionErrorCodes.BlockedAccount;
+                case LogoutReason.InvalidCredentials: return ConnectionErrorCodes.InvalidCredentials;
+                case LogoutReason.NetworkError: return ConnectionErrorCodes.NetworkError;
+                case LogoutReason.ServerError: return ConnectionErrorCodes.ServerError;
+                case LogoutReason.ServerLogout: return ConnectionErrorCodes.ServerLogout;
+                case LogoutReason.SlowConnection: return ConnectionErrorCodes.SlowConnection;
+                case LogoutReason.LoginDeleted: return ConnectionErrorCodes.LoginDeleted;
+                default: return ConnectionErrorCodes.Unknown;
+            }
         }
 
         #endregion

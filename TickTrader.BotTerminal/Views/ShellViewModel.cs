@@ -158,11 +158,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override void OnDeactivate(bool close)
-        {
-            if (close)
-                Shutdown();
-        }
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    if (close)
+        //        App.Current.Shutdown();
+        //        //Shutdown();
+        //}
 
         public override void CanClose(Action<bool> callback)
         {
@@ -239,7 +240,7 @@ namespace TickTrader.BotTerminal
 
         public NotificationsViewModel Notifications { get; private set; }
 
-        private async void Shutdown()
+        public async Task Shutdown()
         {
             isClosed = true;
 
@@ -247,12 +248,12 @@ namespace TickTrader.BotTerminal
             {
                 await cManager.Disconnect();
                 await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await storage.Stop();
             }
-            catch (Exception) { }
-
-            await storage.Stop();
-
-            App.Current.Shutdown();
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Shutdown() failed.");
+            }
         }
 
         protected override void OnViewLoaded(object view)
