@@ -14,12 +14,25 @@ namespace TickTrader.BotTerminal
 
         public bool HasStartedBots { get; }
 
+        public string DialogTitle { get; set; }
 
-        public ExitDialogViewModel(bool hasStartedBots)
+
+        public ExitDialogViewModel(bool hasStartedBots, ShootMode mode)
         {
             HasStartedBots = hasStartedBots;
 
-            DisplayName = "Exit - " + EnvService.Instance.ApplicationName;
+            switch (mode)
+            {
+                case ShootMode.Exit:
+                    DisplayName = "Exit - " + EnvService.Instance.ApplicationName;
+                    DialogTitle = "Are you sure you want to exit the application?";
+                    break;
+                case ShootMode.Logout:
+                    DisplayName = "Log out - " + EnvService.Instance.ApplicationName;
+                    DialogTitle = "Are you sure you want to log out?";
+                    break;
+
+            }
         }
 
 
@@ -34,4 +47,6 @@ namespace TickTrader.BotTerminal
             TryClose();
         }
     }
+
+    enum ShootMode { Logout, Exit };
 }

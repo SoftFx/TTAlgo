@@ -126,8 +126,7 @@ namespace TickTrader.BotTerminal
         private void UpdateCommandStates()
         {
             var state = cManager.State;
-            CanConnect = !ConnectionLock.IsLocked;
-            CanDisconnect = cManager.IsLoggedIn && !ConnectionLock.IsLocked;
+            CanDisconnect = cManager.IsLoggedIn;
             ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
@@ -141,16 +140,44 @@ namespace TickTrader.BotTerminal
         public bool CanConnect { get; private set; }
         public bool CanDisconnect { get; private set; }
 
+        public void ShootBots(out bool isConfirmed)
+        {
+            isConfirmed = true;
+
+            if (ConnectionLock.IsLocked)
+            {
+                var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots), ShootMode.Logout);
+                wndManager.ShowDialog(exit, this);
+
+                isConfirmed = exit.IsConfirmed;
+                if (isConfirmed)
+                {
+                    storage.ProfileManager.Stop();
+                    if (exit.HasStartedBots)
+                    {
+                        var shutdown = new ShutdownDialogViewModel(Charts);
+                        wndManager.ShowDialog(shutdown, this);
+                    }
+                }
+            }
+        }
+
         public void Connect()
         {
-            Connect(null);
+            ShootBots(out var isConfirmed);
+
+            if(isConfirmed)
+                Connect(null);
         }
 
         public void Disconnect()
         {
             try
             {
-                cManager.TriggerDisconnect();
+                ShootBots(out var isConfirmed);
+
+                if (isConfirmed)
+                    cManager.TriggerDisconnect();
             }
             catch (Exception ex)
             {
@@ -167,7 +194,7 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
+            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots), ShootMode.Exit);
             wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
