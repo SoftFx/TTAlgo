@@ -7,6 +7,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -107,7 +108,7 @@ namespace TickTrader.BotTerminal
 
         public PluginMetadataInfo Metadata { get; }
 
-        public PluginInfo PluginRef { get; }
+        public PluginInfo Plugin { get; }
 
         public bool IsValid { get; private set; }
 
@@ -115,11 +116,13 @@ namespace TickTrader.BotTerminal
 
         public SetupMetadataInfo SetupMetadata { get; }
 
+        public SetupContextInfo SetupContext { get; }
+
         public PluginSetupMode Mode { get; }
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-        public bool CanBeSkipped => IsEmpty && Metadata.IsValid && Metadata.AlgoLogicType != AlgoTypes.Robot;
+        public bool CanBeSkipped => IsEmpty && Metadata.IsValid && Metadata.Type != AlgoTypes.Robot;
 
         public string InstanceId
         {
@@ -186,10 +189,10 @@ namespace TickTrader.BotTerminal
         public event System.Action ValidityChanged = delegate { };
 
 
-        public PluginSetupViewModel(PluginInfo info, SetupMetadataInfo setupMetadata, PluginSetupMode mode)
+        public PluginSetupViewModel(PluginInfo plugin, SetupMetadataInfo setupMetadata, SetupContextInfo setupContext, PluginSetupMode mode)
         {
-            PluginRef = info;
-            Metadata = info.Metadata;
+            Plugin = plugin;
+            Metadata = plugin.Metadata;
             SetupMetadata = setupMetadata;
             Mode = mode;
         }
@@ -225,9 +228,9 @@ namespace TickTrader.BotTerminal
 
         public virtual void Reset()
         {
-            SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbolCode);
-            SelectedMapping = SetupMetadata.SymbolMappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
+            SelectedTimeFrame = SetupContext.DefaultTimeFrame;
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupContext.DefaultSymbolCode);
+            SelectedMapping = SetupMetadata.SymbolMappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
             InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata);
 
             _parameters.ForEach(p => p.Reset());

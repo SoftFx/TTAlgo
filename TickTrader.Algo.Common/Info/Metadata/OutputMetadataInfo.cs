@@ -1,6 +1,4 @@
-﻿using TickTrader.Algo.Api;
-
-namespace TickTrader.Algo.Common.Info
+﻿namespace TickTrader.Algo.Common.Info
 {
     public class OutputMetadataInfo : PropertyMetadataInfo
     {
@@ -8,8 +6,8 @@ namespace TickTrader.Algo.Common.Info
 
         public double DefaultThickness { get; set; }
 
-        public Colors DefaultColor { get; set; }
+        public int DefaultColor { get; set; }
 
-        public LineStyles DefaultLineStyle { get; set; }
+        public string DefaultLineStyle { get; set; }
     }
 }

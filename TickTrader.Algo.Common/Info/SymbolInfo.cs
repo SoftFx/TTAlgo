@@ -5,6 +5,8 @@
         public string Name { get; set; }
 
 
+        public SymbolInfo() { }
+
         public SymbolInfo(string name)
         {
             Name = name;

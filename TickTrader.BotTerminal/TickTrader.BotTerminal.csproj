@@ -464,15 +464,6 @@
     <Compile Include="Views.Setup\Inputs\QuoteInputSetupViewModel.cs" />
     <Compile Include="Views.Setup\Inputs\QuoteToBarInputSetupViewModel.cs" />
     <Compile Include="Views.Setup\Inputs\QuoteToDoubleInputSetupViewModel.cs" />
-    <Compile Include="Views.Setup\Mappings\AskBarMappings.cs" />
-    <Compile Include="Views.Setup\Mappings\BidBarMappings.cs" />
-    <Compile Include="Views.Setup\Mappings\DefaultReductions.cs" />
-    <Compile Include="Views.Setup\Mappings\FullBarToBarMapping.cs" />
-    <Compile Include="Views.Setup\Mappings\FullBarToDoubleMapping.cs" />
-    <Compile Include="Views.Setup\Mappings\QuoteToBarMapping.cs" />
-    <Compile Include="Views.Setup\Mappings\QuoteToDoubleMapping.cs" />
-    <Compile Include="Views.Setup\Mappings\SymbolMapping.cs" />
-    <Compile Include="Views.Setup\Mappings\SymbolMappingsCollection.cs" />
     <Compile Include="Views.Setup\Outputs\ColoredLineOutputSetupViewModel.cs" />
     <Compile Include="Views.Setup\Outputs\MarkerSeriesOutputSetupViewModel.cs" />
     <Compile Include="Views.Setup\Outputs\OutputSetupViewModel.cs" />

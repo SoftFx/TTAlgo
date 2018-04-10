@@ -248,5 +248,5 @@ namespace TickTrader.Algo.Core.Metadata
     }
 
     public enum AlgoTypes { Indicator, Robot, Unknown }
-    public enum AlgoMetadataErrors { HasInvalidProperties, UnknwonBaseType, IncompatibleApiVersion }
+    public enum AlgoMetadataErrors { Unknown, HasInvalidProperties, UnknwonBaseType, IncompatibleApiVersion }
 }

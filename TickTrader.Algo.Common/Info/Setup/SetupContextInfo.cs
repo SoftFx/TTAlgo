@@ -8,10 +8,12 @@ namespace TickTrader.Algo.Common.Info
 
         public string DefaultSymbolCode { get; set; }
 
-        public string DefaultMapping { get; set; }
+        public MappingKey DefaultMapping { get; set; }
 
 
-        public SetupContextInfo(TimeFrames defaultTimeFrame, string defaultSymbolCode, string defaultMapping)
+        public SetupContextInfo() { }
+
+        public SetupContextInfo(TimeFrames defaultTimeFrame, string defaultSymbolCode, MappingKey defaultMapping)
         {
             DefaultTimeFrame = defaultTimeFrame;
             DefaultSymbolCode = defaultSymbolCode;

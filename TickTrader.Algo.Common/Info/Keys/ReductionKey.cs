@@ -1,15 +1,15 @@
 ﻿namespace TickTrader.Algo.Common.Info
 {
-    public class PluginKey
+    public class ReductionKey
     {
         public string PackagePath { get; set; }
 
         public string DescriptorId { get; set; }
 
 
-        public PluginKey() { }
+        public ReductionKey() { }
 
-        public PluginKey(string packagePath, string descriptorId)
+        public ReductionKey(string packagePath, string descriptorId)
         {
             PackagePath = packagePath;
             DescriptorId = descriptorId;
@@ -18,7 +18,7 @@
 
         public override string ToString()
         {
-            return $"plugin {DescriptorId} from {PackagePath}";
+            return $"reduction {DescriptorId} from {PackagePath}";
         }
     }
 }

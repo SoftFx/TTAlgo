@@ -2,8 +2,17 @@
 {
     public class PluginInfo
     {
-        public PluginKey Id { get; set; }
+        public PluginKey Key { get; set; }
 
         public PluginMetadataInfo Metadata { get; set; }
+
+
+        public PluginInfo() { }
+
+        public PluginInfo(PluginKey key, PluginMetadataInfo metadata)
+        {
+            Key = key;
+            Metadata = metadata;
+        }
     }
 }

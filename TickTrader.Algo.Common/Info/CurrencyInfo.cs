@@ -5,6 +5,8 @@
         public string Name { get; set; }
 
 
+        public CurrencyInfo() { }
+
         public CurrencyInfo(string name)
         {
             Name = name;

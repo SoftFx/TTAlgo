@@ -1,7 +1,6 @@
-﻿using TickTrader.Algo.Api;
+﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,13 +13,13 @@ namespace TickTrader.BotTerminal
         public override bool AllowChangeMapping => true;
 
 
-        public TradeBotSetupViewModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
-            : this(pRef, metadata, context, PluginSetupMode.New)
+        public TradeBotSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context)
+            : this(plugin, metadata, context, PluginSetupMode.New)
         {
         }
 
-        public TradeBotSetupViewModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context, PluginSetupMode mode)
-            : base(pRef, metadata, context, mode)
+        public TradeBotSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context, PluginSetupMode mode)
+            : base(plugin, metadata, context, mode)
         {
             Init();
         }
