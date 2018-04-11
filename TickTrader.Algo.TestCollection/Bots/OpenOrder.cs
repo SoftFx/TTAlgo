@@ -41,9 +41,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
         public int? ExpirationTimeout { get; set; }
 
+        [Parameter(DefaultValue = "Open Order Bot Comment")]
+        public string Comment { get; set; }
+
         protected override void OnStart()
         {
-            var res = OpenOrder(Symbol.Name, Type, Side, Volume, MaxVisibleVolume, Price, StopPrice, StopLoss, TakeProfit, "Open Order Bot " + DateTime.Now, Options, Tag,
+            var res = OpenOrder(Symbol.Name, Type, Side, Volume, MaxVisibleVolume, Price, StopPrice, StopLoss, TakeProfit, Comment, Options, Tag,
                 ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null);
             Status.WriteLine($"ResultCode = {res.ResultCode}");
             if (res.ResultingOrder != null)
