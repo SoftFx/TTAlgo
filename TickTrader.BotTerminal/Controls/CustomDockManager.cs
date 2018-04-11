@@ -17,6 +17,16 @@ namespace TickTrader.BotTerminal
 
         private Dictionary<string, LayoutAnchorable> _anchorableViews;
 
+        private static CustomDockManager customDockManager;
+
+        public static CustomDockManager GetInstance()
+        {
+            if (customDockManager is null)
+                return new CustomDockManager();
+            else
+                return customDockManager;
+        }
+
 
         public static readonly DependencyProperty DockManagerServiceProperty =
             DependencyProperty.Register("DockManagerService", typeof(IDockManagerServiceProvider), typeof(CustomDockManager), new PropertyMetadata(null, OnDockManagerServicePropertyChanged));
@@ -56,9 +66,14 @@ namespace TickTrader.BotTerminal
 
         public CustomDockManager()
         {
+            if (!(customDockManager is null))
+                throw new Exception("Instance of class has been exist!");
+
             _anchorableViews = new Dictionary<string, LayoutAnchorable>();
 
             Loaded += (sender, args) => FindAnchorableViews();
+
+            customDockManager = this;
         }
 
 

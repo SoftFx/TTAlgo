@@ -25,6 +25,8 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using System.Windows.Input;
 using TickTrader.Algo.Common.Model;
+using Xceed.Wpf.AvalonDock.Layout;
+using System.Windows.Controls;
 
 namespace TickTrader.BotTerminal
 {
@@ -288,6 +290,19 @@ namespace TickTrader.BotTerminal
 
         public void Drop(object o)
         {
+            //var dock = CustomDockManager.GetInstance();
+
+            //ContentControl cc = new ContentControl();
+            //var tb = new TextBlock();
+            //tb.Text = "Hihihi";
+            //cc.Content = tb;
+
+            //var la = new LayoutAnchorable { Title = "New Window", FloatingHeight = 400, FloatingWidth = 500, Content = cc };
+            //la.AddToLayout(dock, AnchorableShowStrategy.Right);
+
+            //la.Float();
+            //la.Show();
+
             var algo = o as AlgoItemViewModel;
             if (algo != null)
             {
