@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
@@ -70,7 +72,16 @@ namespace TickTrader.BotTerminal
 
         public void OpenState()
         {
-            _shell.ToolWndManager.OpenOrActivateWindow(Model, () => new BotStateViewModel(Model, _shell.ToolWndManager));
+
+            var stateView = new BotStateViewModel(Model, _shell.ToolWndManager);
+
+            var dock = CustomDockManager.GetInstance();
+
+            var la = new LayoutAnchorable { Title = "New Window", FloatingHeight = 400, FloatingWidth = 500, Content = stateView };
+            la.AddToLayout(dock, AnchorableShowStrategy.Right);
+
+            la.Float();
+            la.Show();
         }
 
         public void OpenSettings()

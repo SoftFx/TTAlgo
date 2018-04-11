@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xceed.Wpf.AvalonDock.Controls;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotStateViewModel : Screen, IWindowModel
+    internal class BotStateViewModel : Screen
     {
         private WindowManager _wndManager;
 
@@ -24,6 +26,7 @@ namespace TickTrader.BotTerminal
             BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
             Bot_CustomStatusChanged(Bot);
+            //LayoutAnchorableTabItem
         }
 
         private void BotConfigurationChanged(TradeBotModel obj)
