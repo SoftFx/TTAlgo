@@ -76,6 +76,53 @@ namespace TickTrader.BotTerminal
             customDockManager = this;
         }
 
+        #region view methods
+
+        public void AddView(string viewId, LayoutAnchorable view)
+        {
+            if (!HasView(viewId))
+            {
+                _anchorableViews.Add(viewId, view);
+                view.AddToLayout(this, AnchorableShowStrategy.Left);
+                FloatView(viewId);
+            }
+        }
+
+        public void FloatView(string viewId)
+        {
+            if (HasView(viewId))
+                _anchorableViews[viewId].Float();
+        }
+
+        public void ShowView(string viewId)
+        {
+            if (HasView(viewId))
+                _anchorableViews[viewId].Show();
+        }
+
+        public void HideView(string viewId)
+        {
+            if (HasView(viewId))
+                _anchorableViews[viewId].Hide();
+        }
+
+        public bool HasView(string viewId)
+        {
+            return _anchorableViews.ContainsKey(viewId);
+        }
+
+        public void RemoveView(string viewId)
+        {
+            if (HasView(viewId))
+            {
+                var view = _anchorableViews[viewId];
+                view.Parent.RemoveChild(view);
+                _anchorableViews.Remove(viewId);
+            }
+        }
+
+        #endregion
+
 
         private void FindAnchorableViews()
         {

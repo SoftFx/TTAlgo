@@ -49,10 +49,10 @@ namespace TickTrader.BotTerminal
             {
                 StartStop();
             }
-            if (openState)
-            {
+
+            CreateState();
+            if(openState)
                 OpenState();
-            }
         }
 
 
@@ -67,21 +67,31 @@ namespace TickTrader.BotTerminal
         public void Close()
         {
             _botManager.CloseBot(Model.InstanceId);
+            CustomDockManager.GetInstance().RemoveView(Model.InstanceId);
             Model.StateChanged -= BotStateChanged;
         }
 
+        public void CreateState()
+        {
+            var botId = Model.InstanceId;
+            var manager = CustomDockManager.GetInstance();
+            if (!manager.HasView(botId))
+            {
+
+                var content = new BotStateViewModel(Model, _shell.ToolWndManager);
+                var view = new LayoutAnchorable { Title = botId, FloatingHeight = 300, FloatingWidth = 300, Content = content, ContentId = botId };
+                manager.AddView(botId, view);
+                manager.ShowView(botId);
+            }
+        }
+
+
         public void OpenState()
         {
-
-            var stateView = new BotStateViewModel(Model, _shell.ToolWndManager);
-
-            var dock = CustomDockManager.GetInstance();
-
-            var la = new LayoutAnchorable { Title = "New Window", FloatingHeight = 400, FloatingWidth = 500, Content = stateView };
-            la.AddToLayout(dock, AnchorableShowStrategy.Right);
-
-            la.Float();
-            la.Show();
+            var manager = CustomDockManager.GetInstance();
+            if (!manager.HasView(Model.InstanceId))
+                CreateState();                
+            manager.ShowView(Model.InstanceId);
         }
 
         public void OpenSettings()

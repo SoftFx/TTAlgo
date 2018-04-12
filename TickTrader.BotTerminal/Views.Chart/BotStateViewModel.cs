@@ -26,7 +26,6 @@ namespace TickTrader.BotTerminal
             BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
             Bot_CustomStatusChanged(Bot);
-            //LayoutAnchorableTabItem
         }
 
         private void BotConfigurationChanged(TradeBotModel obj)
