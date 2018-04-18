@@ -22,13 +22,13 @@ namespace TickTrader.BotTerminal
         private TraderClientModel _clientModel;
         private FeedHistoryProviderModel.Handler _historyProvider;
         private WindowManager _wndManager;
-        private CustomFeedStorage _customStorage;
+        private CustomFeedStorage.Handler _customStorage;
         private VarContext _varContext = new VarContext();
         private VarDictionary<string, SymbolModel> _onlineSymbols = new VarDictionary<string, SymbolModel>();
         private IVarSet<string, ManagedCustomSymbol> _customManagedSymbols;
         private IVarSet<string, ManagedOnlineSymbol> _onlineManagedSymbols;
 
-        public SymbolManagerViewModel(TraderClientModel clientModel, CustomFeedStorage customStorage, WindowManager wndManager)
+        public SymbolManagerViewModel(TraderClientModel clientModel, CustomFeedStorage.Handler customStorage, WindowManager wndManager)
         {
             _clientModel = clientModel;
             _historyProvider = clientModel.FeedHistory;
@@ -37,14 +37,14 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Symbol Manager";
 
-            var onlineCacheKeys = _historyProvider.Cache.GetKeysSyncCopy(new DispatcherSync());
-            var customCacheKeys = customStorage.GetKeysSyncCopy(new DispatcherSync());
+            var onlineCacheKeys = _historyProvider.Cache.Keys;
+            var customCacheKeys = customStorage.Keys;
 
             var onlineSeries = onlineCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, _historyProvider.Cache, false));
             var customSeries = customCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, customStorage, true));
 
             _onlineManagedSymbols = _onlineSymbols.Select((k, v) => new ManagedOnlineSymbol((SymbolModel)v, this, onlineSeries));
-            _customManagedSymbols = customStorage.GetSymbolsSyncCopy(new DispatcherSync()).Select((k, v) => new ManagedCustomSymbol(v, this, customStorage, customSeries));
+            _customManagedSymbols = customStorage.Symbols.Select((k, v) => new ManagedCustomSymbol(v, this, customStorage, customSeries));
 
             var symbolsBySecurity = _onlineManagedSymbols.GroupBy((k, v) => v.Security);
             var groupsBySecurity = symbolsBySecurity.TransformToList((k, v) => new ManageSymbolGrouping(v.GroupKey, v.TransformToList((k1, v1) => (ManagedSymbol)v1)));
@@ -208,9 +208,9 @@ namespace TickTrader.BotTerminal
     internal class CacheSeriesInfoViewModel : ObservableObject
     {
         private SymbolManagerViewModel _parent;
-        private FeedCache _cache;
+        private FeedCache.Handler _cache;
 
-        public CacheSeriesInfoViewModel(FeedCacheKey key, SymbolManagerViewModel parent, FeedCache cache, bool isCustom)
+        public CacheSeriesInfoViewModel(FeedCacheKey key, SymbolManagerViewModel parent, FeedCache.Handler cache, bool isCustom)
         {
             _parent = parent;
             _cache = cache;
@@ -223,11 +223,11 @@ namespace TickTrader.BotTerminal
         public string Symbol { get; }
         public string Cfg { get; }
         public double? Size { get; private set; }
-        public FeedCache Storage => _cache;
+        public FeedCache.Handler Storage => _cache;
 
         public async Task UpdateSize()
         {
-            var newSize = await Task.Factory.StartNew(() => _cache.GetCollectionSize(Key));
+            var newSize = await _cache.GetCollectionSize(Key);
             Size = Math.Round(newSize.Value / (1024 * 1024), 2);
             NotifyOfPropertyChange(nameof(Size));
         }
@@ -328,9 +328,9 @@ namespace TickTrader.BotTerminal
     internal class ManagedCustomSymbol : ManagedSymbol
     {
         private CustomSymbol _model;
-        private CustomFeedStorage _storage;
+        private CustomFeedStorage.Handler _storage;
 
-        public ManagedCustomSymbol(CustomSymbol symbolModel, SymbolManagerViewModel parent, CustomFeedStorage storage,
+        public ManagedCustomSymbol(CustomSymbol symbolModel, SymbolManagerViewModel parent, CustomFeedStorage.Handler storage,
             IVarSet<CacheSeriesInfoViewModel> storageCollection)
         {
             _model = symbolModel;

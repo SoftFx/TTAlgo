@@ -30,10 +30,12 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment algoEnv;
         private BotsWarden botsWarden;
         private SymbolManagerViewModel _smbManager;
-        private CustomFeedStorage _userSymbols = new CustomFeedStorage();
+        private CustomFeedStorage.Handler _userSymbols;
 
-        public ShellViewModel(ClientModel.Data commonClient)
+        public ShellViewModel(ClientModel.Data commonClient, CustomFeedStorage.Handler customFeedStorage)
         {
+            _userSymbols = customFeedStorage;
+
             DisplayName = EnvService.Instance.ApplicationName;
 
             //var botNameAggregator = new BotNameAggregator();
@@ -92,8 +94,6 @@ namespace TickTrader.BotTerminal
             //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
 
             LogStateLoop();
-
-            _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
         }
 
         private void OpenDefaultChart()
@@ -229,6 +229,7 @@ namespace TickTrader.BotTerminal
         public UiLock ConnectionLock { get; private set; }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
+        public BacktesterViewModel Backtester { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public WindowManager ToolWndManager => wndManager;
 
@@ -245,7 +246,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await _userSymbols.Stop();
             }
             catch (Exception) { }
 
@@ -333,6 +334,14 @@ namespace TickTrader.BotTerminal
                 _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
 
             wndManager.ShowDialog(_smbManager, this);
+        }
+
+        public void OpenBacktester()
+        {
+            if (Backtester == null)
+                Backtester = new BacktesterViewModel(algoEnv, _userSymbols, this);
+
+            wndManager.OpenMdiWindow(Backtester);
         }
 
         public void CloseChart(object chart)

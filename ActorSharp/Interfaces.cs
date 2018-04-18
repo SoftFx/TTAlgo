@@ -29,6 +29,12 @@ namespace ActorSharp
         void GetResult();
     }
 
+    public interface IAsyncReader<T>
+    {
+        IAwaitable<bool> ReadNext();
+        T Current { get; }
+    }
+
     public interface IContextFactory
     {
         SynchronizationContext CreateContext();

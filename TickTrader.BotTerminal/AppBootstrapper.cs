@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using ActorSharp;
+using Caliburn.Micro;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -197,10 +198,17 @@ namespace TickTrader.BotTerminal
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
+                var customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
+                await customStorage.SyncData();
+                await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
+
                 _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
+                _container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();
+
+                var shell = _container.GetInstance<ShellViewModel>();
 
                 DisplayRootViewFor<ShellViewModel>();
             }

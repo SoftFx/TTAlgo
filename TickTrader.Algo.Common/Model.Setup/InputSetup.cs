@@ -12,7 +12,6 @@ namespace TickTrader.Algo.Common.Model.Setup
         private ISymbolInfo _selectedSymbol;
         private string _defaultSymbolCode;
 
-
         public ISymbolInfo SelectedSymbol
         {
             get { return _selectedSymbol; }
@@ -42,7 +41,6 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             SelectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
         }
-
 
         protected virtual void LoadConfig(Input input)
         {

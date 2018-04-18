@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Text;
 
 namespace ActorSharp
@@ -7,16 +8,16 @@ namespace ActorSharp
     internal class LocalPage<T> : List<T>
     {
         public bool Last { get; set; }
-        public Exception Error { get; set; }
+        public ExceptionDispatchInfo Error { get; set; }
     }
 
     internal class CloseWriterRequest
     {
         public CloseWriterRequest(Exception ex)
         {
-            Error = ex;
+            Error = ExceptionDispatchInfo.Capture(ex);
         }
 
-        public Exception Error { get; }
+        public ExceptionDispatchInfo Error { get; }
     }
 }

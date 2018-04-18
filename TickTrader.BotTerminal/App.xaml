@@ -50,6 +50,7 @@
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
                 
                 <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterSymbolSetupView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedImportView.xaml" />

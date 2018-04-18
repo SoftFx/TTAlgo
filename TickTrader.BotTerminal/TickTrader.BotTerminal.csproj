@@ -71,7 +71,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>144CA0736B3DE500D38E5962DCF8B2D5AAC6B907</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>E8396A9005DA25F7DBBF71630A43306F76898D17</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
@@ -311,7 +311,7 @@
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
-    <Compile Include="Model\SymbolModel.cs" />
+    <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
@@ -364,7 +364,6 @@
     <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\RateSplitModel.cs" />
-    <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -387,6 +386,7 @@
     <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.Aux\ActionViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -836,6 +836,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Aux\ActionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterSymbolSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

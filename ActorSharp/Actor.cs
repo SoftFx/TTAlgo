@@ -33,6 +33,21 @@ namespace ActorSharp
             return new LocalRef<T>(instance, context);
         }
 
+        public static Task Spawn(Func<Task> asyncFunc)
+        {
+            return Spawn(null, asyncFunc);
+        }
+
+        public static Task Spawn(IContextFactory factory, Func<Task> asyncFunc)
+        {
+            var context = factory?.CreateContext() ?? new PoolContext(10, null);
+
+            var actor = new SingleFunctionActor(asyncFunc);
+            context.Post(s => ((SingleFunctionActor)s).Start(), actor);
+
+            return actor.Task;
+        }
+
         internal SynchronizationContext Context { get; set; }
         internal virtual bool PostInit => true;
 

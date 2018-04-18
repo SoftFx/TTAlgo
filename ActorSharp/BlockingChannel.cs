@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 
@@ -18,7 +19,7 @@ namespace ActorSharp
         private int maxPageSize;
         private bool _isClosed;
         private bool _isCloseCompleted;
-        private Exception _writerError;
+        private ExceptionDispatchInfo _writerError;
 
         internal BlockingChannel(Channel<T> channel)
         {
@@ -389,7 +390,7 @@ namespace ActorSharp
                 {
                     _isClosed = true;
                     _queuePage.Last = true;
-                    _queuePage.Error = ex;
+                    _queuePage.Error = ExceptionDispatchInfo.Capture(ex);
                     _confirmationCounter = 1;
                     TrySendPage();
                 }

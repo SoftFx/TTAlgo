@@ -70,6 +70,7 @@
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
+    <Compile Include="Emulator\PluginEmulator.cs" />
     <Compile Include="Entities.Requests\CancelOrderRequest.cs" />
     <Compile Include="Entities.Requests\CloseOrderRequest.cs" />
     <Compile Include="Entities.Requests\OpenOrderRequest.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="Lib\CrossDomainTask.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
+    <Compile Include="Lib\LinqExtentions.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarVector.cs" />
     <Compile Include="Metadata\ReductionDescriptor.cs" />

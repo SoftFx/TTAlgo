@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text;
 
 namespace ActorSharp
@@ -31,7 +32,8 @@ namespace ActorSharp
             {
                 _isClosed = true;
                 _queuePage.Last = true;
-                _queuePage.Error = error;
+                if (error != null)
+                    _queuePage.Error = ExceptionDispatchInfo.Capture(error);
                 _confirmationCounter = 1;
                 TrySendPage();
             }
