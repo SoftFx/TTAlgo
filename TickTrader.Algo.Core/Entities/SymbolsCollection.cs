@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core
             throw new NotImplementedException();
         }
 
-        internal Symbol GetOrDefault(string symbol)
+        internal SymbolAccessor GetOrDefault(string symbol)
         {
             return fixture.GetOrDefault(symbol);
         }
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Core
 
             public SymbolList List { get { return this; } }
 
-            public Symbol GetOrDefault(string symbol)
+            public SymbolAccessor GetOrDefault(string symbol)
             {
                 SymbolAccessor entity;
                 symbols.TryGetValue(symbol, out entity);

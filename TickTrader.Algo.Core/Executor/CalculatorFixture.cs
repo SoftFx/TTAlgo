@@ -1,13 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BL = TickTrader.BusinessLogic;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class CalculatorFixture
+    public interface ICalculatorApi
+    {
+        bool HasEnoughMarginToOpenOrder(BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo);
+        bool HasEnoughMarginToModifyOrder(BL.IOrderModel oldOrder, BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo);
+    }
+
+
+    internal class CalculatorFixture : ICalculatorApi
     {
         private BL.MarketState _state;
         private IFixtureContext _context;
@@ -93,5 +97,65 @@ namespace TickTrader.Algo.Core
                 accEntity.Margin = (double)Margin;
             }
         }
+
+        #region ICalculatorApi implementation
+
+        public bool HasEnoughMarginToOpenOrder(BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo)
+        {
+            try
+            {
+                if (marginCalc != null)
+                {
+                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
+                    calc.UpdateMargin(newOrder, acc);
+                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin);
+                }
+                if (cashCalc != null)
+                {
+                    var margin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbolInfo);
+                    return cashCalc.HasSufficientMarginToOpenOrder(newOrder, margin);
+                }
+            }
+            catch (BL.NotEnoughMoneyException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
+            }
+            return false;
+        }
+
+        public bool HasEnoughMarginToModifyOrder(BL.IOrderModel oldOrder, BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo)
+        {
+            try
+            {
+                if (marginCalc != null)
+                {
+                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
+                    calc.UpdateMargin(oldOrder, acc);
+                    calc.UpdateMargin(newOrder, acc);
+                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin - oldOrder.Margin);
+                }
+                if (cashCalc != null)
+                {
+                    var oldMargin = BL.CashAccountCalculator.CalculateMargin(oldOrder, symbolInfo);
+                    var newMargin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbolInfo);
+                    return cashCalc.HasSufficientMarginToOpenOrder(newOrder, newMargin - oldMargin);
+                }
+            }
+            catch (BL.NotEnoughMoneyException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _context.Builder.Logger.OnError($"Failed to calculate margin for order #{oldOrder.OrderId}", ex);
+            }
+            return false;
+        }
+
+        #endregion IAccountCalculator implementation
     }
 }

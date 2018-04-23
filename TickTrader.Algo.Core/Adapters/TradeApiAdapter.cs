@@ -9,20 +9,22 @@ namespace TickTrader.Algo.Core
     internal class TradeApiAdapter : TradeCommands
     {
         private ITradeApi api;
-        private SymbolProvider symbols;
+        private SymbolsCollection symbols;
         private AccountAccessor account;
         private PluginLoggerAdapter logger;
         private string _isolationTag;
         private ITradePermissions _permissions;
+        private ICalculatorApi _calculator;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
+        public TradeApiAdapter(PluginBuilder builder, PluginLoggerAdapter logger)
         {
-            this.api = api;
-            this.symbols = symbols;
-            this.account = account;
+            this.api = builder.TradeApi;
+            this.symbols = builder.Symbols;
+            this.account = builder.Account;
             this.logger = logger;
-            this._isolationTag = isolationTag;
-            this._permissions = tradePermissions;
+            _isolationTag = builder.Id;
+            _permissions = builder.Permissions;
+            _calculator = builder.Calculator;
         }
 
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
@@ -96,8 +98,6 @@ namespace TickTrader.Algo.Core
                 logRequest.StopLoss = sl;
                 logRequest.TakeProfit = tp;
 
-                LogOrderOpening(logRequest);
-
                 var request = new OpenOrderRequest
                 {
                     Symbol = symbol,
@@ -114,6 +114,10 @@ namespace TickTrader.Algo.Core
                     Tag = isolationTag,
                     Expiration = expiration
                 };
+
+                ValidateMargin(request, smbMetadata);
+
+                LogOrderOpening(logRequest);
 
                 var orderResp = await api.OpenOrder(isAysnc, request);
 
@@ -305,7 +309,6 @@ namespace TickTrader.Algo.Core
                 logRequest.StopPrice = stopPrice;
                 logRequest.StopLoss = sl;
                 logRequest.TrakeProfit = tp;
-                LogOrderModifying(logRequest);
 
                 var request = new ReplaceOrderRequest
                 {
@@ -324,6 +327,10 @@ namespace TickTrader.Algo.Core
                     MaxVisibleVolume = orderMaxVisibleVolume,
                     Options = options
                 };
+
+                ValidateMargin(request, smbMetadata);
+
+                LogOrderModifying(logRequest);
 
                 var result = await api.ModifyOrder(isAysnc, request);
 
@@ -391,10 +398,10 @@ namespace TickTrader.Algo.Core
 
         #region Validation
 
-        private Symbol GetSymbolOrThrow(string symbolName)
+        private SymbolAccessor GetSymbolOrThrow(string symbolName)
         {
-            var smbMetadata = symbols.List[symbolName];
-            if (smbMetadata.IsNull)
+            var smbMetadata = symbols.GetOrDefault(symbolName);
+            if (smbMetadata == null)
                 throw new OrderValidationError(OrderCmdResultCodes.SymbolNotFound);
             return smbMetadata;
         }
@@ -510,6 +517,56 @@ namespace TickTrader.Algo.Core
 
             if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) && (orderType != OrderType.StopLimit))
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+        }
+
+        private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
+        {
+            var orderEntity = new OrderEntity("-1")
+            {
+                Symbol = request.Symbol,
+                Type = request.Type,
+                Side = request.Side,
+                Price = request.Price,
+                StopPrice = request.StopPrice,
+                RequestedVolume = request.Volume,
+                RemainingVolume = request.Volume,
+                MaxVisibleVolume = request.MaxVisibleVolume,
+                StopLoss = request.StopLoss,
+                TakeProfit = request.TakeProfit,
+                Expiration = request.Expiration,
+                Options = request.Options,
+            };
+
+            var newOrder = new OrderAccessor(orderEntity, symbol);
+
+            if (!_calculator.HasEnoughMarginToOpenOrder(newOrder, symbol))
+                throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private void ValidateMargin(ReplaceOrderRequest request, SymbolAccessor symbol)
+        {
+            var oldOrder = account.Orders.GetOrderOrNull(request.OrderId);
+
+            var orderEntity = new OrderEntity(request.OrderId)
+            {
+                Symbol = request.Symbol,
+                Type = request.Type,
+                Side = request.Side,
+                Price = request.Price ?? oldOrder.Price,
+                StopPrice = request.StopPrice ?? oldOrder.StopPrice,
+                RequestedVolume = request.NewVolume ?? request.CurrentVolume,
+                RemainingVolume = request.NewVolume ?? request.CurrentVolume,
+                MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
+                StopLoss = request.StopLoss ?? oldOrder.StopLoss,
+                TakeProfit = request.TrakeProfit ?? oldOrder.TakeProfit,
+                Expiration = request.Expiration ?? oldOrder.Expiration,
+                Options = request.Options ?? oldOrder.Entity.Options,
+            };
+
+            var newOrder = new OrderAccessor(orderEntity, symbol);
+
+            if (!_calculator.HasEnoughMarginToModifyOrder(oldOrder, newOrder, symbol))
+                throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
         #endregion
