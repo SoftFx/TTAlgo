@@ -559,28 +559,12 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
         }
 
-        private OrderType ConvertCashOrderType(OrderType type)
-        {
-            //convert order types for cash accounts
-            if (account.Type == AccountTypes.Cash)
-            {
-                switch (type)
-                {
-                    case OrderType.Market: // market turn into limit IoC, but there is no difference for margin check
-                        return OrderType.Limit;
-                    case OrderType.Stop:
-                        return OrderType.StopLimit;
-                }
-            }
-            return type;
-        }
-
         private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
         {
             var orderEntity = new OrderEntity("-1")
             {
                 Symbol = request.Symbol,
-                Type = ConvertCashOrderType(request.Type),
+                Type = request.Type,
                 Side = request.Side,
                 Price = request.Price,
                 StopPrice = request.StopPrice,
@@ -592,6 +576,8 @@ namespace TickTrader.Algo.Core
                 Expiration = request.Expiration,
                 Options = request.Options,
             };
+
+            FixCashOrder(orderEntity, symbol);
 
             var newOrder = new OrderAccessor(orderEntity, symbol);
 
@@ -606,7 +592,7 @@ namespace TickTrader.Algo.Core
             var orderEntity = new OrderEntity(request.OrderId)
             {
                 Symbol = request.Symbol,
-                Type = ConvertCashOrderType(request.Type),
+                Type = request.Type,
                 Side = request.Side,
                 Price = request.Price ?? oldOrder.Price,
                 StopPrice = request.StopPrice ?? oldOrder.StopPrice,
@@ -619,10 +605,31 @@ namespace TickTrader.Algo.Core
                 Options = request.Options ?? oldOrder.Entity.Options,
             };
 
+            FixCashOrder(orderEntity, symbol);
+
             var newOrder = new OrderAccessor(orderEntity, symbol);
 
             if (!_calculator.HasEnoughMarginToModifyOrder(oldOrder, newOrder, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private void FixCashOrder(OrderEntity order, SymbolAccessor symbol)
+        {
+            //convert order types for cash accounts
+            if (account.Type == AccountTypes.Cash)
+            {
+                switch (order.Type)
+                {
+                    case OrderType.Market:
+                        order.Type = OrderType.Limit;
+                        order.Options |= OrderExecOptions.ImmediateOrCancel;
+                        break;
+                    case OrderType.Stop:
+                        order.Type = OrderType.StopLimit;
+                        order.Price = order.StopPrice + symbol.Point*symbol.DefaultSlippage*(order.Side == OrderSide.Buy ? -1 : 1);
+                        break;
+                }
+            }
         }
 
         #endregion

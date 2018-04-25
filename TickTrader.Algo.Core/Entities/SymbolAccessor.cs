@@ -64,6 +64,8 @@ namespace TickTrader.Algo.Core
         public int TripleSwapDay => entity.TripleSwapDay;
         public double HiddenLimitOrderMarginReduction => entity.HiddenLimitOrderMarginReduction ?? double.NaN;
 
+        public double DefaultSlippage => entity.DefaultSlippage ?? 0;
+
         #region BO.ISymbolInfo
 
         string BO.ISymbolInfo.Symbol => Name;
