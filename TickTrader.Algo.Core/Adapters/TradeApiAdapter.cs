@@ -699,25 +699,25 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit);
         }
 
         private void AppendIocOrderParams(StringBuilder logEntry, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, OpenOrderRequest request)
         {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.Volume, request.StopPrice ?? request.Price ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.Volume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, ReplaceOrderRequest request)
         {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.StopPrice ?? request.Price ?? double.NaN, request.StopLoss, request.TrakeProfit);
+            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TrakeProfit);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)
+        private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp)
         {
             logEntry.Append(type)
                 .Append(suffix).Append(side)
@@ -737,8 +737,16 @@ namespace TickTrader.Algo.Core
                 logEntry.Append(")");
             }
 
-            if (!double.IsNaN(price) && price != 0)
+            if (!double.IsNaN(price))
                 logEntry.Append(" at price ").Append(price);
+
+            if (!double.IsNaN(stopPrice))
+            {
+                if (!double.IsNaN(price))
+                    logEntry.Append(", stop price ").Append(stopPrice);
+                else
+                    logEntry.Append(" at stop price ").Append(stopPrice);
+            }
         }
 
         #endregion
