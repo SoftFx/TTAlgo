@@ -559,12 +559,28 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
         }
 
+        private OrderType ConvertCashOrderType(OrderType type)
+        {
+            //convert order types for cash accounts
+            if (account.Type == AccountTypes.Cash)
+            {
+                switch (type)
+                {
+                    case OrderType.Market: // market turn into limit IoC, but there is no difference for margin check
+                        return OrderType.Limit;
+                    case OrderType.Stop:
+                        return OrderType.StopLimit;
+                }
+            }
+            return type;
+        }
+
         private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
         {
             var orderEntity = new OrderEntity("-1")
             {
                 Symbol = request.Symbol,
-                Type = request.Type,
+                Type = ConvertCashOrderType(request.Type),
                 Side = request.Side,
                 Price = request.Price,
                 StopPrice = request.StopPrice,
@@ -590,7 +606,7 @@ namespace TickTrader.Algo.Core
             var orderEntity = new OrderEntity(request.OrderId)
             {
                 Symbol = request.Symbol,
-                Type = request.Type,
+                Type = ConvertCashOrderType(request.Type),
                 Side = request.Side,
                 Price = request.Price ?? oldOrder.Price,
                 StopPrice = request.StopPrice ?? oldOrder.StopPrice,
