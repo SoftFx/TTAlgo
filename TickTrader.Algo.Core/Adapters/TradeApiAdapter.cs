@@ -577,7 +577,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options,
             };
 
-            FixCashOrder(orderEntity, symbol);
+            ApplyHiddenServerLogic(orderEntity, symbol);
 
             var newOrder = new OrderAccessor(orderEntity, symbol);
 
@@ -605,7 +605,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options ?? oldOrder.Entity.Options,
             };
 
-            FixCashOrder(orderEntity, symbol);
+            ApplyHiddenServerLogic(orderEntity, symbol);
 
             var newOrder = new OrderAccessor(orderEntity, symbol);
 
@@ -613,8 +613,18 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
-        private void FixCashOrder(OrderEntity order, SymbolAccessor symbol)
+        private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
         {
+            //add prices for market orders
+            if (order.Type == OrderType.Market && order.Price == null)
+            {
+                order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
+                if (account.Type == AccountTypes.Cash)
+                {
+                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
+                }
+            }
+
             //convert order types for cash accounts
             if (account.Type == AccountTypes.Cash)
             {
@@ -626,7 +636,7 @@ namespace TickTrader.Algo.Core
                         break;
                     case OrderType.Stop:
                         order.Type = OrderType.StopLimit;
-                        order.Price = order.StopPrice + symbol.Point*symbol.DefaultSlippage*(order.Side == OrderSide.Buy ? -1 : 1);
+                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
                         break;
                 }
             }
