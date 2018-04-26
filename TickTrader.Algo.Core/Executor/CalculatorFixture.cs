@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Api;
 using BL = TickTrader.BusinessLogic;
 using BO = TickTrader.BusinessObjects;
 
@@ -6,8 +7,10 @@ namespace TickTrader.Algo.Core
 {
     public interface ICalculatorApi
     {
-        bool HasEnoughMarginToOpenOrder(BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo);
-        bool HasEnoughMarginToModifyOrder(BL.IOrderModel oldOrder, BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo);
+        bool HasEnoughMarginToOpenOrder(OrderEntity orderEntity, SymbolAccessor symbol);
+        bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, OrderEntity orderEntity, SymbolAccessor symbol);
+        double? GetSymbolMargin(SymbolAccessor symbol, OrderSide side);
+        double CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol);
     }
 
 
@@ -98,28 +101,27 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        #region ICalculatorApi implementation
+        #region CalculatorApi implementation
 
-        public bool HasEnoughMarginToOpenOrder(BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo)
+        public bool HasEnoughMarginToOpenOrder(OrderEntity orderEntity, SymbolAccessor symbol)
         {
+            var newOrder = GetOrderAccessor(orderEntity, symbol);
+
             try
             {
                 if (marginCalc != null)
                 {
                     var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
                     calc.UpdateMargin(newOrder, acc);
-                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin);
+                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, ((BL.IOrderModel)newOrder).Margin);
                 }
                 if (cashCalc != null)
                 {
-                    var margin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbolInfo);
+                    var margin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
                     return cashCalc.HasSufficientMarginToOpenOrder(newOrder, margin);
                 }
             }
-            catch (BL.NotEnoughMoneyException)
-            {
-                return false;
-            }
+            catch (BL.NotEnoughMoneyException) { }
             catch (Exception ex)
             {
                 _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
@@ -127,8 +129,10 @@ namespace TickTrader.Algo.Core
             return false;
         }
 
-        public bool HasEnoughMarginToModifyOrder(BL.IOrderModel oldOrder, BL.IOrderModel newOrder, BO.ISymbolInfo symbolInfo)
+        public bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, OrderEntity orderEntity, SymbolAccessor symbol)
         {
+            var newOrder = GetOrderAccessor(orderEntity, symbol);
+
             try
             {
                 if (marginCalc != null)
@@ -136,19 +140,16 @@ namespace TickTrader.Algo.Core
                     var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
                     calc.UpdateMargin(oldOrder, acc);
                     calc.UpdateMargin(newOrder, acc);
-                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin - oldOrder.Margin);
+                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, ((BL.IOrderModel)newOrder).Margin - ((BL.IOrderModel)oldOrder).Margin);
                 }
                 if (cashCalc != null)
                 {
-                    var oldMargin = BL.CashAccountCalculator.CalculateMargin(oldOrder, symbolInfo);
-                    var newMargin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbolInfo);
+                    var oldMargin = BL.CashAccountCalculator.CalculateMargin(oldOrder, symbol);
+                    var newMargin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
                     return cashCalc.HasSufficientMarginToOpenOrder(newOrder, newMargin - oldMargin);
                 }
             }
-            catch (BL.NotEnoughMoneyException)
-            {
-                return false;
-            }
+            catch (BL.NotEnoughMoneyException) { }
             catch (Exception ex)
             {
                 _context.Builder.Logger.OnError($"Failed to calculate margin for order #{oldOrder.OrderId}", ex);
@@ -156,6 +157,80 @@ namespace TickTrader.Algo.Core
             return false;
         }
 
-        #endregion IAccountCalculator implementation
+        public double? GetSymbolMargin(SymbolAccessor symbol, OrderSide side)
+        {
+            if (marginCalc != null)
+            {
+                return 0;
+            }
+            return null;
+        }
+
+        public double CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol)
+        {
+            var newOrder = GetOrderAccessor(orderEntity, symbol);
+
+            try
+            {
+                if (marginCalc != null)
+                {
+                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
+                    calc.UpdateMargin(newOrder, acc);
+                    return newOrder.Margin;
+                }
+                if (cashCalc != null)
+                {
+                    return (double)BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
+                }
+            }
+            catch (BL.NotEnoughMoneyException)
+            {
+                return double.NaN;
+            }
+            catch (Exception ex)
+            {
+                _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
+            }
+            return double.NaN;
+        }
+
+
+        private OrderAccessor GetOrderAccessor(OrderEntity orderEntity, SymbolAccessor symbol)
+        {
+            ApplyHiddenServerLogic(orderEntity, symbol);
+
+            return new OrderAccessor(orderEntity, symbol);
+        }
+
+        private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
+        {
+            //add prices for market orders
+            if (order.Type == OrderType.Market && order.Price == null)
+            {
+                order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
+                if (acc.Type == AccountTypes.Cash)
+                {
+                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
+                }
+            }
+
+            //convert order types for cash accounts
+            if (acc.Type == AccountTypes.Cash)
+            {
+                switch (order.Type)
+                {
+                    case OrderType.Market:
+                        order.Type = OrderType.Limit;
+                        order.Options |= OrderExecOptions.ImmediateOrCancel;
+                        break;
+                    case OrderType.Stop:
+                        order.Type = OrderType.StopLimit;
+                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
+                        break;
+                }
+            }
+        }
+
+        #endregion CalculatorApi implementation
     }
 }

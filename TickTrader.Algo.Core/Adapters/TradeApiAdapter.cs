@@ -577,11 +577,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options,
             };
 
-            ApplyHiddenServerLogic(orderEntity, symbol);
-
-            var newOrder = new OrderAccessor(orderEntity, symbol);
-
-            if (!_calculator.HasEnoughMarginToOpenOrder(newOrder, symbol))
+            if (!_calculator.HasEnoughMarginToOpenOrder(orderEntity, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -605,11 +601,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options ?? oldOrder.Entity.Options,
             };
 
-            ApplyHiddenServerLogic(orderEntity, symbol);
-
-            var newOrder = new OrderAccessor(orderEntity, symbol);
-
-            if (!_calculator.HasEnoughMarginToModifyOrder(oldOrder, newOrder, symbol))
+            if (!_calculator.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 

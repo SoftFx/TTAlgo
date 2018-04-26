@@ -32,6 +32,14 @@ namespace TickTrader.Algo.Api
         OrderList OrdersBySymbol(string symbol);
         OrderList OrdersBy(Predicate<Order> customCondition);
 
+        /// <summary>
+        /// Margin in balance currency for all orders/positions by specified symbol and side.
+        /// Isolation is ignored. Null for cash accounts
+        /// </summary>
+        double? GetSymbolMargin(string symbol, OrderSide side);
+        double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None);
+        bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None);
+
         event Action BalanceUpdated;
         /// <summary>
         /// This event signals that all data is updated by fresh snapshots coming from server.

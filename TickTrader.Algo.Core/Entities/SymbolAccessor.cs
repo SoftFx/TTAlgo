@@ -48,6 +48,7 @@ namespace TickTrader.Algo.Core
         public CommissionChargeMethod CommissionChargeMethod { get { return entity.CommissionChargeMethod; } }
         public CommissionChargeType CommissionChargeType { get { return entity.CommissionChargeType; } }
         public CommissionType CommissionType { get { return entity.CommissionType; } }
+        public double HedgingFactor => entity.MarginHedged;
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
         public double MarginFactorFractional => entity.MarginFactorFractional;
@@ -121,6 +122,7 @@ namespace TickTrader.Algo.Core
         public CommissionChargeMethod CommissionChargeMethod { get { return CommissionChargeMethod.OneWay; } }
         public CommissionChargeType CommissionChargeType { get { return CommissionChargeType.PerTrade; } }
         public CommissionType CommissionType { get { return CommissionType.Percent; } }
+        public double HedgingFactor => double.NaN;
 
         public void Subscribe(int depth = 1)
         {
