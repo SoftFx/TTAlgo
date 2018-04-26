@@ -368,7 +368,12 @@
             <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
                      Text="{Binding Setup.InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="Plugin Version:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="0" Foreground="{DynamicResource Shell_PrimaryForeground}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding PluginType}"/>
+                    <TextBlock Text=" Version:"/>
+                </StackPanel>
+            </Label>
             <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
                      Text="{Binding Setup.PluginRef.DisplayName, Mode=OneWay}" IsEnabled="False"/>            
             <Label Grid.Row="4" Grid.Column="0" Content="AllowTrade" />
