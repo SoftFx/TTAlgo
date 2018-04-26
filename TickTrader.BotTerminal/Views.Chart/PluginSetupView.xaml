@@ -356,20 +356,25 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="90"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="90"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
                      Text="{Binding Setup.InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
-            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Setup.AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
-            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Setup.Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="0" Content="Plugin Version:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
+                     Text="{Binding Setup.PluginRef.DisplayName, Mode=OneWay}" IsEnabled="False"/>            
+            <Label Grid.Row="4" Grid.Column="0" Content="AllowTrade" />
+            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Setup.AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="4" Grid.Column="2" Content="Isolate bot" />
+            <CheckBox Grid.Row="4" Grid.Column="3" IsChecked="{Binding Setup.Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
@@ -555,8 +560,24 @@
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="2" VerticalAlignment="Top" />
+
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DataType}" Value="TickTrader.Algo.Api.File">
+                                            <Setter Property="ToolTip">
+                                                <Setter.Value>
+                                                    <TextBlock Text="{Binding FilePath}"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+
                         </ItemsControl>
                     </GroupBox>
                     <GroupBox Name="InputsGroup" Header="Inputs" Margin="4">
