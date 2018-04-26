@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
     {
         bool HasEnoughMarginToOpenOrder(OrderEntity orderEntity, SymbolAccessor symbol);
         bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, OrderEntity orderEntity, SymbolAccessor symbol);
-        double? GetSymbolMargin(SymbolAccessor symbol, OrderSide side);
+        double? GetSymbolMargin(string symbol, OrderSide side);
         double CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol);
     }
 
@@ -157,11 +157,15 @@ namespace TickTrader.Algo.Core
             return false;
         }
 
-        public double? GetSymbolMargin(SymbolAccessor symbol, OrderSide side)
+        public double? GetSymbolMargin(string symbol, OrderSide side)
         {
             if (marginCalc != null)
             {
-                return 0;
+                var netting = marginCalc.GetNetting(symbol);
+                if (netting == null)
+                    return 0;
+
+                return (double)(side == OrderSide.Buy ? netting.Buy.Margin : netting.Sell.Margin);
             }
             return null;
         }

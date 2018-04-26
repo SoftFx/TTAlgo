@@ -124,10 +124,9 @@ namespace TickTrader.Algo.Core
 
         public double? GetSymbolMargin(string symbol, OrderSide side)
         {
-            var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
-            if (symbolAccessor != null && builder.Calculator != null)
+            if (builder.Calculator != null)
             {
-                builder.Calculator.GetSymbolMargin(symbolAccessor, side);
+                builder.Calculator.GetSymbolMargin(symbol, side);
             }
             return null;
         }
