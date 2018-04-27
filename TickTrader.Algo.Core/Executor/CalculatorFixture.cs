@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
         bool HasEnoughMarginToOpenOrder(OrderEntity orderEntity, SymbolAccessor symbol);
         bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, OrderEntity orderEntity, SymbolAccessor symbol);
         double? GetSymbolMargin(string symbol, OrderSide side);
-        double CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol);
+        double? CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol);
     }
 
 
@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
-        public double CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol)
+        public double? CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol)
         {
             var newOrder = GetOrderAccessor(orderEntity, symbol);
 
@@ -187,15 +187,11 @@ namespace TickTrader.Algo.Core
                     return (double)BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
                 }
             }
-            catch (BL.NotEnoughMoneyException)
-            {
-                return double.NaN;
-            }
             catch (Exception ex)
             {
                 _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
             }
-            return double.NaN;
+            return null;
         }
 
 
