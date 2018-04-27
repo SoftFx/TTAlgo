@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.BA.Entities
         public AccountKey Account { get; set; }
         public TradeBotConfig Config { get; set; }
         //public PluginKey AlgoKey { get; }
-        public AlgoPluginDescriptor Descriptor { get; set; }
+        public PluginMetadata Descriptor { get; set; }
         public string BotName { get; set; }
         public BotStates State { get; set; }
     }

@@ -58,15 +58,15 @@ namespace TickTrader.BotTerminal
         {
             var seriesData = model.GetOutputSeries(outputSetup.Id);
 
-            if (outputSetup is ColoredLineOutputSetupModel)
-                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupModel)outputSetup);
+            if (outputSetup is ColoredLineOutputSetupViewModel)
+                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupViewModel)outputSetup);
             else if (outputSetup is MarkerSeriesOutputSetupViewModel)
                 return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupViewModel)outputSetup);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetupModel outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetupViewModel outputSetup)
         {
             var plotType = outputSetup.Descriptor.PlotType;
 

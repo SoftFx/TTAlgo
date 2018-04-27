@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public MarkerSeriesOutputSetupModel(OutputDescriptor descriptor)
+        public MarkerSeriesOutputSetupModel(OutputMetadata descriptor)
             : base(descriptor)
         {
         }

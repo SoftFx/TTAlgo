@@ -29,14 +29,14 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public EnumParamSetupModel(ParameterDescriptor descriptor)
+        public EnumParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
-            EnumValues = descriptor.EnumValues;
+            EnumValues = descriptor.Descriptor.EnumValues;
             if (descriptor.DefaultValue != null && descriptor.DefaultValue is string)
                 DefaultValue = (string)descriptor.DefaultValue;
             if (DefaultValue == null)
-                DefaultValue = descriptor.EnumValues.FirstOrDefault();
+                DefaultValue = descriptor.Descriptor.EnumValues.FirstOrDefault();
         }
 
 

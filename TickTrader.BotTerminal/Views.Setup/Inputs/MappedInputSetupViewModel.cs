@@ -6,13 +6,13 @@ namespace TickTrader.BotTerminal
 {
     public abstract class MappedInputSetupViewModel : InputSetupViewModel
     {
-        private string _defaultMapping;
-        private SymbolMapping _selectedMapping;
+        private MappingKey _defaultMapping;
+        private MappingInfo _selectedMapping;
 
 
-        public IReadOnlyList<SymbolMapping> AvailableMappings { get; protected set; }
+        public IReadOnlyList<MappingInfo> AvailableMappings { get; protected set; }
 
-        public SymbolMapping SelectedMapping
+        public MappingInfo SelectedMapping
         {
             get { return _selectedMapping; }
             set
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public MappedInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, string defaultMapping)
+        public MappedInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, MappingKey defaultMapping)
             : base(metadata, accountMetadata, defaultSymbolCode)
         {
             _defaultMapping = defaultMapping;
@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected abstract SymbolMapping GetMapping(string mappingKey);
+        protected abstract MappingInfo GetMapping(MappingKey mappingKey);
 
 
         protected override void LoadConfig(Input input)
@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
             var mappedInput = input as MappedInput;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.Name;
+                mappedInput.SelectedMapping = SelectedMapping.Key;
             }
 
             base.SaveConfig(input);

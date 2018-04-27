@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         public PluginCatalogKey Key { get; private set; }
         public AlgoPluginRef Ref { get; private set; }
         public string FilePath { get; private set; }
-        public AlgoPluginDescriptor Descriptor { get { return Ref.Descriptor; } }
+        public PluginMetadata Descriptor { get { return Ref.Metadata; } }
         public string DisplayName { get { return Descriptor.DisplayName; } }
         public string Category { get { return Descriptor.Category; } }
 

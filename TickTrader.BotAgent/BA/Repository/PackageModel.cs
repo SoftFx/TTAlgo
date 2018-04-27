@@ -30,14 +30,14 @@ namespace TickTrader.BotAgent.BA.Repository
         public IEnumerable<PluginInfo> GetPlugins()
         {
             return Container?.Plugins
-                .Select(p => new PluginInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
+                .Select(p => new PluginInfo(new PluginKey(Name, p.Metadata.Id), p.Metadata))
                 ?? Enumerable.Empty<PluginInfo>();
         }
 
         public IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type)
         {
             return Container?.Plugins
-                .Where(p => p.Descriptor.AlgoLogicType == type)
+                .Where(p => p.Metadata.AlgoLogicType == type)
                 .Select(p => new PluginInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
                 ?? Enumerable.Empty<PluginInfo>();
         }

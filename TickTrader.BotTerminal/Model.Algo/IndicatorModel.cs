@@ -55,10 +55,10 @@ namespace TickTrader.BotTerminal
 
             foreach (var outputSetup in Setup.Outputs)
             {
-                if (outputSetup is ColoredLineOutputSetupModel)
+                if (outputSetup is ColoredLineOutputSetupViewModel)
                 {
                     var buffer = executor.GetOutput<double>(outputSetup.Id);
-                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupModel)outputSetup);
+                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupViewModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
                 else if (outputSetup is MarkerSeriesOutputSetupViewModel)

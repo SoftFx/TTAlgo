@@ -5,7 +5,7 @@ using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
-    public class ColoredLineOutputSetupModel : OutputSetupViewModel
+    public class ColoredLineOutputSetupViewModel : OutputSetupViewModel
     {
         private static LineStyles[] _availableLineStyles = (LineStyles[])Enum.GetValues(typeof(LineStyles));
 
@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ColoredLineOutputSetupModel(OutputMetadataInfo metadata)
+        public ColoredLineOutputSetupViewModel(OutputMetadataInfo metadata)
             : base(metadata)
         {
         }

@@ -329,7 +329,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             _ref = Package.GetPluginRef(Descriptor);
-            if (_ref == null || _ref.Descriptor.AlgoLogicType != AlgoTypes.Robot)
+            if (_ref == null || _ref.Metadata.AlgoLogicType != AlgoTypes.Robot)
             {
                 ChangeState(BotStates.Broken, $"Trade bot '{Descriptor}' is missing in package '{PackageName}'!");
                 return;

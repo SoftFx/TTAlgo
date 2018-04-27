@@ -13,13 +13,13 @@ namespace TickTrader.BotTerminal
         public override bool AllowChangeMapping => false;
 
 
-        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context)
-            : this(plugin, metadata, context, PluginSetupMode.New)
+        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context, AccountMetadataInfo account)
+            : this(plugin, metadata, context, account, PluginSetupMode.New)
         {
         }
 
-        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context, PluginSetupMode mode)
-            : base(plugin, metadata, context, mode)
+        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context, AccountMetadataInfo account, PluginSetupMode mode)
+            : base(plugin, metadata, context, account, mode)
         {
             Init();
         }

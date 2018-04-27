@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
-        private AlgoPluginDescriptor descriptor;
+        private PluginMetadata descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
         private string workingFolder;
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core
 
         public PluginExecutor(string pluginId)
         {
-            this.descriptor = AlgoPluginDescriptor.Get(pluginId);
+            this.descriptor = AlgoAssemblyInspector.GetPlugin(pluginId);
             this.accFixture = new TradingFixture(this);
             this.statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);

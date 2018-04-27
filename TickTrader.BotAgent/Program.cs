@@ -337,68 +337,68 @@ namespace TickTrader.BotAgent
         //    server.Close();
         //}
 
-        private static string GetDisplayName(AccountInfo acc)
-        {
-            return string.Format("account {0} : {1}", acc.Server, acc.Login);
-        }
+        //private static string GetDisplayName(AccountInfo acc)
+        //{
+        //    return string.Format("account {0} : {1}", acc.Server, acc.Login);
+        //}
 
-        private static PluginConfig SetupBot(AlgoPluginDescriptor descriptor)
-        {
-            var config = new Algo.Common.Model.Config.TradeBotConfig();
+        //private static PluginConfig SetupBot(PluginMetadata descriptor)
+        //{
+        //    var config = new Algo.Common.Model.Config.TradeBotConfig();
 
-            //config.PriceType = BarPriceType.Bid;
-            config.MainSymbol = CommandUi.InputString("symbol");
+        //    //config.PriceType = BarPriceType.Bid;
+        //    config.MainSymbol = CommandUi.InputString("symbol");
 
-            foreach (var prop in descriptor.AllProperties)
-                config.Properties.Add(InputBotParam(prop));
+        //    foreach (var prop in descriptor.AllProperties)
+        //        config.Properties.Add(InputBotParam(prop));
 
-            Console.WriteLine();
-            Console.WriteLine("Configuration:");
-            Console.WriteLine("\tMain Symbol - {0}", config.MainSymbol);
+        //    Console.WriteLine();
+        //    Console.WriteLine("Configuration:");
+        //    Console.WriteLine("\tMain Symbol - {0}", config.MainSymbol);
 
-            foreach (var p in config.Properties)
-                PrintProperty(p);
+        //    foreach (var p in config.Properties)
+        //        PrintProperty(p);
 
-            return config;
-        }
+        //    return config;
+        //}
 
-        private static Property InputBotParam(AlgoPropertyDescriptor descriptor)
-        {
-            if (descriptor is ParameterDescriptor)
-            {
-                var paramDescriptor = (ParameterDescriptor)descriptor;
-                var id = descriptor.Id;
+        //private static Property InputBotParam(PropertyMetadata descriptor)
+        //{
+        //    if (descriptor is ParameterMetadata)
+        //    {
+        //        var paramDescriptor = (ParameterMetadata)descriptor;
+        //        var id = descriptor.Id;
 
-                if (paramDescriptor.IsEnum)
-                {
-                    var enumVal = CommandUi.ChooseNullable(descriptor.DisplayName, paramDescriptor.EnumValues.ToArray());
-                    return new EnumParameter() { Id = id, Value = enumVal ?? (string)paramDescriptor.DefaultValue };
-                }
+        //        if (paramDescriptor.IsEnum)
+        //        {
+        //            var enumVal = CommandUi.ChooseNullable(descriptor.DisplayName, paramDescriptor.EnumValues.ToArray());
+        //            return new EnumParameter() { Id = id, Value = enumVal ?? (string)paramDescriptor.DefaultValue };
+        //        }
 
-                switch (paramDescriptor.DataType)
-                {
-                    case "System.Int32":
-                        var valInt32 = CommandUi.InputNullabelInteger(paramDescriptor.DisplayName);
-                        return new IntParameter() { Id = id, Value = valInt32 ?? (int)paramDescriptor.DefaultValue };
-                    case "System.Double":
-                        var valDouble = CommandUi.InputNullableDouble(paramDescriptor.DisplayName);
-                        return new DoubleParameter() { Id = id, Value = valDouble ?? (double)paramDescriptor.DefaultValue };
-                    case "System.String":
-                        var strVal = CommandUi.InputString(paramDescriptor.DisplayName);
-                        return new StringParameter() { Id = id, Value = CommandUi.InputString(paramDescriptor.DisplayName) };
-                    case "TickTrader.Algo.Api.File":
-                        return new FileParameter() { Id = id, FileName = CommandUi.InputString(paramDescriptor.DisplayName) };
-                }
-            }
+        //        switch (paramDescriptor.DataType)
+        //        {
+        //            case "System.Int32":
+        //                var valInt32 = CommandUi.InputNullabelInteger(paramDescriptor.DisplayName);
+        //                return new IntParameter() { Id = id, Value = valInt32 ?? (int)paramDescriptor.DefaultValue };
+        //            case "System.Double":
+        //                var valDouble = CommandUi.InputNullableDouble(paramDescriptor.DisplayName);
+        //                return new DoubleParameter() { Id = id, Value = valDouble ?? (double)paramDescriptor.DefaultValue };
+        //            case "System.String":
+        //                var strVal = CommandUi.InputString(paramDescriptor.DisplayName);
+        //                return new StringParameter() { Id = id, Value = CommandUi.InputString(paramDescriptor.DisplayName) };
+        //            case "TickTrader.Algo.Api.File":
+        //                return new FileParameter() { Id = id, FileName = CommandUi.InputString(paramDescriptor.DisplayName) };
+        //        }
+        //    }
 
-            throw new ApplicationException($"Parameter '{descriptor.DisplayName}' is of unsupported type!");
-        }
+        //    throw new ApplicationException($"Parameter '{descriptor.DisplayName}' is of unsupported type!");
+        //}
 
-        private static void PrintProperty(Property p)
-        {
-            if (p is Parameter)
-                Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
-        }
+        //private static void PrintProperty(Property p)
+        //{
+        //    if (p is Parameter)
+        //        Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
+        //}
 
         private static void SetupGlobalExceptionLogging(Logger log)
         {

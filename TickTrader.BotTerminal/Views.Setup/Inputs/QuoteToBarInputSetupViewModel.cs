@@ -5,7 +5,7 @@ namespace TickTrader.BotTerminal
 {
     public class QuoteToBarInputSetupViewModel : MappedInputSetupViewModel
     {
-        public QuoteToBarInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, string defaultMapping)
+        public QuoteToBarInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, MappingKey defaultMapping)
             : base(metadata, accountMetadata, defaultSymbolCode, defaultMapping)
         {
             AvailableMappings = accountMetadata.SymbolMappings.QuoteToBarMappings;
@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected override SymbolMapping GetMapping(string mappingKey)
+        protected override MappingInfo GetMapping(MappingKey mappingKey)
         {
             return AccountMetadata.SymbolMappings.GetQuoteToBarMappingOrDefault(mappingKey);
         }

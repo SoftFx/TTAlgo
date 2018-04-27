@@ -152,7 +152,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static ParameterDescriptorDto ToDto(this ParameterDescriptor parameter)
+        public static ParameterDescriptorDto ToDto(this ParameterMetadata parameter)
         {
             return new ParameterDescriptorDto()
             {
@@ -167,7 +167,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        private static string GetDataType(ParameterDescriptor parameter)
+        private static string GetDataType(ParameterMetadata parameter)
         {
             if (parameter.IsEnum)
                 return ParameterTypes.Enumeration;
@@ -187,7 +187,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 }
         }
 
-        private static object ConvertDefaultValue(ParameterDescriptor parameter)
+        private static object ConvertDefaultValue(ParameterMetadata parameter)
         {
             if (parameter.IsEnum)
             {

@@ -106,12 +106,6 @@
     <Compile Include="Info\Keys\ReductionKey.cs" />
     <Compile Include="Info\Setup\MappingCollectionInfo.cs" />
     <Compile Include="Info\Setup\MappingInfo.cs" />
-    <Compile Include="Info\Metadata\InputMetadataInfo.cs" />
-    <Compile Include="Info\Metadata\OutputMetadataInfo.cs" />
-    <Compile Include="Info\Metadata\ParameterMetadataInfo.cs" />
-    <Compile Include="Info\Metadata\PluginMetadataInfo.cs" />
-    <Compile Include="Info\Metadata\PropertyMetadataInfo.cs" />
-    <Compile Include="Info\Metadata\ReductionMetadataInfo.cs" />
     <Compile Include="Info\PluginInfo.cs" />
     <Compile Include="Info\ReductionInfo.cs" />
     <Compile Include="Info\Setup\SetupContextInfo.cs" />

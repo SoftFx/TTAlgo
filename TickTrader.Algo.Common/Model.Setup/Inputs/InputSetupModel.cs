@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         protected IAlgoSetupMetadata Metadata { get; }
 
 
-        public InputDescriptor Descriptor { get; }
+        public InputMetadata Descriptor { get; }
 
         public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        private InputSetupModel(InputDescriptor descriptor, string defaultSymbolCode)
+        private InputSetupModel(InputMetadata descriptor, string defaultSymbolCode)
         {
             Descriptor = descriptor;
             _defaultSymbolCode = defaultSymbolCode;
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetMetadata(descriptor);
         }
 
-        public InputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode)
+        public InputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode)
             : this(descriptor, defaultSymbolCode)
         {
             Metadata = metadata;
@@ -72,16 +72,16 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public class Invalid : InputSetupModel
         {
-            public Invalid(InputDescriptor descriptor, object error = null)
+            public Invalid(InputMetadata descriptor, object error = null)
                 : base(descriptor, null)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error.Value);
+                    Error = new ErrorMsgModel(descriptor.Error);
                 else
                     Error = new ErrorMsgModel(error);
             }
 
-            public Invalid(InputDescriptor descriptor, string symbol, ErrorMsgModel error)
+            public Invalid(InputMetadata descriptor, string symbol, ErrorMsgModel error)
                 : base(descriptor, symbol)
             {
                 Error = error;

@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core.Metadata
 
     public class AlgoMetadataException : AlgoException
     {
-        public AlgoMetadataException(AlgoMetadataErrors errorCode, IEnumerable<AlgoPropertyDescriptor> invalidProperties = null)
+        public AlgoMetadataException(AlgoMetadataErrors errorCode, IEnumerable<PropertyMetadataBase> invalidProperties = null)
             : base(CreateMessageDescription(errorCode, invalidProperties))
         {
             this.ErrorCode = errorCode;
@@ -32,10 +32,10 @@ namespace TickTrader.Algo.Core.Metadata
             if (invalidProperties != null)
                 this.InvalidProperties = invalidProperties.ToArray();
             else
-                this.InvalidProperties = new AlgoPropertyDescriptor[0];
+                this.InvalidProperties = new PropertyMetadataBase[0];
         }
 
-        private static string CreateMessageDescription(AlgoMetadataErrors errorCode, IEnumerable<AlgoPropertyDescriptor> invalidProperties)
+        private static string CreateMessageDescription(AlgoMetadataErrors errorCode, IEnumerable<PropertyMetadataBase> invalidProperties)
         {
             switch (errorCode)
             {
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core.Metadata
                     if (invalidProperties != null)
                     {
                         foreach (var property in invalidProperties)
-                            builder.Append("\tproperty ").Append(property.Id).Append(" - ").Append(property.Error.Value);
+                            builder.Append("\tproperty ").Append(property.Id).Append(" - ").Append(property.Error);
                     }
                     return builder.ToString();
                 case AlgoMetadataErrors.UnknwonBaseType:
@@ -58,6 +58,6 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public AlgoMetadataErrors ErrorCode { get; private set; }
-        public AlgoPropertyDescriptor[] InvalidProperties { get; private set; }
+        public PropertyMetadataBase[] InvalidProperties { get; private set; }
     }
 }

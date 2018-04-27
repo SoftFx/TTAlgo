@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Container;
-using TickTrader.Algo.Core.Repository;
+﻿using TickTrader.Algo.Core.Container;
 
 namespace TickTrader.Algo.Core.Metadata
 {
     public class AlgoPluginRef
     {
-        public AlgoPluginRef(AlgoPluginDescriptor descriptor)
+        public string Id => Metadata.Id;
+
+        public string DisplayName => Metadata.Descriptor.DisplayName;
+
+        public PluginMetadata Metadata { get; private set; }
+
+
+        public AlgoPluginRef(PluginMetadata metadata)
         {
-            this.Descriptor = descriptor;
+            Metadata = metadata;
         }
 
-        public string Id { get { return Descriptor.Id; } }
-        public string DisplayName { get { return Descriptor.DisplayName; } }
-        public AlgoPluginDescriptor Descriptor { get; private set; }
 
         public virtual PluginExecutor CreateExecutor()
         {
@@ -25,19 +23,22 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
+
     public class IsolatedPluginRef : AlgoPluginRef
     {
-        private AlgoSandbox sandbox;
+        private AlgoSandbox _sandbox;
 
-        internal IsolatedPluginRef(AlgoPluginDescriptor descriptor, AlgoSandbox sandbox)
-            : base(descriptor)
+
+        internal IsolatedPluginRef(PluginMetadata metadata, AlgoSandbox sandbox)
+            : base(metadata)
         {
-            this.sandbox = sandbox;
+            _sandbox = sandbox;
         }
+
 
         public override PluginExecutor CreateExecutor()
         {
-            return sandbox.CreateExecutor(Id);
+            return _sandbox.CreateExecutor(Id);
         }
     }
 }

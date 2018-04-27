@@ -162,7 +162,7 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(AlgoPluginDescriptor descriptor)
+        private string GetPluginTypeDisplayName(PluginMetadata descriptor)
         {
             switch (descriptor.AlgoLogicType)
             {

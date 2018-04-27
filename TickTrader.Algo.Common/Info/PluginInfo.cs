@@ -1,18 +1,20 @@
-﻿namespace TickTrader.Algo.Common.Info
+﻿using TickTrader.Algo.Core.Metadata;
+
+namespace TickTrader.Algo.Common.Info
 {
     public class PluginInfo
     {
         public PluginKey Key { get; set; }
 
-        public PluginMetadataInfo Metadata { get; set; }
+        public PluginDescriptor Descriptor { get; set; }
 
 
         public PluginInfo() { }
 
-        public PluginInfo(PluginKey key, PluginMetadataInfo metadata)
+        public PluginInfo(PluginKey key, PluginDescriptor descriptor)
         {
             Key = key;
-            Metadata = metadata;
+            Descriptor = descriptor;
         }
     }
 }

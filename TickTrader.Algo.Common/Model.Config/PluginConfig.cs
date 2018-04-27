@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model.Config
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.Common.Model.Config
         public string MainSymbol { get; set; }
 
         [DataMember(Name = "mapping")]
-        public string SelectedMapping { get; set; }
+        public MappingKey SelectedMapping { get; set; }
 
         [DataMember(Name = "instanceId")]
         public string InstanceId { get; set; }

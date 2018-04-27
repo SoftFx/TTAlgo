@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class BarToDoubleInputSetupModel : MappedInputSetupModel
     {
-        public BarToDoubleInputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
+        public BarToDoubleInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
             : base(descriptor, metadata, defaultSymbolCode, defaultMapping)
         {
             AvailableMappings = metadata.SymbolMappings.BarToDoubleMappings;

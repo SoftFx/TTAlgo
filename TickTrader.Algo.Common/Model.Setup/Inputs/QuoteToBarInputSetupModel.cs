@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class QuoteToBarInputSetupModel : MappedInputSetupModel
     {
-        public QuoteToBarInputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
+        public QuoteToBarInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
             : base(descriptor, metadata, defaultSymbolCode, defaultMapping)
         {
             AvailableMappings = metadata.SymbolMappings.QuoteToBarMappings;

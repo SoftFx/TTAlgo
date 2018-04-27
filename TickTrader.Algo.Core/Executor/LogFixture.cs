@@ -129,7 +129,7 @@ namespace TickTrader.Algo.Core
         public void OnInitialized()
         {
             AddLogRecord(LogSeverities.Info, "Bot initialized");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
         }
 
         public void OnStart()
@@ -140,7 +140,7 @@ namespace TickTrader.Algo.Core
         public void OnStop()
         {
             AddLogRecord(LogSeverities.Info, "Bot stopped");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
         }
 
         public void OnExit()
@@ -151,7 +151,7 @@ namespace TickTrader.Algo.Core
         public void OnAbort()
         {
             AddLogRecord(LogSeverities.Info, "Bot aborted");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
         }
 
         public void UpdateStatus(string status)

@@ -6,6 +6,7 @@ using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -27,9 +28,10 @@ namespace TickTrader.BotTerminal
         private List<OutputSetupViewModel> _outputs;
         private TimeFrames _selectedTimeFrame;
         private SymbolInfo _mainSymbol;
-        private SymbolMapping _selectedMapping;
+        private MappingInfo _selectedMapping;
         private string _instanceId;
         private PluginPermissions _permissions;
+        private IPluginIdProvider _idProvider;
 
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
@@ -72,11 +74,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IReadOnlyList<SymbolMapping> AvailableMappings { get; private set; }
+        public IReadOnlyList<MappingInfo> AvailableMappings { get; private set; }
 
         public abstract bool AllowChangeMapping { get; }
 
-        public SymbolMapping SelectedMapping
+        public MappingInfo SelectedMapping
         {
             get { return _selectedMapping; }
             set
@@ -118,6 +120,8 @@ namespace TickTrader.BotTerminal
 
         public SetupContextInfo SetupContext { get; }
 
+        public AccountMetadataInfo AccountMetadata { get; }
+
         public PluginSetupMode Mode { get; }
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
@@ -139,7 +143,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : SetupMetadata.IdProvider.IsValidPluginId(Metadata, InstanceId);
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Metadata, InstanceId);
 
         public PluginPermissions Permissions
         {
@@ -189,11 +193,13 @@ namespace TickTrader.BotTerminal
         public event System.Action ValidityChanged = delegate { };
 
 
-        public PluginSetupViewModel(PluginInfo plugin, SetupMetadataInfo setupMetadata, SetupContextInfo setupContext, PluginSetupMode mode)
+        public PluginSetupViewModel(PluginInfo plugin, SetupMetadataInfo setupMetadata, SetupContextInfo setupContext,
+            AccountMetadataInfo accountMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
         {
             Plugin = plugin;
-            Metadata = plugin.Metadata;
+            Metadata = plugin.Descriptor;
             SetupMetadata = setupMetadata;
+            AccountMetadata = accountMetadata;
             Mode = mode;
         }
 
@@ -202,7 +208,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedTimeFrame = cfg.TimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrAny(cfg.MainSymbol);
-            SelectedMapping = SetupMetadata.SymbolMappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
             foreach (var scrProperty in cfg.Properties)
@@ -218,7 +224,7 @@ namespace TickTrader.BotTerminal
             var cfg = SaveToConfig();
             cfg.TimeFrame = SelectedTimeFrame;
             cfg.MainSymbol = MainSymbol.Name;
-            cfg.SelectedMapping = SelectedMapping.Name;
+            cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = Permissions.Clone();
             foreach (var property in _allProperties)
@@ -230,8 +236,8 @@ namespace TickTrader.BotTerminal
         {
             SelectedTimeFrame = SetupContext.DefaultTimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupContext.DefaultSymbolCode);
-            SelectedMapping = SetupMetadata.SymbolMappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
-            InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata);
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
+            InstanceId = _idProvider.GeneratePluginId(Metadata);
 
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
@@ -256,9 +262,9 @@ namespace TickTrader.BotTerminal
 
         protected void Init()
         {
-            AvailableTimeFrames = Enum.GetValues(typeof(TimeFrames)).Cast<TimeFrames>().Where(tf => tf != TimeFrames.TicksLevel2).ToList();
-            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbolCode);
-            AvailableMappings = SetupMetadata.SymbolMappings.BarToBarMappings;
+            AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
+            AvailableSymbols = AccountMetadata.GetAvaliableSymbols(SetupContext.DefaultSymbolCode);
+            AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
             _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
@@ -289,10 +295,10 @@ namespace TickTrader.BotTerminal
 
             switch (metadata.DataType)
             {
-                case "System.Boolean": return new BoolParamSetupModel(metadata);
-                case "System.Int32": return new IntParamSetupModel(metadata);
-                case "System.Double": return new DoubleParamSetupModel(metadata);
-                case "System.String": return new StringParamSetupModel(metadata);
+                case "System.Boolean": return new BoolParamSetupViewModel(metadata);
+                case "System.Int32": return new IntParamSetupViewModel(metadata);
+                case "System.Double": return new DoubleParamSetupViewModel(metadata);
+                case "System.String": return new StringParamSetupViewModel(metadata);
                 case "TickTrader.Algo.Api.File": return new FileParamSetupViewModel(metadata);
                 default: return new ParameterSetupViewModel.Invalid(metadata, ErrorMsgCodes.UnsupportedParameterType);
             }
@@ -305,8 +311,8 @@ namespace TickTrader.BotTerminal
 
             switch (metadata.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInputSetupModel(metadata, SetupMetadata, Context.DefaultSymbolCode, $"{Context.DefaultMapping}.Close");
-                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupViewModel(metadata, SetupMetadata, Context.DefaultSymbolCode, Context.DefaultMapping);
+                case "System.Double": return new BarToDoubleInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, new MappingKey(SetupContext.DefaultMapping, SetupMetadata.Mappings.DefaultBarToDoubleReduction));
+                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, SetupContext.DefaultMapping);
                 //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
                 //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
                 default: return new InputSetupViewModel.Invalid(metadata, ErrorMsgCodes.UnsupportedInputType);
@@ -320,10 +326,10 @@ namespace TickTrader.BotTerminal
 
             switch (metadata.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new QuoteToDoubleInputSetupModel(metadata, SetupMetadata, Context.DefaultSymbolCode, $"{Context.DefaultMapping}.Close");
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupViewModel(metadata, SetupMetadata, Context.DefaultSymbolCode, Context.DefaultMapping);
-                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupViewModel(metadata, SetupMetadata, Context.DefaultSymbolCode, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupViewModel(metadata, SetupMetadata, Context.DefaultSymbolCode, true);
+                case "System.Double": return new QuoteToDoubleInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, new MappingKey(SetupMetadata.Mappings.DefaultQuoteToDoubleReduction));
+                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, new MappingKey(SetupMetadata.Mappings.DefaultQuoteToBarReduction));
+                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, false);
+                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, true);
                 default: return new InputSetupViewModel.Invalid(metadata, ErrorMsgCodes.UnsupportedInputType);
             }
         }
@@ -335,7 +341,7 @@ namespace TickTrader.BotTerminal
 
             switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new ColoredLineOutputSetupModel(descriptor);
+                case "System.Double": return new ColoredLineOutputSetupViewModel(descriptor);
                 case "TickTrader.Algo.Api.Marker": return new MarkerSeriesOutputSetupViewModel(descriptor);
                 default: return new OutputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedOutputType);
             }

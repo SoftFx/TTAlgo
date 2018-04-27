@@ -9,18 +9,18 @@ namespace TickTrader.Algo.Core.Repository
     public class ExtCollection
     {
         private IAlgoCoreLogger _logger;
-        private List<ReductionDescriptor> _barToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> _fullbarToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> _fullbarToBar = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> _quoteToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> _quoteToBar = new List<ReductionDescriptor>();
+        private List<ReductionMetadata> _barToDouble = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _fullbarToDouble = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _fullbarToBar = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _quoteToDouble = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _quoteToBar = new List<ReductionMetadata>();
 
 
-        public IEnumerable<ReductionDescriptor> BarToDoubleReductions => _barToDouble;
-        public IEnumerable<ReductionDescriptor> FullBarToDoubleReductions => _fullbarToDouble;
-        public IEnumerable<ReductionDescriptor> FullBarToBarReductions => _fullbarToBar;
-        public IEnumerable<ReductionDescriptor> QuoteToDoubleReductions => _quoteToDouble;
-        public IEnumerable<ReductionDescriptor> QuoteToBarReductions => _quoteToBar;
+        public IEnumerable<ReductionMetadata> BarToDoubleReductions => _barToDouble;
+        public IEnumerable<ReductionMetadata> FullBarToDoubleReductions => _fullbarToDouble;
+        public IEnumerable<ReductionMetadata> FullBarToBarReductions => _fullbarToBar;
+        public IEnumerable<ReductionMetadata> QuoteToDoubleReductions => _quoteToDouble;
+        public IEnumerable<ReductionMetadata> QuoteToBarReductions => _quoteToBar;
 
 
         public ExtCollection(IAlgoCoreLogger logger)
@@ -29,9 +29,9 @@ namespace TickTrader.Algo.Core.Repository
         }
 
 
-        public void Add(ReductionDescriptor reduction)
+        public void Add(ReductionMetadata reduction)
         {
-            switch (reduction.Type)
+            switch (reduction.Descriptor.Type)
             {
                 case ReductionType.BarToDouble: _barToDouble.Add(reduction); break;
                 case ReductionType.FullBarToDouble: _fullbarToDouble.Add(reduction); break;
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public void LoadExtentions(string path)
         {
-            var plugins = System.IO.Directory.GetFiles(path, "*.ttalgo");
+            var plugins = Directory.GetFiles(path, "*.ttalgo");
 
             foreach (var file in plugins)
             {
@@ -51,14 +51,14 @@ namespace TickTrader.Algo.Core.Repository
                 {
                     using (var st = File.OpenRead(file))
                     {
-                        var pckg = Algo.Core.Package.Load(st);
+                        var pckg = Package.Load(st);
                         if (!string.IsNullOrEmpty(pckg.Metadata.MainBinaryFile))
                         {
                             var extFile = pckg.GetFile(pckg.Metadata.MainBinaryFile);
                             if (extFile != null)
                             {
                                 var extAssembly = Assembly.Load(extFile, null);
-                                var reductions = ReductionDescriptor.InspectAssembly(extAssembly);
+                                var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                                 foreach (var r in reductions)
                                     Add(r);
                             }
@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Core.Repository
             try
             {
                 var extAssembly = Assembly.Load(extAssemblyName);
-                var reductions = ReductionDescriptor.InspectAssembly(extAssembly);
+                var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                 foreach (var r in reductions)
                     Add(r);
 

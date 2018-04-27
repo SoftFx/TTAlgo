@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public virtual void Apply(IPluginSetupTarget target) { }
 
 
-        internal void SetMetadata(AlgoPropertyDescriptor descriptor)
+        internal void SetMetadata(PropertyMetadataBase descriptor)
         {
             Id = descriptor.Id;
             DisplayName = descriptor.DisplayName;

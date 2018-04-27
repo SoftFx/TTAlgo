@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public static readonly string NullableDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
 
 
-        public ParameterDescriptor Descriptor { get; }
+        public ParameterMetadata Descriptor { get; }
 
         public string DataType { get; }
 
@@ -21,11 +21,11 @@ namespace TickTrader.Algo.Common.Model.Setup
         public virtual bool IsReadonly => false;
 
 
-        public ParameterSetupModel(ParameterDescriptor descriptor)
+        public ParameterSetupModel(ParameterMetadata descriptor)
         {
             Descriptor = descriptor;
-            DataType = descriptor.DataType;
-            IsRequired = descriptor.IsRequired;
+            DataType = descriptor.Descriptor.DataType;
+            IsRequired = descriptor.Descriptor.IsRequired;
 
             SetMetadata(descriptor);
         }
@@ -45,11 +45,11 @@ namespace TickTrader.Algo.Common.Model.Setup
             public override bool IsReadonly => true;
 
 
-            public Invalid(ParameterDescriptor descriptor, object error = null)
+            public Invalid(ParameterMetadata descriptor, object error = null)
                 : base(descriptor)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error.Value);
+                    Error = new ErrorMsgModel(descriptor.Error);
                 else
                     Error = new ErrorMsgModel(error);
             }

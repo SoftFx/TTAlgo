@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
             rep.Start();
         }
 
-        public void Add(AlgoPluginDescriptor descriptor)
+        public void Add(PluginMetadata descriptor)
         {
             var key = new PluginCatalogKey(NoRepositoryId, "", descriptor.Id);
             plugins.Add(key, new PluginCatalogItem(key, new AlgoPluginRef(descriptor), "Built-in"));
@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
 
         public void AddAssembly(Assembly assembly)
         {
-            var descritpors = AlgoPluginDescriptor.InspectAssembly(assembly);
+            var descritpors = PluginMetadata.InspectAssembly(assembly);
             foreach (var d in descritpors)
                 Add(d);
         }

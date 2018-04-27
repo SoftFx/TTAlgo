@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public MappedInputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
+        public MappedInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
             : base(descriptor, metadata, defaultSymbolCode)
         {
             _defaultMapping = defaultMapping;

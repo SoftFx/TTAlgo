@@ -100,12 +100,12 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class BoolParamSetupModel : ParameterSetupViewModel<bool>
+    public class BoolParamSetupViewModel : ParameterSetupViewModel<bool>
     {
         internal override UiConverter<bool> Converter => UiConverter.Bool;
 
 
-        public BoolParamSetupModel(ParameterMetadataInfo metadata)
+        public BoolParamSetupViewModel(ParameterMetadataInfo metadata)
             : base(metadata)
         {
         }
@@ -118,12 +118,12 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class IntParamSetupModel : ParameterSetupViewModel<int>
+    public class IntParamSetupViewModel : ParameterSetupViewModel<int>
     {
         internal override UiConverter<int> Converter => UiConverter.Int;
 
 
-        public IntParamSetupModel(ParameterMetadataInfo metadata)
+        public IntParamSetupViewModel(ParameterMetadataInfo metadata)
             : base(metadata)
         {
         }
@@ -154,12 +154,12 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class DoubleParamSetupModel : ParameterSetupViewModel<double>
+    public class DoubleParamSetupViewModel : ParameterSetupViewModel<double>
     {
         internal override UiConverter<double> Converter => UiConverter.Double;
 
 
-        public DoubleParamSetupModel(ParameterMetadataInfo metadata)
+        public DoubleParamSetupViewModel(ParameterMetadataInfo metadata)
             : base(metadata)
         {
         }
@@ -190,12 +190,12 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class StringParamSetupModel : ParameterSetupViewModel<string>
+    public class StringParamSetupViewModel : ParameterSetupViewModel<string>
     {
         internal override UiConverter<string> Converter => UiConverter.String;
 
 
-        public StringParamSetupModel(ParameterMetadataInfo metadata)
+        public StringParamSetupViewModel(ParameterMetadataInfo metadata)
             : base(metadata)
         {
         }

@@ -8,14 +8,14 @@ namespace TickTrader.BotAgent.BA.Entities
 {
     public class PluginInfo
     {
-        public PluginInfo(PluginKey key, AlgoPluginDescriptor descriptor)
+        public PluginInfo(PluginKey key, PluginMetadata descriptor)
         {
             Id = key;
             Descriptor = descriptor;
         }
 
         public PluginKey Id { get; }
-        public AlgoPluginDescriptor Descriptor { get; }
+        public PluginMetadata Descriptor { get; }
     }
 
     public class PluginKey

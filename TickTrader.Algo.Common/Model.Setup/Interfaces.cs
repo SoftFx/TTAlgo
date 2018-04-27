@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -32,8 +33,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
     public interface IPluginIdProvider
     {
-        string GeneratePluginId(AlgoPluginDescriptor descriptor);
+        string GeneratePluginId(PluginDescriptor descriptor);
 
-        bool IsValidPluginId(AlgoPluginDescriptor descriptor, string pluginId);
+        bool IsValidPluginId(PluginDescriptor descriptor, string pluginId);
     }
 }

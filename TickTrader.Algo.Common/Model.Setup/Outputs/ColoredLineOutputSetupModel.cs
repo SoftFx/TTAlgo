@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public ColoredLineOutputSetupModel(OutputDescriptor descriptor)
+        public ColoredLineOutputSetupModel(OutputMetadata descriptor)
             : base(descriptor)
         {
         }
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             base.Reset();
 
-            LineStyle = Descriptor.DefaultLineStyle;
+            LineStyle = Descriptor.Descriptor.DefaultLineStyle;
         }
 
         public override void Load(Property srcProperty)

@@ -3,9 +3,9 @@ using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
-    public class QuoteToDoubleInputSetupModel : MappedInputSetupViewModel
+    public class QuoteToDoubleInputSetupViewModel : MappedInputSetupViewModel
     {
-        public QuoteToDoubleInputSetupModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, string defaultMapping)
+        public QuoteToDoubleInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, MappingKey defaultMapping)
             : base(metadata, accountMetadata, defaultSymbolCode, defaultMapping)
         {
             AvailableMappings = accountMetadata.SymbolMappings.QuoteToDoubleMappings;
@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        protected override SymbolMapping GetMapping(string mappingKey)
+        protected override MappingInfo GetMapping(MappingKey mappingKey)
         {
             return AccountMetadata.SymbolMappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
         }

@@ -163,9 +163,9 @@ namespace TickTrader.Algo.Core.Repository
             var newMetadataLookup = newMetadata.ToDictionary(a => a.Id);
             foreach (AlgoPluginRef item in items.Values)
             {
-                if (!newMetadataLookup.ContainsKey(item.Descriptor.Id))
+                if (!newMetadataLookup.ContainsKey(item.Metadata.Id))
                 {
-                    items.Remove(item.Descriptor.Id);
+                    items.Remove(item.Metadata.Id);
                     Removed(this, item);
                 }
             }

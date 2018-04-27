@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 foreach (var reduction in _extCollection.FullBarToBarReductions)
                 {
-                    _barToBarMappings.Add(new FullBarToBarMapping(reduction.DisplayName,
+                    _barToBarMappings.Add(new FullBarToBarMapping(reduction.Descriptor.DisplayName,
                         reduction.CreateInstance<FullBarToBarReduction>()));
                 }
             }
@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 foreach (var reduction in _extCollection.FullBarToDoubleReductions)
                 {
-                    _barToDoubleMappings.Add(new FullBarToDoubleMapping(reduction.DisplayName,
+                    _barToDoubleMappings.Add(new FullBarToDoubleMapping(reduction.Descriptor.DisplayName,
                         reduction.CreateInstance<FullBarToDoubleReduction>()));
                 }
             }
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 foreach (var reduction in _extCollection.QuoteToBarReductions)
                 {
-                    _quoteToBarMappings.Add(new QuoteToBarMapping(reduction.DisplayName,
+                    _quoteToBarMappings.Add(new QuoteToBarMapping(reduction.Descriptor.DisplayName,
                         reduction.CreateInstance<QuoteToBarReduction>()));
                 }
             }
@@ -95,7 +95,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 foreach (var reduction in _extCollection.QuoteToDoubleReductions)
                 {
-                    _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reduction.DisplayName,
+                    _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reduction.Descriptor.DisplayName,
                         reduction.CreateInstance<QuoteToDoubleReduction>()));
                 }
             }
@@ -108,16 +108,16 @@ namespace TickTrader.Algo.Common.Model.Setup
                 foreach (var reductionDouble in _extCollection.BarToDoubleReductions)
                 {
                     var instanceDouble = reductionDouble.CreateInstance<BarToDoubleReduction>();
-                    _barToDoubleMappings.Add(new BidBarToDoubleMapping(reductionDouble.DisplayName, instanceDouble));
-                    _barToDoubleMappings.Add(new AskBarToDoubleMapping(reductionDouble.DisplayName, instanceDouble));
+                    _barToDoubleMappings.Add(new BidBarToDoubleMapping(reductionDouble.Descriptor.DisplayName, instanceDouble));
+                    _barToDoubleMappings.Add(new AskBarToDoubleMapping(reductionDouble.Descriptor.DisplayName, instanceDouble));
 
                     if (_extCollection?.FullBarToBarReductions != null)
                     {
                         foreach (var reductionBar in _extCollection.FullBarToBarReductions)
                         {
                             var instanceBar = reductionBar.CreateInstance<FullBarToBarReduction>();
-                            _barToDoubleMappings.Add(new FullBarToDoubleMapping(reductionBar.DisplayName,
-                                instanceBar, reductionDouble.DisplayName, instanceDouble));
+                            _barToDoubleMappings.Add(new FullBarToDoubleMapping(reductionBar.Descriptor.DisplayName,
+                                instanceBar, reductionDouble.Descriptor.DisplayName, instanceDouble));
                         }
                     }
 
@@ -126,8 +126,8 @@ namespace TickTrader.Algo.Common.Model.Setup
                         foreach (var reductionBar in _extCollection.QuoteToBarReductions)
                         {
                             var instanceBar = reductionBar.CreateInstance<QuoteToBarReduction>();
-                            _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reductionBar.DisplayName,
-                                instanceBar, reductionDouble.DisplayName, instanceDouble));
+                            _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reductionBar.Descriptor.DisplayName,
+                                instanceBar, reductionDouble.Descriptor.DisplayName, instanceDouble));
                         }
                     }
                 }

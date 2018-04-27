@@ -8,10 +8,10 @@ namespace TickTrader.BotTerminal
     {
         public static PluginSetupViewModel CreateSetup(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context)
         {
-            switch (plugin.Metadata.Type)
+            switch (plugin.Descriptor.Type)
             {
                 case AlgoTypes.Robot: return new TradeBotSetupViewModel(plugin, metadata, context);
-                case AlgoTypes.Indicator: return new IndicatorSetupViewModel(catalogItem, metadata, context);
+                case AlgoTypes.Indicator: return new IndicatorSetupViewModel(plugin, metadata, context);
                 default: throw new ArgumentException("Unknown plugin type");
             }
         }

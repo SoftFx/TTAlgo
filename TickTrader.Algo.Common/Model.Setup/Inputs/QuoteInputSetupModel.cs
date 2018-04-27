@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         private bool _useL2;
 
 
-        public QuoteInputSetupModel(InputDescriptor descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, bool useL2)
+        public QuoteInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, bool useL2)
             : base(descriptor, metadata, defaultSymbolCode)
         {
             _useL2 = useL2;

@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         private bool _isEnabled;
 
 
-        public OutputDescriptor Descriptor { get; }
+        public OutputMetadata Descriptor { get; }
 
         public bool IsEnabled
         {
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public OutputSetupModel(OutputDescriptor descriptor)
+        public OutputSetupModel(OutputMetadata descriptor)
         {
             Descriptor = descriptor;
 
@@ -94,12 +94,12 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         private void InitColor()
         {
-            LineColor = Convert.ToWindowsColor(Descriptor.DefaultColor);
+            LineColor = Convert.ToWindowsColor(Descriptor.Descriptor.DefaultColor);
         }
 
         private void InitThickness()
         {
-            var intThikness = (int)Descriptor.DefaultThickness;
+            var intThikness = (int)Descriptor.Descriptor.DefaultThickness;
             if (intThikness < 1)
                 intThikness = 1;
             if (intThikness > 5)
@@ -110,11 +110,11 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public class Invalid : OutputSetupModel
         {
-            public Invalid(OutputDescriptor descriptor, object error = null)
+            public Invalid(OutputMetadata descriptor, object error = null)
                 : base(descriptor)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error.Value);
+                    Error = new ErrorMsgModel(descriptor.Error);
                 else
                     Error = new ErrorMsgModel(error);
             }

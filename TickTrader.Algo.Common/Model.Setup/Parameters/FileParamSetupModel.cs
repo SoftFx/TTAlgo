@@ -43,12 +43,12 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public FileParamSetupModel(ParameterDescriptor descriptor)
+        public FileParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
             DefaultFile = descriptor.DefaultValue as string ?? string.Empty;
 
-            var filterEntries = descriptor.FileFilters
+            var filterEntries = descriptor.Descriptor.FileFilters
                .Where(s => !string.IsNullOrWhiteSpace(s.FileMask) && !string.IsNullOrWhiteSpace(s.FileTypeName));
 
             var filterStrBuilder = new StringBuilder();

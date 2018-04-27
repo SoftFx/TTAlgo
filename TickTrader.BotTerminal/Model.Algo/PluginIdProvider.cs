@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
@@ -23,27 +24,27 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public string GeneratePluginId(AlgoPluginDescriptor descriptor)
+        public string GeneratePluginId(PluginMetadataInfo descriptor)
         {
-            switch (descriptor.AlgoLogicType)
+            switch (descriptor.Type)
             {
                 case AlgoTypes.Indicator:
-                    return GenerateIndicatorId(descriptor.UserDisplayName);
+                    return GenerateIndicatorId(descriptor.DisplayName);
                 case AlgoTypes.Robot:
-                    return GenerateBotId(descriptor.UserDisplayName);
+                    return GenerateBotId(descriptor.DisplayName);
                 default:
-                    return GenerateId(descriptor.UserDisplayName);
+                    return GenerateId(descriptor.DisplayName);
             }
         }
 
-        public bool IsValidPluginId(AlgoPluginDescriptor descriptor, string pluginId)
+        public bool IsValidPluginId(PluginMetadataInfo descriptor, string pluginId)
         {
             if (!_botIdHelper.Validate(pluginId))
             {
                 return false;
             }
 
-            switch (descriptor.AlgoLogicType)
+            switch (descriptor.Type)
             {
                 case AlgoTypes.Indicator:
                     return true;
@@ -56,7 +57,7 @@ namespace TickTrader.BotTerminal
 
         public void AddPlugin(PluginModel plugin)
         {
-            if (plugin.Setup.Metadata.AlgoLogicType == AlgoTypes.Robot)
+            if (plugin.Setup.Metadata.Type == AlgoTypes.Robot)
             {
                 _bots.Add(plugin.InstanceId, 1);
             }

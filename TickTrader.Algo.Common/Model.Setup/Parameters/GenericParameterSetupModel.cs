@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal virtual UiConverter<T> Converter => null;
 
 
-        public ParameterSetupModel(ParameterDescriptor descriptor)
+        public ParameterSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
             DefaultValue = default(T);
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal override UiConverter<bool> Converter => UiConverter.Bool;
 
 
-        public BoolParamSetupModel(ParameterDescriptor descriptor)
+        public BoolParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
         }
@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal override UiConverter<int> Converter => UiConverter.Int;
 
 
-        public IntParamSetupModel(ParameterDescriptor descriptor)
+        public IntParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
         }
@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal override UiConverter<int?> Converter => UiConverter.NullableInt;
 
 
-        public NullableIntParamSetupModel(ParameterDescriptor descriptor) : base(descriptor)
+        public NullableIntParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
 
@@ -162,7 +162,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal override UiConverter<double> Converter => UiConverter.Double;
 
 
-        public DoubleParamSetupModel(ParameterDescriptor descriptor) : base(descriptor)
+        public DoubleParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
 
@@ -179,7 +179,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal override UiConverter<double?> Converter => UiConverter.NullableDouble;
 
 
-        public NullableDoubleParamSetupModel(ParameterDescriptor descriptor) : base(descriptor)
+        public NullableDoubleParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
 
@@ -196,7 +196,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         internal override UiConverter<string> Converter => UiConverter.String;
 
 
-        public StringParamSetupModel(ParameterDescriptor descriptor) : base(descriptor)
+        public StringParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
 

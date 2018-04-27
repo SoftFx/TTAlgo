@@ -103,9 +103,9 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public bool HasOutputs => _outputs.Count > 0;
 
-        public bool HasDescription => !string.IsNullOrWhiteSpace(Descriptor?.Description);
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Descriptor.Descriptor?.Description);
 
-        public AlgoPluginDescriptor Descriptor { get; }
+        public PluginMetadata Descriptor { get; }
 
         public AlgoPluginRef PluginRef { get; }
 
@@ -121,7 +121,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.AlgoLogicType != AlgoTypes.Robot;
+        public bool CanBeSkipped => IsEmpty && Descriptor.Descriptor.IsValid && Descriptor.Descriptor.Type != AlgoTypes.Robot;
 
         public string InstanceId
         {
@@ -191,7 +191,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context, PluginSetupMode mode)
         {
             PluginRef = pRef;
-            Descriptor = pRef.Descriptor;
+            Descriptor = pRef.Metadata;
             Metadata = metadata;
             Context = context;
             Mode = mode;
@@ -276,7 +276,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         protected virtual bool CheckValidity()
         {
-            return Descriptor.Error == null && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+            return Descriptor.Descriptor.IsValid && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
         }
 
 
@@ -294,26 +294,26 @@ namespace TickTrader.Algo.Common.Model.Setup
             _allProperties = _parameters.Concat<PropertySetupModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
             _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
-            IsEmpty = _allProperties.Count == 0 && !Descriptor.SetupMainSymbol;
+            IsEmpty = _allProperties.Count == 0 && !Descriptor.Descriptor.SetupMainSymbol;
 
             Reset();
             Validate();
         }
 
 
-        private ParameterSetupModel CreateParameter(ParameterDescriptor descriptor)
+        private ParameterSetupModel CreateParameter(ParameterMetadata descriptor)
         {
             if (!descriptor.IsValid)
                 return new ParameterSetupModel.Invalid(descriptor);
 
-            if (descriptor.IsEnum)
+            if (descriptor.Descriptor.IsEnum)
                 return new EnumParamSetupModel(descriptor);
-            if (descriptor.DataType == ParameterSetupModel.NullableIntTypeName)
+            if (descriptor.Descriptor.DataType == ParameterSetupModel.NullableIntTypeName)
                 return new NullableIntParamSetupModel(descriptor);
-            if (descriptor.DataType == ParameterSetupModel.NullableDoubleTypeName)
+            if (descriptor.Descriptor.DataType == ParameterSetupModel.NullableDoubleTypeName)
                 return new NullableDoubleParamSetupModel(descriptor);
 
-            switch (descriptor.DataType)
+            switch (descriptor.Descriptor.DataType)
             {
                 case "System.Boolean": return new BoolParamSetupModel(descriptor);
                 case "System.Int32": return new IntParamSetupModel(descriptor);
@@ -324,12 +324,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        private InputSetupModel CreateBarBasedInput(InputDescriptor descriptor)
+        private InputSetupModel CreateBarBasedInput(InputMetadata descriptor)
         {
             if (!descriptor.IsValid)
                 return new InputSetupModel.Invalid(descriptor);
 
-            switch (descriptor.DataSeriesBaseTypeFullName)
+            switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
                 case "System.Double": return new BarToDoubleInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, $"{Context.DefaultMapping}.Close");
                 case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, Context.DefaultMapping);
@@ -339,12 +339,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        private InputSetupModel CreateTickBasedInput(InputDescriptor descriptor)
+        private InputSetupModel CreateTickBasedInput(InputMetadata descriptor)
         {
             if (!descriptor.IsValid)
                 return new InputSetupModel.Invalid(descriptor);
 
-            switch (descriptor.DataSeriesBaseTypeFullName)
+            switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
                 case "System.Double": return new QuoteToDoubleInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, $"{Context.DefaultMapping}.Close");
                 case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, Context.DefaultMapping);
@@ -354,12 +354,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        private OutputSetupModel CreateOutput(OutputDescriptor descriptor)
+        private OutputSetupModel CreateOutput(OutputMetadata descriptor)
         {
             if (!descriptor.IsValid)
                 return new OutputSetupModel.Invalid(descriptor);
 
-            switch (descriptor.DataSeriesBaseTypeFullName)
+            switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
                 case "System.Double": return new ColoredLineOutputSetupModel(descriptor);
                 case "TickTrader.Algo.Api.Marker": return new MarkerSeriesOutputSetupModel(descriptor);

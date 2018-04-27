@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         public static PluginSetupModel CreateSetup(AlgoPluginRef catalogItem, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
         {
-            switch (catalogItem.Descriptor.AlgoLogicType)
+            switch (catalogItem.Metadata.Descriptor.Type)
             {
                 case AlgoTypes.Robot: return new TradeBotSetupModel(catalogItem, metadata, context);
                 case AlgoTypes.Indicator: return new IndicatorSetupModel(catalogItem, metadata, context);
