@@ -4,6 +4,7 @@ using NLog.Config;
 using NLog.Targets;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,6 +25,9 @@ namespace TickTrader.BotTerminal
 
         public AppBootstrapper()
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             LocaleSelector.Instance.ActivateDefault();
 
             Initialize();
