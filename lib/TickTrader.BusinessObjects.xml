@@ -22,6 +22,11 @@
             A new object that is a copy of this instance.
             </returns>
         </member>
+        <member name="T:TickTrader.BusinessObjects.SessionTypes">
+            <summary>
+            Session types
+            </summary>
+        </member>
         <member name="T:TickTrader.BusinessObjects.SystemPerformanceCounterTypes">
             <summary>
             Contains enums used in Monitoring as System Performance Counters
@@ -420,7 +425,7 @@
             Create activate order request with required parameters.
             </summary>
             <param name="OrderId">Order Id to activate</param>
-            <param name="Activation">Order activation type</param>         
+            <param name="Activation">Order activation type</param>
             <returns>Activate order request</returns>
         </member>
         <member name="M:TickTrader.BusinessObjects.Requests.ActivateOrderRequest.Create(System.Int64,TickTrader.BusinessObjects.ActivationTypes,System.Nullable{System.Decimal},System.Nullable{System.Decimal})">
@@ -428,7 +433,7 @@
             Create activate order request with required parameters.
             </summary>
             <param name="OrderId">Order Id to activate</param>
-            <param name="Activation">Order activation type</param>         
+            <param name="Activation">Order activation type</param>
             <param name="Price">Order activation price (can be null)</param>
             <param name="Amount">Order activation amount (can be null)</param>
             <returns>Activate order request</returns>
@@ -486,7 +491,7 @@
             <param name="closeByType">Close by type</param>
             <returns>Close position request</returns>
         </member>
-        <member name="M:TickTrader.BusinessObjects.Requests.ClosePositionRequest.CreateCloseAllPositionsForAccount(System.Int32,System.Boolean)">
+        <member name="M:TickTrader.BusinessObjects.Requests.ClosePositionRequest.CreateCloseAllPositionsForAccount(System.Int64,System.Boolean)">
             <summary>
             Create close position request for 'Close all positions for account with the given Account Login' operation.
             </summary>
@@ -494,7 +499,7 @@
             <param name="StopoutFlag">Stop out flag</param>
             <returns>Close position request</returns>
         </member>
-        <member name="M:TickTrader.BusinessObjects.Requests.ClosePositionRequest.CreateClientCloseAllPositionsForAccount(System.Int32)">
+        <member name="M:TickTrader.BusinessObjects.Requests.ClosePositionRequest.CreateClientCloseAllPositionsForAccount(System.Int64)">
             <summary>
             Create close position request for 'Close all positions for account with the given Account Login' operation (client emulation).
             </summary>
@@ -740,7 +745,7 @@
             <param name="UserComment">User Comment</param>
             <param name="ManagerComment">Manager Comment</param>
             <param name="UserTag">User Tag</param>
-            <param name="ManagerTag">Manager Tag</param>/// 
+            <param name="ManagerTag">Manager Tag</param>///
             <param name="Magic">Magic number (default is 0)</param>
             <param name="Expiration">Expiration date/time (default is null)</param>
             <returns>Open order request</returns>
@@ -761,7 +766,7 @@
             <param name="UserComment">User Comment</param>
             <param name="ManagerComment">Manager Comment</param>
             <param name="UserTag">User Tag</param>
-            <param name="ManagerTag">Manager Tag</param>/// 
+            <param name="ManagerTag">Manager Tag</param>///
             <param name="Magic">Magic number (default is 0)</param>
             <param name="Expiration">Expiration date/time (default is null)</param>
             <returns>Open order request</returns>

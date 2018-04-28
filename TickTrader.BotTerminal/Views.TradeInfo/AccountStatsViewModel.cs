@@ -37,7 +37,8 @@ namespace TickTrader.BotTerminal
 
             client.Disconnected += () =>
             {
-                account.Calc.Updated -= Calc_Updated;
+                if (account.Calc != null)
+                    account.Calc.Updated -= Calc_Updated;
             };
         }
 

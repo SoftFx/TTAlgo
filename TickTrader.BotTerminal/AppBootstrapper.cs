@@ -4,7 +4,9 @@ using NLog.Config;
 using NLog.Targets;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,9 +21,13 @@ namespace TickTrader.BotTerminal
 
         private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
         private SimpleContainer _container = new SimpleContainer();
+        private ShellViewModel _shell;
 
         public AppBootstrapper()
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             LocaleSelector.Instance.ActivateDefault();
 
             Initialize();
@@ -158,12 +164,12 @@ namespace TickTrader.BotTerminal
             Algo.Core.CoreLoggerFactory.Init(s => new AlgoLogAdapter(s));
         }
 
-        protected override void OnExit(object sender, EventArgs e)
-        {
-            base.OnExit(sender, e);
+        //protected override void OnExit(object sender, EventArgs e)
+        //{
+        //    base.OnExit(sender, e);
 
-            _instanceRestrictor.Dispose();
-        }
+            
+        //}
 
         protected override object GetInstance(Type service, string key)
         {
@@ -202,7 +208,20 @@ namespace TickTrader.BotTerminal
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();
 
+                _shell = _container.GetInstance<ShellViewModel>();
+                _shell.Deactivated += Shell_Deactivated;
+
                 DisplayRootViewFor<ShellViewModel>();
+            }
+        }
+
+        private async void Shell_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            if (e.WasClosed)
+            {
+                await _shell.Shutdown();
+                _instanceRestrictor.Dispose();
+                App.Current.Shutdown();
             }
         }
     }

@@ -296,13 +296,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnIocFilled(ExecutionReport report)
         {
-            if (accType == AccountTypes.Cash)
-            {
-                report.OrderType = OrderType.Market;
-                return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
-            }
-            else
-                return OnOrderUpdated(report, OrderExecAction.Filled);
+            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
         }
 
         private OrderUpdateAction OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
@@ -433,6 +427,7 @@ namespace TickTrader.Algo.Common.Model
                 {
                     order = cache.Account.Orders.GetOrDefault(_report.OrderId);
                     cache.Account.orders.Remove(_report.OrderId);
+                    order?.Update(_report);
                 }
                 else if (_entityAction == OrderEntityAction.Updated)
                 {

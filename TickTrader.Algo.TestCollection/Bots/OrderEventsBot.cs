@@ -34,7 +34,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Opened order #{args.Order.Id}");
-            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
+            sb.AppendLine(ToObjectPropertiesString("Order", args.Order));
             Print(sb.ToString());
         }
 
@@ -42,8 +42,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Modified order #{args.OldOrder.Id}");
-            sb.AppendLine(ToObjectPropertiesString("Old Order", typeof(Order), args.OldOrder));
-            sb.AppendLine(ToObjectPropertiesString("New Order", typeof(Order), args.NewOrder));
+            sb.AppendLine(ToObjectPropertiesString("Old Order", args.OldOrder));
+            sb.AppendLine(ToObjectPropertiesString("New Order", args.NewOrder));
             Print(sb.ToString());
         }
 
@@ -51,8 +51,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Filled order #{args.OldOrder.Id}");
-            sb.AppendLine(ToObjectPropertiesString("Old Order", typeof(Order), args.OldOrder));
-            sb.AppendLine(ToObjectPropertiesString("New Order", typeof(Order), args.NewOrder));
+            sb.AppendLine(ToObjectPropertiesString("Old Order", args.OldOrder));
+            sb.AppendLine(ToObjectPropertiesString("New Order", args.NewOrder));
             Print(sb.ToString());
         }
 
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Expired order #{args.Order.Id}");
-            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
+            sb.AppendLine(ToObjectPropertiesString("Order", args.Order));
             Print(sb.ToString());
         }
 
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Closed order #{args.Order.Id}");
-            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
+            sb.AppendLine(ToObjectPropertiesString("Order", args.Order));
             Print(sb.ToString());
         }
 
@@ -76,7 +76,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Canceled order #{args.Order.Id}");
-            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
+            sb.AppendLine(ToObjectPropertiesString("Order", args.Order));
             Print(sb.ToString());
         }
 
@@ -84,7 +84,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Activated order #{args.Order.Id} ");
-            sb.AppendLine(ToObjectPropertiesString("Order", typeof(Order), args.Order));
+            sb.AppendLine(ToObjectPropertiesString("Order", args.Order));
             Print(sb.ToString());
         }
     }

@@ -55,6 +55,7 @@
     <Compile Include="Bots\LifecycleTradeBot.cs" />
     <Compile Include="Bots\FeedQueryBot.cs" />
     <Compile Include="Bots\ModifyLoopBot.cs" />
+    <Compile Include="Bots\EventBot.cs" />
     <Compile Include="Bots\TradeLoadBot.cs" />
     <Compile Include="Bots\LogBot.cs" />
     <Compile Include="Bots\DelayBot.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
     <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Indicators\MultiplePrecisionIndicator.cs" />
+    <Compile Include="Lib\PrintExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

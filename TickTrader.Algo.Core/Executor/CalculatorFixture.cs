@@ -1,13 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using BL = TickTrader.BusinessLogic;
+using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class CalculatorFixture
+    public interface ICalculatorApi
+    {
+        bool HasEnoughMarginToOpenOrder(OrderEntity orderEntity, SymbolAccessor symbol);
+        bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, OrderEntity orderEntity, SymbolAccessor symbol);
+        double? GetSymbolMargin(string symbol, OrderSide side);
+        double? CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol);
+    }
+
+
+    internal class CalculatorFixture : ICalculatorApi
     {
         private BL.MarketState _state;
         private IFixtureContext _context;
@@ -93,5 +100,137 @@ namespace TickTrader.Algo.Core
                 accEntity.Margin = (double)Margin;
             }
         }
+
+        #region CalculatorApi implementation
+
+        public bool HasEnoughMarginToOpenOrder(OrderEntity orderEntity, SymbolAccessor symbol)
+        {
+            var newOrder = GetOrderAccessor(orderEntity, symbol);
+
+            try
+            {
+                if (marginCalc != null)
+                {
+                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
+                    calc.UpdateMargin(newOrder, acc);
+                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, ((BL.IOrderModel)newOrder).Margin);
+                }
+                if (cashCalc != null)
+                {
+                    var margin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
+                    return cashCalc.HasSufficientMarginToOpenOrder(newOrder, margin);
+                }
+            }
+            catch (BL.NotEnoughMoneyException) { }
+            catch (Exception ex)
+            {
+                _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
+            }
+            return false;
+        }
+
+        public bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, OrderEntity orderEntity, SymbolAccessor symbol)
+        {
+            var newOrder = GetOrderAccessor(orderEntity, symbol);
+
+            try
+            {
+                if (marginCalc != null)
+                {
+                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
+                    calc.UpdateMargin(oldOrder, acc);
+                    calc.UpdateMargin(newOrder, acc);
+                    return marginCalc.HasSufficientMarginToOpenOrder(newOrder, ((BL.IOrderModel)newOrder).Margin - ((BL.IOrderModel)oldOrder).Margin);
+                }
+                if (cashCalc != null)
+                {
+                    var oldMargin = BL.CashAccountCalculator.CalculateMargin(oldOrder, symbol);
+                    var newMargin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
+                    return cashCalc.HasSufficientMarginToOpenOrder(newOrder, newMargin - oldMargin);
+                }
+            }
+            catch (BL.NotEnoughMoneyException) { }
+            catch (Exception ex)
+            {
+                _context.Builder.Logger.OnError($"Failed to calculate margin for order #{oldOrder.OrderId}", ex);
+            }
+            return false;
+        }
+
+        public double? GetSymbolMargin(string symbol, OrderSide side)
+        {
+            if (marginCalc != null)
+            {
+                var netting = marginCalc.GetNetting(symbol);
+                if (netting == null)
+                    return 0;
+
+                return (double)(side == OrderSide.Buy ? netting.Buy.Margin : netting.Sell.Margin);
+            }
+            return null;
+        }
+
+        public double? CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol)
+        {
+            var newOrder = GetOrderAccessor(orderEntity, symbol);
+
+            try
+            {
+                if (marginCalc != null)
+                {
+                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
+                    calc.UpdateMargin(newOrder, acc);
+                    return newOrder.Margin;
+                }
+                if (cashCalc != null)
+                {
+                    return (double)BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
+                }
+            }
+            catch (Exception ex)
+            {
+                _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);
+            }
+            return null;
+        }
+
+
+        private OrderAccessor GetOrderAccessor(OrderEntity orderEntity, SymbolAccessor symbol)
+        {
+            ApplyHiddenServerLogic(orderEntity, symbol);
+
+            return new OrderAccessor(orderEntity, symbol);
+        }
+
+        private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
+        {
+            //add prices for market orders
+            if (order.Type == OrderType.Market && order.Price == null)
+            {
+                order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
+                if (acc.Type == AccountTypes.Cash)
+                {
+                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
+                }
+            }
+
+            //convert order types for cash accounts
+            if (acc.Type == AccountTypes.Cash)
+            {
+                switch (order.Type)
+                {
+                    case OrderType.Market:
+                        order.Type = OrderType.Limit;
+                        order.Options |= OrderExecOptions.ImmediateOrCancel;
+                        break;
+                    case OrderType.Stop:
+                        order.Type = OrderType.StopLimit;
+                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
+                        break;
+                }
+            }
+        }
+
+        #endregion CalculatorApi implementation
     }
 }

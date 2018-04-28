@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Common.Model.Interop
         ServerError,
         LoginDeleted,
         ServerLogout,
-        Canceled
+        Canceled,
+        RejectedByServer
     }
 }
