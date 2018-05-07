@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Vertical" Grid.Row="0" Margin="10" VerticalAlignment="Center">
-            <Label Content="Are you sure you want to exit the application?" />
+            <Label Content="{Binding DialogTitle}" />
             <Label Content="All running bots will be stopped!" Padding="0" HorizontalAlignment="Center"
                    Foreground="{DynamicResource Dialog_ErrorForeground}" Visibility="{Binding HasStartedBots, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>

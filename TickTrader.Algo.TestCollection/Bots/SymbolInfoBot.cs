@@ -10,13 +10,13 @@ namespace TickTrader.Algo.TestCollection.Bots
     {
         protected override void Init()
         {
-            Print(ToObjectPropertiesString("Current", typeof(Symbol), Symbol));
+            Print(ToObjectPropertiesString("Current", Symbol));
 
             var symbolList = Symbols.ToList();
             Print(string.Join(Environment.NewLine, new[] { "Symbols order:" }.AsEnumerable().Concat(symbolList.Select((s, i) => $"{i + 1} - {s.Name}"))));
 
             foreach (var symbol in Symbols)
-                Print(ToObjectPropertiesString(symbol.Name, typeof(Symbol), symbol));
+                Print(ToObjectPropertiesString(symbol.Name, symbol));
 
             Status.WriteLine("Done. Check bot logs");
 

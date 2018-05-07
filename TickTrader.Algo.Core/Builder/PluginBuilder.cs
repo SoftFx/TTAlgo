@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Core
         public Action CurrencyDataRequested { get; set; }
         public DiagnosticInfo Diagnostics { get; set; }
         public ITradeApi TradeApi { get; set; }
+        public ICalculatorApi Calculator { get; set; }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
         public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
@@ -254,7 +255,7 @@ namespace TickTrader.Algo.Core
                 if (TradeApi == null)
                     return new NullTradeApi();
 
-                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Permissions, Id);
+                return new TradeApiAdapter(this, logAdapter);
             }
         }
 

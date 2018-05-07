@@ -11,7 +11,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var sbuilder = new StringBuilder();
             sbuilder.AppendLine($"Bot Instance ID: {Id}");
-            sbuilder.AppendLine(ToObjectPropertiesString("Environment Info", typeof(EnvironmentInfo), Enviroment));
+            sbuilder.AppendLine(ToObjectPropertiesString("Environment Info", Enviroment));
             Status.WriteLine(sbuilder.ToString());
         }
     }

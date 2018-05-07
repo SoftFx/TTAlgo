@@ -239,10 +239,23 @@ namespace TickTrader.Algo.Common.Model
             }
             catch (Exception ex)
             {
-                logger.Error(ex);
-                await Deinitialize();
-                OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
-                return;
+                var fex = ex.FlattenAsPossible();
+
+                if (fex is InteropException)
+                {
+                    var iex = (InteropException)fex;
+
+                    logger.Info("Connection sequence failed: " + iex.Message);
+                    await Deinitialize();
+                    OnFailedConnect(request, new ConnectionErrorInfo(iex.ErrorCode, iex.Message));
+                }
+                else
+                {
+                    logger.Error(ex);
+                    await Deinitialize();
+                    OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
+                    return;
+                }
             }
 
             wasConnected = true;

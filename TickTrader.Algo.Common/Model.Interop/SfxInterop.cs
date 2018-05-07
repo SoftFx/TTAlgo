@@ -87,6 +87,12 @@ namespace TickTrader.Algo.Common.Model
             catch (AggregateException aex)
             {
                 var ex = aex.InnerExceptions.First();
+                if (ex is LoginException)
+                {
+                    var code = ((LoginException)ex).LogoutReason;
+                    return new ConnectionErrorInfo(Convert(code), ex.Message);
+                }
+
                 return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
             }
             catch (Exception ex)
@@ -405,7 +411,7 @@ namespace TickTrader.Algo.Common.Model
         {
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
-                r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
+                r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
                 r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
         }
 
@@ -420,7 +426,7 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<SFX.ExecutionReport>> operationDef)
+        private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<List<SFX.ExecutionReport>>> operationDef)
             where TReq : OrderRequest
         {
             var operationId = request.OperationId;
@@ -445,6 +451,26 @@ namespace TickTrader.Algo.Common.Model
                     return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
                 logger.Error(ex);
                 return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
+            }
+        }
+
+        private OrderTimeInForce? GetTimeInForceReplace(OrderExecOptions? options, DateTime? expiration)
+        {
+            if (options != null)
+            {
+                if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel))
+                    return OrderTimeInForce.ImmediateOrCancel;
+                else if (expiration != null)
+                    return OrderTimeInForce.GoodTillDate;
+                else
+                    return OrderTimeInForce.GoodTillCancel;
+            }
+            else
+            {
+                if (expiration != null)
+                    return OrderTimeInForce.GoodTillDate;
+                else
+                    return null;
             }
         }
 
@@ -699,7 +725,7 @@ namespace TickTrader.Algo.Common.Model
                 UserTag = record.Tag,
                 RemainingVolume = record.LeavesVolume,
                 RequestedVolume = record.InitialVolume,
-                Expiration = record.Expiration,
+                Expiration = record.Expiration?.ToLocalTime(),
                 MaxVisibleVolume = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
                 Options = GetOptions(record),
@@ -716,11 +742,11 @@ namespace TickTrader.Algo.Common.Model
             return OrderExecOptions.None;
         }
 
-        private static ExecutionReport[] ConvertToEr(SFX.ExecutionReport[] reports, string operationId = null)
+        private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId = null)
         {
-            var result = new ExecutionReport[reports.Length];
-            for (int i = 0; i < reports.Length; i++)
-                result[i] = ConvertToEr(reports[i], operationId);
+            var result = new List<ExecutionReport>(reports.Count);
+            for (int i = 0; i < reports.Count; i++)
+                result.Add(ConvertToEr(reports[i], operationId));
             return result;
         }
 
@@ -733,7 +759,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 OrderId = report.OrderId,
                 TradeRequestId = operationId,
-                Expiration = report.Expiration,
+                Expiration = report.Expiration?.ToLocalTime(),
                 Created = report.Created,
                 Modified = report.Modified,
                 RejectReason = Convert(report.RejectReason, report.Text ?? ""),
@@ -1071,6 +1097,21 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException("Unsupported price type: " + priceType);
         }
 
+        private ConnectionErrorCodes Convert(LogoutReason fdkCode)
+        {
+            switch (fdkCode)
+            {
+                case LogoutReason.BlockedAccount: return ConnectionErrorCodes.BlockedAccount;
+                case LogoutReason.InvalidCredentials: return ConnectionErrorCodes.InvalidCredentials;
+                case LogoutReason.NetworkError: return ConnectionErrorCodes.NetworkError;
+                case LogoutReason.ServerError: return ConnectionErrorCodes.ServerError;
+                case LogoutReason.ServerLogout: return ConnectionErrorCodes.ServerLogout;
+                case LogoutReason.SlowConnection: return ConnectionErrorCodes.SlowConnection;
+                case LogoutReason.LoginDeleted: return ConnectionErrorCodes.LoginDeleted;
+                default: return ConnectionErrorCodes.Unknown;
+            }
+        }
+
         #endregion
-    }
+    }    
 }
