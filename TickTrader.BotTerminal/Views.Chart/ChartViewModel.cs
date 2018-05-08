@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Metadata.SetupMainSymbol);
+            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Descriptor.SetupMainSymbol);
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -177,7 +177,7 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = Chart.IsCrosshairEnabled,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    DescriptorId = i.Model.Setup.Metadata.Id,
+                    DescriptorId = i.Model.Setup.Descriptor.Id,
                     PluginFilePath = i.Model.PluginFilePath,
                     Config = i.Model.Setup.Save(),
                 }).ToList(),
@@ -221,7 +221,7 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            if (setupModel.Setup.Metadata.AlgoLogicType != AlgoTypes.Indicator)
+            if (setupModel.Setup.Descriptor.Type != AlgoTypes.Indicator)
             {
                 logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not an indicator!");
             }
@@ -240,7 +240,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (item.Descriptor.AlgoLogicType == AlgoTypes.Robot)
+                if (item.Descriptor.Type == AlgoTypes.Robot)
                 {
                     _botManager.OpenBotSetup(item, Chart);
                     return;
@@ -267,13 +267,13 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            switch (setupModel.Setup.Metadata.AlgoLogicType)
+            switch (setupModel.Setup.Descriptor.Type)
             {
                 case AlgoTypes.Indicator:
                     Chart.AddIndicator(setupModel);
                     break;
                 default:
-                    throw new Exception($"Unknown plugin type '{setupModel.Setup.Metadata.AlgoLogicType}'");
+                    throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.Type}'");
             }
         }
 
@@ -291,7 +291,7 @@ namespace TickTrader.BotTerminal
             var algo = o as AlgoItemViewModel;
             if (algo != null)
             {
-                var pluginType = algo.PluginItem.Descriptor.AlgoLogicType;
+                var pluginType = algo.PluginItem.Descriptor.Type;
                 if (pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot)
                     OpenAlgoSetup(algo.PluginItem);
             }

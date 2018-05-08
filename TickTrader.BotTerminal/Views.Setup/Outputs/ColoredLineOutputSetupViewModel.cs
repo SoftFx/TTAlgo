@@ -1,7 +1,7 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -29,8 +29,8 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ColoredLineOutputSetupViewModel(OutputMetadataInfo metadata)
-            : base(metadata)
+        public ColoredLineOutputSetupViewModel(OutputDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
         {
             base.Reset();
 
-            LineStyle = Metadata.DefaultLineStyle;
+            LineStyle = Descriptor.DefaultLineStyle;
         }
 
         public override void Load(Property srcProperty)

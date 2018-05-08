@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoItemViewModel;
             if (algoBot != null)
             {
-                var pluginType = algoBot.PluginItem.Descriptor.AlgoLogicType;
+                var pluginType = algoBot.PluginItem.Descriptor.Type;
                 if (pluginType == AlgoTypes.Robot)
                     _botManager.OpenBotSetup(algoBot.PluginItem);
             }

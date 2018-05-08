@@ -53,7 +53,7 @@ namespace TickTrader.Algo.CoreUsageSample
             var dataModel = new FeedModel(TimeFrames.M1);
             dataModel.Fill("EURUSD", TTQuoteFileReader.ReadFile("EURUSD-M1-bids.txt"));
 
-            var descriptor = PluginMetadata.Get(typeof(Alligator));
+            var descriptor = AlgoAssemblyInspector.GetPlugin(typeof(Alligator));
             var executor = new PluginExecutor(descriptor.Id);
             executor.MainSymbolCode = "EURUSD";
             executor.InvokeStrategy = new PriorityInvokeStartegy();

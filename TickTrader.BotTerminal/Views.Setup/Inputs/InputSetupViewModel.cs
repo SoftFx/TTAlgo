@@ -4,6 +4,7 @@ using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -13,10 +14,10 @@ namespace TickTrader.BotTerminal
         private SymbolInfo _selectedSymbol;
 
 
-        protected AccountMetadataInfo AccountMetadata { get; }
+        protected SetupMetadata SetupMetadata { get; }
 
 
-        public InputMetadataInfo Metadata { get; }
+        public InputDescriptor Descriptor { get; }
 
         public IReadOnlyList<SymbolInfo> AvailableSymbols { get; private set; }
 
@@ -34,20 +35,20 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private InputSetupViewModel(InputMetadataInfo metadata, string defaultSymbolCode)
+        private InputSetupViewModel(InputDescriptor descriptor, string defaultSymbolCode)
         {
-            Metadata = metadata;
+            Descriptor = descriptor;
             _defaultSymbolCode = defaultSymbolCode;
 
-            SetMetadata(metadata);
+            SetMetadata(descriptor);
         }
 
-        public InputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode)
-            : this(metadata, defaultSymbolCode)
+        public InputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
+            : this(descriptor, setupMetadata.Context.DefaultSymbolCode)
         {
-            AccountMetadata = accountMetadata;
+            SetupMetadata = setupMetadata;
 
-            AvailableSymbols = accountMetadata.GetAvaliableSymbols(_defaultSymbolCode);
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(_defaultSymbolCode);
         }
 
 
@@ -72,16 +73,16 @@ namespace TickTrader.BotTerminal
 
         public class Invalid : InputSetupViewModel
         {
-            public Invalid(InputMetadataInfo descriptor, object error = null)
-                : base(descriptor, null)
+            public Invalid(InputDescriptor descriptor, object error = null)
+                : base(descriptor, (string)null)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(descriptor.Error.Value);
+                    Error = new ErrorMsgModel(descriptor.Error);
                 else
                     Error = new ErrorMsgModel(error);
             }
 
-            public Invalid(InputMetadataInfo descriptor, string symbol, ErrorMsgModel error)
+            public Invalid(InputDescriptor descriptor, string symbol, ErrorMsgModel error)
                 : base(descriptor, symbol)
             {
                 Error = error;

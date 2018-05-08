@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : Metadata.IdProvider.IsValidPluginId(Descriptor, InstanceId);
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : Metadata.IdProvider.IsValidPluginId(Descriptor.Descriptor, InstanceId);
 
         public PluginPermissions Permissions
         {
@@ -257,7 +257,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedTimeFrame = Context.DefaultTimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrAny(Context.DefaultSymbolCode);
             SelectedMapping = Metadata.SymbolMappings.GetBarToBarMappingOrDefault(Context.DefaultMapping);
-            InstanceId = Metadata.IdProvider.GeneratePluginId(Descriptor);
+            InstanceId = Metadata.IdProvider.GeneratePluginId(Descriptor.Descriptor);
 
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)

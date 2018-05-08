@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public FileParamSetupViewModel(ParameterMetadataInfo descriptor)
+        public FileParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
         {
             DefaultFile = descriptor.DefaultValue as string ?? string.Empty;

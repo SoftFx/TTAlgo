@@ -1,5 +1,6 @@
 ﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
@@ -13,13 +14,13 @@ namespace TickTrader.BotTerminal
         public override bool AllowChangeMapping => false;
 
 
-        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context, AccountMetadataInfo account)
-            : this(plugin, metadata, context, account, PluginSetupMode.New)
+        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadata metadata, IPluginIdProvider idProvider)
+            : this(plugin, metadata, idProvider, PluginSetupMode.New)
         {
         }
 
-        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadataInfo metadata, SetupContextInfo context, AccountMetadataInfo account, PluginSetupMode mode)
-            : base(plugin, metadata, context, account, mode)
+        public IndicatorSetupViewModel(PluginInfo plugin, SetupMetadata metadata, IPluginIdProvider idProvider, PluginSetupMode mode)
+            : base(plugin, metadata, idProvider, mode)
         {
             Init();
         }

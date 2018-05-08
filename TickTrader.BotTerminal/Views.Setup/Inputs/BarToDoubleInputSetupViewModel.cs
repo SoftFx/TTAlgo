@@ -1,14 +1,23 @@
 ﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     public class BarToDoubleInputSetupViewModel : MappedInputSetupViewModel
     {
-        public BarToDoubleInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, MappingKey defaultMapping)
-            : base(metadata, accountMetadata, defaultSymbolCode, defaultMapping)
+        private MappingKey _defaultMapping;
+
+
+        protected override MappingKey DefaultMapping => _defaultMapping;
+
+
+        public BarToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
+            : base(descriptor, setupMetadata)
         {
-            AvailableMappings = accountMetadata.SymbolMappings.BarToDoubleMappings;
+            _defaultMapping = new MappingKey(setupMetadata.Context.DefaultMapping, setupMetadata.Mappings.DefaultBarToDoubleReduction);
+            AvailableMappings = setupMetadata.Mappings.BarToDoubleMappings;
         }
 
 
@@ -31,7 +40,7 @@ namespace TickTrader.BotTerminal
 
         protected override MappingInfo GetMapping(MappingKey mappingKey)
         {
-            return AccountMetadata.SymbolMappings.GetBarToDoubleMappingOrDefault(mappingKey);
+            return SetupMetadata.Mappings.GetBarToDoubleMappingOrDefault(mappingKey);
         }
     }
 }

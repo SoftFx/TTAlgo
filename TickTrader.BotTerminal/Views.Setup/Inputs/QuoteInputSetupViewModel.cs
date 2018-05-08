@@ -1,5 +1,7 @@
 ﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -8,8 +10,8 @@ namespace TickTrader.BotTerminal
         private bool _useL2;
 
 
-        public QuoteInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, bool useL2)
-            : base(metadata, accountMetadata, defaultSymbolCode)
+        public QuoteInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata, bool useL2)
+            : base(descriptor, setupMetadata)
         {
             _useL2 = useL2;
         }

@@ -165,6 +165,7 @@
     <Compile Include="Model.Setup\Parameters\EnumParameterSetupModel.cs" />
     <Compile Include="Model.Setup\Parameters\FileParamSetupModel.cs" />
     <Compile Include="Model.Setup\Parameters\GenericParameterSetupModel.cs" />
+    <Compile Include="Model.Setup\SetupMetadata.cs" />
     <Compile Include="Model.Setup\TradeBotSetupModel.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />

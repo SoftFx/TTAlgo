@@ -10,12 +10,12 @@ namespace TickTrader.BotAgent.BA.Models
 {
     public class IdProviderStub : IPluginIdProvider
     {
-        public string GeneratePluginId(PluginMetadata descriptor)
+        public string GeneratePluginId(PluginDescriptor descriptor)
         {
-            return descriptor.UserDisplayName;
+            return descriptor.DisplayName;
         }
 
-        public bool IsValidPluginId(PluginMetadata descriptor, string pluginId)
+        public bool IsValidPluginId(PluginDescriptor descriptor, string pluginId)
         {
             return true;
         }

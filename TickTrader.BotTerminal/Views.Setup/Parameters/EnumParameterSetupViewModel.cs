@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -29,14 +29,14 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public EnumParamSetupViewModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public EnumParamSetupViewModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
-            EnumValues = metadata.EnumValues;
-            if (metadata.DefaultValue != null && metadata.DefaultValue is string)
-                DefaultValue = (string)metadata.DefaultValue;
+            EnumValues = descriptor.EnumValues;
+            if (descriptor.DefaultValue != null && descriptor.DefaultValue is string)
+                DefaultValue = (string)descriptor.DefaultValue;
             if (DefaultValue == null)
-                DefaultValue = metadata.EnumValues.FirstOrDefault();
+                DefaultValue = descriptor.EnumValues.FirstOrDefault();
         }
 
 

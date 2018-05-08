@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.Bots = _botManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
-                    DescriptorId = b.Setup.Metadata.Id,
+                    DescriptorId = b.Setup.Descriptor.Id,
                     PluginFilePath = b.PluginFilePath,
                     Started = b.State == BotModelStates.Running,
                     Config = b.Setup.Save(),
@@ -188,7 +188,7 @@ namespace TickTrader.BotTerminal
                 _logger.Error($"Trade bot '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
                 return;
             }
-            if (catalogItem.Descriptor.AlgoLogicType != AlgoTypes.Robot)
+            if (catalogItem.Descriptor.Type != AlgoTypes.Robot)
             {
                 _logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not a trade bot!");
                 return;

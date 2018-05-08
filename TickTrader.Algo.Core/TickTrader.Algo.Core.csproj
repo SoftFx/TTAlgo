@@ -151,6 +151,7 @@
     <Compile Include="Metadata\ReductionMetadata.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />
+    <Compile Include="Container\AlgoPackageRef.cs" />
     <Compile Include="Package\PackageWriter.cs" />
     <Compile Include="Math\BarSampler.cs" />
     <Compile Include="Buffers\ValueFactory.cs" />
@@ -171,8 +172,8 @@
     <Compile Include="Metadata\ParameterMetadata.cs" />
     <Compile Include="PluginPermissions.cs" />
     <Compile Include="Repository\ExtCollection.cs" />
-    <Compile Include="Repository\FileWatcher.cs" />
-    <Compile Include="Repository\AlgoRepository.cs" />
+    <Compile Include="Repository\PackageWatcher.cs" />
+    <Compile Include="Repository\PackageRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />

@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
         {
             Bot = bot;
             Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupViewModel;
-            PluginType = GetPluginTypeDisplayName(Setup.Metadata);
+            PluginType = GetPluginTypeDisplayName(Setup.Descriptor);
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
             Setup.ValidityChanged += Validate;
             Validate();
 
-            _logger.Debug($"Init {Setup.Metadata.DisplayName} "
+            _logger.Debug($"Init {Setup.Descriptor.DisplayName} "
                  + Setup.Parameters.Count() + " params "
                  + Setup.Inputs.Count() + " inputs "
                  + Setup.Outputs.Count() + " outputs ");
@@ -162,9 +162,9 @@ namespace TickTrader.BotTerminal
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(PluginMetadata descriptor)
+        private string GetPluginTypeDisplayName(PluginDescriptor descriptor)
         {
-            switch (descriptor.AlgoLogicType)
+            switch (descriptor.Type)
             {
                 case AlgoTypes.Robot:
                     return "Bot";

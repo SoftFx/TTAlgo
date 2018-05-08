@@ -106,9 +106,9 @@ namespace TickTrader.BotTerminal
 
         public bool HasOutputs => _outputs.Count > 0;
 
-        public bool HasDescription => !string.IsNullOrWhiteSpace(Metadata?.Description);
+        public bool HasDescription => !string.IsNullOrWhiteSpace(Descriptor?.Description);
 
-        public PluginMetadataInfo Metadata { get; }
+        public PluginDescriptor Descriptor { get; }
 
         public PluginInfo Plugin { get; }
 
@@ -116,17 +116,13 @@ namespace TickTrader.BotTerminal
 
         public bool IsEmpty { get; private set; }
 
-        public SetupMetadataInfo SetupMetadata { get; }
-
-        public SetupContextInfo SetupContext { get; }
-
-        public AccountMetadataInfo AccountMetadata { get; }
+        public SetupMetadata SetupMetadata { get; }
 
         public PluginSetupMode Mode { get; }
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-        public bool CanBeSkipped => IsEmpty && Metadata.IsValid && Metadata.Type != AlgoTypes.Robot;
+        public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.Type != AlgoTypes.Robot;
 
         public string InstanceId
         {
@@ -143,7 +139,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Metadata, InstanceId);
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Descriptor, InstanceId);
 
         public PluginPermissions Permissions
         {
@@ -193,13 +189,12 @@ namespace TickTrader.BotTerminal
         public event System.Action ValidityChanged = delegate { };
 
 
-        public PluginSetupViewModel(PluginInfo plugin, SetupMetadataInfo setupMetadata, SetupContextInfo setupContext,
-            AccountMetadataInfo accountMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
+        public PluginSetupViewModel(PluginInfo plugin, SetupMetadata setupMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
         {
             Plugin = plugin;
-            Metadata = plugin.Descriptor;
+            Descriptor = plugin.Descriptor;
             SetupMetadata = setupMetadata;
-            AccountMetadata = accountMetadata;
+            _idProvider = idProvider;
             Mode = mode;
         }
 
@@ -234,10 +229,10 @@ namespace TickTrader.BotTerminal
 
         public virtual void Reset()
         {
-            SelectedTimeFrame = SetupContext.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupContext.DefaultSymbolCode);
-            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
-            InstanceId = _idProvider.GeneratePluginId(Metadata);
+            SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbolCode);
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
+            InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
@@ -256,85 +251,85 @@ namespace TickTrader.BotTerminal
 
         protected virtual bool CheckValidity()
         {
-            return Metadata.Error == null && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+            return Descriptor.Error == AlgoMetadataErrors.None && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
         }
 
 
         protected void Init()
         {
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
-            AvailableSymbols = AccountMetadata.GetAvaliableSymbols(SetupContext.DefaultSymbolCode);
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbolCode);
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
-            _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
-            _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
-            _tickBasedInputs = Metadata.Inputs.Select(CreateTickBasedInput).ToList();
-            _outputs = Metadata.Outputs.Select(CreateOutput).ToList();
+            _parameters = Descriptor.Parameters.Select(CreateParameter).ToList();
+            _barBasedInputs = Descriptor.Inputs.Select(CreateBarBasedInput).ToList();
+            _tickBasedInputs = Descriptor.Inputs.Select(CreateTickBasedInput).ToList();
+            _outputs = Descriptor.Outputs.Select(CreateOutput).ToList();
 
             _allProperties = _parameters.Concat<PropertySetupViewModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
             _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
 
-            IsEmpty = _allProperties.Count == 0 && !Metadata.SetupMainSymbol;
+            IsEmpty = _allProperties.Count == 0 && !Descriptor.SetupMainSymbol;
 
             Reset();
             Validate();
         }
 
 
-        private ParameterSetupViewModel CreateParameter(ParameterMetadataInfo metadata)
+        private ParameterSetupViewModel CreateParameter(ParameterDescriptor descriptor)
         {
-            if (!metadata.IsValid)
-                return new ParameterSetupViewModel.Invalid(metadata);
+            if (!descriptor.IsValid)
+                return new ParameterSetupViewModel.Invalid(descriptor);
 
-            if (metadata.IsEnum)
-                return new EnumParamSetupViewModel(metadata);
-            if (metadata.DataType == ParameterSetupViewModel.NullableIntTypeName)
-                return new NullableIntParamSetupModel(metadata);
-            if (metadata.DataType == ParameterSetupViewModel.NullableDoubleTypeName)
-                return new NullableDoubleParamSetupModel(metadata);
+            if (descriptor.IsEnum)
+                return new EnumParamSetupViewModel(descriptor);
+            if (descriptor.DataType == ParameterSetupViewModel.NullableIntTypeName)
+                return new NullableIntParamSetupModel(descriptor);
+            if (descriptor.DataType == ParameterSetupViewModel.NullableDoubleTypeName)
+                return new NullableDoubleParamSetupModel(descriptor);
 
-            switch (metadata.DataType)
+            switch (descriptor.DataType)
             {
-                case "System.Boolean": return new BoolParamSetupViewModel(metadata);
-                case "System.Int32": return new IntParamSetupViewModel(metadata);
-                case "System.Double": return new DoubleParamSetupViewModel(metadata);
-                case "System.String": return new StringParamSetupViewModel(metadata);
-                case "TickTrader.Algo.Api.File": return new FileParamSetupViewModel(metadata);
-                default: return new ParameterSetupViewModel.Invalid(metadata, ErrorMsgCodes.UnsupportedParameterType);
+                case "System.Boolean": return new BoolParamSetupViewModel(descriptor);
+                case "System.Int32": return new IntParamSetupViewModel(descriptor);
+                case "System.Double": return new DoubleParamSetupViewModel(descriptor);
+                case "System.String": return new StringParamSetupViewModel(descriptor);
+                case "TickTrader.Algo.Api.File": return new FileParamSetupViewModel(descriptor);
+                default: return new ParameterSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedParameterType);
             }
         }
 
-        private InputSetupViewModel CreateBarBasedInput(InputMetadataInfo metadata)
+        private InputSetupViewModel CreateBarBasedInput(InputDescriptor descriptor)
         {
-            if (!metadata.IsValid)
-                return new InputSetupViewModel.Invalid(metadata);
+            if (!descriptor.IsValid)
+                return new InputSetupViewModel.Invalid(descriptor);
 
-            switch (metadata.DataSeriesBaseTypeFullName)
+            switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, new MappingKey(SetupContext.DefaultMapping, SetupMetadata.Mappings.DefaultBarToDoubleReduction));
-                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, SetupContext.DefaultMapping);
+                case "System.Double": return new BarToDoubleInputSetupViewModel(descriptor, SetupMetadata);
+                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupViewModel(descriptor, SetupMetadata);
                 //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
                 //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
-                default: return new InputSetupViewModel.Invalid(metadata, ErrorMsgCodes.UnsupportedInputType);
+                default: return new InputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }
 
-        private InputSetupViewModel CreateTickBasedInput(InputMetadataInfo metadata)
+        private InputSetupViewModel CreateTickBasedInput(InputDescriptor descriptor)
         {
-            if (!metadata.IsValid)
-                return new InputSetupViewModel.Invalid(metadata);
+            if (!descriptor.IsValid)
+                return new InputSetupViewModel.Invalid(descriptor);
 
-            switch (metadata.DataSeriesBaseTypeFullName)
+            switch (descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new QuoteToDoubleInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, new MappingKey(SetupMetadata.Mappings.DefaultQuoteToDoubleReduction));
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, new MappingKey(SetupMetadata.Mappings.DefaultQuoteToBarReduction));
-                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupViewModel(metadata, AccountMetadata, SetupContext.DefaultSymbolCode, true);
-                default: return new InputSetupViewModel.Invalid(metadata, ErrorMsgCodes.UnsupportedInputType);
+                case "System.Double": return new QuoteToDoubleInputSetupViewModel(descriptor, SetupMetadata);
+                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupViewModel(descriptor, SetupMetadata);
+                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupViewModel(descriptor, SetupMetadata, false);
+                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupViewModel(descriptor, SetupMetadata, true);
+                default: return new InputSetupViewModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }
 
-        private OutputSetupViewModel CreateOutput(OutputMetadataInfo descriptor)
+        private OutputSetupViewModel CreateOutput(OutputDescriptor descriptor)
         {
             if (!descriptor.IsValid)
                 return new OutputSetupViewModel.Invalid(descriptor);

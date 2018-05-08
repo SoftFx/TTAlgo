@@ -1,8 +1,8 @@
 ﻿using System;
 using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Info;
 using System.Windows.Media;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         private bool _isEnabled;
 
 
-        public OutputMetadataInfo Metadata { get; }
+        public OutputDescriptor Descriptor { get; }
 
         public bool IsEnabled
         {
@@ -60,11 +60,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public OutputSetupViewModel(OutputMetadataInfo metadata)
+        public OutputSetupViewModel(OutputDescriptor descriptor)
         {
-            Metadata = metadata;
+            Descriptor = descriptor;
 
-            SetMetadata(metadata);
+            SetMetadata(descriptor);
         }
 
 
@@ -94,12 +94,12 @@ namespace TickTrader.BotTerminal
 
         private void InitColor()
         {
-            LineColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(Metadata.DefaultColor);
+            LineColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(Descriptor.DefaultColor);
         }
 
         private void InitThickness()
         {
-            var intThikness = (int)Metadata.DefaultThickness;
+            var intThikness = (int)Descriptor.DefaultThickness;
             if (intThikness < 1)
                 intThikness = 1;
             if (intThikness > 5)
@@ -110,11 +110,11 @@ namespace TickTrader.BotTerminal
 
         public class Invalid : OutputSetupViewModel
         {
-            public Invalid(OutputMetadataInfo metadata, object error = null)
-                : base(metadata)
+            public Invalid(OutputDescriptor descriptor, object error = null)
+                : base(descriptor)
             {
                 if (error == null)
-                    Error = new ErrorMsgModel(metadata.Error.Value);
+                    Error = new ErrorMsgModel(descriptor.Error);
                 else
                     Error = new ErrorMsgModel(error);
             }

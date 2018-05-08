@@ -117,8 +117,8 @@ namespace TickTrader.BotTerminal
             res.Add("------------ Permissions ------------");
             res.Add(Bot.Setup.Permissions.ToString());
             res.Add("------------ Plugin Info ------------");
-            res.Add($"Name: {Bot.Setup.Metadata.UserDisplayName}");
-            res.Add($"Version: {Bot.Setup.Metadata.Version}");
+            res.Add($"Name: {Bot.Setup.Descriptor.DisplayName}");
+            res.Add($"Version: {Bot.Setup.Descriptor.Version}");
             res.Add($"File Path: {Bot.PluginFilePath}");
             if (Bot.Setup.HasParams)
             {

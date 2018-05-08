@@ -1,13 +1,17 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     public abstract class MappedInputSetupViewModel : InputSetupViewModel
     {
-        private MappingKey _defaultMapping;
         private MappingInfo _selectedMapping;
+
+
+        protected abstract MappingKey DefaultMapping { get; }
 
 
         public IReadOnlyList<MappingInfo> AvailableMappings { get; protected set; }
@@ -26,10 +30,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public MappedInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, MappingKey defaultMapping)
-            : base(metadata, accountMetadata, defaultSymbolCode)
+        public MappedInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
+            : base(descriptor, setupMetadata)
         {
-            _defaultMapping = defaultMapping;
         }
 
 
@@ -37,7 +40,7 @@ namespace TickTrader.BotTerminal
         {
             base.Reset();
 
-            SelectedMapping = GetMapping(_defaultMapping);
+            SelectedMapping = GetMapping(DefaultMapping);
         }
 
 
@@ -47,7 +50,7 @@ namespace TickTrader.BotTerminal
         protected override void LoadConfig(Input input)
         {
             var mappedInput = input as MappedInput;
-            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? _defaultMapping);
+            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? DefaultMapping);
 
             base.LoadConfig(input);
         }

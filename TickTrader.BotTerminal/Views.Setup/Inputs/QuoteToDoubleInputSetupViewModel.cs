@@ -1,14 +1,23 @@
 ﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     public class QuoteToDoubleInputSetupViewModel : MappedInputSetupViewModel
     {
-        public QuoteToDoubleInputSetupViewModel(InputMetadataInfo metadata, AccountMetadataInfo accountMetadata, string defaultSymbolCode, MappingKey defaultMapping)
-            : base(metadata, accountMetadata, defaultSymbolCode, defaultMapping)
+        private MappingKey _defaultMapping;
+
+
+        protected override MappingKey DefaultMapping => _defaultMapping;
+
+
+        public QuoteToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
+            : base(descriptor, setupMetadata)
         {
-            AvailableMappings = accountMetadata.SymbolMappings.QuoteToDoubleMappings;
+            _defaultMapping = new MappingKey(setupMetadata.Mappings.DefaultQuoteToDoubleReduction);
+            AvailableMappings = setupMetadata.Mappings.QuoteToDoubleMappings;
         }
 
 
@@ -31,7 +40,7 @@ namespace TickTrader.BotTerminal
 
         protected override MappingInfo GetMapping(MappingKey mappingKey)
         {
-            return AccountMetadata.SymbolMappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
+            return SetupMetadata.Mappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
         }
     }
 }

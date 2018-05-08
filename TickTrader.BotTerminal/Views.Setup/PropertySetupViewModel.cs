@@ -3,6 +3,7 @@ using System;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -43,10 +44,10 @@ namespace TickTrader.BotTerminal
         public abstract void Reset();
 
 
-        internal void SetMetadata(PropertyMetadataInfo metadata)
+        internal void SetMetadata(PropertyDescriptor descriptor)
         {
-            Id = metadata.DescriptorId;
-            DisplayName = metadata.DisplayName;
+            Id = descriptor.Id;
+            DisplayName = descriptor.DisplayName;
         }
     }
 }

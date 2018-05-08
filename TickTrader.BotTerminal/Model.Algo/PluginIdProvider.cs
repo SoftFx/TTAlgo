@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
@@ -24,7 +23,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public string GeneratePluginId(PluginMetadataInfo descriptor)
+        public string GeneratePluginId(PluginDescriptor descriptor)
         {
             switch (descriptor.Type)
             {
@@ -37,7 +36,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsValidPluginId(PluginMetadataInfo descriptor, string pluginId)
+        public bool IsValidPluginId(PluginDescriptor descriptor, string pluginId)
         {
             if (!_botIdHelper.Validate(pluginId))
             {
@@ -57,7 +56,7 @@ namespace TickTrader.BotTerminal
 
         public void AddPlugin(PluginModel plugin)
         {
-            if (plugin.Setup.Metadata.Type == AlgoTypes.Robot)
+            if (plugin.Setup.Descriptor.Type == AlgoTypes.Robot)
             {
                 _bots.Add(plugin.InstanceId, 1);
             }

@@ -1,7 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -28,8 +28,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public MarkerSeriesOutputSetupViewModel(OutputMetadataInfo metadata)
-            : base(metadata)
+        public MarkerSeriesOutputSetupViewModel(OutputDescriptor descriptor)
+            : base(descriptor)
         {
         }
 

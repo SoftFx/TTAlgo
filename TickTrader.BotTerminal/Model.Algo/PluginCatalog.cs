@@ -19,14 +19,14 @@ namespace TickTrader.BotTerminal
     {
         private Logger logger;
         private static readonly Guid NoRepositoryId = Guid.Empty;
-        private List<AlgoRepository> repositories = new List<AlgoRepository>();
-        private Dictionary<AlgoRepository, Guid> repositoryToIdMap = new Dictionary<AlgoRepository, Guid>();
+        private List<PackageRepository> repositories = new List<PackageRepository>();
+        private Dictionary<PackageRepository, Guid> repositoryToIdMap = new Dictionary<PackageRepository, Guid>();
         private VarDictionary<PluginCatalogKey, PluginCatalogItem> plugins = new VarDictionary<PluginCatalogKey, PluginCatalogItem>();
 
         public PluginCatalog()
         {
-            Indicators = plugins.Where((k, p) => p.Descriptor.AlgoLogicType == AlgoTypes.Indicator);
-            BotTraders = plugins.Where((k, p) => p.Descriptor.AlgoLogicType == AlgoTypes.Robot);
+            Indicators = plugins.Where((k, p) => p.Descriptor.Type == AlgoTypes.Indicator);
+            BotTraders = plugins.Where((k, p) => p.Descriptor.Type == AlgoTypes.Robot);
 
             logger = NLog.LogManager.GetCurrentClassLogger();
         }
@@ -40,7 +40,7 @@ namespace TickTrader.BotTerminal
 
         public void AddFolder(string path)
         {
-            AlgoRepository rep = new AlgoRepository(path, new AlgoLogAdapter("AlgoRepository"));
+            PackageRepository rep = new PackageRepository(path, new AlgoLogAdapter("AlgoRepository"));
             repositories.Add(rep);
 
             repositoryToIdMap.Add(rep, Guid.NewGuid());
@@ -60,8 +60,8 @@ namespace TickTrader.BotTerminal
 
         public void AddAssembly(Assembly assembly)
         {
-            var descritpors = PluginMetadata.InspectAssembly(assembly);
-            foreach (var d in descritpors)
+            var descritors = AlgoAssemblyInspector.FindPlugins(assembly);
+            foreach (var d in descritors)
                 Add(d);
         }
 

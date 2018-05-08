@@ -30,9 +30,9 @@ namespace TickTrader.BotTerminal
         {
             PluginItem = item;
             Name = item.DisplayName;
-            Description = string.Join(Environment.NewLine, item.Ref.Metadata.Description, string.Empty, $"Path: {item.FilePath}").Trim();
-            Category = item.Ref.Metadata.Category;
-            var type = item.Ref.Metadata.AlgoLogicType;
+            Description = string.Join(Environment.NewLine, item.Descriptor.Description, string.Empty, $"Path: {item.FilePath}").Trim();
+            Category = item.Descriptor.Category;
+            var type = item.Descriptor.Type;
             if (type == Algo.Core.Metadata.AlgoTypes.Indicator)
                 Group = "Indicators";
             else if (type == Algo.Core.Metadata.AlgoTypes.Robot)

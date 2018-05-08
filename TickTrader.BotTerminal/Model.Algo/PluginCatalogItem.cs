@@ -20,8 +20,8 @@ namespace TickTrader.BotTerminal
         public PluginCatalogKey Key { get; private set; }
         public AlgoPluginRef Ref { get; private set; }
         public string FilePath { get; private set; }
-        public PluginMetadata Descriptor { get { return Ref.Metadata; } }
-        public string DisplayName { get { return Descriptor.DisplayName; } }
+        public PluginDescriptor Descriptor { get { return Ref.Metadata.Descriptor; } }
+        public string DisplayName { get { return Descriptor.UiDisplayName; } }
         public string Category { get { return Descriptor.Category; } }
 
         internal bool CanBeUseForSnapshot<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()

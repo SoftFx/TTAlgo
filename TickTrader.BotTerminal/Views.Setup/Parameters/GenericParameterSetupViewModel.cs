@@ -1,7 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -48,20 +48,14 @@ namespace TickTrader.BotTerminal
         internal virtual UiConverter<T> Converter => null;
 
 
-        public ParameterSetupViewModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public ParameterSetupViewModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
             DefaultValue = default(T);
 
-            if (metadata.DefaultValue != null)
+            if (descriptor.DefaultValue != null && Converter != null)
             {
-                if (metadata.DefaultValue is T)
-                    DefaultValue = (T)metadata.DefaultValue;
-                else
-                {
-                    if (Converter.FromObject(metadata.DefaultValue, out var convertedFromObj))
-                        DefaultValue = convertedFromObj;
-                }
+                DefaultValue = Converter.Parse(Descriptor.DefaultValue, out var error);
             }
         }
 
@@ -105,8 +99,8 @@ namespace TickTrader.BotTerminal
         internal override UiConverter<bool> Converter => UiConverter.Bool;
 
 
-        public BoolParamSetupViewModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public BoolParamSetupViewModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
@@ -123,8 +117,8 @@ namespace TickTrader.BotTerminal
         internal override UiConverter<int> Converter => UiConverter.Int;
 
 
-        public IntParamSetupViewModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public IntParamSetupViewModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
@@ -141,8 +135,8 @@ namespace TickTrader.BotTerminal
         internal override UiConverter<int?> Converter => UiConverter.NullableInt;
 
 
-        public NullableIntParamSetupModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public NullableIntParamSetupModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
@@ -159,8 +153,8 @@ namespace TickTrader.BotTerminal
         internal override UiConverter<double> Converter => UiConverter.Double;
 
 
-        public DoubleParamSetupViewModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public DoubleParamSetupViewModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
@@ -177,8 +171,8 @@ namespace TickTrader.BotTerminal
         internal override UiConverter<double?> Converter => UiConverter.NullableDouble;
 
 
-        public NullableDoubleParamSetupModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public NullableDoubleParamSetupModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
@@ -195,8 +189,8 @@ namespace TickTrader.BotTerminal
         internal override UiConverter<string> Converter => UiConverter.String;
 
 
-        public StringParamSetupViewModel(ParameterMetadataInfo metadata)
-            : base(metadata)
+        public StringParamSetupViewModel(ParameterDescriptor descriptor)
+            : base(descriptor)
         {
         }
 
