@@ -59,7 +59,7 @@
                     <DataGridTextColumn Header="{l:Resx Journal_Time}" Width="Auto"
                                         Binding="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"
                                         CellStyle="{DynamicResource DataGridCellStyle_RightAligned}"
-                                        SortMemberPath="Time" SortDirection="Ascending" />
+                                        SortMemberPath="Time" SortDirection="Descending" />
                     <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="*"
                                             CellTemplate="{StaticResource MessageCellTemplate}"
                                             ClipboardContentBinding="{Binding Message}"/>

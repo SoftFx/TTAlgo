@@ -22,6 +22,7 @@ using TickTrader.BotAgent.Extensions;
 using NLog;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.BotAgent.BA.Entities;
+using System.Globalization;
 
 namespace TickTrader.BotAgent
 {
@@ -29,6 +30,9 @@ namespace TickTrader.BotAgent
     {
         public static void Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             CoreLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
 
             var logger = LogManager.GetLogger(nameof(Startup));

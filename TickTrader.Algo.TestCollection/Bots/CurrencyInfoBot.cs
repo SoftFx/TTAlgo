@@ -14,7 +14,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             Print(string.Join(Environment.NewLine, new[] { "Currencies order:" }.AsEnumerable().Concat(currenciesList.Select((s, i) => $"{i + 1} - {s.Name}"))));
 
             foreach (var currency in Currencies)
-                Print(ToObjectPropertiesString(currency.Name, typeof(Currency), currency));
+                Print(ToObjectPropertiesString(currency.Name, currency));
 
             Status.WriteLine("Done. Check bot logs");
 

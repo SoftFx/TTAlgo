@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
@@ -47,10 +49,10 @@ namespace TickTrader.BotTerminal
             {
                 StartStop();
             }
-            if (openState)
-            {
+
+            CreateState();
+            if(openState)
                 OpenState();
-            }
         }
 
 
@@ -65,12 +67,31 @@ namespace TickTrader.BotTerminal
         public void Close()
         {
             _botManager.CloseBot(Model.InstanceId);
+            CustomDockManager.GetInstance().RemoveView(Model.InstanceId);
             Model.StateChanged -= BotStateChanged;
         }
 
+        public void CreateState()
+        {
+            var botId = Model.InstanceId;
+            var manager = CustomDockManager.GetInstance();
+            if (!manager.HasView(botId))
+            {
+
+                var content = new BotStateViewModel(Model, _shell.ToolWndManager);
+                var view = new LayoutAnchorable { Title = botId, FloatingHeight = 300, FloatingWidth = 300, Content = content, ContentId = botId };
+                manager.AddView(botId, view);
+                manager.ShowView(botId);
+            }
+        }
+
+
         public void OpenState()
         {
-            _shell.ToolWndManager.OpenOrActivateWindow(Model, () => new BotStateViewModel(Model, _shell.ToolWndManager));
+            var manager = CustomDockManager.GetInstance();
+            if (!manager.HasView(Model.InstanceId))
+                CreateState();                
+            manager.ShowView(Model.InstanceId);
         }
 
         public void OpenSettings()

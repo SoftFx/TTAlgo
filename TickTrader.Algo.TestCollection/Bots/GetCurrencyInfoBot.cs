@@ -12,7 +12,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            Status.WriteLine(ToObjectPropertiesString(CurrencyCode, typeof(Currency), Currencies[CurrencyCode]));
+            Status.WriteLine(ToObjectPropertiesString(CurrencyCode, Currencies[CurrencyCode]));
 
             Exit();
         }

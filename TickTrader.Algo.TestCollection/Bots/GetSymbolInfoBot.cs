@@ -12,7 +12,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
-            Status.WriteLine(ToObjectPropertiesString(SymbolName, typeof(Symbol), Symbols[SymbolName]));
+            Status.WriteLine(ToObjectPropertiesString(SymbolName, Symbols[SymbolName]));
 
             Exit();
         }

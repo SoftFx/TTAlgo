@@ -252,5 +252,57 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
+
+
+        public double? GetSymbolMargin(string symbol, OrderSide side)
+        {
+            if (builder.Calculator != null)
+            {
+                return builder.Calculator.GetSymbolMargin(symbol, side);
+            }
+            return null;
+        }
+
+        public double? CalculateOrderMargin(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None)
+        {
+            var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
+            if (symbolAccessor != null && builder.Calculator != null)
+            {
+                var orderEntity = CreateOrderStub(symbolAccessor, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, options);
+
+                return builder.Calculator.CalculateOrderMargin(orderEntity, symbolAccessor);
+            }
+            return null;
+        }
+
+        public bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None)
+        {
+            var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
+            if (symbolAccessor != null && builder.Calculator != null)
+            {
+                var orderEntity = CreateOrderStub(symbolAccessor, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, options);
+
+                return builder.Calculator.HasEnoughMarginToOpenOrder(orderEntity, symbolAccessor);
+            }
+            return false;
+        }
+
+        private OrderEntity CreateOrderStub(SymbolAccessor symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, OrderExecOptions options)
+        {
+            return new OrderEntity("-1")
+            {
+                Symbol = symbol.Name,
+                Type = type,
+                Side = side,
+                Price = price,
+                StopPrice = stopPrice,
+                RequestedVolume = volume * symbol.ContractSize,
+                RemainingVolume = volume * symbol.ContractSize,
+                MaxVisibleVolume = maxVisibleVolume * symbol.ContractSize,
+                StopLoss = sl,
+                TakeProfit = tp,
+                Options = options,
+            };
+        }
     }
 }

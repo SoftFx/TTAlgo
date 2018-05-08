@@ -17,6 +17,16 @@ namespace TickTrader.BotTerminal
 
         private Dictionary<string, LayoutAnchorable> _anchorableViews;
 
+        private static CustomDockManager customDockManager;
+
+        public static CustomDockManager GetInstance()
+        {
+            if (customDockManager is null)
+                return new CustomDockManager();
+            else
+                return customDockManager;
+        }
+
 
         public static readonly DependencyProperty DockManagerServiceProperty =
             DependencyProperty.Register("DockManagerService", typeof(IDockManagerServiceProvider), typeof(CustomDockManager), new PropertyMetadata(null, OnDockManagerServicePropertyChanged));
@@ -56,10 +66,62 @@ namespace TickTrader.BotTerminal
 
         public CustomDockManager()
         {
+            if (!(customDockManager is null))
+                throw new Exception("Instance of class has been exist!");
+
             _anchorableViews = new Dictionary<string, LayoutAnchorable>();
 
             Loaded += (sender, args) => FindAnchorableViews();
+
+            customDockManager = this;
         }
+
+        #region view methods
+
+        public void AddView(string viewId, LayoutAnchorable view)
+        {
+            if (!HasView(viewId))
+            {
+                _anchorableViews.Add(viewId, view);
+                view.AddToLayout(this, AnchorableShowStrategy.Left);
+                FloatView(viewId);
+            }
+        }
+
+        public void FloatView(string viewId)
+        {
+            if (HasView(viewId))
+                _anchorableViews[viewId].Float();
+        }
+
+        public void ShowView(string viewId)
+        {
+            if (HasView(viewId))
+                _anchorableViews[viewId].Show();
+        }
+
+        public void HideView(string viewId)
+        {
+            if (HasView(viewId))
+                _anchorableViews[viewId].Hide();
+        }
+
+        public bool HasView(string viewId)
+        {
+            return _anchorableViews.ContainsKey(viewId);
+        }
+
+        public void RemoveView(string viewId)
+        {
+            if (HasView(viewId))
+            {
+                var view = _anchorableViews[viewId];
+                view.Parent.RemoveChild(view);
+                _anchorableViews.Remove(viewId);
+            }
+        }
+
+        #endregion
 
 
         private void FindAnchorableViews()

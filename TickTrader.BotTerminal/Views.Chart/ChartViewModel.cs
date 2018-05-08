@@ -25,6 +25,8 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using System.Windows.Input;
 using TickTrader.Algo.Common.Model;
+using Xceed.Wpf.AvalonDock.Layout;
+using System.Windows.Controls;
 
 namespace TickTrader.BotTerminal
 {
