@@ -30,9 +30,9 @@ namespace TickTrader.Algo.Core.Repository
         private IAlgoCoreLogger _logger;
 
 
-        public event Action<AlgoRepositoryEventArgs> Added = delegate { };
-        public event Action<AlgoRepositoryEventArgs> Removed = delegate { };
-        public event Action<AlgoRepositoryEventArgs> Replaced = delegate { };
+        public event Action<AlgoPackageRef> Added;
+        public event Action<AlgoPackageRef> Updated;
+        public event Action<AlgoPackageRef> Removed;
 
 
         public PackageRepository(string repPath, RepositoryLocation location, IAlgoCoreLogger logger = null)
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Core.Repository
                             continue;
 
                         if (!_packages.TryGetValue(file, out var item))
-                            AddItem(file);
+                            UpsertPackage(file);
                         else
                             item.CheckForChanges();
                     }
@@ -135,19 +135,9 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger?.Info($"Failed to scan {_repPath}", ex);
                 _stateControl.PushEvent(Events.ScanFailed);
             }
-        }
-
-        private void AddItem(string file)
-        {
-            var item = new PackageWatcher(file, _location, _logger);
-            item.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
-            item.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
-            item.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
-            _packages.Add(file, item);
-            item.Start();
         }
 
         private void WatcherOnError(object sender, ErrorEventArgs e)
@@ -157,72 +147,74 @@ namespace TickTrader.Algo.Core.Repository
 
         private void WatcherOnRenamed(object sender, RenamedEventArgs e)
         {
+            var oldFileSupported = PackageWatcher.IsFileSupported(e.OldFullPath);
+            var newFileSupported = PackageWatcher.IsFileSupported(e.FullPath);
+
+            if (!oldFileSupported && !newFileSupported)
+                return;
+
             lock (_scanUpdateLockObj)
             {
-                if (!PackageWatcher.IsFileSupported(e.FullPath))
-                    return;
+                if (oldFileSupported)
+                    RemovePackage(e.OldFullPath);
 
-                PackageWatcher assembly;
-                if (_packages.TryGetValue(e.FullPath, out assembly))
-                    assembly.CheckForChanges();
-                else
-                {
-                    assembly = new PackageWatcher(e.FullPath, _logger);
-                    _packages.Add(e.FullPath, assembly);
-                }
+                if (newFileSupported)
+                    UpsertPackage(e.FullPath);
             }
-
-            //lock (scanUpdateLockObj)
-            //{
-            //    FileWatcher assembly;
-            //    if (assemblies.TryGetValue(e.OldFullPath, out assembly))
-            //    {
-            //        assemblies.Remove(e.OldFullPath);
-            //        assemblies.Add(e.FullPath, assembly);
-            //        assembly.Rename(e.FullPath);
-            //    }
-            //    else if (assemblies.TryGetValue(e.FullPath, out assembly))
-            //    {
-            //        // I dunno
-            //    }
-            //    else
-            //    {
-            //        assembly = new FileWatcher(e.FullPath, OnError);
-            //        assemblies.Add(e.FullPath, assembly);
-            //    }
-            //}
-        }
-
-        private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
-        {
         }
 
         private void WatcherOnChanged(object sender, FileSystemEventArgs e)
         {
+            if (!PackageWatcher.IsFileSupported(e.FullPath))
+                return;
+
             lock (_scanUpdateLockObj)
             {
-                if (!PackageWatcher.IsFileSupported(e.FullPath))
-                    return;
-
-                if (_packages.TryGetValue(e.FullPath, out var assembly))
-                    assembly.CheckForChanges();
-                else
-                    AddItem(e.FullPath);
+                UpsertPackage(e.FullPath);
             }
         }
-    }
 
-    public class AlgoRepositoryEventArgs
-    {
-        public AlgoPackageRef PackageRef { get; }
-
-        public AlgoPluginRef PluginRef { get; }
-
-
-        public AlgoRepositoryEventArgs(AlgoPackageRef packageRef, AlgoPluginRef pluginRef)
+        private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
         {
-            PackageRef = packageRef;
-            PluginRef = pluginRef;
+            if (!PackageWatcher.IsFileSupported(e.FullPath))
+                return;
+
+            lock (_scanUpdateLockObj)
+            {
+                RemovePackage(e.FullPath);
+            }
+        }
+
+        private void UpsertPackage(string path)
+        {
+            if (_packages.TryGetValue(path, out var package))
+            {
+                package.CheckForChanges();
+            }
+            else
+            {
+                package = new PackageWatcher(path, _location, _logger);
+                _packages.Add(path, package);
+                package.Updated += PackageWatcherOnUpdated;
+                Added?.Invoke(package.PackageRef);
+                package.Start();
+            }
+        }
+
+        private void RemovePackage(string path)
+        {
+            if (_packages.TryGetValue(path, out var package))
+            {
+                _packages.Remove(path);
+                package.Updated -= PackageWatcherOnUpdated;
+                Removed?.Invoke(package.PackageRef);
+                package.Dispose();
+            }
+        }
+
+        private void PackageWatcherOnUpdated(AlgoPackageRef packageRef)
+        {
+            Updated?.Invoke(packageRef);
         }
     }
 }

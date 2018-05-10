@@ -16,8 +16,7 @@ namespace TickTrader.Algo.Core.Repository
         public enum Events { Start, Changed, DoneLoad, DoneLoadRetry, NextRetry, CloseRequested, DoneClosing, Rescan }
 
 
-        private StateMachine<States> _stateControl = new StateMachine<States>();
-        private Dictionary<string, AlgoPluginRef> _plugins = new Dictionary<string, AlgoPluginRef>();
+        private StateMachine<States> _stateControl;
         private FileInfo _currentFileInfo;
         private bool _isRescanRequested;
         private Task _scanTask;
@@ -30,20 +29,20 @@ namespace TickTrader.Algo.Core.Repository
 
         public RepositoryLocation Location { get; }
 
-        public AlgoPackageRef Package { get; private set; }
+        public AlgoPackageRef PackageRef { get; private set; }
 
 
-        public event Action<PackageWatcher, AlgoPluginRef> Added;
-        public event Action<PackageWatcher, AlgoPluginRef> Removed;
-        public event Action<PackageWatcher, AlgoPluginRef> Replaced;
+        public event Action<AlgoPackageRef> Updated;
 
 
         public PackageWatcher(string filePath, RepositoryLocation location, IAlgoCoreLogger logger)
         {
             FilePath = filePath;
-            FileName = Path.GetFileName(filePath);
+            FileName = Path.GetFileName(filePath).ToLowerInvariant();
             Location = location;
             _logger = logger;
+
+            _stateControl = new StateMachine<States>();
 
             _stateControl.AddTransition(States.Created, Events.Start, States.Loading);
             _stateControl.AddTransition(States.Loading, Events.DoneLoad, States.Ready);
@@ -79,11 +78,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public void Dispose()
         {
-            foreach (var plugin in _plugins.Values)
-            {
-                Removed?.Invoke(this, plugin);
-            }
-            Package?.SetObsolete();
+            PackageRef?.SetObsolete();
         }
 
         public Task WaitReady()
@@ -117,14 +112,17 @@ namespace TickTrader.Algo.Core.Repository
 
                     if (!skipFileScan)
                     {
-                        var oldPackage = Package;
+                        var oldPackage = PackageRef;
                         var container = PluginContainer.Load(filePath, _logger);
-                        newPackage = new AlgoPackageRef(Location, FileName, info.LastWriteTimeUtc, container);
-                        Package = newPackage;
+                        newPackage = new IsolatedAlgoPackageRef(FileName, Location, info.LastWriteTimeUtc, container);
                         _currentFileInfo = info;
                         _logger.Info("Loaded package " + FileName);
-                        Merge(newPackage.GetPluginRefs()); // this will fire events
-                        oldPackage?.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefuly stopped
+                        PackageRef = newPackage;
+                        if (oldPackage != null)
+                        {
+                            Updated?.Invoke(newPackage);
+                            oldPackage.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
+                        }
                     }
                 }
 
@@ -150,37 +148,6 @@ namespace TickTrader.Algo.Core.Repository
                 newPackage?.Dispose();
                 _logger?.Info("Cannot open file: " + FileName + " " + ex.Message);
                 _stateControl.PushEvent(Events.DoneLoad);
-            }
-        }
-
-        private void Merge(IEnumerable<AlgoPluginRef> newMetadata)
-        {
-            // upsert
-
-            foreach (var pluginRef in newMetadata)
-            {
-                if (!_plugins.ContainsKey(pluginRef.Id))
-                {
-                    _plugins.Add(pluginRef.Id, pluginRef);
-                    Added(this, pluginRef);
-                }
-                else
-                {
-                    _plugins[pluginRef.Id] = pluginRef;
-                    Replaced(this, pluginRef);
-                }
-            }
-
-            // delete
-
-            var newMetadataLookup = newMetadata.ToDictionary(a => a.Id);
-            foreach (var item in _plugins.Values)
-            {
-                if (!newMetadataLookup.ContainsKey(item.Metadata.Id))
-                {
-                    _plugins.Remove(item.Metadata.Id);
-                    Removed(this, item);
-                }
             }
         }
     }

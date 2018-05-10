@@ -97,6 +97,9 @@
     <Compile Include="Fdk.Serializers\ISerializer.cs" />
     <Compile Include="Fdk.Serializers\TextSerializer.cs" />
     <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
+    <Compile Include="Info\InfoExtensions.cs" />
+    <Compile Include="Info\Keys\PackageKey.cs" />
+    <Compile Include="Info\PackageInfo.cs" />
     <Compile Include="Info\Setup\AccountMetadataInfo.cs" />
     <Compile Include="Info\Setup\ApiMetadataInfo.cs" />
     <Compile Include="Info\CurrencyInfo.cs" />
@@ -146,6 +149,8 @@
     <Compile Include="Model.Interop\TimeSlicer.cs" />
     <Compile Include="Model.Interop\InteropException.cs" />
     <Compile Include="Model.Interop\SfxInterop.cs" />
+    <Compile Include="Model.Library\IAlgoLibrary.cs" />
+    <Compile Include="Model.Library\LocalAlgoLibrary.cs" />
     <Compile Include="Model.Setup\AlgoSetupFactory.cs" />
     <Compile Include="Model.Setup\Extensions.cs" />
     <Compile Include="Model.Setup\IndicatorSetupModel.cs" />

@@ -16,5 +16,16 @@ namespace TickTrader.Algo.Common.Info
             Key = key;
             Descriptor = descriptor;
         }
+
+
+        public override string ToString()
+        {
+            return Key.ToString();
+        }
+
+        public override int GetHashCode()
+        {
+            return Key.GetHashCode();
+        }
     }
 }

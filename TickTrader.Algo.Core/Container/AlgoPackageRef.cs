@@ -16,20 +16,18 @@ namespace TickTrader.Algo.Core.Metadata
 
     public class AlgoPackageRef : IDisposable
     {
-        private int _refCount;
+        private List<AlgoPluginRef> _plugins;
 
-
-        public RepositoryLocation Location { get; }
 
         public string Name { get; }
 
-        public DateTime Created { get; }
+        public RepositoryLocation Location { get; }
 
-        public PluginContainer Container { get; }
+        public DateTime CreatedUtc { get; }
 
-        public bool IsValid => Container != null;
+        public virtual bool IsValid => true;
 
-        public bool IsLocked => _refCount > 0;
+        public virtual bool IsLocked => true;
 
         public bool IsObsolete { get; private set; }
 
@@ -37,50 +35,34 @@ namespace TickTrader.Algo.Core.Metadata
         public event Action<AlgoPackageRef> IsLockedChanged;
 
 
-        public AlgoPackageRef(RepositoryLocation location, string name, DateTime created, PluginContainer container)
+        protected AlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc)
         {
-            Location = location;
             Name = name;
-            Created = created;
-            Container = container;
+            Location = location;
+            CreatedUtc = createdUtc;
             IsObsolete = false;
         }
 
-        public IEnumerable<AlgoPluginRef> GetPluginRefs()
+        public AlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc, IEnumerable<AlgoPluginRef> plugins)
+            : this(name, location, createdUtc)
         {
-            return Container?.Plugins ?? Enumerable.Empty<AlgoPluginRef>();
+            _plugins = plugins.ToList();
         }
 
-        public AlgoPluginRef GetPluginRef(string id)
+
+        public virtual IEnumerable<AlgoPluginRef> GetPluginRefs()
         {
-            return Container?.Plugins.FirstOrDefault(pr => pr.Id == id);
+            return _plugins ?? Enumerable.Empty<AlgoPluginRef>();
         }
 
-        public void IncrementRef()
+        public virtual AlgoPluginRef GetPluginRef(string id)
         {
-            if (IsObsolete)
-                throw new AlgoException($"Package {Name} at {Location} is obsolete");
-
-            _refCount++;
-            if (_refCount == 1)
-                IsLockedChanged?.Invoke(this);
+            return _plugins.FirstOrDefault(pr => pr.Id == id);
         }
 
-        public void DecrementRef()
-        {
-            _refCount--;
-            if (_refCount == 0)
-            {
-                IsLockedChanged?.Invoke(this);
-                if (IsObsolete)
-                    Dispose();
-            }
-        }
+        public virtual void IncrementRef() { }
 
-        public void Dispose()
-        {
-            Container?.Dispose();
-        }
+        public virtual void DecrementRef() { }
 
         public void SetObsolete()
         {
@@ -90,6 +72,78 @@ namespace TickTrader.Algo.Core.Metadata
             IsObsolete = true;
             if (!IsLocked)
                 Dispose();
+        }
+
+
+        internal virtual void Dispose() { }
+
+
+        protected void OnLockedChanged()
+        {
+            IsLockedChanged?.Invoke(this);
+        }
+
+
+        void IDisposable.Dispose()
+        {
+            Dispose();
+        }
+    }
+
+
+    public class IsolatedAlgoPackageRef : AlgoPackageRef
+    {
+        private int _refCount;
+
+
+        public PluginContainer Container { get; }
+
+        public override bool IsValid => Container != null;
+
+        public override bool IsLocked => _refCount > 0;
+
+
+        public IsolatedAlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc, PluginContainer container)
+            : base(name, location, createdUtc)
+        {
+            Container = container;
+        }
+
+        public override IEnumerable<AlgoPluginRef> GetPluginRefs()
+        {
+            return Container?.Plugins ?? Enumerable.Empty<AlgoPluginRef>();
+        }
+
+        public override AlgoPluginRef GetPluginRef(string id)
+        {
+            return Container?.Plugins.FirstOrDefault(pr => pr.Id == id);
+        }
+
+        public override void IncrementRef()
+        {
+            if (IsObsolete)
+                throw new AlgoException($"Package {Name} at {Location} is obsolete");
+
+            _refCount++;
+            if (_refCount == 1)
+                OnLockedChanged();
+        }
+
+        public override void DecrementRef()
+        {
+            _refCount--;
+            if (_refCount == 0)
+            {
+                OnLockedChanged();
+                if (IsObsolete)
+                    Dispose();
+            }
+        }
+
+
+        internal override void Dispose()
+        {
+            Container?.Dispose();
         }
     }
 }
