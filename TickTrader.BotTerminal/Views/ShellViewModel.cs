@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
@@ -30,6 +31,7 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment algoEnv;
         private BotsWarden botsWarden;
         private SymbolManagerViewModel _smbManager;
+        private SymbolCatalog _symbolsData;
         private CustomFeedStorage.Handler _userSymbols;
 
         public ShellViewModel(ClientModel.Data commonClient, CustomFeedStorage.Handler customFeedStorage)
@@ -59,6 +61,8 @@ namespace TickTrader.BotTerminal
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             Trade = new TradeInfoViewModel(clientModel, cManager);
+
+            _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
 
@@ -259,7 +263,14 @@ namespace TickTrader.BotTerminal
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            ConnectLast();
+            //ConnectLast();
+
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new System.Action(OnLoaded));
+        }
+
+        public void OnLoaded()
+        {
+            Connect(null); // show connect window
         }
 
         private async void PrintSystemInfo()
@@ -331,7 +342,7 @@ namespace TickTrader.BotTerminal
         public void OpenStorageManager()
         {
             if (_smbManager == null)
-                _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
+                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsData, ToolWndManager);
 
             wndManager.ShowDialog(_smbManager, this);
         }
@@ -339,7 +350,7 @@ namespace TickTrader.BotTerminal
         public void OpenBacktester()
         {
             if (Backtester == null)
-                Backtester = new BacktesterViewModel(algoEnv, _userSymbols, this);
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this);
 
             wndManager.OpenMdiWindow(Backtester);
         }

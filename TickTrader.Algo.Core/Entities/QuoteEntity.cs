@@ -23,6 +23,11 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        public QuoteEntity(string symbol, DateTime time, double? bid, double? ask)
+            : this(symbol, time, bid == null ? null : new BookEntry[] { new BookEntryEntity(bid.Value) }, ask == null ? null : new BookEntry[] { new BookEntryEntity(ask.Value) })
+        {
+        }
+
         public QuoteEntity(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks)
         {
             Symbol = symbol;

@@ -12,6 +12,9 @@
             <Style TargetType="Label">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
+            <DataTemplate x:Key="SymbolTemplate">
+                <TextBlock Text="{Binding Name}"/>
+            </DataTemplate>
 
         </ControlTemplate.Resources>
 
@@ -19,26 +22,34 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100" />
-                <ColumnDefinition Width="2*" MaxWidth="160"/>
-                <ColumnDefinition MaxWidth="80"/>
+                <ColumnDefinition Width="2*" MaxWidth="180"/>
+                <ColumnDefinition MaxWidth="120"/>
                 <ColumnDefinition MaxWidth="70"/>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
-            <Label Name="SymbolLabel" Content="Symbol:" Width="100" Grid.Column="0" />
-            <ComboBox Grid.Column="1" Margin="0" ItemsSource="{Binding AvailableSymbols}" SelectedItem="{Binding SelectedSymbol.Value}"/>
+
+            <Label Name="SymbolLabel" Content="Feed:" Grid.Column="0" HorizontalAlignment="Right" Margin="0,0,5,0" />
+            <ComboBox Name="SymbolCombo" Grid.Column="1" Margin="0" ItemsSource="{Binding AvailableSymbols}" SelectedItem="{Binding SelectedSymbol.Value}"
+                      ItemTemplate="{StaticResource SymbolTemplate}"/>
             <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeframe.Value}"/>
-            <ComboBox Grid.Column="3" ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"/>
+            <ComboBox Name="PriceTypeCombo" Grid.Column="3" ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"
+                      IsEnabled="{Binding CanChangePrice.Value}"/>
             <Button Name="RemoveBtn" Content="-" Style="{DynamicResource TinyButton}" cal:Message.Attach="Remove" Grid.Column="4" />
             <Button Name="AddBtn" Content="+" Style="{DynamicResource TinyButton}" cal:Message.Attach="Add" Grid.Column="4" Visibility="Hidden" />
         </Grid>
 
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsPrimary}" Value="True">
+            <DataTrigger Binding="{Binding SetupType}" Value="MainSymbol">
                 <Setter TargetName="SymbolLabel" Property="Content" Value="Main symbol:"/>
                 <Setter TargetName="RemoveBtn" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="AddBtn" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="PriceTypeCombo" Property="Visibility" Value="Hidden"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding SetupType}" Value="MainFeed">
+                <Setter TargetName="RemoveBtn" Property="Visibility" Value="Hidden"/>
                 <Setter TargetName="AddBtn" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="SymbolCombo" Property="IsEnabled" Value="False"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
         

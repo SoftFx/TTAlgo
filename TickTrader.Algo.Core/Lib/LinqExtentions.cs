@@ -43,5 +43,60 @@ namespace TickTrader.Algo.Core
 
             return maxElement;
         }
+
+        public static IEnumerable<TOut> JoinSorted<TIn, TOut>(this IEnumerable<TIn> first, IEnumerable<TIn> second,
+            Func<TIn, TIn, int> joinCompare, Func<TIn, TIn, TOut> joinFunc)
+        {
+            using (var firstEnumerator = first.GetEnumerator())
+            using (var secondEnumerator = second.GetEnumerator())
+            {
+                var elementsLeftInFirst = firstEnumerator.MoveNext();
+                var elementsLeftInSecond = secondEnumerator.MoveNext();
+
+                while (elementsLeftInFirst || elementsLeftInSecond)
+                {
+                    if (!elementsLeftInFirst)
+                    {
+                        do
+                        {
+                            yield return joinFunc(default(TIn), secondEnumerator.Current);
+                        }
+                        while (secondEnumerator.MoveNext());
+
+                        yield break;
+                    }
+
+                    if (!elementsLeftInSecond)
+                    {
+                        do
+                        {
+                            yield return joinFunc(firstEnumerator.Current, default(TIn));
+                        }
+                        while (firstEnumerator.MoveNext());
+
+                        yield break;
+                    }
+
+                    var cmpResult = joinCompare(firstEnumerator.Current, secondEnumerator.Current);
+
+                    if (cmpResult == 0)
+                    {
+                        yield return joinFunc(firstEnumerator.Current, secondEnumerator.Current);
+                        elementsLeftInFirst = firstEnumerator.MoveNext();
+                        elementsLeftInSecond = secondEnumerator.MoveNext();
+                    }
+                    else if(cmpResult < 0)
+                    {
+                        yield return joinFunc(firstEnumerator.Current, default(TIn));
+                        elementsLeftInFirst = firstEnumerator.MoveNext();
+                    }
+                    else
+                    {
+                        yield return joinFunc(default(TIn), secondEnumerator.Current);
+                        elementsLeftInSecond = secondEnumerator.MoveNext();
+                    }
+                }
+            }
+        }
     }
 }

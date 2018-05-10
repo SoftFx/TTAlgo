@@ -63,7 +63,7 @@ namespace Machinarium.UnitTest
             src2.Add("key3", 3);
             src2.Add("key4", 4);
 
-            var composition = Dynamic.Combine(src1, src2);
+            var composition = VarCollection.Combine(src1, src2);
 
             Assert.AreEqual(4, composition.Snapshot.Count);
             Assert.AreEqual(1, composition.Snapshot["key1"]);

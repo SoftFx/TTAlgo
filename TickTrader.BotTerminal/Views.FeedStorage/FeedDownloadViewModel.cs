@@ -19,18 +19,19 @@ namespace TickTrader.BotTerminal
         private readonly VarContext varContext = new VarContext();
         private TraderClientModel _client;
 
-        public FeedDownloadViewModel(TraderClientModel clientModel, SymbolModel symbol = null)
+        public FeedDownloadViewModel(TraderClientModel clientModel, SymbolCatalog catalog, SymbolData symbol = null)
         {
             _client = clientModel;
 
-            Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
+            //Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
+            Symbols = catalog.ObservableOnlineSymbols;
 
             DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
 
             SelectedTimeFrame = varContext.AddProperty(TimeFrames.M1);
             SelectedPriceType = varContext.AddProperty(BarPriceType.Bid);
-            SelectedSymbol = varContext.AddProperty<SymbolModel>(symbol);
+            SelectedSymbol = varContext.AddProperty<SymbolData>(symbol);
             ShowDownloadUi = varContext.AddBoolProperty();
 
             IsRangeLoaded = varContext.AddBoolProperty();
@@ -50,7 +51,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
-        public IObservableList<SymbolModel> Symbols { get; }
+        public IObservableList<SymbolData> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ActionViewModel DownloadObserver { get; }
 
@@ -58,7 +59,7 @@ namespace TickTrader.BotTerminal
 
         public BoolProperty ShowDownloadUi { get; private set; }
         public BoolProperty IsRangeLoaded { get; private set; }
-        public Property<SymbolModel> SelectedSymbol { get; private set; }
+        public Property<SymbolData> SelectedSymbol { get; private set; }
         public BoolVar DownloadEnabled { get; private set; }
         public BoolVar CancelEnabled { get; private set; }
         public BoolVar IsPriceTypeActual { get; private set; }
@@ -99,15 +100,14 @@ namespace TickTrader.BotTerminal
             DownloadObserver.Start(DownloadAsync);
         }
 
-        private async void UpdateAvailableRange(SymbolModel smb)
+        private async void UpdateAvailableRange(SymbolData smb)
         {
             IsRangeLoaded.Value = false;
-            DateRange.From = null;
-            DateRange.To = null;
+            DateRange.Reset();
 
             if (smb != null)
             {
-                var range = await _client.FeedHistory.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
+                var range = await  smb.GetAvailableRange(TimeFrames.M1);
 
                 if (SelectedSymbol.Value == smb)
                 {
@@ -122,8 +122,8 @@ namespace TickTrader.BotTerminal
             var symbol = SelectedSymbol.Value.Name;
             var timeFrame = SelectedTimeFrame.Value;
             var priceType = SelectedPriceType.Value;
-            var from = DateRange.From.Value;
-            var to = DateRange.To.Value + TimeSpan.FromDays(1);
+            var from = DateRange.From;
+            var to = DateRange.To + TimeSpan.FromDays(1);
 
             observer?.SetMessage("Downloading... \n");
 

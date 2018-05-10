@@ -108,7 +108,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 _feedProxy = null;
                 await _diskCache.Stop();
-                _diskCache.Dispose();
+                //_diskCache.Dispose();
             }
             catch (Exception ex)
             {
@@ -163,9 +163,11 @@ namespace TickTrader.Algo.Common.Model
             var inputStream = Channel.NewInput<BarEntity>();
             var barSlicer = TimeSlicer.GetBarSlicer(SliceMaxSize, from, to);
 
-            logger.Debug("Start downloading bars (" + from + " - " + to + ")");
+            logger.Debug("start downloading bars (" + from + " - " + to + ")");
 
-            _feedProxy.DownloadBars(CreateBlocingChannel(inputStream), key.Symbol, from, to, key.PriceType.Value, key.Frame);
+            var correctedTo = to - TimeSpan.FromTicks(1);
+
+            _feedProxy.DownloadBars(CreateBlocingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
 
             var i = from;
             while (await inputStream.ReadNext())
@@ -189,8 +191,8 @@ namespace TickTrader.Algo.Common.Model
             var lastSlice = barSlicer.CompleteSlice(true);
             if (lastSlice != null)
             {
-                await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
                 logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
+                await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
                 if (!await outputAction(lastSlice))
                 {
                     logger.Debug("Downloading canceled!");

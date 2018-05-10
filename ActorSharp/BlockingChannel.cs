@@ -146,6 +146,8 @@ namespace ActorSharp
 
                 _readPage = page;
                 _isClosed = page.Last;
+                if (_isClosed && _readPage.Count == 0)
+                    _readPage = null;
                 _writerError = page.Error;
                 Monitor.PulseAll(_readLock);
             }
@@ -390,7 +392,8 @@ namespace ActorSharp
                 {
                     _isClosed = true;
                     _queuePage.Last = true;
-                    _queuePage.Error = ExceptionDispatchInfo.Capture(ex);
+                    if (ex != null)
+                        _queuePage.Error = ExceptionDispatchInfo.Capture(ex);
                     _confirmationCounter = 1;
                     TrySendPage();
                 }

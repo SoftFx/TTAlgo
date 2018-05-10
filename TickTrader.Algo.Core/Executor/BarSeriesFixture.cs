@@ -212,12 +212,4 @@ namespace TickTrader.Algo.Core
             AppendData(data);
         }
     }
-
-    //internal class TimeSyncBarSeriesFixture : BarSeriesFixture
-    //{
-    //    public TimeSyncBarSeriesFixture(string symbolCode, IFeedFixtureContext context, ITimeRef syncRef)
-    //        : base(symbolCode, context)
-    //    {
-    //    }
-    //}
 }

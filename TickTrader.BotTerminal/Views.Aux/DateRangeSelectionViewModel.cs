@@ -9,8 +9,8 @@ namespace TickTrader.BotTerminal
 {
     internal class DateRangeSelectionViewModel : ObservableObject
     {
-        private DateTime? _rangeFrom;
-        private DateTime? _rangeTo;
+        private DateTime _rangeFrom;
+        private DateTime _rangeTo;
 
         public double MaxRangeDouble => Max.GetAbsoluteDay();
         public double MinRangeDouble => Min.GetAbsoluteDay();
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
             set { To = DateTimeExt.FromTotalDays((int)value); }
         }
 
-        public DateTime? From
+        public DateTime From
         {
             get => _rangeFrom;
             set
@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public DateTime? To
+        public DateTime To
         {
             get { return _rangeTo; }
             set
@@ -60,8 +60,10 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
-            From = null;
-            To = null;
+            Min = DateTime.MinValue;
+            Max = DateTime.MaxValue;
+            From = Min;
+            To = Max;
         }
 
         public void UpdateBoundaries(DateTime min, DateTime max)

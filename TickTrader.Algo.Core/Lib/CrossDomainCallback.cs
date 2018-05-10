@@ -25,4 +25,23 @@ namespace TickTrader.Algo.Core.Lib
             Action(args);
         }
     }
+
+    public class CrossDomainCallback : CrossDomainObject
+    {
+        public CrossDomainCallback()
+        {
+        }
+
+        public Action Action { get; set; }
+
+        public CrossDomainCallback(Action callbackAction)
+        {
+            Action = callbackAction;
+        }
+
+        public void Invoke()
+        {
+            Action();
+        }
+    }
 }

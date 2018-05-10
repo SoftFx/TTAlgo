@@ -40,8 +40,8 @@
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Tools}">
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
-            <MenuItem Header="Symbol Manager..." cal:Message.Attach="OpenStorageManager"/>
             <Separator/>
+            <MenuItem Header="Symbol Manager..." cal:Message.Attach="OpenStorageManager"/>
             <MenuItem Header="Bot Tester..." cal:Message.Attach="OpenBacktester"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Help}">

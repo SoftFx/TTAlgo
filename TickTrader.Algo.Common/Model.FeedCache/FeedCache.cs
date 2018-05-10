@@ -99,11 +99,16 @@ namespace TickTrader.Algo.Common.Model
             public Task Put(string symbol, Api.TimeFrames frame, Api.BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
                 => Put(new FeedCacheKey(symbol, frame, priceType), from, to, values);
 
-            public Channel<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
+            public Channel<Slice<DateTime, BarEntity>> IterateBarCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
             {
                 var channel = new Channel<Slice<DateTime, BarEntity>>(ChannelDirections.Out, 1);
                 _ref.SendChannel(channel, (a, c) => a.IterateBarCache(c, key, from, to));
                 return channel;
+            }
+
+            public BlockingChannel<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, BarEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateBarCache(c, key, from, to));
             }
 
             public Channel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
@@ -116,8 +121,8 @@ namespace TickTrader.Algo.Common.Model
             public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Api.TimeFrames frame, Api.BarPriceType? priceType, DateTime from, DateTime to)
                 => _ref.Call(a => a.GetFirstRange(symbol, frame, priceType, from, to));
 
-            public Task<Tuple<DateTime, DateTime>> GetRange(FeedCacheKey key, bool custom)
-                => _ref.Call(a => a.GetRange(key, custom));
+            public Task<Tuple<DateTime, DateTime>> GetRange(FeedCacheKey key)
+                => _ref.Call(a => a.GetRange(key));
 
             public Task<double?> GetCollectionSize(FeedCacheKey key)
                 => _ref.Call(a => a.GetCollectionSize(key));
@@ -164,7 +169,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        protected Tuple<DateTime, DateTime> GetRange(FeedCacheKey key, bool custom)
+        protected Tuple<DateTime, DateTime> GetRange(FeedCacheKey key)
         {
             CheckState();
 

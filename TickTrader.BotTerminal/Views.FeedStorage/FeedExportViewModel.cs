@@ -17,19 +17,21 @@ namespace TickTrader.BotTerminal
 {
     internal class FeedExportViewModel : Screen, IWindowModel
     {
-        private FeedCacheKey _key;
+        //private FeedCacheKey _key;
+        private SymbolStorageSeries _series;
         private List<FeedExporter> _exporters = new List<FeedExporter>();
         private FeedExporter _selectedExporter;
-        private FeedCache.Handler _storage;
+        //private FeedCache.Handler _storage;
         private bool _isRangeLoaded;
         private bool _showDownloadUi;
         private CancellationTokenSource _cancelExportSrc;
         private Task _exportTask;
 
-        public FeedExportViewModel(FeedCacheKey key, FeedCache.Handler diskStorage)
+        public FeedExportViewModel(SymbolStorageSeries series)
         {
-            _key = key;
-            _storage = diskStorage;
+            _series = series;
+            var key = series.Key;
+            //_storage = diskStorage;
 
             _exporters.Add(new CsvExporter());
 
@@ -142,8 +144,8 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                var from = DateRange.From.Value;
-                var to = DateRange.To.Value + TimeSpan.FromDays(1);
+                var from = DateRange.From;
+                var to = DateRange.To + TimeSpan.FromDays(1);
 
                 await Actor.Spawn(async ()=> 
                 {
@@ -155,9 +157,9 @@ namespace TickTrader.BotTerminal
 
                     try
                     {
-                        if (!_key.Frame.IsTicks())
+                        if (!_series.Key.Frame.IsTicks())
                         {
-                            var i = _storage.IterateBarCache(_key, from, to);
+                            var i = _series.IterateBarCache(from, to);
 
                             while (await i.ReadNext())
                             {
@@ -199,10 +201,9 @@ namespace TickTrader.BotTerminal
         private async void UpdateAvailableRange()
         {
             IsRangeLoaded = false;
-            DateRange.From = null;
-            DateRange.To = null;
+            DateRange.Reset();
 
-            var range = await _storage.GetRange(_key, false);
+            var range = await _series.Symbol.GetAvailableRange(Algo.Api.TimeFrames.M1);
 
             DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
             IsRangeLoaded = true;

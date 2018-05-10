@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ActorSharp
 {
@@ -58,6 +59,37 @@ namespace ActorSharp
             {
                 await channel.Close(ex);
             }
+        }
+
+        /// <summary>
+        /// Warning! Blocking API. Do not call from within actor context! Blocking API is used to interoperate with non-actor threads.
+        /// </summary>
+        public static void BlockingCall<TActor>(this Ref<TActor> actorRef, Action<TActor> actorMethod)
+        {
+            actorRef.Call(actorMethod).Wait();
+        }
+
+        /// <summary>
+        /// Warning! Blocking API. Do not call from within actor context! Blocking API is used to interoperate with non-actor threads.
+        /// </summary>
+        public static TResult CallActor<TActor, TResult>(this Ref<TActor> actorRef, Func<TActor, TResult> actorMethod)
+        {
+            return actorRef.Call(actorMethod).Result;
+        }
+
+        /// <summary>
+        /// Warning! Blocking API. Do not call from within actor context! Blocking API is used to interoperate with non-actor threads.
+        /// </summary>
+        public static TResult CallActor<TActor, TResult>(this Ref<TActor> actorRef, Func<TActor, Task<TResult>> actorMethod)
+        {
+            return actorRef.Call(actorMethod).Result;
+        }
+
+        public static IEnumerable<T> ToEnumerable<T>(this BlockingChannel<T> channel)
+        {
+            T i;
+            while (channel.Read(out i))
+                yield return i;
         }
 
         private class AsyncSelect<TSrc, TResult> : IAsyncReader<TResult>

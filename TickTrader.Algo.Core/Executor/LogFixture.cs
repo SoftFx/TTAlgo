@@ -175,12 +175,17 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class BotLogRecord
     {
-        public BotLogRecord(LogSeverities logSeverity, string message, string errorDetails)
+        public BotLogRecord(DateTime time, LogSeverities logSeverity, string message, string errorDetails)
         {
+            Time = time;
             Severity = logSeverity;
             Message = message;
             Details = errorDetails;
-            Time = DateTime.UtcNow;
+        }
+
+        public BotLogRecord(LogSeverities logSeverity, string message, string errorDetails)
+            : this(DateTime.Now, logSeverity, message, errorDetails)
+        {
         }
 
         public DateTime Time { get; set; }

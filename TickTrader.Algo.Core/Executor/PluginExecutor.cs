@@ -13,7 +13,8 @@ namespace TickTrader.Algo.Core
         public enum States { Idle, Running, Stopping }
 
         private object _sync = new object();
-        private LogFixture pluginLogger;
+        private LogFixture _pluginLoggerFixture;
+        private IPluginLogger _pluginLogger = Null.Logger;
         private IPluginMetadata metadata;
         private IPluginFeedProvider feedProvider;
         private ITradeHistoryProvider tradeHistoryProvider;
@@ -91,11 +92,7 @@ namespace TickTrader.Algo.Core
                 lock (_sync)
                 {
                     ThrowIfRunning();
-
-                    if (value == null)
-                        throw new InvalidOperationException("InvokeStrategy cannot be null!");
-
-                    iStrategy = value;
+                    iStrategy = value ?? throw new InvalidOperationException("InvokeStrategy cannot be null!");
                 }
             }
         }
@@ -264,7 +261,7 @@ namespace TickTrader.Algo.Core
                     builder.Isolated = _isolated;
                     builder.Permissions = _permissions;
                     builder.Diagnostics = this;
-                    builder.Logger = pluginLogger ?? Null.Logger;
+                    builder.Logger = _pluginLogger;
                     builder.OnAsyncAction = OnAsyncAction;
                     builder.OnExit = OnExit;
                     //builder.OnException = OnException;
@@ -280,7 +277,7 @@ namespace TickTrader.Algo.Core
 
                     // Start
 
-                    pluginLogger?.Start();
+                    _pluginLoggerFixture?.Start();
                     statusFixture.Start();
                     accFixture.Start();
                     _timerFixture.Start();
@@ -365,8 +362,8 @@ namespace TickTrader.Algo.Core
                 builder.SetStopped();
 
                 await iStrategy.Stop(qucik).ConfigureAwait(false);
-                if (pluginLogger != null)
-                    await pluginLogger.Stop();
+                if (_pluginLoggerFixture != null)
+                    await _pluginLoggerFixture.Stop();
 
                 System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
 
@@ -482,11 +479,25 @@ namespace TickTrader.Algo.Core
             lock (_sync)
             {
                 ThrowIfRunning();
-                if (pluginLogger == null)
-                    pluginLogger = new LogFixture(this);
-                return pluginLogger;
+                if (_pluginLoggerFixture == null)
+                    _pluginLoggerFixture = new LogFixture(this);
+                _pluginLogger = _pluginLoggerFixture;
+                return _pluginLoggerFixture;
             }
         }
+
+        #region Emulator Support
+
+        internal EmulationControlFixture InitEmulation(DateTime startTime)
+        {
+            var fixture = new EmulationControlFixture(startTime, calcFixture);
+            InvokeStrategy = fixture.InvokeEmulator;
+            TradeExecutor = fixture.TradeEmulator;
+            _pluginLogger = fixture.Collector;
+            return fixture;
+        }
+
+        #endregion
 
         #endregion
 
@@ -607,7 +618,7 @@ namespace TickTrader.Algo.Core
         string IFixtureContext.MainSymbolCode => mainSymbol;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
-        IPluginLogger IFixtureContext.Logger => pluginLogger;
+        IPluginLogger IFixtureContext.Logger => _pluginLoggerFixture;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
