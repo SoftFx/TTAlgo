@@ -310,6 +310,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 this.Symbol = symbol;
                 Subscriptions = new Dictionary<Subscription, int>();
+                Depth = 1;
             }
 
             public int GetMaxDepth()
