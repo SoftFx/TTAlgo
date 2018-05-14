@@ -431,7 +431,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo, BotManager, DockManagerService);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Library, BotManager, DockManagerService);
             wndManager.ShowDialog(loading, this);
         }
 

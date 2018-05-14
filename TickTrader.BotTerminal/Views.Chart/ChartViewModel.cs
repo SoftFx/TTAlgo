@@ -27,6 +27,7 @@ using System.Windows.Input;
 using TickTrader.Algo.Common.Model;
 using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Controls;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -235,10 +236,10 @@ namespace TickTrader.BotTerminal
 
         public void OpenPlugin(object descriptorObj)
         {
-            OpenAlgoSetup((PluginCatalogItem)descriptorObj);
+            OpenAlgoSetup((PluginInfo)descriptorObj);
         }
 
-        private void OpenAlgoSetup(PluginCatalogItem item)
+        private void OpenAlgoSetup(PluginInfo item)
         {
             try
             {
@@ -293,9 +294,9 @@ namespace TickTrader.BotTerminal
             var algo = o as AlgoItemViewModel;
             if (algo != null)
             {
-                var pluginType = algo.PluginItem.Descriptor.Type;
+                var pluginType = algo.PluginInfo.Descriptor.Type;
                 if (pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot)
-                    OpenAlgoSetup(algo.PluginItem);
+                    OpenAlgoSetup(algo.PluginInfo);
             }
         }
 

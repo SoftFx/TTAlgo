@@ -11,6 +11,7 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public PluginSetupViewModel Setup { get; }
 
-        public PluginCatalogItem PluginItem { get; private set; }
+        public PluginInfo PluginInfo { get; private set; }
 
         public TradeBotModel Bot { get; }
 
@@ -58,16 +59,16 @@ namespace TickTrader.BotTerminal
             RunBot = true;
         }
 
-        public SetupPluginViewModel(AlgoEnvironment algoEnv, PluginCatalogItem item, IAlgoSetupContext setupContext) : this()
+        public SetupPluginViewModel(AlgoEnvironment algoEnv, PluginInfo item, IAlgoSetupContext setupContext) : this()
         {
             _catalog = algoEnv.Repo;
-            PluginItem = item;
+            PluginInfo = item;
             _setupContext = setupContext;
 
-            Setup = AlgoSetupFactory.CreateSetup(item.Ref, algoEnv, setupContext);
+            Setup = AlgoSetupFactory.CreateSetup(item, algoEnv, algoEnv.IdProvider);
             PluginType = GetPluginTypeDisplayName(item.Descriptor);
 
-            DisplayName = $"Setting New {PluginType} - {item.DisplayName}";
+            DisplayName = $"Setting New {PluginType} - {item.Descriptor.DisplayName}";
 
             _catalog.AllPlugins.Updated += AllPlugins_Updated;
 
@@ -135,19 +136,19 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanOk));
         }
 
-        private void AllPlugins_Updated(Machinarium.Qnil.DictionaryUpdateArgs<PluginCatalogKey, PluginCatalogItem> args)
+        private void AllPlugins_Updated(DictionaryUpdateArgs<PluginKey, PluginInfo> args)
         {
             if (args.Action == DLinqAction.Replace)
             {
-                if (args.Key == PluginItem.Key)
+                if (args.Key == PluginInfo.Key)
                 {
-                    PluginItem = args.NewItem;
+                    PluginInfo = args.NewItem;
                     Init();
                 }
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                if (args.Key == PluginItem.Key)
+                if (args.Key == PluginInfo.Key)
                     TryClose();
             }
         }

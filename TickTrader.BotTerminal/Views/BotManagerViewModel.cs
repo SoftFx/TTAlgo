@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
@@ -44,7 +45,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenBotSetup(PluginCatalogItem item, IAlgoSetupContext context = null)
+        public void OpenBotSetup(PluginInfo item, IAlgoSetupContext context = null)
         {
             try
             {

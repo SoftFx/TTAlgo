@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
@@ -8,12 +9,12 @@ namespace TickTrader.Algo.Common.Model.Setup
     public abstract class MappedInputSetupModel : InputSetupModel
     {
         private string _defaultMapping;
-        private SymbolMapping _selectedMapping;
+        private Mapping _selectedMapping;
 
 
-        public IReadOnlyList<SymbolMapping> AvailableMappings { get; protected set; }
+        public IReadOnlyList<Mapping> AvailableMappings { get; protected set; }
 
-        public SymbolMapping SelectedMapping
+        public Mapping SelectedMapping
         {
             get { return _selectedMapping; }
             set
@@ -47,7 +48,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        protected abstract SymbolMapping GetMapping(string mappingKey);
+        protected abstract Mapping GetMapping(string mappingKey);
 
 
         protected override void LoadConfig(Input input)
@@ -63,7 +64,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             var mappedInput = input as MappedInput;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.Name;
+                mappedInput.SelectedMapping = SelectedMapping.DisplayName;
             }
 
             base.SaveConfig(input);

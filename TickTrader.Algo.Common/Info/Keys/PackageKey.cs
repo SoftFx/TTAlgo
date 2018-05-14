@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Core.Metadata;
+﻿using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {

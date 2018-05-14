@@ -2,29 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Container;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
     public class PluginContainer : IDisposable
     {
-        private IAlgoCoreLogger logger;
-        private Isolated<ChildDomainProxy> subDomain;
+        private IAlgoCoreLogger _logger;
+        private Isolated<ChildDomainProxy> _subDomain;
 
         public IEnumerable<AlgoPluginRef> Plugins { get; protected set; }
 
         internal PluginContainer(IPluginLoader loader, IAlgoCoreLogger logger = null)
         {
-            this.logger = logger;
+            this._logger = logger;
 
             try
             {
-                subDomain = new Isolated<ChildDomainProxy>();
-                var sandbox = subDomain.Value.CreateDotNetSanbox(loader);
+                _subDomain = new Isolated<ChildDomainProxy>();
+                var sandbox = _subDomain.Value.CreateDotNetSanbox(loader);
                 Plugins = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
             }
             catch (Exception)
@@ -50,12 +48,12 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                if (subDomain != null)
-                    subDomain.Dispose();
+                if (_subDomain != null)
+                    _subDomain.Dispose();
             }
             catch (Exception ex)
             {
-                logger?.Debug("Failed to unload child domain: " + ex.Message);
+                _logger?.Debug("Failed to unload child domain: " + ex.Message);
             }
         }
 

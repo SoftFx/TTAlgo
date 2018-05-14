@@ -11,6 +11,9 @@ namespace TickTrader.Algo.Common.Model.Config
     [KnownType(typeof(TradeBotConfig))]
     public class PluginConfig
     {
+        [DataMember(Name = "key")]
+        public PluginKey Key { get; set; }
+
         [DataMember(Name = "properties")]
         public List<Property> Properties { get; internal set; }
 

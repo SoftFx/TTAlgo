@@ -1,16 +1,21 @@
-﻿using TickTrader.Algo.Core.Metadata;
+﻿using System.Runtime.Serialization;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {
+    [DataContract(Namespace = "")]
     public class PluginKey
     {
         private int _hash;
 
 
+        [DataMember]
         public string PackageName { get; }
 
+        [DataMember]
         public RepositoryLocation PackageLocation { get; }
 
+        [DataMember]
         public string DescriptorId { get; }
 
 

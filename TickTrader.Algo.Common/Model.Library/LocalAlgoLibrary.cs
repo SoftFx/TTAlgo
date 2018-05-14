@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -93,11 +95,15 @@ namespace TickTrader.Algo.Common.Model
 
         public void AddAssemblyAsPackage(Assembly assembly)
         {
-            var packageRef = new AlgoPackageRef(assembly.GetName().Name, RepositoryLocation.Embedded,
-                System.IO.File.GetLastWriteTimeUtc(assembly.Location),
-                AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m)));
+            var packageRef = new AlgoPackageRef(Path.GetFileName(assembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded,
+                File.GetLastWriteTimeUtc(assembly.Location), AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m)));
 
             RepositoryOnAdded(packageRef);
+        }
+
+        public Task WaitInit()
+        {
+            return Task.WhenAll(_repositories.Values.Select(r => r.WaitInit()));
         }
 
 

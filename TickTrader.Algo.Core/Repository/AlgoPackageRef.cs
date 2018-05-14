@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TickTrader.Algo.Core.Metadata
+namespace TickTrader.Algo.Core.Repository
 {
     public enum RepositoryLocation
     {

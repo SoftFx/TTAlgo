@@ -1,6 +1,7 @@
 ﻿using TickTrader.Algo.Core.Container;
+using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Core.Metadata
+namespace TickTrader.Algo.Core.Repository
 {
     public class AlgoPluginRef
     {
@@ -8,7 +9,7 @@ namespace TickTrader.Algo.Core.Metadata
 
         public string DisplayName => Metadata.Descriptor.DisplayName;
 
-        public PluginMetadata Metadata { get; private set; }
+        public PluginMetadata Metadata { get; }
 
 
         public AlgoPluginRef(PluginMetadata metadata)

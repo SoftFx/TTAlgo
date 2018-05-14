@@ -1,5 +1,6 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {
@@ -46,6 +47,25 @@ namespace TickTrader.Algo.Common.Info
             {
                 Key = pluginRef.GetKey(packageKey),
                 Descriptor = pluginRef.Metadata.Descriptor,
+            };
+        }
+
+        public static MappingInfo ToInfo(this SymbolMapping mapping)
+        {
+            return new MappingInfo
+            {
+                DisplayName = mapping.Name,
+            };
+        }
+
+        public static MappingCollectionInfo ToInfo(this SymbolMappingsCollection symbolMappings)
+        {
+            return new MappingCollectionInfo
+            {
+                BarToBarMappings = symbolMappings.BarToBarMappings.Select(ToInfo).ToList(),
+                BarToDoubleMappings = symbolMappings.BarToDoubleMappings.Select(ToInfo).ToList(),
+                QuoteToBarMappings = symbolMappings.QuoteToBarMappings.Select(ToInfo).ToList(),
+                QuoteToDoubleMappings = symbolMappings.QuoteToDoubleMappings.Select(ToInfo).ToList(),
             };
         }
     }

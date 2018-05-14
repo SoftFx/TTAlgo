@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -29,7 +30,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        protected override SymbolMapping GetMapping(string mappingKey)
+        protected override Mapping GetMapping(string mappingKey)
         {
             return Metadata.SymbolMappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
         }

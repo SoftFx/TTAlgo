@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,19 +16,19 @@ namespace TickTrader.BotTerminal
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
         private CancellationToken _token;
-        private PluginCatalog _repo;
+        private LocalAlgoLibrary _library;
         private BotManagerViewModel _botManager;
         private DockManagerService _dockManagerService;
 
 
         public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token,
-            PluginCatalog repo, BotManagerViewModel botManager, DockManagerService dockManagerService)
+            LocalAlgoLibrary library, BotManagerViewModel botManager, DockManagerService dockManagerService)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
             _profileManager = profileManager;
             _token = token;
-            _repo = repo;
+            _library = library;
             _botManager = botManager;
             _dockManagerService = dockManagerService;
         }
@@ -50,7 +51,7 @@ namespace TickTrader.BotTerminal
 
                 _token.ThrowIfCancellationRequested();
 
-                await _repo.WaitInit();
+                await _library.WaitInit();
 
                 _token.ThrowIfCancellationRequested();
 

@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
             _host = host;
             Setup = pSetup.Setup;
             PluginRef = Setup.PluginRef;
-            PluginFilePath = pSetup.PluginItem.FilePath;
+            PluginFilePath = pSetup.PluginInfo.FilePath;
 
             _executor = CreateExecutor();
             Setup.SetWorkingFolder(_executor.WorkingFolder);

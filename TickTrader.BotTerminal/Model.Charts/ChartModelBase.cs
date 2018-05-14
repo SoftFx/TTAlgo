@@ -24,6 +24,7 @@ using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -63,8 +64,8 @@ namespace TickTrader.BotTerminal
             this.algoEnv = algoEnv;
             this.Journal = algoEnv.BotJournal;
 
-            AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
-            AvailableBotTraders = algoEnv.Repo.BotTraders.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+            AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.Descriptor.DisplayName).Chain().AsObservable();
+            AvailableBotTraders = algoEnv.Repo.BotTraders.OrderBy((k, v) => v.Descriptor.DisplayName).Chain().AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
@@ -104,9 +105,9 @@ namespace TickTrader.BotTerminal
 
         public abstract Api.TimeFrames TimeFrame { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
-        public IObservableList<PluginCatalogItem> AvailableIndicators { get; private set; }
+        public IObservableList<PluginInfo> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
-        public IObservableList<PluginCatalogItem> AvailableBotTraders { get; private set; }
+        public IObservableList<PluginInfo> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }

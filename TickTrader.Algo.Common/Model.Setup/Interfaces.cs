@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         IReadOnlyList<ISymbolInfo> Symbols { get; }
 
-        SymbolMappingsCollection SymbolMappings { get; }
+        MappingCollection SymbolMappings { get; }
 
         IPluginIdProvider IdProvider { get; }
     }

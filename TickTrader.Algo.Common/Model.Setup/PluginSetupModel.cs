@@ -7,6 +7,7 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {

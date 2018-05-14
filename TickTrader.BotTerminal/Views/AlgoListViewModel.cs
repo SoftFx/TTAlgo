@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
@@ -14,37 +15,44 @@ namespace TickTrader.BotTerminal
     {
         public IObservableList<AlgoItemViewModel> Plugins { get; private set; }
 
+
         public AlgoListViewModel(PluginCatalog catalog)
         {
             Plugins = catalog.AllPlugins
-                .Where((k, p) => !string.IsNullOrEmpty(k.FileName))
+                .Where((k, p) => k.PackageName != "TickTrader.Algo.Indicators")
                 .Select((k, p) => new AlgoItemViewModel(p))
                 .OrderBy((k, p) => p.Name)
                 .AsObservable();
         }
     }
 
+
     public class AlgoItemViewModel
     {
-        public AlgoItemViewModel(PluginCatalogItem item)
+        public PluginInfo PluginInfo { get; }
+
+        public string Name { get; }
+
+        public string Group { get; }
+
+        public string Description { get; }
+
+        public string Category { get; }
+
+
+        public AlgoItemViewModel(PluginInfo plugin)
         {
-            PluginItem = item;
-            Name = item.DisplayName;
-            Description = string.Join(Environment.NewLine, item.Descriptor.Description, string.Empty, $"Path: {item.FilePath}").Trim();
-            Category = item.Descriptor.Category;
-            var type = item.Descriptor.Type;
-            if (type == Algo.Core.Metadata.AlgoTypes.Indicator)
+            PluginInfo = plugin;
+            Name = plugin.Descriptor.UiDisplayName;
+            Description = string.Join(Environment.NewLine, plugin.Descriptor.Description, string.Empty, $"Package {plugin.Key.PackageName} at {plugin.Key.PackageLocation}").Trim();
+            Category = plugin.Descriptor.Category;
+            var type = plugin.Descriptor.Type;
+            if (type == AlgoTypes.Indicator)
                 Group = "Indicators";
-            else if (type == Algo.Core.Metadata.AlgoTypes.Robot)
+            else if (type == AlgoTypes.Robot)
                 Group = "Bot Traders";
             else
                 Group = "Unknown type";
         }
-
-        public PluginCatalogItem PluginItem { get; private set; }
-        public string Name { get; private set; }
-        public string Group { get; private set; }
-        public string Description { get; private set; }
-        public string Category { get; private set; }
     }
 }

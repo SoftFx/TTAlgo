@@ -151,7 +151,7 @@
     <Compile Include="Metadata\ReductionMetadata.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />
-    <Compile Include="Container\AlgoPackageRef.cs" />
+    <Compile Include="Repository\AlgoPackageRef.cs" />
     <Compile Include="Package\PackageWriter.cs" />
     <Compile Include="Math\BarSampler.cs" />
     <Compile Include="Buffers\ValueFactory.cs" />
@@ -160,7 +160,7 @@
     <Compile Include="Executor\BarSeriesFixture.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Lib\Dataflow.cs" />
-    <Compile Include="Container\AlgoPluginRef.cs" />
+    <Compile Include="Repository\AlgoPluginRef.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\CircularList.cs" />
     <Compile Include="Lib\Isolated.cs" />
