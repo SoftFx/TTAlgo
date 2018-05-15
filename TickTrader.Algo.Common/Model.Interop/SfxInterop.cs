@@ -792,7 +792,7 @@ namespace TickTrader.Algo.Common.Model
                 OrderType = Convert(report.OrderType),
                 OrderSide = Convert(report.OrderSide),
                 Price = report.Price,
-                Balance = report.Balance ?? 0,
+                Balance = report.Balance ?? double.NaN,
             };
         }
 
