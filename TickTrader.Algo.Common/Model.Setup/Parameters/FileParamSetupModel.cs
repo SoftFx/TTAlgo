@@ -24,7 +24,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             set
             {
                 _filePath = value;
-                NotifyPropertyChanged(nameof(FilePath));
                 var fileName = "";
                 try
                 {
@@ -33,7 +32,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 }
                 catch (ArgumentException) { }
                 FileName = fileName;
-                NotifyPropertyChanged(nameof(FileName));
 
                 if (IsRequired && string.IsNullOrWhiteSpace(FileName))
                     Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);

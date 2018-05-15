@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
@@ -50,22 +50,28 @@ namespace TickTrader.Algo.Common.Info
             };
         }
 
-        public static MappingInfo ToInfo(this SymbolMapping mapping)
+        public static MappingInfo ToInfo(this Mapping mapping)
         {
             return new MappingInfo
             {
-                DisplayName = mapping.Name,
+                Key = mapping.Key,
+                DisplayName = mapping.DisplayName,
             };
         }
 
-        public static MappingCollectionInfo ToInfo(this SymbolMappingsCollection symbolMappings)
+        public static MappingCollectionInfo ToInfo(this MappingCollection mappings)
         {
             return new MappingCollectionInfo
             {
-                BarToBarMappings = symbolMappings.BarToBarMappings.Select(ToInfo).ToList(),
-                BarToDoubleMappings = symbolMappings.BarToDoubleMappings.Select(ToInfo).ToList(),
-                QuoteToBarMappings = symbolMappings.QuoteToBarMappings.Select(ToInfo).ToList(),
-                QuoteToDoubleMappings = symbolMappings.QuoteToDoubleMappings.Select(ToInfo).ToList(),
+                BarToBarMappings = mappings.BarToBarMappings.Values.Select(ToInfo).ToList(),
+                BarToDoubleMappings = mappings.BarToDoubleMappings.Values.Select(ToInfo).ToList(),
+                QuoteToBarMappings = mappings.QuoteToBarMappings.Values.Select(ToInfo).ToList(),
+                QuoteToDoubleMappings = mappings.QuoteToDoubleMappings.Values.Select(ToInfo).ToList(),
+                DefaultFullBarToBarReduction = MappingCollection.DefaultFullBarToBarReduction,
+                DefaultBarToDoubleReduction = MappingCollection.DefaultBarToDoubleReduction,
+                DefaultFullBarToDoubleReduction = MappingCollection.DefaultFullBarToDoubleReduction,
+                DefaultQuoteToBarReduction = MappingCollection.DefaultQuoteToBarReduction,
+                DefaultQuoteToDoubleReduction = MappingCollection.DefaultQuoteToDoubleReduction,
             };
         }
     }

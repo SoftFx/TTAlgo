@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void LoadExtentions(string path, RepositoryLocation location)
+        public void LoadReductions(string path, RepositoryLocation location)
         {
             var plugins = Directory.GetFiles(path, "*.ttalgo");
 

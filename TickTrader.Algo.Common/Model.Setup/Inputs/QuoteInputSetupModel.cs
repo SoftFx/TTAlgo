@@ -9,8 +9,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         private bool _useL2;
 
 
-        public QuoteInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, bool useL2)
-            : base(descriptor, metadata, defaultSymbolCode)
+        public QuoteInputSetupModel(InputMetadata metadata, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext, bool useL2)
+            : base(metadata, setupMetadata, setupContext)
         {
             _useL2 = useL2;
         }
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             //if (useL2)
             //    target.MapInput<QuoteEntity, Api.Quote>(Descriptor.Id, SymbolCode, b => b);
             //else
-            target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Descriptor.Id, SelectedSymbol.Name, b => b);
+            target.GetFeedStrategy<QuoteStrategy>().MapInput<Api.Quote>(Metadata.Id, SelectedSymbol, b => b);
         }
 
         public override void Load(Property srcProperty)

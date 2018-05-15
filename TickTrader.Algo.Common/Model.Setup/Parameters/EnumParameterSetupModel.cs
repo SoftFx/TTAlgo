@@ -7,26 +7,11 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class EnumParamSetupModel : ParameterSetupModel
     {
-        private string _selectedValue;
-
-
         public string DefaultValue { get; }
 
         public List<string> EnumValues { get; }
 
-        public string SelectedValue
-        {
-            get { return _selectedValue; }
-            set
-            {
-                if (_selectedValue == value)
-                    return;
-
-                _selectedValue = value;
-
-                NotifyPropertyChanged(nameof(SelectedValue));
-            }
-        }
+        public string SelectedValue { get; protected set; }
 
 
         public EnumParamSetupModel(ParameterMetadata descriptor)
@@ -47,7 +32,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override object GetValueToApply()
         {
-            return _selectedValue;
+            return SelectedValue;
         }
 
         public override void Reset()

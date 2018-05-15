@@ -25,6 +25,7 @@ using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Library;
 
 namespace TickTrader.BotTerminal
 {
@@ -418,7 +419,7 @@ namespace TickTrader.BotTerminal
 
         string IAlgoSetupContext.DefaultSymbolCode => SymbolCode;
 
-        string IAlgoSetupContext.DefaultMapping => "Bid";
+        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 
         #endregion
     }

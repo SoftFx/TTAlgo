@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -9,64 +7,50 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class InputSetupModel : PropertySetupModel
     {
-        private string _defaultSymbolCode;
-        private ISymbolInfo _selectedSymbol;
+        private string _defaultSymbol;
 
 
-        protected IAlgoSetupMetadata Metadata { get; }
+        protected IAlgoSetupMetadata SetupMetadata { get; }
+
+        protected IAlgoSetupContext SetupContext { get; }
 
 
-        public InputMetadata Descriptor { get; }
+        public InputMetadata Metadata { get; }
 
-        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
-
-        public ISymbolInfo SelectedSymbol
-        {
-            get { return _selectedSymbol; }
-            set
-            {
-                if (_selectedSymbol == value)
-                    return;
-
-                _selectedSymbol = value;
-                NotifyPropertyChanged(nameof(SelectedSymbol));
-            }
-        }
+        public string SelectedSymbol { get; protected set; }
 
 
-        private InputSetupModel(InputMetadata descriptor, string defaultSymbolCode)
-        {
-            Descriptor = descriptor;
-            _defaultSymbolCode = defaultSymbolCode;
-
-            SetMetadata(descriptor);
-        }
-
-        public InputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode)
-            : this(descriptor, defaultSymbolCode)
+        private InputSetupModel(InputMetadata metadata, string defaultSymbolCode)
         {
             Metadata = metadata;
+            _defaultSymbol = defaultSymbolCode;
 
-            AvailableSymbols = metadata.GetAvaliableSymbols(_defaultSymbolCode);
+            SetMetadata(metadata);
+        }
+
+        public InputSetupModel(InputMetadata metadata, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
+            : this(metadata, setupContext.DefaultSymbolCode)
+        {
+            SetupMetadata = setupMetadata;
+            SetupContext = setupContext;
         }
 
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.GetSymbolOrAny(_defaultSymbolCode);
+            SelectedSymbol = _defaultSymbol;
         }
 
 
         protected virtual void LoadConfig(Input input)
         {
-            _selectedSymbol = AvailableSymbols.FirstOrDefault(s => s.Name == input.SelectedSymbol)
-                ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbolCode);
+            SelectedSymbol = input.SelectedSymbol ?? _defaultSymbol;
         }
 
         protected virtual void SaveConfig(Input input)
         {
             input.Id = Id;
-            input.SelectedSymbol = _selectedSymbol.Name;
+            input.SelectedSymbol = SelectedSymbol;
         }
 
 

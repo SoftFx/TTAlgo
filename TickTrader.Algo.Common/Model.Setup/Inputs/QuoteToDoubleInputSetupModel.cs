@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Common.Model.Config;
+﻿using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core.Metadata;
 
@@ -6,10 +7,9 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class QuoteToDoubleInputSetupModel : MappedInputSetupModel
     {
-        public QuoteToDoubleInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
-            : base(descriptor, metadata, defaultSymbolCode, defaultMapping)
+        public QuoteToDoubleInputSetupModel(InputMetadata metadata, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
+            : base(metadata, setupMetadata, setupContext)
         {
-            AvailableMappings = metadata.SymbolMappings.QuoteToDoubleMappings;
         }
 
 
@@ -30,9 +30,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        protected override Mapping GetMapping(string mappingKey)
+        protected override Mapping GetMapping(MappingKey mappingKey)
         {
-            return Metadata.SymbolMappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
+            return SetupMetadata.Mappings.GetQuoteToDoubleMappingOrDefault(mappingKey);
         }
     }
 }

@@ -3,6 +3,8 @@ using NLog;
 using System;
 using System.Linq;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
@@ -81,7 +83,7 @@ namespace TickTrader.BotTerminal
 
         string IAlgoSetupContext.DefaultSymbolCode => "EURUSD";
 
-        string IAlgoSetupContext.DefaultMapping => "Bid";
+        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 
         #endregion
     }

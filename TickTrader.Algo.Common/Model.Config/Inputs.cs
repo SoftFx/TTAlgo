@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Model.Config
     public abstract class MappedInput : Input
     {
         [DataMember]
-        public string SelectedMapping { get; set; }
+        public MappingKey SelectedMapping { get; set; }
     }
 
 

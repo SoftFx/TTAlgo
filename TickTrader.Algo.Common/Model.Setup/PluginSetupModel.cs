@@ -3,92 +3,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public enum PluginSetupMode
-    {
-        New,
-        Edit,
-    }
-
-
-    public abstract class PluginSetupModel : ObservableObject, ICloneable
+    public abstract class PluginSetupModel
     {
         private List<PropertySetupModel> _allProperties;
         private List<ParameterSetupModel> _parameters;
         private List<InputSetupModel> _barBasedInputs;
         private List<InputSetupModel> _tickBasedInputs;
         private List<OutputSetupModel> _outputs;
-        private TimeFrames _selectedTimeFrame;
-        private ISymbolInfo _mainSymbol;
-        private SymbolMapping _selectedMapping;
-        private string _instanceId;
-        private PluginPermissions _permissions;
 
 
-        public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
+        public TimeFrames SelectedTimeFrame { get; protected set; }
 
-        public abstract bool AllowChangeTimeFrame { get; }
+        public string MainSymbol { get; protected set; }
 
-        public TimeFrames SelectedTimeFrame
-        {
-            get { return _selectedTimeFrame; }
-            set
-            {
-                if (_selectedTimeFrame == value)
-                    return;
-
-                var changeInputs = _selectedTimeFrame == TimeFrames.Ticks || value == TimeFrames.Ticks;
-                _selectedTimeFrame = value;
-                NotifyPropertyChanged(nameof(SelectedTimeFrame));
-                if (changeInputs)
-                {
-                    NotifyPropertyChanged(nameof(Inputs));
-                    NotifyPropertyChanged(nameof(HasInputs));
-                }
-            }
-        }
-
-        public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
-
-        public abstract bool AllowChangeMainSymbol { get; }
-
-        public ISymbolInfo MainSymbol
-        {
-            get { return _mainSymbol; }
-            set
-            {
-                if (_mainSymbol == value)
-                    return;
-
-                _mainSymbol = value;
-                NotifyPropertyChanged(nameof(MainSymbol));
-            }
-        }
-
-        public IReadOnlyList<SymbolMapping> AvailableMappings { get; private set; }
-
-        public abstract bool AllowChangeMapping { get; }
-
-        public SymbolMapping SelectedMapping
-        {
-            get { return _selectedMapping; }
-            set
-            {
-                if (_selectedMapping == value)
-                    return;
-
-                _selectedMapping = value;
-                NotifyPropertyChanged(nameof(SelectedMapping));
-            }
-        }
-
+        public Mapping SelectedMapping { get; protected set; }
 
         public IEnumerable<ParameterSetupModel> Parameters => _parameters;
 
@@ -96,115 +32,46 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public IEnumerable<OutputSetupModel> Outputs => _outputs;
 
-        public bool HasInputsOrParams => HasParams || HasInputs;
-
-        public bool HasParams => _parameters.Count > 0;
-
-        public bool HasInputs => ActiveInputs.Count > 0;
-
-        public bool HasOutputs => _outputs.Count > 0;
-
-        public bool HasDescription => !string.IsNullOrWhiteSpace(Descriptor.Descriptor?.Description);
-
-        public PluginMetadata Descriptor { get; }
+        public PluginMetadata Metadata { get; }
 
         public AlgoPluginRef PluginRef { get; }
 
-        public bool IsValid { get; private set; }
+        public bool IsValid { get; protected set; }
 
-        public bool IsEmpty { get; private set; }
+        public IAlgoSetupMetadata SetupMetadata { get; }
 
-        public IAlgoSetupMetadata Metadata { get; }
+        public IAlgoSetupContext SetupContext { get; }
 
-        public IAlgoSetupContext Context { get; }
+        public string InstanceId { get; protected set; }
 
-        public PluginSetupMode Mode { get; }
-
-        public bool IsEditMode => Mode == PluginSetupMode.Edit;
-
-        public bool CanBeSkipped => IsEmpty && Descriptor.Descriptor.IsValid && Descriptor.Descriptor.Type != AlgoTypes.Robot;
-
-        public string InstanceId
-        {
-            get { return _instanceId; }
-            set
-            {
-                if (_instanceId == value)
-                    return;
-
-                _instanceId = value;
-                NotifyPropertyChanged(nameof(InstanceId));
-                NotifyPropertyChanged(nameof(IsInstanceIdValid));
-                Validate();
-            }
-        }
-
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : Metadata.IdProvider.IsValidPluginId(Descriptor.Descriptor, InstanceId);
-
-        public PluginPermissions Permissions
-        {
-            get { return _permissions; }
-            set
-            {
-                if (_permissions == value)
-                    return;
-
-                _permissions = value;
-                NotifyPropertyChanged(nameof(Permissions));
-                NotifyPropertyChanged(nameof(AllowTrade));
-                NotifyPropertyChanged(nameof(Isolated));
-            }
-        }
+        public PluginPermissions Permissions { get; protected set; }
 
         public bool AllowTrade
         {
             get { return Permissions.TradeAllowed; }
-            set
-            {
-                if (Permissions.TradeAllowed == value)
-                    return;
-
-                Permissions.TradeAllowed = value;
-                NotifyPropertyChanged(nameof(AllowTrade));
-            }
+            set { Permissions.TradeAllowed = value; }
         }
 
         public bool Isolated
         {
             get { return Permissions.Isolated; }
-            set
-            {
-                if (Permissions.Isolated == value)
-                    return;
-
-                Permissions.Isolated = value;
-                NotifyPropertyChanged(nameof(Isolated));
-            }
+            set { Permissions.Isolated = value; }
         }
 
 
-        private List<InputSetupModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
+        protected List<InputSetupModel> ActiveInputs => SelectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
 
 
         public event Action ValidityChanged = delegate { };
 
 
-        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context, PluginSetupMode mode)
+        public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
         {
             PluginRef = pRef;
-            Descriptor = pRef.Metadata;
-            Metadata = metadata;
-            Context = context;
-            Mode = mode;
+            Metadata = pRef.Metadata;
+            SetupMetadata = metadata;
+            SetupContext = context;
         }
-
-
-        public object Clone()
-        {
-            return Clone(Mode);
-        }
-
-        public abstract object Clone(PluginSetupMode newMode);
 
 
         public virtual void Apply(IPluginSetupTarget target)
@@ -217,8 +84,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         public virtual void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(cfg.MainSymbol);
-            SelectedMapping = Metadata.SymbolMappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+            MainSymbol = cfg.MainSymbol;
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
             foreach (var scrProperty in cfg.Properties)
@@ -233,8 +100,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             var cfg = SaveToConfig();
             cfg.TimeFrame = SelectedTimeFrame;
-            cfg.MainSymbol = MainSymbol.Name;
-            cfg.SelectedMapping = SelectedMapping.Name;
+            cfg.MainSymbol = MainSymbol;
+            cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = Permissions.Clone();
             foreach (var property in _allProperties)
@@ -255,10 +122,10 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public virtual void Reset()
         {
-            SelectedTimeFrame = Context.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(Context.DefaultSymbolCode);
-            SelectedMapping = Metadata.SymbolMappings.GetBarToBarMappingOrDefault(Context.DefaultMapping);
-            InstanceId = Metadata.IdProvider.GeneratePluginId(Descriptor.Descriptor);
+            SelectedTimeFrame = SetupContext.DefaultTimeFrame;
+            MainSymbol = SetupContext.DefaultSymbolCode;
+            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
+            InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata.Descriptor);
 
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
@@ -277,25 +144,19 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         protected virtual bool CheckValidity()
         {
-            return Descriptor.Descriptor.IsValid && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
+            return Metadata.Descriptor.IsValid && _allProperties.All(p => !p.HasError);
         }
 
 
         protected void Init()
         {
-            AvailableTimeFrames = Enum.GetValues(typeof(TimeFrames)).Cast<TimeFrames>().Where(tf => tf != TimeFrames.TicksLevel2).ToList();
-            AvailableSymbols = Metadata.GetAvaliableSymbols(Context.DefaultSymbolCode);
-            AvailableMappings = Metadata.SymbolMappings.BarToBarMappings;
-
-            _parameters = Descriptor.Parameters.Select(CreateParameter).ToList();
-            _barBasedInputs = Descriptor.Inputs.Select(CreateBarBasedInput).ToList();
-            _tickBasedInputs = Descriptor.Inputs.Select(CreateTickBasedInput).ToList();
-            _outputs = Descriptor.Outputs.Select(CreateOutput).ToList();
+            _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
+            _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
+            _tickBasedInputs = Metadata.Inputs.Select(CreateTickBasedInput).ToList();
+            _outputs = Metadata.Outputs.Select(CreateOutput).ToList();
 
             _allProperties = _parameters.Concat<PropertySetupModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
             _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
-
-            IsEmpty = _allProperties.Count == 0 && !Descriptor.Descriptor.SetupMainSymbol;
 
             Reset();
             Validate();
@@ -332,10 +193,10 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, $"{Context.DefaultMapping}.Close");
-                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, Context.DefaultMapping);
-                //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, false);
-                //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, DefaultSymbolCode, true);
+                case "System.Double": return new BarToDoubleInputSetupModel(descriptor, SetupMetadata, SetupContext);
+                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupModel(descriptor, SetupMetadata, SetupContext);
+                //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, SetupContext, false);
+                //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, SetupContext, true);
                 default: return new InputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }
@@ -347,10 +208,10 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new QuoteToDoubleInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, $"{Context.DefaultMapping}.Close");
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, Context.DefaultMapping);
-                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, Context.DefaultSymbolCode, true);
+                case "System.Double": return new QuoteToDoubleInputSetupModel(descriptor, SetupMetadata, SetupContext);
+                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupModel(descriptor, SetupMetadata, SetupContext);
+                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, SetupMetadata, SetupContext, false);
+                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, SetupMetadata, SetupContext, true);
                 default: return new InputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }

@@ -18,13 +18,11 @@ namespace TickTrader.Algo.Common.Model.Setup
             set
             {
                 _value = value;
-                NotifyPropertyChanged(nameof(Value));
                 Error = null;
 
                 if (Converter != null)
                 {
                     _valueStr = Converter.ToString(value);
-                    NotifyPropertyChanged(nameof(ValueStr));
                 }
             }
         }

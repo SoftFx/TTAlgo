@@ -17,26 +17,10 @@ namespace TickTrader.Algo.Common.Model.Setup
         private static MarkerSizes[] _availableSizes = (MarkerSizes[])Enum.GetValues(typeof(MarkerSizes));
 
 
-        private MarkerSizes _markerSize;
+        public MarkerSizes MarkerSize { get; protected set; }
 
-
-        public MarkerSizes[] AvailableSizes => _availableSizes;
-
-        public MarkerSizes MarkerSize
-        {
-            get { return _markerSize; }
-            set
-            {
-                if (_markerSize == value)
-                    return;
-
-                _markerSize = value;
-                NotifyPropertyChanged(nameof(MarkerSize));
-            }
-        }
-
-        public MarkerSeriesOutputSetupModel(OutputMetadata descriptor)
-            : base(descriptor)
+        public MarkerSeriesOutputSetupModel(OutputMetadata metadata)
+            : base(metadata)
         {
         }
 

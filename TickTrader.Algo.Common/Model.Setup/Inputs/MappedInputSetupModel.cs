@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core;
@@ -8,53 +8,35 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class MappedInputSetupModel : InputSetupModel
     {
-        private string _defaultMapping;
-        private Mapping _selectedMapping;
+        public Mapping SelectedMapping { get; protected set; }
 
 
-        public IReadOnlyList<Mapping> AvailableMappings { get; protected set; }
-
-        public Mapping SelectedMapping
+        public MappedInputSetupModel(InputMetadata metadata, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
+            : base(metadata, setupMetadata, setupContext)
         {
-            get { return _selectedMapping; }
-            set
-            {
-                if (_selectedMapping == value)
-                    return;
-
-                _selectedMapping = value;
-                NotifyPropertyChanged(nameof(SelectedMapping));
-            }
-        }
-
-
-        public MappedInputSetupModel(InputMetadata descriptor, IAlgoSetupMetadata metadata, string defaultSymbolCode, string defaultMapping)
-            : base(descriptor, metadata, defaultSymbolCode)
-        {
-            _defaultMapping = defaultMapping;
         }
 
 
         public override void Apply(IPluginSetupTarget target)
         {
-            _selectedMapping?.MapInput(target, Descriptor.Id, SelectedSymbol.Name);
+            SelectedMapping?.MapInput(target, Metadata.Id, SelectedSymbol);
         }
 
         public override void Reset()
         {
             base.Reset();
 
-            SelectedMapping = GetMapping(_defaultMapping);
+            SelectedMapping = GetMapping(SetupContext.DefaultMapping);
         }
 
 
-        protected abstract Mapping GetMapping(string mappingKey);
+        protected abstract Mapping GetMapping(MappingKey mappingKey);
 
 
         protected override void LoadConfig(Input input)
         {
             var mappedInput = input as MappedInput;
-            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? _defaultMapping);
+            SelectedMapping = GetMapping(mappedInput?.SelectedMapping ?? SetupContext.DefaultMapping);
 
             base.LoadConfig(input);
         }
@@ -64,7 +46,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             var mappedInput = input as MappedInput;
             if (mappedInput != null)
             {
-                mappedInput.SelectedMapping = SelectedMapping.DisplayName;
+                mappedInput.SelectedMapping = SelectedMapping.Key;
             }
 
             base.SaveConfig(input);

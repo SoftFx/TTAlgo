@@ -1,12 +1,11 @@
 ﻿using System;
-using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public abstract class PropertySetupModel : ObservableObject
+    public abstract class PropertySetupModel
     {
         private ErrorMsgModel _error;
 
@@ -22,9 +21,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 _error = value;
                 ErrorChanged(this);
-                NotifyPropertyChanged(nameof(Error));
-                NotifyPropertyChanged(nameof(IsValid));
-                NotifyPropertyChanged(nameof(HasError));
             }
         }
 

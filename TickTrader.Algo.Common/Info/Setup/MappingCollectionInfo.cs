@@ -25,9 +25,9 @@ namespace TickTrader.Algo.Common.Info
 
         public MappingCollectionInfo() { }
 
-        public MappingCollectionInfo(List<MappingInfo> barToBarMappings, List<MappingInfo> barToDoubleMappings, List<MappingInfo> quoteToBarMappings, List<MappingInfo> quoteToDoubleMappings)
+        public MappingCollectionInfo(List<MappingInfo> fullBarToBarMappings, List<MappingInfo> barToDoubleMappings, List<MappingInfo> quoteToBarMappings, List<MappingInfo> quoteToDoubleMappings)
         {
-            BarToBarMappings = barToBarMappings;
+            BarToBarMappings = fullBarToBarMappings;
             BarToDoubleMappings = barToDoubleMappings;
             QuoteToBarMappings = quoteToBarMappings;
             QuoteToDoubleMappings = quoteToDoubleMappings;

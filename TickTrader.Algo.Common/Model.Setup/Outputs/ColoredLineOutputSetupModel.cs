@@ -10,27 +10,11 @@ namespace TickTrader.Algo.Common.Model.Setup
         private static LineStyles[] _availableLineStyles = (LineStyles[])Enum.GetValues(typeof(LineStyles));
 
 
-        private LineStyles _style;
+        public LineStyles LineStyle { get; protected set; }
 
 
-        public LineStyles[] AvailableLineStyles => _availableLineStyles;
-
-        public LineStyles LineStyle
-        {
-            get { return _style; }
-            set
-            {
-                if (_style == value)
-                    return;
-
-                _style = value;
-                NotifyPropertyChanged(nameof(LineStyle));
-            }
-        }
-
-
-        public ColoredLineOutputSetupModel(OutputMetadata descriptor)
-            : base(descriptor)
+        public ColoredLineOutputSetupModel(OutputMetadata metadata)
+            : base(metadata)
         {
         }
 
@@ -39,7 +23,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             base.Reset();
 
-            LineStyle = Descriptor.Descriptor.DefaultLineStyle;
+            LineStyle = Metadata.Descriptor.DefaultLineStyle;
         }
 
         public override void Load(Property srcProperty)

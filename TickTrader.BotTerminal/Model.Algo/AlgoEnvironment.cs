@@ -8,16 +8,17 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Common.Model.Library;
 
 namespace TickTrader.BotTerminal
 {
     internal class AlgoEnvironment : IAlgoSetupMetadata
     {
         private PluginCatalog _catalog;
-        private ExtCollection _algoExt;
+        private ReductionCollection _reductions;
         private BotJournal _botJournal;
         private PluginIdProvider _idProvider;
-        private SymbolMappingsCollection _symbolMappings;
+        private MappingCollection _mappings;
         private LocalAlgoLibrary _algoLibrary;
 
 
@@ -25,13 +26,11 @@ namespace TickTrader.BotTerminal
 
         public PluginCatalog Repo => _catalog;
 
-        public ExtCollection Extentions => _algoExt;
-
         public PluginIdProvider IdProvider => _idProvider;
 
         public IReadOnlyList<ISymbolInfo> Symbols { get; private set; }
 
-        public SymbolMappingsCollection SymbolMappings => _symbolMappings;
+        public MappingCollection Mappings => _mappings;
 
         public LocalAlgoLibrary Library => _algoLibrary;
 
@@ -41,7 +40,7 @@ namespace TickTrader.BotTerminal
 
         public AlgoEnvironment()
         {
-            _algoExt = new ExtCollection(new AlgoLogAdapter("Extensions"));
+            _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             _botJournal = new BotJournal(1000);
             _idProvider = new PluginIdProvider();
             _algoLibrary = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
@@ -51,11 +50,12 @@ namespace TickTrader.BotTerminal
                 _algoLibrary.RegisterRepositoryLocation(RepositoryLocation.CommonRepository, EnvService.Instance.AlgoCommonRepositoryFolder);
             _algoLibrary.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
 
-            _algoExt.AddAssembly("TickTrader.Algo.Ext");
-            _algoExt.LoadExtentions(EnvService.Instance.AlgoExtFolder);
+            _reductions.AddAssembly("TickTrader.Algo.Ext");
+            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, RepositoryLocation.LocalExtensions);
 
             _catalog = new PluginCatalog(_algoLibrary);
-            _symbolMappings = new SymbolMappingsCollection(_algoExt);
+            _mappings = new MappingCollection(_reductions);
+            ProfileResolver.Mappings = _mappings;
         }
 
 

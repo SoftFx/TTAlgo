@@ -11,60 +11,20 @@ namespace TickTrader.Algo.Common.Model.Setup
         private static int[] _availableThicknesses = new int[] { 1, 2, 3, 4, 5 };
 
 
-        private Color _lineColor;
-        private int _lineThickness;
-        private bool _isEnabled;
+        public OutputMetadata Metadata { get; }
+
+        public bool IsEnabled { get; protected set; }
+
+        public Color LineColor { get; protected set; }
+
+        public int LineThickness { get; protected set; }
 
 
-        public OutputMetadata Descriptor { get; }
-
-        public bool IsEnabled
+        public OutputSetupModel(OutputMetadata metadata)
         {
-            get { return _isEnabled; }
-            set
-            {
-                if (_isEnabled == value)
-                    return;
+            Metadata = metadata;
 
-                _isEnabled = value;
-                NotifyPropertyChanged(nameof(IsEnabled));
-            }
-        }
-
-        public Color LineColor
-        {
-            get { return _lineColor; }
-            set
-            {
-                if (_lineColor == value)
-                    return;
-
-                _lineColor = value;
-                NotifyPropertyChanged(nameof(LineColor));
-            }
-        }
-
-        public int[] AvailableThicknesses => _availableThicknesses;
-
-        public int LineThickness
-        {
-            get { return _lineThickness; }
-            set
-            {
-                if (_lineThickness == value)
-                    return;
-
-                _lineThickness = value;
-                NotifyPropertyChanged(nameof(LineThickness));
-            }
-        }
-
-
-        public OutputSetupModel(OutputMetadata descriptor)
-        {
-            Descriptor = descriptor;
-
-            SetMetadata(descriptor);
+            SetMetadata(metadata);
         }
 
 
@@ -94,12 +54,12 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         private void InitColor()
         {
-            LineColor = Convert.ToWindowsColor(Descriptor.Descriptor.DefaultColor);
+            LineColor = Convert.ToWindowsColor(Metadata.Descriptor.DefaultColor);
         }
 
         private void InitThickness()
         {
-            var intThikness = (int)Descriptor.Descriptor.DefaultThickness;
+            var intThikness = (int)Metadata.Descriptor.DefaultThickness;
             if (intThikness < 1)
                 intThikness = 1;
             if (intThikness > 5)

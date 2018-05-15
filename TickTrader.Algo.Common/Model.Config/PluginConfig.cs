@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model.Config
         public string MainSymbol { get; set; }
 
         [DataMember(Name = "mapping")]
-        public string SelectedMapping { get; set; }
+        public MappingKey SelectedMapping { get; set; }
 
         [DataMember(Name = "instanceId")]
         public string InstanceId { get; set; }

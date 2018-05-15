@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 using Ver1 = TickTrader.Algo.Common.Model.Config.Version1;
@@ -10,7 +11,7 @@ namespace TickTrader.Algo.Common.Model.Config
 {
     public static partial class PluginConfigResolver
     {
-        public static PluginConfig ResolvePluginConfigVersion1(Ver1.PluginConfig c, AlgoTypes t)
+        public static PluginConfig ResolvePluginConfigVersion1(Ver1.PluginConfig c, AlgoTypes t, MappingCollection mc)
         {
             PluginConfig res = null;
             switch (t)
@@ -29,24 +30,24 @@ namespace TickTrader.Algo.Common.Model.Config
             switch (c)
             {
                 case Ver1.BarBasedConfig barConfig:
-                    res.SelectedMapping = ResolveBarPriceTypeMappingVersion1(barConfig.PriceType);
+                    res.SelectedMapping = mc.GetBarToBarMappingKeyByNameOrDefault(ResolveBarPriceTypeMappingVersion1(barConfig.PriceType));
                     break;
                 case Ver1.QuoteBasedConfig quoteConfig:
-                    res.SelectedMapping = "Bid";
+                    res.SelectedMapping = mc.GetQuoteToBarMappingKeyByNameOrDefault("Bid");
                     break;
             }
-            res.Properties = c.Properties.Select(p => ResolvePluginPropertyVersion1(p)).ToList();
+            res.Properties = c.Properties.Select(p => ResolvePluginPropertyVersion1(p, mc)).ToList();
 
             return res;
         }
 
 
-        private static Property ResolvePluginPropertyVersion1(Ver1.Property p)
+        private static Property ResolvePluginPropertyVersion1(Ver1.Property p, MappingCollection mc)
         {
             switch (p)
             {
                 case Ver1.Input i:
-                    return ResolvePluginInputVersion1(i);
+                    return ResolvePluginInputVersion1(i, mc);
                 case Ver1.Output o:
                     return ResolvePluginOutputVersion1(o);
                 case Ver1.Parameter param:
@@ -56,7 +57,7 @@ namespace TickTrader.Algo.Common.Model.Config
             }
         }
 
-        private static Input ResolvePluginInputVersion1(Ver1.Input i)
+        private static Input ResolvePluginInputVersion1(Ver1.Input i, MappingCollection mc)
         {
             switch (i)
             {
@@ -72,28 +73,28 @@ namespace TickTrader.Algo.Common.Model.Config
                     {
                         Id = qtbi.Id,
                         SelectedSymbol = qtbi.SelectedSymbol,
-                        SelectedMapping = ResolveBarPriceTypeMappingVersion1(qtbi.PriceType),
+                        SelectedMapping = mc.GetQuoteToBarMappingKeyByNameOrDefault(ResolveBarPriceTypeMappingVersion1(qtbi.PriceType)),
                     };
                 case Ver1.QuoteToDoubleInput qtdi:
                     return new QuoteToDoubleInput
                     {
                         Id = qtdi.Id,
                         SelectedSymbol = qtdi.SelectedSymbol,
-                        SelectedMapping = ResolveQuoteToDoubleMappingsVersion1(qtdi.Mapping),
+                        SelectedMapping = mc.GetQuoteToDoubleMappingKeyByNameOrDefault(ResolveQuoteToDoubleMappingsVersion1(qtdi.Mapping)),
                     };
                 case Ver1.BarToBarInput btbi:
                     return new BarToBarInput
                     {
                         Id = btbi.Id,
                         SelectedSymbol = btbi.SelectedSymbol,
-                        SelectedMapping = btbi.SelectedMapping,
+                        SelectedMapping = mc.GetBarToBarMappingKeyByNameOrDefault(btbi.SelectedMapping),
                     };
                 case Ver1.BarToDoubleInput btdi:
                     return new BarToDoubleInput
                     {
                         Id = btdi.Id,
                         SelectedSymbol = btdi.SelectedSymbol,
-                        SelectedMapping = btdi.SelectedMapping,
+                        SelectedMapping = mc.GetBarToDoubleMappingKeyByNameOrDefault(btdi.SelectedMapping),
                     };
                 default:
                     throw new ArgumentException($"Unknown input type: {i.GetType().FullName}");
