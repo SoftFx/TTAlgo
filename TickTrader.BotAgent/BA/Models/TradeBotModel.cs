@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
@@ -223,7 +224,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.InitBarStrategy(feedAdapter, Algo.Api.BarPriceType.Bid);
-                executor.MainSymbolCode = setupModel.MainSymbol.Name;
+                executor.MainSymbolCode = setupModel.MainSymbol;
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
                 executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(1024);
@@ -329,7 +330,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             _ref = Package.GetPluginRef(Descriptor);
-            if (_ref == null || _ref.Metadata.AlgoLogicType != AlgoTypes.Robot)
+            if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
                 ChangeState(BotStates.Broken, $"Trade bot '{Descriptor}' is missing in package '{PackageName}'!");
                 return;

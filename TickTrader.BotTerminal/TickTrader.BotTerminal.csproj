@@ -303,6 +303,8 @@
     <Compile Include="Model.Algo\Adapters.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
+    <Compile Include="Model.Algo\LocalAgent.cs" />
+    <Compile Include="Model.Algo\PluginCatalogItem.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Profiles\ProfileResolver.cs" />

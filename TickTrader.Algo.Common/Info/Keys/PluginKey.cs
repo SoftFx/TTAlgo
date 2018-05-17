@@ -57,5 +57,10 @@ namespace TickTrader.Algo.Common.Info
         {
             return key.Name == PackageName && key.Location == PackageLocation;
         }
+
+        public PackageKey GetPackageKey()
+        {
+            return new PackageKey(PackageName, PackageLocation);
+        }
     }
 }

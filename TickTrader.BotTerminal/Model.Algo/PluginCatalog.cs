@@ -17,9 +17,11 @@ namespace TickTrader.BotTerminal
 
         public IVarSet<PluginKey, PluginInfo> AllPlugins => _plugins;
 
-        public IVarSet<PluginKey, PluginInfo> Indicators { get; }
+        public IVarList<PluginCatalogItem> PluginList { get; }
 
-        public IVarSet<PluginKey, PluginInfo> BotTraders { get; }
+        public IVarList<PluginCatalogItem> Indicators { get; }
+
+        public IVarList<PluginCatalogItem> BotTraders { get; }
 
 
         public PluginCatalog(IAlgoLibrary algoLibrary)
@@ -34,8 +36,9 @@ namespace TickTrader.BotTerminal
                 _plugins.Add(plugin.Key, plugin);
             }
 
-            Indicators = _plugins.Where((k, p) => p.Descriptor.Type == AlgoTypes.Indicator);
-            BotTraders = _plugins.Where((k, p) => p.Descriptor.Type == AlgoTypes.Robot);
+            PluginList = _plugins.OrderBy((k, p) => p.Descriptor.UiDisplayName).Select(info => new PluginCatalogItem(info));
+            Indicators = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Indicator);
+            BotTraders = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Robot);
 
             _algoLibrary.PluginAdded += LibraryOnPluginAdded;
             _algoLibrary.PluginReplaced += LibraryOnPluginReplaced;

@@ -1,45 +1,33 @@
 ﻿using Machinarium.Qnil;
-using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Visuals.RenderableSeries;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.BotTerminal.Lib;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
-    //internal interface IIndicatorSetup
-    //{
-    //    long InstanceId { get; }
-    //    int DataLen { get; }
-    //    AlgoPluginDescriptor Descriptor { get; }
-    //    PluginSetup UiModel { get; }
-    //    IndicatorModel CreateIndicator();
-    //    IIndicatorSetup CreateCopy();
-    //}
+    internal interface IAlgoAgent
+    {
+        string Name { get; }
 
-    //internal interface IAlgoFactory
-    //{
-    //}
+        IVarList<AccountKey> Accounts { get; }
 
-    //internal interface IAlgoSetupFactory
-    //{
-    //    PluginSetupModel CreateSetup(AlgoPluginRef catalogItem, IAlgoSetupContext context);
-    //}
+        IAlgoLibrary Library { get; }
 
-    //internal interface IIndicatorAdapterContext
-    //{
-    //    OutputBuffer<T> GetOutput<T>(string name);
-    //    DateTime GetTimeCoordinate(int index);
-    //    void AddSeries(IRenderableSeries series);
-    //    void AddSeries(DynamicList<MarkerAnnotation> series);
-    //}
+        PluginCatalog Catalog { get; }
+
+        IPluginIdProvider IdProvider { get; }
+
+
+        Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);
+
+        Task<bool> AddOrUpdatePlugin(PluginConfig config, bool start);
+    }
+
 
     internal interface IAlgoPluginHost
     {

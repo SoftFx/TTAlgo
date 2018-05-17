@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {
@@ -65,6 +66,15 @@ namespace TickTrader.BotTerminal
                 mapping = mappingCollection.QuoteToDoubleMappings.First(m => m.Key == defaultMappingKey);
             }
             return mapping;
+        }
+    }
+
+
+    public static class SetupContextExtensions
+    {
+        public static SetupContextInfo GetSetupContextInfo(this IAlgoSetupContext setupContext)
+        {
+            return new SetupContextInfo(setupContext.DefaultTimeFrame, setupContext.DefaultSymbolCode, setupContext.DefaultMapping);
         }
     }
 }

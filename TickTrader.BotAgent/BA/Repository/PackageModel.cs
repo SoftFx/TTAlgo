@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Repository;
 
@@ -37,8 +38,8 @@ namespace TickTrader.BotAgent.BA.Repository
         public IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes type)
         {
             return Container?.Plugins
-                .Where(p => p.Metadata.AlgoLogicType == type)
-                .Select(p => new PluginInfo(new PluginKey(Name, p.Descriptor.Id), p.Descriptor))
+                .Where(p => p.Metadata.Descriptor.Type == type)
+                .Select(p => new PluginInfo(new PluginKey(Name, p.Metadata.Id), p.Metadata))
                 ?? Enumerable.Empty<PluginInfo>();
         }
 

@@ -5,6 +5,9 @@ using TickTrader.Algo.Core;
 using Ver1 = TickTrader.BotTerminal.Model.Profiles.Version1;
 using ConfigVer1 = TickTrader.Algo.Common.Model.Config.Version1;
 using TickTrader.Algo.Core.Metadata;
+using System.IO;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
@@ -37,8 +40,6 @@ namespace TickTrader.BotTerminal
         {
             return new IndicatorStorageEntry
             {
-                DescriptorId = i.DescriptorId,
-                PluginFilePath = i.PluginFilePath,
                 Config = ResolveIndicatorConfigVersion1(i, c),
             };
         }
@@ -47,8 +48,6 @@ namespace TickTrader.BotTerminal
         {
             return new TradeBotStorageEntry
             {
-                DescriptorId = b.DescriptorId,
-                PluginFilePath = b.PluginFilePath,
                 Started = b.Started,
                 Config = ResolveTradeBotConfigVersion1(b, c),
             };
@@ -72,7 +71,20 @@ namespace TickTrader.BotTerminal
 
         private static PluginConfig ResolvePluginConfigVersion1(Ver1.PluginStorageEntry p, AlgoTypes t, Ver1.ChartStorageEntry c)
         {
-            var res = PluginConfigResolver.ResolvePluginConfigVersion1(p.Config, t);
+            var res = PluginConfigResolver.ResolvePluginConfigVersion1(p.Config, t, Mappings);
+            string packageName;
+            RepositoryLocation location;
+            if (p.PluginFilePath == "Built-in")
+            {
+                packageName = "TickTrader.Algo.Indicators.dll".ToLowerInvariant();
+                location = RepositoryLocation.Embedded;
+            }
+            else
+            {
+                packageName = Path.GetFileName(p.PluginFilePath).ToLowerInvariant();
+                location = p.PluginFilePath.StartsWith(EnvService.Instance.AlgoCommonRepositoryFolder) ? RepositoryLocation.CommonRepository : RepositoryLocation.LocalRepository;
+            }
+            res.Key = new PluginKey(packageName, location, p.DescriptorId);
             res.InstanceId = p.InstanceId;
             res.Permissions = new PluginPermissions
             {

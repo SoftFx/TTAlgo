@@ -9,12 +9,6 @@ namespace TickTrader.BotTerminal
     internal abstract class PluginStorageEntry<T> where T : PluginStorageEntry<T>, new()
     {
         [DataMember]
-        public string DescriptorId { get; set; }
-
-        [DataMember]
-        public string PluginFilePath { get; set; }
-
-        [DataMember]
         public PluginConfig Config { get; set; }
 
 
@@ -22,8 +16,6 @@ namespace TickTrader.BotTerminal
         {
             return new T
             {
-                DescriptorId = DescriptorId,
-                PluginFilePath = PluginFilePath,
                 Config = Config,
             };
         }

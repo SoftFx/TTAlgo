@@ -180,8 +180,6 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = Chart.IsCrosshairEnabled,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    DescriptorId = i.Model.Setup.Descriptor.Id,
-                    PluginFilePath = i.Model.PluginFilePath,
                     Config = i.Model.Setup.Save(),
                 }).ToList(),
             };
@@ -201,32 +199,38 @@ namespace TickTrader.BotTerminal
 
         private SetupPluginViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
         {
-            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.CanBeUseForSnapshot(snapshot)).Snapshot.FirstOrDefault().Value;
+            var catalogItem = algoEnv.Repo.AllPlugins.Snapshot[snapshot.Config.Key];
             if (catalogItem == null)
             {
                 return null;
             }
             var setupModel = new SetupPluginViewModel(algoEnv, catalogItem, Chart);
-            if (snapshot.Config != null)
-            {
-                setupModel.Setup.Load(snapshot.Config);
-            }
+            setupModel.Setup.Load(snapshot.Config);
             return setupModel;
         }
 
         private void RestoreIndicator(IndicatorStorageEntry entry)
         {
+            if (entry.Config == null)
+            {
+                logger.Error("Indicator not configured!");
+            }
+            if (entry.Config.Key == null)
+            {
+                logger.Error("Trade bot key missing!");
+            }
+
             var setupModel = RestorePlugin(entry);
 
             if (setupModel == null)
             {
-                logger.Error($"Indicator '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
+                logger.Error($"{entry.Config.Key} not found!");
                 return;
             }
 
             if (setupModel.Setup.Descriptor.Type != AlgoTypes.Indicator)
             {
-                logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not an indicator!");
+                logger.Error($"{entry.Config.Key} is not a trade bot!");
             }
 
             AttachPlugin(setupModel);

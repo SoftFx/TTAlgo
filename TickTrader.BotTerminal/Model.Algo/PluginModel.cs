@@ -6,68 +6,86 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
     internal class PluginModel : CrossDomainObject
     {
-        private enum States { Strating, Running, Stopping }
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        private StateMachine<States> _stateControl = new StateMachine<States>();
         private PluginExecutor _executor;
-        private IAlgoPluginHost _host;
 
-        public AlgoPluginRef PluginRef { get; }
 
-        public string PluginFilePath { get; }
+        public PluginConfig Config { get; private set; }
 
-        public PluginSetupViewModel Setup { get; private set; }
+        public string InstanceId => Config.InstanceId;
 
-        public string InstanceId => Setup.InstanceId;
+        public AlgoPackageRef PackageRef { get; private set; }
 
-        public IAlgoPluginHost Host => _host;
+        public AlgoPluginRef PluginRef { get; private set; }
 
-        public PluginModel(SetupPluginViewModel pSetup, IAlgoPluginHost host)
+        public PluginSetupModel Setup { get; private set; }
+
+
+        protected LocalAgent Agent { get; }
+
+        protected IAlgoPluginHost Host { get; }
+
+        protected IAlgoSetupContext SetupContext { get; }
+
+
+        public PluginModel(PluginConfig config, LocalAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
         {
-            _host = host;
-            Setup = pSetup.Setup;
-            PluginRef = Setup.PluginRef;
-            PluginFilePath = pSetup.PluginInfo.FilePath;
-
-            _executor = CreateExecutor();
-            Setup.SetWorkingFolder(_executor.WorkingFolder);
-            Setup.Apply(_executor);
+            Config = config;
+            Agent = agent;
+            Host = host;
+            SetupContext = setupContext;
         }
 
         protected bool StartExcecutor()
         {
             try
             {
-                _host.UpdatePlugin(_executor);
+                PackageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
+                PackageRef.IncrementRef();
+                PluginRef = Agent.Library.GetPluginRef(Config.Key);
+                Setup = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(PluginRef, Agent, SetupContext);
+                Setup.Load(Config);
+
+                _executor = CreateExecutor();
+                Setup.SetWorkingFolder(_executor.WorkingFolder);
+                Setup.Apply(_executor);
+
+                Host.UpdatePlugin(_executor);
                 _executor.Start();
                 return true;
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "StartExcecutor() failed!");
+                _logger.Error(ex, "StartExcecutor() failed!");
+                PackageRef?.DecrementRef();
+
                 return false;
             }
         }
 
-        protected void Configurate(PluginSetupViewModel setup)
+        internal virtual void Configurate(PluginConfig config)
         {
-            Setup = setup;
-
-            Setup.SetWorkingFolder(_executor.WorkingFolder);
-            Setup.Apply(_executor);
-            _executor.Permissions = Setup.Permissions;
+            Config = config;
         }
 
         protected Task StopExecutor()
         {
-            return Task.Factory.StartNew(() => _executor.Stop());
+            return Task.Factory.StartNew(() =>
+            {
+                _executor.Stop();
+
+                PackageRef?.DecrementRef();
+                PackageRef = null;
+                PluginRef = null;
+            });
         }
 
         protected void AbortExecutor()
@@ -82,13 +100,13 @@ namespace TickTrader.BotTerminal
             executor.OnRuntimeError += Executor_OnRuntimeError;
 
             executor.TimeFrame = Setup.SelectedTimeFrame;
-            executor.MainSymbolCode = Setup.MainSymbol.Name;
+            executor.MainSymbolCode = Setup.MainSymbol;
             executor.InstanceId = InstanceId;
             executor.Permissions = Setup.Permissions;
             executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 
-            _host.InitializePlugin(executor);
+            Host.InitializePlugin(executor);
 
             return executor;
         }
@@ -100,7 +118,7 @@ namespace TickTrader.BotTerminal
 
         private void Executor_OnRuntimeError(Exception ex)
         {
-            logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
+            _logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
         }
     }
 

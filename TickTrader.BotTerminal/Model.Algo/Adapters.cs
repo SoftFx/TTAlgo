@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
     {
         private OutputFixture<double> buffer;
 
-        public DoubleSeriesAdapter(OutputFixture<double> buffer, ColoredLineOutputSetupViewModel setup)
+        public DoubleSeriesAdapter(OutputFixture<double> buffer, ColoredLineOutputSetupModel setup)
         {
             this.buffer = buffer;
             this.SeriesData = new XyDataSeries<DateTime, double>();
@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
                 buffer.Appended += Append;
                 buffer.AllUpdated += CopyAll;
 
-                SeriesData.SeriesName = setup.Descriptor.Id;
+                SeriesData.SeriesName = setup.Metadata.Descriptor.Id;
             }
         }
 
@@ -63,7 +63,7 @@ namespace TickTrader.BotTerminal
     {
         private OutputFixture<Marker> buffer;
 
-        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetupViewModel setup)
+        public MarkerSeriesAdapter(OutputFixture<Marker> buffer, MarkerSeriesOutputSetupModel setup)
         {
             this.buffer = buffer;
 
@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
                 buffer.Appended += Append;
                 buffer.AllUpdated += CopyAll;
 
-                SeriesData.SeriesName = setup.Descriptor.Id;
+                SeriesData.SeriesName = setup.Metadata.Descriptor.Id;
 
                 //buffer.Updated = Update;
                 //buffer.Appended = Append;

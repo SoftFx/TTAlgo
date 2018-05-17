@@ -19,14 +19,46 @@ namespace TickTrader.BotTerminal
     {
         private Logger _logger;
         private bool _dlgResult;
-        private PluginCatalog _catalog;
         private bool _runBot;
-        private IAlgoSetupContext _setupContext;
+        private SetupContextInfo _setupContext;
+        private PluginCatalogItem _selectedPlugin;
+        private AccountKey _selectedAccount;
 
 
-        public PluginSetupViewModel Setup { get; }
+        public IAlgoAgent Agent { get; }
 
-        public PluginInfo PluginInfo { get; private set; }
+        public IObservableList<AccountKey> Accounts { get; }
+
+        public AccountKey SelectedAccount
+        {
+            get { return _selectedAccount; }
+            set
+            {
+                if (_selectedAccount == value)
+                    return;
+
+                _selectedAccount = value;
+                NotifyOfPropertyChange(nameof(SelectedAccount));
+            }
+        }
+
+        public IObservableList<PluginCatalogItem> Plugins { get; }
+
+        public PluginCatalogItem SelectedPlugin
+        {
+            get { return _selectedPlugin; }
+            set
+            {
+                if (_selectedPlugin == value)
+                    return;
+
+                _selectedPlugin = value;
+                NotifyOfPropertyChange(nameof(SelectedPlugin));
+                UpdateSetup();
+            }
+        }
+
+        public PluginSetupViewModel Setup { get; private set; }
 
         public TradeBotModel Bot { get; }
 
@@ -59,18 +91,31 @@ namespace TickTrader.BotTerminal
             RunBot = true;
         }
 
-        public SetupPluginViewModel(AlgoEnvironment algoEnv, PluginInfo item, IAlgoSetupContext setupContext) : this()
+        public SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext = null) : this()
         {
-            _catalog = algoEnv.Repo;
-            PluginInfo = item;
+            Agent = agent;
             _setupContext = setupContext;
 
-            Setup = AlgoSetupFactory.CreateSetup(item, algoEnv, algoEnv.IdProvider);
-            PluginType = GetPluginTypeDisplayName(item.Descriptor);
+            switch (type)
+            {
+                case AlgoTypes.Robot:
+                    Plugins = Agent.Catalog.BotTraders.AsObservable();
+                    break;
+                case AlgoTypes.Indicator:
+                    Plugins = Agent.Catalog.Indicators.AsObservable();
+                    break;
+                default:
+                    Plugins = Agent.Catalog.PluginList.AsObservable();
+                    break;
+            }
 
-            DisplayName = $"Setting New {PluginType} - {item.Descriptor.DisplayName}";
+            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key == key);
 
-            _catalog.AllPlugins.Updated += AllPlugins_Updated;
+            PluginType = GetPluginTypeDisplayName(type);
+
+            DisplayName = $"Setting New {PluginType}";
+
+            Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
 
             Init();
         }
@@ -78,8 +123,8 @@ namespace TickTrader.BotTerminal
         public SetupPluginViewModel(TradeBotModel bot) : this()
         {
             Bot = bot;
-            Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupViewModel;
-            PluginType = GetPluginTypeDisplayName(Setup.Descriptor);
+            //Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupViewModel;
+            PluginType = GetPluginTypeDisplayName(Setup.Descriptor.Type);
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
@@ -136,43 +181,50 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanOk));
         }
 
-        private void AllPlugins_Updated(DictionaryUpdateArgs<PluginKey, PluginInfo> args)
+        private void AllPlugins_Updated(ListUpdateArgs<PluginCatalogItem> args)
         {
             if (args.Action == DLinqAction.Replace)
             {
-                if (args.Key == PluginInfo.Key)
+                if (args.NewItem.Key == SelectedPlugin.Key)
                 {
-                    PluginInfo = args.NewItem;
+                    SelectedPlugin = args.NewItem;
                     Init();
                 }
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                if (args.Key == PluginInfo.Key)
+                if (args.NewItem.Key == SelectedPlugin.Key)
                     TryClose();
             }
         }
 
         private void Dispose()
         {
-            if (_catalog != null)
-                _catalog.AllPlugins.Updated -= AllPlugins_Updated;
+            if (Agent.Catalog != null)
+                Agent.Catalog.PluginList.Updated -= AllPlugins_Updated;
             if (Bot != null)
                 Bot.StateChanged -= BotStateChanged;
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
         }
 
-        private string GetPluginTypeDisplayName(PluginDescriptor descriptor)
+        private string GetPluginTypeDisplayName(AlgoTypes type)
         {
-            switch (descriptor.Type)
+            switch (type)
             {
-                case AlgoTypes.Robot:
-                    return "Bot";
-                case AlgoTypes.Indicator:
-                    return "Indicator";
-                default:
-                    return "PluginType";
+                case AlgoTypes.Robot: return "Bot";
+                case AlgoTypes.Indicator: return "Indicator";
+                default: return "PluginType";
+            }
+        }
+
+        private async void UpdateSetup()
+        {
+            if (SelectedPlugin != null)
+            {
+                var metadata = await Agent.GetSetupMetadata(SelectedAccount, _setupContext);
+                Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider);
+                NotifyOfPropertyChange(nameof(Setup));
             }
         }
     }
