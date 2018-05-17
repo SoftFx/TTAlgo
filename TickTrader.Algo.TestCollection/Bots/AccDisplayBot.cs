@@ -215,7 +215,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     if (buyMargin.HasValue && buyMargin.Value > 0)
                         Status.WriteLine($"Buy {symbol.Name} margin: {buyMargin.Value}");
                     if (sellMargin.HasValue && sellMargin.Value > 0)
-                        Status.WriteLine($"Buy {symbol.Name} margin: {sellMargin.Value}");
+                        Status.WriteLine($"Sell {symbol.Name} margin: {sellMargin.Value}");
                 }
             }
         }
