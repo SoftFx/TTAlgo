@@ -54,27 +54,27 @@ namespace TickTrader.BotTerminal
         //    return null;
         //}
 
-        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetupViewModel outputSetup)
+        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetupModel outputSetup)
         {
             var seriesData = model.GetOutputSeries(outputSetup.Id);
 
-            if (outputSetup is ColoredLineOutputSetupViewModel)
-                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupViewModel)outputSetup);
-            else if (outputSetup is MarkerSeriesOutputSetupViewModel)
-                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupViewModel)outputSetup);
+            if (outputSetup is ColoredLineOutputSetupModel)
+                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupModel)outputSetup);
+            else if (outputSetup is MarkerSeriesOutputSetupModel)
+                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupModel)outputSetup);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetupViewModel outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetupModel outputSetup)
         {
-            var plotType = outputSetup.Descriptor.PlotType;
+            var plotType = outputSetup.Metadata.Descriptor.PlotType;
 
             if (plotType == PlotType.Line || plotType == PlotType.DiscontinuousLine)
             {
                 var viewModel = new LineRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.DrawNaNAs = outputSetup.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
+                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
                      LineDrawMode.Gaps : LineDrawMode.ClosedLines;
                 viewModel.Stroke = outputSetup.LineColor;
                 viewModel.StrokeThickness = outputSetup.LineThickness;
@@ -106,12 +106,12 @@ namespace TickTrader.BotTerminal
             {
                 var viewModel = new ColumnRenderableSeriesViewModel();
                 viewModel.DataSeries = seriesData;
-                viewModel.DrawNaNAs = outputSetup.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
+                viewModel.DrawNaNAs = outputSetup.Metadata.Descriptor.PlotType == Algo.Api.PlotType.DiscontinuousLine ?
                      LineDrawMode.Gaps : LineDrawMode.ClosedLines;
                 viewModel.Stroke = outputSetup.LineColor;
                 viewModel.Fill = new SolidColorBrush(outputSetup.LineColor);
                 viewModel.StrokeThickness = outputSetup.LineThickness;
-                viewModel.ZeroLineY = outputSetup.Descriptor.ZeroLine;
+                viewModel.ZeroLineY = outputSetup.Metadata.Descriptor.ZeroLine;
                 viewModel.IsVisible = outputSetup.IsEnabled && outputSetup.IsValid;
                 viewModel.StyleKey = "IndicatorSeriesStyle_Histogram";
 
@@ -121,7 +121,7 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException("Unsupported plot type: " + plotType);
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupViewModel outputSetup)
+        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupModel outputSetup)
         {
             var viewModel = new LineRenderableSeriesViewModel();
             viewModel.DataSeries = seriesData;

@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
         public void AddBot(TradeBotModel botModel)
         {
             _bots.Add(botModel.InstanceId, botModel);
-            AlgoEnv.IdProvider.AddPlugin(botModel);
+            AlgoEnv.IdProvider.RegisterBot(botModel);
             botModel.StateChanged += StateChanged;
         }
 
@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             {
                 botModel.Remove();
                 _bots.Remove(instanceId);
-                AlgoEnv.IdProvider.RemovePlugin(instanceId);
+                AlgoEnv.IdProvider.UnregisterPlugin(instanceId);
                 botModel.StateChanged -= StateChanged;
             }
         }

@@ -19,27 +19,28 @@ namespace TickTrader.BotTerminal
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
 
-        private BotManager _botManagerModel;
         private IShell _shell;
         private PreferencesStorageModel _preferences;
 
 
         public IVarList<BotControlViewModel> Bots { get; }
 
-        public TraderClientModel ClientModel { get; }
+        public LocalAgent Agent => _shell.Agent;
 
-        public AlgoEnvironment AlgoEnv { get; }
+        public TraderClientModel ClientModel => Agent.ClientModel;
+
+        public AlgoEnvironment AlgoEnv => Agent.AlgoEnv;
 
 
-        public BotManagerViewModel(BotManager botManagerModel, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
+        private BotManager BotManagerModel => Agent.BotManager;
+
+
+        public BotManagerViewModel(IShell shell, PersistModel storage)
         {
-            _botManagerModel = botManagerModel;
             _shell = shell;
-            ClientModel = clientModel;
-            AlgoEnv = algoEnv;
             _preferences = storage.PreferencesStorage.StorageModel;
 
-            Bots = botManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, this, false, false));
+            Bots = BotManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, this, false, false));
 
             ClientModel.Connected += ClientModelOnConnected;
         }
@@ -49,7 +50,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new SetupPluginViewModel(AlgoEnv, item, context ?? _botManagerModel);
+                var model = new SetupPluginViewModel(Agent, item.Key, AlgoTypes.Robot, (context ?? BotManagerModel).GetSetupContextInfo());
                 _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 model.Closed += AlgoSetupClosed;
             }
@@ -82,7 +83,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                profileStorage.Bots = _botManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
+                profileStorage.Bots = BotManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
                     Started = b.State == BotModelStates.Running,
                     Config = b.Setup.Save(),
@@ -123,17 +124,17 @@ namespace TickTrader.BotTerminal
 
         public void CloseBot(string instanceId)
         {
-            _botManagerModel.RemoveBot(instanceId);
+            BotManagerModel.RemoveBot(instanceId);
         }
 
         public void CloseAllBots(CancellationToken token)
         {
-            foreach (var instanceId in _botManagerModel.Bots.Snapshot.Keys.ToList())
+            foreach (var instanceId in BotManagerModel.Bots.Snapshot.Keys.ToList())
             {
                 if (token.IsCancellationRequested)
                     return;
 
-                _botManagerModel.RemoveBot(instanceId);
+                BotManagerModel.RemoveBot(instanceId);
             }
         }
 
@@ -161,21 +162,22 @@ namespace TickTrader.BotTerminal
 
         private void AddBot(SetupPluginViewModel setupModel)
         {
-            var bot = new TradeBotModel(setupModel, this, new WindowStorageModel { Width = 300, Height = 300 });
-            _botManagerModel.AddBot(bot);
+            var bot = new TradeBotModel(setupModel.GetConfig(), Agent, this,
+                new AlgoSetupContextStub(setupModel.SetupContext), new WindowStorageModel { Width = 300, Height = 300 });
+            BotManagerModel.AddBot(bot);
             if (setupModel.RunBot)
                 bot.Start();
         }
 
         private void UpdateBot(SetupPluginViewModel setupModel)
         {
-            setupModel.Bot.Configurate(setupModel.Setup);
-            _botManagerModel.UpdateBot(setupModel.Bot);
+            setupModel.Bot.Configurate(setupModel.GetConfig());
+            BotManagerModel.UpdateBot(setupModel.Bot);
         }
 
         private void BotClosed(BotControlViewModel sender)
         {
-            _botManagerModel.RemoveBot(sender.Model.InstanceId);
+            BotManagerModel.RemoveBot(sender.Model.InstanceId);
         }
 
         private void RestoreTradeBot(TradeBotStorageEntry entry)
@@ -202,7 +204,7 @@ namespace TickTrader.BotTerminal
                 return;
             }
 
-            var setupModel = new SetupPluginViewModel(AlgoEnv, entry.Config.Key, AlgoTypes.Robot);
+            var setupModel = new SetupPluginViewModel(Agent, entry.Config.Key, AlgoTypes.Robot);
             setupModel.RunBot = entry.Started && _preferences.RestartBotsOnStartup;
             setupModel.Setup.Load(entry.Config);
             AddBot(setupModel);

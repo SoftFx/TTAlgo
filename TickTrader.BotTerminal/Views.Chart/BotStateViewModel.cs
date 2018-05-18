@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
         {
             if (dialogResult)
             {
-                Bot.Configurate(setupVM.Setup);
+                Bot.Configurate(setupVM.GetConfig());
             }
         }
 
@@ -117,12 +117,16 @@ namespace TickTrader.BotTerminal
             var res = new List<string>();
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
-            res.Add(Bot.Setup.Permissions.ToString());
-            res.Add("------------ Plugin Info ------------");
-            res.Add($"Name: {Bot.Setup.Descriptor.DisplayName}");
-            res.Add($"Version: {Bot.Setup.Descriptor.Version}");
-            res.Add($"File Path: {Bot.PluginFilePath}");
-            if (Bot.Setup.HasParams)
+            res.Add(Bot.Config.Permissions.ToString());
+            if (Bot.PluginRef != null)
+            {
+                res.Add("------------ Plugin Info ------------");
+                res.Add($"Name: {Bot.PluginRef.Metadata.Descriptor.DisplayName}");
+                res.Add($"Version: {Bot.PluginRef.Metadata.Descriptor.Version}");
+                res.Add($"Package Name: {Bot.PackageRef.Name}");
+                res.Add($"Package Location: {Bot.PackageRef.Location}");
+            }
+            if (Bot.Setup.Parameters.Any())
             {
                 res.Add("");
                 res.Add("------------ Parameters ------------");

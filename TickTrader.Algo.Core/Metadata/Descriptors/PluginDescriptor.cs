@@ -55,5 +55,13 @@ namespace TickTrader.Algo.Core.Metadata
         public AlgoMetadataErrors Error { get; set; }
 
         public bool IsValid => Error == AlgoMetadataErrors.None;
+
+
+        public PluginDescriptor()
+        {
+            Parameters = new List<ParameterDescriptor>();
+            Inputs = new List<InputDescriptor>();
+            Outputs = new List<OutputDescriptor>();
+        }
     }
 }

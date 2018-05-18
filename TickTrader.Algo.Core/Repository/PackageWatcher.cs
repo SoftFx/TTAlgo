@@ -42,6 +42,8 @@ namespace TickTrader.Algo.Core.Repository
             Location = location;
             _logger = logger;
 
+            PackageRef = new AlgoPackageRef(FileName, Location, DateTime.UtcNow, null);
+
             _stateControl = new StateMachine<States>();
 
             _stateControl.AddTransition(States.Created, Events.Start, States.Loading);

@@ -7,9 +7,9 @@ namespace TickTrader.Algo.Common.Info
         private int _hash;
 
 
-        public string Name { get; }
+        public string Name { get; private set; }
 
-        public RepositoryLocation Location { get; }
+        public RepositoryLocation Location { get; private set; }
 
 
         public PackageKey(string name, RepositoryLocation location)
@@ -37,6 +37,17 @@ namespace TickTrader.Algo.Common.Info
             return key != null
                 && key.Name == Name
                 && key.Location == Location;
+        }
+
+
+        public static bool operator ==(PackageKey first, PackageKey second)
+        {
+            return ReferenceEquals(first, second) || first != null && first.Equals(second);
+        }
+
+        public static bool operator !=(PackageKey first, PackageKey second)
+        {
+            return !ReferenceEquals(first, second) || first != null && !first.Equals(second);
         }
     }
 }

@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core.Repository
         public AlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc, IEnumerable<AlgoPluginRef> plugins)
             : this(name, location, createdUtc)
         {
-            _plugins = plugins.ToList();
+            _plugins = plugins?.ToList();
         }
 
 
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public virtual AlgoPluginRef GetPluginRef(string id)
         {
-            return _plugins.FirstOrDefault(pr => pr.Id == id);
+            return _plugins?.FirstOrDefault(pr => pr.Id == id);
         }
 
         public virtual void IncrementRef() { }

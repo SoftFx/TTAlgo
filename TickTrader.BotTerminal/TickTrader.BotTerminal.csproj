@@ -454,6 +454,7 @@
     </Compile>
     <Compile Include="Views.Protocol\BotAgentLoginDialogViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentViewModel.cs" />
+    <Compile Include="Views.Setup\AlgoSetupContextStub.cs" />
     <Compile Include="Views.Setup\AlgoSetupFactory.cs" />
     <Compile Include="Views.Setup\Extensions.cs" />
     <Compile Include="Views.Setup\IndicatorSetupViewModel.cs" />

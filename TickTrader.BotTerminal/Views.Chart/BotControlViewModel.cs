@@ -101,7 +101,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenChart()
         {
-            _shell.ShowChart(Model.Setup.MainSymbol.Name, Model.Setup.SelectedTimeFrame.Convert());
+            _shell.ShowChart(Model.Config.MainSymbol, Model.Config.TimeFrame.Convert());
         }
 
         private void BotStateChanged(TradeBotModel model)

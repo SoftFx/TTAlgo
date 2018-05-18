@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
         {
-            ActivateItem(new ChartViewModel(GenerateChartId(), symbol, period, _shell, _clientModel, _algoEnv, _botManager));
+            ActivateItem(new ChartViewModel(GenerateChartId(), symbol, period, _shell, _botManager));
         }
 
         public void OpenOrActivate(string symbol, ChartPeriods period)
@@ -129,7 +129,7 @@ namespace TickTrader.BotTerminal
                     }
 
                     var id = chart.Id ?? GenerateChartId(); // generate missing chartIds
-                    var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _shell, _clientModel, _algoEnv, _botManager);
+                    var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _shell, _botManager);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }

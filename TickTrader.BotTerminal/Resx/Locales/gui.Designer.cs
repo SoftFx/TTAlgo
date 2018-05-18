@@ -493,6 +493,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PluginError_None {
+            get {
+                return ResourceManager.GetString("PluginError_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Amount##.
         /// </summary>
         internal static string Position_Amount {

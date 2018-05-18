@@ -3,7 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:cal="http://www.caliburnproject.org"
-    xmlns:am="clr-namespace:TickTrader.Algo.Common.Model.Setup;assembly=TickTrader.Algo.Common"
     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
@@ -48,7 +47,7 @@
 
     <!-- Double Output Template  -->
 
-    <DataTemplate DataType="{x:Type am:ColoredLineOutputSetupModel}">
+    <DataTemplate DataType="{x:Type l:ColoredLineOutputSetupViewModel}">
         <Grid Margin="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -83,7 +82,7 @@
 
     <!-- Marker Output Template  -->
 
-    <DataTemplate DataType="{x:Type am:MarkerSeriesOutputSetupModel}">
+    <DataTemplate DataType="{x:Type l:MarkerSeriesOutputSetupViewModel}">
         <Grid Margin="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -135,14 +134,14 @@
 
     <!--  AlgoInvalidParameter  -->
 
-    <DataTemplate DataType="{x:Type am:ParameterSetupModel+Invalid}">
+    <DataTemplate DataType="{x:Type l:ParameterSetupViewModel+Invalid}">
         <TextBox Name="input" Text="Invalid parameter" IsEnabled="False"
                                      HorizontalAlignment="Stretch" />
     </DataTemplate>
 
     <!--  Bool Param template  -->
 
-    <DataTemplate DataType="{x:Type am:BoolParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:BoolParamSetupViewModel}">
         <CheckBox Name="input" IsChecked="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -155,7 +154,7 @@
 
     <!--  Int Param template  -->
 
-    <DataTemplate DataType="{x:Type am:IntParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:IntParamSetupViewModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -165,7 +164,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:NullableIntParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:NullableIntParamSetupViewModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -177,7 +176,7 @@
 
     <!--  DoubleParam template -->
 
-    <DataTemplate DataType="{x:Type am:DoubleParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:DoubleParamSetupViewModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -187,7 +186,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:NullableDoubleParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:NullableDoubleParamSetupViewModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
                                      HorizontalAlignment="Stretch" Margin="0"/>
         <DataTemplate.Triggers>
@@ -199,7 +198,7 @@
 
     <!--  StringParam template  -->
 
-    <DataTemplate DataType="{x:Type am:StringParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:StringParamSetupViewModel}">
         <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
                                      HorizontalAlignment="Stretch"/>
         <DataTemplate.Triggers>
@@ -211,7 +210,7 @@
 
     <!--  Enum Param template  -->
 
-    <DataTemplate DataType="{x:Type am:EnumParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:EnumParamSetupViewModel}">
         <ComboBox Name="input"
                       ItemsSource="{Binding EnumValues}" SelectedItem="{Binding SelectedValue}"
                       Margin="0">
@@ -230,7 +229,7 @@
 
     <!--  File Param template  -->
 
-    <DataTemplate DataType="{x:Type am:FileParamSetupModel}">
+    <DataTemplate DataType="{x:Type l:FileParamSetupViewModel}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -260,7 +259,7 @@
                   IsEnabled="{Binding HasChoice}"/>
     </DataTemplate>-->
 
-    <DataTemplate DataType="{x:Type am:BarToBarInputSetupModel}">
+    <DataTemplate DataType="{x:Type l:BarToBarInputSetupViewModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -274,12 +273,12 @@
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                       ItemsSource="{Binding AvailableMappings}"
                       SelectedValue="{Binding SelectedMapping}"
-                      DisplayMemberPath="Name"
+                      DisplayMemberPath="DisplayName"
                       Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type am:QuoteToBarInputSetupModel}">
+    <DataTemplate DataType="{x:Type l:QuoteToBarInputSetupViewModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -293,14 +292,14 @@
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                       ItemsSource="{Binding AvailableMappings}"
                       SelectedValue="{Binding SelectedMapping}"
-                      DisplayMemberPath="Name"
+                      DisplayMemberPath="DisplayName"
                       Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
 
     <!-- Tick Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteInputSetupModel}">
+    <DataTemplate DataType="{x:Type l:QuoteInputSetupViewModel}">
         <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
                       IsEnabled="{Binding HasChoice}"/>
@@ -308,7 +307,7 @@
 
     <!-- Double (bar based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:BarToDoubleInputSetupModel}">
+    <DataTemplate DataType="{x:Type l:BarToDoubleInputSetupViewModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -322,14 +321,14 @@
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                       ItemsSource="{Binding AvailableMappings}"
                       SelectedValue="{Binding SelectedMapping}"
-                      DisplayMemberPath="Name"
+                      DisplayMemberPath="DisplayName"
                       Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
 
     <!-- Double (tick based) Input Setup Template  -->
 
-    <DataTemplate DataType="{x:Type am:QuoteToDoubleInputSetupModel}">
+    <DataTemplate DataType="{x:Type l:QuoteToDoubleInputSetupViewModel}">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -343,7 +342,7 @@
             <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
                       ItemsSource="{Binding AvailableMappings}"
                       SelectedValue="{Binding SelectedMapping}"
-                      DisplayMemberPath="Name"
+                      DisplayMemberPath="DisplayName"
                       Margin="2,0,0,0" />
         </Grid>
     </DataTemplate>
@@ -353,8 +352,6 @@
     <ControlTemplate x:Key="GeneralSettings" TargetType="Control">
         <Grid Margin="3">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
@@ -368,18 +365,10 @@
             <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
                      Text="{Binding Setup.InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Foreground="{DynamicResource Shell_PrimaryForeground}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding PluginType}"/>
-                    <TextBlock Text=" Version:"/>
-                </StackPanel>
-            </Label>
-            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
-                     Text="{Binding Setup.PluginRef.DisplayName, Mode=OneWay}" IsEnabled="False"/>            
-            <Label Grid.Row="4" Grid.Column="0" Content="AllowTrade" />
-            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Setup.AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="4" Grid.Column="2" Content="Isolate bot" />
-            <CheckBox Grid.Row="4" Grid.Column="3" IsChecked="{Binding Setup.Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
+            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Setup.AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
+            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Setup.Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
@@ -418,7 +407,7 @@
                       ItemsSource="{Binding Setup.AvailableMappings}"
                       SelectedValue="{Binding Setup.SelectedMapping}"
                       IsEnabled="{Binding Setup.AllowChangeMapping}"
-                      DisplayMemberPath="Name"/>
+                      DisplayMemberPath="DisplayName"/>
         </Grid>
     </ControlTemplate>
 
@@ -434,9 +423,11 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="Plugin Host" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Local instance" IsEnabled="False" />
+            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Agent.Name, Mode=OneWay}" IsEnabled="False" />
             <Label Grid.Row="2" Grid.Column="0" Content="Account" />
-            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="Current account" IsEnabled="False" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="False"
+                      ItemsSource="{Binding Accounts}"
+                      SelectedValue="{Binding SelectedAccount}"/>
         </Grid>
     </ControlTemplate>
 
@@ -450,7 +441,10 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" />
-            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Selected plugin" IsEnabled="False" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="True"
+                      ItemsSource="{Binding Plugins}"
+                      SelectedValue="{Binding SelectedPlugin}"
+                      DisplayMemberPath="DisplayName"/>
         </Grid>
     </ControlTemplate>
 
@@ -636,12 +630,12 @@
             <DataTrigger Binding="{Binding Setup.HasDescription}" Value="False">
                 <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot">
+            <DataTrigger Binding="{Binding Setup.Descriptor.Type}" Value="Robot">
                 <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot"/>
+                    <Condition Binding="{Binding Setup.Descriptor.Type}" Value="Robot"/>
                     <Condition Binding="{Binding Setup.Descriptor.SetupMainSymbol}" Value="True"/>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
@@ -650,7 +644,7 @@
             </MultiDataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding Setup.Descriptor.AlgoLogicType}" Value="Robot"/>
+                    <Condition Binding="{Binding Setup.Descriptor.Type}" Value="Robot"/>
                     <Condition Binding="{Binding Setup.IsEditMode}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>

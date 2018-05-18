@@ -26,6 +26,7 @@ using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Library;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -41,7 +42,6 @@ namespace TickTrader.BotTerminal
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
         private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
-        private readonly AlgoEnvironment algoEnv;
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
         private bool isLoading;
@@ -57,26 +57,25 @@ namespace TickTrader.BotTerminal
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
 
-        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel client)
+        public ChartModelBase(SymbolModel symbol, LocalAgent agent)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.ClientModel = client;
+            Agent = agent;
             this.Model = symbol;
-            this.algoEnv = algoEnv;
-            this.Journal = algoEnv.BotJournal;
+            this.Journal = AlgoEnv.BotJournal;
 
-            AvailableIndicators = algoEnv.Repo.Indicators.Chain().AsObservable();
-            AvailableBotTraders = algoEnv.Repo.BotTraders.Chain().AsObservable();
+            AvailableIndicators = AlgoEnv.Repo.Indicators.Chain().AsObservable();
+            AvailableBotTraders = AlgoEnv.Repo.BotTraders.Chain().AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
 
-            this.isConnected = client.IsConnected.Value;
-            client.Connected += Connection_Connected;
+            this.isConnected = ClientModel.IsConnected.Value;
+            ClientModel.Connected += Connection_Connected;
             //client.Disconnected += Connection_Disconnected;
-            client.Deinitializing += Client_Deinitializing;
+            ClientModel.Deinitializing += Client_Deinitializing;
 
-            subscription = client.Distributor.Subscribe(symbol.Name);
+            subscription = ClientModel.Distributor.Subscribe(symbol.Name);
             subscription.NewQuote += OnRateUpdate;
 
             CurrentAsk = symbol.CurrentAsk;
@@ -98,9 +97,10 @@ namespace TickTrader.BotTerminal
             stateController.StateChanged += (o, n) => logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
+        protected LocalAgent Agent { get; }
         protected SymbolModel Model { get; private set; }
-        protected TraderClientModel ClientModel { get; private set; }
-        protected AlgoEnvironment AlgoEnv => algoEnv;
+        protected TraderClientModel ClientModel => Agent.ClientModel;
+        protected AlgoEnvironment AlgoEnv => Agent.AlgoEnv;
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
@@ -213,18 +213,18 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsLocked = delegate { };
         public event System.Action ParamsUnlocked = delegate { };
 
-        public void AddIndicator(SetupPluginViewModel setup)
+        public void AddIndicator(PluginConfig config)
         {
-            var indicator = CreateIndicator(setup);
+            var indicator = CreateIndicator(config);
             indicators.Add(indicator);
-            algoEnv.IdProvider.AddPlugin(indicator);
+            AlgoEnv.IdProvider.RegisterIndicator(indicator);
         }
 
         public void RemoveIndicator(IndicatorModel i)
         {
             if (indicators.Remove(i))
             {
-                algoEnv.IdProvider.RemovePlugin(i.InstanceId);
+                AlgoEnv.IdProvider.UnregisterPlugin(i.InstanceId);
                 i.Dispose();
             }
         }
@@ -237,7 +237,7 @@ namespace TickTrader.BotTerminal
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel CreateIndicator(SetupPluginViewModel setup);
+        protected abstract IndicatorModel CreateIndicator(PluginConfig config);
         protected abstract void ApplyUpdate(QuoteEntity update);
 
         protected void Support(SelectableChartTypes chartType)

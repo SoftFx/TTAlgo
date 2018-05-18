@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core.Repository
             }
             catch (Exception ex)
             {
-                _logger?.Info($"Failed to scan {_repPath}", ex);
+                _logger?.Error($"Failed to scan {_repPath}", ex);
                 _stateControl.PushEvent(Events.ScanFailed);
             }
         }

@@ -15,6 +15,7 @@ using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Core.Math;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -25,8 +26,8 @@ namespace TickTrader.BotTerminal
         private Api.TimeFrames timeframe;
         private readonly BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel clientModel)
-            : base(symbol, algoEnv, clientModel)
+        public BarChartModel(SymbolModel symbol, LocalAgent agent)
+            : base(symbol, agent)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
@@ -86,9 +87,9 @@ namespace TickTrader.BotTerminal
                 InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
         }
 
-        protected override IndicatorModel CreateIndicator(SetupPluginViewModel setup)
+        protected override IndicatorModel CreateIndicator(PluginConfig config)
         {
-            return new IndicatorModel(setup, this);
+            return new IndicatorModel(config, Agent, this, this);
         }
 
         public override void InitializePlugin(PluginExecutor plugin)

@@ -5,9 +5,9 @@
         private int _hash;
 
 
-        public string Server { get; set; }
+        public string Server { get; private set; }
 
-        public string Login { get; set; }
+        public string Login { get; private set; }
 
 
         public AccountKey(string server, string login)
@@ -35,6 +35,17 @@
             return key != null
                 && key.Login == Login
                 && key.Server == Server;
+        }
+
+
+        public static bool operator ==(AccountKey first, AccountKey second)
+        {
+            return ReferenceEquals(first, second) || (first?.Equals(second) ?? false);
+        }
+
+        public static bool operator !=(AccountKey first, AccountKey second)
+        {
+            return !ReferenceEquals(first, second) || (!first?.Equals(second) ?? false);
         }
     }
 }

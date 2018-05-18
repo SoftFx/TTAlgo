@@ -9,10 +9,10 @@ namespace TickTrader.Algo.Common.Info
 
 
         [DataMember]
-        public ReductionKey BarReduction { get; }
+        public ReductionKey BarReduction { get; private set; }
 
         [DataMember]
-        public ReductionKey DoubleReduction { get; }
+        public ReductionKey DoubleReduction { get; private set; }
 
 
         public MappingKey(ReductionKey barReduction)
@@ -54,8 +54,19 @@ namespace TickTrader.Algo.Common.Info
         {
             var key = obj as MappingKey;
             return key != null
-                && key.BarReduction != BarReduction
-                && key.DoubleReduction != DoubleReduction;
+                && key.BarReduction == BarReduction
+                && key.DoubleReduction == DoubleReduction;
+        }
+
+
+        public static bool operator ==(MappingKey first, MappingKey second)
+        {
+            return ReferenceEquals(first, second) || first != null && first.Equals(second);
+        }
+
+        public static bool operator !=(MappingKey first, MappingKey second)
+        {
+            return !ReferenceEquals(first, second) || first != null && !first.Equals(second);
         }
     }
 }

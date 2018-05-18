@@ -10,13 +10,13 @@ namespace TickTrader.Algo.Common.Info
 
 
         [DataMember]
-        public string PackageName { get; }
+        public string PackageName { get; private set; }
 
         [DataMember]
-        public RepositoryLocation PackageLocation { get; }
+        public RepositoryLocation PackageLocation { get; private set; }
 
         [DataMember]
-        public string DescriptorId { get; }
+        public string DescriptorId { get; private set; }
 
 
         public ReductionKey(PackageKey packageKey, string descriptorId)
@@ -51,6 +51,16 @@ namespace TickTrader.Algo.Common.Info
                 && key.DescriptorId == DescriptorId
                 && key.PackageName == PackageName
                 && key.PackageLocation == PackageLocation;
+        }
+
+        public static bool operator ==(ReductionKey first, ReductionKey second)
+        {
+            return ReferenceEquals(first, second) || first != null && first.Equals(second);
+        }
+
+        public static bool operator !=(ReductionKey first, ReductionKey second)
+        {
+            return !ReferenceEquals(first, second) || first != null && !first.Equals(second);
         }
     }
 }

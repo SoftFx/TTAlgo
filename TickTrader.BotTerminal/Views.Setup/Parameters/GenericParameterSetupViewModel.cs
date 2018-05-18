@@ -130,12 +130,12 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class NullableIntParamSetupModel : ParameterSetupViewModel<int?>
+    public class NullableIntParamSetupViewModel : ParameterSetupViewModel<int?>
     {
         internal override UiConverter<int?> Converter => UiConverter.NullableInt;
 
 
-        public NullableIntParamSetupModel(ParameterDescriptor descriptor)
+        public NullableIntParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
         {
         }
@@ -166,12 +166,12 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class NullableDoubleParamSetupModel : ParameterSetupViewModel<double?>
+    public class NullableDoubleParamSetupViewModel : ParameterSetupViewModel<double?>
     {
         internal override UiConverter<double?> Converter => UiConverter.NullableDouble;
 
 
-        public NullableDoubleParamSetupModel(ParameterDescriptor descriptor)
+        public NullableDoubleParamSetupViewModel(ParameterDescriptor descriptor)
             : base(descriptor)
         {
         }

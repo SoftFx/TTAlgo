@@ -37,8 +37,6 @@ namespace TickTrader.BotTerminal
     class ChartViewModel : Screen, IDropHandler
     {
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private readonly TraderClientModel clientModel;
-        private readonly AlgoEnvironment algoEnv;
         private ChartModelBase activeChart;
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
@@ -49,24 +47,22 @@ namespace TickTrader.BotTerminal
         private IVarList<BotControlViewModel> _botsBySymbol;
 
 
-        public ChartViewModel(string chartId, string symbol, ChartPeriods period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
+        public ChartViewModel(string chartId, string symbol, ChartPeriods period, IShell shell, BotManagerViewModel botManager)
         {
             this.Symbol = symbol;
             this.DisplayName = symbol;
-            this.clientModel = clientModel;
-            this.algoEnv = algoEnv;
             this.shell = shell;
             _botManager = botManager;
 
             ChartWindowId = chartId;
 
-            smb = clientModel.Symbols.GetOrDefault(symbol);
+            smb = shell.Agent.ClientModel.Symbols.GetOrDefault(symbol);
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();
 
-            this.barChart = new BarChartModel(smb, algoEnv, clientModel);
-            this.tickChart = new TickChartModel(smb, algoEnv, clientModel);
+            this.barChart = new BarChartModel(smb, shell.Agent);
+            this.tickChart = new TickChartModel(smb, shell.Agent);
             this.UiLock = new UiLock();
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
@@ -82,7 +78,7 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Setup.MainSymbol.Name == Symbol && bc.Model.Setup.Descriptor.SetupMainSymbol);
+            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Config.MainSymbol == Symbol);// && bc.Model.Setup.Descriptor.SetupMainSymbol);
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -156,7 +152,7 @@ namespace TickTrader.BotTerminal
         {
             base.TryClose(dialogResult);
 
-            Indicators.Foreach(i => algoEnv.IdProvider.RemovePlugin(i.Model.InstanceId));
+            Indicators.Foreach(i => shell.Agent.AlgoEnv.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
             shell.ToolWndManager.CloseWindowByKey(this);
 
@@ -197,18 +193,6 @@ namespace TickTrader.BotTerminal
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
         }
 
-        private SetupPluginViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
-        {
-            var catalogItem = algoEnv.Repo.AllPlugins.Snapshot[snapshot.Config.Key];
-            if (catalogItem == null)
-            {
-                return null;
-            }
-            var setupModel = new SetupPluginViewModel(algoEnv, catalogItem, Chart);
-            setupModel.Setup.Load(snapshot.Config);
-            return setupModel;
-        }
-
         private void RestoreIndicator(IndicatorStorageEntry entry)
         {
             if (entry.Config == null)
@@ -217,43 +201,30 @@ namespace TickTrader.BotTerminal
             }
             if (entry.Config.Key == null)
             {
-                logger.Error("Trade bot key missing!");
+                logger.Error("Indicator key missing!");
             }
 
-            var setupModel = RestorePlugin(entry);
-
-            if (setupModel == null)
-            {
-                logger.Error($"{entry.Config.Key} not found!");
-                return;
-            }
-
-            if (setupModel.Setup.Descriptor.Type != AlgoTypes.Indicator)
-            {
-                logger.Error($"{entry.Config.Key} is not a trade bot!");
-            }
-
-            AttachPlugin(setupModel);
+            Chart.AddIndicator(entry.Config);
         }
 
         #region Algo
 
         public void OpenPlugin(object descriptorObj)
         {
-            OpenAlgoSetup((PluginInfo)descriptorObj);
+            OpenAlgoSetup((PluginCatalogItem)descriptorObj);
         }
 
-        private void OpenAlgoSetup(PluginInfo item)
+        private void OpenAlgoSetup(PluginCatalogItem item)
         {
             try
             {
                 if (item.Descriptor.Type == AlgoTypes.Robot)
                 {
-                    _botManager.OpenBotSetup(item, Chart);
+                    _botManager.OpenBotSetup(item.Info, Chart);
                     return;
                 }
 
-                var model = new SetupPluginViewModel(algoEnv, item, Chart);
+                var model = new SetupPluginViewModel(shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
                 if (!model.Setup.CanBeSkipped)
                     shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
@@ -277,7 +248,7 @@ namespace TickTrader.BotTerminal
             switch (setupModel.Setup.Descriptor.Type)
             {
                 case AlgoTypes.Indicator:
-                    Chart.AddIndicator(setupModel);
+                    Chart.AddIndicator(setupModel.GetConfig());
                     break;
                 default:
                     throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.Type}'");
@@ -298,9 +269,9 @@ namespace TickTrader.BotTerminal
             var algo = o as AlgoItemViewModel;
             if (algo != null)
             {
-                var pluginType = algo.PluginInfo.Descriptor.Type;
+                var pluginType = algo.PluginItem.Descriptor.Type;
                 if (pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot)
-                    OpenAlgoSetup(algo.PluginInfo);
+                    OpenAlgoSetup(algo.PluginItem);
             }
         }
 
@@ -322,7 +293,7 @@ namespace TickTrader.BotTerminal
 
         private void FilterBots()
         {
-            Bots = _botsBySymbol.Where(bc => bc.Model.Setup.SelectedTimeFrame == Chart.TimeFrame).AsObservable();
+            Bots = _botsBySymbol.Where(bc => bc.Model.Config.TimeFrame == Chart.TimeFrame).AsObservable();
             NotifyOfPropertyChange(nameof(Bots));
         }
 

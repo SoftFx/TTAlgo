@@ -284,9 +284,9 @@ namespace TickTrader.BotTerminal
             if (descriptor.IsEnum)
                 return new EnumParamSetupViewModel(descriptor);
             if (descriptor.DataType == ParameterSetupViewModel.NullableIntTypeName)
-                return new NullableIntParamSetupModel(descriptor);
+                return new NullableIntParamSetupViewModel(descriptor);
             if (descriptor.DataType == ParameterSetupViewModel.NullableDoubleTypeName)
-                return new NullableDoubleParamSetupModel(descriptor);
+                return new NullableDoubleParamSetupViewModel(descriptor);
 
             switch (descriptor.DataType)
             {

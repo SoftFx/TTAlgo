@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         {
             Plugins = catalog.PluginList
                 .Where(p => p.Key.PackageName != "TickTrader.Algo.Indicators")
-                .Select(p => new AlgoItemViewModel(p.Info))
+                .Select(p => new AlgoItemViewModel(p))
                 .AsObservable();
         }
     }
@@ -28,7 +28,7 @@ namespace TickTrader.BotTerminal
 
     public class AlgoItemViewModel
     {
-        public PluginInfo PluginInfo { get; }
+        public PluginCatalogItem PluginItem { get; }
 
         public string Name { get; }
 
@@ -39,19 +39,18 @@ namespace TickTrader.BotTerminal
         public string Category { get; }
 
 
-        public AlgoItemViewModel(PluginInfo plugin)
+        public AlgoItemViewModel(PluginCatalogItem item)
         {
-            PluginInfo = plugin;
-            Name = plugin.Descriptor.UiDisplayName;
-            Description = string.Join(Environment.NewLine, plugin.Descriptor.Description, string.Empty, $"Package {plugin.Key.PackageName} at {plugin.Key.PackageLocation}").Trim();
-            Category = plugin.Descriptor.Category;
-            var type = plugin.Descriptor.Type;
-            if (type == AlgoTypes.Indicator)
-                Group = "Indicators";
-            else if (type == AlgoTypes.Robot)
-                Group = "Bot Traders";
-            else
-                Group = "Unknown type";
+            PluginItem = item;
+            Name = item.Descriptor.UiDisplayName;
+            Description = string.Join(Environment.NewLine, item.Descriptor.Description, string.Empty, $"Package {item.Key.PackageName} at {item.Key.PackageLocation}").Trim();
+            Category = item.Descriptor.Category;
+            switch (item.Descriptor.Type)
+            {
+                case AlgoTypes.Indicator: Group = "Indicators"; break;
+                case AlgoTypes.Robot: Group = "Bot Traders"; break;
+                default: Group = "Unknown type"; break;
+            }
         }
     }
 }

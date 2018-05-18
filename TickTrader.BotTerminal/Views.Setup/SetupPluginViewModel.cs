@@ -12,6 +12,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,12 +21,13 @@ namespace TickTrader.BotTerminal
         private Logger _logger;
         private bool _dlgResult;
         private bool _runBot;
-        private SetupContextInfo _setupContext;
         private PluginCatalogItem _selectedPlugin;
         private AccountKey _selectedAccount;
 
 
         public IAlgoAgent Agent { get; }
+
+        public SetupContextInfo SetupContext { get; }
 
         public IObservableList<AccountKey> Accounts { get; }
 
@@ -94,7 +96,10 @@ namespace TickTrader.BotTerminal
         public SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext = null) : this()
         {
             Agent = agent;
-            _setupContext = setupContext;
+            SetupContext = setupContext;
+
+            Accounts = Agent.Accounts.AsObservable();
+            SelectedAccount = Accounts.FirstOrDefault();
 
             switch (type)
             {
@@ -156,6 +161,13 @@ namespace TickTrader.BotTerminal
             callback(true);
             Closed(this, _dlgResult);
             Dispose();
+        }
+
+        public PluginConfig GetConfig()
+        {
+            var res = Setup.Save();
+            res.Key = SelectedPlugin.Key;
+            return res;
         }
 
 
@@ -222,7 +234,7 @@ namespace TickTrader.BotTerminal
         {
             if (SelectedPlugin != null)
             {
-                var metadata = await Agent.GetSetupMetadata(SelectedAccount, _setupContext);
+                var metadata = await Agent.GetSetupMetadata(SelectedAccount, SetupContext);
                 Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider);
                 NotifyOfPropertyChange(nameof(Setup));
             }

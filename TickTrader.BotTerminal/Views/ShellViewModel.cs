@@ -64,7 +64,10 @@ namespace TickTrader.BotTerminal
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             _botManagerModel = new BotManager(algoEnv);
-            BotManager = new BotManagerViewModel(_botManagerModel, this, clientModel, algoEnv, storage);
+
+            Agent = new LocalAgent(algoEnv, clientModel, _botManagerModel);
+
+            BotManager = new BotManagerViewModel(this, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, BotManager);
 
@@ -177,7 +180,7 @@ namespace TickTrader.BotTerminal
         {
             ShootBots(out var isConfirmed);
 
-            if(isConfirmed)
+            if (isConfirmed)
                 Connect(null);
         }
 
@@ -279,6 +282,7 @@ namespace TickTrader.BotTerminal
         public WindowManager ToolWndManager => wndManager;
         public BotManagerViewModel BotManager { get; }
         public DockManagerService DockManagerService { get; set; }
+        public LocalAgent Agent { get; }
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;

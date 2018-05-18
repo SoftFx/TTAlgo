@@ -13,46 +13,49 @@ namespace TickTrader.BotTerminal
 {
     internal class LocalAgent : IAlgoAgent, IAlgoSetupMetadata
     {
-        private AlgoEnvironment _algoEnv;
-        private TraderClientModel _clientModel;
-        private BotManager _botManager;
         private VarList<AccountKey> _accounts;
         private SetupMetadataInfo _setupMetadataInfo;
 
+
+        public AlgoEnvironment AlgoEnv { get; }
+
+        public TraderClientModel ClientModel { get; }
+
+        public BotManager BotManager { get; }
+
+
+        public LocalAgent(AlgoEnvironment algoEnv, TraderClientModel clientModel, BotManager botManager)
+        {
+            AlgoEnv = algoEnv;
+            ClientModel = clientModel;
+            BotManager = botManager;
+
+            _accounts = new VarList<AccountKey>();
+            _setupMetadataInfo = new SetupMetadataInfo(ApiMetadataInfo.CreateCurrentMetadata(), AlgoEnv.Mappings.ToInfo());
+
+            ClientModel.Connected += ClientModelOnConnected;
+        }
+
+
+
+        #region IAlgoAgent implementation
 
         public string Name => "Bot Terminal";
 
         public IVarList<AccountKey> Accounts => _accounts;
 
-        public IAlgoLibrary Library => _algoEnv.Library;
+        public IAlgoLibrary Library => AlgoEnv.Library;
 
-        public PluginCatalog Catalog => _algoEnv.Repo;
+        public PluginCatalog Catalog => AlgoEnv.Repo;
 
-        public IPluginIdProvider IdProvider => _algoEnv.IdProvider;
-
-        public MappingCollection Mappings => _algoEnv.Mappings;
-
-        public IReadOnlyList<ISymbolInfo> Symbols => _clientModel.ObservableSymbolList;
-
-
-        public LocalAgent(AlgoEnvironment algoEnv, TraderClientModel clientModel, BotManager botManager)
-        {
-            _algoEnv = algoEnv;
-            _clientModel = clientModel;
-            _botManager = botManager;
-
-            _accounts = new VarList<AccountKey>();
-            _setupMetadataInfo = new SetupMetadataInfo(ApiMetadataInfo.CreateCurrentMetadata(), _algoEnv.Mappings.ToInfo());
-
-            _clientModel.Connected += ClientModelOnConnected;
-        }
+        public IPluginIdProvider IdProvider => AlgoEnv.IdProvider;
 
 
         public Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
         {
-            var accountMetadata = new AccountMetadataInfo(new AccountKey(_clientModel.Connection.CurrentServer,
-                _clientModel.Connection.CurrentLogin), _clientModel.ObservableSymbolList.Select(s => new SymbolInfo(s.Name)).ToList());
-            var res = new SetupMetadata(_setupMetadataInfo, accountMetadata, setupContext ?? _botManager.GetSetupContextInfo());
+            var accountMetadata = new AccountMetadataInfo(new AccountKey(ClientModel.Connection.CurrentServer,
+                ClientModel.Connection.CurrentLogin), ClientModel.ObservableSymbolList.Select(s => new SymbolInfo(s.Name)).ToList());
+            var res = new SetupMetadata(_setupMetadataInfo, accountMetadata, setupContext ?? BotManager.GetSetupContextInfo());
             return Task.FromResult(res);
         }
 
@@ -65,7 +68,18 @@ namespace TickTrader.BotTerminal
         private void ClientModelOnConnected()
         {
             _accounts.Clear();
-            _accounts.Add(new AccountKey(_clientModel.Connection.CurrentServer, _clientModel.Connection.CurrentLogin));
+            _accounts.Add(new AccountKey(ClientModel.Connection.CurrentServer, ClientModel.Connection.CurrentLogin));
         }
+
+        #endregion IAlgoAgent implementation
+
+
+        #region IAlgoSetupMetadata implementation
+
+        public MappingCollection Mappings => AlgoEnv.Mappings;
+
+        public IReadOnlyList<ISymbolInfo> Symbols => ClientModel.ObservableSymbolList;
+
+        #endregion IAlgoSetupMetadata implementation
     }
 }
