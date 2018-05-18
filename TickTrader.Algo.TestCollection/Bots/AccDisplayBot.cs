@@ -44,6 +44,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Account.Orders.Expired += args => PrintStat("Account.Orders.Expired");
                 Account.Orders.Activated += args => PrintStat("Account.Orders.Activated");
                 Account.Assets.Modified += args => PrintStat("Account.Assets.Modified");
+                Account.NetPositions.Modified += args => PrintStat("Account.NetPositions.Modified");
                 Account.BalanceUpdated += () => PrintStat("Account.BalanceUpdated");
                 Account.Reset += () => PrintStat("Account.Reset");
             }
