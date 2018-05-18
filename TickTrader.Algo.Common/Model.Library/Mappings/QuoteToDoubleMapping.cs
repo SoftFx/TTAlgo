@@ -2,7 +2,6 @@
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Library
 {
@@ -14,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Library
 
         internal QuoteToDoubleMapping()
         {
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(QuoteToBestBidReduction)));
+            Key = new MappingKey(MappingCollection.DefaultQuoteToDoubleReduction);
             DisplayName = "Bid";
         }
 

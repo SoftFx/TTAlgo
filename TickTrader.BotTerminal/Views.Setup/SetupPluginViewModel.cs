@@ -83,20 +83,18 @@ namespace TickTrader.BotTerminal
 
         public string PluginType { get; }
 
+        public PluginSetupMode Mode { get; }
+
+        public bool CanChangePlugin => Mode == PluginSetupMode.New;
+
 
         public event Action<SetupPluginViewModel, bool> Closed = delegate { };
 
 
-        private SetupPluginViewModel()
-        {
-            _logger = NLog.LogManager.GetCurrentClassLogger();
-            RunBot = true;
-        }
-
-        public SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext = null) : this()
+        private SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, PluginSetupMode mode)
         {
             Agent = agent;
-            SetupContext = setupContext;
+            Mode = mode;
 
             Accounts = Agent.Accounts.AsObservable();
             SelectedAccount = Accounts.FirstOrDefault();
@@ -114,9 +112,18 @@ namespace TickTrader.BotTerminal
                     break;
             }
 
-            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key == key);
+            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(key));
 
             PluginType = GetPluginTypeDisplayName(type);
+
+            _logger = NLog.LogManager.GetCurrentClassLogger();
+            RunBot = true;
+        }
+
+        public SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext)
+            : this(agent, key, type, PluginSetupMode.New)
+        {
+            SetupContext = setupContext;
 
             DisplayName = $"Setting New {PluginType}";
 
@@ -125,13 +132,14 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
-        public SetupPluginViewModel(TradeBotModel bot) : this()
+        public SetupPluginViewModel(IAlgoAgent agent, TradeBotModel bot) 
+            : this(agent, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
         {
             Bot = bot;
-            //Setup = bot.Setup.Clone(PluginSetupMode.Edit) as TradeBotSetupViewModel;
-            PluginType = GetPluginTypeDisplayName(Setup.Descriptor.Type);
 
             DisplayName = $"Settings - {bot.InstanceId}";
+
+            Setup.Load(Bot.Config);
 
             Bot.StateChanged += BotStateChanged;
 
@@ -197,7 +205,7 @@ namespace TickTrader.BotTerminal
         {
             if (args.Action == DLinqAction.Replace)
             {
-                if (args.NewItem.Key == SelectedPlugin.Key)
+                if (args.NewItem.Key.Equals(SelectedPlugin.Key))
                 {
                     SelectedPlugin = args.NewItem;
                     Init();
@@ -205,7 +213,7 @@ namespace TickTrader.BotTerminal
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                if (args.NewItem.Key == SelectedPlugin.Key)
+                if (args.OldItem.Key.Equals(SelectedPlugin.Key))
                     TryClose();
             }
         }
@@ -235,7 +243,7 @@ namespace TickTrader.BotTerminal
             if (SelectedPlugin != null)
             {
                 var metadata = await Agent.GetSetupMetadata(SelectedAccount, SetupContext);
-                Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider);
+                Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider, Mode);
                 NotifyOfPropertyChange(nameof(Setup));
             }
         }

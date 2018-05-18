@@ -3,21 +3,22 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {
-    [DataContract(Namespace = "")]
+    [DataContract]
     public class ReductionKey
     {
-        private int _hash;
-
+        [DataMember]
+        public string PackageName { get; set; }
 
         [DataMember]
-        public string PackageName { get; private set; }
+        public RepositoryLocation PackageLocation { get; set; }
 
         [DataMember]
-        public RepositoryLocation PackageLocation { get; private set; }
+        public string DescriptorId { get; set; }
 
-        [DataMember]
-        public string DescriptorId { get; private set; }
 
+        public ReductionKey()
+        {
+        }
 
         public ReductionKey(PackageKey packageKey, string descriptorId)
             : this(packageKey.Name, packageKey.Location, descriptorId)
@@ -29,8 +30,6 @@ namespace TickTrader.Algo.Common.Info
             PackageName = packageName;
             PackageLocation = packageLocation;
             DescriptorId = descriptorId;
-
-            _hash = $"{PackageName}{PackageLocation}{DescriptorId}".GetHashCode();
         }
 
 
@@ -41,7 +40,7 @@ namespace TickTrader.Algo.Common.Info
 
         public override int GetHashCode()
         {
-            return _hash;
+            return $"{PackageName}{PackageLocation}{DescriptorId}".GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -51,16 +50,6 @@ namespace TickTrader.Algo.Common.Info
                 && key.DescriptorId == DescriptorId
                 && key.PackageName == PackageName
                 && key.PackageLocation == PackageLocation;
-        }
-
-        public static bool operator ==(ReductionKey first, ReductionKey second)
-        {
-            return ReferenceEquals(first, second) || first != null && first.Equals(second);
-        }
-
-        public static bool operator !=(ReductionKey first, ReductionKey second)
-        {
-            return !ReferenceEquals(first, second) || first != null && !first.Equals(second);
         }
     }
 }

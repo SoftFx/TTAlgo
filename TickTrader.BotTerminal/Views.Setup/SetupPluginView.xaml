@@ -442,6 +442,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" />
             <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="True"
+                      IsEnabled="{Binding CanChangePlugin}"
                       ItemsSource="{Binding Plugins}"
                       SelectedValue="{Binding SelectedPlugin}"
                       DisplayMemberPath="DisplayName"/>
@@ -541,7 +542,7 @@
                     <GroupBox Name="LaunchTargetGroup" Header="Run on" Margin="4" Visibility="Collapsed">
                         <Control Template="{StaticResource LaunchTargetSelection}" />
                     </GroupBox>
-                    <GroupBox Name="PluginGroup" Header="{Binding PluginType}" Margin="4" Visibility="Collapsed">
+                    <GroupBox Name="PluginGroup" Header="{Binding PluginType}" Margin="4">
                         <Control Template="{StaticResource PluginSelection}" />
                     </GroupBox>
                     <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
@@ -649,7 +650,6 @@
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
                     <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
-                    <Setter TargetName="PluginGroup" Property="Visibility" Value="Visible"/>
                     <Setter TargetName="LaunchTargetGroup" Property="Visibility" Value="Visible"/>
                 </MultiDataTrigger.Setters>
             </MultiDataTrigger>

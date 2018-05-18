@@ -3,7 +3,6 @@ using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Library
 {
@@ -14,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Library
 
         internal QuoteToBarMapping()
         {
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(QuoteToBidBarReduction)));
+            Key = new MappingKey(MappingCollection.DefaultQuoteToBarReduction);
             DisplayName = "Bid";
         }
 

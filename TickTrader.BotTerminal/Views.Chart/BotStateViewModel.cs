@@ -11,11 +11,11 @@ namespace TickTrader.BotTerminal
 {
     internal class BotStateViewModel : Screen
     {
-        private WindowManager _wndManager;
+        private IShell _shell;
 
-        public BotStateViewModel(TradeBotModel bot, WindowManager wndManager)
+        public BotStateViewModel(TradeBotModel bot, IShell shell)
         {
-            _wndManager = wndManager;
+            _shell = shell;
             this.Bot = bot;
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
@@ -68,9 +68,9 @@ namespace TickTrader.BotTerminal
         {
             var key = $"BotSettings {Bot.InstanceId}";
 
-            _wndManager.OpenOrActivateWindow(key, () =>
+            _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
             {
-                var pSetup = new SetupPluginViewModel(Bot);
+                var pSetup = new SetupPluginViewModel(_shell.Agent, Bot);
                 pSetup.Closed += SetupPluginViewClosed;
                 return pSetup;
             });
@@ -126,7 +126,7 @@ namespace TickTrader.BotTerminal
                 res.Add($"Package Name: {Bot.PackageRef.Name}");
                 res.Add($"Package Location: {Bot.PackageRef.Location}");
             }
-            if (Bot.Setup.Parameters.Any())
+            if (Bot.Setup?.Parameters.Any() ?? false)
             {
                 res.Add("");
                 res.Add("------------ Parameters ------------");

@@ -3,7 +3,6 @@ using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Library
 {
@@ -11,7 +10,7 @@ namespace TickTrader.Algo.Common.Model.Library
     {
         internal AskBarMapping()
         {
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "AskBarReduction"));
+            Key = new MappingKey(MappingCollection.AskBarReduction);
             DisplayName = "Ask";
         }
 
@@ -30,8 +29,7 @@ namespace TickTrader.Algo.Common.Model.Library
 
         internal AskBarToDoubleMapping()
         {
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "AskBarReduction"),
-                new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(BarToCloseReduction)));
+            Key = new MappingKey(MappingCollection.AskBarReduction, MappingCollection.DefaultBarToDoubleReduction);
             DisplayName = "Ask.Close";
         }
 
@@ -39,7 +37,7 @@ namespace TickTrader.Algo.Common.Model.Library
         {
             _doubleReduction = doubleReduction;
 
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "AskBarReduction"), doubleReductionKey);
+            Key = new MappingKey(MappingCollection.AskBarReduction, doubleReductionKey);
             DisplayName = $"Ask.{_doubleReduction.Descriptor.DisplayName}";
         }
 

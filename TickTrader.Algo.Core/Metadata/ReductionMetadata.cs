@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Core.Metadata
                 DisplayName = reflectionInfo.Name,
             };
 
-            if (string.IsNullOrEmpty(reductionAttr.DisplayName))
+            if (!string.IsNullOrEmpty(reductionAttr.DisplayName))
                 Descriptor.DisplayName = reductionAttr.DisplayName;
             Descriptor.DisplayName = Descriptor.DisplayName.Replace('.', '_');
 

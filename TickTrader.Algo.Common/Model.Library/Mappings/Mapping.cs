@@ -6,10 +6,6 @@ namespace TickTrader.Algo.Common.Model.Library
 {
     public abstract class Mapping
     {
-        private ReductionMetadata _barReduction;
-        private ReductionMetadata _doubleReduction;
-
-
         public MappingKey Key { get; protected set; }
 
         public string DisplayName { get; protected set; }

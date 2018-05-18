@@ -8,20 +8,22 @@ namespace TickTrader.Algo.Common.Model.Library
     public class MappingCollection
     {
         private ReductionCollection _extCollection;
-        private Dictionary<MappingKey, Mapping> _BarToBarMappings;
+        private Dictionary<MappingKey, Mapping> _barToBarMappings;
         private Dictionary<MappingKey, Mapping> _barToDoubleMappings;
         private Dictionary<MappingKey, Mapping> _quoteToBarMappings;
         private Dictionary<MappingKey, Mapping> _quoteToDoubleMappings;
 
 
-        public static ReductionKey DefaultFullBarToBarReduction = new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "BidBarReduction");
-        public static ReductionKey DefaultBarToDoubleReduction = new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(BarToCloseReduction));
-        public static ReductionKey DefaultFullBarToDoubleReduction = new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(FullBarToBidCloseReduction));
-        public static ReductionKey DefaultQuoteToBarReduction = new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(QuoteToBidBarReduction));
-        public static ReductionKey DefaultQuoteToDoubleReduction = new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(QuoteToBestBidReduction));
+        public static ReductionKey BidBarReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.BidBarReduction");
+        public static ReductionKey AskBarReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.AskBarReduction");
+        public static ReductionKey DefaultFullBarToBarReduction = BidBarReduction;
+        public static ReductionKey DefaultBarToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.BarCloseReduction");
+        public static ReductionKey DefaultFullBarToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.FullBarToBidCloseReduction");
+        public static ReductionKey DefaultQuoteToBarReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.QuoteBidBarReduction");
+        public static ReductionKey DefaultQuoteToDoubleReduction = new ReductionKey("ticktrader.algo.ext.dll", RepositoryLocation.Embedded, "TickTrader.Algo.Ext.QuoteBestBidReduction");
 
 
-        public IReadOnlyDictionary<MappingKey, Mapping> BarToBarMappings => _BarToBarMappings;
+        public IReadOnlyDictionary<MappingKey, Mapping> BarToBarMappings => _barToBarMappings;
 
         public IReadOnlyDictionary<MappingKey, Mapping> BarToDoubleMappings => _barToDoubleMappings;
 
@@ -34,7 +36,7 @@ namespace TickTrader.Algo.Common.Model.Library
         {
             _extCollection = extCollection;
 
-            _BarToBarMappings = new Dictionary<MappingKey, Mapping>();
+            _barToBarMappings = new Dictionary<MappingKey, Mapping>();
             _barToDoubleMappings = new Dictionary<MappingKey, Mapping>();
             _quoteToBarMappings = new Dictionary<MappingKey, Mapping>();
             _quoteToDoubleMappings = new Dictionary<MappingKey, Mapping>();
@@ -86,7 +88,7 @@ namespace TickTrader.Algo.Common.Model.Library
 
         private void InitMappings()
         {
-            _BarToBarMappings.Clear();
+            _barToBarMappings.Clear();
             _barToDoubleMappings.Clear();
             _quoteToBarMappings.Clear();
             _quoteToDoubleMappings.Clear();
@@ -95,7 +97,7 @@ namespace TickTrader.Algo.Common.Model.Library
             {
                 foreach (var reduction in _extCollection.FullBarToBarReductions)
                 {
-                    _BarToBarMappings.Add(new FullBarToBarMapping(reduction.Key, reduction.Value));
+                    _barToBarMappings.Add(new FullBarToBarMapping(reduction.Key, reduction.Value));
                 }
             }
 
@@ -123,8 +125,8 @@ namespace TickTrader.Algo.Common.Model.Library
                 }
             }
 
-            _BarToBarMappings.Add(new BidBarMapping());
-            _BarToBarMappings.Add(new AskBarMapping());
+            _barToBarMappings.Add(new BidBarMapping());
+            _barToBarMappings.Add(new AskBarMapping());
 
             if (_extCollection?.BarToDoubleReductions != null)
             {

@@ -2,18 +2,19 @@
 
 namespace TickTrader.Algo.Common.Info
 {
-    [DataContract(Namespace = "")]
+    [DataContract]
     public class MappingKey
     {
-        private int _hash;
-
+        [DataMember]
+        public ReductionKey BarReduction { get; set; }
 
         [DataMember]
-        public ReductionKey BarReduction { get; private set; }
+        public ReductionKey DoubleReduction { get; set; }
 
-        [DataMember]
-        public ReductionKey DoubleReduction { get; private set; }
 
+        public MappingKey()
+        {
+        }
 
         public MappingKey(ReductionKey barReduction)
             : this(barReduction, null)
@@ -35,8 +36,6 @@ namespace TickTrader.Algo.Common.Info
         {
             BarReduction = barReduction;
             DoubleReduction = doubleReduction;
-
-            _hash = $"{BarReduction.PackageName}{BarReduction.PackageLocation}{BarReduction.DescriptorId}{DoubleReduction?.PackageName}{DoubleReduction?.PackageLocation}{DoubleReduction?.DescriptorId}".GetHashCode();
         }
 
 
@@ -47,26 +46,15 @@ namespace TickTrader.Algo.Common.Info
 
         public override int GetHashCode()
         {
-            return _hash;
+            return $"{BarReduction.PackageName}{BarReduction.PackageLocation}{BarReduction.DescriptorId}{DoubleReduction?.PackageName}{DoubleReduction?.PackageLocation}{DoubleReduction?.DescriptorId}".GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
             var key = obj as MappingKey;
             return key != null
-                && key.BarReduction == BarReduction
-                && key.DoubleReduction == DoubleReduction;
-        }
-
-
-        public static bool operator ==(MappingKey first, MappingKey second)
-        {
-            return ReferenceEquals(first, second) || first != null && first.Equals(second);
-        }
-
-        public static bool operator !=(MappingKey first, MappingKey second)
-        {
-            return !ReferenceEquals(first, second) || first != null && !first.Equals(second);
+                && key.BarReduction != null && key.BarReduction.Equals(BarReduction)
+                && (key.DoubleReduction == null || key.DoubleReduction.Equals(DoubleReduction));
         }
     }
 }

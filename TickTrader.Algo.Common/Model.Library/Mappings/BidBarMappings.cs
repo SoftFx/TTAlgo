@@ -3,7 +3,6 @@ using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Library
 {
@@ -11,7 +10,7 @@ namespace TickTrader.Algo.Common.Model.Library
     {
         internal BidBarMapping()
         {
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "BidBarReduction"));
+            Key = new MappingKey(MappingCollection.BidBarReduction);
             DisplayName = "Bid";
         }
 
@@ -30,8 +29,7 @@ namespace TickTrader.Algo.Common.Model.Library
 
         internal BidBarToDoubleMapping()
         {
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "BidBarReduction"),
-                new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, nameof(BarToCloseReduction)));
+            Key = new MappingKey(MappingCollection.BidBarReduction, MappingCollection.DefaultBarToDoubleReduction);
             DisplayName = "Bid.Close";
         }
 
@@ -39,7 +37,7 @@ namespace TickTrader.Algo.Common.Model.Library
         {
             _doubleReduction = doubleReduction;
 
-            Key = new MappingKey(new ReductionKey("TickTrader.Algo.Common.dll", RepositoryLocation.Embedded, "BidBarReduction"), doubleReductionKey);
+            Key = new MappingKey(MappingCollection.BidBarReduction, doubleReductionKey);
             DisplayName = $"Bid.{_doubleReduction.Descriptor.DisplayName}";
         }
 

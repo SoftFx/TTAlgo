@@ -89,7 +89,7 @@ namespace TickTrader.Algo.Common.Model
             try
             {
                 var extAssembly = Assembly.Load(extAssemblyName);
-                var packageKey = new PackageKey(extAssembly.GetName().Name, RepositoryLocation.Embedded);
+                var packageKey = new PackageKey(Path.GetFileName(extAssembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded);
                 var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                 foreach (var r in reductions)
                     Add(new ReductionKey(packageKey, r.Id), r);

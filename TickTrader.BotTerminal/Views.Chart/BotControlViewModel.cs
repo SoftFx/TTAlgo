@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
             if (!manager.HasView(botId))
             {
 
-                var content = new BotStateViewModel(Model, _shell.ToolWndManager);
+                var content = new BotStateViewModel(Model, _shell);
                 var view = new LayoutAnchorable { Title = botId, FloatingHeight = 300, FloatingWidth = 300, Content = content, ContentId = botId };
                 manager.AddView(botId, view);
                 manager.ShowView(botId);

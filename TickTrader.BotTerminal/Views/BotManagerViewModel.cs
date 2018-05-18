@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -68,7 +69,7 @@ namespace TickTrader.BotTerminal
 
                 _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
                 {
-                    var pSetup = new SetupPluginViewModel(model);
+                    var pSetup = new SetupPluginViewModel(Agent, model);
                     pSetup.Closed += AlgoSetupClosed;
                     return pSetup;
                 });
@@ -86,7 +87,7 @@ namespace TickTrader.BotTerminal
                 profileStorage.Bots = BotManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
                     Started = b.State == BotModelStates.Running,
-                    Config = b.Setup.Save(),
+                    Config = b.Config,
                 }).ToList();
             }
             catch (Exception ex)
@@ -162,10 +163,14 @@ namespace TickTrader.BotTerminal
 
         private void AddBot(SetupPluginViewModel setupModel)
         {
-            var bot = new TradeBotModel(setupModel.GetConfig(), Agent, this,
-                new AlgoSetupContextStub(setupModel.SetupContext), new WindowStorageModel { Width = 300, Height = 300 });
+            AddBot(setupModel.GetConfig(), new AlgoSetupContextStub(setupModel.SetupContext), setupModel.RunBot);
+        }
+
+        private void AddBot(PluginConfig config, IAlgoSetupContext context, bool runBot)
+        {
+            var bot = new TradeBotModel(config, Agent, this, context, new WindowStorageModel { Width = 300, Height = 300 });
             BotManagerModel.AddBot(bot);
-            if (setupModel.RunBot)
+            if (runBot)
                 bot.Start();
         }
 
@@ -191,23 +196,7 @@ namespace TickTrader.BotTerminal
                 _logger.Error("Trade bot key missing!");
             }
 
-            var catalogItem = AlgoEnv.Repo.AllPlugins.Snapshot[entry.Config.Key];
-
-            if (catalogItem == null)
-            {
-                _logger.Error($"{entry.Config.Key} not found!");
-                return;
-            }
-            if (catalogItem.Descriptor.Type != AlgoTypes.Robot)
-            {
-                _logger.Error($"{entry.Config.Key} is not a trade bot!");
-                return;
-            }
-
-            var setupModel = new SetupPluginViewModel(Agent, entry.Config.Key, AlgoTypes.Robot);
-            setupModel.RunBot = entry.Started && _preferences.RestartBotsOnStartup;
-            setupModel.Setup.Load(entry.Config);
-            AddBot(setupModel);
+            AddBot(entry.Config, BotManagerModel, entry.Started && _preferences.RestartBotsOnStartup);
         }
 
 

@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal
         public AlgoListViewModel(PluginCatalog catalog)
         {
             Plugins = catalog.PluginList
-                .Where(p => p.Key.PackageName != "TickTrader.Algo.Indicators")
+                .Where(p => p.Key.PackageName != "ticktrader.algo.indicators.dll")
                 .Select(p => new AlgoItemViewModel(p))
                 .AsObservable();
         }
