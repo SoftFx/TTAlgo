@@ -35,7 +35,7 @@ namespace TickTrader.Algo.Core.Metadata
             if (DefaultValue == null && reflectionInfo.PropertyType.IsValueType && reflectionInfo.PropertyType.IsPrimitive)
                 DefaultValue = Activator.CreateInstance(reflectionInfo.PropertyType);
 
-            _isDefaultValueDirectlyAssignable = DefaultValue != null && DefaultValue.GetType() == reflectionInfo.GetType();
+            _isDefaultValueDirectlyAssignable = DefaultValue != null && DefaultValue.GetType() == reflectionInfo.PropertyType;
 
             Descriptor.DataType = reflectionInfo.PropertyType.FullName;
             Descriptor.DefaultValue = DefaultValue?.ToString() ?? string.Empty;
