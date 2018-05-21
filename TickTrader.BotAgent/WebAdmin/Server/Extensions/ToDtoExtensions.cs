@@ -82,7 +82,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
         public static TradeBotConfigDto ToConfigDto(this TradeBotInfo bot)
         {
-            var pluginDescriptor = bot.Descriptor;
+            var pluginDescriptor = bot.Metadata;
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.PluginConfig.MainSymbol,
@@ -91,7 +91,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                      {
                          Id = p.Id,
                          Value = ((Parameter)p).ValObj,
-                         Descriptor = pluginDescriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                         Descriptor = pluginDescriptor?.Descriptor.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
                      }).ToArray()
             };
             return config;
@@ -113,9 +113,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return new PluginDto()
             {
                 Id = plugin.Descriptor.Id,
-                DisplayName = plugin.Descriptor.DisplayName,
-                UserDisplayName = plugin.Descriptor.UserDisplayName,
-                Type = plugin.Descriptor.AlgoLogicType.ToString(),
+                DisplayName = plugin.Descriptor.UiDisplayName,
+                UserDisplayName = plugin.Descriptor.DisplayName,
+                Type = plugin.Descriptor.Type.ToString(),
                 Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
             };
         }
@@ -152,7 +152,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static ParameterDescriptorDto ToDto(this ParameterMetadata parameter)
+        public static ParameterDescriptorDto ToDto(this ParameterDescriptor parameter)
         {
             return new ParameterDescriptorDto()
             {
@@ -167,7 +167,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        private static string GetDataType(ParameterMetadata parameter)
+        private static string GetDataType(ParameterDescriptor parameter)
         {
             if (parameter.IsEnum)
                 return ParameterTypes.Enumeration;
@@ -187,7 +187,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 }
         }
 
-        private static object ConvertDefaultValue(ParameterMetadata parameter)
+        private static object ConvertDefaultValue(ParameterDescriptor parameter)
         {
             if (parameter.IsEnum)
             {

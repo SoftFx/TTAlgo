@@ -40,7 +40,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 TimeFrame = TimeFrames.M1,
                 MainSymbol = setup.Symbol,
-                SelectedMapping = "Bid",
+                SelectedMapping = new Algo.Common.Info.MappingKey(Algo.Common.Model.Library.MappingCollection.DefaultFullBarToBarReduction),
                 InstanceId = setup.InstanceId,
                 Permissions = setup.Permissions.Parse(),
             };

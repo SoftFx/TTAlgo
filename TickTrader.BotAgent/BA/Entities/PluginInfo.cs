@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Metadata;
+﻿using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotAgent.BA.Entities
 {
     public class PluginInfo
     {
-        public PluginInfo(PluginKey key, PluginMetadata descriptor)
+        public PluginInfo(PluginKey key, PluginMetadata metadata)
         {
             Id = key;
-            Descriptor = descriptor;
+            Metadata = metadata;
         }
 
         public PluginKey Id { get; }
-        public PluginMetadata Descriptor { get; }
+        public PluginMetadata Metadata { get; }
+        public PluginDescriptor Descriptor => Metadata.Descriptor;
     }
 
     public class PluginKey

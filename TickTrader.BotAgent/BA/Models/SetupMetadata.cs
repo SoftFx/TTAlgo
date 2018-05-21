@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -39,7 +41,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         public IReadOnlyList<ISymbolInfo> Symbols { get; }
 
-        public SymbolMappingsCollection SymbolMappings { get; }
+        public MappingCollection Mappings { get; }
 
         public IPluginIdProvider IdProvider { get; }
 
@@ -47,7 +49,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             //Extentions = new ExtCollection();
             Symbols = symbols.Select(s => new StubSymbolInfo(s)).ToList();
-            SymbolMappings = new SymbolMappingsCollection(null);
+            Mappings = new MappingCollection(null);
             IdProvider = new IdProviderStub();
         }
     }
@@ -56,10 +58,13 @@ namespace TickTrader.BotAgent.BA.Models
     // stub
     public class SetupContext : IAlgoSetupContext
     {
+        private static MappingKey _defaultMapping = new MappingKey(MappingCollection.BidBarReduction, MappingCollection.DefaultBarToDoubleReduction);
+
+
         public TimeFrames DefaultTimeFrame => TimeFrames.M1;
 
         public string DefaultSymbolCode => "EURUSD";
 
-        public string DefaultMapping => "Bid";
+        public MappingKey DefaultMapping => _defaultMapping;
     }
 }

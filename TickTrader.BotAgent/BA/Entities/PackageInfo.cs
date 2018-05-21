@@ -24,7 +24,7 @@ namespace TickTrader.BotAgent.BA.Entities
 
         public IEnumerable<PluginInfo> GetPluginsByType(AlgoTypes robot)
         {
-            return Plugins.Where(p => p.Descriptor.AlgoLogicType == AlgoTypes.Robot);
+            return Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot);
         }
     }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Metadata;
+﻿using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotAgent.BA.Entities
 {
@@ -19,7 +13,7 @@ namespace TickTrader.BotAgent.BA.Entities
         public AccountKey Account { get; set; }
         public TradeBotConfig Config { get; set; }
         //public PluginKey AlgoKey { get; }
-        public PluginMetadata Descriptor { get; set; }
+        public PluginMetadata Metadata { get; set; }
         public string BotName { get; set; }
         public BotStates State { get; set; }
     }
