@@ -272,7 +272,7 @@ namespace TickTrader.Algo.Common.Model
                             return MockMarkedFilled(report);
 
                         if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
-                            return OnMarketFilled(report, OrderExecAction.Filled);
+                            return OnMarketFilled(report, OrderExecAction.Opened);
                     }
                     break;
             }
