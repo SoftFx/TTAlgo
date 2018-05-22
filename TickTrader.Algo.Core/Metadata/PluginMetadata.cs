@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core.Metadata
             else
             {
                 Descriptor.Type = AlgoTypes.Unknown;
-                SetError(AlgoMetadataErrors.UnknwonBaseType);
+                SetError(AlgoMetadataErrors.UnknownBaseType);
                 return;
             }
 

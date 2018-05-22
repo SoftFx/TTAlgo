@@ -3,7 +3,7 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Protocol.Sfx;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal

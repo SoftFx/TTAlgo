@@ -19,7 +19,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Microsoft.AspNetCore.Http;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Protocol.Sfx;
 using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin

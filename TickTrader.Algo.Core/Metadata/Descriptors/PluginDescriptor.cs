@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core.Metadata
         None = 0,
         Unknown = 1,
         HasInvalidProperties = 2,
-        UnknwonBaseType = 3,
+        UnknownBaseType = 3,
         IncompatibleApiVersion = 4,
     }
 
@@ -29,6 +29,12 @@ namespace TickTrader.Algo.Core.Metadata
         public string Id { get; set; }
 
         public string DisplayName { get; set; }
+
+        public AlgoTypes Type { get; set; }
+
+        public AlgoMetadataErrors Error { get; set; }
+
+        public bool IsValid => Error == AlgoMetadataErrors.None;
 
         public string UiDisplayName { get; set; }
 
@@ -48,13 +54,6 @@ namespace TickTrader.Algo.Core.Metadata
         public List<InputDescriptor> Inputs { get; set; }
 
         public List<OutputDescriptor> Outputs { get; set; }
-
-
-        public AlgoTypes Type { get; set; }
-
-        public AlgoMetadataErrors Error { get; set; }
-
-        public bool IsValid => Error == AlgoMetadataErrors.None;
 
 
         public PluginDescriptor()

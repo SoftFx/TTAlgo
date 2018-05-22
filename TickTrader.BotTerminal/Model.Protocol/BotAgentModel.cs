@@ -1,7 +1,7 @@
 ﻿using Machinarium.Qnil;
 using System;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Protocol.Sfx;
 
 namespace TickTrader.BotTerminal
 {

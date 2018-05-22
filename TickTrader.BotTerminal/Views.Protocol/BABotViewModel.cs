@@ -1,6 +1,6 @@
 ﻿using Caliburn.Micro;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Protocol.Sfx;
 
 namespace TickTrader.BotTerminal
 {

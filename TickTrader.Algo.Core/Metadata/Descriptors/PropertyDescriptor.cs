@@ -18,11 +18,9 @@ namespace TickTrader.Algo.Core.Metadata
         SetIsNotPublic = 2,
         GetIsNotPublic = 3,
         MultipleAttributes = 4,
-        OutputIsOnlyForIndicators = 5,
-        InputIsOnlyForIndicators = 6,
-        InputIsNotDataSeries = 7,
-        OutputIsNotDataSeries = 8,
-        EmptyEnum = 9,
+        InputIsNotDataSeries = 5,
+        OutputIsNotDataSeries = 6,
+        EmptyEnum = 7,
     }
 
 
@@ -33,10 +31,10 @@ namespace TickTrader.Algo.Core.Metadata
 
         public string DisplayName { get; set; }
 
+        public virtual AlgoPropertyTypes PropertyType => AlgoPropertyTypes.Unknown;
+
         public AlgoPropertyErrors Error { get; set; }
 
         public bool IsValid => Error == AlgoPropertyErrors.None;
-
-        public virtual AlgoPropertyTypes PropertyType => AlgoPropertyTypes.Unknown;
     }
 }

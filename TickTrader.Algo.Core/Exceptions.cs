@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core.Metadata
                             builder.Append("\tproperty ").Append(property.Id).Append(" - ").Append(property.Error);
                     }
                     return builder.ToString();
-                case AlgoMetadataErrors.UnknwonBaseType:
+                case AlgoMetadataErrors.UnknownBaseType:
                     return "Plugin error: Invalid base class. Your plugin must be derived from Indicator or TradeBot API classes.";
                 case AlgoMetadataErrors.IncompatibleApiVersion:
                     return "Plugin error: Incompatible api version. This client can't support newer api versions. Please update your client.";

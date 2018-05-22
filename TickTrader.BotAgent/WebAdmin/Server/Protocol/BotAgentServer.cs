@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Protocol.Sfx;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Models;

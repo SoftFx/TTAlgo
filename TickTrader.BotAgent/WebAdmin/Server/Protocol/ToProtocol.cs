@@ -1,6 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Protocol.Sfx;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
 

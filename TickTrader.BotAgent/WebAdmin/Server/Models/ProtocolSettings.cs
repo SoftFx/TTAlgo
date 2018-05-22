@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Protocol;
+﻿using TickTrader.Algo.Protocol.Sfx;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
