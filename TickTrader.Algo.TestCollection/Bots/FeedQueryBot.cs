@@ -28,27 +28,30 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void OnStart()
         {
-            try
-            {
-                //if (Period == FeedQueryPeriods.Input)
-                //{
-                //    if (TimeFrame != TimeFrames.Ticks)
-                //        PrintBarSeries();
-                //}
-                //else
-                //{
+            if (Symbols.Select(v => v.Name).Contains(SafeSymbol))
+                try
+                {
+                    //if (Period == FeedQueryPeriods.Input)
+                    //{
+                    //    if (TimeFrame != TimeFrames.Ticks)
+                    //        PrintBarSeries();
+                    //}
+                    //else
+                    //{
                     DateTime from, to;
                     GetBounds(out from, out to);
                     if (TimeFrame == TimeFrames.Ticks)
                         PrintQuotes(from, to);
                     else
                         PrintBars(from, to);
-                //}
-            }
-            catch (Exception ex)
-            {
-                Status.WriteLine("Exception: " + ex);
-            }
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    Status.WriteLine("Exception: " + ex);
+                }
+            else
+                Status.WriteLine($"Symbols collection doesn't contain symbol {SafeSymbol}.");
             Exit();
         }
 
