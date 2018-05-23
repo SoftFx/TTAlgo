@@ -14,6 +14,16 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest> __Marshaller_LoginRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Marshaller_LoginResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest> __Marshaller_PackageListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Marshaller_PackageListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest> __Marshaller_AccountListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> __Marshaller_AccountListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest> __Marshaller_BotListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> __Marshaller_BotListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest> __Marshaller_SubscribeToUpdatesRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.Update> __Marshaller_Update = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.Update.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey> __Marshaller_AccountKey = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo> __Marshaller_AccountMetadataInfo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo.Parser.ParseFrom);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Method_Login = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse>(
         grpc::MethodType.Unary,
@@ -21,6 +31,41 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         "Login",
         __Marshaller_LoginRequest,
         __Marshaller_LoginResponse);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Method_GetPackageList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetPackageList",
+        __Marshaller_PackageListRequest,
+        __Marshaller_PackageListResponse);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> __Method_GetAccountList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetAccountList",
+        __Marshaller_AccountListRequest,
+        __Marshaller_AccountListResponse);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> __Method_GetBotList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetBotList",
+        __Marshaller_BotListRequest,
+        __Marshaller_BotListResponse);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.Update> __Method_SubscribeToUpdates = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.Update>(
+        grpc::MethodType.ServerStreaming,
+        __ServiceName,
+        "SubscribeToUpdates",
+        __Marshaller_SubscribeToUpdatesRequest,
+        __Marshaller_Update);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo> __Method_GetAccountMetadata = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetAccountMetadata",
+        __Marshaller_AccountKey,
+        __Marshaller_AccountMetadataInfo);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -32,6 +77,31 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public abstract partial class BotAgentBase
     {
       public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> Login(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> GetPackageList(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> GetAccountList(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> GetBotList(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task SubscribeToUpdates(global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest request, grpc::IServerStreamWriter<global::TickTrader.Algo.Protocol.Grpc.Lib.Update> responseStream, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo> GetAccountMetadata(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -77,6 +147,78 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       {
         return CallInvoker.AsyncUnaryCall(__Method_Login, null, options, request);
       }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse GetPackageList(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetPackageList(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse GetPackageList(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetPackageList, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> GetPackageListAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetPackageListAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> GetPackageListAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetPackageList, null, options, request);
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse GetAccountList(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetAccountList(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse GetAccountList(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetAccountList, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> GetAccountListAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetAccountListAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> GetAccountListAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetAccountList, null, options, request);
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse GetBotList(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetBotList(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse GetBotList(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetBotList, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> GetBotListAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetBotListAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> GetBotListAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetBotList, null, options, request);
+      }
+      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.Update> SubscribeToUpdates(global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return SubscribeToUpdates(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.Update> SubscribeToUpdates(global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncServerStreamingCall(__Method_SubscribeToUpdates, null, options, request);
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo GetAccountMetadata(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetAccountMetadata(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo GetAccountMetadata(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetAccountMetadata, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo> GetAccountMetadataAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetAccountMetadataAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo> GetAccountMetadataAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetAccountMetadata, null, options, request);
+      }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       protected override BotAgentClient NewInstance(ClientBaseConfiguration configuration)
       {
@@ -89,7 +231,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public static grpc::ServerServiceDefinition BindService(BotAgentBase serviceImpl)
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
-          .AddMethod(__Method_Login, serviceImpl.Login).Build();
+          .AddMethod(__Method_Login, serviceImpl.Login)
+          .AddMethod(__Method_GetPackageList, serviceImpl.GetPackageList)
+          .AddMethod(__Method_GetAccountList, serviceImpl.GetAccountList)
+          .AddMethod(__Method_GetBotList, serviceImpl.GetBotList)
+          .AddMethod(__Method_SubscribeToUpdates, serviceImpl.SubscribeToUpdates)
+          .AddMethod(__Method_GetAccountMetadata, serviceImpl.GetAccountMetadata).Build();
     }
 
   }

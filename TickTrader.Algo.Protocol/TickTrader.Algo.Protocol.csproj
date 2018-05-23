@@ -60,6 +60,9 @@
   <ItemGroup>
     <Compile Include="Grpc\Lib\BotAgent.cs" />
     <Compile Include="Grpc\Lib\BotAgentGrpc.cs" />
+    <Compile Include="Grpc\Lib\Config.cs" />
+    <Compile Include="Grpc\Lib\Descriptors.cs" />
+    <Compile Include="Grpc\Lib\Metadata.cs" />
     <Compile Include="Sfx\Entities\ConnectionErrorEntity.cs" />
     <Compile Include="Sfx\Infrastructure\ToAlgo.cs" />
     <Compile Include="Sfx\Infrastructure\ToSfx.cs" />
@@ -115,6 +118,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Grpc\Lib\bot_agent.proto" />
+    <None Include="Grpc\Lib\config.proto" />
+    <None Include="Grpc\Lib\descriptors.proto" />
+    <None Include="Grpc\Lib\metadata.proto" />
     <None Include="Grpc\Lib\rebuild.grpc.cmd" />
     <None Include="Sfx\Lib\BotAgent.net" />
     <None Include="Sfx\Lib\rebuild.sfx.cmd" />

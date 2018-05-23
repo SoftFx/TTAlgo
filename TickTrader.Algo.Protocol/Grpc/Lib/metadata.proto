@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package TickTrader.Algo.Protocol.Grpc.Lib;
+
+import "google_protos/timestamp.proto";
+import "descriptors.proto";
+
+message AccountKey
+{
+	string server = 1;
+	string login = 2;
+}
+
+enum RepositoryLocation
+{
+	EMBEDDED = 0;
+	LOCAL_REPOSITORY = 1;
+	LOCAL_EXTENSIONS = 2;
+	COMMON_REPOSITORY = 3;
+	COMMON_EXTENSIONS = 4;
+}
+
+message PackageKey
+{
+	string name = 1;
+	RepositoryLocation location = 2;
+}
+
+message PluginKey
+{
+	string package_name = 1;
+	RepositoryLocation package_location = 2;
+	string descriptor_id = 3;
+}
+
+message ReductionKey
+{
+	string package_name = 1;
+	RepositoryLocation package_location = 2;
+	string descriptor_id = 3;
+}
+
+message MappingKey
+{
+	ReductionKey primary_reduction = 1;
+	ReductionKey secondary_reduction = 2;
+}
+
+message ApiMetadataInfo
+{
+	repeated ApiDescriptor.TimeFrame time_frames = 1;
+	repeated ApiDescriptor.LineStyle line_styles = 2;
+	repeated int32 thicknesses = 3;
+	repeated ApiDescriptor.MarkerSize marker_sizes = 4;
+}
+
+
+message PluginInfo
+{
+	PluginKey key = 1;
+	PluginDescriptor descriptor = 2;
+}
+
+message PackageInfo
+{
+	PackageKey key = 1;
+	google.protobuf.Timestamp created_utc = 2;
+	repeated PluginInfo plugins = 3;
+}
+
+message ReductionInfo
+{
+	ReductionKey key = 1;
+	ReductionDescriptor descriptor = 2;
+}
+
+message CurrencyInfo
+{
+	string name = 1;
+}
+
+message SymbolInfo
+{
+	string name = 1;
+}
+
+message AccountMetadataInfo
+{
+	AccountKey key = 1;
+	repeated string symbols = 2;
+}
+
+message MappingInfo
+{
+	MappingKey key = 1;
+	string display_name = 2;
+}
+
+message MappingCollectionInfo
+{
+	repeated MappingInfo bar_to_bar_mappings = 1;
+	repeated MappingInfo bar_to_double_mappings = 2;
+	repeated MappingInfo quote_to_bar_mappings = 3;
+	repeated MappingInfo quote_to_double_mappings = 4;
+
+	ReductionKey default_full_bar_to_bar_reduction = 5;
+	ReductionKey default_full_bar_to_double_reduction = 6;
+	ReductionKey default_bar_to_double_reduction = 7;
+	ReductionKey default_quote_to_bar_reduction = 8;
+	ReductionKey default_quote_to_double_reduction = 9;
+}
+
+message SetupContextInfo
+{
+	ApiDescriptor.TimeFrame default_time_frame = 1;
+	string default_symbol_code = 2;
+	MappingKey default_mapping = 3;
+}
+
+message SetupMetadataInfo
+{
+	ApiMetadataInfo api = 1;
+	MappingCollectionInfo mappings = 2;
+}

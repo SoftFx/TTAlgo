@@ -4,17 +4,28 @@ package TickTrader.Algo.Protocol.Grpc.Lib;
 
 // current version 1.0, syncronize with VersionSpec.cs
 
-import "google_protos/timestamp.proto";
+import "metadata.proto";
+import "config.proto";
 
 service BotAgent
 {
 	rpc Login (LoginRequest) returns (LoginResponse);
+
+	rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
+	rpc GetAccountList(AccountListRequest) returns (AccountListResponse);
+	rpc GetBotList(BotListRequest) returns (BotListResponse);
+	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream Update);
+
+	rpc GetAccountMetadata(AccountKey) returns (AccountMetadataInfo);
 }
 
-enum RequestStatus
+message Request
 {
-	SUCCESS = 0;
-	INTERNAL_SERVER_ERROR = 1;
+	enum RequestStatus
+	{
+		SUCCESS = 0;
+		INTERNAL_SERVER_ERROR = 1;
+	}
 }
 
 message LoginRequest
@@ -34,7 +45,7 @@ message LoginResponse
 		VERSION_MISMATCH = 2;
 	}
 
-	RequestStatus status = 1;
+	Request.RequestStatus status = 1;
 	LoginError error = 2;
 	int32 major_version = 3; // server version
 	int32 minor_version = 4; // server version
@@ -52,266 +63,86 @@ message LogoutResponse
 	    SERVER_LOGOUT = 1;
 	}
 
-	LogoutReason reason = 1;
-	string text = 2;
+	Request.RequestStatus status = 1;
+	LogoutReason reason = 2;
+	string text = 3;
 }
 
-message AccountKey
+message PackageListRequest
 {
-	string server = 1;
-	string login = 2;
 }
 
-enum RepositoryLocation
+message PackageListResponse
 {
-	EMBEDDED = 0;
-	LOCAL_REPOSITORY = 1;
-	LOCAL_EXTENSIONS = 2;
-	COMMON_REPOSITORY = 3;
-	COMMON_EXTENSIONS = 4;
+	Request.RequestStatus status = 1;
+	repeated PackageInfo packages = 2;
 }
 
-message PackageKey
+message AccountListRequest
 {
-	string name = 1;
-	RepositoryLocation location = 2;
 }
 
-message PluginKey
+message AccountListResponse
 {
-	string package_name = 1;
-	RepositoryLocation package_location = 2;
-	string descriptor_id = 3;
+	Request.RequestStatus status = 1;
+	repeated AccountKey accounts = 2;
 }
 
-message ReductionKey
+message BotListRequest
 {
-	string package_name = 1;
-	RepositoryLocation package_location = 2;
-	string descriptor_id = 3;
 }
 
-message MappingKey
+message BotListResponse
 {
-	ReductionKey primary_reduction = 1;
-	ReductionKey secondary_reduction = 2;
+	Request.RequestStatus status = 1;
+	repeated string bots = 2;
 }
 
-message ApiMetadataInfo
+message SubscribeToUpdatesRequest
 {
-	enum TimeFrame
+}
+
+message Update
+{
+	enum UpdateType
 	{
-		UNKNOWN_TIME_FRAME = 0;
-		MN = 1;
-		D = 2;
-		W = 3;
-		H4 = 4;
-		H1 = 5;
-		M30 = 6;
-		M15 = 7;
-		M5 = 8;
-		M1 = 9;
-		S10 = 10;
-		S1 = 11;
-		Ticks = 12;
+	    ADDED = 0;
+	    UPDATED = 1;
+	    REMOVED = 2;
 	}
 
-	enum LineStyle
+	UpdateType type = 1;
+	oneof update
 	{
-		UNKNOWN_LINE_STYLE = 0;
-		SOLID = 1;
-		DOTS = 2;
-		DOTS_RARE = 3;
-		DOTS_VERY_RARE = 4;
-		LINES_DOTS = 5;
-		LINES = 6;
+		PackageUpdate package = 5;
+		AccountUpdate account = 6;
+		AccountStateUpdate account_state = 7;
+		BotUpdate bot = 8;
+		BotStateUpdate bot_state = 9;
 	}
-
-	enum PlotType
-	{
-		UNKNOWN_PLOT_TYPE = 0;
-		LINE = 1;
-		HISTOGRAM = 2;
-		POINTS = 3;
-		DISCONTINUOUS_LINE = 4;
-	}
-
-	enum OutputTarget
-	{
-		UNKNOWN_OUTPUT_TARGET = 0;
-		OVERLAY = 1;
-		WINDOW1 = 2;
-		WINDOW2 = 3;
-		WINDOW3 = 4;
-		WINDOW4 = 5;
-	}
-
-	enum MarkerSize
-	{
-		UNKNOWN_MARKER_SIZE = 0;
-		Large = 1;
-		Medium = 2;
-		Small = 3;
-	}
-
-	repeated TimeFrame time_frames = 1;
-	repeated LineStyle line_styles = 2;
-	repeated int32 thicknesses = 3;
-	repeated MarkerSize marker_sizes = 4;
 }
 
-message PropertyDescriptor
+message PackageUpdate
 {
-	enum AlgoPropertyType
-	{
-		UNKNOWN_PROPERTY_TYPE = 0;
-		PARAMETER = 1;
-		INPUT_SERIES = 2;
-		OUTPUT_SERIES = 3;
-	}
-
-	enum AlgoPropertyError
-	{
-		NONE = 0;
-		UNKNOWN = 1;
-		SET_IS_NOT_PUBLIC = 2;
-		GET_IS_NOT_PUBLIC = 3;
-		MULTIPLE_ATTRIBUTES = 4;
-		INPUT_IS_NOT_DATA_SERIES = 5;
-		OUTPUT_IS_NOT_DATA_SERIES = 6;
-		EMPTY_ENUM = 7;
-	}
-
-	string id = 1;
-	string display_name = 2;
-	AlgoPropertyType property_type = 3;
-	AlgoPropertyError error = 4;
+	PackageInfo package = 1;
 }
 
-message FileFilterEntry
+message AccountUpdate
 {
-	string file_type_name = 1;
-	string file_mask = 2;
+	AccountKey account = 1;
 }
 
-message ParameterDescriptor
+message AccountStateUpdate
 {
-	PropertyDescriptor property_header = 1;
-	string data_type = 2;
-	string default_value = 3;
-	bool is_required = 4;
-
-	bool is_enum = 5;
-	repeated string enum_values = 6;
-
-	repeated FileFilterEntry file_filters = 7;
+	AccountKey account = 1;
 }
 
-message InputDescriptor
+message BotUpdate
 {
-	PropertyDescriptor property_header = 1;
-	string data_series_base_type_full_name = 2;
+	string bot_id = 1;
 }
 
-message OutputDescriptor
+message BotStateUpdate
 {
-	PropertyDescriptor property_header = 1;
-	string data_series_base_type_full_name = 2;
-	double default_thickness = 3;
-	int32 default_color = 4;
-	ApiMetadataInfo.LineStyle default_line_style = 5;
-	ApiMetadataInfo.PlotType plot_type = 6;
-	ApiMetadataInfo.OutputTarget target = 7;
-	int32 precision = 8;
-	double zero_line = 9;
-}
-
-message PluginDescriptor
-{
-	enum AlgoType
-	{
-		UNKNOWN_PLUGIN_TYPE = 0;
-		INDICATOR = 1;
-		ROBOT = 2;
-	}
-
-	enum AlgoMetadataError
-	{
-		NONE = 0;
-		UNKNOWN = 1;
-		HAS_INVALID_PROPERTIES = 2;
-		UNKNOWN_BASE_TYPE = 3;
-		INCOMPATIBLE_API_VERSION = 4;
-	}
-
-	string api_version_str = 1;
-	string id = 2;
-	string display_name = 3;
-	AlgoType type = 4;
-	AlgoMetadataError error = 5;
-	string ui_display_name = 6;
-	string category = 7;
-	string version = 8;
-	string description = 9;
-	string copyright = 10;
-
-	repeated ParameterDescriptor parameters = 11;
-	repeated InputDescriptor inputs = 12;
-	repeated OutputDescriptor outputs = 13;
-
-	bool setup_main_symbol = 14;
-}
-
-message PluginInfo
-{
-	PluginKey key = 1;
-	PluginDescriptor descriptor = 2;
-}
-
-message PackageInfo
-{
-	PackageKey key = 1;
-	google.protobuf.Timestamp created_utc = 2;
-	repeated PluginInfo plugins = 3;
-}
-
-message ReductionDescriptor
-{
-	enum ReductionType
-	{
-		UNKNOWN = 0;
-		BAR_TO_DOUBLE = 1;
-		FULL_BAR_TO_DOUBLE = 2;
-		FULL_BAR_TO_BAR = 3;
-		QUOTE_TO_DOUBLE = 4;
-		QUOTE_TO_BAR = 5;
-	}
-
-	string api_version_str = 1;
-	string id = 2;
-	string display_name = 3;
-	ReductionType type = 4;
-}
-
-message ReductionInfo
-{
-	ReductionKey key = 1;
-	ReductionDescriptor descriptor = 2;
-}
-
-message CurrencyInfo
-{
-	string name = 1;
-}
-
-message SymbolInfo
-{
-	string name = 1;
-}
-
-enum UpdateType
-{
-    ADDED = 0;
-    UPDATED = 1;
-    REMOVED = 2;
+	string bot_id = 1;
 }
