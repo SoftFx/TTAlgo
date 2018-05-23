@@ -77,7 +77,8 @@ namespace TickTrader.Algo.Core
                 volumeLots = RoundVolume(volumeLots, smbMetadata);
                 maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
                 ValidateVolumeLots(volumeLots, smbMetadata);
-                ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata);
+                ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
+                ValidateOptions(options, orderType);
                 double volume = ConvertVolume(volumeLots, smbMetadata);
                 double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
                 price = RoundPrice(price, smbMetadata, side);
@@ -301,10 +302,12 @@ namespace TickTrader.Algo.Core
                 //    ValidateStopPrice(stopPrice);
 
                 double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
+                double orderVolumeInLots = orderVolume / GetSymbolOrThrow(orderToModify.Symbol).ContractSize;
+
                 volume = RoundVolume(volume, smbMetadata);
                 maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
                 ValidateVolumeLots(volume, smbMetadata);
-                ValidateMaxVisibleVolumeLots(maxVisibleVolume, smbMetadata);
+                ValidateMaxVisibleVolumeLots(maxVisibleVolume, smbMetadata, orderType, volume ?? orderVolumeInLots);
                 double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
                 double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
@@ -480,12 +483,18 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
         }
 
-        private void ValidateMaxVisibleVolumeLots(double? volumeLots, Symbol smbMetadata)
+        private void ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, OrderType orderType, double? volumeLots)
         {
-            if (!volumeLots.HasValue)
+            if (!maxVisibleVolumeLots.HasValue)
                 return;
 
-            if (volumeLots < 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
+            var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
+                || maxVisibleVolumeLots < 0
+                || maxVisibleVolumeLots < smbMetadata.MinTradeVolume
+                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume
+                || maxVisibleVolumeLots > volumeLots;
+
+            if (isIncorrectMaxVisibleVolume)
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
         }
 
@@ -555,7 +564,9 @@ namespace TickTrader.Algo.Core
             if (options == null)
                 return;
 
-            if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) && (orderType != OrderType.StopLimit))
+            var isOrderTypeCompatibleToIoC = orderType == OrderType.Limit || orderType == OrderType.StopLimit;
+
+            if (options == OrderExecOptions.ImmediateOrCancel && !isOrderTypeCompatibleToIoC)
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
         }
 
