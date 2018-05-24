@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
         }
 
 
-        public override void OnConnect(Server server, Server.Session session)
+        public override void OnConnect(SfxProtocol.Server server, SfxProtocol.Server.Session session)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnDisconnect(Server server, Server.Session session, ServerContext[] contexts, string text)
+        public override void OnDisconnect(SfxProtocol.Server server, SfxProtocol.Server.Session session, ServerContext[] contexts, string text)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnLoginRequest(Server server, Server.Session session, LoginRequest message)
+        public override void OnLoginRequest(SfxProtocol.Server server, SfxProtocol.Server.Session session, LoginRequest message)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnLogoutRequest(Server server, Server.Session session, LogoutRequest message)
+        public override void OnLogoutRequest(SfxProtocol.Server server, SfxProtocol.Server.Session session, LogoutRequest message)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnSubscribeRequest(Server server, Server.Session session, SubscribeRequest message)
+        public override void OnSubscribeRequest(SfxProtocol.Server server, SfxProtocol.Server.Session session, SubscribeRequest message)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnAccountListRequest(Server server, Server.Session session, AccountListRequest message)
+        public override void OnAccountListRequest(SfxProtocol.Server server, SfxProtocol.Server.Session session, AccountListRequest message)
         {
             try
             {
@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnBotListRequest(Server server, Server.Session session, BotListRequest message)
+        public override void OnBotListRequest(SfxProtocol.Server server, SfxProtocol.Server.Session session, BotListRequest message)
         {
             try
             {
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Protocol.Sfx.Lib
             }
         }
 
-        public override void OnPackageListRequest(Server server, Server.Session session, PackageListRequest message)
+        public override void OnPackageListRequest(SfxProtocol.Server server, SfxProtocol.Server.Session session, PackageListRequest message)
         {
             try
             {

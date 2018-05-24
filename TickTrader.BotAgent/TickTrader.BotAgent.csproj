@@ -26,6 +26,7 @@
     <None Update="WebAdmin\Server\Views\**\*;WebAdmin\wwwroot\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj" />
     <ProjectReference Include="..\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />

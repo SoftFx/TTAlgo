@@ -127,10 +127,9 @@ message OutputColor
 
 message Output
 {
-	string property_id = 1;
-	bool is_enabled = 2;
-	OutputColor line_color = 3;
-	int32 line_thickness = 4;
+	bool is_enabled = 1;
+	OutputColor line_color = 2;
+	int32 line_thickness = 3;
 	oneof output
 	{
 		ColoredLineOutput colored_line = 10;

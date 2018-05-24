@@ -7,7 +7,7 @@ message ApiDescriptor
 	enum TimeFrame
 	{
 		UNKNOWN_TIME_FRAME = 0;
-		MN = 1;
+		M_N = 1;
 		D = 2;
 		W = 3;
 		H4 = 4;
@@ -18,7 +18,7 @@ message ApiDescriptor
 		M1 = 9;
 		S10 = 10;
 		S1 = 11;
-		Ticks = 12;
+		TICKS = 12;
 	}
 
 	enum LineStyle
@@ -54,9 +54,9 @@ message ApiDescriptor
 	enum MarkerSize
 	{
 		UNKNOWN_MARKER_SIZE = 0;
-		Large = 1;
-		Medium = 2;
-		Small = 3;
+		LARGE = 1;
+		MEDIUM = 2;
+		SMALL = 3;
 	}
 }
 
@@ -73,7 +73,7 @@ message PropertyDescriptor
 	enum AlgoPropertyError
 	{
 		NONE = 0;
-		UNKNOWN = 1;
+		UNKNOWN_PROPERTY_ERROR = 1;
 		SET_IS_NOT_PUBLIC = 2;
 		GET_IS_NOT_PUBLIC = 3;
 		MULTIPLE_ATTRIBUTES = 4;
@@ -138,7 +138,7 @@ message PluginDescriptor
 	enum AlgoMetadataError
 	{
 		NONE = 0;
-		UNKNOWN = 1;
+		UNKNOWN_METADATA_ERROR = 1;
 		HAS_INVALID_PROPERTIES = 2;
 		UNKNOWN_BASE_TYPE = 3;
 		INCOMPATIBLE_API_VERSION = 4;
@@ -166,7 +166,7 @@ message ReductionDescriptor
 {
 	enum ReductionType
 	{
-		UNKNOWN = 0;
+		UNKNOWN_REDUCTION_TYPE = 0;
 		BAR_TO_DOUBLE = 1;
 		FULL_BAR_TO_DOUBLE = 2;
 		FULL_BAR_TO_BAR = 3;

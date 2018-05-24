@@ -63,6 +63,8 @@
     <Compile Include="Grpc\Lib\Config.cs" />
     <Compile Include="Grpc\Lib\Descriptors.cs" />
     <Compile Include="Grpc\Lib\Metadata.cs" />
+    <Compile Include="Grpc\ToAlgo.cs" />
+    <Compile Include="Grpc\ToGrpc.cs" />
     <Compile Include="Sfx\Entities\ConnectionErrorEntity.cs" />
     <Compile Include="Sfx\Infrastructure\ToAlgo.cs" />
     <Compile Include="Sfx\Infrastructure\ToSfx.cs" />
@@ -114,6 +116,18 @@
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
+      <Project>{8901C84D-FB62-433C-A25F-4D24255B9453}</Project>
+      <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj">
+      <Project>{BFFE802C-BCB0-4376-9551-977FE8C277D2}</Project>
+      <Name>TickTrader.Algo.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj">
+      <Project>{8BAB901C-10BB-4EB7-B81E-716FA05B6957}</Project>
+      <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

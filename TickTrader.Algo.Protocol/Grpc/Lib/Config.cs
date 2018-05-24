@@ -69,33 +69,33 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "YXJUb0JhcklucHV0IhIKEEJhclRvRG91YmxlSW5wdXQiEQoPUXVvdGVUb0Jh",
             "cklucHV0IhQKElF1b3RlVG9Eb3VibGVJbnB1dCJGCgtPdXRwdXRDb2xvchIN",
             "CgVhbHBoYRgBIAEoAhILCgNyZWQYAiABKAISDQoFZ3JlZW4YAyABKAISDAoE",
-            "Ymx1ZRgEIAEoAiK1AgoGT3V0cHV0EhMKC3Byb3BlcnR5X2lkGAEgASgJEhIK",
-            "CmlzX2VuYWJsZWQYAiABKAgSQgoKbGluZV9jb2xvchgDIAEoCzIuLlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5PdXRwdXRDb2xvchIWCg5s",
-            "aW5lX3RoaWNrbmVzcxgEIAEoBRJMCgxjb2xvcmVkX2xpbmUYCiABKAsyNC5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQ29sb3JlZExpbmVP",
-            "dXRwdXRIABJOCg1tYXJrZXJfc2VyaWVzGAsgASgLMjUuVGlja1RyYWRlci5B",
-            "bGdvLlByb3RvY29sLkdycGMuTGliLk1hcmtlclNlcmllc091dHB1dEgAQggK",
-            "Bm91dHB1dCJjChFDb2xvcmVkTGluZU91dHB1dBJOCgpsaW5lX3N0eWxlGAIg",
-            "ASgOMjouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURl",
-            "c2NyaXB0b3IuTGluZVN0eWxlImYKEk1hcmtlclNlcmllc091dHB1dBJQCgtt",
-            "YXJrZXJfc2l6ZRgCIAEoDjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5BcGlEZXNjcmlwdG9yLk1hcmtlclNpemUiPAoRUGx1Z2luUGVy",
-            "bWlzc2lvbnMSFQoNdHJhZGVfYWxsb3dlZBgBIAEoCBIQCghpc29sYXRlZBgC",
-            "IAEoCCKzBAoMUGx1Z2luQ29uZmlnEjkKA2tleRgBIAEoCzIsLlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5LZXkSTgoKdGltZV9m",
-            "cmFtZRgCIAEoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5BcGlEZXNjcmlwdG9yLlRpbWVGcmFtZRITCgttYWluX3N5bWJvbBgDIAEo",
-            "CRJHChBzZWxlY3RlZF9tYXBwaW5nGAQgASgLMi0uVGlja1RyYWRlci5BbGdv",
-            "LlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdLZXkSEwoLaW5zdGFuY2VfaWQY",
-            "BSABKAkSSQoLcGVybWlzc2lvbnMYBiABKAsyNC5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luUGVybWlzc2lvbnMSPwoKcHJvcGVy",
-            "dGllcxgHIAMoCzIrLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5Qcm9wZXJ0eRJHCglpbmRpY2F0b3IYCiABKAsyMi5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuSW5kaWNhdG9yQ29uZmlnSAASRgoJdHJh",
-            "ZGVfYm90GAsgASgLMjEuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
-            "TGliLlRyYWRlQm90Q29uZmlnSABCCAoGY29uZmlnIhEKD0luZGljYXRvckNv",
-            "bmZpZyIQCg5UcmFkZUJvdENvbmZpZ2IGcHJvdG8z"));
+            "Ymx1ZRgEIAEoAiKgAgoGT3V0cHV0EhIKCmlzX2VuYWJsZWQYASABKAgSQgoK",
+            "bGluZV9jb2xvchgCIAEoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5PdXRwdXRDb2xvchIWCg5saW5lX3RoaWNrbmVzcxgDIAEoBRJM",
+            "Cgxjb2xvcmVkX2xpbmUYCiABKAsyNC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
+            "b2wuR3JwYy5MaWIuQ29sb3JlZExpbmVPdXRwdXRIABJOCg1tYXJrZXJfc2Vy",
+            "aWVzGAsgASgLMjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "Lk1hcmtlclNlcmllc091dHB1dEgAQggKBm91dHB1dCJjChFDb2xvcmVkTGlu",
+            "ZU91dHB1dBJOCgpsaW5lX3N0eWxlGAIgASgOMjouVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuTGluZVN0eWxlImYK",
+            "Ek1hcmtlclNlcmllc091dHB1dBJQCgttYXJrZXJfc2l6ZRgCIAEoDjI7LlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9y",
+            "Lk1hcmtlclNpemUiPAoRUGx1Z2luUGVybWlzc2lvbnMSFQoNdHJhZGVfYWxs",
+            "b3dlZBgBIAEoCBIQCghpc29sYXRlZBgCIAEoCCKzBAoMUGx1Z2luQ29uZmln",
+            "EjkKA2tleRgBIAEoCzIsLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5QbHVnaW5LZXkSTgoKdGltZV9mcmFtZRgCIAEoDjI6LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLlRpbWVG",
+            "cmFtZRITCgttYWluX3N5bWJvbBgDIAEoCRJHChBzZWxlY3RlZF9tYXBwaW5n",
+            "GAQgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1h",
+            "cHBpbmdLZXkSEwoLaW5zdGFuY2VfaWQYBSABKAkSSQoLcGVybWlzc2lvbnMY",
+            "BiABKAsyNC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1",
+            "Z2luUGVybWlzc2lvbnMSPwoKcHJvcGVydGllcxgHIAMoCzIrLlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Qcm9wZXJ0eRJHCglpbmRpY2F0",
+            "b3IYCiABKAsyMi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "SW5kaWNhdG9yQ29uZmlnSAASRgoJdHJhZGVfYm90GAsgASgLMjEuVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlRyYWRlQm90Q29uZmlnSABC",
+            "CAoGY29uZmlnIhEKD0luZGljYXRvckNvbmZpZyIQCg5UcmFkZUJvdENvbmZp",
+            "Z2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.QuoteToBarInput), global::TickTrader.Algo.Protocol.Grpc.Lib.QuoteToBarInput.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.QuoteToDoubleInput), global::TickTrader.Algo.Protocol.Grpc.Lib.QuoteToDoubleInput.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.OutputColor), global::TickTrader.Algo.Protocol.Grpc.Lib.OutputColor.Parser, new[]{ "Alpha", "Red", "Green", "Blue" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.Output), global::TickTrader.Algo.Protocol.Grpc.Lib.Output.Parser, new[]{ "PropertyId", "IsEnabled", "LineColor", "LineThickness", "ColoredLine", "MarkerSeries" }, new[]{ "Output" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.Output), global::TickTrader.Algo.Protocol.Grpc.Lib.Output.Parser, new[]{ "IsEnabled", "LineColor", "LineThickness", "ColoredLine", "MarkerSeries" }, new[]{ "Output" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ColoredLineOutput), global::TickTrader.Algo.Protocol.Grpc.Lib.ColoredLineOutput.Parser, new[]{ "LineStyle" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MarkerSeriesOutput), global::TickTrader.Algo.Protocol.Grpc.Lib.MarkerSeriesOutput.Parser, new[]{ "MarkerSize" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginPermissions), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginPermissions.Parser, new[]{ "TradeAllowed", "Isolated" }, null, null, null),
@@ -3202,7 +3202,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Output(Output other) : this() {
-      propertyId_ = other.propertyId_;
       isEnabled_ = other.isEnabled_;
       LineColor = other.lineColor_ != null ? other.LineColor.Clone() : null;
       lineThickness_ = other.lineThickness_;
@@ -3223,19 +3222,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new Output(this);
     }
 
-    /// <summary>Field number for the "property_id" field.</summary>
-    public const int PropertyIdFieldNumber = 1;
-    private string propertyId_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string PropertyId {
-      get { return propertyId_; }
-      set {
-        propertyId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
     /// <summary>Field number for the "is_enabled" field.</summary>
-    public const int IsEnabledFieldNumber = 2;
+    public const int IsEnabledFieldNumber = 1;
     private bool isEnabled_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsEnabled {
@@ -3246,7 +3234,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     /// <summary>Field number for the "line_color" field.</summary>
-    public const int LineColorFieldNumber = 3;
+    public const int LineColorFieldNumber = 2;
     private global::TickTrader.Algo.Protocol.Grpc.Lib.OutputColor lineColor_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TickTrader.Algo.Protocol.Grpc.Lib.OutputColor LineColor {
@@ -3257,7 +3245,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     /// <summary>Field number for the "line_thickness" field.</summary>
-    public const int LineThicknessFieldNumber = 4;
+    public const int LineThicknessFieldNumber = 3;
     private int lineThickness_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int LineThickness {
@@ -3321,7 +3309,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (PropertyId != other.PropertyId) return false;
       if (IsEnabled != other.IsEnabled) return false;
       if (!object.Equals(LineColor, other.LineColor)) return false;
       if (LineThickness != other.LineThickness) return false;
@@ -3334,7 +3321,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (PropertyId.Length != 0) hash ^= PropertyId.GetHashCode();
       if (IsEnabled != false) hash ^= IsEnabled.GetHashCode();
       if (lineColor_ != null) hash ^= LineColor.GetHashCode();
       if (LineThickness != 0) hash ^= LineThickness.GetHashCode();
@@ -3354,20 +3340,16 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (PropertyId.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(PropertyId);
-      }
       if (IsEnabled != false) {
-        output.WriteRawTag(16);
+        output.WriteRawTag(8);
         output.WriteBool(IsEnabled);
       }
       if (lineColor_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(18);
         output.WriteMessage(LineColor);
       }
       if (LineThickness != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(24);
         output.WriteInt32(LineThickness);
       }
       if (outputCase_ == OutputOneofCase.ColoredLine) {
@@ -3386,9 +3368,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (PropertyId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(PropertyId);
-      }
       if (IsEnabled != false) {
         size += 1 + 1;
       }
@@ -3414,9 +3393,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public void MergeFrom(Output other) {
       if (other == null) {
         return;
-      }
-      if (other.PropertyId.Length != 0) {
-        PropertyId = other.PropertyId;
       }
       if (other.IsEnabled != false) {
         IsEnabled = other.IsEnabled;
@@ -3456,22 +3432,18 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 10: {
-            PropertyId = input.ReadString();
-            break;
-          }
-          case 16: {
+          case 8: {
             IsEnabled = input.ReadBool();
             break;
           }
-          case 26: {
+          case 18: {
             if (lineColor_ == null) {
               lineColor_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.OutputColor();
             }
             input.ReadMessage(lineColor_);
             break;
           }
-          case 32: {
+          case 24: {
             LineThickness = input.ReadInt32();
             break;
           }

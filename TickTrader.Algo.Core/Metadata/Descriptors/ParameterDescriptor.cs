@@ -6,9 +6,9 @@ namespace TickTrader.Algo.Core.Metadata
     [Serializable]
     public class FileFilterEntry
     {
-        public string FileTypeName { get; }
+        public string FileTypeName { get; set; }
 
-        public string FileMask { get; }
+        public string FileMask { get; set; }
 
 
         public FileFilterEntry() { }

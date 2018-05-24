@@ -46,15 +46,6 @@ message MappingKey
 	ReductionKey secondary_reduction = 2;
 }
 
-message ApiMetadataInfo
-{
-	repeated ApiDescriptor.TimeFrame time_frames = 1;
-	repeated ApiDescriptor.LineStyle line_styles = 2;
-	repeated int32 thicknesses = 3;
-	repeated ApiDescriptor.MarkerSize marker_sizes = 4;
-}
-
-
 message PluginInfo
 {
 	PluginKey key = 1;
@@ -87,7 +78,7 @@ message SymbolInfo
 message AccountMetadataInfo
 {
 	AccountKey key = 1;
-	repeated string symbols = 2;
+	repeated SymbolInfo symbols = 2;
 }
 
 message MappingInfo
@@ -108,6 +99,14 @@ message MappingCollectionInfo
 	ReductionKey default_bar_to_double_reduction = 7;
 	ReductionKey default_quote_to_bar_reduction = 8;
 	ReductionKey default_quote_to_double_reduction = 9;
+}
+
+message ApiMetadataInfo
+{
+	repeated ApiDescriptor.TimeFrame time_frames = 1;
+	repeated ApiDescriptor.LineStyle line_styles = 2;
+	repeated int32 thicknesses = 3;
+	repeated ApiDescriptor.MarkerSize marker_sizes = 4;
 }
 
 message SetupContextInfo

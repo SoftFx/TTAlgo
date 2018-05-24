@@ -1,8 +1,8 @@
 ﻿using NLog;
-using SoftFX.Net.BotAgent;
 using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Protocol.Sfx.Lib;
+using SfxProtocol = SoftFX.Net.BotAgent;
 
 namespace TickTrader.Algo.Protocol.Sfx
 {
@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Protocol.Sfx
         private List<int> _subscriptionList;
 
 
-        internal Server Server { get; set; }
+        internal SfxProtocol.Server Server { get; set; }
 
         internal BotAgentServerListener Listener { get; set; }
 
@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Protocol.Sfx
 
                 Listener = new BotAgentServerListener(AgentServer, _logger);
 
-                Server = new Server(Settings.ServerName, Settings.CreateServerOptions())
+                Server = new SfxProtocol.Server(Settings.ServerName, Settings.CreateServerOptions())
                 {
                     Listener = Listener,
                 };
