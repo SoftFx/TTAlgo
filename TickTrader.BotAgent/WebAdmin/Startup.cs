@@ -19,7 +19,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Microsoft.AspNetCore.Http;
-using TickTrader.Algo.Protocol.Sfx;
+using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin
@@ -125,15 +125,15 @@ namespace TickTrader.BotAgent.WebAdmin
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            //_protocolServer = new ProtocolServer(new BotAgentServer(services, Configuration), Configuration.GetProtocolServerSettings(env.ContentRootPath));
-            //_protocolServer.Start();
+            _protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(services, Configuration), Configuration.GetProtocolServerSettings(env.ContentRootPath));
+            _protocolServer.Start();
         }
 
         private void Shutdown(IServiceProvider services)
         {
             var server = services.GetRequiredService<IBotAgent>();
 
-            //_protocolServer.Stop();
+            _protocolServer.Stop();
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
         }
 

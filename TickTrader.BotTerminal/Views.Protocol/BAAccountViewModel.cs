@@ -1,12 +1,12 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
-using TickTrader.Algo.Protocol.Sfx;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
     internal class BAAccountViewModel : PropertyChangedBase
     {
-        private AccountModelEntity _entity;
+        private AccountKey _entity;
 
 
         public string Login => _entity.Login;
@@ -17,11 +17,12 @@ namespace TickTrader.BotTerminal
         {
             get
             {
-                if (_entity.LastError.Code == ConnectionErrorCode.None)
-                    return $"{_entity.ConnectionState}";
-                if (_entity.LastError.Code == ConnectionErrorCode.Unknown)
-                    return $"{_entity.ConnectionState} - {_entity.LastError.Text}";
-                return $"{_entity.ConnectionState} - {_entity.LastError.Code}";
+                //if (_entity.LastError.Code == ConnectionErrorCode.None)
+                //    return $"{_entity.ConnectionState}";
+                //if (_entity.LastError.Code == ConnectionErrorCode.Unknown)
+                //    return $"{_entity.ConnectionState} - {_entity.LastError.Text}";
+                //return $"{_entity.ConnectionState} - {_entity.LastError.Code}";
+                return "";
             }
         }
 
@@ -30,7 +31,7 @@ namespace TickTrader.BotTerminal
         public IObservableList<BABotViewModel> Bots { get; }
 
 
-        public BAAccountViewModel(AccountModelEntity entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
+        public BAAccountViewModel(AccountKey entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
         {
             _entity = entity;
             AccountKey = BotAgentModel.GetAccountKey(_entity);

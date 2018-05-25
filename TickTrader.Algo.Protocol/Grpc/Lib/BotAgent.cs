@@ -53,41 +53,43 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "dFJlcXVlc3QiaQoPQm90TGlzdFJlc3BvbnNlEkgKBnN0YXR1cxgBIAEoDjI4",
             "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0LlJl",
             "cXVlc3RTdGF0dXMSDAoEYm90cxgCIAMoCSIbChlTdWJzY3JpYmVUb1VwZGF0",
-            "ZXNSZXF1ZXN0IugDCgZVcGRhdGUSQgoEdHlwZRgBIAEoDjI0LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5VcGRhdGUuVXBkYXRlVHlwZRJD",
-            "CgdwYWNrYWdlGAUgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLlBhY2thZ2VVcGRhdGVIABJDCgdhY2NvdW50GAYgASgLMjAuVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRVcGRhdGVI",
-            "ABJOCg1hY2NvdW50X3N0YXRlGAcgASgLMjUuVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkFjY291bnRTdGF0ZVVwZGF0ZUgAEjsKA2JvdBgI",
-            "IAEoCzIsLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RV",
-            "cGRhdGVIABJGCglib3Rfc3RhdGUYCSABKAsyMS5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuQm90U3RhdGVVcGRhdGVIACIxCgpVcGRhdGVU",
-            "eXBlEgkKBUFEREVEEAASCwoHVVBEQVRFRBABEgsKB1JFTU9WRUQQAkIICgZ1",
-            "cGRhdGUiUAoNUGFja2FnZVVwZGF0ZRI/CgdwYWNrYWdlGAEgASgLMi4uVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VJbmZvIk8K",
-            "DUFjY291bnRVcGRhdGUSPgoHYWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5IlQKEkFjY291bnRT",
-            "dGF0ZVVwZGF0ZRI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdv",
-            "LlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiGwoJQm90VXBkYXRlEg4K",
-            "BmJvdF9pZBgBIAEoCSIgCg5Cb3RTdGF0ZVVwZGF0ZRIOCgZib3RfaWQYASAB",
-            "KAky6wUKCEJvdEFnZW50EmoKBUxvZ2luEi8uVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkxvZ2luUmVxdWVzdBowLlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dpblJlc3BvbnNlEn8KDkdldFBhY2th",
-            "Z2VMaXN0EjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBh",
-            "Y2thZ2VMaXN0UmVxdWVzdBo2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5QYWNrYWdlTGlzdFJlc3BvbnNlEn8KDkdldEFjY291bnRMaXN0",
-            "EjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRM",
-            "aXN0UmVxdWVzdBo2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5BY2NvdW50TGlzdFJlc3BvbnNlEnMKCkdldEJvdExpc3QSMS5UaWNrVHJh",
-            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TGlzdFJlcXVlc3QaMi5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TGlzdFJlc3Bv",
-            "bnNlEn8KElN1YnNjcmliZVRvVXBkYXRlcxI8LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5TdWJzY3JpYmVUb1VwZGF0ZXNSZXF1ZXN0Giku",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVwZGF0ZTABEnsK",
-            "EkdldEFjY291bnRNZXRhZGF0YRItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5BY2NvdW50S2V5GjYuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLkFjY291bnRNZXRhZGF0YUluZm9iBnByb3RvMw=="));
+            "ZXNSZXF1ZXN0IokECgpVcGRhdGVJbmZvEkYKBHR5cGUYASABKA4yOC5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuVXBkYXRlSW5mby5VcGRh",
+            "dGVUeXBlEkcKB3BhY2thZ2UYBSABKAsyNC5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuUGFja2FnZVVwZGF0ZUluZm9IABJHCgdhY2NvdW50",
+            "GAYgASgLMjQuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFj",
+            "Y291bnRVcGRhdGVJbmZvSAASUgoNYWNjb3VudF9zdGF0ZRgHIAEoCzI5LlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50U3RhdGVV",
+            "cGRhdGVJbmZvSAASPwoDYm90GAggASgLMjAuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLkJvdFVwZGF0ZUluZm9IABJKCglib3Rfc3RhdGUY",
+            "CSABKAsyNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90",
+            "U3RhdGVVcGRhdGVJbmZvSAAiMQoKVXBkYXRlVHlwZRIJCgVBRERFRBAAEgsK",
+            "B1VQREFURUQQARILCgdSRU1PVkVEEAJCDQoLdXBkYXRlX2luZm8iVAoRUGFj",
+            "a2FnZVVwZGF0ZUluZm8SPwoHcGFja2FnZRgBIAEoCzIuLlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlSW5mbyJTChFBY2NvdW50",
+            "VXBkYXRlSW5mbxI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiWAoWQWNjb3VudFN0YXRl",
+            "VXBkYXRlSW5mbxI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiHwoNQm90VXBkYXRlSW5m",
+            "bxIOCgZib3RfaWQYASABKAkiJAoSQm90U3RhdGVVcGRhdGVJbmZvEg4KBmJv",
+            "dF9pZBgBIAEoCTLwBQoIQm90QWdlbnQSagoFTG9naW4SLy5UaWNrVHJhZGVy",
+            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTG9naW5SZXF1ZXN0GjAuVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ2luUmVzcG9uc2USfwoO",
+            "R2V0UGFja2FnZUxpc3QSNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuUGFja2FnZUxpc3RSZXF1ZXN0GjYuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlBhY2thZ2VMaXN0UmVzcG9uc2USfwoOR2V0QWNj",
+            "b3VudExpc3QSNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "QWNjb3VudExpc3RSZXF1ZXN0GjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkFjY291bnRMaXN0UmVzcG9uc2UScwoKR2V0Qm90TGlzdBIx",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RMaXN0UmVx",
+            "dWVzdBoyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RM",
+            "aXN0UmVzcG9uc2USgwEKElN1YnNjcmliZVRvVXBkYXRlcxI8LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TdWJzY3JpYmVUb1VwZGF0ZXNS",
+            "ZXF1ZXN0Gi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVw",
+            "ZGF0ZUluZm8wARJ7ChJHZXRBY2NvdW50TWV0YWRhdGESLS5UaWNrVHJhZGVy",
+            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRo2LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TWV0YWRhdGFJbmZv",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -103,12 +105,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse.Parser, new[]{ "Status", "Bots" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.Update), global::TickTrader.Algo.Protocol.Grpc.Lib.Update.Parser, new[]{ "Type", "Package", "Account", "AccountState", "Bot", "BotState" }, new[]{ "Update" }, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.Update.Types.UpdateType) }, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate.Parser, new[]{ "Package" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate.Parser, new[]{ "Account" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate.Parser, new[]{ "Account" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate), global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate.Parser, new[]{ "BotId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate.Parser, new[]{ "BotId" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Parser, new[]{ "Type", "Package", "Account", "AccountState", "Bot", "BotState" }, new[]{ "UpdateInfo" }, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Types.UpdateType) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo.Parser, new[]{ "Package" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo.Parser, new[]{ "Account" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo.Parser, new[]{ "Account" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo.Parser, new[]{ "BotId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo.Parser, new[]{ "BotId" }, null, null, null)
           }));
     }
     #endregion
@@ -1828,11 +1830,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class Update : pb::IMessage<Update> {
-    private static readonly pb::MessageParser<Update> _parser = new pb::MessageParser<Update>(() => new Update());
+  public sealed partial class UpdateInfo : pb::IMessage<UpdateInfo> {
+    private static readonly pb::MessageParser<UpdateInfo> _parser = new pb::MessageParser<UpdateInfo>(() => new UpdateInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<Update> Parser { get { return _parser; } }
+    public static pb::MessageParser<UpdateInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -1845,29 +1847,29 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Update() {
+    public UpdateInfo() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Update(Update other) : this() {
+    public UpdateInfo(UpdateInfo other) : this() {
       type_ = other.type_;
-      switch (other.UpdateCase) {
-        case UpdateOneofCase.Package:
+      switch (other.UpdateInfoCase) {
+        case UpdateInfoOneofCase.Package:
           Package = other.Package.Clone();
           break;
-        case UpdateOneofCase.Account:
+        case UpdateInfoOneofCase.Account:
           Account = other.Account.Clone();
           break;
-        case UpdateOneofCase.AccountState:
+        case UpdateInfoOneofCase.AccountState:
           AccountState = other.AccountState.Clone();
           break;
-        case UpdateOneofCase.Bot:
+        case UpdateInfoOneofCase.Bot:
           Bot = other.Bot.Clone();
           break;
-        case UpdateOneofCase.BotState:
+        case UpdateInfoOneofCase.BotState:
           BotState = other.BotState.Clone();
           break;
       }
@@ -1876,15 +1878,15 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Update Clone() {
-      return new Update(this);
+    public UpdateInfo Clone() {
+      return new UpdateInfo(this);
     }
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Update.Types.UpdateType type_ = 0;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Types.UpdateType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Update.Types.UpdateType Type {
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Types.UpdateType Type {
       get { return type_; }
       set {
         type_ = value;
@@ -1894,61 +1896,61 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     /// <summary>Field number for the "package" field.</summary>
     public const int PackageFieldNumber = 5;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate Package {
-      get { return updateCase_ == UpdateOneofCase.Package ? (global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate) update_ : null; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo Package {
+      get { return updateInfoCase_ == UpdateInfoOneofCase.Package ? (global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo) updateInfo_ : null; }
       set {
-        update_ = value;
-        updateCase_ = value == null ? UpdateOneofCase.None : UpdateOneofCase.Package;
+        updateInfo_ = value;
+        updateInfoCase_ = value == null ? UpdateInfoOneofCase.None : UpdateInfoOneofCase.Package;
       }
     }
 
     /// <summary>Field number for the "account" field.</summary>
     public const int AccountFieldNumber = 6;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate Account {
-      get { return updateCase_ == UpdateOneofCase.Account ? (global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate) update_ : null; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo Account {
+      get { return updateInfoCase_ == UpdateInfoOneofCase.Account ? (global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo) updateInfo_ : null; }
       set {
-        update_ = value;
-        updateCase_ = value == null ? UpdateOneofCase.None : UpdateOneofCase.Account;
+        updateInfo_ = value;
+        updateInfoCase_ = value == null ? UpdateInfoOneofCase.None : UpdateInfoOneofCase.Account;
       }
     }
 
     /// <summary>Field number for the "account_state" field.</summary>
     public const int AccountStateFieldNumber = 7;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate AccountState {
-      get { return updateCase_ == UpdateOneofCase.AccountState ? (global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate) update_ : null; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo AccountState {
+      get { return updateInfoCase_ == UpdateInfoOneofCase.AccountState ? (global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo) updateInfo_ : null; }
       set {
-        update_ = value;
-        updateCase_ = value == null ? UpdateOneofCase.None : UpdateOneofCase.AccountState;
+        updateInfo_ = value;
+        updateInfoCase_ = value == null ? UpdateInfoOneofCase.None : UpdateInfoOneofCase.AccountState;
       }
     }
 
     /// <summary>Field number for the "bot" field.</summary>
     public const int BotFieldNumber = 8;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate Bot {
-      get { return updateCase_ == UpdateOneofCase.Bot ? (global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate) update_ : null; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo Bot {
+      get { return updateInfoCase_ == UpdateInfoOneofCase.Bot ? (global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo) updateInfo_ : null; }
       set {
-        update_ = value;
-        updateCase_ = value == null ? UpdateOneofCase.None : UpdateOneofCase.Bot;
+        updateInfo_ = value;
+        updateInfoCase_ = value == null ? UpdateInfoOneofCase.None : UpdateInfoOneofCase.Bot;
       }
     }
 
     /// <summary>Field number for the "bot_state" field.</summary>
     public const int BotStateFieldNumber = 9;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate BotState {
-      get { return updateCase_ == UpdateOneofCase.BotState ? (global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate) update_ : null; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo BotState {
+      get { return updateInfoCase_ == UpdateInfoOneofCase.BotState ? (global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo) updateInfo_ : null; }
       set {
-        update_ = value;
-        updateCase_ = value == null ? UpdateOneofCase.None : UpdateOneofCase.BotState;
+        updateInfo_ = value;
+        updateInfoCase_ = value == null ? UpdateInfoOneofCase.None : UpdateInfoOneofCase.BotState;
       }
     }
 
-    private object update_;
-    /// <summary>Enum of possible cases for the "update" oneof.</summary>
-    public enum UpdateOneofCase {
+    private object updateInfo_;
+    /// <summary>Enum of possible cases for the "update_info" oneof.</summary>
+    public enum UpdateInfoOneofCase {
       None = 0,
       Package = 5,
       Account = 6,
@@ -1956,25 +1958,25 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       Bot = 8,
       BotState = 9,
     }
-    private UpdateOneofCase updateCase_ = UpdateOneofCase.None;
+    private UpdateInfoOneofCase updateInfoCase_ = UpdateInfoOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public UpdateOneofCase UpdateCase {
-      get { return updateCase_; }
+    public UpdateInfoOneofCase UpdateInfoCase {
+      get { return updateInfoCase_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearUpdate() {
-      updateCase_ = UpdateOneofCase.None;
-      update_ = null;
+    public void ClearUpdateInfo() {
+      updateInfoCase_ = UpdateInfoOneofCase.None;
+      updateInfo_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as Update);
+      return Equals(other as UpdateInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(Update other) {
+    public bool Equals(UpdateInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1987,7 +1989,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (!object.Equals(AccountState, other.AccountState)) return false;
       if (!object.Equals(Bot, other.Bot)) return false;
       if (!object.Equals(BotState, other.BotState)) return false;
-      if (UpdateCase != other.UpdateCase) return false;
+      if (UpdateInfoCase != other.UpdateInfoCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1995,12 +1997,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
-      if (updateCase_ == UpdateOneofCase.Package) hash ^= Package.GetHashCode();
-      if (updateCase_ == UpdateOneofCase.Account) hash ^= Account.GetHashCode();
-      if (updateCase_ == UpdateOneofCase.AccountState) hash ^= AccountState.GetHashCode();
-      if (updateCase_ == UpdateOneofCase.Bot) hash ^= Bot.GetHashCode();
-      if (updateCase_ == UpdateOneofCase.BotState) hash ^= BotState.GetHashCode();
-      hash ^= (int) updateCase_;
+      if (updateInfoCase_ == UpdateInfoOneofCase.Package) hash ^= Package.GetHashCode();
+      if (updateInfoCase_ == UpdateInfoOneofCase.Account) hash ^= Account.GetHashCode();
+      if (updateInfoCase_ == UpdateInfoOneofCase.AccountState) hash ^= AccountState.GetHashCode();
+      if (updateInfoCase_ == UpdateInfoOneofCase.Bot) hash ^= Bot.GetHashCode();
+      if (updateInfoCase_ == UpdateInfoOneofCase.BotState) hash ^= BotState.GetHashCode();
+      hash ^= (int) updateInfoCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2018,23 +2020,23 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
-      if (updateCase_ == UpdateOneofCase.Package) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.Package) {
         output.WriteRawTag(42);
         output.WriteMessage(Package);
       }
-      if (updateCase_ == UpdateOneofCase.Account) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.Account) {
         output.WriteRawTag(50);
         output.WriteMessage(Account);
       }
-      if (updateCase_ == UpdateOneofCase.AccountState) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.AccountState) {
         output.WriteRawTag(58);
         output.WriteMessage(AccountState);
       }
-      if (updateCase_ == UpdateOneofCase.Bot) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.Bot) {
         output.WriteRawTag(66);
         output.WriteMessage(Bot);
       }
-      if (updateCase_ == UpdateOneofCase.BotState) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.BotState) {
         output.WriteRawTag(74);
         output.WriteMessage(BotState);
       }
@@ -2049,19 +2051,19 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
-      if (updateCase_ == UpdateOneofCase.Package) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.Package) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Package);
       }
-      if (updateCase_ == UpdateOneofCase.Account) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.Account) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Account);
       }
-      if (updateCase_ == UpdateOneofCase.AccountState) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.AccountState) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(AccountState);
       }
-      if (updateCase_ == UpdateOneofCase.Bot) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.Bot) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Bot);
       }
-      if (updateCase_ == UpdateOneofCase.BotState) {
+      if (updateInfoCase_ == UpdateInfoOneofCase.BotState) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(BotState);
       }
       if (_unknownFields != null) {
@@ -2071,41 +2073,41 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(Update other) {
+    public void MergeFrom(UpdateInfo other) {
       if (other == null) {
         return;
       }
       if (other.Type != 0) {
         Type = other.Type;
       }
-      switch (other.UpdateCase) {
-        case UpdateOneofCase.Package:
+      switch (other.UpdateInfoCase) {
+        case UpdateInfoOneofCase.Package:
           if (Package == null) {
-            Package = new global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate();
+            Package = new global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo();
           }
           Package.MergeFrom(other.Package);
           break;
-        case UpdateOneofCase.Account:
+        case UpdateInfoOneofCase.Account:
           if (Account == null) {
-            Account = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate();
+            Account = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo();
           }
           Account.MergeFrom(other.Account);
           break;
-        case UpdateOneofCase.AccountState:
+        case UpdateInfoOneofCase.AccountState:
           if (AccountState == null) {
-            AccountState = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate();
+            AccountState = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo();
           }
           AccountState.MergeFrom(other.AccountState);
           break;
-        case UpdateOneofCase.Bot:
+        case UpdateInfoOneofCase.Bot:
           if (Bot == null) {
-            Bot = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate();
+            Bot = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo();
           }
           Bot.MergeFrom(other.Bot);
           break;
-        case UpdateOneofCase.BotState:
+        case UpdateInfoOneofCase.BotState:
           if (BotState == null) {
-            BotState = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate();
+            BotState = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo();
           }
           BotState.MergeFrom(other.BotState);
           break;
@@ -2123,12 +2125,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            type_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Update.Types.UpdateType) input.ReadEnum();
+            type_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Types.UpdateType) input.ReadEnum();
             break;
           }
           case 42: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdate();
-            if (updateCase_ == UpdateOneofCase.Package) {
+            global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo();
+            if (updateInfoCase_ == UpdateInfoOneofCase.Package) {
               subBuilder.MergeFrom(Package);
             }
             input.ReadMessage(subBuilder);
@@ -2136,8 +2138,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           }
           case 50: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdate();
-            if (updateCase_ == UpdateOneofCase.Account) {
+            global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountUpdateInfo();
+            if (updateInfoCase_ == UpdateInfoOneofCase.Account) {
               subBuilder.MergeFrom(Account);
             }
             input.ReadMessage(subBuilder);
@@ -2145,8 +2147,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           }
           case 58: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdate();
-            if (updateCase_ == UpdateOneofCase.AccountState) {
+            global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountStateUpdateInfo();
+            if (updateInfoCase_ == UpdateInfoOneofCase.AccountState) {
               subBuilder.MergeFrom(AccountState);
             }
             input.ReadMessage(subBuilder);
@@ -2154,8 +2156,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           }
           case 66: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdate();
-            if (updateCase_ == UpdateOneofCase.Bot) {
+            global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo();
+            if (updateInfoCase_ == UpdateInfoOneofCase.Bot) {
               subBuilder.MergeFrom(Bot);
             }
             input.ReadMessage(subBuilder);
@@ -2163,8 +2165,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           }
           case 74: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdate();
-            if (updateCase_ == UpdateOneofCase.BotState) {
+            global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo();
+            if (updateInfoCase_ == UpdateInfoOneofCase.BotState) {
               subBuilder.MergeFrom(BotState);
             }
             input.ReadMessage(subBuilder);
@@ -2176,7 +2178,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     #region Nested types
-    /// <summary>Container for nested types declared in the Update message type.</summary>
+    /// <summary>Container for nested types declared in the UpdateInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       public enum UpdateType {
@@ -2190,11 +2192,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class PackageUpdate : pb::IMessage<PackageUpdate> {
-    private static readonly pb::MessageParser<PackageUpdate> _parser = new pb::MessageParser<PackageUpdate>(() => new PackageUpdate());
+  public sealed partial class PackageUpdateInfo : pb::IMessage<PackageUpdateInfo> {
+    private static readonly pb::MessageParser<PackageUpdateInfo> _parser = new pb::MessageParser<PackageUpdateInfo>(() => new PackageUpdateInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<PackageUpdate> Parser { get { return _parser; } }
+    public static pb::MessageParser<PackageUpdateInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -2207,21 +2209,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public PackageUpdate() {
+    public PackageUpdateInfo() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public PackageUpdate(PackageUpdate other) : this() {
+    public PackageUpdateInfo(PackageUpdateInfo other) : this() {
       Package = other.package_ != null ? other.Package.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public PackageUpdate Clone() {
-      return new PackageUpdate(this);
+    public PackageUpdateInfo Clone() {
+      return new PackageUpdateInfo(this);
     }
 
     /// <summary>Field number for the "package" field.</summary>
@@ -2237,11 +2239,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as PackageUpdate);
+      return Equals(other as PackageUpdateInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(PackageUpdate other) {
+    public bool Equals(PackageUpdateInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2291,7 +2293,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(PackageUpdate other) {
+    public void MergeFrom(PackageUpdateInfo other) {
       if (other == null) {
         return;
       }
@@ -2325,11 +2327,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class AccountUpdate : pb::IMessage<AccountUpdate> {
-    private static readonly pb::MessageParser<AccountUpdate> _parser = new pb::MessageParser<AccountUpdate>(() => new AccountUpdate());
+  public sealed partial class AccountUpdateInfo : pb::IMessage<AccountUpdateInfo> {
+    private static readonly pb::MessageParser<AccountUpdateInfo> _parser = new pb::MessageParser<AccountUpdateInfo>(() => new AccountUpdateInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<AccountUpdate> Parser { get { return _parser; } }
+    public static pb::MessageParser<AccountUpdateInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -2342,21 +2344,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public AccountUpdate() {
+    public AccountUpdateInfo() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public AccountUpdate(AccountUpdate other) : this() {
+    public AccountUpdateInfo(AccountUpdateInfo other) : this() {
       Account = other.account_ != null ? other.Account.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public AccountUpdate Clone() {
-      return new AccountUpdate(this);
+    public AccountUpdateInfo Clone() {
+      return new AccountUpdateInfo(this);
     }
 
     /// <summary>Field number for the "account" field.</summary>
@@ -2372,11 +2374,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as AccountUpdate);
+      return Equals(other as AccountUpdateInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(AccountUpdate other) {
+    public bool Equals(AccountUpdateInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2426,7 +2428,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(AccountUpdate other) {
+    public void MergeFrom(AccountUpdateInfo other) {
       if (other == null) {
         return;
       }
@@ -2460,11 +2462,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class AccountStateUpdate : pb::IMessage<AccountStateUpdate> {
-    private static readonly pb::MessageParser<AccountStateUpdate> _parser = new pb::MessageParser<AccountStateUpdate>(() => new AccountStateUpdate());
+  public sealed partial class AccountStateUpdateInfo : pb::IMessage<AccountStateUpdateInfo> {
+    private static readonly pb::MessageParser<AccountStateUpdateInfo> _parser = new pb::MessageParser<AccountStateUpdateInfo>(() => new AccountStateUpdateInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<AccountStateUpdate> Parser { get { return _parser; } }
+    public static pb::MessageParser<AccountStateUpdateInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -2477,21 +2479,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public AccountStateUpdate() {
+    public AccountStateUpdateInfo() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public AccountStateUpdate(AccountStateUpdate other) : this() {
+    public AccountStateUpdateInfo(AccountStateUpdateInfo other) : this() {
       Account = other.account_ != null ? other.Account.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public AccountStateUpdate Clone() {
-      return new AccountStateUpdate(this);
+    public AccountStateUpdateInfo Clone() {
+      return new AccountStateUpdateInfo(this);
     }
 
     /// <summary>Field number for the "account" field.</summary>
@@ -2507,11 +2509,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as AccountStateUpdate);
+      return Equals(other as AccountStateUpdateInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(AccountStateUpdate other) {
+    public bool Equals(AccountStateUpdateInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2561,7 +2563,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(AccountStateUpdate other) {
+    public void MergeFrom(AccountStateUpdateInfo other) {
       if (other == null) {
         return;
       }
@@ -2595,11 +2597,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class BotUpdate : pb::IMessage<BotUpdate> {
-    private static readonly pb::MessageParser<BotUpdate> _parser = new pb::MessageParser<BotUpdate>(() => new BotUpdate());
+  public sealed partial class BotUpdateInfo : pb::IMessage<BotUpdateInfo> {
+    private static readonly pb::MessageParser<BotUpdateInfo> _parser = new pb::MessageParser<BotUpdateInfo>(() => new BotUpdateInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<BotUpdate> Parser { get { return _parser; } }
+    public static pb::MessageParser<BotUpdateInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -2612,21 +2614,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public BotUpdate() {
+    public BotUpdateInfo() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public BotUpdate(BotUpdate other) : this() {
+    public BotUpdateInfo(BotUpdateInfo other) : this() {
       botId_ = other.botId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public BotUpdate Clone() {
-      return new BotUpdate(this);
+    public BotUpdateInfo Clone() {
+      return new BotUpdateInfo(this);
     }
 
     /// <summary>Field number for the "bot_id" field.</summary>
@@ -2642,11 +2644,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as BotUpdate);
+      return Equals(other as BotUpdateInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(BotUpdate other) {
+    public bool Equals(BotUpdateInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2696,7 +2698,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(BotUpdate other) {
+    public void MergeFrom(BotUpdateInfo other) {
       if (other == null) {
         return;
       }
@@ -2724,11 +2726,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class BotStateUpdate : pb::IMessage<BotStateUpdate> {
-    private static readonly pb::MessageParser<BotStateUpdate> _parser = new pb::MessageParser<BotStateUpdate>(() => new BotStateUpdate());
+  public sealed partial class BotStateUpdateInfo : pb::IMessage<BotStateUpdateInfo> {
+    private static readonly pb::MessageParser<BotStateUpdateInfo> _parser = new pb::MessageParser<BotStateUpdateInfo>(() => new BotStateUpdateInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<BotStateUpdate> Parser { get { return _parser; } }
+    public static pb::MessageParser<BotStateUpdateInfo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -2741,21 +2743,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public BotStateUpdate() {
+    public BotStateUpdateInfo() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public BotStateUpdate(BotStateUpdate other) : this() {
+    public BotStateUpdateInfo(BotStateUpdateInfo other) : this() {
       botId_ = other.botId_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public BotStateUpdate Clone() {
-      return new BotStateUpdate(this);
+    public BotStateUpdateInfo Clone() {
+      return new BotStateUpdateInfo(this);
     }
 
     /// <summary>Field number for the "bot_id" field.</summary>
@@ -2771,11 +2773,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as BotStateUpdate);
+      return Equals(other as BotStateUpdateInfo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(BotStateUpdate other) {
+    public bool Equals(BotStateUpdateInfo other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2825,7 +2827,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(BotStateUpdate other) {
+    public void MergeFrom(BotStateUpdateInfo other) {
       if (other == null) {
         return;
       }

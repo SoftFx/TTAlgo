@@ -787,5 +787,21 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #endregion metadata.proto
+
+
+        public static Lib.UpdateInfo.Types.UpdateType Convert(UpdateType type)
+        {
+            switch (type)
+            {
+                case UpdateType.Added:
+                    return Lib.UpdateInfo.Types.UpdateType.Added;
+                case UpdateType.Updated:
+                    return Lib.UpdateInfo.Types.UpdateType.Updated;
+                case UpdateType.Removed:
+                    return Lib.UpdateInfo.Types.UpdateType.Removed;
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }

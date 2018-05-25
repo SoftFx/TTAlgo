@@ -6,20 +6,20 @@ namespace TickTrader.BotTerminal
 {
     internal class BABotViewModel : PropertyChangedBase
     {
-        private BotModelEntity _entity;
+        private string _entity;
 
 
-        public string InstanceId => _entity.InstanceId;
+        public string InstanceId => _entity;//.InstanceId;
 
-        public BotState State => _entity.State;
+        //public BotState State => _entity.State;
 
         public string AccountKey { get; }
 
 
-        public BABotViewModel(BotModelEntity entity, BotAgentModel botAgent)
+        public BABotViewModel(string entity, BotAgentModel botAgent)
         {
             _entity = entity;
-            AccountKey = BotAgentModel.GetAccountKey(_entity.Account);
+            //AccountKey = BotAgentModel.GetAccountKey(_entity.Account);
 
             botAgent.BotStateChanged += BotAgentOnBotStateChanged;
         }
@@ -27,9 +27,9 @@ namespace TickTrader.BotTerminal
 
         private void BotAgentOnBotStateChanged(string instanceId)
         {
-            if (instanceId == _entity.InstanceId)
+            if (instanceId == _entity)//.InstanceId)
             {
-                NotifyOfPropertyChange(nameof(State));
+                //NotifyOfPropertyChange(nameof(State));
             }
         }
     }

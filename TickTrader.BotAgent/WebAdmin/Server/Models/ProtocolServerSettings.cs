@@ -1,5 +1,5 @@
 ﻿using System.Security.Cryptography.X509Certificates;
-using TickTrader.Algo.Protocol.Sfx;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {

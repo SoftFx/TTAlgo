@@ -3,7 +3,7 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TickTrader.Algo.Protocol.Sfx;
+using TickTrader.Algo.Protocol;
 using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
@@ -47,7 +47,7 @@ namespace TickTrader.BotTerminal
             Creds = botAgentCreds;
 
             BotAgent = new BotAgentModel();
-            _protocolClient = new ProtocolClient(BotAgent);
+            _protocolClient = new Algo.Protocol.Grpc.GrpcClient(BotAgent);
 
             _protocolClient.Connected += ClientOnConnected;
             _protocolClient.Disconnected += ClientOnDisconnected;

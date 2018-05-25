@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
@@ -8,7 +9,7 @@ namespace TickTrader.BotTerminal
     {
         private string _server;
         private IVarSet<string, BABotViewModel> _bots;
-        private IVarSet<string, BAAccountViewModel> _accounts;
+        private IVarSet<AccountKey, BAAccountViewModel> _accounts;
 
 
         public BotAgentConnectionManager Connection { get; }

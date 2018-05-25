@@ -97,6 +97,7 @@
     <Compile Include="Fdk.Serializers\ISerializer.cs" />
     <Compile Include="Fdk.Serializers\TextSerializer.cs" />
     <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
+    <Compile Include="Info\UpdateInfo.cs" />
     <Compile Include="Info\InfoExtensions.cs" />
     <Compile Include="Info\Keys\PackageKey.cs" />
     <Compile Include="Info\PackageInfo.cs" />

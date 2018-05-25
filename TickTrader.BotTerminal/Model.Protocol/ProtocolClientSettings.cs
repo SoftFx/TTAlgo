@@ -1,4 +1,4 @@
-﻿using TickTrader.Algo.Protocol.Sfx;
+﻿using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {

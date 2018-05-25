@@ -14,7 +14,7 @@ service BotAgent
 	rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
 	rpc GetAccountList(AccountListRequest) returns (AccountListResponse);
 	rpc GetBotList(BotListRequest) returns (BotListResponse);
-	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream Update);
+	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
 
 	rpc GetAccountMetadata(AccountKey) returns (AccountMetadataInfo);
 }
@@ -102,7 +102,7 @@ message SubscribeToUpdatesRequest
 {
 }
 
-message Update
+message UpdateInfo
 {
 	enum UpdateType
 	{
@@ -112,37 +112,37 @@ message Update
 	}
 
 	UpdateType type = 1;
-	oneof update
+	oneof update_info
 	{
-		PackageUpdate package = 5;
-		AccountUpdate account = 6;
-		AccountStateUpdate account_state = 7;
-		BotUpdate bot = 8;
-		BotStateUpdate bot_state = 9;
+		PackageUpdateInfo package = 5;
+		AccountUpdateInfo account = 6;
+		AccountStateUpdateInfo account_state = 7;
+		BotUpdateInfo bot = 8;
+		BotStateUpdateInfo bot_state = 9;
 	}
 }
 
-message PackageUpdate
+message PackageUpdateInfo
 {
 	PackageInfo package = 1;
 }
 
-message AccountUpdate
+message AccountUpdateInfo
 {
 	AccountKey account = 1;
 }
 
-message AccountStateUpdate
+message AccountStateUpdateInfo
 {
 	AccountKey account = 1;
 }
 
-message BotUpdate
+message BotUpdateInfo
 {
 	string bot_id = 1;
 }
 
-message BotStateUpdate
+message BotStateUpdateInfo
 {
 	string bot_id = 1;
 }

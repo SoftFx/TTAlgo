@@ -1,23 +1,25 @@
 ﻿using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Protocol.Sfx;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
     internal class BotAgentModel : IBotAgentClient
     {
         private ISyncContext _syncContext;
-        private VarDictionary<string, AccountModelEntity> _accounts;
-        private VarDictionary<string, BotModelEntity> _bots;
-        private VarDictionary<string, PackageModelEntity> _packages;
+        private VarDictionary<PackageKey, PackageInfo> _packages;
+        private VarDictionary<AccountKey, AccountKey> _accounts;
+        private VarDictionary<string, string> _bots;
 
 
-        public IVarSet<string, AccountModelEntity> Accounts => _accounts;
+        public IVarSet<PackageKey, PackageInfo> Packages => _packages;
 
-        public IVarSet<string, BotModelEntity> Bots => _bots;
+        public IVarSet<AccountKey, AccountKey> Accounts => _accounts;
 
-        public IVarSet<string, PackageModelEntity> Packages => _packages;
+        public IVarSet<string, string> Bots => _bots;
 
 
         public Action<string> BotStateChanged = delegate { };
@@ -29,21 +31,21 @@ namespace TickTrader.BotTerminal
         {
             _syncContext = new DispatcherSync();
 
-            _accounts = new VarDictionary<string, AccountModelEntity>();
-            _bots = new VarDictionary<string, BotModelEntity>();
-            _packages = new VarDictionary<string, PackageModelEntity>();
+            _packages = new VarDictionary<PackageKey, PackageInfo>();
+            _accounts = new VarDictionary<AccountKey, AccountKey>();
+            _bots = new VarDictionary<string, string>();
         }
 
 
-        public static string GetAccountKey(AccountModelEntity account)
+        public static string GetAccountKey(AccountKey account)
         {
             return GetAccountKey(account.Server, account.Login);
         }
 
-        public static string GetAccountKey(AccountKeyEntity accountKey)
-        {
-            return GetAccountKey(accountKey.Server, accountKey.Login);
-        }
+        //public static string GetAccountKey(AccountKeyEntity accountKey)
+        //{
+        //    return GetAccountKey(accountKey.Server, accountKey.Login);
+        //}
 
         public static string GetAccountKey(string server, string login)
         {
@@ -64,125 +66,124 @@ namespace TickTrader.BotTerminal
 
         #region IBotAgentClient implementation
 
-        public void InitAccountList(AccountListReportEntity report)
-        {
-            _syncContext.Invoke(() =>
-            {
-                _accounts.Clear();
-                foreach (var acc in report.Accounts)
-                {
-                    _accounts.Add(GetAccountKey(acc), acc);
-                }
-            });
-        }
-
-        public void InitBotList(BotListReportEntity report)
-        {
-            _syncContext.Invoke(() =>
-            {
-                _bots.Clear();
-                foreach (var bot in report.Bots)
-                {
-                    _bots.Add(bot.InstanceId, bot);
-                }
-            });
-        }
-
-        public void InitPackageList(PackageListReportEntity report)
+        public void InitPackageList(List<PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
             {
                 _packages.Clear();
-                foreach (var package in report.Packages)
+                foreach (var package in packages)
                 {
-                    _packages.Add(package.Name, package);
+                    _packages.Add(package.Key, package);
                 }
             });
         }
 
-        public void UpdateAccount(AccountModelUpdateEntity update)
+        public void InitAccountList(List<AccountKey> accounts)
         {
             _syncContext.Invoke(() =>
             {
-                var acc = update.Item;
-                var key = GetAccountKey(acc);
+                _accounts.Clear();
+                foreach (var acc in accounts)
+                {
+                    _accounts.Add(acc, acc);
+                }
+            });
+        }
+
+        public void InitBotList(List<string> bots)
+        {
+            _syncContext.Invoke(() =>
+            {
+                _bots.Clear();
+                foreach (var bot in bots)
+                {
+                    _bots.Add(bot, bot);
+                }
+            });
+        }
+
+        public void UpdatePackage(UpdateInfo<PackageInfo> update)
+        {
+            _syncContext.Invoke(() =>
+            {
+                var package = update.Value;
                 switch (update.Type)
                 {
                     case UpdateType.Added:
                     case UpdateType.Updated:
-                        _accounts[key] = acc;
+                        _packages[package.Key] = package;
                         break;
                     case UpdateType.Removed:
-                        if (_accounts.ContainsKey(key))
-                            _accounts.Remove(key);
+                        if (_packages.ContainsKey(package.Key))
+                            _packages.Remove(package.Key);
                         break;
                 }
             });
         }
 
-        public void UpdateBot(BotModelUpdateEntity update)
+        public void UpdateAccount(UpdateInfo<AccountKey> update)
         {
             _syncContext.Invoke(() =>
             {
-                var bot = update.Item;
+                var acc = update.Value;
                 switch (update.Type)
                 {
                     case UpdateType.Added:
                     case UpdateType.Updated:
-                        _bots[bot.InstanceId] = bot;
+                        _accounts[acc] = acc;
                         break;
                     case UpdateType.Removed:
-                        if (_bots.ContainsKey(bot.InstanceId))
-                            _bots.Remove(bot.InstanceId);
+                        if (_accounts.ContainsKey(acc))
+                            _accounts.Remove(acc);
                         break;
                 }
             });
         }
 
-        public void UpdatePackage(PackageModelUpdateEntity update)
+        public void UpdateBot(UpdateInfo<string> update)
         {
             _syncContext.Invoke(() =>
             {
-                var package = update.Item;
+                var bot = update.Value;
                 switch (update.Type)
                 {
                     case UpdateType.Added:
                     case UpdateType.Updated:
-                        _packages[package.Name] = package;
+                        _bots[bot] = bot;
                         break;
                     case UpdateType.Removed:
-                        if (_packages.ContainsKey(package.Name))
-                            _packages.Remove(package.Name);
+                        if (_bots.ContainsKey(bot))
+                            _bots.Remove(bot);
                         break;
                 }
             });
         }
 
-        public void UpdateBotState(BotStateUpdateEntity update)
-        {
-            _syncContext.Invoke(() =>
-            {
-                if (_bots.ContainsKey(update.BotId))
-                {
-                    _bots[update.BotId].State = update.State;
-                    BotStateChanged(update.BotId);
-                }
-            });
-        }
+        //public void UpdateBotState(BotStateUpdateEntity update)
+        //{
+        //    _syncContext.Invoke(() =>
+        //    {
+        //        if (_bots.ContainsKey(update.BotId))
+        //        {
+        //            _bots[update.BotId].State = update.State;
+        //            BotStateChanged(update.BotId);
+        //        }
+        //    });
+        //}
 
-        public void UpdateAccountState(AccountStateUpdateEntity update)
-        {
-            _syncContext.Invoke(() =>
-            {
-                var key = GetAccountKey(update.Account);
-                if (_accounts.ContainsKey(key))
-                {
-                    _accounts[key].ConnectionState = update.ConnectionState;
-                    _accounts[key].LastError = update.LastError;
-                    AccountStateChanged(key);
-                }
-            });
-        }
+        //public void UpdateAccountState(AccountStateUpdateEntity update)
+        //{
+        //    _syncContext.Invoke(() =>
+        //    {
+        //        var key = GetAccountKey(update.Account);
+        //        if (_accounts.ContainsKey(key))
+        //        {
+        //            _accounts[key].ConnectionState = update.ConnectionState;
+        //            _accounts[key].LastError = update.LastError;
+        //            AccountStateChanged(key);
+        //        }
+        //    });
+        //}
 
         #endregion
     }
