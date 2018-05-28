@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using ActorSharp;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model
 {

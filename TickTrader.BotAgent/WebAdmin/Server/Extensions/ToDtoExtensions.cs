@@ -7,9 +7,8 @@ using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Core;
 using System.Reflection;
-using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -24,7 +23,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             nDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
         }
 
-        public static AccountInfoDto ToDto(this TradeMetadataInfo info)
+        public static AccountInfoDto ToDto(this AccountMetadataInfo info)
         {
             return new AccountInfoDto
             {
@@ -32,18 +31,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotDto ToDto(this TradeBotInfo bot)
+        public static TradeBotDto ToDto(this BotModelInfo bot)
         {
             return new TradeBotDto()
             {
-                Id = bot.Id,
+                Id = bot.InstanceId,
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
-                PackageName = bot.Config.Plugin.PackageName,
+                PackageName = bot.Config.Key.PackageName,
                 BotName = bot.BotName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
-                Permissions = bot.Config.PluginConfig.Permissions.ToDto(),
+                Permissions = bot.Config.Permissions.ToDto(),
             };
         }
 
@@ -80,13 +79,13 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotConfigDto ToConfigDto(this TradeBotInfo bot)
+        public static TradeBotConfigDto ToConfigDto(this BotModelInfo bot)
         {
             var pluginDescriptor = bot.Metadata;
             var config = new TradeBotConfigDto()
             {
-                Symbol = bot.Config.PluginConfig.MainSymbol,
-                Parameters = bot.Config.PluginConfig.Properties.Select(p =>
+                Symbol = bot.Config.MainSymbol,
+                Parameters = bot.Config.Properties.Select(p =>
                      new ParameterDto()
                      {
                          Id = p.Id,
@@ -97,14 +96,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return config;
         }
 
-        public static PackageDto ToDto(this PackageInfo model)
+        public static PackageDto ToDto(this PackageInfo package)
         {
             return new PackageDto()
             {
-                Name = model.Name,
-                Created = model.Created,
-                Plugins = model.GetPluginsByType(AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
-                IsValid = model.IsValid
+                Name = package.Key.Name,
+                Created = package.CreatedUtc.ToLocalTime(),
+                Plugins = package.GetPluginsByType(AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
+                IsValid = package.IsValid
             };
         }
 
@@ -120,11 +119,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static BotStateDto ToBotStateDto(this TradeBotInfo bot)
+        public static BotStateDto ToBotStateDto(this BotModelInfo bot)
         {
             return new BotStateDto
             {
-                Id = bot.Id,
+                Id = bot.InstanceId,
                 State = bot.State.ToString(),
                 FaultMessage = bot.FaultMessage
             };
@@ -141,14 +140,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static AccountDto ToDto(this AccountInfo account)
+        public static AccountDto ToDto(this AccountModelInfo account)
         {
             return new AccountDto()
             {
                 Server = account.Server,
                 Login = account.Login,
                 LastConnectionStatus = ConnectionErrorCodes.None,
-                UseNewProtocol = account.UseSfxProtocol
+                UseNewProtocol = account.UseNewProtocol,
             };
         }
 

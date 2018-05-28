@@ -1,20 +1,18 @@
 ﻿using ActorSharp;
 using NLog;
 using System;
-using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.Extensions;
-using TickTrader.BotAgent.Infrastructure;
-using AlgoCommon = TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -34,19 +32,13 @@ namespace TickTrader.BotAgent.BA.Models
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
-        public TradeBotModel(TradeBotConfig config)
+        public TradeBotModel(PluginConfig config)
         {
-            Config = config.PluginConfig;
-            PackageName = config.Plugin.PackageName;
-            Descriptor = config.Plugin.DescriptorId;
+            Config = config;
         }
 
         [DataMember(Name = "configuration")]
-        public AlgoCommon.PluginConfig Config { get; private set; }
-        [DataMember(Name = "package")]
-        public string PackageName { get; private set; }
-        [DataMember(Name = "descriptor")]
-        public string Descriptor { get; private set; }
+        public PluginConfig Config { get; private set; }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
 
@@ -59,9 +51,8 @@ namespace TickTrader.BotAgent.BA.Models
         public string FaultMessage { get; private set; }
         public AccountKey Account => _client.GetKey();
         public Ref<BotLog> LogRef => _botLog.Ref;
-        public string BotName => _ref?.DisplayName;
+        public string BotName => _ref?.Metadata.Descriptor.UiDisplayName;
         public AlgoPluginRef AlgoRef => _ref;
-        public PluginKey PluginId => new PluginKey(PackageName, Descriptor);
 
         public IAlgoData AlgoData => _algoData;
 
@@ -96,7 +87,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (IsStopped())
             {
-                Config = config.PluginConfig;
+                Config = config;
                 ConfigurationChanged?.Invoke(this);
             }
             else
@@ -214,7 +205,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 executor = _ref.CreateExecutor();
 
-                if (!(Config is AlgoCommon.TradeBotConfig))
+                if (!(Config is TradeBotConfig))
                     throw new Exception("Unsupported configuration!");
 
                 var setupModel = new TradeBotSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());

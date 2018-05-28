@@ -9,7 +9,8 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.BA.Models;
 using System.Net;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
@@ -198,16 +199,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             try
             {
                 var pluginCfg = setup.Parse();
-                var accountKey = new AccountKey(setup.Account.Login, setup.Account.Server);
+                var accountKey = new AccountKey(setup.Account.Server, setup.Account.Login);
 
-                var config = new TradeBotConfig
-                {
-                    Plugin = new PluginKey(setup.PackageName, setup.PluginId),
-                    PluginConfig = pluginCfg,
-                };
+                pluginCfg.Key = new PluginKey(setup.PackageName, RepositoryLocation.LocalRepository, setup.PluginId);
 
-                var tradeBot = _botAgent.AddBot(accountKey, config);
-                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.Id));
+                var tradeBot = _botAgent.AddBot(accountKey, pluginCfg);
+                setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));
 
                 return Ok(tradeBot.ToDto());
             }
@@ -226,13 +223,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var botId = WebUtility.UrlDecode(id);
 
                 var pluginCfg = setup.Parse();
-                var config = new TradeBotConfig
-                {
-                    PluginConfig = pluginCfg,
-                };
-                config.PluginConfig.InstanceId = botId;
+                pluginCfg.InstanceId = botId;
 
-                _botAgent.ChangeBotConfig(botId, config);
+                _botAgent.ChangeBotConfig(botId, pluginCfg);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(botId));
 
                 return Ok();

@@ -4,24 +4,14 @@ using TickTrader.BotAgent.WebAdmin;
 using Microsoft.Extensions.Configuration;
 using TickTrader.BotAgent.BA.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TickTrader.BotAgent.BA;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Common.Model.Config;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
-using System.Security.Cryptography.X509Certificates;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.BotAgent.Extensions;
 using NLog;
-using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.BotAgent.BA.Entities;
 using System.Globalization;
 
 namespace TickTrader.BotAgent

@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -8,14 +7,11 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.BA.Exceptions;
-using TickTrader.BotAgent.Infrastructure;
-using TickTrader.BotAgent.Extensions;
-using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Core;
 using Machinarium.Qnil;
-using TickTrader.BotAgent.BA.Entities;
 using NLog;
 using ActorSharp.Lib;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -135,14 +131,14 @@ namespace TickTrader.BotAgent.BA.Models
         [DataMember(Name = "useNewProtocol")]
         public bool UseNewProtocol { get; private set; }
 
-        public async Task<TradeMetadataInfo> GetMetadata()
+        public async Task<AccountMetadataInfo> GetMetadata()
         {
             using (await _requestGate.Enter())
             {
                 if (_lastError.Code != ConnectionErrorCodes.None)
                     throw new CommunicationException("Connection error! Code: " + _lastError.Code, _lastError.Code);
 
-                return new TradeMetadataInfo(await _core.GetAccountType(), await _core.GetSymbols(), await _core.GetCurrecnies());
+                return new AccountMetadataInfo(GetKey(), (await _core.GetSymbols()).Select(s => new SymbolInfo(s.Name)).ToList());
             }
 
             //if (ConnectionState == ConnectionStates.Online)
@@ -161,7 +157,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public AccountKey GetKey()
         {
-            return new AccountKey(Username, Address);
+            return new AccountKey(Address, Username);
         }
 
         public PluginFeedProvider CreatePluginFeedAdapter()
@@ -373,7 +369,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             CheckInitialized();
 
-            var algoKey = config.Plugin;
+            var algoKey = config.Key;
 
             var package = _packageProvider.Get(algoKey.PackageName);
 

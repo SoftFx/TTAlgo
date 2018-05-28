@@ -7,7 +7,6 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
-using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
@@ -23,8 +22,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         private ServerCredentials _serverCreds;
 
 
-        public event Action<UpdateInfo<Algo.Common.Info.PackageInfo>> PackageUpdated = delegate { };
-        public event Action<UpdateInfo<Algo.Common.Info.AccountKey>> AccountUpdated = delegate { };
+        public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
+        public event Action<UpdateInfo<AccountKey>> AccountUpdated = delegate { };
         public event Action<UpdateInfo<string>> BotUpdated = delegate { };
         //public event Action<BotStateUpdateEntity> BotStateUpdated = delegate { };
         //public event Action<AccountStateUpdateEntity> AccountStateUpdated = delegate { };
@@ -51,10 +50,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _serverCreds.Login == login && _serverCreds.Password == password;
         }
 
-        public List<Algo.Common.Info.AccountKey> GetAccountList()
+        public List<AccountKey> GetAccountList()
         {
             return _botAgent.GetAccounts().Select(
-                    acc => new Algo.Common.Info.AccountKey
+                    acc => new AccountKey
                     {
                         Login = acc.Login,
                         Server = acc.Server,
@@ -71,7 +70,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public List<string> GetBotList()
         {
             return _botAgent.GetTradeBots().Select(
-                    bot => bot.Id
+                    bot => bot.InstanceId
                     //new BotModelEntity
                     //{
                     //InstanceId = bot.Id,
@@ -82,44 +81,36 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     ).ToList();
         }
 
-        public List<Algo.Common.Info.PackageInfo> GetPackageList()
+        public List<PackageInfo> GetPackageList()
         {
-            return _botAgent.GetPackages().Select(
-                    package => new Algo.Common.Info.PackageInfo
-                    {
-                        Key = new PackageKey(package.Name, Algo.Core.Repository.RepositoryLocation.LocalRepository),
-                        CreatedUtc = package.Created.ToUniversalTime(),
-                        Plugins = new List<Algo.Common.Info.PluginInfo>(),
-                            //package.Plugins.Select(
-                            //plugin => new PluginInfoEntity
-                            //{
-                            //    Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
-                            //    Descriptor = new PluginDescriptorEntity
-                            //    {
-                            //        ApiVersion = plugin.Descriptor.ApiVersionStr,
-                            //        Id = plugin.Descriptor.Id,
-                            //        DisplayName = plugin.Descriptor.UiDisplayName,
-                            //        UserDisplayName = plugin.Descriptor.DisplayName,
-                            //        Category = plugin.Descriptor.Category,
-                            //        Copyright = plugin.Descriptor.Copyright,
-                            //        Description = plugin.Descriptor.Description,
-                            //        Type = ToProtocol.Convert(plugin.Descriptor.Type),
-                            //        Version = plugin.Descriptor.Version,
-                            //    },
-                            //}).ToList(),
-                    }).ToList();
+            return _botAgent.GetPackages();
         }
 
 
-        private void OnAccountChanged(AccountInfo account, ChangeAction action)
+        private UpdateType Convert(ChangeAction action)
+        {
+            switch (action)
+            {
+                case ChangeAction.Added:
+                    return UpdateType.Added;
+                case ChangeAction.Modified:
+                    return UpdateType.Updated;
+                case ChangeAction.Removed:
+                    return UpdateType.Removed;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        private void OnAccountChanged(AccountModelInfo account, ChangeAction action)
         {
             try
             {
-                AccountUpdated(new UpdateInfo<Algo.Common.Info.AccountKey>
+                AccountUpdated(new UpdateInfo<AccountKey>
                 {
                     //Type = ToProtocol.Convert(action),
-                    Type = UpdateType.Added,
-                    Value = new Algo.Common.Info.AccountKey
+                    Type = Convert(action),
+                    Value = new AccountKey
                     {
                         Login = account.Login,
                         Server = account.Server,
@@ -139,14 +130,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotChanged(TradeBotInfo bot, ChangeAction action)
+        private void OnBotChanged(BotModelInfo bot, ChangeAction action)
         {
             try
             {
                 BotUpdated(new UpdateInfo<string>
                 {
-                    Type = UpdateType.Added,
-                    Value = bot.Id,
+                    Type = Convert(action),
+                    Value = bot.InstanceId,
                     //new TradeBotInfo
                     //{
                     //    InstanceId = bot.Id,
@@ -163,36 +154,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnPackageChanged(BA.Entities.PackageInfo package, ChangeAction action)
+        private void OnPackageChanged(PackageInfo package, ChangeAction action)
         {
             try
             {
-                PackageUpdated(new UpdateInfo<Algo.Common.Info.PackageInfo>
+                PackageUpdated(new UpdateInfo<PackageInfo>
                 {
-                    Type = UpdateType.Added,
-                    Value = new Algo.Common.Info.PackageInfo
-                    {
-                        Key = new PackageKey(package.Name, Algo.Core.Repository.RepositoryLocation.LocalRepository),
-                        CreatedUtc = package.Created.ToUniversalTime(),
-                        Plugins = new List<Algo.Common.Info.PluginInfo>(),
-                        //package.Plugins.Select(
-                        //    plugin => new PluginInfoEntity
-                        //    {
-                        //        Key = new PluginKeyEntity { DescriptorId = plugin.Id.DescriptorId, PackageName = plugin.Id.PackageName },
-                        //        Descriptor = new PluginDescriptorEntity
-                        //        {
-                        //            ApiVersion = plugin.Descriptor.ApiVersionStr,
-                        //            Id = plugin.Descriptor.Id,
-                        //            DisplayName = plugin.Descriptor.UiDisplayName,
-                        //            UserDisplayName = plugin.Descriptor.DisplayName,
-                        //            Category = plugin.Descriptor.Category,
-                        //            Copyright = plugin.Descriptor.Copyright,
-                        //            Description = plugin.Descriptor.Description,
-                        //            Type = ToProtocol.Convert(plugin.Descriptor.Type),
-                        //            Version = plugin.Descriptor.Version,
-                        //        },
-                        //    }).ToArray(),
-                    }
+                    Type = Convert(action),
+                    Value = package,
                 });
             }
             catch (Exception ex)
@@ -201,7 +170,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnBotStateChanged(TradeBotInfo bot)
+        private void OnBotStateChanged(BotModelInfo bot)
         {
             try
             {
@@ -217,7 +186,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             }
         }
 
-        private void OnAccountStateChanged(AccountInfo account)
+        private void OnAccountStateChanged(AccountModelInfo account)
         {
             try
             {

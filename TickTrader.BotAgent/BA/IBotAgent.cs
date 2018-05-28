@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.BotAgent.BA.Entities;
 using TickTrader.BotAgent.BA.Models;
 
 namespace TickTrader.BotAgent.BA
@@ -22,25 +22,25 @@ namespace TickTrader.BotAgent.BA
         
         // -------- Account Management --------
 
-        List<AccountInfo> GetAccounts();
+        List<AccountModelInfo> GetAccounts();
         void AddAccount(AccountKey key, string password, bool useNewProtocol);
         void RemoveAccount(AccountKey key);
         void ChangeAccountPassword(AccountKey key, string password);
         void ChangeAccountProtocol(AccountKey key);
-        ConnectionErrorCodes GetAccountMetadata(AccountKey key, out TradeMetadataInfo info);
+        ConnectionErrorCodes GetAccountMetadata(AccountKey key, out AccountMetadataInfo info);
         ConnectionErrorInfo TestAccount(AccountKey accountId);
         ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol);
 
-        event Action<AccountInfo, ChangeAction> AccountChanged;
-        event Action<AccountInfo> AccountStateChanged;
+        event Action<AccountModelInfo, ChangeAction> AccountChanged;
+        event Action<AccountModelInfo> AccountStateChanged;
 
         // -------- Bot Management --------
 
-        List<TradeBotInfo> GetTradeBots();
-        TradeBotInfo GetBotInfo(string botId);
+        List<BotModelInfo> GetTradeBots();
+        BotModelInfo GetBotInfo(string botId);
         IAlgoData GetAlgoData(string botId);
         string GenerateBotId(string botDisplayName);
-        TradeBotInfo AddBot(AccountKey accountId, TradeBotConfig config);
+        BotModelInfo AddBot(AccountKey accountId, TradeBotConfig config);
         void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
         void ChangeBotConfig(string botId, TradeBotConfig newConfig);
         void StartBot(string botId);
@@ -48,8 +48,8 @@ namespace TickTrader.BotAgent.BA
         void AbortBot(string botId);
         IBotLog GetBotLog(string botId);
 
-        event Action<TradeBotInfo, ChangeAction> BotChanged;
-        event Action<TradeBotInfo> BotStateChanged;
+        event Action<BotModelInfo, ChangeAction> BotChanged;
+        event Action<BotModelInfo> BotStateChanged;
 
         // -------- Server Management --------
 
@@ -57,9 +57,6 @@ namespace TickTrader.BotAgent.BA
 
         Task ShutdownAsync();
     }
-
-    public enum ConnectionStates { Offline, Connecting, Online, Disconnecting }
-    public enum BotStates { Offline, Starting, Faulted, Online, Stopping, Broken, Reconnecting }
 
     public interface IAlgoData
     {

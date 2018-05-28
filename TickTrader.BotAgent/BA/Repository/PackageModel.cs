@@ -4,8 +4,6 @@ using System.Linq;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
-using TickTrader.BotAgent.BA.Entities;
-using TickTrader.BotAgent.BA.Repository;
 
 namespace TickTrader.BotAgent.BA.Repository
 {

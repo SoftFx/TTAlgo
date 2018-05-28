@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
 using TickTrader.FDK.Common;
@@ -27,10 +28,10 @@ namespace TickTrader.Algo.Common.Model
             client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
 
             client.CurrencyListResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.CurrencyListErrorEvent += (c, d, ex) => SetFailed<CurrencyInfo[]>(d, ex);
+            client.CurrencyListErrorEvent += (c, d, ex) => SetFailed<FDK2.CurrencyInfo[]>(d, ex);
 
             client.SymbolListResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.SymbolListErrorEvent += (c, d, ex) => SetFailed<SymbolInfo[]>(d, ex);
+            client.SymbolListErrorEvent += (c, d, ex) => SetFailed<FDK2.SymbolInfo[]>(d, ex);
 
             client.SubscribeQuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
             client.SubscribeQuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
@@ -53,16 +54,16 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<CurrencyInfo[]> GetCurrencyListAsync(this FDK.QuoteFeed.Client client)
+        public static Task<FDK2.CurrencyInfo[]> GetCurrencyListAsync(this FDK.QuoteFeed.Client client)
         {
-            var taskSrc = new TaskCompletionSource<CurrencyInfo[]>();
+            var taskSrc = new TaskCompletionSource<FDK2.CurrencyInfo[]>();
             client.GetCurrencyListAsync(taskSrc);
             return taskSrc.Task;
         }
 
-        public static Task<SymbolInfo[]> GetSymbolListAsync(this FDK.QuoteFeed.Client client)
+        public static Task<FDK2.SymbolInfo[]> GetSymbolListAsync(this FDK.QuoteFeed.Client client)
         {
-            var taskSrc = new TaskCompletionSource<SymbolInfo[]>();
+            var taskSrc = new TaskCompletionSource<FDK2.SymbolInfo[]>();
             client.GetSymbolListAsync(taskSrc);
             return taskSrc.Task;
         }

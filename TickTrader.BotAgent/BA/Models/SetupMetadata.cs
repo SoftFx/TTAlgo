@@ -5,7 +5,6 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotAgent.BA.Models
@@ -29,9 +28,9 @@ namespace TickTrader.BotAgent.BA.Models
         public string Name { get; set; }
 
 
-        public StubSymbolInfo(SymbolEntity symbolEntity)
+        public StubSymbolInfo(SymbolInfo symbolInfo)
         {
-            Name = symbolEntity.Name;
+            Name = symbolInfo.Name;
         }
     }
 
@@ -45,7 +44,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public IPluginIdProvider IdProvider { get; }
 
-        public SetupMetadata(IEnumerable<SymbolEntity> symbols)
+        public SetupMetadata(IEnumerable<SymbolInfo> symbols)
         {
             //Extentions = new ExtCollection();
             Symbols = symbols.Select(s => new StubSymbolInfo(s)).ToList();

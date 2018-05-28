@@ -5,9 +5,8 @@ using TickTrader.BotAgent.BA.Models;
 using System;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -70,7 +69,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return app;
         }
 
-        private static void OnBotChaged(TradeBotInfo bot, ChangeAction action)
+        private static void OnBotChaged(BotModelInfo bot, ChangeAction action)
         {
             switch (action)
             {
@@ -78,7 +77,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     Hub.Clients.All.AddBot(bot.ToDto());
                     break;
                 case ChangeAction.Removed:
-                    Hub.Clients.All.DeleteBot(bot.Id);
+                    Hub.Clients.All.DeleteBot(bot.InstanceId);
                     break;
                 case ChangeAction.Modified:
                     Hub.Clients.All.UpdateBot(bot.ToDto());
@@ -86,12 +85,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        private static void OnBotStateChanged(TradeBotInfo bot)
+        private static void OnBotStateChanged(BotModelInfo bot)
         {
             Hub.Clients.All.ChangeBotState(bot.ToBotStateDto());
         }
 
-        private static void OnAccountChanged(AccountInfo account, ChangeAction action)
+        private static void OnAccountChanged(AccountModelInfo account, ChangeAction action)
         {
             switch (action)
             {
@@ -113,7 +112,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     Hub.Clients.All.AddOrUpdatePackage(package.ToDto());
                     break;
                 case ChangeAction.Removed:
-                    Hub.Clients.All.DeletePackage(package.Name);
+                    Hub.Clients.All.DeletePackage(package.Key.Name);
                     break;
             }
         }

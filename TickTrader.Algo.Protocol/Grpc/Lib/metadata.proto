@@ -4,6 +4,7 @@ package TickTrader.Algo.Protocol.Grpc.Lib;
 
 import "google_protos/timestamp.proto";
 import "descriptors.proto";
+import "config.proto"
 
 message AccountKey
 {
@@ -120,4 +121,63 @@ message SetupMetadataInfo
 {
 	ApiMetadataInfo api = 1;
 	MappingCollectionInfo mappings = 2;
+}
+
+message ConnectionErrorInfo
+{
+	enum ConnectionErrorCode
+	{
+		NONE = 0;
+		UNKNOWN_CONNNECTION_ERROR = 1;
+		NETWORK_ERROR = 2;
+		TIMEOUT = 3;
+		BLOCKED_ACCOUNT = 4;
+		CLIENT_INITIATED = 5;
+		INVALID_CREDENTIALS = 6;
+		SLOW_CONNECTION = 7;
+		SERVER_ERROR = 8;
+		LOGIN_DELETED = 9;
+		SERVER_LOGOUT = 10;
+		CANCELED = 11;
+		REJECTED_BY_SERVER = 12;
+	}
+
+	ConnectionErrorCode error_code = 1;
+	string text_message = 2;
+}
+
+message AccountModelInfo
+{
+	enum ConnectionState
+	{
+		OFFLINE = 0;
+		CONNECTING = 1;
+		ONLINE = 2;
+		DISCONNECTING = 3;
+	}
+
+	AccountKey key = 1;
+	bool use_new_protocol = 2;
+	ConnectionState connection_state = 3;
+	ConnectionErrorInfo last_error = 4;
+}
+
+message BotModelInfo
+{
+	enum BotState
+	{
+		OFFLINE = 0;
+		STARTING = 1;
+		FAULTED = 2;
+		ONLINE = 3;
+		STOPPING = 4;
+		BROKEN = 5;
+		RECONNECTING = 6;
+	}
+
+	string instance_id = 1;
+	AccountKey account = 2;
+	PluginKey plugin = 3;
+	BotState state = 4;
+	string fault_message = 5;
 }

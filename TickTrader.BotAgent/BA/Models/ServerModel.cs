@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model.Interop;
 using ActorSharp;
-using TickTrader.BotAgent.BA.Entities;
 using NLog;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -79,19 +79,19 @@ namespace TickTrader.BotAgent.BA.Models
             public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActor(a => a.AddAccount(key, password, useNewProtocol));
             public void ChangeAccountPassword(AccountKey key, string password) => CallActor(a => a.ChangeAccountPassword(key, password));
             public void ChangeAccountProtocol(AccountKey key) => CallActor(a => a.ChangeAccountProtocol(key));
-            public List<AccountInfo> GetAccounts() => CallActor(a => a._accounts.GetInfoCopy());
+            public List<AccountModelInfo> GetAccounts() => CallActor(a => a._accounts.GetInfoCopy());
             public void RemoveAccount(AccountKey key) => CallActor(a => a.RemoveAccount(key));
             public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActor(a => a.GetAccountOrThrow(accountId).TestConnection());
             public ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol) => CallActor(a => a.TestCreds(login, password, server, useNewProtocol));
 
-            public event Action<AccountInfo, ChangeAction> AccountChanged
+            public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActor(a => a.AccountChanged += value);
                 remove => CallActor(a => a.AccountChanged -= value);
             }
 
-            public event Action<AccountInfo> AccountStateChanged
+            public event Action<AccountModelInfo> AccountStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActor(a => a.AccountStateChanged += value);
@@ -103,14 +103,14 @@ namespace TickTrader.BotAgent.BA.Models
             #region Bot Management
 
             public string GenerateBotId(string botDisplayName) => CallActor(a => a.AutogenerateBotId(botDisplayName));
-            public TradeBotInfo AddBot(AccountKey accountId, TradeBotConfig config) => CallActor(a => a.AddBot(accountId, config));
+            public BotModelInfo AddBot(AccountKey accountId, TradeBotConfig config) => CallActor(a => a.AddBot(accountId, config));
             public void ChangeBotConfig(string botId, TradeBotConfig config) => CallActor(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
             public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActor(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
             public void StartBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Start());
             public Task StopBotAsync(string botId) => CallActor(a => a.GetBotOrThrow(botId).StopAsync());
             public void AbortBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Abort());
-            public TradeBotInfo GetBotInfo(string botId) => CallActor(a => a.GetBotOrThrow(botId).GetInfoCopy());
-            public List<TradeBotInfo> GetTradeBots() => CallActor(a => a._allBots.Values.GetInfoCopy());
+            public BotModelInfo GetBotInfo(string botId) => CallActor(a => a.GetBotOrThrow(botId).GetInfoCopy());
+            public List<BotModelInfo> GetTradeBots() => CallActor(a => a._allBots.Values.GetInfoCopy());
             public IAlgoData GetAlgoData(string botId) => CallActor(a => a.GetBotOrThrow(botId).AlgoData);
 
             public IBotLog GetBotLog(string botId)
@@ -119,21 +119,21 @@ namespace TickTrader.BotAgent.BA.Models
                 return new BotLog.Handler(logRef);
             }
 
-            public ConnectionErrorCodes GetAccountMetadata(AccountKey key, out TradeMetadataInfo info)
+            public ConnectionErrorCodes GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
             {
                 var result = CallActor(a => a.GetAccountMetadata(key));
                 info = result.Item2;
                 return result.Item1;
             }
 
-            public event Action<TradeBotInfo, ChangeAction> BotChanged
+            public event Action<BotModelInfo, ChangeAction> BotChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActor(a => a.BotChanged += value);
                 remove => CallActor(a => a.BotChanged -= value);
             }
 
-            public event Action<TradeBotInfo> BotStateChanged
+            public event Action<BotModelInfo> BotStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActor(a => a.BotStateChanged += value);
@@ -147,8 +147,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Account management
 
-        public event Action<AccountInfo, ChangeAction> AccountChanged;
-        public event Action<AccountInfo> AccountStateChanged;
+        public event Action<AccountModelInfo, ChangeAction> AccountChanged;
+        public event Action<AccountModelInfo> AccountStateChanged;
 
         public async Task<ConnectionErrorInfo> TestCreds(string login, string password, string server, bool useNewProtocol)
         {
@@ -166,7 +166,7 @@ namespace TickTrader.BotAgent.BA.Models
             return testResult;
         }
 
-        private async Task<Tuple<ConnectionErrorCodes, TradeMetadataInfo>> GetAccountMetadata(AccountKey key)
+        private async Task<Tuple<ConnectionErrorCodes, AccountMetadataInfo>> GetAccountMetadata(AccountKey key)
         {
             try
             {
@@ -175,7 +175,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
             catch (CommunicationException ex)
             {
-                return Tuple.Create(ex.FdkCode, (TradeMetadataInfo)null);
+                return Tuple.Create(ex.FdkCode, (AccountMetadataInfo)null);
             }
         }
 
@@ -325,10 +325,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Bot management
 
-        private event Action<TradeBotInfo, ChangeAction> BotChanged;
-        private event Action<TradeBotInfo> BotStateChanged;
+        private event Action<BotModelInfo, ChangeAction> BotChanged;
+        private event Action<BotModelInfo> BotStateChanged;
 
-        private TradeBotInfo AddBot(AccountKey account, TradeBotConfig config)
+        private BotModelInfo AddBot(AccountKey account, TradeBotConfig config)
         {
             var bot = GetAccountOrThrow(account).AddBot(config);
             return bot.GetInfoCopy();

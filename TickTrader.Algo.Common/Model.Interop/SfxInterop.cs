@@ -16,6 +16,7 @@ using BO = TickTrader.BusinessObjects;
 using TickTrader.FDK.QuoteStore;
 using TickTrader.FDK.TradeCapture;
 using ActorSharp;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -495,7 +496,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Convertors
 
-        private static SymbolEntity Convert(SymbolInfo info)
+        private static SymbolEntity Convert(SFX.SymbolInfo info)
         {
             return new SymbolEntity(info.Name)
             {
@@ -592,7 +593,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static CurrencyEntity Convert(CurrencyInfo info)
+        private static CurrencyEntity Convert(SFX.CurrencyInfo info)
         {
             return new CurrencyEntity(info.Name)
             {

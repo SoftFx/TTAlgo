@@ -34,7 +34,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        public static PluginConfig Parse(this PluginSetupDto setup)
+        public static TradeBotConfig Parse(this PluginSetupDto setup)
         {
             var botConfig = new TradeBotConfig()
             {

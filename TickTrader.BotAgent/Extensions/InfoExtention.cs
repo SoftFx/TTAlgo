@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Common.Info;
 using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.BA.Repository;
 
@@ -20,41 +19,37 @@ namespace TickTrader.BotAgent.Extensions
             return storage.Packages.Select(GetInfoCopy).ToList();
         }
 
-        public static AccountInfo GetInfoCopy(this ClientModel acc)
+        public static AccountModelInfo GetInfoCopy(this ClientModel acc)
         {
-            return new AccountInfo(acc.Address, acc.Username, acc.UseNewProtocol);
+            return new AccountModelInfo
+            {
+                Server = acc.Address,
+                Login = acc.Username,
+                UseNewProtocol = acc.UseNewProtocol,
+                ConnectionState = acc.ConnectionState,
+                LastError = acc.LastError,
+            };
         }
 
-        public static List<AccountInfo> GetInfoCopy(this IEnumerable<ClientModel> accList)
+        public static List<AccountModelInfo> GetInfoCopy(this IEnumerable<ClientModel> accList)
         {
             return accList.Select(GetInfoCopy).ToList();
         }
 
-        public static List<TradeBotInfo> GetInfoCopy(this IEnumerable<TradeBotModel> botList)
+        public static List<BotModelInfo> GetInfoCopy(this IEnumerable<TradeBotModel> botList)
         {
             return botList.Select(GetInfoCopy).ToList();
         }
 
-        public static TradeBotInfo GetInfoCopy(this TradeBotModel model)
+        public static BotModelInfo GetInfoCopy(this TradeBotModel model)
         {
-            return new TradeBotInfo()
+            return new BotModelInfo()
             {
+                InstanceId = model.Id,
                 Account = model.Account,
-                BotName = model.BotName,
-                Id = model.Id,
+                Config = model.Config,
                 State = model.State,
-                Config = model.GetConfigInfo(),
-                Metadata = model.AlgoRef?.Metadata,
                 FaultMessage = model.FaultMessage
-            };
-        }
-
-        public static TradeBotConfig GetConfigInfo(this TradeBotModel model)
-        {
-            return new TradeBotConfig()
-            {
-                Plugin = model.PluginId,
-                PluginConfig = model.Config
             };
         }
     }

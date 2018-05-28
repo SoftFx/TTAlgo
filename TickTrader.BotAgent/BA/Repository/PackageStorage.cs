@@ -1,15 +1,12 @@
-﻿using Microsoft.Extensions.Options;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Reflection;
 using TickTrader.Algo.Core;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.BotAgent.BA.Models;
-using System.Threading;
 using System.Collections.Generic;
 using System;
 using TickTrader.BotAgent.BA.Exceptions;
-using TickTrader.BotAgent.BA.Entities;
 using NLog;
 
 namespace TickTrader.BotAgent.BA.Repository
