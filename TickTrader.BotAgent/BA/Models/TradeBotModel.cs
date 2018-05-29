@@ -46,7 +46,7 @@ namespace TickTrader.BotAgent.BA.Models
         public string Id => Config.InstanceId;
         public PluginPermissions Permissions => Config.Permissions;
         public BotStates State { get; private set; }
-        public PackageModel Package { get; private set; }
+        public AlgoPackageRef Package { get; private set; }
         public Exception Fault { get; private set; }
         public string FaultMessage { get; private set; }
         public AccountKey Account => _client.GetKey();
@@ -331,7 +331,7 @@ namespace TickTrader.BotAgent.BA.Models
                 ChangeState(BotStates.Offline, null);
         }
 
-        private void _packageRepo_PackageChanged(PackageModel pckg, ChangeAction action)
+        private void _packageRepo_PackageChanged(PackageInfo pckg, ChangeAction action)
         {
             if (pckg.NameEquals(PackageName))
                 UpdatePackage();

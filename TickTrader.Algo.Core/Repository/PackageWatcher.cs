@@ -1,11 +1,8 @@
 ﻿using Machinarium.State;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
@@ -97,7 +94,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private void Load(string filePath)
         {
-            AlgoPackageRef newPackage = null;
+            var retry = false;
 
             try
             {
@@ -114,42 +111,59 @@ namespace TickTrader.Algo.Core.Repository
 
                     if (!skipFileScan)
                     {
-                        var oldPackage = PackageRef;
-                        var container = PluginContainer.Load(filePath, _logger);
-                        newPackage = new IsolatedAlgoPackageRef(FileName, Location, info.LastWriteTimeUtc, container);
+                        PackageRef?.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
+                        var container = LoadContainer(filePath, out retry);
+                        PackageRef = new IsolatedAlgoPackageRef(FileName, Location, info.LastWriteTimeUtc, container);
                         _currentFileInfo = info;
                         _logger.Info("Loaded package " + FileName);
-                        PackageRef = newPackage;
-                        if (oldPackage != null)
-                        {
-                            Updated?.Invoke(newPackage);
-                            oldPackage.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
-                        }
                     }
-                }
-
-                _stateControl.PushEvent(Events.DoneLoad);
-            }
-            catch (IOException ioEx)
-            {
-                newPackage?.Dispose();
-
-                if (ioEx.IsLockExcpetion())
-                {
-                    _logger?.Debug("File is locked: " + FileName);
-                    _stateControl.PushEvent(Events.DoneLoadRetry); // File is in use. We should retry loading.
-                }
-                else
-                {
-                    _logger?.Info("Cannot open file: " + FileName + " " + ioEx.Message);
-                    _stateControl.PushEvent(Events.DoneLoad); // other errors
                 }
             }
             catch (Exception ex)
             {
-                newPackage?.Dispose();
+                _logger?.Error($"Failed to update package {FileName} at {Location}", ex);
+                PackageRef = new AlgoPackageRef(FileName, Location, DateTime.UtcNow, null);
+            }
+
+            OnPackageUpdated();
+            _stateControl.PushEvent(retry ? Events.DoneLoadRetry : Events.DoneLoad);
+        }
+
+        private PluginContainer LoadContainer(string filePath, out bool retry)
+        {
+            retry = false;
+            try
+            {
+                return PluginContainer.Load(filePath, _logger);
+            }
+            catch (IOException ioEx)
+            {
+                if (ioEx.IsLockExcpetion())
+                {
+                    _logger?.Debug("File is locked: " + FileName);
+                    retry = true; // File is in use. We should retry loading.
+                }
+                else
+                {
+                    _logger?.Info("Cannot open file: " + FileName + " " + ioEx.Message); // other errors
+                }
+            }
+            catch (Exception ex)
+            {
                 _logger?.Info("Cannot open file: " + FileName + " " + ex.Message);
-                _stateControl.PushEvent(Events.DoneLoad);
+            }
+            return null;
+        }
+
+        private void OnPackageUpdated()
+        {
+            try
+            {
+                Updated?.Invoke(PackageRef);
+            }
+            catch(Exception ex)
+            {
+                _logger?.Error($"Failed to send update events for package {FileName} at {Location}", ex);
             }
         }
     }

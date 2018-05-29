@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
                     try
                     {
-                        var pacakge = _botAgent.UpdatePackage(fileContent, file.FileName);
+                        _botAgent.UpdatePackage(fileContent, file.FileName);
                     }
                     catch (BAException dsex)
                     {

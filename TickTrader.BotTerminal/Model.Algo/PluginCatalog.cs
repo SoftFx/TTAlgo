@@ -40,49 +40,29 @@ namespace TickTrader.BotTerminal
             Indicators = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Indicator);
             BotTraders = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Robot);
 
-            _algoLibrary.PluginAdded += LibraryOnPluginAdded;
-            _algoLibrary.PluginReplaced += LibraryOnPluginReplaced;
-            _algoLibrary.PluginRemoved += LibraryOnPluginRemoved;
+            _algoLibrary.PluginUpdated += LibraryOnPluginUpdated;
         }
 
 
-        private void LibraryOnPluginAdded(PluginInfo plugin)
+        private void LibraryOnPluginUpdated(UpdateInfo<PluginInfo> update)
         {
             Execute.OnUIThread(() =>
             {
                 try
                 {
-                    _plugins.Add(plugin.Key, plugin);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex);
-                }
-            });
-        }
-
-        private void LibraryOnPluginReplaced(PluginInfo plugin)
-        {
-            Execute.OnUIThread(() =>
-            {
-                try
-                {
-                    _plugins[plugin.Key] = plugin;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex);
-                }
-            });
-        }
-
-        private void LibraryOnPluginRemoved(PluginInfo plugin)
-        {
-            Execute.OnUIThread(() =>
-            {
-                try
-                {
-                    _plugins.Remove(plugin.Key);
+                    var plugin = update.Value;
+                    switch (update.Type)
+                    {
+                        case UpdateType.Added:
+                            _plugins.Add(plugin.Key, plugin);
+                            break;
+                        case UpdateType.Replaced:
+                            _plugins[plugin.Key] = plugin;
+                            break;
+                        case UpdateType.Removed:
+                            _plugins.Remove(plugin.Key);
+                            break;
+                    }
                 }
                 catch (Exception ex)
                 {

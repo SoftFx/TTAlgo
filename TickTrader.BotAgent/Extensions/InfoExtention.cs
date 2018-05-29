@@ -9,14 +9,9 @@ namespace TickTrader.BotAgent.Extensions
 {
     public static class InfoExtention
     {
-        public static PackageInfo GetInfoCopy(this PackageModel package)
-        {
-            return new PackageInfo(package.Name, package.Created, package.IsValid, package.GetPlugins());
-        }
-
         public static List<PackageInfo> GetInfo(this PackageStorage storage)
         {
-            return storage.Packages.Select(GetInfoCopy).ToList();
+            return storage.Library.GetPackages().ToList();
         }
 
         public static AccountModelInfo GetInfoCopy(this ClientModel acc)
@@ -51,6 +46,21 @@ namespace TickTrader.BotAgent.Extensions
                 State = model.State,
                 FaultMessage = model.FaultMessage
             };
+        }
+
+        public static ChangeAction Convert(this UpdateType updateType)
+        {
+            switch (updateType)
+            {
+                case UpdateType.Added:
+                    return ChangeAction.Added;
+                case UpdateType.Replaced:
+                    return ChangeAction.Modified;
+                case UpdateType.Removed:
+                    return ChangeAction.Removed;
+                default:
+                    throw new ArgumentException();
+            }
         }
     }
 }

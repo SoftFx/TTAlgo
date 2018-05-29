@@ -1,13 +1,15 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Reflection;
 using TickTrader.Algo.Core;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.BotAgent.BA.Models;
-using System.Collections.Generic;
 using System;
 using TickTrader.BotAgent.BA.Exceptions;
 using NLog;
+using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Library;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.BA.Repository
 {
@@ -15,135 +17,93 @@ namespace TickTrader.BotAgent.BA.Repository
     {
         private static ILogger _logger = LogManager.GetLogger(nameof(ServerModel));
 
-        private readonly string packageTemplate = "*.ttalgo";
+
         private readonly string _storageDir;
-        private readonly Dictionary<string, PackageModel> _packages;
+
+        private ReductionCollection _reductions;
+
+
+        public LocalAlgoLibrary Library { get; }
+
+        public MappingCollection Mappings { get; }
+
+
+        public event Action<PackageInfo, ChangeAction> PackageChanged;
+
 
         public PackageStorage()
         {
             _storageDir = GetFullPathToStorage("AlgoRepository/");
-            _packages = new Dictionary<string, PackageModel>();
-
-            EnsureStorageDirectoryCreated();
-            InitStorage();
-        }
-
-        public IEnumerable<PackageModel> Packages => _packages.Values;
-
-        private void InitStorage()
-        {
-            var storageDir = new DirectoryInfo(_storageDir);
-            var files = storageDir.GetFiles(packageTemplate);
-            files.AsParallel().ForAll(f =>
-            {
-                var package = ReadPackage(f);
-                lock (_packages)
-                    _packages.Add(GetPackageKey(package.Name), package);
-            });
-        }
-
-        public PackageModel Update(byte[] packageContent, string packageName)
-        {
-            //Validate(packageName);
 
             EnsureStorageDirectoryCreated();
 
-            var key = GetPackageKey(packageName);
-            var existing = _packages.GetOrDefault(key);
-            if (existing != null)
+            Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"));
+            Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, _storageDir);
+            Library.PackageUpdated += LibraryOnPackageUpdated;
+
+            _reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
+            _reductions.AddAssembly("TickTrader.Algo.Ext");
+            Mappings = new MappingCollection(_reductions);
+        }
+
+
+        public static PackageKey GetPackageKey(string packageName)
+        {
+            return new PackageKey(packageName.ToLower(), RepositoryLocation.LocalRepository);
+        }
+
+
+        public void Update(byte[] packageContent, string packageName)
+        {
+            EnsureStorageDirectoryCreated();
+
+            var packageRef = Library.GetPackageRef(GetPackageKey(packageName));
+            if (packageRef != null)
             {
-                if (existing.IsLocked)
+                if (packageRef.IsLocked)
                     throw new PackageLockedException($"Cannot update package '{packageName}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
 
-                RemovePackage(existing);
+                RemovePackage(packageRef);
             }
 
-            var packageFileInfo = SavePackage(packageName, packageContent);
-            var package = ReadPackage(packageFileInfo);
-            _packages.Add(key, package);
-
-            if (existing == null)
-                PackageChanged?.Invoke(package, ChangeAction.Added);
-            else
-                PackageChanged?.Invoke(package, ChangeAction.Modified);
-
-            return package;
+            SavePackage(packageName, packageContent);
         }
 
-        public PackageModel Get(string name)
+        public AlgoPackageRef Get(string packageName)
         {
-            return GetByName(name);
-        }
-
-        public void Replace()
-        {
+            return Library.GetPackageRef(GetPackageKey(packageName));
         }
 
         public void Remove(string packageName)
         {
-            PackageModel package;
-            if (_packages.TryGetValue(GetPackageKey(packageName), out package))
+            var packageRef = Library.GetPackageRef(GetPackageKey(packageName));
+            if (packageRef != null)
             {
-                RemovePackage(package);
-                PackageChanged?.Invoke(package, ChangeAction.Removed);
+                RemovePackage(packageRef);
             }
         }
 
-        public event Action<PackageModel, ChangeAction> PackageChanged;
 
         #region Private Methods
-        private bool TryDisposePackage(PackageModel package)
-        {
-            try
-            {
-                package.Dispose();
-                return true;
-            }
-            catch
-            {
-                _logger.Warn($"Error disposing package '{package.Name}'");
-                return false;
-            }
-        }
 
-        private static void CheckLock(PackageModel package)
+        private static void CheckLock(AlgoPackageRef package)
         {
             if (package.IsLocked)
                 throw new PackageLockedException("Cannot remove package: one or more trade robots from this package is being executed! Please stop all robots and try again!");
         }
 
-        private PackageModel GetByName(string name)
-        {
-            return _packages.GetOrDefault(GetPackageKey(name));
-        }
-
-        public static string GetPackageKey(string packageName)
-        {
-            return packageName.ToLower();
-        }
-
-        private void RemovePackage(PackageModel package)
+        private void RemovePackage(AlgoPackageRef package)
         {
             CheckLock(package);
 
             try
             {
                 File.Delete(Path.Combine(_storageDir, package.Name));
-                _packages.Remove(GetPackageKey(package.Name));
             }
             catch
             {
                 _logger.Warn($"Error deleting file package '{package.Name}'");
                 throw;
-            }
-
-            try
-            {
-                package.Dispose();
-            }
-            catch
-            {
-                _logger.Warn($"Error disposing package '{package.Name}'");
             }
         }
 
@@ -166,33 +126,23 @@ namespace TickTrader.BotAgent.BA.Repository
             return Path.Combine(_storageDir, fileName);
         }
 
-        private PackageModel ReadPackage(FileInfo fileInfo)
+        private void SavePackage(string packageName, byte[] packageContent)
         {
             try
             {
-                var container = PluginContainer.Load(fileInfo.FullName);
-                return new PackageModel(fileInfo.Name, fileInfo.LastWriteTime, container);
+                File.WriteAllBytes(GetFullPathToPackage(packageName), packageContent);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.Error($"Failed to read package {fileInfo.Name}: {ex}");
-
-                return new PackageModel(fileInfo.Name, fileInfo.LastWriteTime, null);
+                _logger.Warn($"Error saving file package '{packageName}'");
+                throw;
             }
         }
 
-        private FileInfo SavePackage(string packageName, byte[] packageContent)
+        private void LibraryOnPackageUpdated(UpdateInfo<PackageInfo> update)
         {
-            var packagePath = GetFullPathToPackage(packageName);
-            File.WriteAllBytes(packagePath, packageContent);
-            return new FileInfo(packagePath);
+            PackageChanged?.Invoke(update.Value, update.Type.Convert());
         }
-
-        //private void Validate(string packageName)
-        //{
-        //    if (_packages.ContainsKey(GetPackageKey(packageName)))
-        //        throw new DuplicatePackageException($"Package with the same name '{packageName}' already exists");
-        //}
 
         #endregion
     }

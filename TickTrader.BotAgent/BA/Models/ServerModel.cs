@@ -44,7 +44,7 @@ namespace TickTrader.BotAgent.BA.Models
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
 
-            _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p.GetInfoCopy(), a);
+            _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
             foreach (var acc in _accounts)
                 await InitAccount(acc);
         }
@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.BA.Models
             #region Repository Management
 
             public List<PackageInfo> GetPackages() => CallActor(a => a._packageStorage.GetInfo());
-            public PackageInfo UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
+            public void UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
             public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
             public List<PluginInfo> GetAllPlugins() => throw new NotImplementedException();
             public List<PluginInfo> GetPluginsByType(AlgoTypes type) => throw new NotImplementedException();
@@ -411,9 +411,9 @@ namespace TickTrader.BotAgent.BA.Models
 
         private event Action<PackageInfo, ChangeAction> PackageChanged;
 
-        private PackageInfo UpdatePackage(byte[] fileContent, string fileName)
+        private void UpdatePackage(byte[] fileContent, string fileName)
         {
-            return _packageStorage.Update(fileContent, fileName).GetInfoCopy();
+            _packageStorage.Update(fileContent, fileName);
         }
 
         private void RemovePackage(string package)
@@ -435,16 +435,12 @@ namespace TickTrader.BotAgent.BA.Models
 
         private PluginInfo[] GetAllPlugins()
         {
-            return _packageStorage.Packages
-                .SelectMany(p => p.GetPlugins())
-                .ToArray();
+            return _packageStorage.Library.GetPlugins().ToArray();
         }
 
         private PluginInfo[] GetPluginsByType(AlgoTypes type)
         {
-            return _packageStorage.Packages
-            .SelectMany(p => p.GetPluginsByType(type))
-            .ToArray();
+            return _packageStorage.Library.GetPlugins(type).ToArray();
         }
 
         #endregion

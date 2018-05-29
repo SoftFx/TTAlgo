@@ -94,7 +94,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 case ChangeAction.Added:
                     return UpdateType.Added;
                 case ChangeAction.Modified:
-                    return UpdateType.Updated;
+                    return UpdateType.Replaced;
                 case ChangeAction.Removed:
                     return UpdateType.Removed;
                 default:

@@ -3,7 +3,7 @@
     public enum UpdateType
     {
         Added = 0,
-        Updated = 1,
+        Replaced = 1,
         Removed = 2,
     }
 

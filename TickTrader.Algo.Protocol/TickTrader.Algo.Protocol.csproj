@@ -64,6 +64,7 @@
     <Compile Include="Grpc\Lib\BotAgentGrpc.cs" />
     <Compile Include="Grpc\Lib\Config.cs" />
     <Compile Include="Grpc\Lib\Descriptors.cs" />
+    <Compile Include="Grpc\Lib\Keys.cs" />
     <Compile Include="Grpc\Lib\Metadata.cs" />
     <Compile Include="Grpc\ToAlgo.cs" />
     <Compile Include="Grpc\ToGrpc.cs" />
@@ -145,6 +146,7 @@
     <None Include="Grpc\Lib\bot_agent.proto" />
     <None Include="Grpc\Lib\config.proto" />
     <None Include="Grpc\Lib\descriptors.proto" />
+    <None Include="Grpc\Lib\keys.proto" />
     <None Include="Grpc\Lib\metadata.proto" />
     <None Include="Grpc\Lib\rebuild.grpc.cmd" />
     <None Include="Sfx\Lib\BotAgent.net" />

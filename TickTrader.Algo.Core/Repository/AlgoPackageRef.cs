@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public DateTime CreatedUtc { get; }
 
-        public virtual bool IsValid => true;
+        public virtual bool IsValid => _plugins != null;
 
         public virtual bool IsLocked => true;
 
@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Core.Repository
 
 
         public event Action<AlgoPackageRef> IsLockedChanged;
+        public event Action<AlgoPackageRef> IsObsoleteChanged;
 
 
         protected AlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc)
@@ -72,15 +73,25 @@ namespace TickTrader.Algo.Core.Repository
             IsObsolete = true;
             if (!IsLocked)
                 Dispose();
+
+            OnObsoleteChanged();
         }
 
 
-        internal virtual void Dispose() { }
+        internal virtual void Dispose()
+        {
+            _plugins = null;
+        }
 
 
         protected void OnLockedChanged()
         {
             IsLockedChanged?.Invoke(this);
+        }
+
+        protected void OnObsoleteChanged()
+        {
+            IsObsoleteChanged?.Invoke(this);
         }
 
 
@@ -96,7 +107,7 @@ namespace TickTrader.Algo.Core.Repository
         private int _refCount;
 
 
-        public PluginContainer Container { get; }
+        public PluginContainer Container { get; private set; }
 
         public override bool IsValid => Container != null;
 
@@ -134,9 +145,10 @@ namespace TickTrader.Algo.Core.Repository
             _refCount--;
             if (_refCount == 0)
             {
-                OnLockedChanged();
                 if (IsObsolete)
                     Dispose();
+
+                OnLockedChanged();
             }
         }
 
@@ -144,6 +156,7 @@ namespace TickTrader.Algo.Core.Repository
         internal override void Dispose()
         {
             Container?.Dispose();
+            Container = null;
         }
     }
 }

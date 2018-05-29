@@ -110,7 +110,7 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateType.Added:
-                    case UpdateType.Updated:
+                    case UpdateType.Replaced:
                         _packages[package.Key] = package;
                         break;
                     case UpdateType.Removed:
@@ -129,7 +129,7 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateType.Added:
-                    case UpdateType.Updated:
+                    case UpdateType.Replaced:
                         _accounts[acc] = acc;
                         break;
                     case UpdateType.Removed:
@@ -148,7 +148,7 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateType.Added:
-                    case UpdateType.Updated:
+                    case UpdateType.Replaced:
                         _bots[bot] = bot;
                         break;
                     case UpdateType.Removed:

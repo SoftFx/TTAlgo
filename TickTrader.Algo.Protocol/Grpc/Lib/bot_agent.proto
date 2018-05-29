@@ -4,6 +4,7 @@ package TickTrader.Algo.Protocol.Grpc.Lib;
 
 // current version 1.0, syncronize with VersionSpec.cs
 
+import "keys.proto";
 import "metadata.proto";
 import "config.proto";
 
@@ -107,7 +108,7 @@ message UpdateInfo
 	enum UpdateType
 	{
 	    ADDED = 0;
-	    UPDATED = 1;
+	    REPLACED = 1;
 	    REMOVED = 2;
 	}
 

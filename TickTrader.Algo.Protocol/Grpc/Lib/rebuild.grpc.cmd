@@ -11,7 +11,7 @@ if exist BotAgentGrpc.cs del BotAgentGrpc.cs
 
 if exist %COMPILER% (
 	%COMPILER% --version
-	%COMPILER% --proto_path=./ --csharp_out=./  descriptors.proto config.proto metadata.proto
+	%COMPILER% --proto_path=./ --csharp_out=./  descriptors.proto config.proto metadata.proto keys.proto
 	%COMPILER% --proto_path=./ --csharp_out=./  --grpc_out=./ --plugin=protoc-gen-grpc=%GRPC_PLUGIN% bot_agent.proto
 ) else (
 	echo Compiler not found!

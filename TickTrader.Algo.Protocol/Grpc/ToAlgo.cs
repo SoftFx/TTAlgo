@@ -792,8 +792,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 case Lib.UpdateInfo.Types.UpdateType.Added:
                     return UpdateType.Added;
-                case Lib.UpdateInfo.Types.UpdateType.Updated:
-                    return UpdateType.Updated;
+                case Lib.UpdateInfo.Types.UpdateType.Replaced:
+                    return UpdateType.Replaced;
                 case Lib.UpdateInfo.Types.UpdateType.Removed:
                     return UpdateType.Removed;
                 default:

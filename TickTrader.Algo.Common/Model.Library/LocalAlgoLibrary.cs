@@ -22,13 +22,9 @@ namespace TickTrader.Algo.Common.Model
         private object _updateLock = new object();
 
 
-        public event Action<PackageInfo> PackageAdded;
-        public event Action<PackageInfo> PackageReplaced;
-        public event Action<PackageInfo> PackageRemoved;
+        public event Action<UpdateInfo<PackageInfo>> PackageUpdated;
 
-        public event Action<PluginInfo> PluginAdded;
-        public event Action<PluginInfo> PluginReplaced;
-        public event Action<PluginInfo> PluginRemoved;
+        public event Action<UpdateInfo<PluginInfo>> PluginUpdated;
 
 
         public LocalAlgoLibrary(IAlgoCoreLogger logger)
@@ -185,7 +181,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                PackageAdded?.Invoke(package);
+                PackageUpdated?.Invoke(new UpdateInfo<PackageInfo>(UpdateType.Added, package));
             }
             catch (Exception ex)
             {
@@ -197,7 +193,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                PackageReplaced?.Invoke(package);
+                PackageUpdated?.Invoke(new UpdateInfo<PackageInfo>(UpdateType.Replaced, package));
             }
             catch (Exception ex)
             {
@@ -209,7 +205,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                PackageRemoved?.Invoke(package);
+                PackageUpdated?.Invoke(new UpdateInfo<PackageInfo>(UpdateType.Removed, package));
             }
             catch (Exception ex)
             {
@@ -221,7 +217,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                PluginAdded?.Invoke(plugin);
+                PluginUpdated?.Invoke(new UpdateInfo<PluginInfo>(UpdateType.Added, plugin));
             }
             catch (Exception ex)
             {
@@ -233,7 +229,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                PluginReplaced?.Invoke(plugin);
+                PluginUpdated?.Invoke(new UpdateInfo<PluginInfo>(UpdateType.Replaced, plugin));
             }
             catch (Exception ex)
             {
@@ -245,7 +241,7 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                PluginRemoved?.Invoke(plugin);
+                PluginUpdated?.Invoke(new UpdateInfo<PluginInfo>(UpdateType.Removed, plugin));
             }
             catch (Exception ex)
             {

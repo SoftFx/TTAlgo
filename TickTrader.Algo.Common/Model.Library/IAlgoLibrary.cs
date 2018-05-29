@@ -8,13 +8,9 @@ namespace TickTrader.Algo.Common.Model
 {
     public interface IAlgoLibrary
     {
-        event Action<PackageInfo> PackageAdded;
-        event Action<PackageInfo> PackageReplaced;
-        event Action<PackageInfo> PackageRemoved;
+        event Action<UpdateInfo<PackageInfo>> PackageUpdated;
 
-        event Action<PluginInfo> PluginAdded;
-        event Action<PluginInfo> PluginReplaced;
-        event Action<PluginInfo> PluginRemoved;
+        event Action<UpdateInfo<PluginInfo>> PluginUpdated;
 
 
         IEnumerable<PackageInfo> GetPackages();

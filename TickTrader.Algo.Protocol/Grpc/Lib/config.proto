@@ -4,7 +4,7 @@ package TickTrader.Algo.Protocol.Grpc.Lib;
 
 import "google_protos/wrappers.proto";
 import "descriptors.proto";
-import "metadata.proto";
+import "keys.proto";
 
 message Property
 {

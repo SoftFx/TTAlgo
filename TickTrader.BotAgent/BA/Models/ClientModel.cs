@@ -12,6 +12,7 @@ using NLog;
 using ActorSharp.Lib;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -468,7 +469,7 @@ namespace TickTrader.BotAgent.BA.Models
             BotStateChanged?.Invoke(bot);
         }
 
-        internal void RemoveBotsFromPackage(PackageModel package)
+        internal void RemoveBotsFromPackage(AlgoPackageRef package)
         {
             var toRemove = _bots.Where(b => b.Package == package).ToList();
             toRemove.ForEach(b => _bots.Remove(b));
