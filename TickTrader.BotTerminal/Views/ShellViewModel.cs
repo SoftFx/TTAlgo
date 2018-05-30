@@ -74,6 +74,7 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
             cManager.ConnectionStateChanged += (o, n) => UpdateCommandStates();
+            cManager.ConnectionStateChanged += (o, n) => UpdateRunningBotsState();
             cManager.LoggedIn += () => UpdateCommandStates();
             cManager.LoggedOut += () => UpdateCommandStates();
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
@@ -130,6 +131,12 @@ namespace TickTrader.BotTerminal
             ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
+        }
+
+        private void UpdateRunningBotsState()
+        {
+            if(cManager.Connection.LastError?.Code == Algo.Common.Model.Interop.ConnectionErrorCodes.BlockedAccount)
+                Charts.Items.SelectMany(c => c.Bots).Where(c => c.IsStarted).Foreach(c => c.StartStop());
         }
 
         private async Task LoadConnectionProfile(object sender, CancellationToken token)
