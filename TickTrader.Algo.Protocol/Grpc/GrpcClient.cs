@@ -39,11 +39,20 @@ namespace TickTrader.Algo.Protocol.Grpc
         protected override void Init()
         {
             var packages = _client.GetPackageList(new Lib.PackageListRequest());
+            if (FailConnectionForNonSuccess(packages.Status))
+                return;
             AgentClient.InitPackageList(packages.Packages.Select(ToAlgo.Convert).ToList());
+
             var accounts = _client.GetAccountList(new Lib.AccountListRequest());
+            if (FailConnectionForNonSuccess(accounts.Status))
+                return;
             AgentClient.InitAccountList(accounts.Accounts.Select(ToAlgo.Convert).ToList());
+
             var bots = _client.GetBotList(new Lib.BotListRequest());
-            AgentClient.InitBotList(bots.Bots.Select(s => s).ToList());
+            if (FailConnectionForNonSuccess(bots.Status))
+                return;
+            AgentClient.InitBotList(bots.Bots.Select(ToAlgo.Convert).ToList());
+
             OnSubscribed();
         }
 
@@ -57,6 +66,17 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             OnDisconnected();
             //throw new System.NotImplementedException();
+        }
+
+
+        private bool FailConnectionForNonSuccess(Lib.Request.Types.RequestStatus status)
+        {
+            if (status != Lib.Request.Types.RequestStatus.Success)
+            {
+                OnConnectionError(status.ToString());
+                return true;
+            }
+            return false;
         }
     }
 }

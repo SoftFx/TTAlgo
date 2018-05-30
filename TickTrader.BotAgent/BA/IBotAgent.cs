@@ -13,6 +13,7 @@ namespace TickTrader.BotAgent.BA
         // -------- Repository Management --------
 
         List<PackageInfo> GetPackages();
+        PackageInfo GetPackage(string package);
         void UpdatePackage(byte[] fileContent, string fileName);
         void RemovePackage(string package);
         List<PluginInfo> GetAllPlugins();

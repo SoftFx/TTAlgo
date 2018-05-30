@@ -11,20 +11,20 @@ namespace TickTrader.BotTerminal
     {
         private ISyncContext _syncContext;
         private VarDictionary<PackageKey, PackageInfo> _packages;
-        private VarDictionary<AccountKey, AccountKey> _accounts;
-        private VarDictionary<string, string> _bots;
+        private VarDictionary<AccountKey, AccountModelInfo> _accounts;
+        private VarDictionary<string, BotModelInfo> _bots;
 
 
         public IVarSet<PackageKey, PackageInfo> Packages => _packages;
 
-        public IVarSet<AccountKey, AccountKey> Accounts => _accounts;
+        public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
 
-        public IVarSet<string, string> Bots => _bots;
+        public IVarSet<string, BotModelInfo> Bots => _bots;
 
 
         public Action<string> BotStateChanged = delegate { };
 
-        public Action<string> AccountStateChanged = delegate { };
+        public Action<AccountKey> AccountStateChanged = delegate { };
 
 
         public BotAgentModel()
@@ -32,8 +32,8 @@ namespace TickTrader.BotTerminal
             _syncContext = new DispatcherSync();
 
             _packages = new VarDictionary<PackageKey, PackageInfo>();
-            _accounts = new VarDictionary<AccountKey, AccountKey>();
-            _bots = new VarDictionary<string, string>();
+            _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
+            _bots = new VarDictionary<string, BotModelInfo>();
         }
 
 
@@ -41,11 +41,6 @@ namespace TickTrader.BotTerminal
         {
             return GetAccountKey(account.Server, account.Login);
         }
-
-        //public static string GetAccountKey(AccountKeyEntity accountKey)
-        //{
-        //    return GetAccountKey(accountKey.Server, accountKey.Login);
-        //}
 
         public static string GetAccountKey(string server, string login)
         {
@@ -78,26 +73,26 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        public void InitAccountList(List<AccountKey> accounts)
+        public void InitAccountList(List<AccountModelInfo> accounts)
         {
             _syncContext.Invoke(() =>
             {
                 _accounts.Clear();
                 foreach (var acc in accounts)
                 {
-                    _accounts.Add(acc, acc);
+                    _accounts.Add(acc.Key, acc);
                 }
             });
         }
 
-        public void InitBotList(List<string> bots)
+        public void InitBotList(List<BotModelInfo> bots)
         {
             _syncContext.Invoke(() =>
             {
                 _bots.Clear();
                 foreach (var bot in bots)
                 {
-                    _bots.Add(bot, bot);
+                    _bots.Add(bot.InstanceId, bot);
                 }
             });
         }
@@ -121,7 +116,7 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        public void UpdateAccount(UpdateInfo<AccountKey> update)
+        public void UpdateAccount(UpdateInfo<AccountModelInfo> update)
         {
             _syncContext.Invoke(() =>
             {
@@ -130,17 +125,17 @@ namespace TickTrader.BotTerminal
                 {
                     case UpdateType.Added:
                     case UpdateType.Replaced:
-                        _accounts[acc] = acc;
+                        _accounts[acc.Key] = acc;
                         break;
                     case UpdateType.Removed:
-                        if (_accounts.ContainsKey(acc))
-                            _accounts.Remove(acc);
+                        if (_accounts.ContainsKey(acc.Key))
+                            _accounts.Remove(acc.Key);
                         break;
                 }
             });
         }
 
-        public void UpdateBot(UpdateInfo<string> update)
+        public void UpdateBot(UpdateInfo<BotModelInfo> update)
         {
             _syncContext.Invoke(() =>
             {
@@ -149,41 +144,41 @@ namespace TickTrader.BotTerminal
                 {
                     case UpdateType.Added:
                     case UpdateType.Replaced:
-                        _bots[bot] = bot;
+                        _bots[bot.InstanceId] = bot;
                         break;
                     case UpdateType.Removed:
-                        if (_bots.ContainsKey(bot))
-                            _bots.Remove(bot);
+                        if (_bots.ContainsKey(bot.InstanceId))
+                            _bots.Remove(bot.InstanceId);
                         break;
                 }
             });
         }
 
-        //public void UpdateBotState(BotStateUpdateEntity update)
-        //{
-        //    _syncContext.Invoke(() =>
-        //    {
-        //        if (_bots.ContainsKey(update.BotId))
-        //        {
-        //            _bots[update.BotId].State = update.State;
-        //            BotStateChanged(update.BotId);
-        //        }
-        //    });
-        //}
+        public void UpdateAccountState(AccountModelInfo account)
+        {
+            _syncContext.Invoke(() =>
+            {
+                if (_accounts.TryGetValue(account.Key, out var accountModel))
+                {
+                    accountModel.ConnectionState = account.ConnectionState;
+                    accountModel.LastError = account.LastError;
+                    AccountStateChanged(account.Key);
+                }
+            });
+        }
 
-        //public void UpdateAccountState(AccountStateUpdateEntity update)
-        //{
-        //    _syncContext.Invoke(() =>
-        //    {
-        //        var key = GetAccountKey(update.Account);
-        //        if (_accounts.ContainsKey(key))
-        //        {
-        //            _accounts[key].ConnectionState = update.ConnectionState;
-        //            _accounts[key].LastError = update.LastError;
-        //            AccountStateChanged(key);
-        //        }
-        //    });
-        //}
+        public void UpdateBotState(BotModelInfo bot)
+        {
+            _syncContext.Invoke(() =>
+            {
+                if (_bots.TryGetValue(bot.InstanceId, out var botModel))
+                {
+                    botModel.State = bot.State;
+                    botModel.FaultMessage = bot.FaultMessage;
+                    BotStateChanged(bot.InstanceId);
+                }
+            });
+        }
 
         #endregion
     }

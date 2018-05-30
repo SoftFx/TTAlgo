@@ -12,9 +12,9 @@ namespace TickTrader.Algo.Protocol
 
         List<PackageInfo> GetPackageList();
 
-        List<AccountKey> GetAccountList();
+        List<AccountModelInfo> GetAccountList();
 
-        List<string> GetBotList();
+        List<BotModelInfo> GetBotList();
 
         #endregion Initialization
 
@@ -23,13 +23,13 @@ namespace TickTrader.Algo.Protocol
 
         event Action<UpdateInfo<PackageInfo>> PackageUpdated;
 
-        event Action<UpdateInfo<AccountKey>> AccountUpdated;
+        event Action<UpdateInfo<AccountModelInfo>> AccountUpdated;
 
-        event Action<UpdateInfo<string>> BotUpdated;
+        event Action<UpdateInfo<BotModelInfo>> BotUpdated;
 
-        //event Action<BotStateUpdateEntity> BotStateUpdated;
+        event Action<BotModelInfo> BotStateUpdated;
 
-        //event Action<AccountStateUpdateEntity> AccountStateUpdated;
+        event Action<AccountModelInfo> AccountStateUpdated;
 
         #endregion Updates
     }

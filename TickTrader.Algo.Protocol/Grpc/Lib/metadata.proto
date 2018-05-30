@@ -17,7 +17,8 @@ message PackageInfo
 {
 	PackageKey key = 1;
 	google.protobuf.Timestamp created_utc = 2;
-	repeated PluginInfo plugins = 3;
+	bool is_valid = 3;
+	repeated PluginInfo plugins = 4;
 }
 
 message ReductionInfo
@@ -102,7 +103,7 @@ message ConnectionErrorInfo
 		REJECTED_BY_SERVER = 12;
 	}
 
-	ConnectionErrorCode error_code = 1;
+	ConnectionErrorCode code = 1;
 	string text_message = 2;
 }
 
@@ -137,7 +138,8 @@ message BotModelInfo
 
 	string instance_id = 1;
 	AccountKey account = 2;
-	PluginKey plugin = 3;
-	BotState state = 4;
-	string fault_message = 5;
+	BotState state = 3;
+	string fault_message = 4;
+	PluginConfig config = 5;
+	PluginDescriptor descriptor = 6;
 }

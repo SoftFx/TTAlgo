@@ -9,6 +9,8 @@ namespace TickTrader.Algo.Common.Info
 
         public DateTime CreatedUtc { get; set; }
 
+        public bool IsValid { get; set; }
+
         public List<PluginInfo> Plugins { get; set; }
 
 

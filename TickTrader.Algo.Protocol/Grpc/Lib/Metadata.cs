@@ -30,84 +30,86 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "Z2luSW5mbxI5CgNrZXkYASABKAsyLC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
             "b2wuR3JwYy5MaWIuUGx1Z2luS2V5EkcKCmRlc2NyaXB0b3IYAiABKAsyMy5U",
             "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luRGVzY3Jp",
-            "cHRvciK6AQoLUGFja2FnZUluZm8SOgoDa2V5GAEgASgLMi0uVGlja1RyYWRl",
+            "cHRvciLMAQoLUGFja2FnZUluZm8SOgoDa2V5GAEgASgLMi0uVGlja1RyYWRl",
             "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VLZXkSLwoLY3JlYXRl",
-            "ZF91dGMYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEj4KB3Bs",
-            "dWdpbnMYAyADKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuUGx1Z2luSW5mbyKZAQoNUmVkdWN0aW9uSW5mbxI8CgNrZXkYASABKAsy",
-            "Ly5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9u",
-            "S2V5EkoKCmRlc2NyaXB0b3IYAiABKAsyNi5UaWNrVHJhZGVyLkFsZ28uUHJv",
-            "dG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uRGVzY3JpcHRvciIcCgxDdXJyZW5j",
-            "eUluZm8SDAoEbmFtZRgBIAEoCSIaCgpTeW1ib2xJbmZvEgwKBG5hbWUYASAB",
-            "KAkikQEKE0FjY291bnRNZXRhZGF0YUluZm8SOgoDa2V5GAEgASgLMi0uVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkSPgoH",
-            "c3ltYm9scxgCIAMoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5TeW1ib2xJbmZvIl8KC01hcHBpbmdJbmZvEjoKA2tleRgBIAEoCzIt",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nS2V5",
-            "EhQKDGRpc3BsYXlfbmFtZRgCIAEoCSKfBgoVTWFwcGluZ0NvbGxlY3Rpb25J",
-            "bmZvEksKE2Jhcl90b19iYXJfbWFwcGluZ3MYASADKAsyLi5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ0luZm8STgoWYmFyX3Rv",
-            "X2RvdWJsZV9tYXBwaW5ncxgCIAMoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5NYXBwaW5nSW5mbxJNChVxdW90ZV90b19iYXJfbWFw",
-            "cGluZ3MYAyADKAsyLi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuTWFwcGluZ0luZm8SUAoYcXVvdGVfdG9fZG91YmxlX21hcHBpbmdzGAQg",
-            "AygLMi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBp",
-            "bmdJbmZvEloKIWRlZmF1bHRfZnVsbF9iYXJfdG9fYmFyX3JlZHVjdGlvbhgF",
-            "IAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZWR1",
-            "Y3Rpb25LZXkSXQokZGVmYXVsdF9mdWxsX2Jhcl90b19kb3VibGVfcmVkdWN0",
-            "aW9uGAYgASgLMi8uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LlJlZHVjdGlvbktleRJYCh9kZWZhdWx0X2Jhcl90b19kb3VibGVfcmVkdWN0",
-            "aW9uGAcgASgLMi8uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LlJlZHVjdGlvbktleRJXCh5kZWZhdWx0X3F1b3RlX3RvX2Jhcl9yZWR1Y3Rp",
-            "b24YCCABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "UmVkdWN0aW9uS2V5EloKIWRlZmF1bHRfcXVvdGVfdG9fZG91YmxlX3JlZHVj",
-            "dGlvbhgJIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5SZWR1Y3Rpb25LZXkimwIKD0FwaU1ldGFkYXRhSW5mbxJPCgt0aW1lX2Zy",
-            "YW1lcxgBIAMoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5BcGlEZXNjcmlwdG9yLlRpbWVGcmFtZRJPCgtsaW5lX3N0eWxlcxgCIAMo",
-            "DjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNj",
-            "cmlwdG9yLkxpbmVTdHlsZRITCgt0aGlja25lc3NlcxgDIAMoBRJRCgxtYXJr",
-            "ZXJfc2l6ZXMYBCADKA4yOy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
-            "Yy5MaWIuQXBpRGVzY3JpcHRvci5NYXJrZXJTaXplIs8BChBTZXR1cENvbnRl",
-            "eHRJbmZvElYKEmRlZmF1bHRfdGltZV9mcmFtZRgBIAEoDjI6LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLlRpbWVG",
-            "cmFtZRIbChNkZWZhdWx0X3N5bWJvbF9jb2RlGAIgASgJEkYKD2RlZmF1bHRf",
-            "bWFwcGluZxgDIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5NYXBwaW5nS2V5IqABChFTZXR1cE1ldGFkYXRhSW5mbxI/CgNhcGkY",
-            "ASABKAsyMi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQXBp",
-            "TWV0YWRhdGFJbmZvEkoKCG1hcHBpbmdzGAIgASgLMjguVGlja1RyYWRlci5B",
-            "bGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdDb2xsZWN0aW9uSW5mbyKj",
-            "AwoTQ29ubmVjdGlvbkVycm9ySW5mbxJeCgplcnJvcl9jb2RlGAEgASgOMkou",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNvbm5lY3Rpb25F",
-            "cnJvckluZm8uQ29ubmVjdGlvbkVycm9yQ29kZRIUCgx0ZXh0X21lc3NhZ2UY",
-            "AiABKAkilQIKE0Nvbm5lY3Rpb25FcnJvckNvZGUSCAoETk9ORRAAEh0KGVVO",
-            "S05PV05fQ09OTk5FQ1RJT05fRVJST1IQARIRCg1ORVRXT1JLX0VSUk9SEAIS",
-            "CwoHVElNRU9VVBADEhMKD0JMT0NLRURfQUNDT1VOVBAEEhQKEENMSUVOVF9J",
-            "TklUSUFURUQQBRIXChNJTlZBTElEX0NSRURFTlRJQUxTEAYSEwoPU0xPV19D",
-            "T05ORUNUSU9OEAcSEAoMU0VSVkVSX0VSUk9SEAgSEQoNTE9HSU5fREVMRVRF",
-            "RBAJEhEKDVNFUlZFUl9MT0dPVVQQChIMCghDQU5DRUxFRBALEhYKElJFSkVD",
-            "VEVEX0JZX1NFUlZFUhAMIuICChBBY2NvdW50TW9kZWxJbmZvEjoKA2tleRgB",
-            "IAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2Nv",
-            "dW50S2V5EhgKEHVzZV9uZXdfcHJvdG9jb2wYAiABKAgSXQoQY29ubmVjdGlv",
-            "bl9zdGF0ZRgDIAEoDjJDLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5BY2NvdW50TW9kZWxJbmZvLkNvbm5lY3Rpb25TdGF0ZRJKCgpsYXN0",
-            "X2Vycm9yGAQgASgLMjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
-            "TGliLkNvbm5lY3Rpb25FcnJvckluZm8iTQoPQ29ubmVjdGlvblN0YXRlEgsK",
-            "B09GRkxJTkUQABIOCgpDT05ORUNUSU5HEAESCgoGT05MSU5FEAISEQoNRElT",
-            "Q09OTkVDVElORxADIu0CCgxCb3RNb2RlbEluZm8SEwoLaW5zdGFuY2VfaWQY",
-            "ASABKAkSPgoHYWNjb3VudBgCIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5EjwKBnBsdWdpbhgDIAEoCzIsLlRp",
-            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5LZXkSRwoF",
-            "c3RhdGUYBCABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuQm90TW9kZWxJbmZvLkJvdFN0YXRlEhUKDWZhdWx0X21lc3NhZ2UYBSAB",
-            "KAkiagoIQm90U3RhdGUSCwoHT0ZGTElORRAAEgwKCFNUQVJUSU5HEAESCwoH",
-            "RkFVTFRFRBACEgoKBk9OTElORRADEgwKCFNUT1BQSU5HEAQSCgoGQlJPS0VO",
-            "EAUSEAoMUkVDT05ORUNUSU5HEAZiBnByb3RvMw=="));
+            "ZF91dGMYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhAKCGlz",
+            "X3ZhbGlkGAMgASgIEj4KB3BsdWdpbnMYBCADKAsyLS5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luSW5mbyKZAQoNUmVkdWN0aW9u",
+            "SW5mbxI8CgNrZXkYASABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuUmVkdWN0aW9uS2V5EkoKCmRlc2NyaXB0b3IYAiABKAsyNi5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uRGVz",
+            "Y3JpcHRvciIcCgxDdXJyZW5jeUluZm8SDAoEbmFtZRgBIAEoCSIaCgpTeW1i",
+            "b2xJbmZvEgwKBG5hbWUYASABKAkikQEKE0FjY291bnRNZXRhZGF0YUluZm8S",
+            "OgoDa2V5GAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
+            "TGliLkFjY291bnRLZXkSPgoHc3ltYm9scxgCIAMoCzItLlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TeW1ib2xJbmZvIl8KC01hcHBpbmdJ",
+            "bmZvEjoKA2tleRgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5NYXBwaW5nS2V5EhQKDGRpc3BsYXlfbmFtZRgCIAEoCSKfBgoV",
+            "TWFwcGluZ0NvbGxlY3Rpb25JbmZvEksKE2Jhcl90b19iYXJfbWFwcGluZ3MY",
+            "ASADKAsyLi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFw",
+            "cGluZ0luZm8STgoWYmFyX3RvX2RvdWJsZV9tYXBwaW5ncxgCIAMoCzIuLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nSW5mbxJN",
+            "ChVxdW90ZV90b19iYXJfbWFwcGluZ3MYAyADKAsyLi5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ0luZm8SUAoYcXVvdGVfdG9f",
+            "ZG91YmxlX21hcHBpbmdzGAQgAygLMi4uVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLk1hcHBpbmdJbmZvEloKIWRlZmF1bHRfZnVsbF9iYXJf",
+            "dG9fYmFyX3JlZHVjdGlvbhgFIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25LZXkSXQokZGVmYXVsdF9mdWxsX2Jh",
+            "cl90b19kb3VibGVfcmVkdWN0aW9uGAYgASgLMi8uVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlJlZHVjdGlvbktleRJYCh9kZWZhdWx0X2Jh",
+            "cl90b19kb3VibGVfcmVkdWN0aW9uGAcgASgLMi8uVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlJlZHVjdGlvbktleRJXCh5kZWZhdWx0X3F1",
+            "b3RlX3RvX2Jhcl9yZWR1Y3Rpb24YCCABKAsyLy5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uS2V5EloKIWRlZmF1bHRfcXVv",
+            "dGVfdG9fZG91YmxlX3JlZHVjdGlvbhgJIAEoCzIvLlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25LZXkimwIKD0FwaU1ldGFk",
+            "YXRhSW5mbxJPCgt0aW1lX2ZyYW1lcxgBIAMoDjI6LlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLlRpbWVGcmFtZRJP",
+            "CgtsaW5lX3N0eWxlcxgCIAMoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLkxpbmVTdHlsZRITCgt0aGlja25l",
+            "c3NlcxgDIAMoBRJRCgxtYXJrZXJfc2l6ZXMYBCADKA4yOy5UaWNrVHJhZGVy",
+            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQXBpRGVzY3JpcHRvci5NYXJrZXJT",
+            "aXplIs8BChBTZXR1cENvbnRleHRJbmZvElYKEmRlZmF1bHRfdGltZV9mcmFt",
+            "ZRgBIAEoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5B",
+            "cGlEZXNjcmlwdG9yLlRpbWVGcmFtZRIbChNkZWZhdWx0X3N5bWJvbF9jb2Rl",
+            "GAIgASgJEkYKD2RlZmF1bHRfbWFwcGluZxgDIAEoCzItLlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nS2V5IqABChFTZXR1cE1l",
+            "dGFkYXRhSW5mbxI/CgNhcGkYASABKAsyMi5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuQXBpTWV0YWRhdGFJbmZvEkoKCG1hcHBpbmdzGAIg",
+            "ASgLMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBp",
+            "bmdDb2xsZWN0aW9uSW5mbyKdAwoTQ29ubmVjdGlvbkVycm9ySW5mbxJYCgRj",
+            "b2RlGAEgASgOMkouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "LkNvbm5lY3Rpb25FcnJvckluZm8uQ29ubmVjdGlvbkVycm9yQ29kZRIUCgx0",
+            "ZXh0X21lc3NhZ2UYAiABKAkilQIKE0Nvbm5lY3Rpb25FcnJvckNvZGUSCAoE",
+            "Tk9ORRAAEh0KGVVOS05PV05fQ09OTk5FQ1RJT05fRVJST1IQARIRCg1ORVRX",
+            "T1JLX0VSUk9SEAISCwoHVElNRU9VVBADEhMKD0JMT0NLRURfQUNDT1VOVBAE",
+            "EhQKEENMSUVOVF9JTklUSUFURUQQBRIXChNJTlZBTElEX0NSRURFTlRJQUxT",
+            "EAYSEwoPU0xPV19DT05ORUNUSU9OEAcSEAoMU0VSVkVSX0VSUk9SEAgSEQoN",
+            "TE9HSU5fREVMRVRFRBAJEhEKDVNFUlZFUl9MT0dPVVQQChIMCghDQU5DRUxF",
+            "RBALEhYKElJFSkVDVEVEX0JZX1NFUlZFUhAMIuICChBBY2NvdW50TW9kZWxJ",
+            "bmZvEjoKA2tleRgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5BY2NvdW50S2V5EhgKEHVzZV9uZXdfcHJvdG9jb2wYAiABKAgS",
+            "XQoQY29ubmVjdGlvbl9zdGF0ZRgDIAEoDjJDLlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TW9kZWxJbmZvLkNvbm5lY3Rpb25T",
+            "dGF0ZRJKCgpsYXN0X2Vycm9yGAQgASgLMjYuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8iTQoPQ29ubmVj",
+            "dGlvblN0YXRlEgsKB09GRkxJTkUQABIOCgpDT05ORUNUSU5HEAESCgoGT05M",
+            "SU5FEAISEQoNRElTQ09OTkVDVElORxADIrkDCgxCb3RNb2RlbEluZm8SEwoL",
+            "aW5zdGFuY2VfaWQYASABKAkSPgoHYWNjb3VudBgCIAEoCzItLlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5EkcKBXN0YXRl",
+            "GAMgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJv",
+            "dE1vZGVsSW5mby5Cb3RTdGF0ZRIVCg1mYXVsdF9tZXNzYWdlGAQgASgJEj8K",
+            "BmNvbmZpZxgFIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5QbHVnaW5Db25maWcSRwoKZGVzY3JpcHRvchgGIAEoCzIzLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5EZXNjcmlwdG9y",
+            "ImoKCEJvdFN0YXRlEgsKB09GRkxJTkUQABIMCghTVEFSVElORxABEgsKB0ZB",
+            "VUxURUQQAhIKCgZPTkxJTkUQAxIMCghTVE9QUElORxAEEgoKBkJST0tFThAF",
+            "EhAKDFJFQ09OTkVDVElORxAGYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo.Parser, new[]{ "Key", "Descriptor_" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageInfo.Parser, new[]{ "Key", "CreatedUtc", "Plugins" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageInfo.Parser, new[]{ "Key", "CreatedUtc", "IsValid", "Plugins" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionInfo.Parser, new[]{ "Key", "Descriptor_" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.CurrencyInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.CurrencyInfo.Parser, new[]{ "Name" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo.Parser, new[]{ "Name" }, null, null, null),
@@ -117,9 +119,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo.Parser, new[]{ "TimeFrames", "LineStyles", "Thicknesses", "MarkerSizes" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo.Parser, new[]{ "DefaultTimeFrame", "DefaultSymbolCode", "DefaultMapping" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupMetadataInfo.Parser, new[]{ "Api", "Mappings" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Parser, new[]{ "ErrorCode", "TextMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Parser, new[]{ "Code", "TextMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Parser, new[]{ "Key", "UseNewProtocol", "ConnectionState", "LastError" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Types.ConnectionState) }, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "Plugin", "State", "FaultMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) }, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) }, null)
           }));
     }
     #endregion
@@ -322,6 +324,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public PackageInfo(PackageInfo other) : this() {
       Key = other.key_ != null ? other.Key.Clone() : null;
       CreatedUtc = other.createdUtc_ != null ? other.CreatedUtc.Clone() : null;
+      isValid_ = other.isValid_;
       plugins_ = other.plugins_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -353,10 +356,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
     }
 
+    /// <summary>Field number for the "is_valid" field.</summary>
+    public const int IsValidFieldNumber = 3;
+    private bool isValid_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsValid {
+      get { return isValid_; }
+      set {
+        isValid_ = value;
+      }
+    }
+
     /// <summary>Field number for the "plugins" field.</summary>
-    public const int PluginsFieldNumber = 3;
+    public const int PluginsFieldNumber = 4;
     private static readonly pb::FieldCodec<global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo> _repeated_plugins_codec
-        = pb::FieldCodec.ForMessage(26, global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo.Parser);
+        = pb::FieldCodec.ForMessage(34, global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo.Parser);
     private readonly pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo> plugins_ = new pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.PluginInfo> Plugins {
@@ -378,6 +392,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (!object.Equals(Key, other.Key)) return false;
       if (!object.Equals(CreatedUtc, other.CreatedUtc)) return false;
+      if (IsValid != other.IsValid) return false;
       if(!plugins_.Equals(other.plugins_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -387,6 +402,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       int hash = 1;
       if (key_ != null) hash ^= Key.GetHashCode();
       if (createdUtc_ != null) hash ^= CreatedUtc.GetHashCode();
+      if (IsValid != false) hash ^= IsValid.GetHashCode();
       hash ^= plugins_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -409,6 +425,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(18);
         output.WriteMessage(CreatedUtc);
       }
+      if (IsValid != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(IsValid);
+      }
       plugins_.WriteTo(output, _repeated_plugins_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -423,6 +443,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (createdUtc_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(CreatedUtc);
+      }
+      if (IsValid != false) {
+        size += 1 + 1;
       }
       size += plugins_.CalculateSize(_repeated_plugins_codec);
       if (_unknownFields != null) {
@@ -447,6 +470,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           createdUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
         }
         CreatedUtc.MergeFrom(other.CreatedUtc);
+      }
+      if (other.IsValid != false) {
+        IsValid = other.IsValid;
       }
       plugins_.Add(other.plugins_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -474,7 +500,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             input.ReadMessage(createdUtc_);
             break;
           }
-          case 26: {
+          case 24: {
+            IsValid = input.ReadBool();
+            break;
+          }
+          case 34: {
             plugins_.AddEntriesFrom(input, _repeated_plugins_codec);
             break;
           }
@@ -2150,7 +2180,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConnectionErrorInfo(ConnectionErrorInfo other) : this() {
-      errorCode_ = other.errorCode_;
+      code_ = other.code_;
       textMessage_ = other.textMessage_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -2160,14 +2190,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new ConnectionErrorInfo(this);
     }
 
-    /// <summary>Field number for the "error_code" field.</summary>
-    public const int ErrorCodeFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode errorCode_ = 0;
+    /// <summary>Field number for the "code" field.</summary>
+    public const int CodeFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode code_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode ErrorCode {
-      get { return errorCode_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode Code {
+      get { return code_; }
       set {
-        errorCode_ = value;
+        code_ = value;
       }
     }
 
@@ -2195,7 +2225,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (ErrorCode != other.ErrorCode) return false;
+      if (Code != other.Code) return false;
       if (TextMessage != other.TextMessage) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -2203,7 +2233,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (ErrorCode != 0) hash ^= ErrorCode.GetHashCode();
+      if (Code != 0) hash ^= Code.GetHashCode();
       if (TextMessage.Length != 0) hash ^= TextMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -2218,9 +2248,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (ErrorCode != 0) {
+      if (Code != 0) {
         output.WriteRawTag(8);
-        output.WriteEnum((int) ErrorCode);
+        output.WriteEnum((int) Code);
       }
       if (TextMessage.Length != 0) {
         output.WriteRawTag(18);
@@ -2234,8 +2264,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (ErrorCode != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) ErrorCode);
+      if (Code != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Code);
       }
       if (TextMessage.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TextMessage);
@@ -2251,8 +2281,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.ErrorCode != 0) {
-        ErrorCode = other.ErrorCode;
+      if (other.Code != 0) {
+        Code = other.Code;
       }
       if (other.TextMessage.Length != 0) {
         TextMessage = other.TextMessage;
@@ -2269,7 +2299,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            errorCode_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) input.ReadEnum();
+            code_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) input.ReadEnum();
             break;
           }
           case 18: {
@@ -2571,9 +2601,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public BotModelInfo(BotModelInfo other) : this() {
       instanceId_ = other.instanceId_;
       Account = other.account_ != null ? other.Account.Clone() : null;
-      Plugin = other.plugin_ != null ? other.Plugin.Clone() : null;
       state_ = other.state_;
       faultMessage_ = other.faultMessage_;
+      Config = other.config_ != null ? other.Config.Clone() : null;
+      Descriptor_ = other.descriptor_ != null ? other.Descriptor_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2604,19 +2635,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
     }
 
-    /// <summary>Field number for the "plugin" field.</summary>
-    public const int PluginFieldNumber = 3;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.PluginKey plugin_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.PluginKey Plugin {
-      get { return plugin_; }
-      set {
-        plugin_ = value;
-      }
-    }
-
     /// <summary>Field number for the "state" field.</summary>
-    public const int StateFieldNumber = 4;
+    public const int StateFieldNumber = 3;
     private global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState state_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState State {
@@ -2627,13 +2647,35 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     /// <summary>Field number for the "fault_message" field.</summary>
-    public const int FaultMessageFieldNumber = 5;
+    public const int FaultMessageFieldNumber = 4;
     private string faultMessage_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string FaultMessage {
       get { return faultMessage_; }
       set {
         faultMessage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "config" field.</summary>
+    public const int ConfigFieldNumber = 5;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig config_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig Config {
+      get { return config_; }
+      set {
+        config_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "descriptor" field.</summary>
+    public const int Descriptor_FieldNumber = 6;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor descriptor_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor Descriptor_ {
+      get { return descriptor_; }
+      set {
+        descriptor_ = value;
       }
     }
 
@@ -2652,9 +2694,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (InstanceId != other.InstanceId) return false;
       if (!object.Equals(Account, other.Account)) return false;
-      if (!object.Equals(Plugin, other.Plugin)) return false;
       if (State != other.State) return false;
       if (FaultMessage != other.FaultMessage) return false;
+      if (!object.Equals(Config, other.Config)) return false;
+      if (!object.Equals(Descriptor_, other.Descriptor_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2663,9 +2706,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       int hash = 1;
       if (InstanceId.Length != 0) hash ^= InstanceId.GetHashCode();
       if (account_ != null) hash ^= Account.GetHashCode();
-      if (plugin_ != null) hash ^= Plugin.GetHashCode();
       if (State != 0) hash ^= State.GetHashCode();
       if (FaultMessage.Length != 0) hash ^= FaultMessage.GetHashCode();
+      if (config_ != null) hash ^= Config.GetHashCode();
+      if (descriptor_ != null) hash ^= Descriptor_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2687,17 +2731,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(18);
         output.WriteMessage(Account);
       }
-      if (plugin_ != null) {
-        output.WriteRawTag(26);
-        output.WriteMessage(Plugin);
-      }
       if (State != 0) {
-        output.WriteRawTag(32);
+        output.WriteRawTag(24);
         output.WriteEnum((int) State);
       }
       if (FaultMessage.Length != 0) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteString(FaultMessage);
+      }
+      if (config_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Config);
+      }
+      if (descriptor_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(Descriptor_);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -2713,14 +2761,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (account_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Account);
       }
-      if (plugin_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Plugin);
-      }
       if (State != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) State);
       }
       if (FaultMessage.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(FaultMessage);
+      }
+      if (config_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Config);
+      }
+      if (descriptor_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Descriptor_);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2742,17 +2793,23 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         }
         Account.MergeFrom(other.Account);
       }
-      if (other.plugin_ != null) {
-        if (plugin_ == null) {
-          plugin_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.PluginKey();
-        }
-        Plugin.MergeFrom(other.Plugin);
-      }
       if (other.State != 0) {
         State = other.State;
       }
       if (other.FaultMessage.Length != 0) {
         FaultMessage = other.FaultMessage;
+      }
+      if (other.config_ != null) {
+        if (config_ == null) {
+          config_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig();
+        }
+        Config.MergeFrom(other.Config);
+      }
+      if (other.descriptor_ != null) {
+        if (descriptor_ == null) {
+          descriptor_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor();
+        }
+        Descriptor_.MergeFrom(other.Descriptor_);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2776,19 +2833,26 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             input.ReadMessage(account_);
             break;
           }
-          case 26: {
-            if (plugin_ == null) {
-              plugin_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.PluginKey();
-            }
-            input.ReadMessage(plugin_);
-            break;
-          }
-          case 32: {
+          case 24: {
             state_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) input.ReadEnum();
             break;
           }
-          case 42: {
+          case 34: {
             FaultMessage = input.ReadString();
+            break;
+          }
+          case 42: {
+            if (config_ == null) {
+              config_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig();
+            }
+            input.ReadMessage(config_);
+            break;
+          }
+          case 50: {
+            if (descriptor_ == null) {
+              descriptor_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor();
+            }
+            input.ReadMessage(descriptor_);
             break;
           }
         }

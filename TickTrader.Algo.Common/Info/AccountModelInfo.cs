@@ -11,9 +11,7 @@
 
     public class AccountModelInfo
     {
-        public string Login { get; set; }
-
-        public string Server { get; set; }
+        public AccountKey Key { get; set; }
 
         public bool UseNewProtocol { get; set; }
 

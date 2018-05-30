@@ -59,7 +59,8 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public List<PackageInfo> GetPackages() => CallActor(a => a._packageStorage.GetInfo());
+            public List<PackageInfo> GetPackages() => CallActor(a => a._packageStorage.GetPackages());
+            public PackageInfo GetPackage(string package) => CallActor(a => a._packageStorage.GetPackage(package));
             public void UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
             public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
             public List<PluginInfo> GetAllPlugins() => throw new NotImplementedException();
@@ -418,7 +419,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void RemovePackage(string package)
         {
-            var dPackage = _packageStorage.Get(package);
+            var dPackage = _packageStorage.GetPackageRef(package);
             if (dPackage != null)
             {
                 if (dPackage.IsLocked)

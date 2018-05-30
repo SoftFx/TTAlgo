@@ -13,6 +13,12 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     internal static class ToGrpc
     {
+        public static string Convert(string s) // because grpc doesn't like null strings
+        {
+            return s ?? string.Empty;
+        }
+
+
         #region descriptors.proto
 
         public static Lib.ApiDescriptor.Types.TimeFrame Convert(TimeFrames timeFrame)
@@ -166,8 +172,8 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.PropertyDescriptor
             {
-                Id = property.Id,
-                DisplayName = property.DisplayName,
+                Id = Convert(property.Id),
+                DisplayName = Convert(property.DisplayName),
                 PropertyType = Convert(property.PropertyType),
                 Error = Convert(property.Error),
             };
@@ -177,8 +183,8 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.FileFilterEntry
             {
-                FileTypeName = entry.FileTypeName,
-                FileMask = entry.FileMask,
+                FileTypeName = Convert(entry.FileTypeName),
+                FileMask = Convert(entry.FileMask),
             };
         }
 
@@ -187,8 +193,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.ParameterDescriptor
             {
                 PropertyHeader = Convert((PropertyDescriptor)parameter),
-                DataType = parameter.DataType,
-                DefaultValue = parameter.DefaultValue,
+                DataType = Convert(parameter.DataType),
+                DefaultValue = Convert(parameter.DefaultValue),
                 IsRequired = parameter.IsRequired,
                 IsEnum = parameter.IsEnum,
             };
@@ -202,7 +208,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.InputDescriptor
             {
                 PropertyHeader = Convert((PropertyDescriptor)input),
-                DataSeriesBaseTypeFullName = input.DataSeriesBaseTypeFullName,
+                DataSeriesBaseTypeFullName = Convert(input.DataSeriesBaseTypeFullName),
             };
         }
 
@@ -211,7 +217,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.OutputDescriptor
             {
                 PropertyHeader = Convert((PropertyDescriptor)output),
-                DataSeriesBaseTypeFullName = output.DataSeriesBaseTypeFullName,
+                DataSeriesBaseTypeFullName = Convert(output.DataSeriesBaseTypeFullName),
                 DefaultThickness = output.DefaultThickness,
                 DefaultColor = (int)output.DefaultColor,
                 DefaultLineStyle = Convert(output.DefaultLineStyle),
@@ -256,22 +262,28 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static Lib.PluginDescriptor Convert(PluginDescriptor plugin)
+        public static Lib.PluginDescriptor ConvertLight(PluginDescriptor plugin)
         {
             var res = new Lib.PluginDescriptor
             {
-                ApiVersionStr = plugin.ApiVersionStr,
-                Id = plugin.Id,
-                DisplayName = plugin.DisplayName,
+                ApiVersionStr = Convert(plugin.ApiVersionStr),
+                Id = Convert(plugin.Id),
+                DisplayName = Convert(plugin.DisplayName),
                 Type = Convert(plugin.Type),
                 Error = Convert(plugin.Error),
-                UiDisplayName = plugin.UiDisplayName,
-                Category = plugin.Category,
-                Version = plugin.Version,
-                Description = plugin.Description,
-                Copyright = plugin.Copyright,
+                UiDisplayName = Convert(plugin.UiDisplayName),
+                Category = Convert(plugin.Category),
+                Version = Convert(plugin.Version),
+                Description = Convert(plugin.Description),
+                Copyright = Convert(plugin.Copyright),
                 SetupMainSymbol = plugin.SetupMainSymbol,
             };
+            return res;
+        }
+
+        public static Lib.PluginDescriptor Convert(PluginDescriptor plugin)
+        {
+            var res = ConvertLight(plugin);
             res.Parameters.AddRange(plugin.Parameters.Select(Convert));
             res.Inputs.AddRange(plugin.Inputs.Select(Convert));
             res.Outputs.AddRange(plugin.Outputs.Select(Convert));
@@ -303,9 +315,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.ReductionDescriptor
             {
-                ApiVersionStr = reduction.ApiVersionStr,
-                Id = reduction.Id,
-                DisplayName = reduction.DisplayName,
+                ApiVersionStr = Convert(reduction.ApiVersionStr),
+                Id = Convert(reduction.Id),
+                DisplayName = Convert(reduction.DisplayName),
                 Type = Convert(reduction.Type),
             };
         }
@@ -319,7 +331,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.Property
             {
-                PropertyId = property.Id,
+                PropertyId = Convert(property.Id),
             };
             switch (property)
             {
@@ -417,7 +429,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.StringParameter
             {
-                Value = param.Value,
+                Value = Convert(param.Value),
             };
         }
 
@@ -425,7 +437,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.EnumParameter
             {
-                Value = param.Value,
+                Value = Convert(param.Value),
             };
         }
 
@@ -433,7 +445,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.FileParameter
             {
-                FileName = param.FileName,
+                FileName = Convert(param.FileName),
             };
         }
 
@@ -441,7 +453,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.Input
             {
-                SelectedSymbol = input.SelectedSymbol,
+                SelectedSymbol = Convert(input.SelectedSymbol),
             };
             switch (input)
             {
@@ -575,9 +587,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 Key = Convert(config.Key),
                 TimeFrame = Convert(config.TimeFrame),
-                MainSymbol = config.MainSymbol,
+                MainSymbol = Convert(config.MainSymbol),
                 SelectedMapping = Convert(config.SelectedMapping),
-                InstanceId = config.InstanceId,
+                InstanceId = Convert(config.InstanceId),
                 Permissions = Convert(config.Permissions),
             };
             res.Properties.AddRange(config.Properties.Select(Convert));
@@ -608,14 +620,14 @@ namespace TickTrader.Algo.Protocol.Grpc
         #endregion config.proto
 
 
-        #region metadata.proto
+        #region keys.proto
 
         public static Lib.AccountKey Convert(AccountKey key)
         {
             return new Lib.AccountKey
             {
-                Login = key.Login,
-                Server = key.Server,
+                Login = Convert(key.Login),
+                Server = Convert(key.Server),
             };
         }
 
@@ -642,7 +654,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.PackageKey
             {
-                Name = key.Name,
+                Name = Convert(key.Name),
                 Location = Convert(key.Location),
             };
         }
@@ -651,9 +663,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.PluginKey
             {
-                PackageName = key.PackageName,
+                PackageName = Convert(key.PackageName),
                 PackageLocation = Convert(key.PackageLocation),
-                DescriptorId = key.DescriptorId,
+                DescriptorId = Convert(key.DescriptorId),
             };
         }
 
@@ -661,9 +673,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.ReductionKey
             {
-                PackageName = key.PackageName,
+                PackageName = Convert(key.PackageName),
                 PackageLocation = Convert(key.PackageLocation),
-                DescriptorId = key.DescriptorId,
+                DescriptorId = Convert(key.DescriptorId),
             };
         }
 
@@ -675,6 +687,11 @@ namespace TickTrader.Algo.Protocol.Grpc
                 SecondaryReduction = Convert(key.SecondaryReduction),
             };
         }
+
+        #endregion keys.proto
+
+
+        #region metadata.proto
 
         public static Lib.PluginInfo Convert(PluginInfo plugin)
         {
@@ -689,8 +706,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.PackageInfo
             {
-                CreatedUtc = Timestamp.FromDateTime(package.CreatedUtc),
                 Key = Convert(package.Key),
+                CreatedUtc = Timestamp.FromDateTime(package.CreatedUtc),
+                IsValid = package.IsValid,
             };
             res.Plugins.AddRange(package.Plugins.Select(Convert));
             return res;
@@ -709,7 +727,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.CurrencyInfo
             {
-                Name = currency.Name,
+                Name = Convert(currency.Name),
             };
         }
 
@@ -717,7 +735,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.SymbolInfo
             {
-                Name = symbol.Name,
+                Name = Convert(symbol.Name),
             };
         }
 
@@ -736,7 +754,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.MappingInfo
             {
                 Key = Convert(mapping.Key),
-                DisplayName = mapping.DisplayName,
+                DisplayName = Convert(mapping.DisplayName),
             };
         }
 
@@ -772,7 +790,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.SetupContextInfo
             {
                 DefaultTimeFrame = Convert(setupContext.DefaultTimeFrame),
-                DefaultSymbolCode = setupContext.DefaultSymbolCode,
+                DefaultSymbolCode = Convert(setupContext.DefaultSymbolCode),
                 DefaultMapping = Convert(setupContext.DefaultMapping),
             };
         }
@@ -784,6 +802,120 @@ namespace TickTrader.Algo.Protocol.Grpc
                 Api = Convert(setupMetadata.Api),
                 Mappings = Convert(setupMetadata.Mappings),
             };
+        }
+
+        public static Lib.ConnectionErrorInfo.Types.ConnectionErrorCode Convert(ConnectionErrorCodes code)
+        {
+            switch (code)
+            {
+                case ConnectionErrorCodes.None:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.None;
+                case ConnectionErrorCodes.Unknown:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.UnknownConnnectionError;
+                case ConnectionErrorCodes.NetworkError:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.NetworkError;
+                case ConnectionErrorCodes.Timeout:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.Timeout;
+                case ConnectionErrorCodes.BlockedAccount:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.BlockedAccount;
+                case ConnectionErrorCodes.ClientInitiated:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ClientInitiated;
+                case ConnectionErrorCodes.InvalidCredentials:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.InvalidCredentials;
+                case ConnectionErrorCodes.SlowConnection:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.SlowConnection;
+                case ConnectionErrorCodes.ServerError:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ServerError;
+                case ConnectionErrorCodes.LoginDeleted:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.LoginDeleted;
+                case ConnectionErrorCodes.ServerLogout:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ServerLogout;
+                case ConnectionErrorCodes.Canceled:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.Canceled;
+                case ConnectionErrorCodes.RejectedByServer:
+                    return Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.RejectedByServer;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Lib.ConnectionErrorInfo Convert(ConnectionErrorInfo error)
+        {
+            return new Lib.ConnectionErrorInfo
+            {
+                Code = Convert(error.Code),
+                TextMessage = Convert(error.TextMessage),
+            };
+        }
+
+        public static Lib.AccountModelInfo.Types.ConnectionState Convert(ConnectionStates state)
+        {
+            switch (state)
+            {
+                case ConnectionStates.Offline:
+                    return Lib.AccountModelInfo.Types.ConnectionState.Offline;
+                case ConnectionStates.Connecting:
+                    return Lib.AccountModelInfo.Types.ConnectionState.Connecting;
+                case ConnectionStates.Online:
+                    return Lib.AccountModelInfo.Types.ConnectionState.Online;
+                case ConnectionStates.Disconnecting:
+                    return Lib.AccountModelInfo.Types.ConnectionState.Disconnecting;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Lib.AccountModelInfo Convert(AccountModelInfo account)
+        {
+            return new Lib.AccountModelInfo
+            {
+                Key = Convert(account.Key),
+                UseNewProtocol = account.UseNewProtocol,
+                ConnectionState = Convert(account.ConnectionState),
+                LastError = Convert(account.LastError),
+            };
+        }
+
+        public static Lib.BotModelInfo.Types.BotState Convert(BotStates state)
+        {
+            switch (state)
+            {
+                case BotStates.Offline:
+                    return Lib.BotModelInfo.Types.BotState.Offline;
+                case BotStates.Starting:
+                    return Lib.BotModelInfo.Types.BotState.Starting;
+                case BotStates.Faulted:
+                    return Lib.BotModelInfo.Types.BotState.Faulted;
+                case BotStates.Online:
+                    return Lib.BotModelInfo.Types.BotState.Online;
+                case BotStates.Stopping:
+                    return Lib.BotModelInfo.Types.BotState.Stopping;
+                case BotStates.Broken:
+                    return Lib.BotModelInfo.Types.BotState.Broken;
+                case BotStates.Reconnecting:
+                    return Lib.BotModelInfo.Types.BotState.Reconnecting;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Lib.BotModelInfo ConvertLight(BotModelInfo bot)
+        {
+            return new Lib.BotModelInfo
+            {
+                InstanceId = Convert(bot.InstanceId),
+                Account = Convert(bot.Account),
+                State = Convert(bot.State),
+                FaultMessage = Convert(bot.FaultMessage),
+            };
+        }
+
+        public static Lib.BotModelInfo Convert(BotModelInfo bot)
+        {
+            var res = ConvertLight(bot);
+            res.Config = Convert(bot.Config);
+            res.Descriptor_ = ConvertLight(bot.Descriptor);
+            return res;
         }
 
         #endregion metadata.proto

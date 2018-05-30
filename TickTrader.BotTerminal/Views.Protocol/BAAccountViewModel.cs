@@ -6,23 +6,22 @@ namespace TickTrader.BotTerminal
 {
     internal class BAAccountViewModel : PropertyChangedBase
     {
-        private AccountKey _entity;
+        private AccountModelInfo _entity;
 
 
-        public string Login => _entity.Login;
+        public string Login => _entity.Key.Login;
 
-        public string Server => _entity.Server;
+        public string Server => _entity.Key.Server;
 
         public string Status
         {
             get
             {
-                //if (_entity.LastError.Code == ConnectionErrorCode.None)
-                //    return $"{_entity.ConnectionState}";
-                //if (_entity.LastError.Code == ConnectionErrorCode.Unknown)
-                //    return $"{_entity.ConnectionState} - {_entity.LastError.Text}";
-                //return $"{_entity.ConnectionState} - {_entity.LastError.Code}";
-                return "";
+                if (_entity.LastError.Code == ConnectionErrorCodes.None)
+                    return $"{_entity.ConnectionState}";
+                if (_entity.LastError.Code == ConnectionErrorCodes.Unknown)
+                    return $"{_entity.ConnectionState} - {_entity.LastError.TextMessage}";
+                return $"{_entity.ConnectionState} - {_entity.LastError.Code}";
             }
         }
 
@@ -31,10 +30,9 @@ namespace TickTrader.BotTerminal
         public IObservableList<BABotViewModel> Bots { get; }
 
 
-        public BAAccountViewModel(AccountKey entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
+        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
         {
             _entity = entity;
-            AccountKey = BotAgentModel.GetAccountKey(_entity);
 
             Bots = bots.Where((k, b) => BotIsAttachedToAccount(b))
                 .OrderBy((k, b) => b.InstanceId)
@@ -50,9 +48,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void BotAgentOnAccountStateChanged(string accountKey)
+        private void BotAgentOnAccountStateChanged(AccountKey accountKey)
         {
-            if (AccountKey == accountKey)
+            if (_entity.Key.Equals(accountKey))
             {
                 NotifyOfPropertyChange(nameof(Status));
             }

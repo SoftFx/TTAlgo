@@ -263,7 +263,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static PluginDescriptor Convert(Lib.PluginDescriptor plugin)
+        public static PluginDescriptor ConvertLight(Lib.PluginDescriptor plugin)
         {
             var res = new PluginDescriptor
             {
@@ -279,6 +279,12 @@ namespace TickTrader.Algo.Protocol.Grpc
                 Copyright = plugin.Copyright,
                 SetupMainSymbol = plugin.SetupMainSymbol,
             };
+            return res;
+        }
+
+        public static PluginDescriptor Convert(Lib.PluginDescriptor plugin)
+        {
+            var res = ConvertLight(plugin);
             res.Parameters.AddRange(plugin.Parameters.Select(Convert));
             res.Inputs.AddRange(plugin.Inputs.Select(Convert));
             res.Outputs.AddRange(plugin.Outputs.Select(Convert));
@@ -605,7 +611,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         #endregion config.proto
 
 
-        #region metadata.proto
+        #region keys.proto
 
         public static AccountKey Convert(Lib.AccountKey key)
         {
@@ -673,6 +679,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
+        #endregion keys.proto
+
+
+        #region metadata.proto
+
         public static PluginInfo Convert(Lib.PluginInfo plugin)
         {
             return new PluginInfo
@@ -686,8 +697,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new PackageInfo
             {
-                CreatedUtc = package.CreatedUtc.ToDateTime(),
                 Key = Convert(package.Key),
+                CreatedUtc = package.CreatedUtc.ToDateTime(),
+                IsValid = package.IsValid,
             };
             res.Plugins.AddRange(package.Plugins.Select(Convert));
             return res;
@@ -781,6 +793,116 @@ namespace TickTrader.Algo.Protocol.Grpc
                 Api = Convert(setupMetadata.Api),
                 Mappings = Convert(setupMetadata.Mappings),
             };
+        }
+
+        public static ConnectionErrorCodes Convert(Lib.ConnectionErrorInfo.Types.ConnectionErrorCode code)
+        {
+            switch (code)
+            {
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.None:
+                    return ConnectionErrorCodes.None;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.UnknownConnnectionError:
+                    return ConnectionErrorCodes.Unknown;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.NetworkError:
+                    return ConnectionErrorCodes.NetworkError;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.Timeout:
+                    return ConnectionErrorCodes.Timeout;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.BlockedAccount:
+                    return ConnectionErrorCodes.BlockedAccount;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ClientInitiated:
+                    return ConnectionErrorCodes.ClientInitiated;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.InvalidCredentials:
+                    return ConnectionErrorCodes.InvalidCredentials;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.SlowConnection:
+                    return ConnectionErrorCodes.SlowConnection;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ServerError:
+                    return ConnectionErrorCodes.ServerError;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.LoginDeleted:
+                    return ConnectionErrorCodes.LoginDeleted;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.ServerLogout:
+                    return ConnectionErrorCodes.ServerLogout;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.Canceled:
+                    return ConnectionErrorCodes.Canceled;
+                case Lib.ConnectionErrorInfo.Types.ConnectionErrorCode.RejectedByServer:
+                    return ConnectionErrorCodes.RejectedByServer;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static ConnectionErrorInfo Convert(Lib.ConnectionErrorInfo error)
+        {
+            return new ConnectionErrorInfo(Convert(error.Code), error.TextMessage);
+        }
+
+        public static ConnectionStates Convert(Lib.AccountModelInfo.Types.ConnectionState state)
+        {
+            switch (state)
+            {
+                case Lib.AccountModelInfo.Types.ConnectionState.Offline:
+                    return ConnectionStates.Offline;
+                case Lib.AccountModelInfo.Types.ConnectionState.Connecting:
+                    return ConnectionStates.Connecting;
+                case Lib.AccountModelInfo.Types.ConnectionState.Online:
+                    return ConnectionStates.Online;
+                case Lib.AccountModelInfo.Types.ConnectionState.Disconnecting:
+                    return ConnectionStates.Disconnecting;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static AccountModelInfo Convert(Lib.AccountModelInfo account)
+        {
+            return new AccountModelInfo
+            {
+                Key = Convert(account.Key),
+                UseNewProtocol = account.UseNewProtocol,
+                ConnectionState = Convert(account.ConnectionState),
+                LastError = Convert(account.LastError),
+            };
+        }
+
+        public static BotStates Convert(Lib.BotModelInfo.Types.BotState state)
+        {
+            switch (state)
+            {
+                case Lib.BotModelInfo.Types.BotState.Offline:
+                    return BotStates.Offline;
+                case Lib.BotModelInfo.Types.BotState.Starting:
+                    return BotStates.Starting;
+                case Lib.BotModelInfo.Types.BotState.Faulted:
+                    return BotStates.Faulted;
+                case Lib.BotModelInfo.Types.BotState.Online:
+                    return BotStates.Online;
+                case Lib.BotModelInfo.Types.BotState.Stopping:
+                    return BotStates.Stopping;
+                case Lib.BotModelInfo.Types.BotState.Broken:
+                    return BotStates.Broken;
+                case Lib.BotModelInfo.Types.BotState.Reconnecting:
+                    return BotStates.Reconnecting;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static BotModelInfo ConvertLight(Lib.BotModelInfo bot)
+        {
+            return new BotModelInfo
+            {
+                InstanceId = bot.InstanceId,
+                Account = Convert(bot.Account),
+                State = Convert(bot.State),
+                FaultMessage = bot.FaultMessage,
+            };
+        }
+
+        public static BotModelInfo Convert(Lib.BotModelInfo bot)
+        {
+            var res = ConvertLight(bot);
+            res.Config = Convert(bot.Config);
+            res.Descriptor = ConvertLight(bot.Descriptor_);
+            return res;
         }
 
         #endregion metadata.proto

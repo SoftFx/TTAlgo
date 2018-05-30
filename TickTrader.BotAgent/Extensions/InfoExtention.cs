@@ -3,23 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.BotAgent.BA.Models;
-using TickTrader.BotAgent.BA.Repository;
 
 namespace TickTrader.BotAgent.Extensions
 {
     public static class InfoExtention
     {
-        public static List<PackageInfo> GetInfo(this PackageStorage storage)
-        {
-            return storage.Library.GetPackages().ToList();
-        }
-
         public static AccountModelInfo GetInfoCopy(this ClientModel acc)
         {
             return new AccountModelInfo
             {
-                Server = acc.Address,
-                Login = acc.Username,
+                Key = new AccountKey(acc.Address, acc.Username),
                 UseNewProtocol = acc.UseNewProtocol,
                 ConnectionState = acc.ConnectionState,
                 LastError = acc.LastError,
@@ -42,9 +35,10 @@ namespace TickTrader.BotAgent.Extensions
             {
                 InstanceId = model.Id,
                 Account = model.Account,
-                Config = model.Config,
                 State = model.State,
-                FaultMessage = model.FaultMessage
+                FaultMessage = model.FaultMessage,
+                Config = model.Config,
+                Descriptor = model.AlgoRef?.Metadata.Descriptor,
             };
         }
 

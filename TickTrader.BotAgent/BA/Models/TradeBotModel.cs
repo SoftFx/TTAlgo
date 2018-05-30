@@ -45,13 +45,14 @@ namespace TickTrader.BotAgent.BA.Models
 
         public string Id => Config.InstanceId;
         public PluginPermissions Permissions => Config.Permissions;
+        public PluginKey PluginKey => Config.Key;
+        public PackageKey PackageKey { get; private set; }
         public BotStates State { get; private set; }
         public AlgoPackageRef Package { get; private set; }
         public Exception Fault { get; private set; }
         public string FaultMessage { get; private set; }
         public AccountKey Account => _client.GetKey();
         public Ref<BotLog> LogRef => _botLog.Ref;
-        public string BotName => _ref?.Metadata.Descriptor.UiDisplayName;
         public AlgoPluginRef AlgoRef => _ref;
 
         public IAlgoData AlgoData => _algoData;
@@ -63,11 +64,8 @@ namespace TickTrader.BotAgent.BA.Models
         public void Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
         {
             _client = client;
-
             _packageRepo = packageRepo;
-            UpdatePackage();
 
-            _packageRepo.PackageChanged += _packageRepo_PackageChanged;
             _client.StateChanged += Client_StateChanged;
 
             _botLog = new BotLog.ControlHandler(Id);
@@ -124,14 +122,17 @@ namespace TickTrader.BotAgent.BA.Models
         {
             CheckShutdownFlag();
 
-            if (State == BotStates.Broken)
-                throw new InvalidStateException("Trade bot is broken!");
-
             if (!IsStopped())
                 throw new InvalidStateException("Trade bot has been already started!");
 
-            SetRunning(true);
+            UpdatePackage();
+
+            if (State == BotStates.Broken)
+                throw new InvalidStateException("Trade bot is broken!");
+
             Package.IncrementRef();
+
+            SetRunning(true);
 
             ChangeState(BotStates.Starting);
 
@@ -180,7 +181,6 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void Dispose()
         {
-            _packageRepo.PackageChanged -= _packageRepo_PackageChanged;
             _client.StateChanged -= Client_StateChanged;
         }
 
@@ -312,29 +312,24 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void UpdatePackage()
         {
-            Package = _packageRepo.Get(PackageName);
+            PackageKey = PluginKey.GetPackageKey();
+            Package = _packageRepo.GetPackageRef(PackageKey);
 
             if (Package == null)
             {
-                ChangeState(BotStates.Broken, "Package '" + PackageName + "' is not found in repository!");
+                ChangeState(BotStates.Broken, $"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
                 return;
             }
 
-            _ref = Package.GetPluginRef(Descriptor);
+            _ref = _packageRepo.Library.GetPluginRef(PluginKey);
             if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
-                ChangeState(BotStates.Broken, $"Trade bot '{Descriptor}' is missing in package '{PackageName}'!");
+                ChangeState(BotStates.Broken, $"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
                 return;
             }
 
             if (State == BotStates.Broken)
                 ChangeState(BotStates.Offline, null);
-        }
-
-        private void _packageRepo_PackageChanged(PackageInfo pckg, ChangeAction action)
-        {
-            if (pckg.NameEquals(PackageName))
-                UpdatePackage();
         }
 
         public void Abort()

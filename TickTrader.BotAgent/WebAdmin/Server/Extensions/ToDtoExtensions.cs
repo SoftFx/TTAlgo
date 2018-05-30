@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
                 PackageName = bot.Config.Key.PackageName,
-                BotName = bot.BotName,
+                BotName = bot.Descriptor?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
                 Permissions = bot.Config.Permissions.ToDto(),
@@ -81,7 +81,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
         public static TradeBotConfigDto ToConfigDto(this BotModelInfo bot)
         {
-            var pluginDescriptor = bot.Metadata;
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.MainSymbol,
@@ -90,7 +89,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                      {
                          Id = p.Id,
                          Value = ((Parameter)p).ValObj,
-                         Descriptor = pluginDescriptor?.Descriptor.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                         Descriptor = bot.Descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
                      }).ToArray()
             };
             return config;
@@ -102,7 +101,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Name = package.Key.Name,
                 Created = package.CreatedUtc.ToLocalTime(),
-                Plugins = package.GetPluginsByType(AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
+                Plugins = package.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = package.IsValid
             };
         }
@@ -135,8 +134,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Server = account.Server,
                 Login = account.Login,
-                //LastConnectionStatus = ConnectionErrorCodes.None,
-                //UseNewProtocol = account.UseNewProtocol
             };
         }
 
@@ -144,8 +141,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new AccountDto()
             {
-                Server = account.Server,
-                Login = account.Login,
+                Server = account.Key.Server,
+                Login = account.Key.Login,
                 LastConnectionStatus = ConnectionErrorCodes.None,
                 UseNewProtocol = account.UseNewProtocol,
             };

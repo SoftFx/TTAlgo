@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             var packages = _botAgent.GetPackages();
 
-            if (_botAgent.GetPackages().Any(p => p.Name == name))
+            if (_botAgent.GetPackage(name) != null)
                 return Ok();
 
             return NotFound();

@@ -9,9 +9,9 @@ namespace TickTrader.Algo.Protocol
 
         void InitPackageList(List<PackageInfo> report);
 
-        void InitAccountList(List<AccountKey> report);
+        void InitAccountList(List<AccountModelInfo> report);
 
-        void InitBotList(List<string> report);
+        void InitBotList(List<BotModelInfo> report);
 
         #endregion Initialization
 
@@ -20,13 +20,13 @@ namespace TickTrader.Algo.Protocol
 
         void UpdatePackage(UpdateInfo<PackageInfo> update);
 
-        void UpdateAccount(UpdateInfo<AccountKey> update);
+        void UpdateAccount(UpdateInfo<AccountModelInfo> update);
 
-        void UpdateBot(UpdateInfo<string> update);
+        void UpdateBot(UpdateInfo<BotModelInfo> update);
 
-        //void UpdateBotState(BotStateUpdateEntity update);
+        void UpdateAccountState(AccountModelInfo update);
 
-        //void UpdateAccountState(AccountStateUpdateEntity update);
+        void UpdateBotState(BotModelInfo update);
 
         #endregion Updates
     }

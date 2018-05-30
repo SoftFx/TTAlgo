@@ -20,17 +20,20 @@
 
     public class ConnectionErrorInfo
     {
-        private static readonly ConnectionErrorInfo okSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.None);
-        private static readonly ConnectionErrorInfo unknownSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Unknown);
-        private static readonly ConnectionErrorInfo canceledSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Canceled);
+        private static readonly ConnectionErrorInfo _okSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.None);
+        private static readonly ConnectionErrorInfo _unknownSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Unknown);
+        private static readonly ConnectionErrorInfo _canceledSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Canceled);
 
 
-        public static ConnectionErrorInfo Ok => okSingleton;
-        public static ConnectionErrorInfo UnknownNoText => unknownSingleton;
-        public static ConnectionErrorInfo Canceled => canceledSingleton;
+        public static ConnectionErrorInfo Ok => _okSingleton;
+
+        public static ConnectionErrorInfo UnknownNoText => _unknownSingleton;
+
+        public static ConnectionErrorInfo Canceled => _canceledSingleton;
 
 
         public ConnectionErrorCodes Code { get; }
+
         public string TextMessage { get; }
 
 

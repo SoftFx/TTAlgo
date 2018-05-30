@@ -10,6 +10,8 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TickTrader.BotAgent.BA.Repository
 {
@@ -69,9 +71,24 @@ namespace TickTrader.BotAgent.BA.Repository
             SavePackage(packageName, packageContent);
         }
 
-        public AlgoPackageRef Get(string packageName)
+        public List<PackageInfo> GetPackages()
+        {
+            return Library.GetPackages().ToList();
+        }
+
+        public PackageInfo GetPackage(string packageName)
+        {
+            return Library.GetPackage(GetPackageKey(packageName));
+        }
+
+        public AlgoPackageRef GetPackageRef(string packageName)
         {
             return Library.GetPackageRef(GetPackageKey(packageName));
+        }
+
+        public AlgoPackageRef GetPackageRef(PackageKey packageKey)
+        {
+            return Library.GetPackageRef(packageKey);
         }
 
         public void Remove(string packageName)

@@ -86,7 +86,7 @@ message AccountListRequest
 message AccountListResponse
 {
 	Request.RequestStatus status = 1;
-	repeated AccountKey accounts = 2;
+	repeated AccountModelInfo accounts = 2;
 }
 
 message BotListRequest
@@ -96,7 +96,7 @@ message BotListRequest
 message BotListResponse
 {
 	Request.RequestStatus status = 1;
-	repeated string bots = 2;
+	repeated BotModelInfo bots = 2;
 }
 
 message SubscribeToUpdatesRequest
@@ -130,20 +130,20 @@ message PackageUpdateInfo
 
 message AccountUpdateInfo
 {
-	AccountKey account = 1;
+	AccountModelInfo account = 1;
 }
 
 message AccountStateUpdateInfo
 {
-	AccountKey account = 1;
+	AccountModelInfo account = 1;
 }
 
 message BotUpdateInfo
 {
-	string bot_id = 1;
+	BotModelInfo bot = 1;
 }
 
 message BotStateUpdateInfo
 {
-	string bot_id = 1;
+	BotModelInfo bot_id = 1;
 }

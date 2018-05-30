@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Protocol;
@@ -23,10 +22,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
 
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
-        public event Action<UpdateInfo<AccountKey>> AccountUpdated = delegate { };
-        public event Action<UpdateInfo<string>> BotUpdated = delegate { };
-        //public event Action<BotStateUpdateEntity> BotStateUpdated = delegate { };
-        //public event Action<AccountStateUpdateEntity> AccountStateUpdated = delegate { };
+        public event Action<UpdateInfo<AccountModelInfo>> AccountUpdated = delegate { };
+        public event Action<UpdateInfo<BotModelInfo>> BotUpdated = delegate { };
+        public event Action<BotModelInfo> BotStateUpdated = delegate { };
+        public event Action<AccountModelInfo> AccountStateUpdated = delegate { };
 
 
         public BotAgentServer(IServiceProvider services, IConfiguration serverConfig)
@@ -50,35 +49,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _serverCreds.Login == login && _serverCreds.Password == password;
         }
 
-        public List<AccountKey> GetAccountList()
+        public List<AccountModelInfo> GetAccountList()
         {
-            return _botAgent.GetAccounts().Select(
-                    acc => new AccountKey
-                    {
-                        Login = acc.Login,
-                        Server = acc.Server,
-                        //UseNewProtocol = acc.UseSfxProtocol,
-                        //ConnectionState = ToProtocol.Convert(acc.ConnectionState),
-                        //LastError = new ConnectionErrorEntity
-                        //{
-                        //    Code = ToProtocol.Convert(acc.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
-                        //    Text = acc.LastError?.TextMessage,
-                        //},
-                    }).ToList();
+            return _botAgent.GetAccounts();
         }
 
-        public List<string> GetBotList()
+        public List<BotModelInfo> GetBotList()
         {
-            return _botAgent.GetTradeBots().Select(
-                    bot => bot.InstanceId
-                    //new BotModelEntity
-                    //{
-                    //InstanceId = bot.Id,
-                    //State = ToProtocol.Convert(bot.State),
-                    //Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
-                    //Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
-                    //Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
-                    ).ToList();
+            return _botAgent.GetTradeBots();
         }
 
         public List<PackageInfo> GetPackageList()
@@ -106,22 +84,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                AccountUpdated(new UpdateInfo<AccountKey>
+                AccountUpdated(new UpdateInfo<AccountModelInfo>
                 {
-                    //Type = ToProtocol.Convert(action),
                     Type = Convert(action),
-                    Value = new AccountKey
-                    {
-                        Login = account.Login,
-                        Server = account.Server,
-                        //UseNewProtocol = account.UseSfxProtocol,
-                        //ConnectionState = ToProtocol.Convert(account.ConnectionState),
-                        //LastError = new ConnectionErrorEntity
-                        //{
-                        //    Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
-                        //    Text = account.LastError?.TextMessage,
-                        //},
-                    },
+                    Value = account,
                 });
             }
             catch (Exception ex)
@@ -134,18 +100,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                BotUpdated(new UpdateInfo<string>
+                BotUpdated(new UpdateInfo<BotModelInfo>
                 {
                     Type = Convert(action),
-                    Value = bot.InstanceId,
-                    //new TradeBotInfo
-                    //{
-                    //    InstanceId = bot.Id,
-                    //    State = ToProtocol.Convert(bot.State),
-                        //Permissions = new PluginPermissionsEntity { TradeAllowed = bot.Permissions.TradeAllowed, Isolated = bot.Permissions.Isolated },
-                        //Account = new AccountKeyEntity { Server = bot.Account.Address, Login = bot.Account.Username },
-                        //Plugin = new PluginKeyEntity { DescriptorId = bot.Descriptor, PackageName = bot.PackageName },
-                    //}
+                    Value = bot,
                 });
             }
             catch (Exception ex)
@@ -174,11 +132,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                //BotStateUpdated(new BotStateUpdateEntity
-                //{
-                //    BotId = bot.Id,
-                //    State = ToProtocol.Convert(bot.State),
-                //});
+                BotStateUpdated(bot);
             }
             catch (Exception ex)
             {
@@ -190,16 +144,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         {
             try
             {
-                //AccountStateUpdated(new AccountStateUpdateEntity
-                //{
-                //    Account = new AccountKeyEntity { Login = account.Login, Server = account.Server },
-                //    //ConnectionState = ToProtocol.Convert(account.ConnectionState),
-                //    //LastError = new ConnectionErrorEntity
-                //    //{
-                //    //    Code = ToProtocol.Convert(account.LastError?.Code ?? Algo.Common.Model.Interop.ConnectionErrorCodes.None),
-                //    //    Text = account.LastError?.TextMessage,
-                //    //},
-                //});
+                AccountStateUpdated(account);
             }
             catch (Exception ex)
             {
