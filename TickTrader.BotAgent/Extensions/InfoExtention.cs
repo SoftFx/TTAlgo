@@ -15,7 +15,7 @@ namespace TickTrader.BotAgent.Extensions
                 Key = new AccountKey(acc.Address, acc.Username),
                 UseNewProtocol = acc.UseNewProtocol,
                 ConnectionState = acc.ConnectionState,
-                LastError = acc.LastError,
+                LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
             };
         }
 

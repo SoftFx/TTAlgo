@@ -161,6 +161,18 @@
                                                   cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
     </ContextMenu>
 
+    <ContextMenu x:Key="RemoteBotContextMenu">
+        <MenuItem Header="Start"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Start"/>
+        <MenuItem Header="Stop"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Stop"/>
+        <MenuItem Header="Settings"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenSettings"/>
+    </ContextMenu>
+
 
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
@@ -217,8 +229,13 @@
                                 <HierarchicalDataTemplate DataType="{x:Type l:BAAccountViewModel}" ItemsSource="{Binding Bots}">
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Style="{StaticResource AccountStatusEllipseStyle}" />
-                                        <TextBlock Text="{Binding AccountKey}" ToolTip="{Binding Status}" />
+                                        <TextBlock Text="{Binding AccountDisplayName}" ToolTip="{Binding Status}" />
                                     </StackPanel>
+                                    <HierarchicalDataTemplate.ItemContainerStyle>
+                                        <Style TargetType="TreeViewItem">
+                                            <Setter Property="ContextMenu" Value="{StaticResource RemoteBotContextMenu}" />
+                                        </Style>
+                                    </HierarchicalDataTemplate.ItemContainerStyle>
                                     <HierarchicalDataTemplate.ItemTemplate>
                                         <DataTemplate DataType="{x:Type l:BABotViewModel}">
                                             <StackPanel Orientation="Horizontal">

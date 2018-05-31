@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Common.Model
 
         event Action<UpdateInfo<PluginInfo>> PluginUpdated;
 
+        event Action Reset;
+
 
         IEnumerable<PackageInfo> GetPackages();
 

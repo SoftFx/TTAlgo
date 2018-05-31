@@ -64,6 +64,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.GetPackages();
         }
 
+        public void StartBot(string botId)
+        {
+            _botAgent.StartBot(botId);
+        }
+
+        public void StopBot(string botId)
+        {
+            _botAgent.StopBotAsync(botId);
+        }
+
 
         private UpdateType Convert(ChangeAction action)
         {

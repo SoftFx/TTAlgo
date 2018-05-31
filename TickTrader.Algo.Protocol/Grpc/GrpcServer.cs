@@ -112,5 +112,35 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return base.GetAccountMetadata(request, context);
         }
+
+        public override Task<Lib.StartBotResponse> StartBot(Lib.StartBotRequest request, ServerCallContext context)
+        {
+            var res = new Lib.StartBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.StartBot(request.BotId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to start bot");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.StopBotResponse> StopBot(Lib.StopBotRequest request, ServerCallContext context)
+        {
+            var res = new Lib.StopBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.StopBot(request.BotId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to stop bot");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
     }
 }

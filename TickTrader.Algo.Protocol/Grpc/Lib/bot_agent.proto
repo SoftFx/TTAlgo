@@ -18,6 +18,9 @@ service BotAgent
 	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
 
 	rpc GetAccountMetadata(AccountKey) returns (AccountMetadataInfo);
+
+	rpc StartBot(StartBotRequest) returns (StartBotResponse);
+	rpc StopBot(StopBotRequest) returns (StopBotResponse);
 }
 
 message Request
@@ -146,4 +149,24 @@ message BotUpdateInfo
 message BotStateUpdateInfo
 {
 	BotModelInfo bot_id = 1;
+}
+
+message StartBotRequest
+{
+	string bot_id = 1;
+}
+
+message StartBotResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message StopBotRequest
+{
+	string bot_id = 1;
+}
+
+message StopBotResponse
+{
+	Request.RequestStatus status = 1;
 }

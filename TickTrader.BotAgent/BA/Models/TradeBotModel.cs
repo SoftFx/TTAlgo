@@ -66,6 +66,8 @@ namespace TickTrader.BotAgent.BA.Models
             _client = client;
             _packageRepo = packageRepo;
 
+            UpdatePackage();
+
             _client.StateChanged += Client_StateChanged;
 
             _botLog = new BotLog.ControlHandler(Id);
@@ -186,7 +188,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private bool IsStopped()
         {
-            return State == BotStates.Offline || State == BotStates.Faulted;
+            return State == BotStates.Offline || State == BotStates.Faulted || State == BotStates.Broken;
         }
 
         private bool TaskIsNullOrStopped(Task task)

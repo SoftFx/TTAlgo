@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.BotTerminal
 {
-    public class LocalAlgoLibrary : IAlgoLibrary
+    internal class RemoteAlgoLibrary : IAlgoLibrary
     {
-        private Dictionary<RepositoryLocation, PackageRepository> _repositories;
-        private Dictionary<PackageKey, AlgoPackageRef> _packageRefs;
-        private Dictionary<PluginKey, AlgoPluginRef> _pluginRefs;
         private Dictionary<PackageKey, PackageInfo> _packages;
         private Dictionary<PluginKey, PluginInfo> _plugins;
         private IAlgoCoreLogger _logger;
@@ -29,13 +24,10 @@ namespace TickTrader.Algo.Common.Model
         public event Action Reset;
 
 
-        public LocalAlgoLibrary(IAlgoCoreLogger logger)
+        public RemoteAlgoLibrary(IAlgoCoreLogger logger)
         {
             _logger = logger;
 
-            _repositories = new Dictionary<RepositoryLocation, PackageRepository>();
-            _packageRefs = new Dictionary<PackageKey, AlgoPackageRef>();
-            _pluginRefs = new Dictionary<PluginKey, AlgoPluginRef>();
             _packages = new Dictionary<PackageKey, PackageInfo>();
             _plugins = new Dictionary<PluginKey, PluginInfo>();
         }
@@ -68,83 +60,89 @@ namespace TickTrader.Algo.Common.Model
 
         public AlgoPackageRef GetPackageRef(PackageKey key)
         {
-            return _packageRefs.ContainsKey(key) ? _packageRefs[key] : null;
+            throw new NotSupportedException();
         }
 
         public AlgoPluginRef GetPluginRef(PluginKey key)
         {
-            return _pluginRefs.ContainsKey(key) ? _pluginRefs[key] : null;
+            throw new NotSupportedException();
         }
 
-        public void RegisterRepositoryLocation(RepositoryLocation location, string repoPath)
-        {
-            if (_repositories.ContainsKey(location))
-                throw new ArgumentException($"Cannot register multiple paths for location '{location}'");
-
-            var repo = new PackageRepository(repoPath, location, _logger);
-            _repositories.Add(location, repo);
-
-            repo.Added += RepositoryOnAdded;
-            repo.Updated += RepositoryOnUpdated;
-            repo.Removed += RepositoryOnRemoved;
-
-            repo.Start();
-        }
-
-        public void AddAssemblyAsPackage(Assembly assembly)
-        {
-            var packageRef = new AlgoPackageRef(Path.GetFileName(assembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded,
-                File.GetLastWriteTimeUtc(assembly.Location), AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m)));
-
-            RepositoryOnAdded(packageRef);
-        }
-
-        public Task WaitInit()
-        {
-            return Task.WhenAll(_repositories.Values.Select(r => r.WaitInit()));
-        }
-
-
-        private void RepositoryOnAdded(AlgoPackageRef packageRef)
+        public void ResetPackages()
         {
             lock (_updateLock)
             {
-                var package = packageRef.ToInfo();
-                _packageRefs.Add(package.Key, packageRef);
-                _packages.Add(package.Key, package);
-                OnPackageAdded(package);
-                MergePlugins(package, packageRef);
+                OnReset();
+                _packages.Clear();
+                _plugins.Clear();
             }
         }
 
-        private void RepositoryOnUpdated(AlgoPackageRef packageRef)
+        public void SetPackages(List<PackageInfo> packages)
         {
             lock (_updateLock)
             {
-                var package = packageRef.ToInfo();
-                _packageRefs[package.Key] = packageRef;
-                _packages[package.Key] = package;
-                OnPackageReplaced(package);
-                MergePlugins(package, packageRef);
-            }
-        }
-
-        private void RepositoryOnRemoved(AlgoPackageRef packageRef)
-        {
-            lock (_updateLock)
-            {
-                var packageKey = packageRef.GetKey();
-                if (_packages.TryGetValue(packageKey, out var package))
+                ResetPackages();
+                foreach (var package in packages)
                 {
-                    _packageRefs.Remove(packageKey);
-                    _packages.Remove(packageKey);
-                    OnPackageRemoved(package);
-                    MergePlugins(new PackageInfo { Key = packageKey }, null);
+                    OnAdded(package);
                 }
             }
         }
 
-        private void MergePlugins(PackageInfo package, AlgoPackageRef packageRef)
+        public void UpdatePackage(UpdateInfo<PackageInfo> update)
+        {
+            var package = update.Value;
+            switch (update.Type)
+            {
+                case UpdateType.Added:
+                    OnAdded(package);
+                    break;
+                case UpdateType.Replaced:
+                    _packages[package.Key] = package;
+                    break;
+                case UpdateType.Removed:
+                    if (_packages.ContainsKey(package.Key))
+                        _packages.Remove(package.Key);
+                    break;
+            }
+        }
+
+
+        private void OnAdded(PackageInfo package)
+        {
+            lock (_updateLock)
+            {
+                _packages.Add(package.Key, package);
+                OnPackageAdded(package);
+                MergePlugins(package);
+            }
+        }
+
+        private void OnUpdated(PackageInfo package)
+        {
+            lock (_updateLock)
+            {
+                _packages[package.Key] = package;
+                OnPackageReplaced(package);
+                MergePlugins(package);
+            }
+        }
+
+        private void RepositoryOnRemoved(PackageInfo package)
+        {
+            lock (_updateLock)
+            {
+                if (_packages.ContainsKey(package.Key))
+                {
+                    _packages.Remove(package.Key);
+                    OnPackageRemoved(package);
+                    MergePlugins(new PackageInfo { Key = package.Key });
+                }
+            }
+        }
+
+        private void MergePlugins(PackageInfo package)
         {
             // upsert
             foreach (var plugin in package.Plugins)
@@ -152,13 +150,11 @@ namespace TickTrader.Algo.Common.Model
                 if (!_plugins.ContainsKey(plugin.Key))
                 {
                     _plugins.Add(plugin.Key, plugin);
-                    _pluginRefs.Add(plugin.Key, packageRef.GetPluginRef(plugin.Key.DescriptorId));
                     OnPluginAdded(plugin);
                 }
                 else
                 {
                     _plugins[plugin.Key] = plugin;
-                    _pluginRefs[plugin.Key] = packageRef.GetPluginRef(plugin.Key.DescriptorId);
                     OnPluginReplaced(plugin);
                 }
             }
@@ -170,7 +166,6 @@ namespace TickTrader.Algo.Common.Model
                 if (!newPluginsLookup.ContainsKey(plugin.Key))
                 {
                     _plugins.Remove(plugin.Key);
-                    _pluginRefs.Remove(plugin.Key);
                     OnPluginRemoved(plugin);
                 }
             }

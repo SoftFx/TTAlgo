@@ -329,6 +329,8 @@
     <Compile Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
     <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model.Lib\FilteredListModel.cs" />
+    <Compile Include="Model.Protocol\RemoteAgent.cs" />
+    <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model\BotManager.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />

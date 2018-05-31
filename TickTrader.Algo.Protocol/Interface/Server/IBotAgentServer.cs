@@ -32,5 +32,14 @@ namespace TickTrader.Algo.Protocol
         event Action<AccountModelInfo> AccountStateUpdated;
 
         #endregion Updates
+
+
+        #region Requests
+
+        void StartBot(string botId);
+
+        void StopBot(string botId);
+
+        #endregion Requests
     }
 }

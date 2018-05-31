@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public string AccountKey { get; }
+        public string AccountDisplayName { get; }
 
         public IObservableList<BABotViewModel> Bots { get; }
 
@@ -33,6 +33,7 @@ namespace TickTrader.BotTerminal
         public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
         {
             _entity = entity;
+            AccountDisplayName = $"{_entity.Key.Server} - {_entity.Key.Login}";
 
             Bots = bots.Where((k, b) => BotIsAttachedToAccount(b))
                 .OrderBy((k, b) => b.InstanceId)
@@ -44,7 +45,7 @@ namespace TickTrader.BotTerminal
 
         public bool BotIsAttachedToAccount(BABotViewModel bot)
         {
-            return bot.AccountKey == AccountKey;
+            return bot.Account.Equals(_entity.Key);
         }
 
 

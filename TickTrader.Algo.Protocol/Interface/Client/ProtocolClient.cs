@@ -241,26 +241,9 @@ namespace TickTrader.Algo.Protocol
 
         #region Requests
 
-        //public Task<AccountListReportEntity> RequestAccounts(AccountListRequestEntity request)
-        //{
-        //    var tcs = new TaskCompletionSource<AccountListReportEntity>();
-        //    ClientSession.SendAccountListRequest(new AccountListRequestClientContext(false) { Data = tcs }, request.ToMessage());
-        //    return tcs.Task;
-        //}
+        public abstract Task StartBot(string botId);
 
-        //public Task<BotListReportEntity> RequestBots(BotListRequestEntity request)
-        //{
-        //    var tcs = new TaskCompletionSource<BotListReportEntity>();
-        //    ClientSession.SendBotListRequest(new BotListRequestClientContext(false) { Data = tcs }, request.ToMessage());
-        //    return tcs.Task;
-        //}
-
-        //public Task<PackageListReportEntity> RequestPackages(PackageListRequestEntity request)
-        //{
-        //    var tcs = new TaskCompletionSource<PackageListReportEntity>();
-        //    ClientSession.SendPackageListRequest(new PackageListRequestClientContext(false) { Data = tcs }, request.ToMessage());
-        //    return tcs.Task;
-        //}
+        public abstract Task StopBot(string botId);
 
         #endregion Requests
     }

@@ -38,6 +38,8 @@ namespace TickTrader.BotTerminal
 
         public BotAgentModel BotAgent { get; }
 
+        public RemoteAgent RemoteAgent { get; }
+
 
         public event Action StateChanged = delegate { };
 
@@ -48,6 +50,7 @@ namespace TickTrader.BotTerminal
 
             BotAgent = new BotAgentModel();
             _protocolClient = new Algo.Protocol.Grpc.GrpcClient(BotAgent);
+            RemoteAgent = new RemoteAgent(_protocolClient, BotAgent);
 
             _protocolClient.Connected += ClientOnConnected;
             _protocolClient.Disconnected += ClientOnDisconnected;

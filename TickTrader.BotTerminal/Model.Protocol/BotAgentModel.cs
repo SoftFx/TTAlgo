@@ -10,12 +10,12 @@ namespace TickTrader.BotTerminal
     internal class BotAgentModel : IBotAgentClient
     {
         private ISyncContext _syncContext;
-        private VarDictionary<PackageKey, PackageInfo> _packages;
+        private RemoteAlgoLibrary _algoLibrary;
         private VarDictionary<AccountKey, AccountModelInfo> _accounts;
         private VarDictionary<string, BotModelInfo> _bots;
 
 
-        public IVarSet<PackageKey, PackageInfo> Packages => _packages;
+        public IAlgoLibrary Library => _algoLibrary;
 
         public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
 
@@ -31,20 +31,9 @@ namespace TickTrader.BotTerminal
         {
             _syncContext = new DispatcherSync();
 
-            _packages = new VarDictionary<PackageKey, PackageInfo>();
+            _algoLibrary = new RemoteAlgoLibrary(new AlgoLogAdapter("BotAgentRepository"));
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
             _bots = new VarDictionary<string, BotModelInfo>();
-        }
-
-
-        public static string GetAccountKey(AccountKey account)
-        {
-            return GetAccountKey(account.Server, account.Login);
-        }
-
-        public static string GetAccountKey(string server, string login)
-        {
-            return $"{server} - {login}";
         }
 
 
@@ -52,9 +41,9 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
+                _algoLibrary.ResetPackages();
                 _accounts.Clear();
                 _bots.Clear();
-                _packages.Clear();
             });
         }
 
@@ -65,11 +54,7 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                _packages.Clear();
-                foreach (var package in packages)
-                {
-                    _packages.Add(package.Key, package);
-                }
+                _algoLibrary.SetPackages(packages);
             });
         }
 
@@ -101,18 +86,7 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                var package = update.Value;
-                switch (update.Type)
-                {
-                    case UpdateType.Added:
-                    case UpdateType.Replaced:
-                        _packages[package.Key] = package;
-                        break;
-                    case UpdateType.Removed:
-                        if (_packages.ContainsKey(package.Key))
-                            _packages.Remove(package.Key);
-                        break;
-                }
+                _algoLibrary.UpdatePackage(update);
             });
         }
 

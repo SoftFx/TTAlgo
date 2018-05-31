@@ -63,6 +63,11 @@ namespace TickTrader.BotTerminal
             _bots.Add(bot.InstanceId, 1);
         }
 
+        public void RegisterBot(string instanceId)
+        {
+            _bots.Add(instanceId, 1);
+        }
+
         public void UnregisterPlugin(string pluginId)
         {
             if (_bots.ContainsKey(pluginId))

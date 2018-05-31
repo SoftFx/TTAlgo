@@ -41,6 +41,7 @@ namespace TickTrader.BotTerminal
             BotTraders = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Robot);
 
             _algoLibrary.PluginUpdated += LibraryOnPluginUpdated;
+            _algoLibrary.Reset += LibraryOnReset;
         }
 
 
@@ -65,6 +66,21 @@ namespace TickTrader.BotTerminal
                     }
                 }
                 catch (Exception ex)
+                {
+                    _logger.Error(ex);
+                }
+            });
+        }
+
+        private void LibraryOnReset()
+        {
+            Execute.OnUIThread(() =>
+            {
+                try
+                {
+                    _plugins.Clear();
+                }
+                catch(Exception ex)
                 {
                     _logger.Error(ex);
                 }

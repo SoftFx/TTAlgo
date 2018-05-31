@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Protocol.Grpc
 {
@@ -71,12 +72,36 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private bool FailConnectionForNonSuccess(Lib.Request.Types.RequestStatus status)
         {
-            if (status != Lib.Request.Types.RequestStatus.Success)
+            if (FailForNonSuccess(status))
             {
                 OnConnectionError(status.ToString());
                 return true;
             }
             return false;
         }
+
+        private bool FailForNonSuccess(Lib.Request.Types.RequestStatus status)
+        {
+            return status != Lib.Request.Types.RequestStatus.Success;
+        }
+
+
+        #region Requests
+
+        public override async Task StartBot(string botId)
+        {
+            var response = await _client.StartBotAsync(new Lib.StartBotRequest { BotId = botId });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task StopBot(string botId)
+        {
+            var response = await _client.StopBotAsync(new Lib.StopBotRequest { BotId = botId });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        #endregion Requests
     }
 }

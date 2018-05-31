@@ -44,6 +44,8 @@ namespace TickTrader.BotAgent.BA.Models
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
 
+            await _packageStorage.Library.WaitInit();
+
             _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
             foreach (var acc in _accounts)
                 await InitAccount(acc);

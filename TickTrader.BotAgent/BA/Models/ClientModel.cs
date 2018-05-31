@@ -27,7 +27,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private CancellationTokenSource _connectCancellation;
         private AsyncGate _requestGate;
-        private ConnectionErrorInfo _lastError;
+        private ConnectionErrorInfo _lastError = ConnectionErrorInfo.Ok;
         private Algo.Common.Model.ClientModel.ControlHandler2 _core;
         private TaskCompletionSource<object> _shutdownCompletedSrc;
         private DateTime _pendingDisconnect;
@@ -112,7 +112,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;
-        public bool HasError => _lastError != null;
+        public bool HasError => _lastError != null && _lastError.Code != ConnectionErrorCodes.None;
         public string ErrorText => _lastError?.TextMessage ?? _lastError?.Code.ToString();
 
         public event Action<ClientModel> StateChanged;
