@@ -24,9 +24,9 @@ namespace TickTrader.Algo.Protocol
 
         void UpdateBot(UpdateInfo<BotModelInfo> update);
 
-        void UpdateAccountState(AccountModelInfo update);
+        void UpdateAccountState(UpdateInfo<AccountModelInfo> update);
 
-        void UpdateBotState(BotModelInfo update);
+        void UpdateBotState(UpdateInfo<BotModelInfo> update);
 
         #endregion Updates
     }

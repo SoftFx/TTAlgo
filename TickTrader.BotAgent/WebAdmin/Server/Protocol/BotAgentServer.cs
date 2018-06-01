@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
@@ -72,6 +73,21 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public void StopBot(string botId)
         {
             _botAgent.StopBotAsync(botId);
+        }
+
+        public void AddBot(AccountKey account, PluginConfig config)
+        {
+            _botAgent.AddBot(account, (TradeBotConfig)config);
+        }
+
+        public void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
+        {
+            _botAgent.RemoveBot(botId, cleanLog, cleanAlgoData);
+        }
+
+        public void ChangeBotConfig(string botId, PluginConfig newConfig)
+        {
+            _botAgent.ChangeBotConfig(botId, (TradeBotConfig)newConfig);
         }
 
 

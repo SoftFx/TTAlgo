@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.Algo.Protocol
 {
@@ -39,6 +40,12 @@ namespace TickTrader.Algo.Protocol
         void StartBot(string botId);
 
         void StopBot(string botId);
+
+        void AddBot(AccountKey account, PluginConfig config);
+
+        void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
+
+        void ChangeBotConfig(string botId, PluginConfig newConfig);
 
         #endregion Requests
     }

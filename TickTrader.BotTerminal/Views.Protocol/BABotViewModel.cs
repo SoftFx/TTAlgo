@@ -36,6 +36,11 @@ namespace TickTrader.BotTerminal
             _remoteAgent.StopBot(_entity.InstanceId);
         }
 
+        public void Remove()
+        {
+            _remoteAgent.RemoveBot(_entity.InstanceId);
+        }
+
 
         private void BotAgentOnBotStateChanged(string instanceId)
         {

@@ -2,6 +2,8 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.Algo.Protocol
 {
@@ -244,6 +246,12 @@ namespace TickTrader.Algo.Protocol
         public abstract Task StartBot(string botId);
 
         public abstract Task StopBot(string botId);
+
+        public abstract Task AddBot(AccountKey account, PluginConfig config);
+
+        public abstract Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
+
+        public abstract Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
         #endregion Requests
     }

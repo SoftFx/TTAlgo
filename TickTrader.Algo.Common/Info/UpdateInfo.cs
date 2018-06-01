@@ -8,10 +8,14 @@
     }
 
 
-    public class UpdateInfo<T>
+    public class UpdateInfo
     {
         public UpdateType Type { get; set; }
+    }
 
+
+    public class UpdateInfo<T> : UpdateInfo
+    {
         public T Value { get; set; }
 
 

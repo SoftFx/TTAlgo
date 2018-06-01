@@ -42,6 +42,21 @@ namespace TickTrader.BotTerminal
             _protocolClient.StopBot(instanceId);
         }
 
+        public void AddBot(AccountKey account, PluginConfig config)
+        {
+            _protocolClient.AddBot(account, config);
+        }
+
+        public void RemoveBot(string instanceId)
+        {
+            _protocolClient.RemoveBot(instanceId);
+        }
+
+        public void ChangeBotConfig(string instanceId, PluginConfig newConfig)
+        {
+            _protocolClient.ChangeBotConfig(instanceId, newConfig);
+        }
+
 
         #region IAlgoAgent implementation
 

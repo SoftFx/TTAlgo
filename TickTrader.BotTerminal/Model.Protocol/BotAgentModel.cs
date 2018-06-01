@@ -128,10 +128,11 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        public void UpdateAccountState(AccountModelInfo account)
+        public void UpdateAccountState(UpdateInfo<AccountModelInfo> update)
         {
             _syncContext.Invoke(() =>
             {
+                var account = update.Value;
                 if (_accounts.TryGetValue(account.Key, out var accountModel))
                 {
                     accountModel.ConnectionState = account.ConnectionState;
@@ -141,10 +142,11 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        public void UpdateBotState(BotModelInfo bot)
+        public void UpdateBotState(UpdateInfo<BotModelInfo> update)
         {
             _syncContext.Invoke(() =>
             {
+                var bot = update.Value;
                 if (_bots.TryGetValue(bot.InstanceId, out var botModel))
                 {
                     botModel.State = bot.State;

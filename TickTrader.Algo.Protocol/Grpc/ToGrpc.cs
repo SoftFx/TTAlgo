@@ -935,5 +935,45 @@ namespace TickTrader.Algo.Protocol.Grpc
                     throw new ArgumentException();
             }
         }
+
+        public static Lib.UpdateInfo Convert(this UpdateInfo update)
+        {
+            return new Lib.UpdateInfo { Type = update.Type.Convert() };
+        }
+
+        public static Lib.UpdateInfo Convert(this UpdateInfo<PackageInfo> update)
+        {
+            var res = ((UpdateInfo)update).Convert();
+            res.Package = new Lib.PackageUpdateInfo { Package = update.Value.Convert() };
+            return res;
+        }
+
+        public static Lib.UpdateInfo Convert(this UpdateInfo<AccountModelInfo> update)
+        {
+            var res = ((UpdateInfo)update).Convert();
+            res.Account = new Lib.AccountUpdateInfo { Account = update.Value.Convert() };
+            return res;
+        }
+
+        public static Lib.UpdateInfo ConvertStateUpdate(this UpdateInfo<AccountModelInfo> update)
+        {
+            var res = ((UpdateInfo)update).Convert();
+            res.AccountState = new Lib.AccountStateUpdateInfo { Account = update.Value.Convert() };
+            return res;
+        }
+
+        public static Lib.UpdateInfo Convert(this UpdateInfo<BotModelInfo> update)
+        {
+            var res = ((UpdateInfo)update).Convert();
+            res.Bot = new Lib.BotUpdateInfo { Bot = update.Value.Convert() };
+            return res;
+        }
+
+        public static Lib.UpdateInfo ConvertStateUpdate(this UpdateInfo<BotModelInfo> update)
+        {
+            var res = ((UpdateInfo)update).Convert();
+            res.BotState = new Lib.BotStateUpdateInfo { Bot = update.Value.ConvertLight() };
+            return res;
+        }
     }
 }

@@ -923,5 +923,57 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
 
         }
+
+        public static UpdateInfo Convert(this Lib.UpdateInfo update)
+        {
+            UpdateInfo res;
+            switch (update.UpdateInfoCase)
+            {
+                case Lib.UpdateInfo.UpdateInfoOneofCase.Package:
+                    res = update.Package.Convert();
+                    break;
+                case Lib.UpdateInfo.UpdateInfoOneofCase.Account:
+                    res = update.Account.Convert();
+                    break;
+                case Lib.UpdateInfo.UpdateInfoOneofCase.AccountState:
+                    res = update.AccountState.ConvertStateUpdate();
+                    break;
+                case Lib.UpdateInfo.UpdateInfoOneofCase.Bot:
+                    res = update.Bot.Convert();
+                    break;
+                case Lib.UpdateInfo.UpdateInfoOneofCase.BotState:
+                    res = update.BotState.ConvertStateUpdate();
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
+            res.Type = update.Type.Convert();
+            return res;
+        }
+
+        public static UpdateInfo<PackageInfo> Convert(this Lib.PackageUpdateInfo update)
+        {
+            return new UpdateInfo<PackageInfo> { Value = update.Package.Convert() };
+        }
+
+        public static UpdateInfo<AccountModelInfo> Convert(this Lib.AccountUpdateInfo update)
+        {
+            return new UpdateInfo<AccountModelInfo> { Value = update.Account.Convert() };
+        }
+
+        public static UpdateInfo<AccountModelInfo> ConvertStateUpdate(this Lib.AccountStateUpdateInfo update)
+        {
+            return new UpdateInfo<AccountModelInfo> { Value = update.Account.Convert() };
+        }
+
+        public static UpdateInfo<BotModelInfo> Convert(this Lib.BotUpdateInfo update)
+        {
+            return new UpdateInfo<BotModelInfo> { Value = update.Bot.Convert() };
+        }
+
+        public static UpdateInfo<BotModelInfo> ConvertStateUpdate(this Lib.BotStateUpdateInfo update)
+        {
+            return new UpdateInfo<BotModelInfo> { Value = update.Bot.ConvertLight() };
+        }
     }
 }

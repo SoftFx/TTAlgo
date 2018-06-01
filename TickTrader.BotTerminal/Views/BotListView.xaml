@@ -159,6 +159,8 @@
                                                   cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
         <MenuItem Header="Remove connection" cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
                                                   cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Add Bot" cal:Message.Attach="AddBot($originalsourcecontext)"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
     </ContextMenu>
 
     <ContextMenu x:Key="RemoteBotContextMenu">
@@ -170,7 +172,10 @@
                   cal:Message.Attach="Stop"/>
         <MenuItem Header="Settings"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="OpenSettings"/>
+                  cal:Message.Attach="OpenSettings"/>        
+        <MenuItem Header="Remove"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Remove"/>
     </ContextMenu>
 
 

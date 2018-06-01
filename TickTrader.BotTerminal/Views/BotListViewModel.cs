@@ -87,5 +87,36 @@ namespace TickTrader.BotTerminal
         {
             return o is AlgoItemViewModel;
         }
+
+        public void AddBot(BotAgentViewModel botAgent)
+        {
+            try
+            {
+                //var model = new SetupPluginViewModel(botAgent.Connection.RemoteAgent, null, AlgoTypes.Robot, (context ?? BotManagerModel).GetSetupContextInfo());
+                //_shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+                //model.Closed += AlgoSetupClosed;
+            }
+            catch (Exception ex)
+            {
+                //_logger.Error(ex);
+            }
+        }
+
+
+        private void AlgoSetupClosed(SetupPluginViewModel setupModel, bool dlgResult)
+        {
+            setupModel.Closed -= AlgoSetupClosed;
+            if (dlgResult)
+            {
+                if (setupModel.Setup.IsEditMode)
+                {
+                    //UpdateBot(setupModel);
+                }
+                else
+                {
+                    //AddBot(setupModel);
+                }
+            }
+        }
     }
 }

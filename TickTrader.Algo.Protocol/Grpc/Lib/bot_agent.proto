@@ -21,6 +21,9 @@ service BotAgent
 
 	rpc StartBot(StartBotRequest) returns (StartBotResponse);
 	rpc StopBot(StopBotRequest) returns (StopBotResponse);
+	rpc AddBot(AddBotRequest) returns (AddBotResponse);
+	rpc RemoveBot(RemoveBotRequest) returns (RemoveBotResponse);
+	rpc ChangeBotConfig(ChangeBotConfigRequest) returns (ChangeBotConfigResponse);
 }
 
 message Request
@@ -148,7 +151,7 @@ message BotUpdateInfo
 
 message BotStateUpdateInfo
 {
-	BotModelInfo bot_id = 1;
+	BotModelInfo bot = 1;
 }
 
 message StartBotRequest
@@ -167,6 +170,40 @@ message StopBotRequest
 }
 
 message StopBotResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message AddBotRequest
+{
+	AccountKey account = 1;
+	PluginConfig config = 2;
+}
+
+message AddBotResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message RemoveBotRequest
+{
+	string bot_id = 1;
+	bool clean_log = 2;
+	bool clean_algo_data = 3;
+}
+
+message RemoveBotResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message ChangeBotConfigRequest
+{
+	string bot_id = 1;
+	PluginConfig new_config = 2;
+}
+
+message ChangeBotConfigResponse
 {
 	Request.RequestStatus status = 1;
 }
