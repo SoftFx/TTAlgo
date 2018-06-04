@@ -13,10 +13,10 @@ namespace TickTrader.Algo.Common.Model.Setup
         public SetupContextInfo Context { get; }
 
 
-        public SetupMetadata(SetupMetadataInfo metadataInfo, AccountMetadataInfo account, SetupContextInfo context)
+        public SetupMetadata(ApiMetadataInfo api, MappingCollectionInfo mappings, AccountMetadataInfo account, SetupContextInfo context)
         {
-            Api = metadataInfo.Api;
-            Mappings = metadataInfo.Mappings;
+            Api = api;
+            Mappings = mappings;
             Account = account;
             Context = context;
         }

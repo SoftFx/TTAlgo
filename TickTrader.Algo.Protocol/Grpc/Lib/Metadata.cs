@@ -73,38 +73,34 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "ZRgBIAEoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5B",
             "cGlEZXNjcmlwdG9yLlRpbWVGcmFtZRIbChNkZWZhdWx0X3N5bWJvbF9jb2Rl",
             "GAIgASgJEkYKD2RlZmF1bHRfbWFwcGluZxgDIAEoCzItLlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nS2V5IqABChFTZXR1cE1l",
-            "dGFkYXRhSW5mbxI/CgNhcGkYASABKAsyMi5UaWNrVHJhZGVyLkFsZ28uUHJv",
-            "dG9jb2wuR3JwYy5MaWIuQXBpTWV0YWRhdGFJbmZvEkoKCG1hcHBpbmdzGAIg",
-            "ASgLMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBp",
-            "bmdDb2xsZWN0aW9uSW5mbyKdAwoTQ29ubmVjdGlvbkVycm9ySW5mbxJYCgRj",
-            "b2RlGAEgASgOMkouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LkNvbm5lY3Rpb25FcnJvckluZm8uQ29ubmVjdGlvbkVycm9yQ29kZRIUCgx0",
-            "ZXh0X21lc3NhZ2UYAiABKAkilQIKE0Nvbm5lY3Rpb25FcnJvckNvZGUSCAoE",
-            "Tk9ORRAAEh0KGVVOS05PV05fQ09OTk5FQ1RJT05fRVJST1IQARIRCg1ORVRX",
-            "T1JLX0VSUk9SEAISCwoHVElNRU9VVBADEhMKD0JMT0NLRURfQUNDT1VOVBAE",
-            "EhQKEENMSUVOVF9JTklUSUFURUQQBRIXChNJTlZBTElEX0NSRURFTlRJQUxT",
-            "EAYSEwoPU0xPV19DT05ORUNUSU9OEAcSEAoMU0VSVkVSX0VSUk9SEAgSEQoN",
-            "TE9HSU5fREVMRVRFRBAJEhEKDVNFUlZFUl9MT0dPVVQQChIMCghDQU5DRUxF",
-            "RBALEhYKElJFSkVDVEVEX0JZX1NFUlZFUhAMIuICChBBY2NvdW50TW9kZWxJ",
-            "bmZvEjoKA2tleRgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5BY2NvdW50S2V5EhgKEHVzZV9uZXdfcHJvdG9jb2wYAiABKAgS",
-            "XQoQY29ubmVjdGlvbl9zdGF0ZRgDIAEoDjJDLlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TW9kZWxJbmZvLkNvbm5lY3Rpb25T",
-            "dGF0ZRJKCgpsYXN0X2Vycm9yGAQgASgLMjYuVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8iTQoPQ29ubmVj",
-            "dGlvblN0YXRlEgsKB09GRkxJTkUQABIOCgpDT05ORUNUSU5HEAESCgoGT05M",
-            "SU5FEAISEQoNRElTQ09OTkVDVElORxADIrkDCgxCb3RNb2RlbEluZm8SEwoL",
-            "aW5zdGFuY2VfaWQYASABKAkSPgoHYWNjb3VudBgCIAEoCzItLlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5EkcKBXN0YXRl",
-            "GAMgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJv",
-            "dE1vZGVsSW5mby5Cb3RTdGF0ZRIVCg1mYXVsdF9tZXNzYWdlGAQgASgJEj8K",
-            "BmNvbmZpZxgFIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5QbHVnaW5Db25maWcSRwoKZGVzY3JpcHRvchgGIAEoCzIzLlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5EZXNjcmlwdG9y",
-            "ImoKCEJvdFN0YXRlEgsKB09GRkxJTkUQABIMCghTVEFSVElORxABEgsKB0ZB",
-            "VUxURUQQAhIKCgZPTkxJTkUQAxIMCghTVE9QUElORxAEEgoKBkJST0tFThAF",
-            "EhAKDFJFQ09OTkVDVElORxAGYgZwcm90bzM="));
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nS2V5Ip0DChNDb25uZWN0",
+            "aW9uRXJyb3JJbmZvElgKBGNvZGUYASABKA4ySi5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuQ29ubmVjdGlvbkVycm9ySW5mby5Db25uZWN0",
+            "aW9uRXJyb3JDb2RlEhQKDHRleHRfbWVzc2FnZRgCIAEoCSKVAgoTQ29ubmVj",
+            "dGlvbkVycm9yQ29kZRIICgROT05FEAASHQoZVU5LTk9XTl9DT05OTkVDVElP",
+            "Tl9FUlJPUhABEhEKDU5FVFdPUktfRVJST1IQAhILCgdUSU1FT1VUEAMSEwoP",
+            "QkxPQ0tFRF9BQ0NPVU5UEAQSFAoQQ0xJRU5UX0lOSVRJQVRFRBAFEhcKE0lO",
+            "VkFMSURfQ1JFREVOVElBTFMQBhITCg9TTE9XX0NPTk5FQ1RJT04QBxIQCgxT",
+            "RVJWRVJfRVJST1IQCBIRCg1MT0dJTl9ERUxFVEVEEAkSEQoNU0VSVkVSX0xP",
+            "R09VVBAKEgwKCENBTkNFTEVEEAsSFgoSUkVKRUNURURfQllfU0VSVkVSEAwi",
+            "4gIKEEFjY291bnRNb2RlbEluZm8SOgoDa2V5GAEgASgLMi0uVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkSGAoQdXNlX25l",
+            "d19wcm90b2NvbBgCIAEoCBJdChBjb25uZWN0aW9uX3N0YXRlGAMgASgOMkMu",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRNb2Rl",
+            "bEluZm8uQ29ubmVjdGlvblN0YXRlEkoKCmxhc3RfZXJyb3IYBCABKAsyNi5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQ29ubmVjdGlvbkVy",
+            "cm9ySW5mbyJNCg9Db25uZWN0aW9uU3RhdGUSCwoHT0ZGTElORRAAEg4KCkNP",
+            "Tk5FQ1RJTkcQARIKCgZPTkxJTkUQAhIRCg1ESVNDT05ORUNUSU5HEAMiuQMK",
+            "DEJvdE1vZGVsSW5mbxITCgtpbnN0YW5jZV9pZBgBIAEoCRI+CgdhY2NvdW50",
+            "GAIgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFj",
+            "Y291bnRLZXkSRwoFc3RhdGUYAyABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuQm90TW9kZWxJbmZvLkJvdFN0YXRlEhUKDWZhdWx0",
+            "X21lc3NhZ2UYBCABKAkSPwoGY29uZmlnGAUgASgLMi8uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpbkNvbmZpZxJHCgpkZXNjcmlw",
+            "dG9yGAYgASgLMjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "LlBsdWdpbkRlc2NyaXB0b3IiagoIQm90U3RhdGUSCwoHT0ZGTElORRAAEgwK",
+            "CFNUQVJUSU5HEAESCwoHRkFVTFRFRBACEgoKBk9OTElORRADEgwKCFNUT1BQ",
+            "SU5HEAQSCgoGQlJPS0VOEAUSEAoMUkVDT05ORUNUSU5HEAZiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -118,7 +114,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo.Parser, new[]{ "BarToBarMappings", "BarToDoubleMappings", "QuoteToBarMappings", "QuoteToDoubleMappings", "DefaultFullBarToBarReduction", "DefaultFullBarToDoubleReduction", "DefaultBarToDoubleReduction", "DefaultQuoteToBarReduction", "DefaultQuoteToDoubleReduction" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo.Parser, new[]{ "TimeFrames", "LineStyles", "Thicknesses", "MarkerSizes" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo.Parser, new[]{ "DefaultTimeFrame", "DefaultSymbolCode", "DefaultMapping" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupMetadataInfo.Parser, new[]{ "Api", "Mappings" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Parser, new[]{ "Code", "TextMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Parser, new[]{ "Key", "UseNewProtocol", "ConnectionState", "LastError" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Types.ConnectionState) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) }, null)
@@ -1986,175 +1981,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
   }
 
-  public sealed partial class SetupMetadataInfo : pb::IMessage<SetupMetadataInfo> {
-    private static readonly pb::MessageParser<SetupMetadataInfo> _parser = new pb::MessageParser<SetupMetadataInfo>(() => new SetupMetadataInfo());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<SetupMetadataInfo> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[10]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SetupMetadataInfo() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SetupMetadataInfo(SetupMetadataInfo other) : this() {
-      Api = other.api_ != null ? other.Api.Clone() : null;
-      Mappings = other.mappings_ != null ? other.Mappings.Clone() : null;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public SetupMetadataInfo Clone() {
-      return new SetupMetadataInfo(this);
-    }
-
-    /// <summary>Field number for the "api" field.</summary>
-    public const int ApiFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo api_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo Api {
-      get { return api_; }
-      set {
-        api_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "mappings" field.</summary>
-    public const int MappingsFieldNumber = 2;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo mappings_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo Mappings {
-      get { return mappings_; }
-      set {
-        mappings_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as SetupMetadataInfo);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(SetupMetadataInfo other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Api, other.Api)) return false;
-      if (!object.Equals(Mappings, other.Mappings)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (api_ != null) hash ^= Api.GetHashCode();
-      if (mappings_ != null) hash ^= Mappings.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (api_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Api);
-      }
-      if (mappings_ != null) {
-        output.WriteRawTag(18);
-        output.WriteMessage(Mappings);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (api_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Api);
-      }
-      if (mappings_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Mappings);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(SetupMetadataInfo other) {
-      if (other == null) {
-        return;
-      }
-      if (other.api_ != null) {
-        if (api_ == null) {
-          api_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo();
-        }
-        Api.MergeFrom(other.Api);
-      }
-      if (other.mappings_ != null) {
-        if (mappings_ == null) {
-          mappings_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo();
-        }
-        Mappings.MergeFrom(other.Mappings);
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            if (api_ == null) {
-              api_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo();
-            }
-            input.ReadMessage(api_);
-            break;
-          }
-          case 18: {
-            if (mappings_ == null) {
-              mappings_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo();
-            }
-            input.ReadMessage(mappings_);
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
   public sealed partial class ConnectionErrorInfo : pb::IMessage<ConnectionErrorInfo> {
     private static readonly pb::MessageParser<ConnectionErrorInfo> _parser = new pb::MessageParser<ConnectionErrorInfo>(() => new ConnectionErrorInfo());
     private pb::UnknownFieldSet _unknownFields;
@@ -2163,7 +1989,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[11]; }
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2343,7 +2169,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[12]; }
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2582,7 +2408,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[13]; }
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

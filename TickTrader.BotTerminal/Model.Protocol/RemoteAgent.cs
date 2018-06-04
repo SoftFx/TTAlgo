@@ -32,29 +32,34 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void StartBot(string instanceId)
+        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
         {
-            _protocolClient.StartBot(instanceId);
+            return _protocolClient.TestAccount(account);
         }
 
-        public void StopBot(string instanceId)
+        public Task StartBot(string instanceId)
         {
-            _protocolClient.StopBot(instanceId);
+            return _protocolClient.StartBot(instanceId);
         }
 
-        public void AddBot(AccountKey account, PluginConfig config)
+        public Task StopBot(string instanceId)
         {
-            _protocolClient.AddBot(account, config);
+            return _protocolClient.StopBot(instanceId);
         }
 
-        public void RemoveBot(string instanceId)
+        public Task AddBot(AccountKey account, PluginConfig config)
         {
-            _protocolClient.RemoveBot(instanceId);
+            return _protocolClient.AddBot(account, config);
         }
 
-        public void ChangeBotConfig(string instanceId, PluginConfig newConfig)
+        public Task RemoveBot(string instanceId)
         {
-            _protocolClient.ChangeBotConfig(instanceId, newConfig);
+            return _protocolClient.RemoveBot(instanceId);
+        }
+
+        public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
+        {
+            return _protocolClient.ChangeBotConfig(instanceId, newConfig);
         }
 
 
@@ -71,9 +76,10 @@ namespace TickTrader.BotTerminal
         public IPluginIdProvider IdProvider => _idProvider;
 
 
-        public Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
+        public async Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
         {
-            throw new NotImplementedException();
+            var accountMetadata = await _protocolClient.GetAccountMetadata(account);
+            return new SetupMetadata(BotAgent.ApiMetadata, BotAgent.Mappings, accountMetadata, BotAgent.SetupContext);
         }
 
         public Task<bool> AddOrUpdatePlugin(PluginConfig config, bool start)

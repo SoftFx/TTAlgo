@@ -243,6 +243,10 @@ namespace TickTrader.Algo.Protocol
 
         #region Requests
 
+        public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
+
+        public abstract Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+
         public abstract Task StartBot(string botId);
 
         public abstract Task StopBot(string botId);

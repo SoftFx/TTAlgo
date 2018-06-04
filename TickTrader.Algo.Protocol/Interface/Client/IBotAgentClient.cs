@@ -13,6 +13,12 @@ namespace TickTrader.Algo.Protocol
 
         void InitBotList(List<BotModelInfo> report);
 
+        void SetApiMetadata(ApiMetadataInfo apiMetadata);
+
+        void SetMappingsInfo(MappingCollectionInfo mappings);
+
+        void SetSetupContext(SetupContextInfo setupContext);
+
         #endregion Initialization
 
 

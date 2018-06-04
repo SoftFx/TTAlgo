@@ -95,37 +95,76 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "ZXdfY29uZmlnGAIgASgLMi8uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
             "cGMuTGliLlBsdWdpbkNvbmZpZyJjChdDaGFuZ2VCb3RDb25maWdSZXNwb25z",
             "ZRJICgZzdGF0dXMYASABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuUmVxdWVzdC5SZXF1ZXN0U3RhdHVzMskKCghCb3RBZ2VudBJq",
-            "CgVMb2dpbhIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5M",
-            "b2dpblJlcXVlc3QaMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuTG9naW5SZXNwb25zZRJ/Cg5HZXRQYWNrYWdlTGlzdBI1LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlTGlzdFJlcXVlc3Qa",
-            "Ni5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGFja2FnZUxp",
-            "c3RSZXNwb25zZRJ/Cg5HZXRBY2NvdW50TGlzdBI1LlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TGlzdFJlcXVlc3QaNi5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudExpc3RSZXNw",
-            "b25zZRJzCgpHZXRCb3RMaXN0EjEuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
-            "LkdycGMuTGliLkJvdExpc3RSZXF1ZXN0GjIuVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkJvdExpc3RSZXNwb25zZRKDAQoSU3Vic2NyaWJl",
-            "VG9VcGRhdGVzEjwuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LlN1YnNjcmliZVRvVXBkYXRlc1JlcXVlc3QaLS5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuVXBkYXRlSW5mbzABEnsKEkdldEFjY291bnRN",
-            "ZXRhZGF0YRItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5B",
-            "Y2NvdW50S2V5GjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LkFjY291bnRNZXRhZGF0YUluZm8ScwoIU3RhcnRCb3QSMi5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3RhcnRCb3RSZXF1ZXN0GjMuVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN0YXJ0Qm90UmVzcG9u",
-            "c2UScAoHU3RvcEJvdBIxLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5TdG9wQm90UmVxdWVzdBoyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5TdG9wQm90UmVzcG9uc2USbQoGQWRkQm90EjAuVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFkZEJvdFJlcXVlc3QaMS5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWRkQm90UmVzcG9u",
-            "c2USdgoJUmVtb3ZlQm90EjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLlJlbW92ZUJvdFJlcXVlc3QaNC5UaWNrVHJhZGVyLkFsZ28uUHJv",
-            "dG9jb2wuR3JwYy5MaWIuUmVtb3ZlQm90UmVzcG9uc2USiAEKD0NoYW5nZUJv",
-            "dENvbmZpZxI5LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5D",
-            "aGFuZ2VCb3RDb25maWdSZXF1ZXN0GjouVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLkNoYW5nZUJvdENvbmZpZ1Jlc3BvbnNlYgZwcm90bzM="));
+            "R3JwYy5MaWIuUmVxdWVzdC5SZXF1ZXN0U3RhdHVzIhQKEkFwaU1ldGFkYXRh",
+            "UmVxdWVzdCKpAQoTQXBpTWV0YWRhdGFSZXNwb25zZRJICgZzdGF0dXMYASAB",
+            "KA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVz",
+            "dC5SZXF1ZXN0U3RhdHVzEkgKDGFwaV9tZXRhZGF0YRgCIAEoCzIyLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlNZXRhZGF0YUluZm8i",
+            "FQoTTWFwcGluZ3NJbmZvUmVxdWVzdCKsAQoUTWFwcGluZ3NJbmZvUmVzcG9u",
+            "c2USSAoGc3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cxJKCghtYXBwaW5ncxgC",
+            "IAEoCzI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBw",
+            "aW5nQ29sbGVjdGlvbkluZm8iFQoTU2V0dXBDb250ZXh0UmVxdWVzdCKsAQoU",
+            "U2V0dXBDb250ZXh0UmVzcG9uc2USSAoGc3RhdHVzGAEgASgOMjguVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0",
+            "YXR1cxJKCg1zZXR1cF9jb250ZXh0GAIgASgLMjMuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlNldHVwQ29udGV4dEluZm8iWAoWQWNjb3Vu",
+            "dE1ldGFkYXRhUmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkigQIKF0FjY291",
+            "bnRNZXRhZGF0YVJlc3BvbnNlEkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0",
+            "dXMSSgoKZXJyb3JfaW5mbxgCIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5Db25uZWN0aW9uRXJyb3JJbmZvElAKEGFjY291bnRf",
+            "bWV0YWRhdGEYAyABKAsyNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuQWNjb3VudE1ldGFkYXRhSW5mbyJUChJUZXN0QWNjb3VudFJlcXVl",
+            "c3QSPgoHYWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5BY2NvdW50S2V5IqsBChNUZXN0QWNjb3VudFJlc3BvbnNl",
+            "EkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMSSgoKZXJyb3JfaW5mbxgC",
+            "IAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Db25u",
+            "ZWN0aW9uRXJyb3JJbmZvMuMOCghCb3RBZ2VudBJqCgVMb2dpbhIvLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dpblJlcXVlc3QaMC5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTG9naW5SZXNwb25z",
+            "ZRJ/Cg5HZXRQYWNrYWdlTGlzdBI1LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5QYWNrYWdlTGlzdFJlcXVlc3QaNi5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUGFja2FnZUxpc3RSZXNwb25zZRJ/Cg5H",
+            "ZXRBY2NvdW50TGlzdBI1LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5BY2NvdW50TGlzdFJlcXVlc3QaNi5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuQWNjb3VudExpc3RSZXNwb25zZRJzCgpHZXRCb3RM",
+            "aXN0EjEuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdExp",
+            "c3RSZXF1ZXN0GjIuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "LkJvdExpc3RSZXNwb25zZRKDAQoSU3Vic2NyaWJlVG9VcGRhdGVzEjwuVGlj",
+            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN1YnNjcmliZVRvVXBk",
+            "YXRlc1JlcXVlc3QaLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuVXBkYXRlSW5mbzABEn8KDkdldEFwaU1ldGFkYXRhEjUuVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaU1ldGFkYXRhUmVxdWVzdBo2",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlNZXRhZGF0",
+            "YVJlc3BvbnNlEoIBCg9HZXRNYXBwaW5nc0luZm8SNi5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ3NJbmZvUmVxdWVzdBo3LlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nc0luZm9S",
+            "ZXNwb25zZRKCAQoPR2V0U2V0dXBDb250ZXh0EjYuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlNldHVwQ29udGV4dFJlcXVlc3QaNy5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU2V0dXBDb250ZXh0UmVz",
+            "cG9uc2USiwEKEkdldEFjY291bnRNZXRhZGF0YRI5LlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TWV0YWRhdGFSZXF1ZXN0Gjou",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRNZXRh",
+            "ZGF0YVJlc3BvbnNlEnwKC1Rlc3RBY2NvdW50EjUuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlRlc3RBY2NvdW50UmVxdWVzdBo2LlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5UZXN0QWNjb3VudFJlc3Bv",
+            "bnNlEnMKCFN0YXJ0Qm90EjIuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLlN0YXJ0Qm90UmVxdWVzdBozLlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5TdGFydEJvdFJlc3BvbnNlEnAKB1N0b3BCb3QSMS5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3RvcEJvdFJlcXVl",
+            "c3QaMi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3RvcEJv",
+            "dFJlc3BvbnNlEm0KBkFkZEJvdBIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5BZGRCb3RSZXF1ZXN0GjEuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLkFkZEJvdFJlc3BvbnNlEnYKCVJlbW92ZUJvdBIz",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZW1vdmVCb3RS",
+            "ZXF1ZXN0GjQuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJl",
+            "bW92ZUJvdFJlc3BvbnNlEogBCg9DaGFuZ2VCb3RDb25maWcSOS5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQ2hhbmdlQm90Q29uZmlnUmVx",
+            "dWVzdBo6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5DaGFu",
+            "Z2VCb3RDb25maWdSZXNwb25zZWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -156,7 +195,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest.Parser, new[]{ "BotId", "CleanLog", "CleanAlgoData" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse.Parser, new[]{ "Status" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest.Parser, new[]{ "BotId", "NewConfig" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse.Parser, new[]{ "Status" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse.Parser, new[]{ "Status", "ApiMetadata" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse.Parser, new[]{ "Status", "Mappings" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse.Parser, new[]{ "Status", "SetupContext" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest.Parser, new[]{ "Account" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse.Parser, new[]{ "Status", "ErrorInfo", "AccountMetadata" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest.Parser, new[]{ "Account" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse.Parser, new[]{ "Status", "ErrorInfo" }, null, null, null)
           }));
     }
     #endregion
@@ -4325,6 +4374,1428 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           case 8: {
             status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class ApiMetadataRequest : pb::IMessage<ApiMetadataRequest> {
+    private static readonly pb::MessageParser<ApiMetadataRequest> _parser = new pb::MessageParser<ApiMetadataRequest>(() => new ApiMetadataRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<ApiMetadataRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[28]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ApiMetadataRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ApiMetadataRequest(ApiMetadataRequest other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ApiMetadataRequest Clone() {
+      return new ApiMetadataRequest(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as ApiMetadataRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(ApiMetadataRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ApiMetadataRequest other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class ApiMetadataResponse : pb::IMessage<ApiMetadataResponse> {
+    private static readonly pb::MessageParser<ApiMetadataResponse> _parser = new pb::MessageParser<ApiMetadataResponse>(() => new ApiMetadataResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<ApiMetadataResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[29]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ApiMetadataResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ApiMetadataResponse(ApiMetadataResponse other) : this() {
+      status_ = other.status_;
+      ApiMetadata = other.apiMetadata_ != null ? other.ApiMetadata.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ApiMetadataResponse Clone() {
+      return new ApiMetadataResponse(this);
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "api_metadata" field.</summary>
+    public const int ApiMetadataFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo apiMetadata_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo ApiMetadata {
+      get { return apiMetadata_; }
+      set {
+        apiMetadata_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as ApiMetadataResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(ApiMetadataResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Status != other.Status) return false;
+      if (!object.Equals(ApiMetadata, other.ApiMetadata)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (apiMetadata_ != null) hash ^= ApiMetadata.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Status != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Status);
+      }
+      if (apiMetadata_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(ApiMetadata);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (apiMetadata_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ApiMetadata);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ApiMetadataResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.apiMetadata_ != null) {
+        if (apiMetadata_ == null) {
+          apiMetadata_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo();
+        }
+        ApiMetadata.MergeFrom(other.ApiMetadata);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (apiMetadata_ == null) {
+              apiMetadata_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo();
+            }
+            input.ReadMessage(apiMetadata_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class MappingsInfoRequest : pb::IMessage<MappingsInfoRequest> {
+    private static readonly pb::MessageParser<MappingsInfoRequest> _parser = new pb::MessageParser<MappingsInfoRequest>(() => new MappingsInfoRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<MappingsInfoRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[30]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MappingsInfoRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MappingsInfoRequest(MappingsInfoRequest other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MappingsInfoRequest Clone() {
+      return new MappingsInfoRequest(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as MappingsInfoRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(MappingsInfoRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(MappingsInfoRequest other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class MappingsInfoResponse : pb::IMessage<MappingsInfoResponse> {
+    private static readonly pb::MessageParser<MappingsInfoResponse> _parser = new pb::MessageParser<MappingsInfoResponse>(() => new MappingsInfoResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<MappingsInfoResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[31]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MappingsInfoResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MappingsInfoResponse(MappingsInfoResponse other) : this() {
+      status_ = other.status_;
+      Mappings = other.mappings_ != null ? other.Mappings.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MappingsInfoResponse Clone() {
+      return new MappingsInfoResponse(this);
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "mappings" field.</summary>
+    public const int MappingsFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo mappings_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo Mappings {
+      get { return mappings_; }
+      set {
+        mappings_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as MappingsInfoResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(MappingsInfoResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Status != other.Status) return false;
+      if (!object.Equals(Mappings, other.Mappings)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (mappings_ != null) hash ^= Mappings.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Status != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Status);
+      }
+      if (mappings_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Mappings);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (mappings_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Mappings);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(MappingsInfoResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.mappings_ != null) {
+        if (mappings_ == null) {
+          mappings_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo();
+        }
+        Mappings.MergeFrom(other.Mappings);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (mappings_ == null) {
+              mappings_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo();
+            }
+            input.ReadMessage(mappings_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class SetupContextRequest : pb::IMessage<SetupContextRequest> {
+    private static readonly pb::MessageParser<SetupContextRequest> _parser = new pb::MessageParser<SetupContextRequest>(() => new SetupContextRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<SetupContextRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[32]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SetupContextRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SetupContextRequest(SetupContextRequest other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SetupContextRequest Clone() {
+      return new SetupContextRequest(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as SetupContextRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(SetupContextRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(SetupContextRequest other) {
+      if (other == null) {
+        return;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class SetupContextResponse : pb::IMessage<SetupContextResponse> {
+    private static readonly pb::MessageParser<SetupContextResponse> _parser = new pb::MessageParser<SetupContextResponse>(() => new SetupContextResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<SetupContextResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[33]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SetupContextResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SetupContextResponse(SetupContextResponse other) : this() {
+      status_ = other.status_;
+      SetupContext = other.setupContext_ != null ? other.SetupContext.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public SetupContextResponse Clone() {
+      return new SetupContextResponse(this);
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "setup_context" field.</summary>
+    public const int SetupContextFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo setupContext_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo SetupContext {
+      get { return setupContext_; }
+      set {
+        setupContext_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as SetupContextResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(SetupContextResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Status != other.Status) return false;
+      if (!object.Equals(SetupContext, other.SetupContext)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (setupContext_ != null) hash ^= SetupContext.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Status != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Status);
+      }
+      if (setupContext_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(SetupContext);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (setupContext_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(SetupContext);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(SetupContextResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.setupContext_ != null) {
+        if (setupContext_ == null) {
+          setupContext_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo();
+        }
+        SetupContext.MergeFrom(other.SetupContext);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (setupContext_ == null) {
+              setupContext_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo();
+            }
+            input.ReadMessage(setupContext_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class AccountMetadataRequest : pb::IMessage<AccountMetadataRequest> {
+    private static readonly pb::MessageParser<AccountMetadataRequest> _parser = new pb::MessageParser<AccountMetadataRequest>(() => new AccountMetadataRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<AccountMetadataRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[34]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AccountMetadataRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AccountMetadataRequest(AccountMetadataRequest other) : this() {
+      Account = other.account_ != null ? other.Account.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AccountMetadataRequest Clone() {
+      return new AccountMetadataRequest(this);
+    }
+
+    /// <summary>Field number for the "account" field.</summary>
+    public const int AccountFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey account_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey Account {
+      get { return account_; }
+      set {
+        account_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as AccountMetadataRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(AccountMetadataRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Account, other.Account)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (account_ != null) hash ^= Account.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (account_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Account);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (account_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Account);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(AccountMetadataRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.account_ != null) {
+        if (account_ == null) {
+          account_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey();
+        }
+        Account.MergeFrom(other.Account);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (account_ == null) {
+              account_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey();
+            }
+            input.ReadMessage(account_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class AccountMetadataResponse : pb::IMessage<AccountMetadataResponse> {
+    private static readonly pb::MessageParser<AccountMetadataResponse> _parser = new pb::MessageParser<AccountMetadataResponse>(() => new AccountMetadataResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<AccountMetadataResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[35]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AccountMetadataResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AccountMetadataResponse(AccountMetadataResponse other) : this() {
+      status_ = other.status_;
+      ErrorInfo = other.errorInfo_ != null ? other.ErrorInfo.Clone() : null;
+      AccountMetadata = other.accountMetadata_ != null ? other.AccountMetadata.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AccountMetadataResponse Clone() {
+      return new AccountMetadataResponse(this);
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "error_info" field.</summary>
+    public const int ErrorInfoFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo errorInfo_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo ErrorInfo {
+      get { return errorInfo_; }
+      set {
+        errorInfo_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "account_metadata" field.</summary>
+    public const int AccountMetadataFieldNumber = 3;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo accountMetadata_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo AccountMetadata {
+      get { return accountMetadata_; }
+      set {
+        accountMetadata_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as AccountMetadataResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(AccountMetadataResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Status != other.Status) return false;
+      if (!object.Equals(ErrorInfo, other.ErrorInfo)) return false;
+      if (!object.Equals(AccountMetadata, other.AccountMetadata)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (errorInfo_ != null) hash ^= ErrorInfo.GetHashCode();
+      if (accountMetadata_ != null) hash ^= AccountMetadata.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Status != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Status);
+      }
+      if (errorInfo_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(ErrorInfo);
+      }
+      if (accountMetadata_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(AccountMetadata);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (errorInfo_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ErrorInfo);
+      }
+      if (accountMetadata_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(AccountMetadata);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(AccountMetadataResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.errorInfo_ != null) {
+        if (errorInfo_ == null) {
+          errorInfo_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo();
+        }
+        ErrorInfo.MergeFrom(other.ErrorInfo);
+      }
+      if (other.accountMetadata_ != null) {
+        if (accountMetadata_ == null) {
+          accountMetadata_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo();
+        }
+        AccountMetadata.MergeFrom(other.AccountMetadata);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (errorInfo_ == null) {
+              errorInfo_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo();
+            }
+            input.ReadMessage(errorInfo_);
+            break;
+          }
+          case 26: {
+            if (accountMetadata_ == null) {
+              accountMetadata_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo();
+            }
+            input.ReadMessage(accountMetadata_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class TestAccountRequest : pb::IMessage<TestAccountRequest> {
+    private static readonly pb::MessageParser<TestAccountRequest> _parser = new pb::MessageParser<TestAccountRequest>(() => new TestAccountRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TestAccountRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[36]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestAccountRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestAccountRequest(TestAccountRequest other) : this() {
+      Account = other.account_ != null ? other.Account.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestAccountRequest Clone() {
+      return new TestAccountRequest(this);
+    }
+
+    /// <summary>Field number for the "account" field.</summary>
+    public const int AccountFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey account_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey Account {
+      get { return account_; }
+      set {
+        account_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TestAccountRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TestAccountRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Account, other.Account)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (account_ != null) hash ^= Account.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (account_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Account);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (account_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Account);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TestAccountRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.account_ != null) {
+        if (account_ == null) {
+          account_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey();
+        }
+        Account.MergeFrom(other.Account);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (account_ == null) {
+              account_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.AccountKey();
+            }
+            input.ReadMessage(account_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class TestAccountResponse : pb::IMessage<TestAccountResponse> {
+    private static readonly pb::MessageParser<TestAccountResponse> _parser = new pb::MessageParser<TestAccountResponse>(() => new TestAccountResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TestAccountResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[37]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestAccountResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestAccountResponse(TestAccountResponse other) : this() {
+      status_ = other.status_;
+      ErrorInfo = other.errorInfo_ != null ? other.ErrorInfo.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestAccountResponse Clone() {
+      return new TestAccountResponse(this);
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "error_info" field.</summary>
+    public const int ErrorInfoFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo errorInfo_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo ErrorInfo {
+      get { return errorInfo_; }
+      set {
+        errorInfo_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TestAccountResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TestAccountResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Status != other.Status) return false;
+      if (!object.Equals(ErrorInfo, other.ErrorInfo)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (errorInfo_ != null) hash ^= ErrorInfo.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Status != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Status);
+      }
+      if (errorInfo_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(ErrorInfo);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (errorInfo_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ErrorInfo);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TestAccountResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.errorInfo_ != null) {
+        if (errorInfo_ == null) {
+          errorInfo_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo();
+        }
+        ErrorInfo.MergeFrom(other.ErrorInfo);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (errorInfo_ == null) {
+              errorInfo_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo();
+            }
+            input.ReadMessage(errorInfo_);
             break;
           }
         }

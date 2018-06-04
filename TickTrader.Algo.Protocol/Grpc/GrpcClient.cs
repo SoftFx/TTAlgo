@@ -57,6 +57,21 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void Init()
         {
+            var apiMetadata = _client.GetApiMetadata(new Lib.ApiMetadataRequest());
+            if (FailConnectionForNonSuccess(apiMetadata.Status))
+                return;
+            AgentClient.SetApiMetadata(apiMetadata.ApiMetadata.Convert());
+
+            var mappings = _client.GetMappingsInfo(new Lib.MappingsInfoRequest());
+            if (FailConnectionForNonSuccess(mappings.Status))
+                return;
+            AgentClient.SetMappingsInfo(mappings.Mappings.Convert());
+
+            var setupContext = _client.GetSetupContext(new Lib.SetupContextRequest());
+            if (FailConnectionForNonSuccess(setupContext.Status))
+                return;
+            AgentClient.SetSetupContext(setupContext.SetupContext.Convert());
+
             var packages = _client.GetPackageList(new Lib.PackageListRequest());
             if (FailConnectionForNonSuccess(packages.Status))
                 return;
@@ -156,6 +171,22 @@ namespace TickTrader.Algo.Protocol.Grpc
 
 
         #region Requests
+
+        public override async Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account)
+        {
+            var response = await _client.GetAccountMetadataAsync(new Lib.AccountMetadataRequest { Account = account.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+            return response.AccountMetadata.Convert();
+        }
+
+        public override async Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        {
+            var response = await _client.TestAccountAsync(new Lib.TestAccountRequest { Account = account.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+            return response.ErrorInfo.Convert();
+        }
 
         public override async Task StartBot(string botId)
         {

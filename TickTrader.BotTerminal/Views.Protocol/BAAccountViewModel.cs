@@ -7,6 +7,7 @@ namespace TickTrader.BotTerminal
     internal class BAAccountViewModel : PropertyChangedBase
     {
         private AccountModelInfo _entity;
+        private RemoteAgent _remoteAgent;
 
 
         public string Login => _entity.Key.Login;
@@ -30,18 +31,25 @@ namespace TickTrader.BotTerminal
         public IObservableList<BABotViewModel> Bots { get; }
 
 
-        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, BotAgentModel botAgent)
+        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, RemoteAgent remoteAgent)
         {
             _entity = entity;
+            _remoteAgent = remoteAgent;
+
             AccountDisplayName = $"{_entity.Key.Server} - {_entity.Key.Login}";
 
             Bots = bots.Where((k, b) => BotIsAttachedToAccount(b))
                 .OrderBy((k, b) => b.InstanceId)
                 .AsObservable();
 
-            botAgent.AccountStateChanged += BotAgentOnAccountStateChanged;
+            remoteAgent.BotAgent.AccountStateChanged += BotAgentOnAccountStateChanged;
         }
 
+
+        public void TestAccount()
+        {
+            _remoteAgent.TestAccount(_entity.Key);
+        }
 
         public bool BotIsAttachedToAccount(BABotViewModel bot)
         {

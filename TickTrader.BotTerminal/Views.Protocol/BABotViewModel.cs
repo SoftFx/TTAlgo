@@ -41,6 +41,11 @@ namespace TickTrader.BotTerminal
             _remoteAgent.RemoveBot(_entity.InstanceId);
         }
 
+        public void OpenSettings()
+        {
+
+        }
+
 
         private void BotAgentOnBotStateChanged(string instanceId)
         {

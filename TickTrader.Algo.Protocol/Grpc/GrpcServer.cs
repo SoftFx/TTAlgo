@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     public class GrpcServer : ProtocolServer
     {
+        private BotAgentServerImpl _impl;
         private GrpcCore.Server _server;
 
 
@@ -21,9 +22,10 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void StartServer()
         {
+            _impl = new BotAgentServerImpl(AgentServer, Logger);
             _server = new GrpcCore.Server
             {
-                Services = { Lib.BotAgent.BindService(new BotAgentServerImpl(AgentServer, Logger)) },
+                Services = { Lib.BotAgent.BindService(_impl) },
                 Ports = { new ServerPort("localhost", Settings.ProtocolSettings.ListeningPort, ServerCredentials.Insecure) },
             };
             _server.Start();
@@ -31,6 +33,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void StopServer()
         {
+            _impl.DisconnectAllClients();
             _server.ShutdownAsync().Wait();
         }
     }
@@ -40,7 +43,7 @@ namespace TickTrader.Algo.Protocol.Grpc
     {
         private IBotAgentServer _botAgent;
         private ILogger _logger;
-        private List<IServerStreamWriter<Lib.UpdateInfo>> _updateListeners;
+        private List<Tuple<TaskCompletionSource<object>, IServerStreamWriter<Lib.UpdateInfo>>> _updateListeners;
 
 
         public BotAgentServerImpl(IBotAgentServer botAgent, ILogger logger)
@@ -48,13 +51,26 @@ namespace TickTrader.Algo.Protocol.Grpc
             _botAgent = botAgent;
             _logger = logger;
 
-            _updateListeners = new List<IServerStreamWriter<Lib.UpdateInfo>>();
+            _updateListeners = new List<Tuple<TaskCompletionSource<object>, IServerStreamWriter<Lib.UpdateInfo>>>();
 
             _botAgent.PackageUpdated += OnPackageUpdate;
             _botAgent.AccountUpdated += OnAccountUpdate;
             _botAgent.AccountStateUpdated += OnAccountStateUpdate;
             _botAgent.BotUpdated += OnBotUpdate;
             _botAgent.BotStateUpdated += OnBotStateUpdate;
+        }
+
+
+        public void DisconnectAllClients()
+        {
+            lock (_updateListeners)
+            {
+                foreach (var listener in _updateListeners)
+                {
+                    listener.Item1.SetCanceled();
+                }
+                _updateListeners.Clear();
+            }
         }
 
 
@@ -116,17 +132,87 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override Task SubscribeToUpdates(Lib.SubscribeToUpdatesRequest request, IServerStreamWriter<Lib.UpdateInfo> responseStream, ServerCallContext context)
         {
+            var tcs = new TaskCompletionSource<object>();
             lock (_updateListeners)
             {
-                _updateListeners.Add(responseStream);
+                _updateListeners.Add(new Tuple<TaskCompletionSource<object>, IServerStreamWriter<Lib.UpdateInfo>>(tcs, responseStream));
             }
-            return new TaskCompletionSource<object>().Task;
-            //return Task.FromResult(this);
+            return tcs.Task;
         }
 
-        public override Task<Lib.AccountMetadataInfo> GetAccountMetadata(Lib.AccountKey request, ServerCallContext context)
+        public override Task<Lib.ApiMetadataResponse> GetApiMetadata(Lib.ApiMetadataRequest request, ServerCallContext context)
         {
-            return base.GetAccountMetadata(request, context);
+            var res = new Lib.ApiMetadataResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.ApiMetadata = _botAgent.GetApiMetadata().Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to get api metadata");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.MappingsInfoResponse> GetMappingsInfo(Lib.MappingsInfoRequest request, ServerCallContext context)
+        {
+            var res = new Lib.MappingsInfoResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.Mappings = _botAgent.GetMappingsInfo().Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to get mappings collection");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.SetupContextResponse> GetSetupContext(Lib.SetupContextRequest request, ServerCallContext context)
+        {
+            var res = new Lib.SetupContextResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.SetupContext = _botAgent.GetSetupContext().Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to get setup context");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.AccountMetadataResponse> GetAccountMetadata(Lib.AccountMetadataRequest request, ServerCallContext context)
+        {
+            var res = new Lib.AccountMetadataResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.AccountMetadata = _botAgent.GetAccountMetadata(request.Account.Convert()).Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to get account metadata");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.TestAccountResponse> TestAccount(Lib.TestAccountRequest request, ServerCallContext context)
+        {
+            var res = new Lib.TestAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.ErrorInfo = _botAgent.TestAccount(request.Account.Convert()).Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to test account");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
         }
 
         public override Task<Lib.StartBotResponse> StartBot(Lib.StartBotRequest request, ServerCallContext context)
@@ -243,12 +329,19 @@ namespace TickTrader.Algo.Protocol.Grpc
                 {
                     foreach (var listener in _updateListeners)
                     {
-                        listener.WriteAsync(update);
+                        try
+                        {
+                            listener.Item2.WriteAsync(update);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "Failed to send update");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Failed to send update");
+                    _logger.Error(ex, "Failed to multicast update");
                 }
             }
         }

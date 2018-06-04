@@ -61,12 +61,13 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public List<PackageInfo> GetPackages() => CallActor(a => a._packageStorage.GetPackages());
-            public PackageInfo GetPackage(string package) => CallActor(a => a._packageStorage.GetPackage(package));
+            public List<PackageInfo> GetPackages() => CallActor(a => a.GetPackages());
+            public PackageInfo GetPackage(string package) => CallActor(a => a.GetPackage(package));
             public void UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
             public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
-            public List<PluginInfo> GetAllPlugins() => throw new NotImplementedException();
-            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => throw new NotImplementedException();
+            public List<PluginInfo> GetAllPlugins() => CallActor(a => a.GetAllPlugins());
+            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActor(a => a.GetPluginsByType(type));
+            public MappingCollectionInfo GetMappingsInfo() => CallActor(a => a.GetMappingsInfo());
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -122,7 +123,7 @@ namespace TickTrader.BotAgent.BA.Models
                 return new BotLog.Handler(logRef);
             }
 
-            public ConnectionErrorCodes GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
+            public ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
             {
                 var result = CallActor(a => a.GetAccountMetadata(key));
                 info = result.Item2;
@@ -169,16 +170,16 @@ namespace TickTrader.BotAgent.BA.Models
             return testResult;
         }
 
-        private async Task<Tuple<ConnectionErrorCodes, AccountMetadataInfo>> GetAccountMetadata(AccountKey key)
+        private async Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key)
         {
             try
             {
                 var metadata = await GetAccountOrThrow(key).GetMetadata();
-                return Tuple.Create(ConnectionErrorCodes.None, metadata);
+                return Tuple.Create(ConnectionErrorInfo.Ok, metadata);
             }
             catch (CommunicationException ex)
             {
-                return Tuple.Create(ex.FdkCode, (AccountMetadataInfo)null);
+                return Tuple.Create(new ConnectionErrorInfo(ex.FdkCode, ex.Message), (AccountMetadataInfo)null);
             }
         }
 
@@ -414,6 +415,16 @@ namespace TickTrader.BotAgent.BA.Models
 
         private event Action<PackageInfo, ChangeAction> PackageChanged;
 
+        private List<PackageInfo> GetPackages()
+        {
+            return _packageStorage.Library.GetPackages().ToList();
+        }
+
+        private PackageInfo GetPackage(string packageName)
+        {
+            return _packageStorage.Library.GetPackage(PackageStorage.GetPackageKey(packageName));
+        }
+
         private void UpdatePackage(byte[] fileContent, string fileName)
         {
             _packageStorage.Update(fileContent, fileName);
@@ -436,14 +447,19 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        private PluginInfo[] GetAllPlugins()
+        private List<PluginInfo> GetAllPlugins()
         {
-            return _packageStorage.Library.GetPlugins().ToArray();
+            return _packageStorage.Library.GetPlugins().ToList();
         }
 
-        private PluginInfo[] GetPluginsByType(AlgoTypes type)
+        private List<PluginInfo> GetPluginsByType(AlgoTypes type)
         {
-            return _packageStorage.Library.GetPlugins(type).ToArray();
+            return _packageStorage.Library.GetPlugins(type).ToList();
+        }
+
+        private MappingCollectionInfo GetMappingsInfo()
+        {
+            return _packageStorage.Mappings.ToInfo();
         }
 
         #endregion

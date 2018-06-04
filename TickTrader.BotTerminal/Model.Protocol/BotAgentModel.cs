@@ -15,6 +15,13 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, BotModelInfo> _bots;
 
 
+        public ApiMetadataInfo ApiMetadata { get; private set; }
+
+        public MappingCollectionInfo Mappings { get; private set; }
+
+        public SetupContextInfo SetupContext { get; private set; }
+
+
         public IAlgoLibrary Library => _algoLibrary;
 
         public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
@@ -44,6 +51,9 @@ namespace TickTrader.BotTerminal
                 _algoLibrary.ResetPackages();
                 _accounts.Clear();
                 _bots.Clear();
+                ApiMetadata = null;
+                Mappings = null;
+                SetupContext = null;
             });
         }
 
@@ -126,6 +136,21 @@ namespace TickTrader.BotTerminal
                         break;
                 }
             });
+        }
+
+        public void SetApiMetadata(ApiMetadataInfo apiMetadata)
+        {
+            ApiMetadata = apiMetadata;
+        }
+
+        public void SetMappingsInfo(MappingCollectionInfo mappings)
+        {
+            Mappings = mappings;
+        }
+
+        public void SetSetupContext(SetupContextInfo setupContext)
+        {
+            SetupContext = setupContext;
         }
 
         public void UpdateAccountState(UpdateInfo<AccountModelInfo> update)

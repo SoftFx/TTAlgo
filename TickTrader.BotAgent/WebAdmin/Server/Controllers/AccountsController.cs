@@ -35,15 +35,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                var connErrorCode = _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login)), out AccountMetadataInfo info);
+                var connError = _botAgent.GetAccountMetadata(new AccountKey(WebUtility.UrlDecode(server), WebUtility.UrlDecode(login)), out AccountMetadataInfo info);
 
-                if (connErrorCode == ConnectionErrorCodes.None)
+                if (connError.Code == ConnectionErrorCodes.None)
                 {
                     return Ok(info.ToDto());
                 }
                 else
                 {
-                    var communicationExc = new CommunicationException($"Connection error: {connErrorCode}", connErrorCode);
+                    var communicationExc = new CommunicationException($"Connection error: {connError.Code}", connError.Code);
 
                     _logger.LogError(communicationExc.Message);
 

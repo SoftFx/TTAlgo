@@ -13,6 +13,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using System.Threading;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,6 +24,7 @@ namespace TickTrader.BotTerminal
         private bool _runBot;
         private PluginCatalogItem _selectedPlugin;
         private AccountKey _selectedAccount;
+        private CancellationTokenSource _updateSetupCancelSrc;
 
 
         public IAlgoAgent Agent { get; }
@@ -66,7 +68,7 @@ namespace TickTrader.BotTerminal
 
         public bool PluginIsStopped => Bot == null ? true : Bot.State == BotModelStates.Stopped;
 
-        public bool CanOk => Setup.IsValid && PluginIsStopped;
+        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped;
 
         public bool RunBot
         {
@@ -112,7 +114,7 @@ namespace TickTrader.BotTerminal
                     break;
             }
 
-            SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(key));
+            SelectedPlugin = key != null ? Plugins.FirstOrDefault(i => i.Key.Equals(key)) : Plugins.First();
 
             PluginType = GetPluginTypeDisplayName(type);
 
@@ -128,11 +130,9 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Setting New {PluginType}";
 
             Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
-
-            Init();
         }
 
-        public SetupPluginViewModel(IAlgoAgent agent, TradeBotModel bot) 
+        public SetupPluginViewModel(IAlgoAgent agent, TradeBotModel bot)
             : this(agent, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
         {
             Bot = bot;
@@ -142,8 +142,6 @@ namespace TickTrader.BotTerminal
             Setup.Load(Bot.Config);
 
             Bot.StateChanged += BotStateChanged;
-
-            Init();
         }
 
 
@@ -208,7 +206,6 @@ namespace TickTrader.BotTerminal
                 if (args.NewItem.Key.Equals(SelectedPlugin.Key))
                 {
                     SelectedPlugin = args.NewItem;
-                    Init();
                 }
             }
             else if (args.Action == DLinqAction.Remove)
@@ -242,9 +239,19 @@ namespace TickTrader.BotTerminal
         {
             if (SelectedPlugin != null)
             {
+                _updateSetupCancelSrc?.Cancel();
+                _updateSetupCancelSrc = new CancellationTokenSource();
+
                 var metadata = await Agent.GetSetupMetadata(SelectedAccount, SetupContext);
+
+                if (_updateSetupCancelSrc.IsCancellationRequested)
+                    return;
+
+                if (Setup != null)
+                    Setup.ValidityChanged -= Validate;
                 Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider, Mode);
                 NotifyOfPropertyChange(nameof(Setup));
+                Init();
             }
         }
     }

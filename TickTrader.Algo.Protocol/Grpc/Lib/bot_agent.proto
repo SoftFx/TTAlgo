@@ -17,7 +17,12 @@ service BotAgent
 	rpc GetBotList(BotListRequest) returns (BotListResponse);
 	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
 
-	rpc GetAccountMetadata(AccountKey) returns (AccountMetadataInfo);
+	rpc GetApiMetadata(ApiMetadataRequest) returns (ApiMetadataResponse);
+	rpc GetMappingsInfo(MappingsInfoRequest) returns (MappingsInfoResponse);
+	rpc GetSetupContext(SetupContextRequest) returns (SetupContextResponse);
+	rpc GetAccountMetadata(AccountMetadataRequest) returns (AccountMetadataResponse);
+
+	rpc TestAccount(TestAccountRequest) returns (TestAccountResponse);
 
 	rpc StartBot(StartBotRequest) returns (StartBotResponse);
 	rpc StopBot(StopBotRequest) returns (StopBotResponse);
@@ -206,4 +211,57 @@ message ChangeBotConfigRequest
 message ChangeBotConfigResponse
 {
 	Request.RequestStatus status = 1;
+}
+
+message ApiMetadataRequest
+{
+}
+
+message ApiMetadataResponse
+{
+	Request.RequestStatus status = 1;
+	ApiMetadataInfo api_metadata = 2;
+}
+
+message MappingsInfoRequest
+{
+}
+
+message MappingsInfoResponse
+{
+	Request.RequestStatus status = 1;
+	MappingCollectionInfo mappings = 2;
+}
+
+message SetupContextRequest
+{
+}
+
+message SetupContextResponse
+{
+	Request.RequestStatus status = 1;
+	SetupContextInfo setup_context = 2;
+}
+
+message AccountMetadataRequest
+{
+	AccountKey account = 1;
+}
+
+message AccountMetadataResponse
+{
+	Request.RequestStatus status = 1;
+	ConnectionErrorInfo error_info = 2;
+	AccountMetadataInfo account_metadata = 3;
+}
+
+message TestAccountRequest
+{
+	AccountKey account = 1;
+}
+
+message TestAccountResponse
+{
+	Request.RequestStatus status = 1;
+	ConnectionErrorInfo error_info = 2;
 }

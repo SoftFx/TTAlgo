@@ -16,6 +16,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
     public class BotAgentServer : IBotAgentServer
     {
         private static IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<BotAgentServer>();
+        private static readonly SetupContext _agentContext = new SetupContext();
 
 
         private IBotAgent _botAgent;
@@ -63,6 +64,34 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public List<PackageInfo> GetPackageList()
         {
             return _botAgent.GetPackages();
+        }
+
+        public ApiMetadataInfo GetApiMetadata()
+        {
+            return ApiMetadataInfo.CreateCurrentMetadata();
+        }
+
+        public MappingCollectionInfo GetMappingsInfo()
+        {
+            return _botAgent.GetMappingsInfo();
+        }
+
+        public SetupContextInfo GetSetupContext()
+        {
+            return new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbolCode, _agentContext.DefaultMapping);
+        }
+
+        public AccountMetadataInfo GetAccountMetadata(AccountKey account)
+        {
+            var error = _botAgent.GetAccountMetadata(account, out var accountMetadata);
+            if (error.Code != ConnectionErrorCodes.None)
+                throw new Exception($"Account {account.Login} at {account.Server} failed to connect");
+            return accountMetadata;
+        }
+
+        public ConnectionErrorInfo TestAccount(AccountKey account)
+        {
+            return _botAgent.TestAccount(account);
         }
 
         public void StartBot(string botId)

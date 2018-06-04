@@ -37,6 +37,16 @@ namespace TickTrader.Algo.Protocol
 
         #region Requests
 
+        ApiMetadataInfo GetApiMetadata();
+
+        MappingCollectionInfo GetMappingsInfo();
+
+        SetupContextInfo GetSetupContext();
+
+        AccountMetadataInfo GetAccountMetadata(AccountKey account);
+
+        ConnectionErrorInfo TestAccount(AccountKey account);
+
         void StartBot(string botId);
 
         void StopBot(string botId);

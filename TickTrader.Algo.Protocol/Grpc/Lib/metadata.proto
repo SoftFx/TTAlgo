@@ -78,12 +78,6 @@ message SetupContextInfo
 	MappingKey default_mapping = 3;
 }
 
-message SetupMetadataInfo
-{
-	ApiMetadataInfo api = 1;
-	MappingCollectionInfo mappings = 2;
-}
-
 message ConnectionErrorInfo
 {
 	enum ConnectionErrorCode

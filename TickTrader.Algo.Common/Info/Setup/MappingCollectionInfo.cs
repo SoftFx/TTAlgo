@@ -23,7 +23,13 @@ namespace TickTrader.Algo.Common.Info
         public ReductionKey DefaultQuoteToDoubleReduction { get; set; }
 
 
-        public MappingCollectionInfo() { }
+        public MappingCollectionInfo()
+        {
+            BarToBarMappings = new List<MappingInfo>();
+            BarToDoubleMappings = new List<MappingInfo>();
+            QuoteToBarMappings = new List<MappingInfo>();
+            QuoteToDoubleMappings = new List<MappingInfo>();
+        }
 
         public MappingCollectionInfo(List<MappingInfo> fullBarToBarMappings, List<MappingInfo> barToDoubleMappings, List<MappingInfo> quoteToBarMappings, List<MappingInfo> quoteToDoubleMappings)
         {

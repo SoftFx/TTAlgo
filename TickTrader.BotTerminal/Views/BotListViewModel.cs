@@ -3,11 +3,14 @@ using System.Linq;
 using Caliburn.Micro;
 using TickTrader.Algo.Core.Metadata;
 using Machinarium.Qnil;
+using NLog;
 
 namespace TickTrader.BotTerminal
 {
     internal class BotListViewModel : PropertyChangedBase, IDropHandler
     {
+        private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private BotAgentManager _botAgentManager;
         private IShell _shell;
         private BotManagerViewModel _botManager;
@@ -92,13 +95,13 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                //var model = new SetupPluginViewModel(botAgent.Connection.RemoteAgent, null, AlgoTypes.Robot, (context ?? BotManagerModel).GetSetupContextInfo());
-                //_shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
-                //model.Closed += AlgoSetupClosed;
+                var model = new SetupPluginViewModel(botAgent.Connection.RemoteAgent, null, AlgoTypes.Robot, botAgent.Connection.BotAgent.SetupContext);
+                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+                model.Closed += AlgoSetupClosed;
             }
             catch (Exception ex)
             {
-                //_logger.Error(ex);
+                _logger.Error(ex);
             }
         }
 
@@ -108,13 +111,15 @@ namespace TickTrader.BotTerminal
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
             {
+                var remoteAgent = (RemoteAgent)setupModel.Agent;
+                var config = setupModel.GetConfig();
                 if (setupModel.Setup.IsEditMode)
                 {
-                    //UpdateBot(setupModel);
+                    remoteAgent.ChangeBotConfig(setupModel.Setup.InstanceId, config);
                 }
                 else
                 {
-                    //AddBot(setupModel);
+                    remoteAgent.AddBot(setupModel.SelectedAccount, config);
                 }
             }
         }

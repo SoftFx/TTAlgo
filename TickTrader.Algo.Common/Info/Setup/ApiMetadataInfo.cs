@@ -32,7 +32,12 @@ namespace TickTrader.Algo.Common.Info
         public List<MarkerSizes> MarkerSizes { get; set; }
 
 
-        public ApiMetadataInfo() { }
+        public ApiMetadataInfo() {
+            TimeFrames = new List<TimeFrames>();
+            LineStyles = new List<LineStyles>();
+            Thicknesses = new List<int>();
+            MarkerSizes = new List<MarkerSizes>();
+        }
 
         public ApiMetadataInfo(List<TimeFrames> timeFrames, List<LineStyles> lineStyles, List<int> thicknesses, List<MarkerSizes> markerSizes)
         {

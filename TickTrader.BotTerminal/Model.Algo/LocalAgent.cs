@@ -13,8 +13,10 @@ namespace TickTrader.BotTerminal
 {
     internal class LocalAgent : IAlgoAgent, IAlgoSetupMetadata
     {
+        private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
+
+        private readonly MappingCollectionInfo _mappingsInfo;
         private VarList<AccountKey> _accounts;
-        private SetupMetadataInfo _setupMetadataInfo;
 
 
         public AlgoEnvironment AlgoEnv { get; }
@@ -31,7 +33,7 @@ namespace TickTrader.BotTerminal
             BotManager = botManager;
 
             _accounts = new VarList<AccountKey>();
-            _setupMetadataInfo = new SetupMetadataInfo(ApiMetadataInfo.CreateCurrentMetadata(), AlgoEnv.Mappings.ToInfo());
+            _mappingsInfo = AlgoEnv.Mappings.ToInfo();
 
             ClientModel.Connected += ClientModelOnConnected;
         }
@@ -55,7 +57,7 @@ namespace TickTrader.BotTerminal
         {
             var accountMetadata = new AccountMetadataInfo(new AccountKey(ClientModel.Connection.CurrentServer,
                 ClientModel.Connection.CurrentLogin), ClientModel.ObservableSymbolList.Select(s => new SymbolInfo(s.Name)).ToList());
-            var res = new SetupMetadata(_setupMetadataInfo, accountMetadata, setupContext ?? BotManager.GetSetupContextInfo());
+            var res = new SetupMetadata(_apiMetadata, _mappingsInfo, accountMetadata, setupContext ?? BotManager.GetSetupContextInfo());
             return Task.FromResult(res);
         }
 

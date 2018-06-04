@@ -71,16 +71,6 @@ namespace TickTrader.BotAgent.BA.Repository
             SavePackage(packageName, packageContent);
         }
 
-        public List<PackageInfo> GetPackages()
-        {
-            return Library.GetPackages().ToList();
-        }
-
-        public PackageInfo GetPackage(string packageName)
-        {
-            return Library.GetPackage(GetPackageKey(packageName));
-        }
-
         public AlgoPackageRef GetPackageRef(string packageName)
         {
             return Library.GetPackageRef(GetPackageKey(packageName));

@@ -151,16 +151,27 @@
     </ContextMenu>
 
     <ContextMenu x:Key="BotAgentContextMenu">
-        <MenuItem Header="Connect" cal:Message.Attach="ConnectBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-        <MenuItem Header="Disconnect" cal:Message.Attach="DisconnectBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-        <MenuItem Header="Change connection" cal:Message.Attach="ChangeBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-        <MenuItem Header="Remove connection" cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-        <MenuItem Header="Add Bot" cal:Message.Attach="AddBot($originalsourcecontext)"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Connect"
+                  cal:Message.Attach="ConnectBotAgent($originalsourcecontext)"
+                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Disconnect"
+                  cal:Message.Attach="DisconnectBotAgent($originalsourcecontext)"
+                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Change connection"
+                  cal:Message.Attach="ChangeBotAgent($originalsourcecontext)"
+                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Remove connection" 
+                  cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
+                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Add Bot"
+                  cal:Message.Attach="AddBot($originalsourcecontext)"
+                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+    </ContextMenu>
+
+    <ContextMenu x:Key="RemoteAccountContextMenu">
+        <MenuItem Header="Test connection"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="TestAccount"/>
     </ContextMenu>
 
     <ContextMenu x:Key="RemoteBotContextMenu">
@@ -172,7 +183,7 @@
                   cal:Message.Attach="Stop"/>
         <MenuItem Header="Settings"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="OpenSettings"/>        
+                  cal:Message.Attach="OpenSettings"/>
         <MenuItem Header="Remove"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="Remove"/>
@@ -230,6 +241,11 @@
                                 <Ellipse Style="{StaticResource BotAgentStatusEllipseStyle}" />
                                 <TextBlock Text="{Binding Server}" ToolTip="{Binding Status}"/>
                             </StackPanel>
+                            <HierarchicalDataTemplate.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
+                                    <Setter Property="ContextMenu" Value="{StaticResource RemoteAccountContextMenu}" />
+                                </Style>
+                            </HierarchicalDataTemplate.ItemContainerStyle>
                             <HierarchicalDataTemplate.ItemTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type l:BAAccountViewModel}" ItemsSource="{Binding Bots}">
                                     <StackPanel Orientation="Horizontal">

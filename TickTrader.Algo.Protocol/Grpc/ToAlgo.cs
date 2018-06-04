@@ -786,15 +786,6 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static SetupMetadataInfo Convert(this Lib.SetupMetadataInfo setupMetadata)
-        {
-            return new SetupMetadataInfo
-            {
-                Api = setupMetadata.Api.Convert(),
-                Mappings = setupMetadata.Mappings.Convert(),
-            };
-        }
-
         public static ConnectionErrorCodes Convert(this Lib.ConnectionErrorInfo.Types.ConnectionErrorCode code)
         {
             switch (code)
