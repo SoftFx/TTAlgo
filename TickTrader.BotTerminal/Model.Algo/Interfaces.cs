@@ -23,6 +23,9 @@ namespace TickTrader.BotTerminal
         IPluginIdProvider IdProvider { get; }
 
 
+        event Action<BotModelInfo> BotStateChanged;
+
+
         Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);
 
         Task<bool> AddOrUpdatePlugin(PluginConfig config, bool start);

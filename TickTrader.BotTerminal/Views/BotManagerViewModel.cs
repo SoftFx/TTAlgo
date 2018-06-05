@@ -69,7 +69,7 @@ namespace TickTrader.BotTerminal
 
                 _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
                 {
-                    var pSetup = new SetupPluginViewModel(Agent, model);
+                    var pSetup = new SetupPluginViewModel(Agent, model.ToInfo());
                     pSetup.Closed += AlgoSetupClosed;
                     return pSetup;
                 });
@@ -176,8 +176,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateBot(SetupPluginViewModel setupModel)
         {
-            setupModel.Bot.Configurate(setupModel.GetConfig());
-            BotManagerModel.UpdateBot(setupModel.Bot);
+            BotManagerModel.ChangeBotConfig(setupModel.Bot.InstanceId, setupModel.GetConfig());
         }
 
         private void BotClosed(BotControlViewModel sender)

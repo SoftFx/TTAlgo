@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
 
             BotAgents = _botAgentManager.BotAgents
                 .OrderBy((s, b) => s)
-                .Select(b => new BotAgentViewModel(b))
+                .Select(b => new BotAgentViewModel(b, _shell))
                 .AsObservable();
         }
 

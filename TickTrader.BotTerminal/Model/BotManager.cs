@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 
@@ -48,11 +49,12 @@ namespace TickTrader.BotTerminal
             botModel.StateChanged += StateChanged;
         }
 
-        public void UpdateBot(TradeBotModel botModel)
+        public void ChangeBotConfig(string instanceId, PluginConfig config)
         {
-            if (_bots.ContainsKey(botModel.InstanceId))
+            if (_bots.TryGetValue(instanceId, out var bot))
             {
-                _bots[botModel.InstanceId] = botModel;
+                bot.Configurate(config);
+                _bots[instanceId] = bot;
             }
         }
 

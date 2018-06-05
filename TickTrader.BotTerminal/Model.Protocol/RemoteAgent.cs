@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
             _idProvider = new PluginIdProvider();
 
             Accounts = BotAgent.Accounts.TransformToList((k, v) => k);
+
+            BotAgent.BotStateChanged += OnBotStateChanged;
         }
 
 
@@ -63,6 +65,15 @@ namespace TickTrader.BotTerminal
         }
 
 
+        private void OnBotStateChanged(string instanceId)
+        {
+            if (BotAgent.Bots.Snapshot.TryGetValue(instanceId, out var bot))
+            {
+                BotStateChanged?.Invoke(bot);
+            }
+        }
+
+
         #region IAlgoAgent implementation
 
         public string Name => _protocolClient.SessionSettings.ServerAddress;
@@ -74,6 +85,9 @@ namespace TickTrader.BotTerminal
         public PluginCatalog Catalog => _catalog;
 
         public IPluginIdProvider IdProvider => _idProvider;
+
+
+        public event Action<BotModelInfo> BotStateChanged;
 
 
         public async Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)

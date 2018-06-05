@@ -21,7 +21,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static ILogger _log = LogManager.GetLogger(nameof(ClientModel));
 
-        private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan ReconnectThreshold = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ReconnectThreshold_BadCreds = TimeSpan.FromMinutes(1);
 

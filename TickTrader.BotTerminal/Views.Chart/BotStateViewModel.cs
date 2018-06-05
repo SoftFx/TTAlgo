@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
             _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
             {
-                var pSetup = new SetupPluginViewModel(_shell.Agent, Bot);
+                var pSetup = new SetupPluginViewModel(_shell.Agent, Bot.ToInfo());
                 pSetup.Closed += SetupPluginViewClosed;
                 return pSetup;
             });

@@ -36,8 +36,14 @@ namespace TickTrader.BotTerminal
             _mappingsInfo = AlgoEnv.Mappings.ToInfo();
 
             ClientModel.Connected += ClientModelOnConnected;
+            BotManager.StateChanged += OnBotStateChanged;
         }
 
+        
+        private void OnBotStateChanged(TradeBotModel botModel)
+        {
+            BotStateChanged?.Invoke(botModel.ToInfo());
+        }
 
 
         #region IAlgoAgent implementation
@@ -51,6 +57,9 @@ namespace TickTrader.BotTerminal
         public PluginCatalog Catalog => AlgoEnv.Repo;
 
         public IPluginIdProvider IdProvider => AlgoEnv.IdProvider;
+
+
+        public event Action<BotModelInfo> BotStateChanged;
 
 
         public Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)

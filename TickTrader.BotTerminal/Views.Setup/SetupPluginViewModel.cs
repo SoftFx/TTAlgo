@@ -19,7 +19,8 @@ namespace TickTrader.BotTerminal
 {
     internal class SetupPluginViewModel : Screen, IWindowModel
     {
-        private Logger _logger;
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private bool _dlgResult;
         private bool _runBot;
         private PluginCatalogItem _selectedPlugin;
@@ -64,9 +65,9 @@ namespace TickTrader.BotTerminal
 
         public PluginSetupViewModel Setup { get; private set; }
 
-        public TradeBotModel Bot { get; }
+        public BotModelInfo Bot { get; private set; }
 
-        public bool PluginIsStopped => Bot == null ? true : Bot.State == BotModelStates.Stopped;
+        public bool PluginIsStopped => Bot == null ? true : Bot.State == BotStates.Offline;
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped;
 
@@ -118,7 +119,6 @@ namespace TickTrader.BotTerminal
 
             PluginType = GetPluginTypeDisplayName(type);
 
-            _logger = NLog.LogManager.GetCurrentClassLogger();
             RunBot = true;
         }
 
@@ -132,16 +132,14 @@ namespace TickTrader.BotTerminal
             Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
         }
 
-        public SetupPluginViewModel(IAlgoAgent agent, TradeBotModel bot)
+        public SetupPluginViewModel(IAlgoAgent agent, BotModelInfo bot)
             : this(agent, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
         {
             Bot = bot;
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
-            Setup.Load(Bot.Config);
-
-            Bot.StateChanged += BotStateChanged;
+            Agent.BotStateChanged += BotStateChanged;
         }
 
 
@@ -177,10 +175,14 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void BotStateChanged(TradeBotModel obj)
+        private void BotStateChanged(BotModelInfo modelInfo)
         {
-            NotifyOfPropertyChange(nameof(PluginIsStopped));
-            NotifyOfPropertyChange(nameof(CanOk));
+            if (Bot.InstanceId == modelInfo.InstanceId)
+            {
+                Bot = modelInfo;
+                NotifyOfPropertyChange(nameof(PluginIsStopped));
+                NotifyOfPropertyChange(nameof(CanOk));
+            }
         }
 
         private void Init()
@@ -217,10 +219,10 @@ namespace TickTrader.BotTerminal
 
         private void Dispose()
         {
-            if (Agent.Catalog != null)
+            if (Agent?.Catalog != null)
                 Agent.Catalog.PluginList.Updated -= AllPlugins_Updated;
-            if (Bot != null)
-                Bot.StateChanged -= BotStateChanged;
+            if (Agent != null)
+                Agent.BotStateChanged -= BotStateChanged;
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;
         }
@@ -252,6 +254,9 @@ namespace TickTrader.BotTerminal
                 Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider, Mode);
                 NotifyOfPropertyChange(nameof(Setup));
                 Init();
+
+                if (Bot != null)
+                    Setup.Load(Bot.Config);
             }
         }
     }

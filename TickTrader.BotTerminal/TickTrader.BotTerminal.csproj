@@ -275,6 +275,7 @@
     <Compile Include="Extensions\ChartExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
+    <Compile Include="Extensions\InfoExtensions.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
     <Compile Include="Extensions\ResxExtension.cs" />
