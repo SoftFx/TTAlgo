@@ -128,7 +128,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
                     _botAgent.TestAccount(new AccountKey(server, login)) :
-                    _botAgent.TestCreds(login, password, server, useNewProtocol);
+                    _botAgent.TestCreds(new AccountKey(server, login), password, useNewProtocol);
 
                 return Ok(testResult);
             }

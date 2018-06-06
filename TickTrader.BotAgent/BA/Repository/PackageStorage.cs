@@ -73,7 +73,7 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public AlgoPackageRef GetPackageRef(string packageName)
         {
-            return Library.GetPackageRef(GetPackageKey(packageName));
+            return GetPackageRef(GetPackageKey(packageName));
         }
 
         public AlgoPackageRef GetPackageRef(PackageKey packageKey)
@@ -83,7 +83,12 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public void Remove(string packageName)
         {
-            var packageRef = Library.GetPackageRef(GetPackageKey(packageName));
+            Remove(GetPackageKey(packageName));
+        }
+
+        public void Remove(PackageKey packageKey)
+        {
+            var packageRef = Library.GetPackageRef(packageKey);
             if (packageRef != null)
             {
                 RemovePackage(packageRef);

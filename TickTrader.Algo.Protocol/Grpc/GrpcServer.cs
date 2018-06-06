@@ -200,21 +200,6 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        public override Task<Lib.TestAccountResponse> TestAccount(Lib.TestAccountRequest request, ServerCallContext context)
-        {
-            var res = new Lib.TestAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
-            try
-            {
-                res.ErrorInfo = _botAgent.TestAccount(request.Account.Convert()).Convert();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to test account");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
-            }
-            return Task.FromResult(res);
-        }
-
         public override Task<Lib.StartBotResponse> StartBot(Lib.StartBotRequest request, ServerCallContext context)
         {
             var res = new Lib.StartBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
@@ -293,6 +278,125 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         }
 
+        public override Task<Lib.AddAccountResponse> AddAccount(Lib.AddAccountRequest request, ServerCallContext context)
+        {
+            var res = new Lib.AddAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.AddAccount(request.Account.Convert(), request.Password, request.UseNewProtocol);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to add account");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.RemoveAccountResponse> RemoveAccount(Lib.RemoveAccountRequest request, ServerCallContext context)
+        {
+            var res = new Lib.RemoveAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.RemoveAccount(request.Account.Convert());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to remove account");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.ChangeAccountResponse> ChangeAccount(Lib.ChangeAccountRequest request, ServerCallContext context)
+        {
+            var res = new Lib.ChangeAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.ChangeAccount(request.Account.Convert(), request.Password, request.UseNewProtocol);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to change account");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.TestAccountResponse> TestAccount(Lib.TestAccountRequest request, ServerCallContext context)
+        {
+            var res = new Lib.TestAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.ErrorInfo = _botAgent.TestAccount(request.Account.Convert()).Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to test account");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.TestAccountCredsResponse> TestAccountCreds(Lib.TestAccountCredsRequest request, ServerCallContext context)
+        {
+            var res = new Lib.TestAccountCredsResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.ErrorInfo = _botAgent.TestAccountCreds(request.Account.Convert(), request.Password, request.UseNewProtocol).Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to test account creds");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.UploadPackageResponse> UploadPackage(Lib.UploadPackageRequest request, ServerCallContext context)
+        {
+            var res = new Lib.UploadPackageResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.UploadPackage(request.FileName, request.PackageBinary.Convert());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to upload package");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.RemovePackageResponse> RemovePackage(Lib.RemovePackageRequest request, ServerCallContext context)
+        {
+            var res = new Lib.RemovePackageResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                _botAgent.RemovePackage(request.Package.Convert());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to remove package");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
+
+        public override Task<Lib.DownloadPackageResponse> DownloadPackage(Lib.DownloadPackageRequest request, ServerCallContext context)
+        {
+            var res = new Lib.DownloadPackageResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            try
+            {
+                res.PackageBinary = _botAgent.DownloadPackage(request.Package.Convert()).Convert();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to download package");
+                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+            }
+            return Task.FromResult(res);
+        }
 
         #region Updates
 

@@ -180,14 +180,6 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.AccountMetadata.Convert();
         }
 
-        public override async Task<ConnectionErrorInfo> TestAccount(AccountKey account)
-        {
-            var response = await _client.TestAccountAsync(new Lib.TestAccountRequest { Account = account.Convert() });
-            if (FailForNonSuccess(response.Status))
-                throw new Exception(response.Status.ToString());
-            return response.ErrorInfo.Convert();
-        }
-
         public override async Task StartBot(string botId)
         {
             var response = await _client.StartBotAsync(new Lib.StartBotRequest { BotId = botId });
@@ -221,6 +213,65 @@ namespace TickTrader.Algo.Protocol.Grpc
             var response = await _client.ChangeBotConfigAsync(new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert() });
             if (FailForNonSuccess(response.Status))
                 throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task AddAccount(AccountKey account, string password, bool useNewProtocol)
+        {
+            var response = await _client.AddAccountAsync(new Lib.AddAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task RemoveAccount(AccountKey account)
+        {
+            var response = await _client.RemoveAccountAsync(new Lib.RemoveAccountRequest { Account = account.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        {
+            var response = await _client.ChangeAccountAsync(new Lib.ChangeAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        {
+            var response = await _client.TestAccountAsync(new Lib.TestAccountRequest { Account = account.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+            return response.ErrorInfo.Convert();
+        }
+
+        public override async Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        {
+            var response = await _client.TestAccountCredsAsync(new Lib.TestAccountCredsRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+            return response.ErrorInfo.Convert();
+        }
+
+        public override async Task UploadPackage(string fileName, byte[] packageBinary)
+        {
+            var response = await _client.UploadPackageAsync(new Lib.UploadPackageRequest { FileName = ToGrpc.Convert(fileName), PackageBinary = packageBinary.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task RemovePackage(PackageKey package)
+        {
+            var response = await _client.RemovePackageAsync(new Lib.RemovePackageRequest { Package = package.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+        }
+
+        public override async Task<byte[]> DownloadPackage(PackageKey package)
+        {
+            var response = await _client.DownloadPackageAsync(new Lib.DownloadPackageRequest { Package = package.Convert() });
+            if (FailForNonSuccess(response.Status))
+                throw new Exception(response.Status.ToString());
+            return response.PackageBinary.Convert();
         }
 
         #endregion Requests

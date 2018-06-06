@@ -89,11 +89,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return accountMetadata;
         }
 
-        public ConnectionErrorInfo TestAccount(AccountKey account)
-        {
-            return _botAgent.TestAccount(account);
-        }
-
         public void StartBot(string botId)
         {
             _botAgent.StartBot(botId);
@@ -117,6 +112,46 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public void ChangeBotConfig(string botId, PluginConfig newConfig)
         {
             _botAgent.ChangeBotConfig(botId, (TradeBotConfig)newConfig);
+        }
+
+        public void AddAccount(AccountKey account, string password, bool useNewProtocol)
+        {
+            _botAgent.AddAccount(account, password, useNewProtocol);
+        }
+
+        public void RemoveAccount(AccountKey account)
+        {
+            _botAgent.RemoveAccount(account);
+        }
+
+        public void ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        {
+            _botAgent.ChangeAccount(account, password, useNewProtocol);
+        }
+
+        public ConnectionErrorInfo TestAccount(AccountKey account)
+        {
+            return _botAgent.TestAccount(account);
+        }
+
+        public ConnectionErrorInfo TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        {
+            return _botAgent.TestCreds(account, password, useNewProtocol);
+        }
+
+        public void UploadPackage(string fileName, byte[] packageBinary)
+        {
+            _botAgent.UpdatePackage(packageBinary, fileName);
+        }
+
+        public void RemovePackage(PackageKey package)
+        {
+            _botAgent.RemovePackage(package);
+        }
+
+        public byte[] DownloadPackage(PackageKey package)
+        {
+            return new byte[0];
         }
 
 

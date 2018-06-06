@@ -65,6 +65,7 @@ namespace TickTrader.BotAgent.BA.Models
             public PackageInfo GetPackage(string package) => CallActor(a => a.GetPackage(package));
             public void UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
             public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
+            public void RemovePackage(PackageKey package) => CallActor(a => a.RemovePackage(package));
             public List<PluginInfo> GetAllPlugins() => CallActor(a => a.GetAllPlugins());
             public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActor(a => a.GetPluginsByType(type));
             public MappingCollectionInfo GetMappingsInfo() => CallActor(a => a.GetMappingsInfo());
@@ -81,12 +82,13 @@ namespace TickTrader.BotAgent.BA.Models
             #region Account Management
 
             public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActor(a => a.AddAccount(key, password, useNewProtocol));
+            public void ChangeAccount(AccountKey key, string password, bool useNewProtocol) => CallActor(a => a.ChangeAccount(key, password, useNewProtocol));
             public void ChangeAccountPassword(AccountKey key, string password) => CallActor(a => a.ChangeAccountPassword(key, password));
             public void ChangeAccountProtocol(AccountKey key) => CallActor(a => a.ChangeAccountProtocol(key));
             public List<AccountModelInfo> GetAccounts() => CallActor(a => a._accounts.GetInfoCopy());
             public void RemoveAccount(AccountKey key) => CallActor(a => a.RemoveAccount(key));
             public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActor(a => a.GetAccountOrThrow(accountId).TestConnection());
-            public ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol) => CallActor(a => a.TestCreds(login, password, server, useNewProtocol));
+            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol) => CallActor(a => a.TestCreds(accountId, password, useNewProtocol));
 
             public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
@@ -154,9 +156,9 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<AccountModelInfo, ChangeAction> AccountChanged;
         public event Action<AccountModelInfo> AccountStateChanged;
 
-        public async Task<ConnectionErrorInfo> TestCreds(string login, string password, string server, bool useNewProtocol)
+        public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password, bool useNewProtocol)
         {
-            var acc = new ClientModel(server, login, password, useNewProtocol);
+            var acc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
             await acc.Init(_packageStorage);
 
             await acc.Init(_packageStorage);
@@ -164,7 +166,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
             {
-                _logger.Error($"Can't stop test connection to {server} - {login} via {(useNewProtocol ? "SFX" : "FIX")}");
+                _logger.Error($"Can't stop test connection to {accountId.Server} - {accountId.Login} via {(useNewProtocol ? "SFX" : "FIX")}");
             }
 
             return testResult;
@@ -233,6 +235,12 @@ namespace TickTrader.BotAgent.BA.Models
                 throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username} via {(acc.UseNewProtocol ? "SFX" : "FIX")}");
         }
 
+        public void ChangeAccount(AccountKey key, string password, bool useNewProtocol)
+        {
+            var acc = GetAccountOrThrow(key);
+            acc.ChangeConnectionSettings(password, useNewProtocol);
+        }
+
         public void ChangeAccountPassword(AccountKey key, string password)
         {
             Validate(key.Login, key.Server, password);
@@ -245,7 +253,6 @@ namespace TickTrader.BotAgent.BA.Models
         {
             var acc = GetAccountOrThrow(key);
             acc.ChangeProtocol();
-            AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Modified);
         }
 
         private ClientModel FindAccount(string login, string server)
@@ -431,6 +438,11 @@ namespace TickTrader.BotAgent.BA.Models
         }
 
         private void RemovePackage(string package)
+        {
+            RemovePackage(PackageStorage.GetPackageKey(package));
+        }
+
+        private void RemovePackage(PackageKey package)
         {
             var dPackage = _packageStorage.GetPackageRef(package);
             if (dPackage != null)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf;
+using System;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
@@ -12,6 +13,12 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     internal static class ToAlgo
     {
+        public static byte[] Convert(this ByteString bytes)
+        {
+            return bytes.ToByteArray();
+        }
+
+
         #region descriptors.proto
 
         public static TimeFrames Convert(this Lib.ApiDescriptor.Types.TimeFrame timeFrame)

@@ -34,11 +34,6 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
-        {
-            return _protocolClient.TestAccount(account);
-        }
-
         public Task StartBot(string instanceId)
         {
             return _protocolClient.StartBot(instanceId);
@@ -62,6 +57,31 @@ namespace TickTrader.BotTerminal
         public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
         {
             return _protocolClient.ChangeBotConfig(instanceId, newConfig);
+        }
+
+        public Task AddAccount(AccountKey account, string password, bool useNewProtocol)
+        {
+            return _protocolClient.AddAccount(account, password, useNewProtocol);
+        }
+
+        public Task RemoveAccount(AccountKey account)
+        {
+            return _protocolClient.RemoveAccount(account);
+        }
+
+        public Task ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        {
+            return _protocolClient.ChangeAccount(account, password, useNewProtocol);
+        }
+
+        public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
+        {
+            return _protocolClient.TestAccount(account);
+        }
+
+        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        {
+            return _protocolClient.TestAccountCreds(account, password, useNewProtocol);
         }
 
 

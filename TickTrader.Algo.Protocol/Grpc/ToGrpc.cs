@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Linq;
 using TickTrader.Algo.Api;
@@ -16,6 +17,11 @@ namespace TickTrader.Algo.Protocol.Grpc
         public static string Convert(string s) // because grpc doesn't like null strings
         {
             return s ?? string.Empty;
+        }
+
+        public static ByteString Convert(this byte[] bytes)
+        {
+            return ByteString.CopyFrom(bytes);
         }
 
 

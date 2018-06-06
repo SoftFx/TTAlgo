@@ -252,11 +252,11 @@ namespace TickTrader.BotTerminal
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
                 Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider, Mode);
-                NotifyOfPropertyChange(nameof(Setup));
                 Init();
-
                 if (Bot != null)
                     Setup.Load(Bot.Config);
+
+                NotifyOfPropertyChange(nameof(Setup));
             }
         }
     }

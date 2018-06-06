@@ -354,6 +354,24 @@ namespace TickTrader.BotAgent.BA.Models
             OnCredsChanged();
         }
 
+        public void ChangeConnectionSettings(string password, bool useNewProtocol)
+        {
+            var updated = false;
+            if (!string.IsNullOrEmpty(password))
+            {
+                Password = password;
+                updated = true;
+            }
+            if (UseNewProtocol != useNewProtocol)
+            {
+                UseNewProtocol = useNewProtocol;
+                updated = true;
+            }
+
+            if (updated)
+                OnCredsChanged();
+        }
+
         private void OnCredsChanged()
         {
             _credsChanged = true;

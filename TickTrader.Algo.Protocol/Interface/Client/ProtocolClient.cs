@@ -245,8 +245,6 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
 
-        public abstract Task<ConnectionErrorInfo> TestAccount(AccountKey account);
-
         public abstract Task StartBot(string botId);
 
         public abstract Task StopBot(string botId);
@@ -256,6 +254,22 @@ namespace TickTrader.Algo.Protocol
         public abstract Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
 
         public abstract Task ChangeBotConfig(string botId, PluginConfig newConfig);
+
+        public abstract Task AddAccount(AccountKey account, string password, bool useNewProtocol);
+
+        public abstract Task RemoveAccount(AccountKey account);
+
+        public abstract Task ChangeAccount(AccountKey account, string password, bool useNewProtocol);
+
+        public abstract Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+
+        public abstract Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+
+        public abstract Task UploadPackage(string fileName, byte[] packageBinary);
+
+        public abstract Task RemovePackage(PackageKey package);
+
+        public abstract Task<byte[]> DownloadPackage(PackageKey package);
 
         #endregion Requests
     }

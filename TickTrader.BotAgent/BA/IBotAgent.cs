@@ -16,6 +16,7 @@ namespace TickTrader.BotAgent.BA
         PackageInfo GetPackage(string package);
         void UpdatePackage(byte[] fileContent, string fileName);
         void RemovePackage(string package);
+        void RemovePackage(PackageKey package);
         List<PluginInfo> GetAllPlugins();
         List<PluginInfo> GetPluginsByType(AlgoTypes type);
         MappingCollectionInfo GetMappingsInfo();
@@ -27,11 +28,12 @@ namespace TickTrader.BotAgent.BA
         List<AccountModelInfo> GetAccounts();
         void AddAccount(AccountKey key, string password, bool useNewProtocol);
         void RemoveAccount(AccountKey key);
+        void ChangeAccount(AccountKey key, string password, bool useNewProtocol);
         void ChangeAccountPassword(AccountKey key, string password);
         void ChangeAccountProtocol(AccountKey key);
         ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info);
         ConnectionErrorInfo TestAccount(AccountKey accountId);
-        ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol);
+        ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol);
 
         event Action<AccountModelInfo, ChangeAction> AccountChanged;
         event Action<AccountModelInfo> AccountStateChanged;

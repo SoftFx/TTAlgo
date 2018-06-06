@@ -45,8 +45,6 @@ namespace TickTrader.Algo.Protocol
 
         AccountMetadataInfo GetAccountMetadata(AccountKey account);
 
-        ConnectionErrorInfo TestAccount(AccountKey account);
-
         void StartBot(string botId);
 
         void StopBot(string botId);
@@ -56,6 +54,22 @@ namespace TickTrader.Algo.Protocol
         void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
 
         void ChangeBotConfig(string botId, PluginConfig newConfig);
+
+        void AddAccount(AccountKey account, string password, bool useNewProtocol);
+
+        void RemoveAccount(AccountKey account);
+
+        void ChangeAccount(AccountKey account, string password, bool useNewProtocol);
+
+        ConnectionErrorInfo TestAccount(AccountKey account);
+
+        ConnectionErrorInfo TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+
+        void UploadPackage(string fileName, byte[] packageBinary);
+
+        void RemovePackage(PackageKey package);
+
+        byte[] DownloadPackage(PackageKey package);
 
         #endregion Requests
     }

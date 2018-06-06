@@ -22,13 +22,21 @@ service BotAgent
 	rpc GetSetupContext(SetupContextRequest) returns (SetupContextResponse);
 	rpc GetAccountMetadata(AccountMetadataRequest) returns (AccountMetadataResponse);
 
-	rpc TestAccount(TestAccountRequest) returns (TestAccountResponse);
-
 	rpc StartBot(StartBotRequest) returns (StartBotResponse);
 	rpc StopBot(StopBotRequest) returns (StopBotResponse);
 	rpc AddBot(AddBotRequest) returns (AddBotResponse);
 	rpc RemoveBot(RemoveBotRequest) returns (RemoveBotResponse);
 	rpc ChangeBotConfig(ChangeBotConfigRequest) returns (ChangeBotConfigResponse);
+
+	rpc AddAccount(AddAccountRequest) returns (AddAccountResponse);
+	rpc RemoveAccount(RemoveAccountRequest) returns (RemoveAccountResponse);
+	rpc ChangeAccount(ChangeAccountRequest) returns (ChangeAccountResponse);
+	rpc TestAccount(TestAccountRequest) returns (TestAccountResponse);
+	rpc TestAccountCreds(TestAccountCredsRequest) returns (TestAccountCredsResponse);
+
+	rpc UploadPackage(UploadPackageRequest) returns (UploadPackageResponse);
+	rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
+	rpc DownloadPackage(DownloadPackageRequest) returns (DownloadPackageResponse);
 }
 
 message Request
@@ -255,6 +263,40 @@ message AccountMetadataResponse
 	AccountMetadataInfo account_metadata = 3;
 }
 
+message AddAccountRequest
+{
+	AccountKey account = 1;
+	string password = 2;
+	bool use_new_protocol = 3;
+}
+
+message AddAccountResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message RemoveAccountRequest
+{
+	AccountKey account = 1;
+}
+
+message RemoveAccountResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message ChangeAccountRequest
+{
+	AccountKey account = 1;
+	string password = 2;
+	bool use_new_protocol = 3;
+}
+
+message ChangeAccountResponse
+{
+	Request.RequestStatus status = 1;
+}
+
 message TestAccountRequest
 {
 	AccountKey account = 1;
@@ -264,4 +306,49 @@ message TestAccountResponse
 {
 	Request.RequestStatus status = 1;
 	ConnectionErrorInfo error_info = 2;
+}
+
+message TestAccountCredsRequest
+{
+	AccountKey account = 1;
+	string password = 2;
+	bool use_new_protocol = 3;
+}
+
+message TestAccountCredsResponse
+{
+	Request.RequestStatus status = 1;
+	ConnectionErrorInfo error_info = 2;
+}
+
+message UploadPackageRequest
+{
+	string file_name = 1;
+	bytes package_binary = 2;
+}
+
+message UploadPackageResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message RemovePackageRequest
+{
+	PackageKey package = 1;
+}
+
+message RemovePackageResponse
+{
+	Request.RequestStatus status = 1;
+}
+
+message DownloadPackageRequest
+{
+	PackageKey package = 1;
+}
+
+message DownloadPackageResponse
+{
+	Request.RequestStatus status = 1;
+	bytes package_binary = 2;
 }
