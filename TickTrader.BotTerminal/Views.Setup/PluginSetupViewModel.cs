@@ -234,7 +234,6 @@ namespace TickTrader.BotTerminal
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
-            _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
                 p.Reset();
         }

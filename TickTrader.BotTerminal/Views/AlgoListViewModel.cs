@@ -13,6 +13,15 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoListViewModel : PropertyChangedBase
     {
+        public string[] AgentsStub { get; } = { "Bot Terminal", "localhost", "ds.st.soft-fx.eu", "ds_load.st.soft-fx.eu" };
+
+        public string[] ViewsStub { get; } = { "Plugins", "Packages" };
+
+        public string SelectedAgent { get; set; } = "Bot Terminal";
+
+        public string SelectedView { get; set; } = "Plugins";
+
+
         public IObservableList<AlgoItemViewModel> Plugins { get; private set; }
 
 
@@ -38,6 +47,8 @@ namespace TickTrader.BotTerminal
 
         public string Category { get; }
 
+        public AlgoTypes Type { get; }
+
 
         public AlgoItemViewModel(PluginCatalogItem item)
         {
@@ -45,6 +56,7 @@ namespace TickTrader.BotTerminal
             Name = item.Descriptor.UiDisplayName;
             Description = string.Join(Environment.NewLine, item.Descriptor.Description, string.Empty, $"Package {item.Key.PackageName} at {item.Key.PackageLocation}").Trim();
             Category = item.Descriptor.Category;
+            Type = item.Descriptor.Type;
             switch (item.Descriptor.Type)
             {
                 case AlgoTypes.Indicator: Group = "Indicators"; break;

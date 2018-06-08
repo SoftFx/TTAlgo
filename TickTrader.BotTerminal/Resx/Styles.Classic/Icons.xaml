@@ -23,7 +23,10 @@
         <TextBlock Text="Download" Margin="4,0,0,0"/>
     </StackPanel>
 
-    <Path x:Key="RefreshToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource RefreshPath}" Fill="Green"  />
+    <Path x:Key="RefreshToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource RefreshPath}" Fill="Green" />
     <Path x:Key="SearchToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource MagnifyLens}" Fill="{DynamicResource ToolBarItem_ForegroundBrush}"/>
+
+    <Path x:Key="TradeBotIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource TradeBot}" Stroke="Blue" />
+    <Path x:Key="IndicatorIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource Indicator}" Stroke="DarkGreen" />
 
 </ResourceDictionary>

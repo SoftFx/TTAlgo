@@ -96,6 +96,12 @@ namespace TickTrader.BotTerminal
 
     public class BoolParamSetupViewModel : ParameterSetupViewModel<bool>
     {
+        public static string[] _boolValues = { "False", "True" };
+
+
+        public string[] BoolValues => _boolValues;
+
+
         internal override UiConverter<bool> Converter => UiConverter.Bool;
 
 
