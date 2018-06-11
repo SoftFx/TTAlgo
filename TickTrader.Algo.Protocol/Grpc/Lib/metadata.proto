@@ -13,12 +13,23 @@ message PluginInfo
 	PluginDescriptor descriptor = 2;
 }
 
+message PackageIdentity
+{
+	string file_name = 1;
+	google.protobuf.Timestamp created_utc = 2;
+	google.protobuf.Timestamp last_modified_utc = 3;
+	int64 size = 4;
+	string hash = 5;
+}
+
 message PackageInfo
 {
 	PackageKey key = 1;
-	google.protobuf.Timestamp created_utc = 2;
+	PackageIdentity identity = 2;
 	bool is_valid = 3;
 	repeated PluginInfo plugins = 4;
+	bool is_locked = 5;
+	bool is_obsolete = 6;
 }
 
 message ReductionInfo

@@ -26,6 +26,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
         public event Action<UpdateInfo<AccountModelInfo>> AccountUpdated = delegate { };
         public event Action<UpdateInfo<BotModelInfo>> BotUpdated = delegate { };
+        public event Action<PackageInfo> PackageStateUpdated = delegate { };
         public event Action<BotModelInfo> BotStateUpdated = delegate { };
         public event Action<AccountModelInfo> AccountStateUpdated = delegate { };
 
@@ -235,6 +236,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             try
             {
                 AccountStateUpdated(account);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to send update: {ex.Message}", ex);
+            }
+        }
+
+        private void OnPackageStateChanged(PackageInfo package)
+        {
+            try
+            {
+                PackageStateUpdated(package);
             }
             catch (Exception ex)
             {

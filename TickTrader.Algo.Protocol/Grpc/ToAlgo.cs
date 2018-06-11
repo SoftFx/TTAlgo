@@ -700,14 +700,34 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static PackageInfo Convert(this Lib.PackageInfo package)
+        public static PackageIdentity Convert(this Lib.PackageIdentity identity)
+        {
+            return new PackageIdentity
+            {
+                FileName = identity.FileName,
+                CreatedUtc = identity.CreatedUtc.ToDateTime(),
+                LastModifiedUtc = identity.LastModifiedUtc.ToDateTime(),
+                Size = identity.Size,
+                Hash = identity.Hash,
+            };
+        }
+
+        public static PackageInfo ConvertLight(this Lib.PackageInfo package)
         {
             var res = new PackageInfo
             {
                 Key = package.Key.Convert(),
-                CreatedUtc = package.CreatedUtc.ToDateTime(),
                 IsValid = package.IsValid,
+                IsLocked = package.IsLocked,
+                IsObsolete = package.IsObsolete,
             };
+            return res;
+        }
+
+        public static PackageInfo Convert(this Lib.PackageInfo package)
+        {
+            var res = package.ConvertLight();
+            res.Identity = package.Identity.Convert();
             res.Plugins.AddRange(package.Plugins.Select(Convert));
             return res;
         }
@@ -930,6 +950,9 @@ namespace TickTrader.Algo.Protocol.Grpc
                 case Lib.UpdateInfo.UpdateInfoOneofCase.Package:
                     res = update.Package.Convert();
                     break;
+                case Lib.UpdateInfo.UpdateInfoOneofCase.PackageState:
+                    res = update.PackageState.ConvertStateUpdate();
+                    break;
                 case Lib.UpdateInfo.UpdateInfoOneofCase.Account:
                     res = update.Account.Convert();
                     break;
@@ -952,6 +975,11 @@ namespace TickTrader.Algo.Protocol.Grpc
         public static UpdateInfo<PackageInfo> Convert(this Lib.PackageUpdateInfo update)
         {
             return new UpdateInfo<PackageInfo> { Value = update.Package.Convert() };
+        }
+
+        public static UpdateInfo<PackageInfo> ConvertStateUpdate(this Lib.PackageStateUpdateInfo update)
+        {
+            return new UpdateInfo<PackageInfo> { Value = update.Package.ConvertLight() };
         }
 
         public static UpdateInfo<AccountModelInfo> Convert(this Lib.AccountUpdateInfo update)

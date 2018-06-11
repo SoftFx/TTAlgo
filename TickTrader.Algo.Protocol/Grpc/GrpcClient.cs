@@ -145,6 +145,9 @@ namespace TickTrader.Algo.Protocol.Grpc
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Package:
                             AgentClient.UpdatePackage((UpdateInfo<PackageInfo>)update.Convert());
                             break;
+                        case Lib.UpdateInfo.UpdateInfoOneofCase.PackageState:
+                            AgentClient.UpdatePackageState((UpdateInfo<PackageInfo>)update.Convert());
+                            break;
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Account:
                             AgentClient.UpdateAccount((UpdateInfo<AccountModelInfo>)update.Convert());
                             break;

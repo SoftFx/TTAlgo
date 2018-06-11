@@ -153,6 +153,14 @@ namespace TickTrader.BotTerminal
             SetupContext = setupContext;
         }
 
+        public void UpdatePackageState(UpdateInfo<PackageInfo> update)
+        {
+            //_syncContext.Invoke(() =>
+            //{
+            //    _algoLibrary.UpdatePackage(update);
+            //});
+        }
+
         public void UpdateAccountState(UpdateInfo<AccountModelInfo> update)
         {
             _syncContext.Invoke(() =>

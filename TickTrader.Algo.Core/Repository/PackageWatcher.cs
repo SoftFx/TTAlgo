@@ -35,11 +35,11 @@ namespace TickTrader.Algo.Core.Repository
         public PackageWatcher(string filePath, RepositoryLocation location, IAlgoCoreLogger logger)
         {
             FilePath = filePath;
-            FileName = Path.GetFileName(filePath).ToLowerInvariant();
+            FileName = Path.GetFileName(filePath);
             Location = location;
             _logger = logger;
 
-            PackageRef = new AlgoPackageRef(FileName, Location, DateTime.UtcNow, null);
+            PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName), null);
 
             _stateControl = new StateMachine<States>();
 
@@ -113,7 +113,8 @@ namespace TickTrader.Algo.Core.Repository
                     {
                         PackageRef?.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
                         var container = LoadContainer(filePath, out retry);
-                        PackageRef = new IsolatedAlgoPackageRef(FileName, Location, info.LastWriteTimeUtc, container);
+                        var identity = retry ? PackageIdentity.CreateInvalid(info) : CreateIdentity(info, out retry);
+                        PackageRef = new IsolatedAlgoPackageRef(FileName, Location, identity, container);
                         _currentFileInfo = info;
                         _logger.Info("Loaded package " + FileName);
                     }
@@ -122,7 +123,7 @@ namespace TickTrader.Algo.Core.Repository
             catch (Exception ex)
             {
                 _logger?.Error($"Failed to update package {FileName} at {Location}", ex);
-                PackageRef = new AlgoPackageRef(FileName, Location, DateTime.UtcNow, null);
+                PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName), null);
             }
 
             OnPackageUpdated();
@@ -161,10 +162,36 @@ namespace TickTrader.Algo.Core.Repository
             {
                 Updated?.Invoke(PackageRef);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger?.Error($"Failed to send update events for package {FileName} at {Location}", ex);
             }
+        }
+
+        private PackageIdentity CreateIdentity(FileInfo info, out bool retry)
+        {
+            retry = false;
+            try
+            {
+                return PackageIdentity.Create(info);
+            }
+            catch (IOException ioEx)
+            {
+                if (ioEx.IsLockExcpetion())
+                {
+                    _logger?.Debug("File is locked: " + FileName);
+                    retry = true; // File is in use. We should retry loading.
+                }
+                else
+                {
+                    _logger?.Info("Cannot calculate file hash: " + FileName + " " + ioEx.Message); // other errors
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Info("Cannot calculate file hash: " + FileName + " " + ex.Message);
+            }
+            return PackageIdentity.CreateInvalid(info);
         }
     }
 }

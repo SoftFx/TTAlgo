@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {
@@ -7,11 +7,15 @@ namespace TickTrader.Algo.Common.Info
     {
         public PackageKey Key { get; set; }
 
-        public DateTime CreatedUtc { get; set; }
+        public PackageIdentity Identity { get; set; }
 
         public bool IsValid { get; set; }
 
         public List<PluginInfo> Plugins { get; set; }
+
+        public bool IsLocked { get; set; }
+
+        public bool IsObsolete { get; set; }
 
 
         public PackageInfo()

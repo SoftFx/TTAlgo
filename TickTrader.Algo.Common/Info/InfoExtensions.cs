@@ -27,9 +27,11 @@ namespace TickTrader.Algo.Common.Info
             return new PackageInfo
             {
                 Key = new PackageKey(packageRef.Name, packageRef.Location),
-                CreatedUtc = packageRef.CreatedUtc,
+                Identity = packageRef.Identity,
                 IsValid = packageRef.IsValid,
                 Plugins = packageRef.GetPluginRefs().Select(r => r.ToInfo(packageRef)).ToList(),
+                IsLocked = packageRef.IsLocked,
+                IsObsolete = packageRef.IsObsolete,
             };
         }
 

@@ -30,6 +30,8 @@ namespace TickTrader.Algo.Protocol
 
         void UpdateBot(UpdateInfo<BotModelInfo> update);
 
+        void UpdatePackageState(UpdateInfo<PackageInfo> update);
+
         void UpdateAccountState(UpdateInfo<AccountModelInfo> update);
 
         void UpdateBotState(UpdateInfo<BotModelInfo> update);

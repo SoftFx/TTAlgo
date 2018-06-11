@@ -135,14 +135,20 @@ message UpdateInfo
 	oneof update_info
 	{
 		PackageUpdateInfo package = 5;
-		AccountUpdateInfo account = 6;
-		AccountStateUpdateInfo account_state = 7;
-		BotUpdateInfo bot = 8;
-		BotStateUpdateInfo bot_state = 9;
+		PackageStateUpdateInfo package_state = 6;
+		AccountUpdateInfo account = 7;
+		AccountStateUpdateInfo account_state = 8;
+		BotUpdateInfo bot = 9;
+		BotStateUpdateInfo bot_state = 10;
 	}
 }
 
 message PackageUpdateInfo
+{
+	PackageInfo package = 1;
+}
+
+message PackageStateUpdateInfo
 {
 	PackageInfo package = 1;
 }

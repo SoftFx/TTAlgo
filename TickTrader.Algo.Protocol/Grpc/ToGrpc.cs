@@ -708,14 +708,34 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.PackageInfo Convert(this PackageInfo package)
+        public static Lib.PackageIdentity Convert(this PackageIdentity identity)
+        {
+            return new Lib.PackageIdentity
+            {
+                FileName = Convert(identity.FileName),
+                CreatedUtc = Timestamp.FromDateTime(identity.CreatedUtc),
+                LastModifiedUtc = Timestamp.FromDateTime(identity.LastModifiedUtc),
+                Size = identity.Size,
+                Hash = Convert(identity.Hash),
+            };
+        }
+
+        public static Lib.PackageInfo ConvertLight(this PackageInfo package)
         {
             var res = new Lib.PackageInfo
             {
                 Key = package.Key.Convert(),
-                CreatedUtc = Timestamp.FromDateTime(package.CreatedUtc),
                 IsValid = package.IsValid,
+                IsLocked = package.IsLocked,
+                IsObsolete = package.IsObsolete,
             };
+            return res;
+        }
+
+        public static Lib.PackageInfo Convert(this PackageInfo package)
+        {
+            var res = package.ConvertLight();
+            res.Identity = package.Identity.Convert();
             res.Plugins.AddRange(package.Plugins.Select(Convert));
             return res;
         }
@@ -942,6 +962,13 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = ((UpdateInfo)update).Convert();
             res.Package = new Lib.PackageUpdateInfo { Package = update.Value.Convert() };
+            return res;
+        }
+
+        public static Lib.UpdateInfo ConvertStateUpdate(this UpdateInfo<PackageInfo> update)
+        {
+            var res = ((UpdateInfo)update).Convert();
+            res.PackageState = new Lib.PackageStateUpdateInfo { Package = update.Value.ConvertLight() };
             return res;
         }
 

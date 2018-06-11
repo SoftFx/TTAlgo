@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public RepositoryLocation Location { get; }
 
-        public DateTime CreatedUtc { get; }
+        public PackageIdentity Identity { get; }
 
         public virtual bool IsValid => _plugins != null;
 
@@ -36,16 +36,16 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoPackageRef> IsObsoleteChanged;
 
 
-        protected AlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc)
+        protected AlgoPackageRef(string name, RepositoryLocation location, PackageIdentity identity)
         {
-            Name = name;
+            Name = name.ToLowerInvariant();
             Location = location;
-            CreatedUtc = createdUtc;
+            Identity = identity;
             IsObsolete = false;
         }
 
-        public AlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc, IEnumerable<AlgoPluginRef> plugins)
-            : this(name, location, createdUtc)
+        public AlgoPackageRef(string name, RepositoryLocation location, PackageIdentity identity, IEnumerable<AlgoPluginRef> plugins)
+            : this(name, location, identity)
         {
             _plugins = plugins?.ToList();
         }
@@ -114,8 +114,8 @@ namespace TickTrader.Algo.Core.Repository
         public override bool IsLocked => _refCount > 0;
 
 
-        public IsolatedAlgoPackageRef(string name, RepositoryLocation location, DateTime createdUtc, PluginContainer container)
-            : base(name, location, createdUtc)
+        public IsolatedAlgoPackageRef(string name, RepositoryLocation location, PackageIdentity identity, PluginContainer container)
+            : base(name, location, identity)
         {
             Container = container;
         }

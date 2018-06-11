@@ -172,6 +172,7 @@
     <Compile Include="Metadata\ParameterMetadata.cs" />
     <Compile Include="PluginPermissions.cs" />
     <Compile Include="Repository\ExtCollection.cs" />
+    <Compile Include="Repository\PackageIdentity.cs" />
     <Compile Include="Repository\PackageWatcher.cs" />
     <Compile Include="Repository\PackageRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

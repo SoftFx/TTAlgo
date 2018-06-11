@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Protocol
 
         event Action<UpdateInfo<BotModelInfo>> BotUpdated;
 
+        event Action<PackageInfo> PackageStateUpdated;
+
         event Action<BotModelInfo> BotStateUpdated;
 
         event Action<AccountModelInfo> AccountStateUpdated;

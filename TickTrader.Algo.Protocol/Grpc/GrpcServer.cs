@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             _updateListeners = new List<Tuple<TaskCompletionSource<object>, IServerStreamWriter<Lib.UpdateInfo>>>();
 
             _botAgent.PackageUpdated += OnPackageUpdate;
+            _botAgent.PackageStateUpdated += OnPackageStateUpdate;
             _botAgent.AccountUpdated += OnAccountUpdate;
             _botAgent.AccountStateUpdated += OnAccountStateUpdate;
             _botAgent.BotUpdated += OnBotUpdate;
@@ -403,6 +404,11 @@ namespace TickTrader.Algo.Protocol.Grpc
         private void OnPackageUpdate(UpdateInfo<PackageInfo> update)
         {
             SendUpdate(update.Convert());
+        }
+
+        private void OnPackageStateUpdate(PackageInfo package)
+        {
+            SendUpdate(new UpdateInfo<PackageInfo> { Type = UpdateType.Replaced, Value = package }.ConvertStateUpdate());
         }
 
         private void OnAccountUpdate(UpdateInfo<AccountModelInfo> update)
