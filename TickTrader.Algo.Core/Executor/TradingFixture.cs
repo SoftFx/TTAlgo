@@ -251,6 +251,15 @@ namespace TickTrader.Algo.Core
                         var clone = order.Clone();
                         context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, clone)));
                     }
+                    else
+                    {
+                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                        if (clone != null)
+                        {
+                            context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone,clone)));
+                        }
+                        CallListener(eReport);
+                    }
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Rejected)

@@ -219,6 +219,11 @@ namespace TickTrader.Algo.Common.Model
 
             switch (report.ExecutionType)
             {
+                case ExecutionType.New:
+                    if (report.OrderType == OrderType.Market)
+                        return OnOrderOpened(report);
+                    break;
+
                 case ExecutionType.Calculated:
                     if (orders.ContainsKey(report.OrderId))
                         return OnOrderUpdated(report, OrderExecAction.Opened);
@@ -272,7 +277,7 @@ namespace TickTrader.Algo.Common.Model
                             return MockMarkedFilled(report);
 
                         if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
-                            return OnMarketFilled(report, OrderExecAction.Opened);
+                            return OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
@@ -280,10 +285,15 @@ namespace TickTrader.Algo.Common.Model
             return null;
         }
 
+        private OrderUpdateAction OnOrderOpened(ExecutionReport report)
+        {
+            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
+        }
+
         private OrderUpdateAction OnOrderAdded(ExecutionReport report, OrderExecAction algoAction)
         {
             if (report.OrderType == OrderType.Limit && report.ImmediateOrCancel)
-                return null;
+                return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
 
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.Added);
         }
@@ -296,7 +306,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnIocFilled(ExecutionReport report)
         {
-            return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.None);
+            return new OrderUpdateAction(report, OrderExecAction.Filled, OrderEntityAction.None);
         }
 
         private OrderUpdateAction OnMarketFilled(ExecutionReport report, OrderExecAction algoAction)
