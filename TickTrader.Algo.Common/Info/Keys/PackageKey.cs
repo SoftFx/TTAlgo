@@ -1,8 +1,9 @@
-﻿using TickTrader.Algo.Core.Repository;
+﻿using System;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {
-    public class PackageKey
+    public class PackageKey : IComparable<PackageKey>
     {
         public string Name { get; set; }
 
@@ -36,6 +37,14 @@ namespace TickTrader.Algo.Common.Info
             return key != null
                 && key.Name == Name
                 && key.Location == Location;
+        }
+
+        public int CompareTo(PackageKey other)
+        {
+            var res = Name.CompareTo(other.Name);
+            if (res == 0)
+                return Location.CompareTo(other.Location);
+            return res;
         }
     }
 }

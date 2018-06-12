@@ -25,6 +25,8 @@ namespace TickTrader.BotTerminal
         private bool _runBot;
         private PluginCatalogItem _selectedPlugin;
         private AccountKey _selectedAccount;
+        private CancellationTokenSource _updateSetupMetadataSrc;
+        private TaskCompletionSource<SetupMetadata> _updateSetupMetadataTaskSrc;
         private CancellationTokenSource _updateSetupCancelSrc;
 
 
@@ -44,6 +46,7 @@ namespace TickTrader.BotTerminal
 
                 _selectedAccount = value;
                 NotifyOfPropertyChange(nameof(SelectedAccount));
+                UpdateSetupMetadata();
             }
         }
 
@@ -84,11 +87,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public AlgoTypes Type { get; }
+
         public string PluginType { get; }
 
         public PluginSetupMode Mode { get; }
 
-        public bool CanChangePlugin => Mode == PluginSetupMode.New;
+        public bool IsNewMode => Mode == PluginSetupMode.New;
+
+        public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
 
         public event Action<SetupPluginViewModel, bool> Closed = delegate { };
@@ -98,6 +105,7 @@ namespace TickTrader.BotTerminal
         {
             Agent = agent;
             Mode = mode;
+            Type = type;
 
             Accounts = Agent.Accounts.AsObservable();
             SelectedAccount = Accounts.FirstOrDefault();
@@ -117,7 +125,7 @@ namespace TickTrader.BotTerminal
 
             SelectedPlugin = key != null ? Plugins.FirstOrDefault(i => i.Key.Equals(key)) : Plugins.First();
 
-            PluginType = GetPluginTypeDisplayName(type);
+            PluginType = GetPluginTypeDisplayName(Type);
 
             RunBot = true;
         }
@@ -136,6 +144,7 @@ namespace TickTrader.BotTerminal
             : this(agent, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
         {
             Bot = bot;
+            UpdateSetup();
 
             DisplayName = $"Settings - {bot.InstanceId}";
 
@@ -237,6 +246,28 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private async void UpdateSetupMetadata()
+        {
+            if (SelectedAccount != null)
+            {
+                _updateSetupMetadataSrc?.Cancel();
+                _updateSetupMetadataSrc = new CancellationTokenSource();
+
+                var tcs = new TaskCompletionSource<SetupMetadata>();
+                _updateSetupMetadataTaskSrc = tcs;
+
+                var metadata = await Agent.GetSetupMetadata(SelectedAccount, SetupContext);
+
+                if (_updateSetupMetadataSrc.IsCancellationRequested)
+                {
+                    tcs.SetCanceled();
+                    return;
+                }
+
+                tcs.SetResult(metadata);
+            }
+        }
+
         private async void UpdateSetup()
         {
             if (SelectedPlugin != null)
@@ -244,7 +275,16 @@ namespace TickTrader.BotTerminal
                 _updateSetupCancelSrc?.Cancel();
                 _updateSetupCancelSrc = new CancellationTokenSource();
 
-                var metadata = await Agent.GetSetupMetadata(SelectedAccount, SetupContext);
+                SetupMetadata metadata = null;
+                try
+                {
+                    metadata = await _updateSetupMetadataTaskSrc.Task;
+                }
+                catch (TaskCanceledException)
+                {
+                    UpdateSetup();
+                    return;
+                }
 
                 if (_updateSetupCancelSrc.IsCancellationRequested)
                     return;

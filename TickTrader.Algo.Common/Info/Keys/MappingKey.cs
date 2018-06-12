@@ -1,9 +1,10 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace TickTrader.Algo.Common.Info
 {
     [DataContract]
-    public class MappingKey
+    public class MappingKey : IComparable<MappingKey>
     {
         [DataMember]
         public ReductionKey PrimaryReduction { get; set; }
@@ -55,6 +56,14 @@ namespace TickTrader.Algo.Common.Info
             return key != null
                 && key.PrimaryReduction != null && key.PrimaryReduction.Equals(PrimaryReduction)
                 && (key.SecondaryReduction == null || key.SecondaryReduction.Equals(SecondaryReduction));
+        }
+
+        public int CompareTo(MappingKey other)
+        {
+            var res = PrimaryReduction.CompareTo(other.PrimaryReduction);
+            if (res == 0 && SecondaryReduction != null && other.SecondaryReduction != null)
+                return SecondaryReduction.CompareTo(other.SecondaryReduction);
+            return res;
         }
     }
 }

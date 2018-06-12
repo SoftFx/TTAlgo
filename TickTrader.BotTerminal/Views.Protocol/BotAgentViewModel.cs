@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             Connection.StateChanged += ConnectionOnStateChanged;
 
             _bots = Connection.BotAgent.Bots.Select((k, b) => new BABotViewModel(b, Connection.RemoteAgent, _shell));
-            _accounts = Connection.BotAgent.Accounts.Select((k, a) => new BAAccountViewModel(a, _bots, Connection.RemoteAgent));
+            _accounts = Connection.BotAgent.Accounts.Select((k, a) => new BAAccountViewModel(a, _bots, Connection.RemoteAgent, _shell));
 
             Bots = _bots.OrderBy((k, b) => k).AsObservable();
             Accounts = _accounts.OrderBy((k, a) => k).AsObservable();

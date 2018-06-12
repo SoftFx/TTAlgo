@@ -1,6 +1,8 @@
-﻿namespace TickTrader.Algo.Common.Info
+﻿using System;
+
+namespace TickTrader.Algo.Common.Info
 {
-    public class AccountKey
+    public class AccountKey : IComparable<AccountKey>
     {
         public string Server { get; set; }
 
@@ -34,6 +36,14 @@
             return key != null
                 && key.Login == Login
                 && key.Server == Server;
+        }
+
+        public int CompareTo(AccountKey other)
+        {
+            var res = Server.CompareTo(other.Server);
+            if (res == 0)
+                return Login.CompareTo(other.Login);
+            return res;
         }
     }
 }

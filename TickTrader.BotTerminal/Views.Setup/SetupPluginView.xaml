@@ -26,6 +26,7 @@
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Agent.Name, Mode=OneWay}" IsEnabled="False" />
             <Label Grid.Row="2" Grid.Column="0" Content="Account" />
             <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="False"
+                      IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Accounts}"
                       SelectedValue="{Binding SelectedAccount}"/>
         </Grid>
@@ -42,7 +43,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" />
             <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="True"
-                      IsEnabled="{Binding CanChangePlugin}"
+                      IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Plugins}"
                       SelectedValue="{Binding SelectedPlugin}"
                       DisplayMemberPath="DisplayName"/>
@@ -141,14 +142,16 @@
             </Grid>
         </Grid>
         <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding Type}" Value="Robot">
+                <Setter TargetName="LaunchTargetGroup" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding Setup.Descriptor.Type}" Value="Robot"/>
-                    <Condition Binding="{Binding Setup.IsEditMode}" Value="False"/>
+                    <Condition Binding="{Binding Type}" Value="Robot"/>
+                    <Condition Binding="{Binding IsEditMode}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <MultiDataTrigger.Setters>
                     <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
-                    <Setter TargetName="LaunchTargetGroup" Property="Visibility" Value="Visible"/>
                 </MultiDataTrigger.Setters>
             </MultiDataTrigger>
         </ControlTemplate.Triggers>

@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanOpenSettings => Model.State == BotModelStates.Stopped;
 
-        public bool CanOpenChart => Model.PluginRef.Metadata.Descriptor.SetupMainSymbol;
+        public bool CanOpenChart => Model.PluginRef?.Metadata.Descriptor.SetupMainSymbol ?? false;
 
 
         public BotControlViewModel(TradeBotModel model, IShell shell, BotManagerViewModel botManager, bool runBot, bool openState)

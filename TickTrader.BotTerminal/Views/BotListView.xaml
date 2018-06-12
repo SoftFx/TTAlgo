@@ -163,12 +163,21 @@
         <MenuItem Header="Remove connection" 
                   cal:Message.Attach="RemoveBotAgent($originalsourcecontext)"
                   cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        <MenuItem Header="Add Account"
+                  cal:Message.Attach="AddAccount($originalsourcecontext)"
+                  cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
         <MenuItem Header="Add Bot"
                   cal:Message.Attach="AddBot($originalsourcecontext)"
                   cal:Bind.ModelWithoutContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
     </ContextMenu>
 
     <ContextMenu x:Key="RemoteAccountContextMenu">
+        <MenuItem Header="Change"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="ChangeAccount"/>
+        <MenuItem Header="Remove"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="RemoveAccount"/>
         <MenuItem Header="Test connection"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="TestAccount"/>

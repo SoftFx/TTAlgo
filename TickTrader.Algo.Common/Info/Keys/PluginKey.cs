@@ -1,10 +1,11 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {
     [DataContract]
-    public class PluginKey
+    public class PluginKey : IComparable<PluginKey>
     {
         [DataMember]
         public string PackageName { get; set; }
@@ -60,6 +61,18 @@ namespace TickTrader.Algo.Common.Info
         public PackageKey GetPackageKey()
         {
             return new PackageKey(PackageName, PackageLocation);
+        }
+
+        public int CompareTo(PluginKey other)
+        {
+            var res1 = PackageName.CompareTo(other.PackageName);
+            if (res1 == 0)
+            {
+                var res2 = PackageLocation.CompareTo(other.PackageLocation);
+                if (res2 == 0)
+                    return DescriptorId.CompareTo(DescriptorId);
+            }
+            return res1;
         }
     }
 }

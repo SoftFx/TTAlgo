@@ -450,6 +450,10 @@
     </Compile>
     <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
     <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
+    <Compile Include="Views.Protocol\BotAgentAccountDialogView.xaml.cs">
+      <DependentUpon>BotAgentAccountDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Protocol\BotAgentAccountDialogViewModel.cs" />
     <Compile Include="Views.Protocol\BAAccountViewModel.cs" />
     <Compile Include="Views.Protocol\BABotViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentLoginDialogView.xaml.cs">
@@ -955,6 +959,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Profiles\ProfileLoadingDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Protocol\BotAgentAccountDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

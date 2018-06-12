@@ -1,13 +1,20 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
+using System;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     internal class BAAccountViewModel : PropertyChangedBase
     {
+        private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+
         private AccountModelInfo _entity;
         private RemoteAgent _remoteAgent;
+        private IShell _shell;
 
 
         public string Login => _entity.Key.Login;
@@ -31,10 +38,11 @@ namespace TickTrader.BotTerminal
         public IObservableList<BABotViewModel> Bots { get; }
 
 
-        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, RemoteAgent remoteAgent)
+        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, RemoteAgent remoteAgent, IShell shell)
         {
             _entity = entity;
             _remoteAgent = remoteAgent;
+            _shell = shell;
 
             AccountDisplayName = $"{_entity.Key.Server} - {_entity.Key.Login}";
 
@@ -45,6 +53,24 @@ namespace TickTrader.BotTerminal
             remoteAgent.BotAgent.AccountStateChanged += BotAgentOnAccountStateChanged;
         }
 
+
+        public void ChangeAccount()
+        {
+            try
+            {
+                var model = new BotAgentAccountDialogViewModel(_remoteAgent, _entity);
+                _shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+
+        public void RemoveAccount()
+        {
+            _remoteAgent.RemoveAccount(_entity.Key);
+        }
 
         public void TestAccount()
         {

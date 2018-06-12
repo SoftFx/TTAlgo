@@ -91,6 +91,19 @@ namespace TickTrader.BotTerminal
             return o is AlgoItemViewModel;
         }
 
+        public void AddAccount(BotAgentViewModel botAgent)
+        {
+            try
+            {
+                var model = new BotAgentAccountDialogViewModel(botAgent.Connection.RemoteAgent);
+                _shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+
         public void AddBot(BotAgentViewModel botAgent)
         {
             try
