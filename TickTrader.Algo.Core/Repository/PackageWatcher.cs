@@ -113,11 +113,23 @@ namespace TickTrader.Algo.Core.Repository
                     {
                         PackageRef?.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
                         var container = LoadContainer(filePath, out retry);
-                        var identity = retry ? PackageIdentity.CreateInvalid(info) : CreateIdentity(info, out retry);
+                        var identity = PackageIdentity.CreateInvalid(info);
                         PackageRef = new IsolatedAlgoPackageRef(FileName, Location, identity, container);
                         _currentFileInfo = info;
                         _logger.Info("Loaded package " + FileName);
                     }
+                }
+            }
+            catch (IOException ioEx)
+            {
+                if (ioEx.IsLockExcpetion())
+                {
+                    _logger?.Debug($"Package {FileName} at {Location} is locked");
+                    retry = true; // File is in use. We should retry loading.
+                }
+                else
+                {
+                    _logger?.Info($"Cannot open package {FileName} at {Location}: {ioEx.Message}"); // other errors
                 }
             }
             catch (Exception ex)

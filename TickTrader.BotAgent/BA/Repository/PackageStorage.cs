@@ -35,7 +35,7 @@ namespace TickTrader.BotAgent.BA.Repository
 
         public PackageStorage()
         {
-            _storageDir = GetFullPathToStorage("AlgoRepository/");
+            _storageDir = GetFullPathToStorage("AlgoRepository");
 
             EnsureStorageDirectoryCreated();
 

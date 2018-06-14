@@ -29,9 +29,11 @@ namespace TickTrader.BotTerminal
         public IVarSet<string, BotModelInfo> Bots => _bots;
 
 
-        public Action<string> BotStateChanged = delegate { };
+        public Action<PackageKey> PackageStateChanged = delegate { };
 
         public Action<AccountKey> AccountStateChanged = delegate { };
+
+        public Action<string> BotStateChanged = delegate { };
 
 
         public BotAgentModel()
@@ -155,10 +157,11 @@ namespace TickTrader.BotTerminal
 
         public void UpdatePackageState(UpdateInfo<PackageInfo> update)
         {
-            //_syncContext.Invoke(() =>
-            //{
-            //    _algoLibrary.UpdatePackage(update);
-            //});
+            _syncContext.Invoke(() =>
+            {
+                _algoLibrary.UpdatePackageState(update);
+                PackageStateChanged(update.Value.Key);
+            });
         }
 
         public void UpdateAccountState(UpdateInfo<AccountModelInfo> update)

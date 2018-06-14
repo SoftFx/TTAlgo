@@ -99,12 +99,25 @@ namespace TickTrader.BotTerminal
                     OnAdded(package);
                     break;
                 case UpdateType.Replaced:
-                    _packages[package.Key] = package;
+                    OnUpdated(package);
                     break;
                 case UpdateType.Removed:
-                    if (_packages.ContainsKey(package.Key))
-                        _packages.Remove(package.Key);
+                    OnRemoved(package);
                     break;
+            }
+        }
+
+        public void UpdatePackageState(UpdateInfo<PackageInfo> update)
+        {
+            var package = update.Value;
+            lock (_updateLock)
+            {
+                if (_packages.TryGetValue(package.Key, out var packageModel))
+                {
+                    packageModel.IsValid = package.IsValid;
+                    packageModel.IsObsolete = package.IsObsolete;
+                    packageModel.IsLocked = package.IsLocked;
+                }
             }
         }
 
@@ -129,7 +142,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void RepositoryOnRemoved(PackageInfo package)
+        private void OnRemoved(PackageInfo package)
         {
             lock (_updateLock)
             {

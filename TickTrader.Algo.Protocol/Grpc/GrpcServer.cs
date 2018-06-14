@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             _server = new GrpcCore.Server
             {
                 Services = { Lib.BotAgent.BindService(_impl) },
-                Ports = { new ServerPort("localhost", Settings.ProtocolSettings.ListeningPort, ServerCredentials.Insecure) },
+                Ports = { new ServerPort("", Settings.ProtocolSettings.ListeningPort, ServerCredentials.Insecure) },
             };
             _server.Start();
         }
