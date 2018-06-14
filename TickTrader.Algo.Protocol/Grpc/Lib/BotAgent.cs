@@ -26,218 +26,219 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           string.Concat(
             "Cg9ib3RfYWdlbnQucHJvdG8SIVRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
             "cnBjLkxpYhoKa2V5cy5wcm90bxoObWV0YWRhdGEucHJvdG8aDGNvbmZpZy5w",
-            "cm90byJCCgdSZXF1ZXN0IjcKDVJlcXVlc3RTdGF0dXMSCwoHU1VDQ0VTUxAA",
-            "EhkKFUlOVEVSTkFMX1NFUlZFUl9FUlJPUhABIl0KDExvZ2luUmVxdWVzdBIN",
-            "CgVsb2dpbhgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIVCg1tYWpvcl92ZXJz",
-            "aW9uGAMgASgFEhUKDW1pbm9yX3ZlcnNpb24YBCABKAUimgIKDUxvZ2luUmVz",
-            "cG9uc2USSAoGc3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cxJKCgVlcnJvchgC",
-            "IAEoDjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dp",
-            "blJlc3BvbnNlLkxvZ2luRXJyb3ISFQoNbWFqb3JfdmVyc2lvbhgDIAEoBRIV",
-            "Cg1taW5vcl92ZXJzaW9uGAQgASgFIkUKCkxvZ2luRXJyb3ISCAoETk9ORRAA",
-            "EhcKE0lOVkFMSURfQ1JFREVOVElBTFMQARIUChBWRVJTSU9OX01JU01BVENI",
-            "EAIiDwoNTG9nb3V0UmVxdWVzdCLvAQoOTG9nb3V0UmVzcG9uc2USSAoGc3Rh",
-            "dHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LlJlcXVlc3QuUmVxdWVzdFN0YXR1cxJOCgZyZWFzb24YAiABKA4yPi5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTG9nb3V0UmVzcG9uc2Uu",
-            "TG9nb3V0UmVhc29uEgwKBHRleHQYAyABKAkiNQoMTG9nb3V0UmVhc29uEhIK",
-            "DkNMSUVOVF9SRVFVRVNUEAASEQoNU0VSVkVSX0xPR09VVBABIhQKElBhY2th",
-            "Z2VMaXN0UmVxdWVzdCKhAQoTUGFja2FnZUxpc3RSZXNwb25zZRJICgZzdGF0",
-            "dXMYASABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "UmVxdWVzdC5SZXF1ZXN0U3RhdHVzEkAKCHBhY2thZ2VzGAIgAygLMi4uVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VJbmZvIhQK",
-            "EkFjY291bnRMaXN0UmVxdWVzdCKmAQoTQWNjb3VudExpc3RSZXNwb25zZRJI",
-            "CgZzdGF0dXMYASABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
-            "Yy5MaWIuUmVxdWVzdC5SZXF1ZXN0U3RhdHVzEkUKCGFjY291bnRzGAIgAygL",
-            "MjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRN",
-            "b2RlbEluZm8iEAoOQm90TGlzdFJlcXVlc3QimgEKD0JvdExpc3RSZXNwb25z",
-            "ZRJICgZzdGF0dXMYASABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuUmVxdWVzdC5SZXF1ZXN0U3RhdHVzEj0KBGJvdHMYAiADKAsy",
-            "Ly5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TW9kZWxJ",
-            "bmZvIhsKGVN1YnNjcmliZVRvVXBkYXRlc1JlcXVlc3Qi3gQKClVwZGF0ZUlu",
-            "Zm8SRgoEdHlwZRgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5VcGRhdGVJbmZvLlVwZGF0ZVR5cGUSRwoHcGFja2FnZRgFIAEo",
-            "CzI0LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdl",
-            "VXBkYXRlSW5mb0gAElIKDXBhY2thZ2Vfc3RhdGUYBiABKAsyOS5UaWNrVHJh",
-            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGFja2FnZVN0YXRlVXBkYXRl",
-            "SW5mb0gAEkcKB2FjY291bnQYByABKAsyNC5UaWNrVHJhZGVyLkFsZ28uUHJv",
-            "dG9jb2wuR3JwYy5MaWIuQWNjb3VudFVwZGF0ZUluZm9IABJSCg1hY2NvdW50",
-            "X3N0YXRlGAggASgLMjkuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
-            "TGliLkFjY291bnRTdGF0ZVVwZGF0ZUluZm9IABI/CgNib3QYCSABKAsyMC5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90VXBkYXRlSW5m",
-            "b0gAEkoKCWJvdF9zdGF0ZRgKIAEoCzI1LlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5Cb3RTdGF0ZVVwZGF0ZUluZm9IACIyCgpVcGRhdGVU",
-            "eXBlEgkKBUFEREVEEAASDAoIUkVQTEFDRUQQARILCgdSRU1PVkVEEAJCDQoL",
-            "dXBkYXRlX2luZm8iVAoRUGFja2FnZVVwZGF0ZUluZm8SPwoHcGFja2FnZRgB",
+            "cm90byKpAQoNUmVxdWVzdFJlc3VsdBJOCgZzdGF0dXMYASABKA4yPi5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdC5S",
+            "ZXF1ZXN0U3RhdHVzEg8KB21lc3NhZ2UYAiABKAkiNwoNUmVxdWVzdFN0YXR1",
+            "cxILCgdTVUNDRVNTEAASGQoVSU5URVJOQUxfU0VSVkVSX0VSUk9SEAEiXQoM",
+            "TG9naW5SZXF1ZXN0Eg0KBWxvZ2luGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJ",
+            "EhUKDW1ham9yX3ZlcnNpb24YAyABKAUSFQoNbWlub3JfdmVyc2lvbhgEIAEo",
+            "BSKXAgoNTG9naW5SZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0",
+            "EkoKBWVycm9yGAIgASgOMjsuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLkxvZ2luUmVzcG9uc2UuTG9naW5FcnJvchIVCg1tYWpvcl92ZXJz",
+            "aW9uGAMgASgFEhUKDW1pbm9yX3ZlcnNpb24YBCABKAUiRQoKTG9naW5FcnJv",
+            "chIICgROT05FEAASFwoTSU5WQUxJRF9DUkVERU5USUFMUxABEhQKEFZFUlNJ",
+            "T05fTUlTTUFUQ0gQAiIPCg1Mb2dvdXRSZXF1ZXN0IuwBCg5Mb2dvdXRSZXNw",
+            "b25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0Ek4KBnJlYXNvbhgCIAEo",
+            "DjI+LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dvdXRS",
+            "ZXNwb25zZS5Mb2dvdXRSZWFzb24SDAoEdGV4dBgDIAEoCSI1CgxMb2dvdXRS",
+            "ZWFzb24SEgoOQ0xJRU5UX1JFUVVFU1QQABIRCg1TRVJWRVJfTE9HT1VUEAEi",
+            "FAoSUGFja2FnZUxpc3RSZXF1ZXN0Ip4BChNQYWNrYWdlTGlzdFJlc3BvbnNl",
+            "EkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQSQAoIcGFja2FnZXMYAiADKAsy",
+            "Li5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGFja2FnZUlu",
+            "Zm8iFAoSQWNjb3VudExpc3RSZXF1ZXN0IqMBChNBY2NvdW50TGlzdFJlc3Bv",
+            "bnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQSRQoIYWNjb3VudHMYAiAD",
+            "KAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3Vu",
+            "dE1vZGVsSW5mbyIQCg5Cb3RMaXN0UmVxdWVzdCKXAQoPQm90TGlzdFJlc3Bv",
+            "bnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQSPQoEYm90cxgCIAMoCzIv",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RNb2RlbElu",
+            "Zm8iGwoZU3Vic2NyaWJlVG9VcGRhdGVzUmVxdWVzdCLeBAoKVXBkYXRlSW5m",
+            "bxJGCgR0eXBlGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLlVwZGF0ZUluZm8uVXBkYXRlVHlwZRJHCgdwYWNrYWdlGAUgASgL",
+            "MjQuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VV",
+            "cGRhdGVJbmZvSAASUgoNcGFja2FnZV9zdGF0ZRgGIAEoCzI5LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlU3RhdGVVcGRhdGVJ",
+            "bmZvSAASRwoHYWNjb3VudBgHIAEoCzI0LlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5BY2NvdW50VXBkYXRlSW5mb0gAElIKDWFjY291bnRf",
+            "c3RhdGUYCCABKAsyOS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuQWNjb3VudFN0YXRlVXBkYXRlSW5mb0gAEj8KA2JvdBgJIAEoCzIwLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RVcGRhdGVJbmZv",
+            "SAASSgoJYm90X3N0YXRlGAogASgLMjUuVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLkJvdFN0YXRlVXBkYXRlSW5mb0gAIjIKClVwZGF0ZVR5",
+            "cGUSCQoFQURERUQQABIMCghSRVBMQUNFRBABEgsKB1JFTU9WRUQQAkINCgt1",
+            "cGRhdGVfaW5mbyJUChFQYWNrYWdlVXBkYXRlSW5mbxI/CgdwYWNrYWdlGAEg",
+            "ASgLMi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2th",
+            "Z2VJbmZvIlkKFlBhY2thZ2VTdGF0ZVVwZGF0ZUluZm8SPwoHcGFja2FnZRgB",
             "IAEoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNr",
-            "YWdlSW5mbyJZChZQYWNrYWdlU3RhdGVVcGRhdGVJbmZvEj8KB3BhY2thZ2UY",
-            "ASABKAsyLi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGFj",
-            "a2FnZUluZm8iWQoRQWNjb3VudFVwZGF0ZUluZm8SRAoHYWNjb3VudBgBIAEo",
-            "CzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50",
-            "TW9kZWxJbmZvIl4KFkFjY291bnRTdGF0ZVVwZGF0ZUluZm8SRAoHYWNjb3Vu",
-            "dBgBIAEoCzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5B",
-            "Y2NvdW50TW9kZWxJbmZvIk0KDUJvdFVwZGF0ZUluZm8SPAoDYm90GAEgASgL",
-            "Mi8uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdE1vZGVs",
-            "SW5mbyJSChJCb3RTdGF0ZVVwZGF0ZUluZm8SPAoDYm90GAEgASgLMi8uVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdE1vZGVsSW5mbyIh",
-            "Cg9TdGFydEJvdFJlcXVlc3QSDgoGYm90X2lkGAEgASgJIlwKEFN0YXJ0Qm90",
-            "UmVzcG9uc2USSAoGc3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cyIgCg5TdG9w",
-            "Qm90UmVxdWVzdBIOCgZib3RfaWQYASABKAkiWwoPU3RvcEJvdFJlc3BvbnNl",
-            "EkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMikAEKDUFkZEJvdFJlcXVl",
-            "c3QSPgoHYWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5BY2NvdW50S2V5Ej8KBmNvbmZpZxgCIAEoCzIvLlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5Db25maWciWgoO",
-            "QWRkQm90UmVzcG9uc2USSAoGc3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5B",
-            "bGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cyJO",
-            "ChBSZW1vdmVCb3RSZXF1ZXN0Eg4KBmJvdF9pZBgBIAEoCRIRCgljbGVhbl9s",
-            "b2cYAiABKAgSFwoPY2xlYW5fYWxnb19kYXRhGAMgASgIIl0KEVJlbW92ZUJv",
-            "dFJlc3BvbnNlEkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMibQoWQ2hh",
-            "bmdlQm90Q29uZmlnUmVxdWVzdBIOCgZib3RfaWQYASABKAkSQwoKbmV3X2Nv",
-            "bmZpZxgCIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5QbHVnaW5Db25maWciYwoXQ2hhbmdlQm90Q29uZmlnUmVzcG9uc2USSAoG",
-            "c3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
-            "TGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cyIUChJBcGlNZXRhZGF0YVJlcXVl",
-            "c3QiqQEKE0FwaU1ldGFkYXRhUmVzcG9uc2USSAoGc3RhdHVzGAEgASgOMjgu",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3QuUmVx",
-            "dWVzdFN0YXR1cxJICgxhcGlfbWV0YWRhdGEYAiABKAsyMi5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQXBpTWV0YWRhdGFJbmZvIhUKE01h",
-            "cHBpbmdzSW5mb1JlcXVlc3QirAEKFE1hcHBpbmdzSW5mb1Jlc3BvbnNlEkgK",
-            "BnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMSSgoIbWFwcGluZ3MYAiABKAsy",
-            "OC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ0Nv",
-            "bGxlY3Rpb25JbmZvIhUKE1NldHVwQ29udGV4dFJlcXVlc3QirAEKFFNldHVw",
-            "Q29udGV4dFJlc3BvbnNlEkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMS",
-            "SgoNc2V0dXBfY29udGV4dBgCIAEoCzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5TZXR1cENvbnRleHRJbmZvIlgKFkFjY291bnRNZXRh",
-            "ZGF0YVJlcXVlc3QSPgoHYWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5IoECChdBY2NvdW50TWV0",
-            "YWRhdGFSZXNwb25zZRJICgZzdGF0dXMYASABKA4yOC5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdC5SZXF1ZXN0U3RhdHVzEkoK",
-            "CmVycm9yX2luZm8YAiABKAsyNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuQ29ubmVjdGlvbkVycm9ySW5mbxJQChBhY2NvdW50X21ldGFk",
-            "YXRhGAMgASgLMjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LkFjY291bnRNZXRhZGF0YUluZm8ifwoRQWRkQWNjb3VudFJlcXVlc3QSPgoH",
-            "YWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5BY2NvdW50S2V5EhAKCHBhc3N3b3JkGAIgASgJEhgKEHVzZV9uZXdf",
-            "cHJvdG9jb2wYAyABKAgiXgoSQWRkQWNjb3VudFJlc3BvbnNlEkgKBnN0YXR1",
-            "cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5S",
-            "ZXF1ZXN0LlJlcXVlc3RTdGF0dXMiVgoUUmVtb3ZlQWNjb3VudFJlcXVlc3QS",
-            "PgoHYWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5BY2NvdW50S2V5ImEKFVJlbW92ZUFjY291bnRSZXNwb25zZRJI",
-            "CgZzdGF0dXMYASABKA4yOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
-            "Yy5MaWIuUmVxdWVzdC5SZXF1ZXN0U3RhdHVzIoIBChRDaGFuZ2VBY2NvdW50",
-            "UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkFjY291bnRLZXkSEAoIcGFzc3dvcmQYAiABKAkS",
-            "GAoQdXNlX25ld19wcm90b2NvbBgDIAEoCCJhChVDaGFuZ2VBY2NvdW50UmVz",
-            "cG9uc2USSAoGc3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cyJUChJUZXN0QWNj",
-            "b3VudFJlcXVlc3QSPgoHYWNjb3VudBgBIAEoCzItLlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5IqsBChNUZXN0QWNjb3Vu",
-            "dFJlc3BvbnNlEkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMSSgoKZXJy",
-            "b3JfaW5mbxgCIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5Db25uZWN0aW9uRXJyb3JJbmZvIoUBChdUZXN0QWNjb3VudENyZWRz",
-            "UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkFjY291bnRLZXkSEAoIcGFzc3dvcmQYAiABKAkS",
-            "GAoQdXNlX25ld19wcm90b2NvbBgDIAEoCCKwAQoYVGVzdEFjY291bnRDcmVk",
-            "c1Jlc3BvbnNlEkgKBnN0YXR1cxgBIAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0LlJlcXVlc3RTdGF0dXMSSgoKZXJy",
-            "b3JfaW5mbxgCIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5Db25uZWN0aW9uRXJyb3JJbmZvIkEKFFVwbG9hZFBhY2thZ2VSZXF1",
-            "ZXN0EhEKCWZpbGVfbmFtZRgBIAEoCRIWCg5wYWNrYWdlX2JpbmFyeRgCIAEo",
-            "DCJhChVVcGxvYWRQYWNrYWdlUmVzcG9uc2USSAoGc3RhdHVzGAEgASgOMjgu",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3QuUmVx",
-            "dWVzdFN0YXR1cyJWChRSZW1vdmVQYWNrYWdlUmVxdWVzdBI+CgdwYWNrYWdl",
-            "GAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBh",
-            "Y2thZ2VLZXkiYQoVUmVtb3ZlUGFja2FnZVJlc3BvbnNlEkgKBnN0YXR1cxgB",
-            "IAEoDjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1",
-            "ZXN0LlJlcXVlc3RTdGF0dXMiWAoWRG93bmxvYWRQYWNrYWdlUmVxdWVzdBI+",
-            "CgdwYWNrYWdlGAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLlBhY2thZ2VLZXkiewoXRG93bmxvYWRQYWNrYWdlUmVzcG9uc2US",
-            "SAoGc3RhdHVzGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLlJlcXVlc3QuUmVxdWVzdFN0YXR1cxIWCg5wYWNrYWdlX2JpbmFy",
-            "eRgCIAEoDDKLFgoIQm90QWdlbnQSagoFTG9naW4SLy5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuTG9naW5SZXF1ZXN0GjAuVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ2luUmVzcG9uc2USfwoOR2V0",
-            "UGFja2FnZUxpc3QSNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuUGFja2FnZUxpc3RSZXF1ZXN0GjYuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLlBhY2thZ2VMaXN0UmVzcG9uc2USfwoOR2V0QWNjb3Vu",
-            "dExpc3QSNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNj",
-            "b3VudExpc3RSZXF1ZXN0GjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLkFjY291bnRMaXN0UmVzcG9uc2UScwoKR2V0Qm90TGlzdBIxLlRp",
-            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RMaXN0UmVxdWVz",
-            "dBoyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RMaXN0",
-            "UmVzcG9uc2USgwEKElN1YnNjcmliZVRvVXBkYXRlcxI8LlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TdWJzY3JpYmVUb1VwZGF0ZXNSZXF1",
-            "ZXN0Gi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVwZGF0",
-            "ZUluZm8wARJ/Cg5HZXRBcGlNZXRhZGF0YRI1LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5BcGlNZXRhZGF0YVJlcXVlc3QaNi5UaWNrVHJh",
-            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQXBpTWV0YWRhdGFSZXNwb25z",
-            "ZRKCAQoPR2V0TWFwcGluZ3NJbmZvEjYuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLk1hcHBpbmdzSW5mb1JlcXVlc3QaNy5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ3NJbmZvUmVzcG9uc2US",
-            "ggEKD0dldFNldHVwQ29udGV4dBI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5TZXR1cENvbnRleHRSZXF1ZXN0GjcuVGlja1RyYWRlci5B",
-            "bGdvLlByb3RvY29sLkdycGMuTGliLlNldHVwQ29udGV4dFJlc3BvbnNlEosB",
-            "ChJHZXRBY2NvdW50TWV0YWRhdGESOS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuQWNjb3VudE1ldGFkYXRhUmVxdWVzdBo6LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TWV0YWRhdGFSZXNw",
-            "b25zZRJzCghTdGFydEJvdBIyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5TdGFydEJvdFJlcXVlc3QaMy5UaWNrVHJhZGVyLkFsZ28uUHJv",
-            "dG9jb2wuR3JwYy5MaWIuU3RhcnRCb3RSZXNwb25zZRJwCgdTdG9wQm90EjEu",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN0b3BCb3RSZXF1",
-            "ZXN0GjIuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN0b3BC",
-            "b3RSZXNwb25zZRJtCgZBZGRCb3QSMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuQWRkQm90UmVxdWVzdBoxLlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5BZGRCb3RSZXNwb25zZRJ2CglSZW1vdmVCb3QS",
-            "My5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVtb3ZlQm90",
-            "UmVxdWVzdBo0LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5S",
-            "ZW1vdmVCb3RSZXNwb25zZRKIAQoPQ2hhbmdlQm90Q29uZmlnEjkuVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNoYW5nZUJvdENvbmZpZ1Jl",
-            "cXVlc3QaOi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQ2hh",
-            "bmdlQm90Q29uZmlnUmVzcG9uc2USeQoKQWRkQWNjb3VudBI0LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BZGRBY2NvdW50UmVxdWVzdBo1",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BZGRBY2NvdW50",
-            "UmVzcG9uc2USggEKDVJlbW92ZUFjY291bnQSNy5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuUmVtb3ZlQWNjb3VudFJlcXVlc3QaOC5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVtb3ZlQWNjb3VudFJl",
-            "c3BvbnNlEoIBCg1DaGFuZ2VBY2NvdW50EjcuVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkNoYW5nZUFjY291bnRSZXF1ZXN0GjguVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNoYW5nZUFjY291bnRSZXNw",
-            "b25zZRJ8CgtUZXN0QWNjb3VudBI1LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5UZXN0QWNjb3VudFJlcXVlc3QaNi5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuVGVzdEFjY291bnRSZXNwb25zZRKLAQoQ",
-            "VGVzdEFjY291bnRDcmVkcxI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5UZXN0QWNjb3VudENyZWRzUmVxdWVzdBo7LlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5UZXN0QWNjb3VudENyZWRzUmVzcG9u",
-            "c2USggEKDVVwbG9hZFBhY2thZ2USNy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuVXBsb2FkUGFja2FnZVJlcXVlc3QaOC5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuVXBsb2FkUGFja2FnZVJlc3BvbnNl",
-            "EoIBCg1SZW1vdmVQYWNrYWdlEjcuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
-            "LkdycGMuTGliLlJlbW92ZVBhY2thZ2VSZXF1ZXN0GjguVGlja1RyYWRlci5B",
-            "bGdvLlByb3RvY29sLkdycGMuTGliLlJlbW92ZVBhY2thZ2VSZXNwb25zZRKI",
-            "AQoPRG93bmxvYWRQYWNrYWdlEjkuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
-            "LkdycGMuTGliLkRvd25sb2FkUGFja2FnZVJlcXVlc3QaOi5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuRG93bmxvYWRQYWNrYWdlUmVzcG9u",
-            "c2ViBnByb3RvMw=="));
+            "YWdlSW5mbyJZChFBY2NvdW50VXBkYXRlSW5mbxJECgdhY2NvdW50GAEgASgL",
+            "MjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRN",
+            "b2RlbEluZm8iXgoWQWNjb3VudFN0YXRlVXBkYXRlSW5mbxJECgdhY2NvdW50",
+            "GAEgASgLMjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFj",
+            "Y291bnRNb2RlbEluZm8iTQoNQm90VXBkYXRlSW5mbxI8CgNib3QYASABKAsy",
+            "Ly5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TW9kZWxJ",
+            "bmZvIlIKEkJvdFN0YXRlVXBkYXRlSW5mbxI8CgNib3QYASABKAsyLy5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TW9kZWxJbmZvIiEK",
+            "D1N0YXJ0Qm90UmVxdWVzdBIOCgZib3RfaWQYASABKAkiWQoQU3RhcnRCb3RS",
+            "ZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0IiAKDlN0b3BCb3RS",
+            "ZXF1ZXN0Eg4KBmJvdF9pZBgBIAEoCSJYCg9TdG9wQm90UmVzcG9uc2USRQoL",
+            "ZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuUmVxdWVzdFJlc3VsdCKQAQoNQWRkQm90UmVxdWVzdBI+Cgdh",
+            "Y2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
+            "TGliLkFjY291bnRLZXkSPwoGY29uZmlnGAIgASgLMi8uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpbkNvbmZpZyJXCg5BZGRCb3RS",
+            "ZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0Ik4KEFJlbW92ZUJv",
+            "dFJlcXVlc3QSDgoGYm90X2lkGAEgASgJEhEKCWNsZWFuX2xvZxgCIAEoCBIX",
+            "Cg9jbGVhbl9hbGdvX2RhdGEYAyABKAgiWgoRUmVtb3ZlQm90UmVzcG9uc2US",
+            "RQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
+            "b2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCJtChZDaGFuZ2VCb3RDb25maWdS",
+            "ZXF1ZXN0Eg4KBmJvdF9pZBgBIAEoCRJDCgpuZXdfY29uZmlnGAIgASgLMi8u",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpbkNvbmZp",
+            "ZyJgChdDaGFuZ2VCb3RDb25maWdSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgB",
+            "IAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1",
+            "ZXN0UmVzdWx0IhQKEkFwaU1ldGFkYXRhUmVxdWVzdCKmAQoTQXBpTWV0YWRh",
+            "dGFSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkgKDGFwaV9t",
+            "ZXRhZGF0YRgCIAEoCzIyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5BcGlNZXRhZGF0YUluZm8iFQoTTWFwcGluZ3NJbmZvUmVxdWVzdCKp",
+            "AQoUTWFwcGluZ3NJbmZvUmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsy",
+            "MC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJl",
+            "c3VsdBJKCghtYXBwaW5ncxgCIAEoCzI4LlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5NYXBwaW5nQ29sbGVjdGlvbkluZm8iFQoTU2V0dXBD",
+            "b250ZXh0UmVxdWVzdCKpAQoUU2V0dXBDb250ZXh0UmVzcG9uc2USRQoLZXhl",
+            "Y19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuUmVxdWVzdFJlc3VsdBJKCg1zZXR1cF9jb250ZXh0GAIgASgLMjMu",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlNldHVwQ29udGV4",
+            "dEluZm8iWAoWQWNjb3VudE1ldGFkYXRhUmVxdWVzdBI+CgdhY2NvdW50GAEg",
+            "ASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291",
+            "bnRLZXki/gEKF0FjY291bnRNZXRhZGF0YVJlc3BvbnNlEkUKC2V4ZWNfcmVz",
+            "dWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "LlJlcXVlc3RSZXN1bHQSSgoKZXJyb3JfaW5mbxgCIAEoCzI2LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Db25uZWN0aW9uRXJyb3JJbmZv",
+            "ElAKEGFjY291bnRfbWV0YWRhdGEYAyABKAsyNi5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudE1ldGFkYXRhSW5mbyJ/ChFBZGRB",
+            "Y2NvdW50UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkSEAoIcGFzc3dvcmQY",
+            "AiABKAkSGAoQdXNlX25ld19wcm90b2NvbBgDIAEoCCJbChJBZGRBY2NvdW50",
+            "UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCJWChRSZW1vdmVB",
+            "Y2NvdW50UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiXgoVUmVtb3ZlQWNj",
+            "b3VudFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQiggEKFENo",
+            "YW5nZUFjY291bnRSZXF1ZXN0Ej4KB2FjY291bnQYASABKAsyLS5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRIQCghwYXNz",
+            "d29yZBgCIAEoCRIYChB1c2VfbmV3X3Byb3RvY29sGAMgASgIIl4KFUNoYW5n",
+            "ZUFjY291bnRSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0IlQK",
+            "ElRlc3RBY2NvdW50UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiqAEKE1Rl",
+            "c3RBY2NvdW50UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJK",
+            "CgplcnJvcl9pbmZvGAIgASgLMjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8ihQEKF1Rlc3RBY2NvdW50",
+            "Q3JlZHNSZXF1ZXN0Ej4KB2FjY291bnQYASABKAsyLS5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRIQCghwYXNzd29yZBgC",
+            "IAEoCRIYChB1c2VfbmV3X3Byb3RvY29sGAMgASgIIq0BChhUZXN0QWNjb3Vu",
+            "dENyZWRzUmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJKCgpl",
+            "cnJvcl9pbmZvGAIgASgLMjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8iQQoUVXBsb2FkUGFja2FnZVJl",
+            "cXVlc3QSEQoJZmlsZV9uYW1lGAEgASgJEhYKDnBhY2thZ2VfYmluYXJ5GAIg",
+            "ASgMIl4KFVVwbG9hZFBhY2thZ2VSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgB",
+            "IAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1",
+            "ZXN0UmVzdWx0IlYKFFJlbW92ZVBhY2thZ2VSZXF1ZXN0Ej4KB3BhY2thZ2UY",
+            "ASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGFj",
+            "a2FnZUtleSJeChVSZW1vdmVQYWNrYWdlUmVzcG9uc2USRQoLZXhlY19yZXN1",
+            "bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "UmVxdWVzdFJlc3VsdCJYChZEb3dubG9hZFBhY2thZ2VSZXF1ZXN0Ej4KB3Bh",
+            "Y2thZ2UYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuUGFja2FnZUtleSJ4ChdEb3dubG9hZFBhY2thZ2VSZXNwb25zZRJFCgtl",
+            "eGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5SZXF1ZXN0UmVzdWx0EhYKDnBhY2thZ2VfYmluYXJ5GAIgASgM",
+            "MosWCghCb3RBZ2VudBJqCgVMb2dpbhIvLlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5Mb2dpblJlcXVlc3QaMC5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuTG9naW5SZXNwb25zZRJ/Cg5HZXRQYWNrYWdl",
+            "TGlzdBI1LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNr",
+            "YWdlTGlzdFJlcXVlc3QaNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuUGFja2FnZUxpc3RSZXNwb25zZRJ/Cg5HZXRBY2NvdW50TGlzdBI1",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TGlz",
+            "dFJlcXVlc3QaNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "QWNjb3VudExpc3RSZXNwb25zZRJzCgpHZXRCb3RMaXN0EjEuVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdExpc3RSZXF1ZXN0GjIuVGlj",
+            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdExpc3RSZXNwb25z",
+            "ZRKDAQoSU3Vic2NyaWJlVG9VcGRhdGVzEjwuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlN1YnNjcmliZVRvVXBkYXRlc1JlcXVlc3QaLS5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuVXBkYXRlSW5mbzAB",
+            "En8KDkdldEFwaU1ldGFkYXRhEjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkFwaU1ldGFkYXRhUmVxdWVzdBo2LlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5BcGlNZXRhZGF0YVJlc3BvbnNlEoIBCg9H",
+            "ZXRNYXBwaW5nc0luZm8SNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuTWFwcGluZ3NJbmZvUmVxdWVzdBo3LlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nc0luZm9SZXNwb25zZRKCAQoPR2V0",
+            "U2V0dXBDb250ZXh0EjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
+            "TGliLlNldHVwQ29udGV4dFJlcXVlc3QaNy5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuU2V0dXBDb250ZXh0UmVzcG9uc2USiwEKEkdldEFj",
+            "Y291bnRNZXRhZGF0YRI5LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5BY2NvdW50TWV0YWRhdGFSZXF1ZXN0GjouVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFjY291bnRNZXRhZGF0YVJlc3BvbnNlEnMK",
+            "CFN0YXJ0Qm90EjIuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "LlN0YXJ0Qm90UmVxdWVzdBozLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5TdGFydEJvdFJlc3BvbnNlEnAKB1N0b3BCb3QSMS5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3RvcEJvdFJlcXVlc3QaMi5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3RvcEJvdFJlc3Bv",
+            "bnNlEm0KBkFkZEJvdBIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5BZGRCb3RSZXF1ZXN0GjEuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkFkZEJvdFJlc3BvbnNlEnYKCVJlbW92ZUJvdBIzLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZW1vdmVCb3RSZXF1ZXN0",
+            "GjQuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlbW92ZUJv",
+            "dFJlc3BvbnNlEogBCg9DaGFuZ2VCb3RDb25maWcSOS5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQ2hhbmdlQm90Q29uZmlnUmVxdWVzdBo6",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5DaGFuZ2VCb3RD",
+            "b25maWdSZXNwb25zZRJ5CgpBZGRBY2NvdW50EjQuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFkZEFjY291bnRSZXF1ZXN0GjUuVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFkZEFjY291bnRSZXNwb25z",
+            "ZRKCAQoNUmVtb3ZlQWNjb3VudBI3LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5SZW1vdmVBY2NvdW50UmVxdWVzdBo4LlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZW1vdmVBY2NvdW50UmVzcG9uc2US",
+            "ggEKDUNoYW5nZUFjY291bnQSNy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuQ2hhbmdlQWNjb3VudFJlcXVlc3QaOC5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQ2hhbmdlQWNjb3VudFJlc3BvbnNlEnwK",
+            "C1Rlc3RBY2NvdW50EjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
+            "TGliLlRlc3RBY2NvdW50UmVxdWVzdBo2LlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5UZXN0QWNjb3VudFJlc3BvbnNlEosBChBUZXN0QWNj",
+            "b3VudENyZWRzEjouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "LlRlc3RBY2NvdW50Q3JlZHNSZXF1ZXN0GjsuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlRlc3RBY2NvdW50Q3JlZHNSZXNwb25zZRKCAQoN",
+            "VXBsb2FkUGFja2FnZRI3LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5VcGxvYWRQYWNrYWdlUmVxdWVzdBo4LlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5VcGxvYWRQYWNrYWdlUmVzcG9uc2USggEKDVJl",
+            "bW92ZVBhY2thZ2USNy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuUmVtb3ZlUGFja2FnZVJlcXVlc3QaOC5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuUmVtb3ZlUGFja2FnZVJlc3BvbnNlEogBCg9Eb3du",
+            "bG9hZFBhY2thZ2USOS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuRG93bmxvYWRQYWNrYWdlUmVxdWVzdBo6LlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5Eb3dubG9hZFBhY2thZ2VSZXNwb25zZWIGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.Request), global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Parser, null, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult), global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Parser, new[]{ "Status", "Message" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Types.RequestStatus) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser, new[]{ "Login", "Password", "MajorVersion", "MinorVersion" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser, new[]{ "Status", "Error", "MajorVersion", "MinorVersion" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Types.LoginError) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser, new[]{ "ExecResult", "Error", "MajorVersion", "MinorVersion" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Types.LoginError) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Parser, new[]{ "Status", "Reason", "Text" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Types.LogoutReason) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Parser, new[]{ "ExecResult", "Reason", "Text" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Types.LogoutReason) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse.Parser, new[]{ "Status", "Packages" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse.Parser, new[]{ "ExecResult", "Packages" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse.Parser, new[]{ "Status", "Accounts" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse.Parser, new[]{ "ExecResult", "Accounts" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse.Parser, new[]{ "Status", "Bots" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse.Parser, new[]{ "ExecResult", "Bots" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Parser, new[]{ "Type", "Package", "PackageState", "Account", "AccountState", "Bot", "BotState" }, new[]{ "UpdateInfo" }, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Types.UpdateType) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageUpdateInfo.Parser, new[]{ "Package" }, null, null, null),
@@ -247,50 +248,50 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotUpdateInfo.Parser, new[]{ "Bot" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStateUpdateInfo.Parser, new[]{ "Bot" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest.Parser, new[]{ "BotId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest.Parser, new[]{ "BotId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest.Parser, new[]{ "Account", "Config" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest.Parser, new[]{ "BotId", "CleanLog", "CleanAlgoData" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest.Parser, new[]{ "BotId", "NewConfig" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse.Parser, new[]{ "Status", "ApiMetadata" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse.Parser, new[]{ "ExecResult", "ApiMetadata" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse.Parser, new[]{ "Status", "Mappings" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse.Parser, new[]{ "ExecResult", "Mappings" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse.Parser, new[]{ "Status", "SetupContext" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse.Parser, new[]{ "ExecResult", "SetupContext" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest.Parser, new[]{ "Account" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse.Parser, new[]{ "Status", "ErrorInfo", "AccountMetadata" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse.Parser, new[]{ "ExecResult", "ErrorInfo", "AccountMetadata" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest.Parser, new[]{ "Account", "Password", "UseNewProtocol" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest.Parser, new[]{ "Account" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest.Parser, new[]{ "Account", "Password", "UseNewProtocol" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest.Parser, new[]{ "Account" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse.Parser, new[]{ "Status", "ErrorInfo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse.Parser, new[]{ "ExecResult", "ErrorInfo" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest.Parser, new[]{ "Account", "Password", "UseNewProtocol" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse.Parser, new[]{ "Status", "ErrorInfo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse.Parser, new[]{ "ExecResult", "ErrorInfo" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest.Parser, new[]{ "FileName", "PackageBinary" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest.Parser, new[]{ "Package" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse.Parser, new[]{ "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest.Parser, new[]{ "Package" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse.Parser, new[]{ "Status", "PackageBinary" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse.Parser, new[]{ "ExecResult", "PackageBinary" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
-  public sealed partial class Request : pb::IMessage<Request> {
-    private static readonly pb::MessageParser<Request> _parser = new pb::MessageParser<Request>(() => new Request());
+  public sealed partial class RequestResult : pb::IMessage<RequestResult> {
+    private static readonly pb::MessageParser<RequestResult> _parser = new pb::MessageParser<RequestResult>(() => new RequestResult());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<Request> Parser { get { return _parser; } }
+    public static pb::MessageParser<RequestResult> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -303,41 +304,69 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Request() {
+    public RequestResult() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Request(Request other) : this() {
+    public RequestResult(RequestResult other) : this() {
+      status_ = other.status_;
+      message_ = other.message_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Request Clone() {
-      return new Request(this);
+    public RequestResult Clone() {
+      return new RequestResult(this);
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Types.RequestStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Types.RequestStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "message" field.</summary>
+    public const int MessageFieldNumber = 2;
+    private string message_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Message {
+      get { return message_; }
+      set {
+        message_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as Request);
+      return Equals(other as RequestResult);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(Request other) {
+    public bool Equals(RequestResult other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (Status != other.Status) return false;
+      if (Message != other.Message) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (Message.Length != 0) hash ^= Message.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -351,6 +380,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (Status != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Status);
+      }
+      if (Message.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Message);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -359,6 +396,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (Message.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Message);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -366,9 +409,15 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(Request other) {
+    public void MergeFrom(RequestResult other) {
       if (other == null) {
         return;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.Message.Length != 0) {
+        Message = other.Message;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -381,12 +430,20 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 8: {
+            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Types.RequestStatus) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            Message = input.ReadString();
+            break;
+          }
         }
       }
     }
 
     #region Nested types
-    /// <summary>Container for nested types declared in the Request message type.</summary>
+    /// <summary>Container for nested types declared in the RequestResult message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       public enum RequestStatus {
@@ -643,7 +700,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public LoginResponse(LoginResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       error_ = other.error_;
       majorVersion_ = other.majorVersion_;
       minorVersion_ = other.minorVersion_;
@@ -655,14 +712,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new LoginResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -718,7 +775,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (Error != other.Error) return false;
       if (MajorVersion != other.MajorVersion) return false;
       if (MinorVersion != other.MinorVersion) return false;
@@ -728,7 +785,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (Error != 0) hash ^= Error.GetHashCode();
       if (MajorVersion != 0) hash ^= MajorVersion.GetHashCode();
       if (MinorVersion != 0) hash ^= MinorVersion.GetHashCode();
@@ -745,9 +802,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (Error != 0) {
         output.WriteRawTag(16);
@@ -769,8 +826,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (Error != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Error);
@@ -792,8 +849,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.Error != 0) {
         Error = other.Error;
@@ -815,8 +875,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 16: {
@@ -976,7 +1039,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public LogoutResponse(LogoutResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       reason_ = other.reason_;
       text_ = other.text_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -987,14 +1050,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new LogoutResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -1033,7 +1096,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (Reason != other.Reason) return false;
       if (Text != other.Text) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1042,7 +1105,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (Reason != 0) hash ^= Reason.GetHashCode();
       if (Text.Length != 0) hash ^= Text.GetHashCode();
       if (_unknownFields != null) {
@@ -1058,9 +1121,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (Reason != 0) {
         output.WriteRawTag(16);
@@ -1078,8 +1141,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (Reason != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Reason);
@@ -1098,8 +1161,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.Reason != 0) {
         Reason = other.Reason;
@@ -1118,8 +1184,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 16: {
@@ -1274,7 +1343,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PackageListResponse(PackageListResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       packages_ = other.packages_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1284,14 +1353,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new PackageListResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -1318,7 +1387,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if(!packages_.Equals(other.packages_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1326,7 +1395,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       hash ^= packages_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1341,9 +1410,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       packages_.WriteTo(output, _repeated_packages_codec);
       if (_unknownFields != null) {
@@ -1354,8 +1423,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       size += packages_.CalculateSize(_repeated_packages_codec);
       if (_unknownFields != null) {
@@ -1369,8 +1438,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       packages_.Add(other.packages_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1384,8 +1456,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -1524,7 +1599,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public AccountListResponse(AccountListResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       accounts_ = other.accounts_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1534,14 +1609,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new AccountListResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -1568,7 +1643,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if(!accounts_.Equals(other.accounts_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1576,7 +1651,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       hash ^= accounts_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1591,9 +1666,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       accounts_.WriteTo(output, _repeated_accounts_codec);
       if (_unknownFields != null) {
@@ -1604,8 +1679,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       size += accounts_.CalculateSize(_repeated_accounts_codec);
       if (_unknownFields != null) {
@@ -1619,8 +1694,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       accounts_.Add(other.accounts_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1634,8 +1712,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -1774,7 +1855,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BotListResponse(BotListResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       bots_ = other.bots_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1784,14 +1865,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new BotListResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -1818,7 +1899,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if(!bots_.Equals(other.bots_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1826,7 +1907,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       hash ^= bots_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1841,9 +1922,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       bots_.WriteTo(output, _repeated_bots_codec);
       if (_unknownFields != null) {
@@ -1854,8 +1935,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       size += bots_.CalculateSize(_repeated_bots_codec);
       if (_unknownFields != null) {
@@ -1869,8 +1950,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       bots_.Add(other.bots_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1884,8 +1968,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -3364,7 +3451,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StartBotResponse(StartBotResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3373,14 +3460,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new StartBotResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -3397,14 +3484,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3418,9 +3505,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -3430,8 +3517,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3444,8 +3531,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3458,8 +3548,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -3622,7 +3715,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StopBotResponse(StopBotResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3631,14 +3724,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new StopBotResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -3655,14 +3748,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3676,9 +3769,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -3688,8 +3781,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3702,8 +3795,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3716,8 +3812,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -3920,7 +4019,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public AddBotResponse(AddBotResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3929,14 +4028,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new AddBotResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -3953,14 +4052,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3974,9 +4073,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -3986,8 +4085,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -4000,8 +4099,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -4014,8 +4116,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -4234,7 +4339,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public RemoveBotResponse(RemoveBotResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -4243,14 +4348,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new RemoveBotResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -4267,14 +4372,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4288,9 +4393,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -4300,8 +4405,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -4314,8 +4419,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -4328,8 +4436,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -4526,7 +4637,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ChangeBotConfigResponse(ChangeBotConfigResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -4535,14 +4646,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new ChangeBotConfigResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -4559,14 +4670,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4580,9 +4691,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -4592,8 +4703,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -4606,8 +4717,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -4620,8 +4734,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -4756,7 +4873,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ApiMetadataResponse(ApiMetadataResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       ApiMetadata = other.apiMetadata_ != null ? other.ApiMetadata.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -4766,14 +4883,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new ApiMetadataResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -4801,7 +4918,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (!object.Equals(ApiMetadata, other.ApiMetadata)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -4809,7 +4926,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (apiMetadata_ != null) hash ^= ApiMetadata.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -4824,9 +4941,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (apiMetadata_ != null) {
         output.WriteRawTag(18);
@@ -4840,8 +4957,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (apiMetadata_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ApiMetadata);
@@ -4857,8 +4974,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.apiMetadata_ != null) {
         if (apiMetadata_ == null) {
@@ -4877,8 +4997,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -5020,7 +5143,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MappingsInfoResponse(MappingsInfoResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       Mappings = other.mappings_ != null ? other.Mappings.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -5030,14 +5153,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new MappingsInfoResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -5065,7 +5188,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (!object.Equals(Mappings, other.Mappings)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -5073,7 +5196,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (mappings_ != null) hash ^= Mappings.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -5088,9 +5211,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (mappings_ != null) {
         output.WriteRawTag(18);
@@ -5104,8 +5227,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (mappings_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Mappings);
@@ -5121,8 +5244,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.mappings_ != null) {
         if (mappings_ == null) {
@@ -5141,8 +5267,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -5284,7 +5413,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public SetupContextResponse(SetupContextResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       SetupContext = other.setupContext_ != null ? other.SetupContext.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -5294,14 +5423,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new SetupContextResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -5329,7 +5458,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (!object.Equals(SetupContext, other.SetupContext)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -5337,7 +5466,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (setupContext_ != null) hash ^= SetupContext.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -5352,9 +5481,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (setupContext_ != null) {
         output.WriteRawTag(18);
@@ -5368,8 +5497,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (setupContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SetupContext);
@@ -5385,8 +5514,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.setupContext_ != null) {
         if (setupContext_ == null) {
@@ -5405,8 +5537,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -5582,7 +5717,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public AccountMetadataResponse(AccountMetadataResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       ErrorInfo = other.errorInfo_ != null ? other.ErrorInfo.Clone() : null;
       AccountMetadata = other.accountMetadata_ != null ? other.AccountMetadata.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -5593,14 +5728,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new AccountMetadataResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -5639,7 +5774,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (!object.Equals(ErrorInfo, other.ErrorInfo)) return false;
       if (!object.Equals(AccountMetadata, other.AccountMetadata)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -5648,7 +5783,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (errorInfo_ != null) hash ^= ErrorInfo.GetHashCode();
       if (accountMetadata_ != null) hash ^= AccountMetadata.GetHashCode();
       if (_unknownFields != null) {
@@ -5664,9 +5799,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (errorInfo_ != null) {
         output.WriteRawTag(18);
@@ -5684,8 +5819,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (errorInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ErrorInfo);
@@ -5704,8 +5839,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.errorInfo_ != null) {
         if (errorInfo_ == null) {
@@ -5730,8 +5868,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -5970,7 +6111,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public AddAccountResponse(AddAccountResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -5979,14 +6120,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new AddAccountResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -6003,14 +6144,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6024,9 +6165,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -6036,8 +6177,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -6050,8 +6191,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6064,8 +6208,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -6234,7 +6381,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public RemoveAccountResponse(RemoveAccountResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -6243,14 +6390,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new RemoveAccountResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -6267,14 +6414,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6288,9 +6435,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -6300,8 +6447,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -6314,8 +6461,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6328,8 +6478,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -6554,7 +6707,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ChangeAccountResponse(ChangeAccountResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -6563,14 +6716,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new ChangeAccountResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -6587,14 +6740,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -6608,9 +6761,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -6620,8 +6773,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -6634,8 +6787,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -6648,8 +6804,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -6818,7 +6977,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestAccountResponse(TestAccountResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       ErrorInfo = other.errorInfo_ != null ? other.ErrorInfo.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -6828,14 +6987,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new TestAccountResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -6863,7 +7022,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (!object.Equals(ErrorInfo, other.ErrorInfo)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -6871,7 +7030,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (errorInfo_ != null) hash ^= ErrorInfo.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -6886,9 +7045,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (errorInfo_ != null) {
         output.WriteRawTag(18);
@@ -6902,8 +7061,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (errorInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ErrorInfo);
@@ -6919,8 +7078,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.errorInfo_ != null) {
         if (errorInfo_ == null) {
@@ -6939,8 +7101,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -7172,7 +7337,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestAccountCredsResponse(TestAccountCredsResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       ErrorInfo = other.errorInfo_ != null ? other.ErrorInfo.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -7182,14 +7347,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new TestAccountCredsResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -7217,7 +7382,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (!object.Equals(ErrorInfo, other.ErrorInfo)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -7225,7 +7390,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (errorInfo_ != null) hash ^= ErrorInfo.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -7240,9 +7405,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (errorInfo_ != null) {
         output.WriteRawTag(18);
@@ -7256,8 +7421,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (errorInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ErrorInfo);
@@ -7273,8 +7438,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.errorInfo_ != null) {
         if (errorInfo_ == null) {
@@ -7293,8 +7461,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {
@@ -7492,7 +7663,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UploadPackageResponse(UploadPackageResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -7501,14 +7672,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new UploadPackageResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -7525,14 +7696,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -7546,9 +7717,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -7558,8 +7729,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -7572,8 +7743,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -7586,8 +7760,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -7756,7 +7933,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public RemovePackageResponse(RemovePackageResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -7765,14 +7942,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new RemovePackageResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -7789,14 +7966,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -7810,9 +7987,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -7822,8 +7999,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -7836,8 +8013,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -7850,8 +8030,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }
@@ -8020,7 +8203,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DownloadPackageResponse(DownloadPackageResponse other) : this() {
-      status_ = other.status_;
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
       packageBinary_ = other.packageBinary_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -8030,14 +8213,14 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return new DownloadPackageResponse(this);
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 1;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus status_ = 0;
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus Status {
-      get { return status_; }
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
       set {
-        status_ = value;
+        execResult_ = value;
       }
     }
 
@@ -8065,7 +8248,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Status != other.Status) return false;
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
       if (PackageBinary != other.PackageBinary) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -8073,7 +8256,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
       if (PackageBinary.Length != 0) hash ^= PackageBinary.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -8088,9 +8271,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Status != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Status);
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
       }
       if (PackageBinary.Length != 0) {
         output.WriteRawTag(18);
@@ -8104,8 +8287,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
       }
       if (PackageBinary.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(PackageBinary);
@@ -8121,8 +8304,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other == null) {
         return;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
       }
       if (other.PackageBinary.Length != 0) {
         PackageBinary = other.PackageBinary;
@@ -8138,8 +8324,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 8: {
-            status_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.Request.Types.RequestStatus) input.ReadEnum();
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
           case 18: {

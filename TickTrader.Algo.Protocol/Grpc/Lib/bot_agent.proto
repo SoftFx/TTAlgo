@@ -39,13 +39,16 @@ service BotAgent
 	rpc DownloadPackage(DownloadPackageRequest) returns (DownloadPackageResponse);
 }
 
-message Request
+message RequestResult
 {
 	enum RequestStatus
 	{
 		SUCCESS = 0;
 		INTERNAL_SERVER_ERROR = 1;
 	}
+
+	RequestStatus status = 1;
+	string message = 2;
 }
 
 message LoginRequest
@@ -65,7 +68,7 @@ message LoginResponse
 		VERSION_MISMATCH = 2;
 	}
 
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	LoginError error = 2;
 	int32 major_version = 3; // server version
 	int32 minor_version = 4; // server version
@@ -83,7 +86,7 @@ message LogoutResponse
 	    SERVER_LOGOUT = 1;
 	}
 
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	LogoutReason reason = 2;
 	string text = 3;
 }
@@ -94,7 +97,7 @@ message PackageListRequest
 
 message PackageListResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	repeated PackageInfo packages = 2;
 }
 
@@ -104,7 +107,7 @@ message AccountListRequest
 
 message AccountListResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	repeated AccountModelInfo accounts = 2;
 }
 
@@ -114,7 +117,7 @@ message BotListRequest
 
 message BotListResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	repeated BotModelInfo bots = 2;
 }
 
@@ -180,7 +183,7 @@ message StartBotRequest
 
 message StartBotResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message StopBotRequest
@@ -190,7 +193,7 @@ message StopBotRequest
 
 message StopBotResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message AddBotRequest
@@ -201,7 +204,7 @@ message AddBotRequest
 
 message AddBotResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message RemoveBotRequest
@@ -213,7 +216,7 @@ message RemoveBotRequest
 
 message RemoveBotResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message ChangeBotConfigRequest
@@ -224,7 +227,7 @@ message ChangeBotConfigRequest
 
 message ChangeBotConfigResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message ApiMetadataRequest
@@ -233,7 +236,7 @@ message ApiMetadataRequest
 
 message ApiMetadataResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	ApiMetadataInfo api_metadata = 2;
 }
 
@@ -243,7 +246,7 @@ message MappingsInfoRequest
 
 message MappingsInfoResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	MappingCollectionInfo mappings = 2;
 }
 
@@ -253,7 +256,7 @@ message SetupContextRequest
 
 message SetupContextResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	SetupContextInfo setup_context = 2;
 }
 
@@ -264,7 +267,7 @@ message AccountMetadataRequest
 
 message AccountMetadataResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	ConnectionErrorInfo error_info = 2;
 	AccountMetadataInfo account_metadata = 3;
 }
@@ -278,7 +281,7 @@ message AddAccountRequest
 
 message AddAccountResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message RemoveAccountRequest
@@ -288,7 +291,7 @@ message RemoveAccountRequest
 
 message RemoveAccountResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message ChangeAccountRequest
@@ -300,7 +303,7 @@ message ChangeAccountRequest
 
 message ChangeAccountResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message TestAccountRequest
@@ -310,7 +313,7 @@ message TestAccountRequest
 
 message TestAccountResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	ConnectionErrorInfo error_info = 2;
 }
 
@@ -323,7 +326,7 @@ message TestAccountCredsRequest
 
 message TestAccountCredsResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	ConnectionErrorInfo error_info = 2;
 }
 
@@ -335,7 +338,7 @@ message UploadPackageRequest
 
 message UploadPackageResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message RemovePackageRequest
@@ -345,7 +348,7 @@ message RemovePackageRequest
 
 message RemovePackageResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 }
 
 message DownloadPackageRequest
@@ -355,6 +358,6 @@ message DownloadPackageRequest
 
 message DownloadPackageResponse
 {
-	Request.RequestStatus status = 1;
+	RequestResult exec_result = 1;
 	bytes package_binary = 2;
 }

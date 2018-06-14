@@ -62,6 +62,17 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
 
+        public static Lib.RequestResult CreateSuccessResult()
+        {
+            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Success, Message = "" };
+        }
+
+        public static Lib.RequestResult CreateErrorResult(string message)
+        {
+            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.InternalServerError, Message = message ?? "" };
+        }
+
+
         public void DisconnectAllClients()
         {
             lock (_updateListeners)
@@ -77,7 +88,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override Task<Lib.PackageListResponse> GetPackageList(Lib.PackageListRequest request, ServerCallContext context)
         {
-            var res = new Lib.PackageListResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.PackageListResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.Packages.AddRange(_botAgent.GetPackageList().Select(ToGrpc.Convert));
@@ -85,14 +96,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get packages list");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.AccountListResponse> GetAccountList(Lib.AccountListRequest request, ServerCallContext context)
         {
-            var res = new Lib.AccountListResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.AccountListResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.Accounts.AddRange(_botAgent.GetAccountList().Select(ToGrpc.Convert));
@@ -100,14 +111,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get account list");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.BotListResponse> GetBotList(Lib.BotListRequest request, ServerCallContext context)
         {
-            var res = new Lib.BotListResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.BotListResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.Bots.AddRange(_botAgent.GetBotList().Select(ToGrpc.Convert));
@@ -115,7 +126,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get bot list");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
@@ -126,7 +137,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 MajorVersion = VersionSpec.MajorVersion,
                 MinorVersion = VersionSpec.MinorVersion,
-                Status = Lib.Request.Types.RequestStatus.Success,
+                ExecResult = CreateSuccessResult(),
                 Error = Lib.LoginResponse.Types.LoginError.None
             });
         }
@@ -143,7 +154,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override Task<Lib.ApiMetadataResponse> GetApiMetadata(Lib.ApiMetadataRequest request, ServerCallContext context)
         {
-            var res = new Lib.ApiMetadataResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.ApiMetadataResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.ApiMetadata = _botAgent.GetApiMetadata().Convert();
@@ -151,14 +162,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get api metadata");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.MappingsInfoResponse> GetMappingsInfo(Lib.MappingsInfoRequest request, ServerCallContext context)
         {
-            var res = new Lib.MappingsInfoResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.MappingsInfoResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.Mappings = _botAgent.GetMappingsInfo().Convert();
@@ -166,14 +177,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get mappings collection");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.SetupContextResponse> GetSetupContext(Lib.SetupContextRequest request, ServerCallContext context)
         {
-            var res = new Lib.SetupContextResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.SetupContextResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.SetupContext = _botAgent.GetSetupContext().Convert();
@@ -181,14 +192,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get setup context");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.AccountMetadataResponse> GetAccountMetadata(Lib.AccountMetadataRequest request, ServerCallContext context)
         {
-            var res = new Lib.AccountMetadataResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.AccountMetadataResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.AccountMetadata = _botAgent.GetAccountMetadata(request.Account.Convert()).Convert();
@@ -196,14 +207,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get account metadata");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.StartBotResponse> StartBot(Lib.StartBotRequest request, ServerCallContext context)
         {
-            var res = new Lib.StartBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.StartBotResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.StartBot(request.BotId);
@@ -211,14 +222,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start bot");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.StopBotResponse> StopBot(Lib.StopBotRequest request, ServerCallContext context)
         {
-            var res = new Lib.StopBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.StopBotResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.StopBot(request.BotId);
@@ -226,14 +237,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to stop bot");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.AddBotResponse> AddBot(Lib.AddBotRequest request, ServerCallContext context)
         {
-            var res = new Lib.AddBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.AddBotResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.AddBot(request.Account.Convert(), request.Config.Convert());
@@ -241,7 +252,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add bot");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
 
@@ -249,7 +260,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override Task<Lib.RemoveBotResponse> RemoveBot(Lib.RemoveBotRequest request, ServerCallContext context)
         {
-            var res = new Lib.RemoveBotResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.RemoveBotResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.RemoveBot(request.BotId, request.CleanLog, request.CleanAlgoData);
@@ -257,7 +268,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add bot");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
 
@@ -265,7 +276,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override Task<Lib.ChangeBotConfigResponse> ChangeBotConfig(Lib.ChangeBotConfigRequest request, ServerCallContext context)
         {
-            var res = new Lib.ChangeBotConfigResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.ChangeBotConfigResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.ChangeBotConfig(request.BotId, request.NewConfig.Convert());
@@ -273,7 +284,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add bot");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
 
@@ -281,7 +292,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override Task<Lib.AddAccountResponse> AddAccount(Lib.AddAccountRequest request, ServerCallContext context)
         {
-            var res = new Lib.AddAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.AddAccountResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.AddAccount(request.Account.Convert(), request.Password, request.UseNewProtocol);
@@ -289,14 +300,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add account");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.RemoveAccountResponse> RemoveAccount(Lib.RemoveAccountRequest request, ServerCallContext context)
         {
-            var res = new Lib.RemoveAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.RemoveAccountResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.RemoveAccount(request.Account.Convert());
@@ -304,14 +315,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to remove account");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.ChangeAccountResponse> ChangeAccount(Lib.ChangeAccountRequest request, ServerCallContext context)
         {
-            var res = new Lib.ChangeAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.ChangeAccountResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.ChangeAccount(request.Account.Convert(), request.Password, request.UseNewProtocol);
@@ -319,14 +330,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to change account");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.TestAccountResponse> TestAccount(Lib.TestAccountRequest request, ServerCallContext context)
         {
-            var res = new Lib.TestAccountResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.TestAccountResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.ErrorInfo = _botAgent.TestAccount(request.Account.Convert()).Convert();
@@ -334,14 +345,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to test account");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.TestAccountCredsResponse> TestAccountCreds(Lib.TestAccountCredsRequest request, ServerCallContext context)
         {
-            var res = new Lib.TestAccountCredsResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.TestAccountCredsResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.ErrorInfo = _botAgent.TestAccountCreds(request.Account.Convert(), request.Password, request.UseNewProtocol).Convert();
@@ -349,14 +360,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to test account creds");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.UploadPackageResponse> UploadPackage(Lib.UploadPackageRequest request, ServerCallContext context)
         {
-            var res = new Lib.UploadPackageResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.UploadPackageResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.UploadPackage(request.FileName, request.PackageBinary.Convert());
@@ -364,14 +375,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to upload package");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.RemovePackageResponse> RemovePackage(Lib.RemovePackageRequest request, ServerCallContext context)
         {
-            var res = new Lib.RemovePackageResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.RemovePackageResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 _botAgent.RemovePackage(request.Package.Convert());
@@ -379,14 +390,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to remove package");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }
 
         public override Task<Lib.DownloadPackageResponse> DownloadPackage(Lib.DownloadPackageRequest request, ServerCallContext context)
         {
-            var res = new Lib.DownloadPackageResponse { Status = Lib.Request.Types.RequestStatus.Success };
+            var res = new Lib.DownloadPackageResponse { ExecResult = CreateSuccessResult() };
             try
             {
                 res.PackageBinary = _botAgent.DownloadPackage(request.Package.Convert()).Convert();
@@ -394,7 +405,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to download package");
-                res.Status = Lib.Request.Types.RequestStatus.InternalServerError;
+                res.ExecResult = CreateErrorResult(ex.Message);
             }
             return Task.FromResult(res);
         }

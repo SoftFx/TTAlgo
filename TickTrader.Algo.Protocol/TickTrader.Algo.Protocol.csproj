@@ -68,6 +68,7 @@
     <Compile Include="Grpc\Lib\Metadata.cs" />
     <Compile Include="Grpc\ToAlgo.cs" />
     <Compile Include="Grpc\ToGrpc.cs" />
+    <Compile Include="Infrastructure\BAException.cs" />
     <Compile Include="Infrastructure\LoggerHelper.cs" />
     <Compile Include="Infrastructure\VersionSpec.cs" />
     <Compile Include="Interface\Client\IBotAgentClient.cs" />
