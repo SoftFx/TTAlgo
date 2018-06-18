@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
         private bool _dlgResult;
         private bool _runBot;
         private PluginCatalogItem _selectedPlugin;
-        private AccountKey _selectedAccount;
+        private AccountModelInfo _selectedAccount;
         private CancellationTokenSource _updateSetupMetadataSrc;
         private TaskCompletionSource<SetupMetadata> _updateSetupMetadataTaskSrc;
         private CancellationTokenSource _updateSetupCancelSrc;
@@ -34,9 +34,9 @@ namespace TickTrader.BotTerminal
 
         public SetupContextInfo SetupContext { get; }
 
-        public IObservableList<AccountKey> Accounts { get; }
+        public IObservableList<AccountModelInfo> Accounts { get; }
 
-        public AccountKey SelectedAccount
+        public AccountModelInfo SelectedAccount
         {
             get { return _selectedAccount; }
             set
@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
             Mode = mode;
             Type = type;
 
-            Accounts = Agent.Accounts.AsObservable();
+            Accounts = Agent.Accounts.TransformToList().AsObservable();
             SelectedAccount = Accounts.FirstOrDefault();
 
             switch (type)
@@ -256,7 +256,7 @@ namespace TickTrader.BotTerminal
                 var tcs = new TaskCompletionSource<SetupMetadata>();
                 _updateSetupMetadataTaskSrc = tcs;
 
-                var metadata = await Agent.GetSetupMetadata(SelectedAccount, SetupContext);
+                var metadata = await Agent.GetSetupMetadata(SelectedAccount.Key, SetupContext);
 
                 if (_updateSetupMetadataSrc.IsCancellationRequested)
                 {

@@ -57,15 +57,15 @@ namespace TickTrader.BotTerminal
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
 
-        public ChartModelBase(SymbolModel symbol, LocalAgent agent)
+        public ChartModelBase(SymbolModel symbol, LocalAlgoAgent agent)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
             Agent = agent;
             this.Model = symbol;
             this.Journal = AlgoEnv.BotJournal;
 
-            AvailableIndicators = AlgoEnv.Repo.Indicators.Chain().AsObservable();
-            AvailableBotTraders = AlgoEnv.Repo.BotTraders.Chain().AsObservable();
+            AvailableIndicators = Agent.Catalog.Indicators.Chain().AsObservable();
+            AvailableBotTraders = Agent.Catalog.BotTraders.Chain().AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
             stateController.StateChanged += (o, n) => logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
-        protected LocalAgent Agent { get; }
+        protected LocalAlgoAgent Agent { get; }
         protected SymbolModel Model { get; private set; }
         protected TraderClientModel ClientModel => Agent.ClientModel;
         protected AlgoEnvironment AlgoEnv => Agent.AlgoEnv;

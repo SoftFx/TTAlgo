@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public IVarList<BotControlViewModel> Bots { get; }
 
-        public LocalAgent Agent => _shell.Agent;
+        public LocalAlgoAgent Agent => _shell.Agent;
 
         public TraderClientModel ClientModel => Agent.ClientModel;
 

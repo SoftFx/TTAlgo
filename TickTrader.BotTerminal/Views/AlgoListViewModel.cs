@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
     }
 
 
-    public class AlgoItemViewModel
+    internal class AlgoItemViewModel
     {
         public PluginCatalogItem PluginItem { get; }
 

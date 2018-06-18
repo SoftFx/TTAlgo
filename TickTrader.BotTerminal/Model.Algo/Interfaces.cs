@@ -14,21 +14,51 @@ namespace TickTrader.BotTerminal
     {
         string Name { get; }
 
-        IVarList<AccountKey> Accounts { get; }
+        IVarSet<PackageKey, PackageInfo> Packages { get; }
 
-        IAlgoLibrary Library { get; }
+        IVarSet<PluginKey, PluginInfo> Plugins { get; }
+
+        IVarSet<AccountKey, AccountModelInfo> Accounts { get; }
+
+        IVarSet<string, BotModelInfo> Bots { get; }
 
         PluginCatalog Catalog { get; }
 
         IPluginIdProvider IdProvider { get; }
 
 
+        event Action<PackageInfo> PackageStateChanged;
+        event Action<AccountModelInfo> AccountStateChanged;
         event Action<BotModelInfo> BotStateChanged;
 
 
         Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);
 
-        Task<bool> AddOrUpdatePlugin(PluginConfig config, bool start);
+        Task StartBot(string botId);
+
+        Task StopBot(string botId);
+
+        Task AddBot(AccountKey account, PluginConfig config);
+
+        Task RemoveBot(string botId, bool cleanLog, bool cleanAlgoData);
+
+        Task ChangeBotConfig(string botId, PluginConfig newConfig);
+
+        Task AddAccount(AccountKey account, string password, bool useNewProtocol);
+
+        Task RemoveAccount(AccountKey account);
+
+        Task ChangeAccount(AccountKey account, string password, bool useNewProtocol);
+
+        Task<ConnectionErrorInfo> TestAccount(AccountKey account);
+
+        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+
+        Task UploadPackage(string fileName, byte[] packageBinary);
+
+        Task RemovePackage(PackageKey package);
+
+        Task<byte[]> DownloadPackage(PackageKey package);
     }
 
 

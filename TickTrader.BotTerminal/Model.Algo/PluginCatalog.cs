@@ -8,14 +8,35 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
+    internal class PluginCatalogItem
+    {
+        public IAlgoAgent Agent { get; }
+
+        public PluginInfo Info { get; }
+
+        public PluginKey Key => Info.Key;
+
+        public PluginDescriptor Descriptor => Info.Descriptor;
+
+        public string DisplayName => Info.Descriptor.UiDisplayName;
+
+        public string Category => Info.Descriptor.Category;
+
+
+        public PluginCatalogItem(IAlgoAgent agent, PluginInfo info)
+        {
+            Agent = agent;
+            Info = info;
+        }
+    }
+
+
     internal class PluginCatalog
     {
-        private IAlgoLibrary _algoLibrary;
-        private Logger _logger;
-        private VarDictionary<PluginKey, PluginInfo> _plugins;
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private IAlgoAgent _algoAgent;
 
-        public IVarSet<PluginKey, PluginInfo> AllPlugins => _plugins;
 
         public IVarList<PluginCatalogItem> PluginList { get; }
 
@@ -24,67 +45,13 @@ namespace TickTrader.BotTerminal
         public IVarList<PluginCatalogItem> BotTraders { get; }
 
 
-        public PluginCatalog(IAlgoLibrary algoLibrary)
+        public PluginCatalog(IAlgoAgent algoAgent)
         {
-            _algoLibrary = algoLibrary;
+            _algoAgent = algoAgent;
 
-            _logger = NLog.LogManager.GetCurrentClassLogger();
-
-            _plugins = new VarDictionary<PluginKey, PluginInfo>();
-            foreach (var plugin in _algoLibrary.GetPlugins())
-            {
-                _plugins.Add(plugin.Key, plugin);
-            }
-
-            PluginList = _plugins.OrderBy((k, p) => p.Descriptor.UiDisplayName).Select(info => new PluginCatalogItem(info));
+            PluginList = algoAgent.Plugins.OrderBy((k, p) => p.Descriptor.UiDisplayName).Select(info => new PluginCatalogItem(_algoAgent, info));
             Indicators = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Indicator);
             BotTraders = PluginList.Where(i => i.Descriptor.Type == AlgoTypes.Robot);
-
-            _algoLibrary.PluginUpdated += LibraryOnPluginUpdated;
-            _algoLibrary.Reset += LibraryOnReset;
-        }
-
-
-        private void LibraryOnPluginUpdated(UpdateInfo<PluginInfo> update)
-        {
-            Execute.OnUIThread(() =>
-            {
-                try
-                {
-                    var plugin = update.Value;
-                    switch (update.Type)
-                    {
-                        case UpdateType.Added:
-                            _plugins.Add(plugin.Key, plugin);
-                            break;
-                        case UpdateType.Replaced:
-                            _plugins[plugin.Key] = plugin;
-                            break;
-                        case UpdateType.Removed:
-                            _plugins.Remove(plugin.Key);
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex);
-                }
-            });
-        }
-
-        private void LibraryOnReset()
-        {
-            Execute.OnUIThread(() =>
-            {
-                try
-                {
-                    _plugins.Clear();
-                }
-                catch(Exception ex)
-                {
-                    _logger.Error(ex);
-                }
-            });
         }
     }
 }

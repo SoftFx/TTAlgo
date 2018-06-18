@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         public event System.Action<TradeBotModel> ConfigurationChanged = delegate { };
 
 
-        public TradeBotModel(PluginConfig config, LocalAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, WindowStorageModel stateSettings)
+        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, WindowStorageModel stateSettings)
             : base(config, agent, host, setupContext)
         {
             host.Journal.RegisterBotLog(InstanceId);

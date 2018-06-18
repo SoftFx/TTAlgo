@@ -124,7 +124,7 @@ namespace TickTrader.BotTerminal
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
             {
-                var remoteAgent = (RemoteAgent)setupModel.Agent;
+                var remoteAgent = (RemoteAlgoAgent)setupModel.Agent;
                 var config = setupModel.GetConfig();
                 if (setupModel.Setup.IsEditMode)
                 {
@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    remoteAgent.AddBot(setupModel.SelectedAccount, config);
+                    remoteAgent.AddBot(setupModel.SelectedAccount.Key, config);
                 }
             }
         }

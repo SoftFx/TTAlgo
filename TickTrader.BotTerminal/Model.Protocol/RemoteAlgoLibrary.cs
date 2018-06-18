@@ -23,6 +23,8 @@ namespace TickTrader.BotTerminal
 
         public event Action Reset;
 
+        public event Action<PackageInfo> PackageStateChanged;
+
 
         public RemoteAlgoLibrary(IAlgoCoreLogger logger)
         {
@@ -109,14 +111,15 @@ namespace TickTrader.BotTerminal
 
         public void UpdatePackageState(UpdateInfo<PackageInfo> update)
         {
-            var package = update.Value;
             lock (_updateLock)
             {
+                var package = update.Value;
                 if (_packages.TryGetValue(package.Key, out var packageModel))
                 {
                     packageModel.IsValid = package.IsValid;
                     packageModel.IsObsolete = package.IsObsolete;
                     packageModel.IsLocked = package.IsLocked;
+                    OnPackageStateChanged(packageModel);
                 }
             }
         }
@@ -259,11 +262,23 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OnReset()
+        private void OnReset()
         {
             try
             {
                 Reset?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+
+        private void OnPackageStateChanged(PackageInfo package)
+        {
+            try
+            {
+                PackageStateChanged?.Invoke(package);
             }
             catch (Exception ex)
             {

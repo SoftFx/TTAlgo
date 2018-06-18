@@ -14,7 +14,6 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoEnvironment : IAlgoSetupMetadata
     {
-        private PluginCatalog _catalog;
         private ReductionCollection _reductions;
         private BotJournal _botJournal;
         private PluginIdProvider _idProvider;
@@ -23,8 +22,6 @@ namespace TickTrader.BotTerminal
 
 
         public BotJournal BotJournal => _botJournal;
-
-        public PluginCatalog Repo => _catalog;
 
         public PluginIdProvider IdProvider => _idProvider;
 
@@ -53,7 +50,6 @@ namespace TickTrader.BotTerminal
             _reductions.AddAssembly("TickTrader.Algo.Ext");
             _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, RepositoryLocation.LocalExtensions);
 
-            _catalog = new PluginCatalog(_algoLibrary);
             _mappings = new MappingCollection(_reductions);
             ProfileResolver.Mappings = _mappings;
         }

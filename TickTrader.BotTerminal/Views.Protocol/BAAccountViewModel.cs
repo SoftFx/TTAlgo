@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 
 
         private AccountModelInfo _entity;
-        private RemoteAgent _remoteAgent;
+        private RemoteAlgoAgent _remoteAgent;
         private IShell _shell;
 
 
@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
         public IObservableList<BABotViewModel> Bots { get; }
 
 
-        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, RemoteAgent remoteAgent, IShell shell)
+        public BAAccountViewModel(AccountModelInfo entity, IVarSet<string, BABotViewModel> bots, RemoteAlgoAgent remoteAgent, IShell shell)
         {
             _entity = entity;
             _remoteAgent = remoteAgent;
@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
                 .OrderBy((k, b) => b.InstanceId)
                 .AsObservable();
 
-            remoteAgent.BotAgent.AccountStateChanged += BotAgentOnAccountStateChanged;
+            remoteAgent.AccountStateChanged += BotAgentOnAccountStateChanged;
         }
 
 
@@ -83,9 +83,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void BotAgentOnAccountStateChanged(AccountKey accountKey)
+        private void BotAgentOnAccountStateChanged(AccountModelInfo account)
         {
-            if (_entity.Key.Equals(accountKey))
+            if (_entity.Key.Equals(account.Key))
             {
                 NotifyOfPropertyChange(nameof(Status));
             }

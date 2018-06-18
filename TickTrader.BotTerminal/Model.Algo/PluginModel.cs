@@ -29,14 +29,14 @@ namespace TickTrader.BotTerminal
         public PluginSetupModel Setup { get; private set; }
 
 
-        protected LocalAgent Agent { get; }
+        protected LocalAlgoAgent Agent { get; }
 
         protected IAlgoPluginHost Host { get; }
 
         protected IAlgoSetupContext SetupContext { get; }
 
 
-        public PluginModel(PluginConfig config, LocalAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
+        public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
         {
             Config = config;
             Agent = agent;

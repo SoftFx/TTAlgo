@@ -99,7 +99,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new PackageDto()
             {
-                Name = package.Key.Name,
+                Name = package.Identity.FileName,
                 Created = package.Identity.CreatedUtc.ToLocalTime(),
                 Plugins = package.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
                 IsValid = package.IsValid

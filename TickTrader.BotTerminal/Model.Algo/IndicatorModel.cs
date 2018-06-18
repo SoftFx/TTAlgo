@@ -23,7 +23,7 @@ namespace TickTrader.BotTerminal
         private bool IsStopping { get; set; }
 
 
-        public IndicatorModel(PluginConfig config, LocalAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
+        public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
             : base(config, agent, host, setupContext)
         {
             host.StartEvent += Host_StartEvent;

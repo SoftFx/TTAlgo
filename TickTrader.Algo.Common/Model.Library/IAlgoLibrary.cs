@@ -14,6 +14,8 @@ namespace TickTrader.Algo.Common.Model
 
         event Action Reset;
 
+        event Action<PackageInfo> PackageStateChanged;
+
 
         IEnumerable<PackageInfo> GetPackages();
 

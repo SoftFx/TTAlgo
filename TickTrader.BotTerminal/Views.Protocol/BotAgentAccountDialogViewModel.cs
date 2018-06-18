@@ -6,7 +6,7 @@ namespace TickTrader.BotTerminal
 {
     internal class BotAgentAccountDialogViewModel : Screen, IWindowModel, IPasswordContainer
     {
-        private RemoteAgent _remoteAgent;
+        private RemoteAlgoAgent _remoteAgent;
         private string _login;
         private string _password;
         private string _server;
@@ -132,7 +132,7 @@ namespace TickTrader.BotTerminal
         public bool HasSuccess => !string.IsNullOrEmpty(_success);
 
 
-        public BotAgentAccountDialogViewModel(RemoteAgent remoteAgent)
+        public BotAgentAccountDialogViewModel(RemoteAlgoAgent remoteAgent)
         {
             _remoteAgent = remoteAgent;
 
@@ -141,7 +141,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Add account";
         }
 
-        public BotAgentAccountDialogViewModel(RemoteAgent remoteAgent, AccountModelInfo account)
+        public BotAgentAccountDialogViewModel(RemoteAlgoAgent remoteAgent, AccountModelInfo account)
         {
             _remoteAgent = remoteAgent;
             _account = account;

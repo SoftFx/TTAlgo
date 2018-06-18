@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Common.Model
 
         public event Action Reset;
 
+        public event Action<PackageInfo> PackageStateChanged;
+
 
         public LocalAlgoLibrary(IAlgoCoreLogger logger)
         {
@@ -110,9 +112,13 @@ namespace TickTrader.Algo.Common.Model
             lock (_updateLock)
             {
                 var package = packageRef.ToInfo();
+
                 _packageRefs.Add(package.Key, packageRef);
+                InitPackageRef(packageRef);
+
                 _packages.Add(package.Key, package);
                 OnPackageAdded(package);
+
                 MergePlugins(package, packageRef);
             }
         }
@@ -122,9 +128,14 @@ namespace TickTrader.Algo.Common.Model
             lock (_updateLock)
             {
                 var package = packageRef.ToInfo();
+
+                DeinitPackageRef(_packageRefs[package.Key]);
                 _packageRefs[package.Key] = packageRef;
+                InitPackageRef(packageRef);
+
                 _packages[package.Key] = package;
                 OnPackageReplaced(package);
+
                 MergePlugins(package, packageRef);
             }
         }
@@ -136,9 +147,12 @@ namespace TickTrader.Algo.Common.Model
                 var packageKey = packageRef.GetKey();
                 if (_packages.TryGetValue(packageKey, out var package))
                 {
+                    DeinitPackageRef(_packageRefs[package.Key]);
                     _packageRefs.Remove(packageKey);
+
                     _packages.Remove(packageKey);
                     OnPackageRemoved(package);
+
                     MergePlugins(new PackageInfo { Key = packageKey }, null);
                 }
             }
@@ -172,6 +186,42 @@ namespace TickTrader.Algo.Common.Model
                     _plugins.Remove(plugin.Key);
                     _pluginRefs.Remove(plugin.Key);
                     OnPluginRemoved(plugin);
+                }
+            }
+        }
+
+        private void InitPackageRef(AlgoPackageRef packageRef)
+        {
+            packageRef.IsLockedChanged += PackageRefOnLockedChanged;
+            packageRef.IsObsoleteChanged += PackageRefOnObsoleteChanged;
+        }
+
+        private void DeinitPackageRef(AlgoPackageRef packageRef)
+        {
+            packageRef.IsLockedChanged -= PackageRefOnLockedChanged;
+            packageRef.IsObsoleteChanged -= PackageRefOnObsoleteChanged;
+        }
+
+        private void PackageRefOnLockedChanged(AlgoPackageRef packageRef)
+        {
+            lock (_updateLock)
+            {
+                if (_packages.TryGetValue(packageRef.GetKey(), out var package))
+                {
+                    package.IsLocked = packageRef.IsLocked;
+                    OnPackageStateChanged(package);
+                }
+            }
+        }
+
+        private void PackageRefOnObsoleteChanged(AlgoPackageRef packageRef)
+        {
+            lock (_updateLock)
+            {
+                if (_packages.TryGetValue(packageRef.GetKey(), out var package))
+                {
+                    package.IsObsolete = packageRef.IsObsolete;
+                    OnPackageStateChanged(package);
                 }
             }
         }
@@ -251,11 +301,23 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public void OnReset()
+        private void OnReset()
         {
             try
             {
                 Reset?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+
+        private void OnPackageStateChanged(PackageInfo package)
+        {
+            try
+            {
+                PackageStateChanged?.Invoke(package);
             }
             catch (Exception ex)
             {

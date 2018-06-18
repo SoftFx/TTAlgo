@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
         private QuoteEntity lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, LocalAgent agent)
+        public TickChartModel(SymbolModel symbol, LocalAlgoAgent agent)
             : base(symbol, agent)
         {
             Support(SelectableChartTypes.Line);

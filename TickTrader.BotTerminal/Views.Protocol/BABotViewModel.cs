@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private BotModelInfo _entity;
-        private RemoteAgent _remoteAgent;
+        private RemoteAlgoAgent _remoteAgent;
         private IShell _shell;
 
 
@@ -23,13 +23,13 @@ namespace TickTrader.BotTerminal
         public BotStates State => _entity.State;
 
 
-        public BABotViewModel(BotModelInfo entity, RemoteAgent remoteAgent, IShell shell)
+        public BABotViewModel(BotModelInfo entity, RemoteAlgoAgent remoteAgent, IShell shell)
         {
             _entity = entity;
             _remoteAgent = remoteAgent;
             _shell = shell;
 
-            _remoteAgent.BotAgent.BotStateChanged += BotAgentOnBotStateChanged;
+            _remoteAgent.BotStateChanged += BotAgentOnBotStateChanged;
         }
 
 
@@ -63,9 +63,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void BotAgentOnBotStateChanged(string instanceId)
+        private void BotAgentOnBotStateChanged(BotModelInfo bot)
         {
-            if (instanceId == _entity.InstanceId)
+            if (bot.InstanceId == _entity.InstanceId)
             {
                 NotifyOfPropertyChange(nameof(State));
             }
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
             {
-                var remoteAgent = (RemoteAgent)setupModel.Agent;
+                var remoteAgent = (RemoteAlgoAgent)setupModel.Agent;
                 var config = setupModel.GetConfig();
                 if (setupModel.Setup.IsEditMode)
                 {
@@ -84,7 +84,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    remoteAgent.AddBot(setupModel.SelectedAccount, config);
+                    remoteAgent.AddBot(setupModel.SelectedAccount.Key, config);
                 }
             }
         }

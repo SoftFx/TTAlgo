@@ -1,6 +1,7 @@
 ﻿using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Protocol;
@@ -10,7 +11,8 @@ namespace TickTrader.BotTerminal
     internal class BotAgentModel : IBotAgentClient
     {
         private ISyncContext _syncContext;
-        private RemoteAlgoLibrary _algoLibrary;
+        private VarDictionary<PackageKey, PackageInfo> _packages;
+        private VarDictionary<PluginKey, PluginInfo> _plugins;
         private VarDictionary<AccountKey, AccountModelInfo> _accounts;
         private VarDictionary<string, BotModelInfo> _bots;
 
@@ -22,25 +24,28 @@ namespace TickTrader.BotTerminal
         public SetupContextInfo SetupContext { get; private set; }
 
 
-        public IAlgoLibrary Library => _algoLibrary;
+        public IVarSet<PackageKey, PackageInfo> Packages => _packages;
+
+        public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;
 
         public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
 
         public IVarSet<string, BotModelInfo> Bots => _bots;
 
 
-        public Action<PackageKey> PackageStateChanged = delegate { };
+        public Action<PackageInfo> PackageStateChanged = delegate { };
 
-        public Action<AccountKey> AccountStateChanged = delegate { };
+        public Action<AccountModelInfo> AccountStateChanged = delegate { };
 
-        public Action<string> BotStateChanged = delegate { };
+        public Action<BotModelInfo> BotStateChanged = delegate { };
 
 
         public BotAgentModel()
         {
             _syncContext = new DispatcherSync();
 
-            _algoLibrary = new RemoteAlgoLibrary(new AlgoLogAdapter("BotAgentRepository"));
+            _packages = new VarDictionary<PackageKey, PackageInfo>();
+            _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
             _bots = new VarDictionary<string, BotModelInfo>();
         }
@@ -50,7 +55,8 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                _algoLibrary.ResetPackages();
+                _packages.Clear();
+                _plugins.Clear();
                 _accounts.Clear();
                 _bots.Clear();
                 ApiMetadata = null;
@@ -60,13 +66,44 @@ namespace TickTrader.BotTerminal
         }
 
 
+        private void MergePlugins(PackageInfo package)
+        {
+            // upsert
+            foreach (var plugin in package.Plugins)
+            {
+                if (!_plugins.ContainsKey(plugin.Key))
+                {
+                    _plugins.Add(plugin.Key, plugin);
+                }
+                else
+                {
+                    _plugins[plugin.Key] = plugin;
+                }
+            }
+
+            // remove
+            var newPluginsLookup = package.Plugins.ToDictionary(p => p.Key);
+            foreach (var plugin in _plugins.Values.Where(p => p.Key.IsFromPackage(package.Key)).ToList())
+            {
+                if (!newPluginsLookup.ContainsKey(plugin.Key))
+                {
+                    _plugins.Remove(plugin.Key);
+                }
+            }
+        }
+
+
         #region IBotAgentClient implementation
 
         public void InitPackageList(List<PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
             {
-                _algoLibrary.SetPackages(packages);
+                packages.ForEach(package =>
+                {
+                    _packages.Add(package.Key, package);
+                    package.Plugins.ForEach(plugin => _plugins.Add(plugin.Key, plugin));
+                });
             });
         }
 
@@ -98,7 +135,22 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                _algoLibrary.UpdatePackage(update);
+                var package = update.Value;
+                switch (update.Type)
+                {
+                    case UpdateType.Added:
+                        _packages.Add(package.Key, package);
+                        MergePlugins(package);
+                        break;
+                    case UpdateType.Replaced:
+                        _packages[package.Key] = package;
+                        MergePlugins(package);
+                        break;
+                    case UpdateType.Removed:
+                        _packages.Remove(package.Key);
+                        MergePlugins(new PackageInfo { Key = package.Key });
+                        break;
+                }
             });
         }
 
@@ -159,8 +211,14 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
-                _algoLibrary.UpdatePackageState(update);
-                PackageStateChanged(update.Value.Key);
+                var package = update.Value;
+                if (_packages.TryGetValue(package.Key, out var packageModel))
+                {
+                    packageModel.IsValid = package.IsValid;
+                    packageModel.IsObsolete = package.IsObsolete;
+                    packageModel.IsLocked = package.IsLocked;
+                    PackageStateChanged(packageModel);
+                }
             });
         }
 
@@ -173,7 +231,7 @@ namespace TickTrader.BotTerminal
                 {
                     accountModel.ConnectionState = account.ConnectionState;
                     accountModel.LastError = account.LastError;
-                    AccountStateChanged(account.Key);
+                    AccountStateChanged(accountModel);
                 }
             });
         }
@@ -187,7 +245,7 @@ namespace TickTrader.BotTerminal
                 {
                     botModel.State = bot.State;
                     botModel.FaultMessage = bot.FaultMessage;
-                    BotStateChanged(bot.InstanceId);
+                    BotStateChanged(botModel);
                 }
             });
         }
