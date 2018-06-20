@@ -15,17 +15,17 @@ using System.Windows.Shapes;
 namespace TickTrader.BotTerminal
 {
     /// <summary>
-    /// Interaction logic for BotAgentAccountDialogView.xaml
+    /// Interaction logic for BAAccountDialogView.xaml
     /// </summary>
-    public partial class BotAgentAccountDialogView : Window
+    public partial class BAAccountDialogView : Window
     {
-        public BotAgentAccountDialogView()
+        public BAAccountDialogView()
         {
             InitializeComponent();
-            Loaded += BotAgentAccountDialogView_Loaded;
+            Loaded += BAAccountDialogView_Loaded;
         }
 
-        private void BotAgentAccountDialogView_Loaded(object sender, RoutedEventArgs e)
+        private void BAAccountDialogView_Loaded(object sender, RoutedEventArgs e)
         {
             var pwdContainer = DataContext as IPasswordContainer;
 

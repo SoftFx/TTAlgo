@@ -36,6 +36,8 @@ namespace TickTrader.BotTerminal
 
         public IPluginIdProvider IdProvider => AlgoEnv.IdProvider;
 
+        public bool SupportsAccountManagement => false;
+
 
 
         public AlgoEnvironment AlgoEnv { get; }

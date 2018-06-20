@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
 
         public string Server
         {
-            get => _server;
+            get { return _server; }
             set
             {
                 if (_server == value)

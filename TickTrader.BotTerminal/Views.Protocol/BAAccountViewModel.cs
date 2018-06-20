@@ -58,7 +58,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new BotAgentAccountDialogViewModel(_remoteAgent, _entity);
+                var model = new BAAccountDialogViewModel(_remoteAgent, _entity);
                 _shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)

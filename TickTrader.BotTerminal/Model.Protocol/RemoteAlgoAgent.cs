@@ -31,6 +31,8 @@ namespace TickTrader.BotTerminal
 
         public IPluginIdProvider IdProvider => _idProvider;
 
+        public bool SupportsAccountManagement => true;
+
 
         public event Action<PackageInfo> PackageStateChanged;
 

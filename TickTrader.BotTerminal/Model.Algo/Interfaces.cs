@@ -26,6 +26,8 @@ namespace TickTrader.BotTerminal
 
         IPluginIdProvider IdProvider { get; }
 
+        bool SupportsAccountManagement { get; }
+
 
         event Action<PackageInfo> PackageStateChanged;
         event Action<AccountModelInfo> AccountStateChanged;

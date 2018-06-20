@@ -4,9 +4,9 @@ using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotAgentAccountDialogViewModel : Screen, IWindowModel, IPasswordContainer
+    internal class BAAccountDialogViewModel : Screen, IWindowModel, IPasswordContainer
     {
-        private RemoteAlgoAgent _remoteAgent;
+        private IAlgoAgent _remoteAgent;
         private string _login;
         private string _password;
         private string _server;
@@ -132,27 +132,27 @@ namespace TickTrader.BotTerminal
         public bool HasSuccess => !string.IsNullOrEmpty(_success);
 
 
-        public BotAgentAccountDialogViewModel(RemoteAlgoAgent remoteAgent)
-        {
-            _remoteAgent = remoteAgent;
-
-            IsEditable = true;
-            IsNewMode = true;
-            DisplayName = "Add account";
-        }
-
-        public BotAgentAccountDialogViewModel(RemoteAlgoAgent remoteAgent, AccountModelInfo account)
+        public BAAccountDialogViewModel(IAlgoAgent remoteAgent, AccountModelInfo account)
         {
             _remoteAgent = remoteAgent;
             _account = account;
 
             IsEditable = true;
-            IsNewMode = false;
-            DisplayName = "Edit account";
 
-            Login = _account.Key.Login;
-            Server = _account.Key.Server;
-            UseSfxProtocol = _account.UseNewProtocol;
+            if (_account == null)
+            {
+                IsNewMode = true;
+                DisplayName = "Add account";
+            }
+            else
+            {
+                IsNewMode = false;
+                DisplayName = "Edit account";
+
+                Login = _account.Key.Login;
+                Server = _account.Key.Server;
+                UseSfxProtocol = _account.UseNewProtocol;
+            }
         }
 
 
@@ -201,7 +201,7 @@ namespace TickTrader.BotTerminal
 
         private void ValidateState()
         {
-            _isValid = !string.IsNullOrWhiteSpace(_login) && !string.IsNullOrWhiteSpace(_server) 
+            _isValid = !string.IsNullOrWhiteSpace(_login) && !string.IsNullOrWhiteSpace(_server)
                 && (!string.IsNullOrEmpty(_password) || _account != null);
             NotifyOfPropertyChange(nameof(CanOk));
             NotifyOfPropertyChange(nameof(CanTest));

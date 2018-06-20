@@ -400,6 +400,10 @@
     </Compile>
     <Compile Include="Services\DockManagerService.cs" />
     <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Algo\AlgoAccountViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoAgentViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoBotViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoPackageViewModel.cs" />
     <Compile Include="Views.Auth\AccountView.xaml.cs">
       <DependentUpon>AccountView.xaml</DependentUpon>
     </Compile>
@@ -449,10 +453,10 @@
     </Compile>
     <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
     <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
-    <Compile Include="Views.Protocol\BotAgentAccountDialogView.xaml.cs">
-      <DependentUpon>BotAgentAccountDialogView.xaml</DependentUpon>
+    <Compile Include="Views.Protocol\BAAccountDialogView.xaml.cs">
+      <DependentUpon>BAAccountDialogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views.Protocol\BotAgentAccountDialogViewModel.cs" />
+    <Compile Include="Views.Protocol\BAAccountDialogViewModel.cs" />
     <Compile Include="Views.Protocol\BAAccountViewModel.cs" />
     <Compile Include="Views.Protocol\BABotViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentLoginDialogView.xaml.cs">
@@ -494,13 +498,13 @@
       <DependentUpon>AboutDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\AboutDialogViewModel.cs" />
-    <Compile Include="Views\AlgoListViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoListViewModel.cs" />
     <Compile Include="Views.TradeInfo\AssetsView.xaml.cs">
       <DependentUpon>AssetsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
-    <Compile Include="Views\BotListViewModel.cs" />
-    <Compile Include="Views\BotManagerViewModel.cs" />
+    <Compile Include="Views.Algo\BotListViewModel.cs" />
+    <Compile Include="Views.Algo\BotManagerViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -961,7 +965,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Protocol\BotAgentAccountDialogView.xaml">
+    <Page Include="Views.Protocol\BAAccountDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -985,7 +989,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\AlgoListView.xaml">
+    <Page Include="Views.Algo\AlgoListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -993,7 +997,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\BotListView.xaml">
+    <Page Include="Views.Algo\BotListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
