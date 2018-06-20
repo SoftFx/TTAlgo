@@ -29,8 +29,8 @@
                       IsCheckable="True" IsChecked="{Binding IsHistoryOpened}"/>
             <MenuItem Header="{l:Resx Tab_Journal}" 
                       IsCheckable="True" IsChecked="{Binding IsJournalOpened}"/>
-            <MenuItem Header="{l:Resx Tab_BotJournal}" 
-                      IsCheckable="True" IsChecked="{Binding IsBotJournalOpened}"/>
+            <!--<MenuItem Header="{l:Resx Tab_BotJournal}" 
+                      IsCheckable="True" IsChecked="{Binding IsBotJournalOpened}"/>-->
         </MenuItem>
 
         <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
@@ -202,9 +202,9 @@
                 <TabItem Header="{l:Resx Tab_Journal}" IsSelected="True">
                     <ContentControl  cal:View.Model="{Binding Journal}"/>
                 </TabItem>
-                <TabItem Header="{l:Resx Tab_BotJournal}">
+                <!--<TabItem Header="{l:Resx Tab_BotJournal}">
                     <ContentControl  cal:View.Model="{Binding BotJournal}"/>
-                </TabItem>
+                </TabItem>-->
             </l:TabControl>
 
         </Grid>
@@ -360,10 +360,10 @@
                                                  ContentId="{x:Static l:DockManagerService.Tab_Journal}">
                                 <ContentControl cal:View.Model="{Binding Journal}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}" CanClose="False" CanHide="True" 
+                            <!--<dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}" CanClose="False" CanHide="True" 
                                                  ContentId="{x:Static l:DockManagerService.Tab_BotJournal}">
                                 <ContentControl cal:View.Model="{Binding BotJournal}"/>
-                            </dk:LayoutAnchorable>
+                            </dk:LayoutAnchorable>-->
                         </dk:LayoutAnchorablePane>
                     </dk:LayoutPanel>
                 </dk:LayoutPanel>

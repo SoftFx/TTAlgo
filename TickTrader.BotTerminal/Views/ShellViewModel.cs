@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
 
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
-            BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
+            //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
             CanConnect = true;
             DockManagerService = new DockManagerService();
 
@@ -272,7 +272,7 @@ namespace TickTrader.BotTerminal
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
-        public BotJournalViewModel BotJournal { get; set; }
+        //public BotJournalViewModel BotJournal { get; set; }
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public IProfileLoader ProfileLoader => this;
