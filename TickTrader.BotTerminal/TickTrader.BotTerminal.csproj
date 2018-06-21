@@ -404,6 +404,7 @@
     <Compile Include="Views.Algo\AlgoAgentViewModel.cs" />
     <Compile Include="Views.Algo\AlgoBotViewModel.cs" />
     <Compile Include="Views.Algo\AlgoPackageViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoPluginViewModel.cs" />
     <Compile Include="Views.Auth\AccountView.xaml.cs">
       <DependentUpon>AccountView.xaml</DependentUpon>
     </Compile>

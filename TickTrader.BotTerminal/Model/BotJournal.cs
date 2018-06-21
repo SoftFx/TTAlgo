@@ -6,29 +6,38 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotJournal : Journal<BotMessage>
+    internal class BotJournal
     {
         private Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>();
+
+        private int _journalSize;
+
+        public Dictionary<string, Journal<BotMessage>> Records = new Dictionary<string, Journal<BotMessage>>();
 
         public BotJournal() : this(500) { }
 
         public BotNameAggregator Statistics { get; private set; }
 
-        public BotJournal(int journalSize) : base(journalSize)
+        public BotJournal(int journalSize)
         {
+            _journalSize = journalSize;
             Statistics = new BotNameAggregator();
         }
 
-        public override void Add(BotMessage item)
+        public void Add(BotMessage item)
         {
-            base.Add(item);
+            if (!Records.ContainsKey(item.Bot))
+                Records.Add(item.Bot, new Journal<BotMessage>(_journalSize));
+
+            Records[item.Bot].Add(item);
 
             WriteToLogger(item);
         }
 
-        public override void Add(List<BotMessage> items)
+        public void Add(List<BotMessage> items)
         {
-            base.Add(items);
+            foreach (var item in items)
+                Add(item);
 
             foreach (var item in items)
                 WriteToLogger(item);
@@ -39,12 +48,12 @@ namespace TickTrader.BotTerminal
             GetOrAddLogger(botName).Trace(status);
         }
 
-        protected override void OnAppended(BotMessage item)
+        protected void OnAppended(BotMessage item)
         {
             Statistics.Register(item);
         }
 
-        protected override void OnRemoved(BotMessage item)
+        protected void OnRemoved(BotMessage item)
         {
             Statistics.UnRegister(item);
         }

@@ -43,6 +43,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenSettings()
         {
+            Agent.OpenBotSetup(Info);
         }
 
 

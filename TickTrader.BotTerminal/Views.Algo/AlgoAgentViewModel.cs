@@ -23,6 +23,8 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoPackageViewModel> Packages { get; }
 
+        public IObservableList<AlgoPluginViewModel> Plugins { get; }
+
         public IObservableList<AlgoAccountViewModel> Accounts { get; }
 
         public IObservableList<AlgoBotViewModel> Bots { get; }
@@ -34,6 +36,7 @@ namespace TickTrader.BotTerminal
             _agentModel = agentModel;
 
             Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this)).AsObservable();
+            Plugins = _agentModel.Plugins.OrderBy((k, v) => k).Select(p => new AlgoPluginViewModel(p, this)).AsObservable();
             Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this)).AsObservable();
             Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this)).AsObservable();
         }
