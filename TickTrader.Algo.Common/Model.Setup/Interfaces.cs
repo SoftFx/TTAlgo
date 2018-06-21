@@ -18,5 +18,6 @@ namespace TickTrader.Algo.Common.Model.Setup
     public interface ISymbolInfo
     {
         string Name { get; }
+        string Id { get; }
     }
 }

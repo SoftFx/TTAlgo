@@ -144,9 +144,15 @@ namespace TickTrader.BotTerminal
                 if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
                     askFeed = ReadSlices(smbData.ReadCachedBars(timeframe, BarPriceType.Ask, precacheFrom, precacheTo));
 
-                tester.AddFeed(smbData.Name, bidFeed, askFeed);
+                tester.Feed.AddSource(smbData.Name, timeframe, bidFeed, askFeed);
+                tester.Symbols.Add(smbData.Name, smbData.InfoEntity);
             }
         }
+
+        //public void InitSeriesBuilder(Backtester tester)
+        //{
+        //    tester.Feed.AddBarBuilder(SelectedSymbol.Value.Name, SelectedTimeframe.Value, BarPriceType.Bid);
+        //}
 
         private DateTime GetLocalFrom(DateTime fromLimit)
         {

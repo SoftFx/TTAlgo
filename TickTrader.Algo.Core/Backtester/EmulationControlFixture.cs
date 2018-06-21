@@ -18,16 +18,17 @@ namespace TickTrader.Algo.Core
         public BacktesterCollector Collector { get; }
         public DateTime StartTimePoint { get; }
 
-        public EmulationControlFixture(DateTime startTime, CalculatorFixture calc)
+        public EmulationControlFixture(DateTime startTime, PluginExecutor executor, CalculatorFixture calc)
         {
             StartTimePoint = startTime;
             InvokeEmulator = new InvokeEmulator();
-            Collector = new BacktesterCollector(InvokeEmulator);
-            TradeEmulator = new TradeEmulator(calc, Collector);
+            Collector = new BacktesterCollector(executor, InvokeEmulator);
+            TradeEmulator = new TradeEmulator(executor, calc, InvokeEmulator, Collector);
         }
 
         public void EmulateExecution()
         {
+            TradeEmulator.OnStart();
             InvokeEmulator.EmulateEventsFlow(StartTimePoint, _cancelEvent.Token);
         }
 

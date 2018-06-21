@@ -213,6 +213,7 @@
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
+    <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
@@ -251,6 +252,7 @@
     <Compile Include="Converters\BoolConverters.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DoubleToGridLengthConverter.cs" />
     <Compile Include="Converters\FallbackConverter.cs" />
     <Compile Include="Converters\LogSeverityToBrushConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
@@ -389,6 +391,7 @@
     <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.Aux\ActionViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
@@ -839,6 +842,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Aux\ActionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterChartPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

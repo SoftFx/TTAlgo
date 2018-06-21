@@ -15,10 +15,13 @@ namespace TickTrader.Algo.Core
     internal class BacktesterCollector : CrossDomainObject, IPluginLogger
     {
         private InvokeEmulator _invokeEmulator;
+        private PluginExecutor _executor;
         private List<BotLogRecord> _events = new List<BotLogRecord>();
+        private Dictionary<string, object> _outputBuffers = new Dictionary<string, object>();
 
-        public BacktesterCollector(InvokeEmulator emulator)
+        public BacktesterCollector(PluginExecutor executor, InvokeEmulator emulator)
         {
+            _executor = executor;
             _invokeEmulator = emulator;
         }
 
@@ -31,13 +34,35 @@ namespace TickTrader.Algo.Core
             _events.Add(new BotLogRecord(VirtualTimepoint, severity, message, description));
         }
 
-        public void LogTrade(string description)
+        public void LogTrade(string message)
         {
+            AddEvent(LogSeverities.TradeSuccess, message);
+        }
+
+        public void LogTradeFail(string message)
+        {
+            AddEvent(LogSeverities.TradeFail, message);
         }
 
         public IPagedEnumerator<BotLogRecord> GetEvents()
         {
             return _events.GetCrossDomainEnumerator(1000);
+        }
+
+        public void InitOutputCollection<T>(string id)
+        {
+            var output = _executor.GetOutput<T>(id);
+            var outputBuffer = new List<T>();
+
+            output.Appended += a =>
+            {
+                outputBuffer.Add(a.Value);
+            };
+        }
+
+        public List<T> GetOutputBuffer<T>(string id)
+        {
+            return (List<T>)_outputBuffers[id];
         }
 
         #region IPluginLogger

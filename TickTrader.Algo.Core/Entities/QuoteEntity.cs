@@ -114,7 +114,6 @@ namespace TickTrader.Algo.Core
             Volume = volume;
         }
 
-
         public double Price { get; set; }
         public double Volume { get; set; }
     }

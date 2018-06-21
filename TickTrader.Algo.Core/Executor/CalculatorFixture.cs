@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
+using TickTrader.BusinessLogic;
 using BL = TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
@@ -14,14 +16,21 @@ namespace TickTrader.Algo.Core
         private MarginCalcAdapter marginCalc;
         private BL.CashAccountCalculator cashCalc;
         private AccountAccessor acc;
+        private Dictionary<string, RateUpdate> _lastRates = new Dictionary<string, RateUpdate>();
 
         public CalculatorFixture(IFixtureContext context)
         {
             _context = context;
         }
 
+        public AccountAccessor Acc => acc;
+        public bool IsCalculated => marginCalc?.IsCalculated ?? true;
+        public int RoundingDigits => marginCalc?.RoundingDigits ??  BL.AccountCalculator.DefaultRounding;
+
         public void Start()
         {
+            _lastRates.Clear();
+
             _state = new BL.MarketState(BL.NettingCalculationTypes.OneByOne);
             _state.Set(_context.Builder.Symbols);
             _state.Set(_context.Builder.Currencies);
@@ -51,9 +60,40 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal void UpdateRate(QuoteEntity entity)
+        public BL.OrderCalculator GetCalculator(string symbol, string accountCurrency)
         {
-            _state?.Update(entity);
+            return _state.GetCalculator(symbol, accountCurrency);
+        }
+
+        public CurrencyEntity GetCurrencyInfo(string currency)
+        {
+            return _context.Builder.Currencies.GetOrNull(currency);
+        }
+
+        internal void UpdateRate(RateUpdate entity)
+        {
+            _lastRates[entity.Symbol] = entity;
+            _state?.Update((QuoteEntity)entity.LastQuote);
+        }
+
+        internal RateUpdate GetCurrentRateOrNull(string symbol)
+        {
+            RateUpdate rate;
+            _lastRates.TryGetValue(symbol, out rate);
+            return rate;
+        }
+
+        internal void CalculateOrder(OrderAccessor order)
+        {
+            if (acc.IsMarginType)
+                order.Calculator.UpdateOrder(order, acc);
+            else if (acc.IsCashType)
+            {
+                // Calculate new order margin
+                //ISymbolInfo symbol = ConfigurationManagerFull.ConvertFromEntity(model.SymbolRef);
+                //model.Margin = CashAccountCalculator.CalculateMargin(model, symbol);
+            }
+
         }
 
         public void Stop()
@@ -74,6 +114,35 @@ namespace TickTrader.Algo.Core
                 marginCalc.Dispose();
                 marginCalc = null;
             }
+        }
+
+        public void ValidateNewOrder(OrderAccessor newOrder, OpenOrderRequest request, OrderCalculator fCalc)
+        {
+            if (acc.AccountingType == BusinessObjects.AccountingTypes.Net
+                || acc.AccountingType == BusinessObjects.AccountingTypes.Gross)
+            {
+                fCalc.UpdateMargin(newOrder, acc);
+
+                // Update order initial margin rate.
+                //newOrder.MarginRateInitial = newOrder.MarginRateCurrent;
+
+                try
+                {
+                    // Check for margin
+                    decimal oldMargin;
+                    decimal newMargin;
+                    if (!marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin.PriceToDecimal(), out oldMargin, out newMargin))
+                        throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
+                }
+                catch (MarketConfigurationException e)
+                {
+                    throw new OrderValidationError(e.Message, Api.OrderCmdResultCodes.InternalError);
+                }
+            }
+            else if(acc.AccountingType == BusinessObjects.AccountingTypes.Cash)
+            {
+
+            }   
         }
 
         private class MarginCalcAdapter : BL.AccountCalculator

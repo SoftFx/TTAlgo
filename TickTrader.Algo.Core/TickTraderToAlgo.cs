@@ -65,10 +65,5 @@ namespace TickTrader.Algo.Core
                 default: throw new NotImplementedException("Unknown order side: " + apiSide);
             }
         }
-
-        public static double? AsNullable(this double value)
-        {
-            return double.IsNaN(value) ? null : (double?)value;
-        }
     }
 }

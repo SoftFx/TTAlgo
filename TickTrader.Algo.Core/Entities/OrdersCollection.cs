@@ -23,6 +23,12 @@ namespace TickTrader.Algo.Core
             fixture = new OrdersFixture(builder.Symbols);
         }
 
+        internal void Add(OrderAccessor order)
+        {
+            fixture.Add(order);
+            Added?.Invoke(order);
+        }
+
         public OrderAccessor Add(OrderEntity entity)
         {
             var result = fixture.Add(entity);
@@ -43,7 +49,15 @@ namespace TickTrader.Algo.Core
             return fixture.GetOrNull(id);
         }
 
-        public OrderAccessor Remove(OrderEntity entity)
+        public OrderAccessor Remove(string orderId)
+        {
+            var order = fixture.Remove(orderId);
+            if (order != null)
+                Removed?.Invoke(order);
+            return order;
+        }
+
+        public OrderAccessor UpdateAndRemove(OrderEntity entity)
         {
             var order = fixture.Remove(entity.Id);
             order?.Update(entity);
@@ -117,6 +131,14 @@ namespace TickTrader.Algo.Core
                         return Null.Order;
                     return entity;
                 }
+            }
+
+            public void Add(OrderAccessor order)
+            {
+                if (!orders.TryAdd(order.Id, order))
+                    throw new ArgumentException("Order #" + order.Id + " already exist!");
+
+                Added?.Invoke(order);
             }
 
             public OrderAccessor Add(OrderEntity entity)

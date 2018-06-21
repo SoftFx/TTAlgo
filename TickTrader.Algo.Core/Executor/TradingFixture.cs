@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
             if (eReport.Action == OrderEntityAction.Removed)
-                return collection.Remove(eReport.OrderCopy);
+                return collection.UpdateAndRemove(eReport.OrderCopy);
             if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
 
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Core
 
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
-                    accProxy.Balance = report.Balance;
+                    accProxy.Balance = (decimal)report.Balance;
                     context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                 }
                 else if (accProxy.Type == Api.AccountTypes.Cash)
@@ -268,9 +268,9 @@ namespace TickTrader.Algo.Core
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
             {
-                if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
+                if (eReport.NewBalance != null && acc.Balance != (decimal)eReport.NewBalance.Value)
                 {
-                    acc.Balance = eReport.NewBalance.Value;
+                    acc.Balance = (decimal) eReport.NewBalance.Value;
                     context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }

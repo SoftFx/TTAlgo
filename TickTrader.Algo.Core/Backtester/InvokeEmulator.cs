@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -31,6 +32,8 @@ namespace TickTrader.Algo.Core
         public DateTime VirtualTimePoint { get { lock (_sync) return _timePoint; } }
         public DateTime SafeVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
+
+        public event Action<RateUpdate> RateUpdated;
 
         protected override void OnInit()
         {
@@ -103,46 +106,6 @@ namespace TickTrader.Algo.Core
                 if (_eFeed != null)
                     _eFeed.Dispose();
             }
-
-
-            //foreach (var quote in ReadFeedStream())
-            //{
-            //    while (true)
-            //    {
-            //        Action<PluginBuilder> toInvoke;
-
-            //        lock (_sync)
-            //        {
-            //            if (_invokeQueue.Count == 0)
-            //                break;
-
-            //            toInvoke = _invokeQueue.Dequeue();
-            //        }
-
-            //        toInvoke.Invoke(Builder);
-            //    }
-
-            //    EmulateQuote(quote);
-
-            //    lock (_sync) UpdateVirtualTimepoint(quote.CreatingTime);
-            //}
-
-            //while (true)
-            //{
-            //    Action<PluginBuilder> toInvoke;
-
-            //    lock (_sync)
-            //    {
-            //        if (_invokeQueue.Count > 0)
-            //            toInvoke = _invokeQueue.Dequeue();
-            //        else if (_delayedQueue.Count > 0)
-            //            toInvoke = _delayedQueue.DeleteMin().Action;
-            //        else
-            //            break;
-            //    }
-
-            //    toInvoke.Invoke(Builder);
-            //}
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction)
@@ -153,6 +116,13 @@ namespace TickTrader.Algo.Core
         public void EmulateDelayedTrade(TimeSpan delay, Action<PluginBuilder> invokeAction)
         {
             EmulateDelayed(delay, invokeAction, true);
+        }
+
+        public Task EmulateAsyncDelay(TimeSpan delay)
+        {
+            var handler = new TaskCompletionSource<object>();
+            EmulateDelayed(delay, b => handler.SetResult(null), true);
+            return handler.Task;
         }
 
         private void EmulateDelayed(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTrade)
@@ -197,6 +167,7 @@ namespace TickTrader.Algo.Core
         {
             var update = FStartegy.InvokeAggregate(null, quote);
             OnFeedUpdate(update);
+            RateUpdated?.Invoke(quote);
         }
 
         public override Task Stop(bool quick)

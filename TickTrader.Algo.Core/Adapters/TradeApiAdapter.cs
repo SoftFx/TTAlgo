@@ -391,9 +391,9 @@ namespace TickTrader.Algo.Core
 
         #region Validation
 
-        private Symbol GetSymbolOrThrow(string symbolName)
+        private SymbolAccessor GetSymbolOrThrow(string symbolName)
         {
-            var smbMetadata = symbols.List[symbolName];
+            var smbMetadata = (SymbolAccessor)symbols.List[symbolName];
             if (smbMetadata.IsNull)
                 throw new OrderValidationError(OrderCmdResultCodes.SymbolNotFound);
             return smbMetadata;
@@ -646,6 +646,12 @@ namespace TickTrader.Algo.Core
     internal class OrderValidationError : Exception
     {
         public OrderValidationError(OrderCmdResultCodes code)
+            : this(null, code)
+        {
+        }
+
+        public OrderValidationError(string message, OrderCmdResultCodes code)
+            : base(message ?? "Validation error: " + code)
         {
             ErrorCode = code;
         }

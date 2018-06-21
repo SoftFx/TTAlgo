@@ -490,7 +490,7 @@ namespace TickTrader.Algo.Core
 
         internal EmulationControlFixture InitEmulation(DateTime startTime)
         {
-            var fixture = new EmulationControlFixture(startTime, calcFixture);
+            var fixture = new EmulationControlFixture(startTime, this, calcFixture);
             InvokeStrategy = fixture.InvokeEmulator;
             TradeExecutor = fixture.TradeEmulator;
             _pluginLogger = fixture.Collector;
@@ -501,7 +501,7 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        private void ApplyNewRate(QuoteEntity quote)
+        private void ApplyNewRate(RateUpdate quote)
         {
             calcFixture.UpdateRate(quote);
         }

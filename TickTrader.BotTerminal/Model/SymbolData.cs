@@ -32,8 +32,10 @@ namespace TickTrader.BotTerminal
 
         public string Name { get; }
         public abstract string Description { get; }
+        public abstract string Key { get; }
         public abstract string Security { get; }
         public abstract bool IsCustom { get; }
+        public abstract SymbolEntity InfoEntity { get; }
 
         public IObservableList<SymbolStorageSeries> SeriesCollection { get; }
 
@@ -79,8 +81,10 @@ namespace TickTrader.BotTerminal
         }
 
         public override bool IsCustom => false;
+        public override string Key => "online->" + Name;
         public override string Description => _symbolInfo.Description;
         public override string Security => _symbolInfo.Descriptor.Security;
+        public override SymbolEntity InfoEntity => _symbolInfo.Descriptor;
 
         public override Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
         {
@@ -182,9 +186,11 @@ namespace TickTrader.BotTerminal
         }
 
         public CustomSymbol Entity => _symbolInfo;
+        public override string Key => "custom->";
         public override bool IsCustom => true;
         public override string Description => _symbolInfo.Description;
         public override string Security => "";
+        public override SymbolEntity InfoEntity => new SymbolEntity(Name) { IsTradeAllowed = true, SwapEnabled = false, MinAmount = 0.001, MaxAmount = 100000 };
 
         public override Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
         {

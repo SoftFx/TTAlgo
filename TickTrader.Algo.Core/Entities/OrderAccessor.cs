@@ -6,28 +6,28 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrderAccessor : Order, BL.IOrderModel
+    public class OrderAccessor : Order, BL.IOrderModel, BO.IOrder
     {
         private OrderEntity _entity;
-        private Symbol _symbol;
+        private SymbolAccessor _symbol;
         private double _lotSize;
+        private decimal? _profit;
+        private decimal? _margin;
 
-        internal OrderAccessor(OrderEntity entity, Func<string, Symbol> symbolProvider)
+        internal OrderAccessor(OrderEntity entity, Func<string, SymbolAccessor> symbolProvider)
             : this(entity, symbolProvider(entity.Symbol))
         {
         }
 
-        internal OrderAccessor(OrderEntity entity, Symbol symbol)
+        internal OrderAccessor(OrderEntity entity, SymbolAccessor symbol)
         {
             _entity = entity ?? throw new ArgumentNullException("entity");
-            Margin = 0;
-            Profit = 0;
 
             _symbol = symbol;
             _lotSize = symbol?.ContractSize ?? 1;
         }
 
-        internal static Order GetAccessor(OrderEntity entity, Symbol symbol)
+        internal static Order GetAccessor(OrderEntity entity, SymbolAccessor symbol)
         {
             if (entity == null)
                 return Null.Order;
@@ -72,8 +72,10 @@ namespace TickTrader.Algo.Core
         public double ExecVolume => _entity.ExecVolume / _lotSize ?? double.NaN;
         public double LastFillPrice => _entity.LastFillPrice ?? double.NaN;
         public double LastFillVolume => _entity.LastFillVolume / _lotSize ?? double.NaN;
-        public double Margin { get; set; }
-        public double Profit { get; set; }
+        public double Margin => (double)(_margin ?? 0);
+        public double Profit => (double)(_profit ?? 0);
+
+        public bool IsPending => Type == OrderType.Limit || Type == OrderType.StopLimit || Type == OrderType.Stop;
 
         #endregion
 
@@ -89,10 +91,10 @@ namespace TickTrader.Algo.Core
         public decimal? Commission => (decimal)_entity.Commission;
         public decimal? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
-        public decimal Amount { get => (decimal)_entity.RequestedVolume; set => throw new NotImplementedException(); }
-        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => throw new NotImplementedException(); }
-        decimal? BL.IOrderModel.Profit { get => (decimal)Profit; set => Profit = (double)value; }
-        decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => Margin = (double)value; }
+        public decimal Amount { get => (decimal)_entity.RequestedVolume; set => _entity.RequestedVolume = (double)value; }
+        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => _entity.RemainingVolume = (double)value; }
+        decimal? BL.IOrderModel.Profit { get => _profit; set => _profit = value; }
+        decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => _margin = value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
         decimal? BL.ICommonOrder.Price { get => GetDecPrice(); set => throw new NotImplementedException(); }
@@ -110,5 +112,84 @@ namespace TickTrader.Algo.Core
             double? price = (Type == OrderType.Stop) ? _entity.StopPrice : _entity.Price;
             return (decimal?)price;
         }
+
+        internal bool HasOption(OrderExecOptions option)
+        {
+            return Entity.Options.HasFlag(option);
+        }
+
+        #region Emulation
+
+        internal short ActionNo { get; set; }
+        internal OrderType InitialType { get; set; }
+        internal decimal? OpenConversionRate { get;  set; }
+        internal SymbolAccessor SymbolInfo => _symbol;
+        public decimal? ClosePrice { get; set; }
+
+        #endregion
+
+        #region TickTrader.BusinessObjects.IOrder
+
+        int BO.IOrder.RangeId => throw new NotImplementedException();
+        long BO.IOrder.AccountId => throw new NotImplementedException();
+        //string BO.IOrder.Symbol => throw new NotImplementedException();
+        string BO.IOrder.SymbolAlias => Symbol;
+        //long BO.IOrder.OrderId => throw new NotImplementedException();
+        string BO.IOrder.ClientOrderId => null;
+        long? BO.IOrder.ParentOrderId => throw new NotImplementedException();
+        decimal? BO.IOrder.Price => (decimal?)Entity.Price;
+        decimal? BO.IOrder.StopPrice => (decimal?)Entity.StopPrice;
+        BO.OrderSides BO.IOrder.Side => _entity.GetBlOrderSide();
+        BO.OrderTypes BO.IOrder.Type => _entity.GetBlOrderType();
+        BO.OrderTypes BO.IOrder.InitialType => throw new NotImplementedException();
+        BO.OrderStatuses BO.IOrder.Status => throw new NotImplementedException();
+        //decimal BO.IOrder.Amount => throw new NotImplementedException();
+        //decimal BO.IOrder.RemainingAmount => throw new NotImplementedException();
+        decimal BO.IOrder.HiddenAmount => throw new NotImplementedException();
+        decimal? BO.IOrder.MaxVisibleAmount => throw new NotImplementedException();
+        DateTime BO.IOrder.Created => Entity.Created ?? DateTime.MinValue;
+        DateTime? BO.IOrder.Modified => Entity.Modified;
+        DateTime? BO.IOrder.Filled => throw new NotImplementedException();
+        DateTime? BO.IOrder.PositionCreated => throw new NotImplementedException();
+        decimal? BO.IOrder.StopLoss => (decimal?)Entity.StopLoss;
+        decimal? BO.IOrder.TakeProfit => (decimal?)Entity.TakeProfit;
+        decimal? BO.IOrder.Profit => _profit;
+        decimal? BO.IOrder.Margin => _margin;
+        decimal BO.IOrder.AggrFillPrice => throw new NotImplementedException();
+        decimal BO.IOrder.AverageFillPrice => throw new NotImplementedException();
+        decimal? BO.IOrder.TransferringCoefficient => throw new NotImplementedException();
+        string BO.IOrder.UserComment => Comment;
+        string BO.IOrder.ManagerComment => throw new NotImplementedException();
+        string BO.IOrder.UserTag => Entity.UserTag;
+        string BO.IOrder.ManagerTag => throw new NotImplementedException();
+        int BO.IOrder.Magic => throw new NotImplementedException();
+        decimal? BO.IOrder.Commission => (decimal)Entity.Commission;
+        decimal? BO.IOrder.AgentCommision => throw new NotImplementedException();
+        decimal? BO.IOrder.Swap => (decimal)Entity.Swap;
+        DateTime? BO.IOrder.Expired => Entity.Expiration;
+        //decimal? BO.IOrder.ClosePrice => throw new NotImplementedException();
+        //decimal? BO.IOrder.CurrentPrice => throw new NotImplementedException();
+        decimal? BO.IOrder.MarginRateInitial => throw new NotImplementedException();
+        decimal? BO.IOrder.MarginRateCurrent => throw new NotImplementedException();
+        BO.ActivationTypes BO.IOrder.Activation => throw new NotImplementedException();
+        decimal? BO.IOrder.OpenConversionRate => throw new NotImplementedException();
+        decimal? BO.IOrder.CloseConversionRate => throw new NotImplementedException();
+        bool BO.IOrder.IsReducedOpenCommission => throw new NotImplementedException();
+        bool BO.IOrder.IsReducedCloseCommission => throw new NotImplementedException();
+        int BO.IOrder.Version => throw new NotImplementedException();
+        BO.OrderExecutionOptions BO.IOrder.Options => throw new NotImplementedException();
+        BO.CustomProperties BO.IOrder.Properties => throw new NotImplementedException();
+        decimal? BO.IOrder.Taxes => throw new NotImplementedException();
+        decimal? BO.IOrder.ReqOpenPrice => throw new NotImplementedException();
+        decimal? BO.IOrder.ReqOpenAmount => throw new NotImplementedException();
+        string BO.IOrder.ClientApp => throw new NotImplementedException();
+
+        internal bool IsSameOrder(OrderAccessor order)
+        {
+            return (order != null && OrderId == order.OrderId && Type == order.Type);
+        }
+
+        #endregion
+
     }
 }

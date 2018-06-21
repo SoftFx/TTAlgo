@@ -5,21 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.Core.Math
+namespace TickTrader.Algo.Core
 {
-    public class BarVector
+    public class BarVector : BarVectorBase
     {
         private readonly List<BarEntity> _list = new List<BarEntity>();
-        private readonly BarSampler _sampler;
 
-        public BarVector(TimeFrames timeFrame)
+        public BarVector(TimeFrames timeFrame) : base(timeFrame)
         {
-            _sampler = BarSampler.Get(timeFrame);
         }
 
-        public BarSampler Sampler => _sampler;
-
-        public BarEntity Last
+        public override BarEntity Last
         {
             get { return _list[_list.Count - 1]; }
             set { _list[_list.Count - 1] = value; }
@@ -32,6 +28,7 @@ namespace TickTrader.Algo.Core.Math
         }
 
         public int Count => _list.Count;
+        public override bool HasElements => _list.Count > 0;
 
         public BarEntity[] ToArray()
         {
@@ -55,58 +52,13 @@ namespace TickTrader.Algo.Core.Math
             _list.Clear();
         }
 
-        public void Append(DateTime time, double open, double high, double low, double close, double volume)
+        protected override void AddToVector(BarEntity entity)
         {
-            var boundaries = _sampler.GetBar(time);
-
-            if (Count > 0 && Last.OpenTime == boundaries.Open)
-            {
-                // join
-                Last = UpdateBar(Last, open, high, low, close, volume);
-            }
-            else
-            {
-                // append
-                var entity = new BarEntity();
-                entity.OpenTime = boundaries.Open;
-                entity.CloseTime = boundaries.Close;
-                entity.Open = open;
-                entity.High = high;
-                entity.Low = low;
-                entity.Close = close;
-                entity.Volume = volume;
-                InternalAdd(entity);
-            }
-        }
-
-        private BarEntity UpdateBar(BarEntity bar, double open, double high, double low, double close, double volume)
-        {
-            var entity = new BarEntity();
-            entity.OpenTime = bar.OpenTime;
-            entity.CloseTime = bar.CloseTime;
-            entity.Open = bar.Open;
-            entity.High = System.Math.Max(bar.High, high);
-            entity.Low = System.Math.Min(bar.Low, low);
-            entity.Close = close;
-            entity.Volume = bar.Volume + volume;
-            return entity;
-        }
-
-        public void Append(BarEntity bar)
-        {
-            var boundaries = _sampler.GetBar(bar.OpenTime);
-
-            if (boundaries.Open == bar.OpenTime || boundaries.Close != bar.CloseTime)
-                throw new ArgumentException("Bar has invalid time boundaries!");
-
-            InternalAdd(bar);
+            _list.Add(entity);
         }
 
         private void InternalAdd(BarEntity bar)
         {
-            if (Count > 0 && Last.OpenTime >= bar.OpenTime)
-                throw new ArgumentException("Invlid time sequnce!");
-
             _list.Add(bar);
         }
     }

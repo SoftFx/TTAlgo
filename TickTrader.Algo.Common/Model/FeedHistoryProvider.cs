@@ -12,7 +12,6 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Math;
 using TickTrader.SeriesStorage;
 using TickTrader.Server.QuoteHistory.Serialization;
 using TT = TickTrader.BusinessObjects;

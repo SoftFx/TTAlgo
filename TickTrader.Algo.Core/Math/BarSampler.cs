@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.Core.Math
+namespace TickTrader.Algo.Core
 {
     public abstract class BarSampler
     {

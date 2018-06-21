@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,24 +17,31 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterViewModel : Screen, IWindowModel, IAlgoSetupFactory
+    internal class BacktesterViewModel : Screen, IWindowModel, IAlgoGuiMetadata
     {
         private AlgoEnvironment _env;
         private IShell _shell;
         private SymbolCatalog _catalog;
         private Property<List<BotLogRecord>> _journalContent = new Property<List<BotLogRecord>>();
+        private SymbolToken _mainSymbolToken;
+        private IVarList<ISymbolInfo> _symbolTokens;
+        private IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
+        private VarContext _var = new VarContext();
+        private TraderClientModel _client;
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
             _env = env ?? throw new ArgumentNullException("env");
             _catalog = catalog ?? throw new ArgumentNullException("catalog");
             _shell = shell ?? throw new ArgumentNullException("shell");
+            _client = client;
 
             ProgressMonitor = new ActionViewModel();
-            Symbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
+            FeedSources = new ObservableCollection<BacktesterSymbolSetupViewModel>();
 
             DateRange = new DateRangeSelectionViewModel();
             IsUpdatingRange = new BoolProperty();
@@ -44,7 +52,7 @@ namespace TickTrader.BotTerminal
             //_availableSymbols = env.Symbols;
 
             AddSymbol(SymbolSetupType.MainSymbol);
-            AddSymbol(SymbolSetupType.MainFeed, Symbols[0].SelectedSymbol.Var);
+            AddSymbol(SymbolSetupType.MainFeed, FeedSources[0].SelectedSymbol.Var);
 
             SelectedPlugin = new Property<AlgoItemViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
@@ -58,11 +66,25 @@ namespace TickTrader.BotTerminal
                 .OrderBy((k, p) => p.Name)
                 .AsObservable();
 
+            _mainSymbolToken = new SymbolToken("[main symbol]", null);
+            var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
+            var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISymbolInfo)new SymbolToken(s.Name, s.Description));
+            _symbolTokens = VarCollection.Combine<ISymbolInfo>(predefinedSymbolTokens, existingSymbolTokens);
+            _observableSymbolTokens = _symbolTokens.AsObservable();
+
             env.Repo.AllPlugins.Updated += a =>
             {
                 if (a.Action == DLinqAction.Remove && a.OldItem.Key == SelectedPlugin.Value?.PluginItem.Key)
                     SelectedPlugin.Value = null;
             };
+
+            ChartPage = new BacktesterChartPageViewModel();
+
+            _var.TriggerOnChange(SelectedPlugin.Var, a =>
+            {
+                if(a.New != null)
+                    PluginSetupModel = new BarBasedPluginSetup(a.New.PluginItem.Ref, _mainSymbolToken, Algo.Api.BarPriceType.Bid, this);
+            });
         }
 
         public ActionViewModel ProgressMonitor { get; private set; }
@@ -75,13 +97,15 @@ namespace TickTrader.BotTerminal
         public BoolVar CanStart { get; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
-        public ObservableCollection<BacktesterSymbolSetupViewModel> Symbols { get; private set; }
-        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
+        public ObservableCollection<BacktesterSymbolSetupViewModel> FeedSources { get; private set; }
+        //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
+        public BacktesterChartPageViewModel ChartPage { get; }
+        public PluginSetup PluginSetupModel { get; private set; }
 
         public void OpenPluginSetup()
         {
-            var setup = new PluginSetupViewModel(_env, SelectedPlugin.Value.PluginItem, this);
+            var setup = new PluginSetupViewModel(PluginSetupModel, _env.Repo);
             _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", setup);
         }
 
@@ -92,18 +116,31 @@ namespace TickTrader.BotTerminal
 
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
-            foreach (var symbolSetup in Symbols)
+            foreach (var symbolSetup in FeedSources)
                 await symbolSetup.PrecacheData(observer, cToken, DateRange.From, DateRange.To);
+
+            var chartSymbol = FeedSources[0].SelectedSymbol.Value;
+            var chartTimeframe = FeedSources[0].SelectedTimeframe.Value;
+            var chartPriceLayer = BarPriceType.Bid;
+
+            _mainSymbolToken.Id = chartSymbol.Key;
 
             observer.StartProgress(DateRange.From.GetAbsoluteDay(), DateRange.To.GetAbsoluteDay());
             observer.SetMessage("Emulating...");
 
             var pluginRef = SelectedPlugin.Value.PluginItem.Ref;
 
-            using (var tester = new Backtester(pluginRef))
+            using (var tester = new Backtester(pluginRef, DateRange.From, DateRange.To))
             {
-                tester.EmulationPeriodStart = DateRange.From;
-                tester.EmulationPeriodEnd = DateRange.To;
+                PluginSetupModel.Apply(tester);
+
+                foreach (var outputSetup in PluginSetupModel.Outputs)
+                {
+                    if (outputSetup is ColoredLineOutputSetup)
+                        tester.InitOutputCollection<double>(outputSetup.Id);
+                    else if (outputSetup is MarkerSeriesOutputSetup)
+                        tester.InitOutputCollection<Marker>(outputSetup.Id);
+                }
 
                 var updateTimer = new DispatcherTimer();
                 updateTimer.Interval = TimeSpan.FromMilliseconds(50);
@@ -117,8 +154,21 @@ namespace TickTrader.BotTerminal
 
                 try
                 {
-                    foreach (var symbolSetup in Symbols)
+                    foreach (var symbolSetup in FeedSources)
                         symbolSetup.Apply(tester, DateRange.From, DateRange.To);
+
+                    tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+
+                    foreach (var rec in _client.Currencies.Snapshot)
+                        tester.Currencies.Add(rec.Key, rec.Value);
+
+                    //foreach (var rec in _client.Symbols.Snapshot)
+                    //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
+
+                    tester.AccountType = AccountTypes.Net;
+                    tester.BalanceCurrency = "USD";
+                    tester.Leverage = 100;
+                    tester.Initialbalance = 10000;
 
                     await Task.Run(() => tester.Run(cToken));
 
@@ -129,7 +179,9 @@ namespace TickTrader.BotTerminal
                     updateTimer.Stop();
                 }
 
-                _journalContent.Value =  await CollectEvents(tester, observer);
+                _journalContent.Value = await CollectEvents(tester, observer);
+
+                await LoadChartData(tester, observer, tester.Feed.GetBarSeriesData(chartSymbol.Name, chartTimeframe, chartPriceLayer));
 
                 observer.SetMessage("Done.");
             }
@@ -160,7 +212,24 @@ namespace TickTrader.BotTerminal
                 return events;
             });
         }
-       
+
+        private async Task LoadChartData(Backtester tester, IActionObserver observer, IReadOnlyList<BarEntity> data)
+        {
+            observer.StartProgress(0, data.Count);
+            observer.SetMessage("Loading chart data...");
+
+            var series = await Task.Run(() =>
+            {
+                var chartData = new OhlcDataSeries<DateTime, double>();
+
+                foreach(var bar in data)
+                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+
+                return chartData;
+            });
+
+            ChartPage.AddMainSeries(series);
+        }
 
         private void AddSymbol()
         {
@@ -175,12 +244,12 @@ namespace TickTrader.BotTerminal
 
             smb.IsUpdating.PropertyChanged += IsUpdating_PropertyChanged;
 
-            Symbols.Add(smb);
+            FeedSources.Add(smb);
         }
 
         private void Smb_Removed(BacktesterSymbolSetupViewModel smb)
         {
-            Symbols.Remove(smb);
+            FeedSources.Remove(smb);
             smb.IsUpdating.PropertyChanged -= IsUpdating_PropertyChanged;
             smb.Removed -= Smb_Removed;
 
@@ -189,11 +258,11 @@ namespace TickTrader.BotTerminal
 
         private void UpdateRangeState()
         {
-            IsUpdatingRange.Value = Symbols.Any(s => s.IsUpdating.Value);
+            IsUpdatingRange.Value = FeedSources.Any(s => s.IsUpdating.Value);
             if (!IsUpdatingRange.Value)
             {
-                var max = Symbols.Max(s => s.AvailableRange.Value?.Item2);
-                var min = Symbols.Min(s => s.AvailableRange.Value?.Item1);
+                var max = FeedSources.Max(s => s.AvailableRange.Value?.Item2);
+                var min = FeedSources.Min(s => s.AvailableRange.Value?.Item1);
                 DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
             }
         }
@@ -203,9 +272,28 @@ namespace TickTrader.BotTerminal
             UpdateRangeState();
         }
 
-        PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
+        //PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
+        //{
+        //    return new BarBasedPluginSetup(catalogItem, _mainSymbolToken, Algo.Api.BarPriceType.Bid, _env);
+        //}
+
+        #region IAlgoGuiMetadata
+
+        IReadOnlyList<ISymbolInfo> IAlgoGuiMetadata.Symbols => _observableSymbolTokens;
+        ExtCollection IAlgoGuiMetadata.Extentions => _env.Extentions;
+
+        #endregion
+
+        public class SymbolToken : ISymbolInfo
         {
-            return new BarBasedPluginSetup(catalogItem, "", Algo.Api.BarPriceType.Ask, _env);
+            public SymbolToken(string name, string id)
+            {
+                Name = name;
+                Id = id;
+            }
+
+            public string Name { get; }
+            public string Id { get; set; }
         }
     }
 }

@@ -41,13 +41,15 @@ namespace TickTrader.Algo.Core
         public ITradeHistoryProvider HistoryProvider { get { return _historyAdapter.Provider; } set { _historyAdapter.Provider = value; } }
 
         public string Id { get; set; }
-        public double Balance { get; set; }
+        public decimal Balance { get; internal set; }
         public string BalanceCurrency { get; set; }
         public int Leverage { get; set; }
         public AccountTypes Type { get; set; }
         public bool Isolated { get; set; }
-
         public string InstanceId { get; set; }
+
+        public bool IsMarginType => Type == AccountTypes.Net || Type == AccountTypes.Gross;
+        public bool IsCashType => Type == AccountTypes.Cash;
 
         public void Update(AccountEntity info, Dictionary<string, Currency> currencies)
         {
@@ -55,7 +57,7 @@ namespace TickTrader.Algo.Core
             Type = info.Type;
             Leverage = info.Leverage;
             BalanceCurrency = info.BalanceCurrency;
-            Balance = info.Balance;
+            Balance = (decimal)info.Balance;
             Assets.Clear();
             foreach (var asset in info.Assets)
                 builder.Account.Assets.Update(asset, currencies);
@@ -148,11 +150,13 @@ namespace TickTrader.Algo.Core
         public double Profit { get; set; }
         public double Commision { get; set; }
 
+        double AccountDataProvider.Balance => (double)Balance;
+
         #region BO
 
         long BL.IAccountInfo.Id => 0;
         public BO.AccountingTypes AccountingType => TickTraderToAlgo.Convert(Type);
-        decimal BL.IMarginAccountInfo.Balance => (decimal)Balance;
+        decimal BL.IMarginAccountInfo.Balance => Balance;
         IEnumerable<BL.IOrderModel> BL.IAccountInfo.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
         IEnumerable<BL.IPositionModel> BL.IMarginAccountInfo.Positions => NetPositions;
         IEnumerable<BL.IAssetModel> BL.ICashAccountInfo.Assets => Assets;
@@ -249,6 +253,31 @@ namespace TickTrader.Algo.Core
             {
                 builder.Logger.OnError($"Account calculator: {actionName} failed", ex);
             }
+        }
+
+        #endregion
+
+        #region Emulation
+
+        internal OrderAccessor GetOrderOrThrow(string orderId)
+        {
+            return Orders.GetOrderOrNull(orderId)
+                ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
+        }
+
+        internal void IncreasePosition(string symbol, decimal amount, decimal price, OrderSide side)
+        {
+            var pos = NetPositions.GetOrCreatePosition(symbol);
+            pos.Increase(amount, price, side);
+            OnPositionUpdated(pos);
+        }
+
+        internal void IncreaseAsset(string currency, decimal byAmount)
+        {
+            AssetChangeType chType;
+            var asset = Assets.GetOrCreateAsset(currency, out chType);
+            asset.IncreaseBy(byAmount);
+            OnAssetsChanged(asset, chType);
         }
 
         #endregion

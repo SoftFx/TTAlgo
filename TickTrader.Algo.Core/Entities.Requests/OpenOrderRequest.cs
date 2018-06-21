@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
@@ -23,5 +24,10 @@ namespace TickTrader.Algo.Core
         public string Comment { get; set; }
         public OrderExecOptions Options { get; set; }
         public string Tag { get; set; }
+
+        internal bool IsOptionSet(OrderExecOptions option)
+        {
+            return Options.HasFlag(option);
+        }
     }
 }

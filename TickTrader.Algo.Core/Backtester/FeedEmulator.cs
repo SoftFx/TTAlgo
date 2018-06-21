@@ -8,25 +8,30 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    class FeedEmulator : CrossDomainObject, IPluginFeedProvider, ISynchronizationContext
+    public class FeedEmulator : CrossDomainObject, IPluginFeedProvider, ISynchronizationContext
     {
-        private Dictionary<string, IBacktesterFeed> _feedSources = new Dictionary<string, IBacktesterFeed>();
+        private Dictionary<string, FeedSeriesEmulator> _feedSources = new Dictionary<string, FeedSeriesEmulator>();
 
         ISynchronizationContext IPluginFeedProvider.Sync => this;
 
-        public IPagedEnumerator<QuoteEntity> GetFeedStream()
+        internal IPagedEnumerator<QuoteEntity> GetFeedStream()
         {
             return GetJoinedStream().GetCrossDomainEnumerator(8000);
         }
 
         private IEnumerable<QuoteEntity> GetJoinedStream()
         {
-            var streams = _feedSources.Values.Select(s => s.GetQuoteStream().GetEnumerator()).ToList();
+            var streams = _feedSources.Values.ToList();
 
             foreach (var e in streams.ToList())
             {
+                e.Start();
+
                 if (!e.MoveNext())
+                {
                     streams.Remove(e);
+                    e.Stop();
+                }
             }
 
             while (streams.Count > 0)
@@ -35,15 +40,42 @@ namespace TickTrader.Algo.Core
                 var nextQuote = max.Current;
 
                 if (!max.MoveNext())
+                {
                     streams.Remove(max);
+                    max.Stop();
+                }
 
                 yield return nextQuote;
             }
         }
 
-        public void AddFeedSource(string symbol, IBacktesterFeed source)
+        public void AddBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
         {
-            _feedSources.Add(symbol, source);
+            var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
+            stream.InitSeries(timeframe, price);
+        }
+
+        public IReadOnlyList<BarEntity> GetBarSeriesData(string symbol, TimeFrames timeframe, BarPriceType price)
+        {
+            var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
+            return stream.GetSeriesData(timeframe, price);
+        }
+
+        public void AddSource(string symbol, IEnumerable<QuoteEntity> stream)
+        {            
+            _feedSources.Add(symbol, new FeedSeriesEmulator.QuoteBased(stream));
+        }
+
+        public void AddSource(string symbol, TimeFrames timeFrame, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
+        {
+            _feedSources.Add(symbol, new BarBasedSeriesEmulator(symbol, timeFrame, bidStream, askStream));
+        }
+
+        private FeedSeriesEmulator GetFeedSrcOrNull(string symbol)
+        {
+            FeedSeriesEmulator src;
+            _feedSources.TryGetValue(symbol, out src);
+            return src;
         }
 
         #region IPluginFeedProvider
@@ -55,22 +87,22 @@ namespace TickTrader.Algo.Core
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {
-            return new List<BarEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, to) ?? new List<BarEntity>();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
         {
-            return new List<BarEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, size) ?? new List<BarEntity>();
         }
 
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
         {
-            return new List<QuoteEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryTicks(from, to, depth) ?? new List<QuoteEntity>();
         }
 
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, int count, DateTime to, int depth)
         {
-            return new List<QuoteEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryTicks(count, to, depth) ?? new List<QuoteEntity>();
         }
 
         void IPluginFeedProvider.Subscribe(Action<QuoteEntity[]> FeedUpdated)
@@ -93,55 +125,50 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    internal interface IBacktesterFeed
-    {
-        IEnumerable<QuoteEntity> GetQuoteStream();
-    }
+    //internal class BacktesterBarFeed : IBacktesterFeed
+    //{
+    //    private IEnumerable<BarEntity> _bidStream;
+    //    private IEnumerable<BarEntity> _askStream;
+    //    private string _symbol;
 
-    internal class BacktesterBarFeed : IBacktesterFeed
-    {
-        private IEnumerable<BarEntity> _bidStream;
-        private IEnumerable<BarEntity> _askStream;
-        private string _symbol;
+    //    public BacktesterBarFeed(string symbol, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
+    //    {
+    //        _symbol = symbol;
+    //        _bidStream = bidStream;
+    //        _askStream = askStream;
+    //    }
 
-        public BacktesterBarFeed(string symbol, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
-        {
-            _symbol = symbol;
-            _bidStream = bidStream;
-            _askStream = askStream;
-        }
+    //    public IEnumerable<QuoteEntity> GetQuoteStream()
+    //    {
+    //        if (_bidStream != null)
+    //        {
+    //            if (_askStream != null)
+    //            {
+    //                return _bidStream.JoinSorted(_askStream, (b, a) => DateTime.Compare(b.OpenTime, a.OpenTime),
+    //                    (b, a) => new QuoteEntity(_symbol, b?.OpenTime ?? a.OpenTime, b?.Open, a?.Open));
+    //            }
+    //            else
+    //                return _bidStream.Select(b => new QuoteEntity(_symbol, b.OpenTime, b.Open, null));
+    //        }
+    //        else if (_askStream != null)
+    //            return _bidStream.Select(b => new QuoteEntity(_symbol, b.OpenTime, null, b.Open));
+    //        else
+    //            throw new InvalidOperationException("Both ask and bid stream are null!");
+    //    }
+    //}
 
-        public IEnumerable<QuoteEntity> GetQuoteStream()
-        {
-            if (_bidStream != null)
-            {
-                if (_askStream != null)
-                {
-                    return _bidStream.JoinSorted(_askStream, (b, a) => DateTime.Compare(b.OpenTime, a.OpenTime),
-                        (b, a) => new QuoteEntity(_symbol, b?.OpenTime ?? a.OpenTime, b?.Open, a?.Open));
-                }
-                else
-                    return _bidStream.Select(b => new QuoteEntity(_symbol, b.OpenTime, b.Open, null));
-            }
-            else if (_askStream != null)
-                return _bidStream.Select(b => new QuoteEntity(_symbol, b.OpenTime, null, b.Open));
-            else
-                throw new InvalidOperationException("Both ask and bid stream are null!");
-        }
-    }
+    //internal class BacktesterTickFeed : IBacktesterFeed
+    //{
+    //    private IEnumerable<QuoteEntity> _stream;
 
-    internal class BacktesterTickFeed : IBacktesterFeed
-    {
-        private IEnumerable<QuoteEntity> _stream;
+    //    public BacktesterTickFeed(IEnumerable<QuoteEntity> stream)
+    //    {
+    //        _stream = stream ?? throw new ArgumentNullException("stream");
+    //    }
 
-        public BacktesterTickFeed(IEnumerable<QuoteEntity> stream)
-        {
-            _stream = stream ?? throw new ArgumentNullException("stream");
-        }
-
-        public IEnumerable<QuoteEntity> GetQuoteStream()
-        {
-            return _stream;
-        }
-    }
+    //    public IEnumerable<QuoteEntity> GetQuoteStream()
+    //    {
+    //        return _stream;
+    //    }
+    //}
 }

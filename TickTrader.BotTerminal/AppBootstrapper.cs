@@ -36,6 +36,9 @@ namespace TickTrader.BotTerminal
 
         private void ConfigureCaliburn()
         {
+            ViewLocator.AddDefaultTypeMapping("Page");
+            ViewLocator.AddDefaultTypeMapping("Dialog");
+
             ViewLocator.LocateForModelType = (modelType, displayLocation, context) =>
             {
                 var viewType = ViewLocator.LocateTypeForModelType(modelType, displayLocation, context);

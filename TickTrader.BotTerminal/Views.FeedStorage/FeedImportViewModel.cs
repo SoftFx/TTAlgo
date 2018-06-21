@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
-using CoreMath = TickTrader.Algo.Core.Math;
+using CoreMath = TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
 
                 foreach (var bar in importer.ImportBars())
                 {
-                    vector.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                    vector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
                     count++;
 
                     if (vector.Count >= pageSize + 1)

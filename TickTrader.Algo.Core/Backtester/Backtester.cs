@@ -9,38 +9,62 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class Backtester : IDisposable
+    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IAccountInfoProvider, IPluginMetadata
     {
-        private AlgoPluginRef _pluginRef;
-        private FeedEmulator _feed = new FeedEmulator();
-        private PluginExecutor _executor;
-        private EmulationControlFixture _control;
+        private static int IdSeed;
 
-        public Backtester(AlgoPluginRef pluginRef)
+        //private AlgoPluginRef _pluginRef;
+        private readonly FeedEmulator _feed = new FeedEmulator();
+        private readonly PluginExecutor _executor;
+        private EmulationControlFixture _control;
+        private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
+        private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
+        private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
+
+        public Backtester(AlgoPluginRef pluginRef, DateTime? from, DateTime? to)
         {
-            _pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
+            pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
+            _executor = pluginRef.CreateExecutor();
+            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
+            _executor.AccInfoProvider = this;
+            _executor.Metadata = this;
+
+            EmulationPeriodStart = from;
+            EmulationPeriodEnd = to;
+
+            _control = _executor.InitEmulation(EmulationPeriodStart ?? DateTime.MinValue);
+
+            Leverage = 100;
+            Initialbalance = 10000;
+            BalanceCurrency = "USD";
+            AccountType = AccountTypes.Gross;
         }
 
         public string MainSymbol { get; set; }
+        public AccountTypes AccountType { get; set; }
+        public string BalanceCurrency { get; set; }
+        public int Leverage { get; set; }
+        public double Initialbalance { get; set; }
+        public Dictionary<string, double> InitialAssets => _initialAssets;
+        public Dictionary<string, SymbolEntity> Symbols => _symbols;
+        public Dictionary<string, CurrencyEntity> Currencies => _currencies;
         public TimeFrames MainTimeframe { get; set; }
-        public DateTime? EmulationPeriodStart { get; set; }
-        public DateTime? EmulationPeriodEnd { get; set; }
+        public DateTime? EmulationPeriodStart { get; }
+        public DateTime? EmulationPeriodEnd { get; }
         public int EventsCount => _control?.Collector.EventsCount ?? 0;
+        public FeedEmulator Feed => _feed;
 
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
 
         public void Run(CancellationToken cToken)
         {
-            Dispose();
-
-            _executor = _pluginRef.CreateExecutor();
             _executor.InitSlidingBuffering(4000);
 
             _executor.MainSymbolCode = MainSymbol;
             _executor.TimeFrame = MainTimeframe;
-            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
-            _control = _executor.InitEmulation(EmulationPeriodStart ?? DateTime.MinValue);
-            
+            _executor.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
+            _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
+
             _executor.Start();
 
             _control.EmulateExecution();
@@ -51,22 +75,72 @@ namespace TickTrader.Algo.Core
             return _control.Collector.GetEvents();
         }
 
-        public void AddFeed(string symbol, IEnumerable<QuoteEntity> stream)
+        public void InitOutputCollection<T>(string id)
         {
-            _feed.AddFeedSource(symbol, new BacktesterTickFeed(stream));
+            _control.Collector.InitOutputCollection<T>(id);
         }
 
-        public void AddFeed(string symbol, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
+        public List<T> GetOutputBuffer<T>(string id)
         {
-            _feed.AddFeedSource(symbol, new BacktesterBarFeed(symbol, bidStream, askStream));
+            return _control.Collector.GetOutputBuffer<T>(id);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            base.Dispose();
+
             _control?.Dispose();
             _control = null;
             _executor?.Dispose();
-            _executor = null;
         }
+
+        #region IPluginSetupTarget
+
+        void IPluginSetupTarget.SetParameter(string id, object value)
+        {
+            _executor.SetParameter(id, value);
+        }
+
+        T IPluginSetupTarget.GetFeedStrategy<T>()
+        {
+            return _executor.GetFeedStrategy<T>();
+        }
+
+        #endregion
+
+        #region IAccountInfoProvider
+
+        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated { add { } remove { } }
+        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated { add { } remove { } }
+        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated { add { } remove { } }
+
+        void IAccountInfoProvider.SyncInvoke(Action action) => action();
+        List<OrderEntity> IAccountInfoProvider.GetOrders() => new List<OrderEntity>();
+        IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions() => new List<PositionExecReport>();
+
+        AccountEntity IAccountInfoProvider.AccountInfo
+        {
+            get
+            {
+                return new AccountEntity()
+                {
+                    Type = AccountType,
+                    Balance = Initialbalance,
+                    BalanceCurrency = BalanceCurrency,
+                    Id = "0",
+                    Assets = _initialAssets.Select(a => new AssetEntity(a.Value, a.Key)).ToArray(),
+                    Leverage = Leverage
+                };
+            }
+        }
+
+        #endregion
+
+        #region IPluginMetadata
+
+        IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => _symbols.Values;
+        IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => _currencies.Values;
+
+        #endregion
     }
 }

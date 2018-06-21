@@ -1,0 +1,156 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Resx/Styles.Classic/Charts.xaml" />
+        <ResourceDictionary Source="/Views.Chart/SeriesView.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <l:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter"/>
+
+    <Style x:Key="XAxisStyle" TargetType="s:AxisBase" BasedOn="{StaticResource AxisBaseStyle}">
+        <Setter Property="MajorGridLineStyle">
+            <Setter.Value>
+                <Style TargetType="Line">
+                    <Setter Property="Stroke" Value="{DynamicResource ChartGridLinesColor}"/>
+                    <Setter Property="StrokeThickness" Value="1"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="OverviewAxisStyle" TargetType="s:AxisBase">
+        <Setter Property="DrawLabels" Value="False"/>
+        <Setter Property="DrawMajorBands" Value="False"/>
+        <Setter Property="DrawMajorGridLines" Value="False"/>
+        <Setter Property="DrawMajorTicks" Value="False"/>
+        <Setter Property="DrawMinorGridLines" Value="False"/>
+        <Setter Property="DrawMinorTicks" Value="False"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+
+    <Style x:Key="OverviewScrollbarStyle" TargetType="s:SciChartScrollbar">
+        <!--<Setter Property="Orientation" Value="Horizontal" />-->
+        <Setter Property="GripsLength" Value="25" />
+        <Setter Property="GripsThickness" Value="5" />
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="ViewportStyle">
+            <Setter.Value>
+                <Style TargetType="Control">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="Gray"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="GripsStyle">
+            <Setter.Value>
+                <Style TargetType="Control">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Background" Value="LightGray"/>
+                    <Setter Property="Foreground" Value="Gray"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="NonSelectedAreaStyle">
+            <Setter.Value>
+                <Style TargetType="Path">
+                    <Setter Property="Fill" Value="Transparent" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="BacktesterChartPageTemplate.Classic" x:Shared="False">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <s:SciChartSurface x:Name="MainChartControl"
+                               Background="{TemplateBinding Background}"
+                               Style="{StaticResource MainChartStyle}"
+                               RenderableSeries="{s:SeriesBinding Series}">
+                <!--l:SciChartBehavior.XAxis="{Binding Chart.TimeAxis}"
+                                           l:SciChartBehavior.XAxisStyle="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
+                                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId}">-->
+
+                <s:SciChartSurface.ChartModifier>
+                    <!--<s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId}">-->
+                    <s:ModifierGroup>
+                        <!--<s:YAxisDragModifier/>
+                        <s:XAxisDragModifier/>-->
+                        <!--<s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>-->
+                        <!--<s:ZoomPanModifier ClipModeX="ClipAtExtents"/>-->
+                        <!--<s:TooltipModifier ShowTooltipOn="Always"/>-->
+                        <!--<s:CursorModifier ShowTooltipOn="Always"
+                                          ShowTooltip="True"
+                                          TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
+                                          IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>-->
+                    </s:ModifierGroup>
+                </s:SciChartSurface.ChartModifier>
+
+                <!--<s:SciChartSurface.ViewportManager>
+                    <l:CustomViewPortManager/>
+                </s:SciChartSurface.ViewportManager>-->
+
+                <s:SciChartSurface.XAxis>
+                    <s:CategoryDateTimeAxis Style="{StaticResource XAxisStyle}" GrowBy="0,0" />
+                </s:SciChartSurface.XAxis>
+
+                <s:SciChartSurface.YAxis>
+                    <s:NumericAxis Style="{StaticResource XAxisStyle}"
+                                   TextFormatting="{Binding YAxisLabelFormat}" CursorTextFormatting="{Binding YAxisLabelFormat}"
+                                   AutoRange="Always">
+                    </s:NumericAxis>
+                </s:SciChartSurface.YAxis>
+
+                <!--<s:SciChartSurface.Annotations>
+                                    <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                            Stroke="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
+                                    <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                            Stroke="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
+                                    <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                        Background="{DynamicResource RateUpColor}" Y1="{Binding Chart.CurrentAsk}"/>
+                                    <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                        Background="{DynamicResource RateDownColor}" Y1="{Binding Chart.CurrentBid}"/>
+                                </s:SciChartSurface.Annotations>-->
+
+            </s:SciChartSurface>
+
+            <!--<s:SciChartOverview Grid.Row="2" ParentSurface="{Binding ElementName=MainChartControl, Mode=OneWay}"
+                                SelectedRange="{Binding ElementName=MainChartControl, Path=XAxis.VisibleRange, Mode=TwoWay}"
+                                s:ThemeManager.Theme="Chrome"/>-->
+
+            <Grid Name="Overview" Grid.Row="1">
+
+                <s:SciChartSurface x:Name="OverviewSurface"
+                                   Background="{TemplateBinding Background}"
+                                   RenderableSeries="{s:SeriesBinding Series}">
+
+                    <s:SciChartSurface.XAxis>
+                        <s:CategoryDateTimeAxis Style="{StaticResource OverviewAxisStyle}" />
+                    </s:SciChartSurface.XAxis>
+
+                    <s:SciChartSurface.YAxis>
+                        <s:NumericAxis Style="{StaticResource OverviewAxisStyle}"/>
+                    </s:SciChartSurface.YAxis>
+
+                </s:SciChartSurface>
+
+                <s:SciChartScrollbar Style="{StaticResource OverviewScrollbarStyle}"
+                                     Axis="{Binding Path=XAxis, ElementName=MainChartControl}" Height="40" />
+
+            </Grid>
+
+        </Grid>
+    </ControlTemplate>
+
+    <Style x:Key="BacktesterChartPageStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BacktesterChartPageTemplate.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

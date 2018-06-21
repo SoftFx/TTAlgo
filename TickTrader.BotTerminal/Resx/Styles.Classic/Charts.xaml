@@ -3,6 +3,26 @@
                     xmlns:l="clr-namespace:TickTrader.BotTerminal"
                     xmlns:s="http://schemas.abtsoftware.co.uk/scichart">
 
+    <Style x:Key="AxisBaseStyle" TargetType="s:AxisBase">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="MajorGridLineStyle">
+            <Setter.Value>
+                <Style TargetType="Line">
+                    <Setter Property="Stroke" Value="YellowGreen"/>
+                    <Setter Property="StrokeThickness" Value="1"/>
+                    <Setter Property="X2" Value="4"/>
+                    <Setter Property="Y2" Value="4"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="GrowBy" Value="0.1, 0.1"/>
+        <Setter Property="DrawMinorGridLines" Value="False"/>
+        <Setter Property="DrawMajorTicks" Value="False"/>
+        <Setter Property="DrawMinorTicks" Value="False"/>
+        <Setter Property="DrawMajorBands" Value="False"/>
+        <Setter Property="MaxAutoTicks" Value="25"/>
+    </Style>
+
     <ControlTemplate x:Key="SymbolChartCursorTooltip_Template" TargetType="s:CursorLabelControl">
         <ControlTemplate.Resources>
             <Style x:Key="ToolTipTextStyle" TargetType="{x:Type TextBlock}">

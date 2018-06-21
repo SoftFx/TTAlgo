@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.BotTerminal
 {

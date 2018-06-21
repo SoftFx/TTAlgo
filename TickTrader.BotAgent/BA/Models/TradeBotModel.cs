@@ -229,14 +229,14 @@ namespace TickTrader.BotAgent.BA.Models
                 if (!(Config is BarBasedConfig))
                     throw new Exception("Unsupported configuration!");
 
-                var setupModel = new BarBasedPluginSetup(_ref);
+                var setupModel = new BarBasedPluginSetup(_ref, null);
                 setupModel.Load(Config);
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
-                executor.MainSymbolCode = setupModel.MainSymbol;
+                executor.MainSymbolCode = setupModel.MainSymbol.Name;
                 executor.TimeFrame = Algo.Api.TimeFrames.M1;
                 executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(1024);

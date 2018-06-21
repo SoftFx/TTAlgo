@@ -12,7 +12,6 @@ using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.RenderableSeries;
 using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
-using TickTrader.Algo.Core.Math;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
 
@@ -88,7 +87,7 @@ namespace TickTrader.BotTerminal
 
         protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
         {
-            return new BarBasedPluginSetup(catalogItem, SymbolCode, Algo.Api.BarPriceType.Bid, AlgoEnv);
+            return new BarBasedPluginSetup(catalogItem, Model, Algo.Api.BarPriceType.Bid, AlgoEnv);
         }
 
         protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)

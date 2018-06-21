@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Common.Model.Setup
     public abstract class InputSetup : PropertySetupBase
     {
         private ISymbolInfo _selectedSymbol;
-        private string _defaultSymbolCode;
+        private ISymbolInfo _defaultSymbol;
 
         public ISymbolInfo SelectedSymbol
         {
@@ -25,13 +25,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         public IReadOnlyList<ISymbolInfo> AvailableSymbols { get; private set; }
 
 
-        public InputSetup(InputDescriptor descriptor, string defaultSymbolCode, IReadOnlyList<ISymbolInfo> symbols)
+        public InputSetup(InputDescriptor descriptor, ISymbolInfo defaultSymbol, IReadOnlyList<ISymbolInfo> symbols)
         {
-            _defaultSymbolCode = defaultSymbolCode;
+            _defaultSymbol = defaultSymbol;
 
             SetMetadata(descriptor);
             if (symbols == null)
-                AvailableSymbols = new ISymbolInfo[] { new DummySymbolInfo(defaultSymbolCode) };
+                AvailableSymbols = new ISymbolInfo[] { defaultSymbol };
             else
                 AvailableSymbols = symbols;
         }
@@ -39,16 +39,14 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
+            SelectedSymbol = _defaultSymbol;
         }
 
         protected virtual void LoadConfig(Input input)
         {
             _selectedSymbol = AvailableSymbols.FirstOrDefault(s => s.Name == input.SelectedSymbol);
             if (_selectedSymbol == null)
-            {
-                _selectedSymbol = AvailableSymbols.First(s => s.Name == _defaultSymbolCode);
-            }
+                _selectedSymbol = _defaultSymbol;
         }
 
         protected virtual void SaveConfig(Input input)
@@ -69,7 +67,7 @@ namespace TickTrader.Algo.Common.Model.Setup
                     Error = new GuiModelMsg(error);
             }
 
-            public Invalid(InputDescriptor descriptor, string symbol, GuiModelMsg error)
+            public Invalid(InputDescriptor descriptor, ISymbolInfo symbol, GuiModelMsg error)
                 : base(descriptor, symbol, null)
             {
                 Error = error;
@@ -100,5 +98,6 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
         public string Name { get; private set; }
+        public string Id => Name;
     }
 }
