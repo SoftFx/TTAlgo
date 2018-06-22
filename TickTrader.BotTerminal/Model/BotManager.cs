@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, TradeBotModel> _bots;
 
 
-        public AlgoEnvironment AlgoEnv { get; }
+        public LocalAlgoAgent Agent { get; }
 
         public IVarSet<string, TradeBotModel> Bots => _bots;
 
@@ -30,9 +30,9 @@ namespace TickTrader.BotTerminal
         public event Action<TradeBotModel> StateChanged = delegate { };
 
 
-        public BotManager(AlgoEnvironment algoEnv)
+        public BotManager(LocalAlgoAgent agent)
         {
-            AlgoEnv = algoEnv;
+            Agent = agent;
             _bots = new VarDictionary<string, TradeBotModel>();
         }
 
@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
         public void AddBot(TradeBotModel botModel)
         {
             _bots.Add(botModel.InstanceId, botModel);
-            AlgoEnv.IdProvider.RegisterBot(botModel);
+            Agent.IdProvider.RegisterBot(botModel);
             botModel.StateChanged += StateChanged;
         }
 
@@ -64,7 +64,7 @@ namespace TickTrader.BotTerminal
             {
                 botModel.Remove();
                 _bots.Remove(instanceId);
-                AlgoEnv.IdProvider.UnregisterPlugin(instanceId);
+                Agent.IdProvider.UnregisterPlugin(instanceId);
                 botModel.StateChanged -= StateChanged;
             }
         }

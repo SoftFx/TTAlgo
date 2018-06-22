@@ -57,10 +57,10 @@ namespace TickTrader.BotTerminal
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
 
-        public ChartModelBase(SymbolModel symbol, LocalAlgoAgent agent)
+        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            Agent = agent;
+            AlgoEnv = algoEnv;
             this.Model = symbol;
             this.Journal = AlgoEnv.BotJournal;
 
@@ -97,10 +97,10 @@ namespace TickTrader.BotTerminal
             stateController.StateChanged += (o, n) => logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
-        protected LocalAlgoAgent Agent { get; }
+        protected LocalAlgoAgent Agent => AlgoEnv.LocalAgent;
         protected SymbolModel Model { get; private set; }
         protected TraderClientModel ClientModel => Agent.ClientModel;
-        protected AlgoEnvironment AlgoEnv => Agent.AlgoEnv;
+        protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
@@ -217,14 +217,14 @@ namespace TickTrader.BotTerminal
         {
             var indicator = CreateIndicator(config);
             indicators.Add(indicator);
-            AlgoEnv.IdProvider.RegisterIndicator(indicator);
+            Agent.IdProvider.RegisterIndicator(indicator);
         }
 
         public void RemoveIndicator(IndicatorModel i)
         {
             if (indicators.Remove(i))
             {
-                AlgoEnv.IdProvider.UnregisterPlugin(i.InstanceId);
+                Agent.IdProvider.UnregisterPlugin(i.InstanceId);
                 i.Dispose();
             }
         }

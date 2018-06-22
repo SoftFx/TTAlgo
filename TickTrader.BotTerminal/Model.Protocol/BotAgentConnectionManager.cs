@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
 
             BotAgent = new BotAgentModel();
             _protocolClient = new Algo.Protocol.Grpc.GrpcClient(BotAgent);
-            RemoteAgent = new RemoteAlgoAgent(_protocolClient, BotAgent);
+            RemoteAgent = new RemoteAlgoAgent(_protocolClient, this);
 
             _protocolClient.Connected += ClientOnConnected;
             _protocolClient.Disconnected += ClientOnDisconnected;

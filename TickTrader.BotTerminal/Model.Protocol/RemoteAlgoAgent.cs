@@ -13,11 +13,12 @@ namespace TickTrader.BotTerminal
     internal class RemoteAlgoAgent : IAlgoAgent
     {
         private ProtocolClient _protocolClient;
+        private BotAgentConnectionManager _connectionManager;
         private BotAgentModel _botAgent;
         private PluginIdProvider _idProvider;
 
 
-        public string Name => _protocolClient.SessionSettings.ServerAddress;
+        public string Name => _connectionManager.Creds.ServerAddress;
 
         public IVarSet<PackageKey, PackageInfo> Packages => _botAgent.Packages;
 
@@ -41,11 +42,12 @@ namespace TickTrader.BotTerminal
         public event Action<BotModelInfo> BotStateChanged;
 
 
-        public RemoteAlgoAgent(ProtocolClient protocolClient, BotAgentModel botAgent)
+        public RemoteAlgoAgent(ProtocolClient protocolClient, BotAgentConnectionManager connectionManager)
         {
             _protocolClient = protocolClient;
-            _botAgent = botAgent;
+            _connectionManager = connectionManager;
 
+            _botAgent = _connectionManager.BotAgent;
             Catalog = new PluginCatalog(this);
             _idProvider = new PluginIdProvider();
 

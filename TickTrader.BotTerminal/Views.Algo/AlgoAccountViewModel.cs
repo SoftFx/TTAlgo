@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
@@ -28,11 +29,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public string DisplayName { get; }
+
+        public IObservableList<AlgoBotViewModel> Bots { get; }
+
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
         {
             Info = info;
             Agent = agent;
+
+            DisplayName = $"{Info.Key.Server} - {Info.Key.Login}";
+            Bots = Agent.Bots.Where(b => BotIsAttachedToAccount(b)).AsObservable();
 
             Agent.Model.AccountStateChanged += OnAccountStateChanged;
         }
@@ -60,6 +68,11 @@ namespace TickTrader.BotTerminal
             {
                 NotifyOfPropertyChange(nameof(Status));
             }
+        }
+
+        private bool BotIsAttachedToAccount(AlgoBotViewModel bot)
+        {
+            return Info.Key.Equals(bot.Account);
         }
     }
 }

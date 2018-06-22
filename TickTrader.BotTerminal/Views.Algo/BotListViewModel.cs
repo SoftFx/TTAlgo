@@ -77,18 +77,16 @@ namespace TickTrader.BotTerminal
 
         public void Drop(object o)
         {
-            var algoBot = o as AlgoItemViewModel;
-            if (algoBot != null)
+            var algoBot = o as AlgoPluginViewModel;
+            if (algoBot != null && algoBot.Type == AlgoTypes.Robot)
             {
-                var pluginType = algoBot.PluginItem.Descriptor.Type;
-                if (pluginType == AlgoTypes.Robot)
-                    _botManager.OpenBotSetup(algoBot.PluginItem.Info);
+                _botManager.OpenBotSetup(algoBot.Info);
             }
         }
 
         public bool CanDrop(object o)
         {
-            return o is AlgoItemViewModel;
+            return o is AlgoPluginViewModel;
         }
 
         public void AddAccount(BotAgentViewModel botAgent)

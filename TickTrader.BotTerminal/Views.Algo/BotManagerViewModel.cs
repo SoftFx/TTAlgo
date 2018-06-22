@@ -30,16 +30,17 @@ namespace TickTrader.BotTerminal
 
         public TraderClientModel ClientModel => Agent.ClientModel;
 
-        public AlgoEnvironment AlgoEnv => Agent.AlgoEnv;
+        public AlgoEnvironment AlgoEnv { get; }
 
 
         private BotManager BotManagerModel => Agent.BotManager;
 
 
-        public BotManagerViewModel(IShell shell, PersistModel storage)
+        public BotManagerViewModel(AlgoEnvironment algoEnv, PersistModel storage)
         {
-            _shell = shell;
+            AlgoEnv = algoEnv;
             _preferences = storage.PreferencesStorage.StorageModel;
+            _shell = algoEnv.Shell;
 
             Bots = BotManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, this, false, false));
 

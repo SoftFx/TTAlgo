@@ -21,13 +21,21 @@ namespace TickTrader.BotTerminal
 
         public string Name => _agentModel.Name;
 
-        public IObservableList<AlgoPackageViewModel> Packages { get; }
+        public IVarList<AlgoPluginViewModel> Plugins { get; }
 
-        public IObservableList<AlgoPluginViewModel> Plugins { get; }
+        public IVarList<AlgoPackageViewModel> Packages { get; }
 
-        public IObservableList<AlgoAccountViewModel> Accounts { get; }
+        public IVarList<AlgoBotViewModel> Bots { get; }
 
-        public IObservableList<AlgoBotViewModel> Bots { get; }
+        public IVarList<AlgoAccountViewModel> Accounts { get; }
+
+        public IObservableList<AlgoPluginViewModel> PluginList { get; }
+
+        public IObservableList<AlgoPackageViewModel> PackageList { get; }
+
+        public IObservableList<AlgoBotViewModel> BotList { get; }
+
+        public IObservableList<AlgoAccountViewModel> AccountList { get; }
 
 
         public AlgoAgentViewModel(IShell shell, IAlgoAgent agentModel)
@@ -35,10 +43,15 @@ namespace TickTrader.BotTerminal
             _shell = shell;
             _agentModel = agentModel;
 
-            Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this)).AsObservable();
-            Plugins = _agentModel.Plugins.OrderBy((k, v) => k).Select(p => new AlgoPluginViewModel(p, this)).AsObservable();
-            Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this)).AsObservable();
-            Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this)).AsObservable();
+            Plugins = _agentModel.Plugins.OrderBy((k, v) => k).Select(p => new AlgoPluginViewModel(p, this));
+            Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this));
+            Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this));
+            Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this));
+
+            PluginList = Plugins.AsObservable();
+            PackageList = Packages.AsObservable();
+            BotList = Bots.AsObservable();
+            AccountList = Accounts.AsObservable();
         }
 
 

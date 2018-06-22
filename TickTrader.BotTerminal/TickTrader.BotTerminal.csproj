@@ -458,8 +458,6 @@
       <DependentUpon>BAAccountDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Protocol\BAAccountDialogViewModel.cs" />
-    <Compile Include="Views.Protocol\BAAccountViewModel.cs" />
-    <Compile Include="Views.Protocol\BABotViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentLoginDialogView.xaml.cs">
       <DependentUpon>BotAgentLoginDialogView.xaml</DependentUpon>
     </Compile>

@@ -9,55 +9,44 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Library;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoEnvironment : IAlgoSetupMetadata
+    internal class AlgoEnvironment
     {
-        private ReductionCollection _reductions;
-        private BotJournal _botJournal;
-        private PluginIdProvider _idProvider;
-        private MappingCollection _mappings;
-        private LocalAlgoLibrary _algoLibrary;
+        private VarList<AlgoAgentViewModel> _localAgentStub;
 
 
-        public BotJournal BotJournal => _botJournal;
+        public IShell Shell { get; }
 
-        public PluginIdProvider IdProvider => _idProvider;
+        public LocalAlgoAgent LocalAgent { get; }
 
-        public IReadOnlyList<ISymbolInfo> Symbols { get; private set; }
+        public BotAgentManager BotAgentManager { get; }
 
-        public MappingCollection Mappings => _mappings;
+        public BotJournal BotJournal { get; }
 
-        public LocalAlgoLibrary Library => _algoLibrary;
+        public AlgoAgentViewModel LocalAgentVM { get; }
+
+        public IVarList<BotAgentViewModel> BotAgents { get; }
+
+        public IVarList<AlgoAgentViewModel> Agents { get; }
 
 
-        IPluginIdProvider IAlgoSetupMetadata.IdProvider => _idProvider;
-
-
-        public AlgoEnvironment()
+        public AlgoEnvironment(IShell shell, LocalAlgoAgent localAgent, BotAgentManager botAgentManager)
         {
-            _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
-            _botJournal = new BotJournal(1000);
-            _idProvider = new PluginIdProvider();
-            _algoLibrary = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
+            Shell = shell;
+            LocalAgent = localAgent;
+            BotAgentManager = botAgentManager;
 
-            _algoLibrary.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, EnvService.Instance.AlgoRepositoryFolder);
-            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                _algoLibrary.RegisterRepositoryLocation(RepositoryLocation.CommonRepository, EnvService.Instance.AlgoCommonRepositoryFolder);
-            _algoLibrary.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
+            BotJournal = new BotJournal(1000);
+            ProfileResolver.Mappings = LocalAgent.Mappings;
 
-            _reductions.AddAssembly("TickTrader.Algo.Ext");
-            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, RepositoryLocation.LocalExtensions);
-
-            _mappings = new MappingCollection(_reductions);
-            ProfileResolver.Mappings = _mappings;
-        }
-
-
-        public void Init(IReadOnlyList<SymbolModel> symbolList)
-        {
-            Symbols = symbolList;
+            LocalAgentVM = new AlgoAgentViewModel(Shell, LocalAgent);
+            _localAgentStub = new VarList<AlgoAgentViewModel>();
+            _localAgentStub.Add(LocalAgentVM);
+            BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, Shell));
+            Agents = Dynamic.CombineChained(_localAgentStub, BotAgents.Select(b => b.Agent));
         }
     }
 }

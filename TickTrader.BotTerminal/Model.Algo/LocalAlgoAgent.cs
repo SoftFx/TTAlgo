@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using TickTrader.Algo.Common.Info;
@@ -8,6 +9,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,11 +17,13 @@ namespace TickTrader.BotTerminal
     {
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
 
+        private readonly ReductionCollection _reductions;
         private readonly MappingCollectionInfo _mappingsInfo;
         private ISyncContext _syncContext;
         private VarDictionary<PackageKey, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
         private VarDictionary<AccountKey, AccountModelInfo> _accounts;
+        private BotsWarden _botsWarden;
 
 
         public string Name => "Bot Terminal";
@@ -34,15 +38,17 @@ namespace TickTrader.BotTerminal
 
         public PluginCatalog Catalog { get; }
 
-        public IPluginIdProvider IdProvider => AlgoEnv.IdProvider;
+        IPluginIdProvider IAlgoAgent.IdProvider => IdProvider;
 
         public bool SupportsAccountManagement => false;
 
 
 
-        public AlgoEnvironment AlgoEnv { get; }
+        public PluginIdProvider IdProvider { get; }
 
-        public IAlgoLibrary Library => AlgoEnv.Library;
+        public MappingCollection Mappings { get; }
+
+        public LocalAlgoLibrary Library { get; }
 
         public TraderClientModel ClientModel { get; }
 
@@ -56,19 +62,20 @@ namespace TickTrader.BotTerminal
         public event Action<BotModelInfo> BotStateChanged;
 
 
-        public LocalAlgoAgent(AlgoEnvironment algoEnv, TraderClientModel clientModel, BotManager botManager)
+        public LocalAlgoAgent(TraderClientModel clientModel)
         {
-            AlgoEnv = algoEnv;
             ClientModel = clientModel;
-            BotManager = botManager;
 
+            _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
+            IdProvider = new PluginIdProvider();
+            Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
+            BotManager = new BotManager(this);
+            _botsWarden = new BotsWarden(BotManager);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<PackageKey, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
-            Bots = botManager.Bots.Select((k, v) => v.ToInfo());
-            Catalog = new PluginCatalog(this);
-            _mappingsInfo = AlgoEnv.Mappings.ToInfo();
+            Bots = BotManager.Bots.Select((k, v) => v.ToInfo());
 
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PluginUpdated += LibraryOnPluginUpdated;
@@ -76,6 +83,18 @@ namespace TickTrader.BotTerminal
             Library.Reset += LibraryOnReset;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
             BotManager.StateChanged += OnBotStateChanged;
+
+            Library.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
+            Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, EnvService.Instance.AlgoRepositoryFolder);
+            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
+                Library.RegisterRepositoryLocation(RepositoryLocation.CommonRepository, EnvService.Instance.AlgoCommonRepositoryFolder);
+
+            _reductions.AddAssembly("TickTrader.Algo.Ext");
+            _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, RepositoryLocation.LocalExtensions);
+
+            Mappings = new MappingCollection(_reductions);
+            _mappingsInfo = Mappings.ToInfo();
+            Catalog = new PluginCatalog(this);
         }
 
 
@@ -256,9 +275,9 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoSetupMetadata implementation
 
-        public MappingCollection Mappings => AlgoEnv.Mappings;
-
         public IReadOnlyList<ISymbolInfo> Symbols => ClientModel.ObservableSymbolList;
+
+        IPluginIdProvider IAlgoSetupMetadata.IdProvider => IdProvider;
 
         #endregion IAlgoSetupMetadata implementation
     }

@@ -40,29 +40,31 @@ namespace TickTrader.BotTerminal
         private ChartModelBase activeChart;
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
-        private readonly IShell shell;
+        private readonly IShell _shell;
+        private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
         private BotManagerViewModel _botManager;
         private IVarList<BotControlViewModel> _botsBySymbol;
 
 
-        public ChartViewModel(string chartId, string symbol, ChartPeriods period, IShell shell, BotManagerViewModel botManager)
+        public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
-            this.Symbol = symbol;
-            this.DisplayName = symbol;
-            this.shell = shell;
+            Symbol = symbol;
+            DisplayName = symbol;
+            _algoEnv = algoEnv;
             _botManager = botManager;
 
             ChartWindowId = chartId;
 
-            smb = shell.Agent.ClientModel.Symbols.GetOrDefault(symbol);
+            _shell = _algoEnv.Shell;
+            smb = _algoEnv.LocalAgent.ClientModel.Symbols.GetOrDefault(symbol);
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();
 
-            this.barChart = new BarChartModel(smb, shell.Agent);
-            this.tickChart = new TickChartModel(smb, shell.Agent);
+            this.barChart = new BarChartModel(smb, _algoEnv);
+            this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
@@ -152,9 +154,9 @@ namespace TickTrader.BotTerminal
         {
             base.TryClose(dialogResult);
 
-            Indicators.Foreach(i => shell.Agent.AlgoEnv.IdProvider.UnregisterPlugin(i.Model.InstanceId));
+            Indicators.Foreach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
-            shell.ToolWndManager.CloseWindowByKey(this);
+            _shell.ToolWndManager.CloseWindowByKey(this);
 
             barChart.Dispose();
             tickChart.Dispose();
@@ -162,7 +164,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenOrder()
         {
-            shell.OrderCommands.OpenMarkerOrder(Symbol);
+            _shell.OrderCommands.OpenMarkerOrder(Symbol);
         }
 
         public ChartStorageEntry GetSnapshot()
@@ -224,9 +226,9 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var model = new SetupPluginViewModel(shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
+                var model = new SetupPluginViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
                 if (!model.Setup.CanBeSkipped)
-                    shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+                    _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
                     AttachPlugin(model);
 
@@ -266,12 +268,10 @@ namespace TickTrader.BotTerminal
 
         public void Drop(object o)
         {
-            var algo = o as AlgoItemViewModel;
-            if (algo != null)
+            var plugin = o as AlgoPluginViewModel;
+            if (plugin != null && (plugin.Type == AlgoTypes.Indicator || plugin.Type == AlgoTypes.Robot))
             {
-                var pluginType = algo.PluginItem.Descriptor.Type;
-                if (pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot)
-                    OpenAlgoSetup(algo.PluginItem);
+                OpenAlgoSetup(new PluginCatalogItem(plugin.Agent.Model, plugin.Info));
             }
         }
 
@@ -299,13 +299,13 @@ namespace TickTrader.BotTerminal
 
         private void Chart_ParamsLocked()
         {
-            shell.ConnectionLock.Lock();
+            _shell.ConnectionLock.Lock();
             UiLock.Lock();
         }
 
         private void Chart_ParamsUnlocked()
         {
-            shell.ConnectionLock.Release();
+            _shell.ConnectionLock.Release();
             UiLock.Release();
         }
 
@@ -339,7 +339,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanDrop(object o)
         {
-            return o is AlgoItemViewModel;
+            return o is AlgoPluginViewModel;
         }
 
         private void UpdateLabelFormat()

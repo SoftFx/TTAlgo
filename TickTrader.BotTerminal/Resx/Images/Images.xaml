@@ -35,4 +35,7 @@
     <Geometry x:Key="TradeBot">M51,0 A 50,50 0,1,1 50,0 Z M38,20 A 30,15 0,1,1 38,50 Z M38,50 A 30,15 0,1,1 38,80 Z</Geometry>
     <Geometry x:Key="Indicator">M51,0 A 50,50 0,1,1 50,0 Z M30,20 L70,20 M30,80 L70,80 M50,20 L50,80</Geometry>
 
+    <Geometry x:Key="ClosedLock">M20,40 L20,80 L80,80 L80,40 Z M30,40 A10,15 180,1,1 70,40</Geometry>
+    <Geometry x:Key="OpenedLock">M51,0 A 50,50 0,1,1 50,0 Z M30,20 L70,20 M30,80 L70,80 M50,20 L50,80</Geometry>
+
 </ResourceDictionary>

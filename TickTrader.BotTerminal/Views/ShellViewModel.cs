@@ -29,11 +29,9 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
-        private BotsWarden botsWarden;
         private SymbolManagerViewModel _smbManager;
         private CustomFeedStorage _userSymbols = new CustomFeedStorage();
         private BotAgentManager _botAgentManager;
-        private BotManager _botManagerModel;
 
         public ShellViewModel(ClientModel.Data commonClient)
         {
@@ -46,21 +44,21 @@ namespace TickTrader.BotTerminal
             storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(storage);
 
+            ConnectionLock = new UiLock();
             wndManager = new WindowManager(this);
 
-            algoEnv = new AlgoEnvironment();
             cManager = new ConnectionManager(commonClient, storage, eventJournal);
             clientModel = new TraderClientModel(commonClient, eventJournal);
-            algoEnv.Init(clientModel.ObservableSymbolList);
 
-            _botManagerModel = new BotManager(algoEnv);
+            Agent = new LocalAlgoAgent(clientModel);
 
-            Agent = new LocalAlgoAgent(algoEnv, clientModel, _botManagerModel);
+            _botAgentManager = new BotAgentManager(storage);
 
-            BotManager = new BotManagerViewModel(this, storage);
+            algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 
-            ConnectionLock = new UiLock();
-            AlgoList = new AlgoListViewModel(Agent.Catalog);
+            BotManager = new BotManagerViewModel(algoEnv, storage);
+
+            AlgoList = new AlgoListViewModel(algoEnv);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             Trade = new TradeInfoViewModel(clientModel, cManager);
@@ -73,9 +71,6 @@ namespace TickTrader.BotTerminal
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
-            botsWarden = new BotsWarden(_botManagerModel);
-
-            _botAgentManager = new BotAgentManager(storage);
             BotList = new BotListViewModel(this, _botAgentManager, BotManager);
 
             AccountPane = new AccountPaneViewModel(cManager, this, this);
@@ -160,7 +155,7 @@ namespace TickTrader.BotTerminal
 
             if (ConnectionLock.IsLocked)
             {
-                var exit = new ExitDialogViewModel(_botManagerModel.HasRunningBots, ShootMode.Logout);
+                var exit = new ExitDialogViewModel(algoEnv.LocalAgent.BotManager.HasRunningBots, ShootMode.Logout);
                 wndManager.ShowDialog(exit, this);
 
                 isConfirmed = exit.IsConfirmed;
@@ -169,7 +164,7 @@ namespace TickTrader.BotTerminal
                     storage.ProfileManager.Stop();
                     if (exit.HasStartedBots)
                     {
-                        var shutdown = new ShutdownDialogViewModel(_botManagerModel);
+                        var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent.BotManager);
                         wndManager.ShowDialog(shutdown, this);
                     }
                 }
@@ -208,14 +203,14 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel(_botManagerModel.HasRunningBots, ShootMode.Exit);
+            var exit = new ExitDialogViewModel(algoEnv.LocalAgent.BotManager.HasRunningBots, ShootMode.Exit);
             wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
                 storage.ProfileManager.Stop();
                 if (exit.HasStartedBots)
                 {
-                    var shutdown = new ShutdownDialogViewModel(_botManagerModel);
+                    var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent.BotManager);
                     wndManager.ShowDialog(shutdown, this);
                 }
             }
@@ -435,7 +430,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Library, BotManager, DockManagerService);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.LocalAgent.Library, BotManager, DockManagerService);
             wndManager.ShowDialog(loading, this);
         }
 

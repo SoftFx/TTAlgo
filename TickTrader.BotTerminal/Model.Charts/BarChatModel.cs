@@ -26,8 +26,8 @@ namespace TickTrader.BotTerminal
         private Api.TimeFrames timeframe;
         private readonly BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, LocalAlgoAgent agent)
-            : base(symbol, agent)
+        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+            : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);

@@ -256,7 +256,7 @@
                                 </Style>
                             </HierarchicalDataTemplate.ItemContainerStyle>
                             <HierarchicalDataTemplate.ItemTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type l:BAAccountViewModel}" ItemsSource="{Binding Bots}">
+                                <HierarchicalDataTemplate DataType="{x:Type l:AlgoAccountViewModel}" ItemsSource="{Binding Bots}">
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Style="{StaticResource AccountStatusEllipseStyle}" />
                                         <TextBlock Text="{Binding AccountDisplayName}" ToolTip="{Binding Status}" />
@@ -267,7 +267,7 @@
                                         </Style>
                                     </HierarchicalDataTemplate.ItemContainerStyle>
                                     <HierarchicalDataTemplate.ItemTemplate>
-                                        <DataTemplate DataType="{x:Type l:BABotViewModel}">
+                                        <DataTemplate DataType="{x:Type l:AlgoBotViewModel}">
                                             <StackPanel Orientation="Horizontal">
                                                 <Ellipse Style="{StaticResource BotStateEllipseStyle}" />
                                                 <TextBlock Text="{Binding Path=InstanceId}" ToolTip="{Binding State}" />

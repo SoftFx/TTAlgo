@@ -11,58 +11,63 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoListViewModel : PropertyChangedBase
+    public enum AlgoListViewType
     {
-        public string[] AgentsStub { get; } = { "Bot Terminal", "localhost", "ds.st.soft-fx.eu", "ds_load.st.soft-fx.eu" };
-
-        public string[] ViewsStub { get; } = { "Plugins", "Packages" };
-
-        public string SelectedAgent { get; set; } = "Bot Terminal";
-
-        public string SelectedView { get; set; } = "Plugins";
-
-
-        public IObservableList<AlgoItemViewModel> Plugins { get; private set; }
-
-
-        public AlgoListViewModel(PluginCatalog catalog)
-        {
-            Plugins = catalog.PluginList
-                .Where(p => p.Key.PackageName != "ticktrader.algo.indicators.dll")
-                .Select(p => new AlgoItemViewModel(p))
-                .AsObservable();
-        }
+        Plugins = 0,
+        Packages = 1,
     }
 
 
-    internal class AlgoItemViewModel
+    internal class AlgoListViewModel : PropertyChangedBase
     {
-        public PluginCatalogItem PluginItem { get; }
-
-        public string Name { get; }
-
-        public string Group { get; }
-
-        public string Description { get; }
-
-        public string Category { get; }
-
-        public AlgoTypes Type { get; }
+        private AlgoAgentViewModel _selectedAgent;
+        private AlgoListViewType _selectedViewType;
 
 
-        public AlgoItemViewModel(PluginCatalogItem item)
+        public IObservableList<AlgoAgentViewModel> AvailableAgents { get; }
+
+        public AlgoAgentViewModel SelectedAgent
         {
-            PluginItem = item;
-            Name = item.Descriptor.UiDisplayName;
-            Description = string.Join(Environment.NewLine, item.Descriptor.Description, string.Empty, $"Package {item.Key.PackageName} at {item.Key.PackageLocation}").Trim();
-            Category = item.Descriptor.Category;
-            Type = item.Descriptor.Type;
-            switch (item.Descriptor.Type)
+            get { return _selectedAgent; }
+            set
             {
-                case AlgoTypes.Indicator: Group = "Indicators"; break;
-                case AlgoTypes.Robot: Group = "Bot Traders"; break;
-                default: Group = "Unknown type"; break;
+                if (_selectedAgent == value)
+                    return;
+
+                _selectedAgent = value;
+                NotifyOfPropertyChange(nameof(SelectedAgent));
+                NotifyOfPropertyChange(nameof(Packages));
+                NotifyOfPropertyChange(nameof(Plugins));
             }
+        }
+
+        public IObservableList<AlgoPackageViewModel> Packages => SelectedAgent.PackageList;
+
+        public IObservableList<AlgoPluginViewModel> Plugins => SelectedAgent.Plugins.Where(p => p.Key.PackageName != "ticktrader.algo.indicators.dll").AsObservable();
+
+        public AlgoListViewType[] AvaliableViewTypes { get; }
+
+        public AlgoListViewType SelectedViewType
+        {
+            get { return _selectedViewType; }
+            set
+            {
+                if (_selectedViewType == value)
+                    return;
+
+                _selectedViewType = value;
+                NotifyOfPropertyChange(nameof(SelectedViewType));
+            }
+        }
+
+
+        public AlgoListViewModel(AlgoEnvironment algoEnv)
+        {
+            AvailableAgents = algoEnv.Agents.AsObservable();
+            SelectedAgent = AvailableAgents.First();
+
+            AvaliableViewTypes = Enum.GetValues(typeof(AlgoListViewType)).Cast<AlgoListViewType>().ToArray();
+            SelectedViewType = AlgoListViewType.Plugins;
         }
     }
 }

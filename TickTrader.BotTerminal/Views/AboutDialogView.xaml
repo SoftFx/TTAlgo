@@ -18,7 +18,9 @@
 
         <Label Grid.Row="0" Content="TickTrader BotTerminal" VerticalAlignment="Center" Margin="10" FontSize="30"/>
         <Label Grid.Row="1" Content="{Binding Version}" VerticalAlignment="Center" Margin="10" HorizontalAlignment="Center"/>
-
+        <Canvas Grid.Row="1" Height="100" Width="100" >
+            <Path Data="{DynamicResource ClosedLock}" Stroke="{DynamicResource Shell_PrimaryForeground}"/>
+        </Canvas>
         <l:FlatButton Grid.Row="2" Grid.Column="0" Margin="5"
                       x:Name="Ok" Content="OK" IsDefault="True"
                       Background="{DynamicResource Dialog_ButtonBackground}"
