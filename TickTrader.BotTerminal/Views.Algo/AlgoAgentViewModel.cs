@@ -146,7 +146,20 @@ namespace TickTrader.BotTerminal
             try
             {
                 var model = new SetupPluginViewModel(_agentModel, bot);
-                _shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
+                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open bot setup");
+            }
+        }
+
+        public void OpenBotSetup(PluginInfo plugin)
+        {
+            try
+            {
+                var model = new SetupPluginViewModel(_agentModel, plugin.Key, plugin.Descriptor.Type, null);
+                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)
             {

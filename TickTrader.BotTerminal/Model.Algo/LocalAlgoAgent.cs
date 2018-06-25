@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         private BotsWarden _botsWarden;
 
 
-        public string Name => "Bot Terminal";
+        public string Name => "Local";
 
         public IVarSet<PackageKey, PackageInfo> Packages => _packages;
 

@@ -28,6 +28,7 @@
             <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="False"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Accounts}"
+                      DisplayMemberPath="Key"
                       SelectedValue="{Binding SelectedAccount}"/>
         </Grid>
     </ControlTemplate>

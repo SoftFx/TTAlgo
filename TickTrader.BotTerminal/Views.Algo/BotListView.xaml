@@ -4,7 +4,7 @@
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:l="clr-namespace:TickTrader.BotTerminal"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
+    xmlns:ci="clr-namespace:TickTrader.Algo.Common.Info;assembly=TickTrader.Algo.Common">
 
 
     <Style x:Key="StatusEllipseStyle" TargetType="Ellipse">
@@ -83,25 +83,25 @@
 
     <Style x:Key="BotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
         <Style.Triggers>
-            <DataTrigger Binding="{Binding State}" Value="Offline">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Offline}">
                 <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Starting">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Starting}">
                 <Setter Property="Fill" Value="Yellow"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Online">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Online}">
                 <Setter Property="Fill" Value="Green"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Stopping">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Stopping}">
                 <Setter Property="Fill" Value="Orange"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Reconnecting">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Reconnecting}">
                 <Setter Property="Fill" Value="Yellow"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Broken">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Broken}">
                 <Setter Property="Fill" Value="Red"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Faulted">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Faulted}">
                 <Setter Property="Fill" Value="Red"/>
             </DataTrigger>
         </Style.Triggers>
@@ -198,6 +198,9 @@
                   cal:Message.Attach="Remove"/>
     </ContextMenu>
 
+    <l:Behaviors x:Key="AgentBehaviors" x:Shared="false">
+        <l:DropBehavior/>
+    </l:Behaviors>
 
     <ControlTemplate x:Key="BotListView.Classic">
         <Border BorderThickness="0">
@@ -211,7 +214,8 @@
                     </CollectionViewSource>
                 </TreeView.Resources>
 
-                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}">
+                <TreeViewItem Header="Local" ItemsSource="{Binding Source={StaticResource LocalBotsViewSrc}}"
+                              l:StyleInteraction.Behaviors="{StaticResource AgentBehaviors}">
                     <TreeViewItem.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">
                             <Setter Property="ContextMenu" Value="{StaticResource LocalBotContextMenu}" />
@@ -225,11 +229,6 @@
                             </StackPanel>
                         </DataTemplate>
                     </TreeViewItem.ItemTemplate>
-
-                    <i:Interaction.Behaviors>
-                        <l:DropBehavior/>
-                    </i:Interaction.Behaviors>
-
                 </TreeViewItem>
 
                 <TreeViewItem Header="Bot Agents" ItemsSource="{Binding BotAgents}">
@@ -242,13 +241,14 @@
                         <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource ExpandedTreeViewItem}">
                             <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TreeViewItem, AncestorLevel=1}}"/>
                             <Setter Property="ContextMenu" Value="{StaticResource BotAgentContextMenu}" />
+                            <Setter Property="l:StyleInteraction.Behaviors" Value="{StaticResource AgentBehaviors}" />
                         </Style>
                     </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type l:BotAgentViewModel}" ItemsSource="{Binding Accounts}">
+                        <HierarchicalDataTemplate DataType="{x:Type l:BotAgentViewModel}" ItemsSource="{Binding Agent.AccountList}">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Style="{StaticResource BotAgentStatusEllipseStyle}" />
-                                <TextBlock Text="{Binding Server}" ToolTip="{Binding Status}"/>
+                                <TextBlock Text="{Binding Agent.Name}" ToolTip="{Binding Status}"/>
                             </StackPanel>
                             <HierarchicalDataTemplate.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">
@@ -259,7 +259,7 @@
                                 <HierarchicalDataTemplate DataType="{x:Type l:AlgoAccountViewModel}" ItemsSource="{Binding Bots}">
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Style="{StaticResource AccountStatusEllipseStyle}" />
-                                        <TextBlock Text="{Binding AccountDisplayName}" ToolTip="{Binding Status}" />
+                                        <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding Status}" />
                                     </StackPanel>
                                     <HierarchicalDataTemplate.ItemContainerStyle>
                                         <Style TargetType="TreeViewItem">

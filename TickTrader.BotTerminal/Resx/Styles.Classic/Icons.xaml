@@ -29,7 +29,7 @@
     <Path x:Key="TradeBotIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource TradeBot}" Stroke="Blue" />
     <Path x:Key="IndicatorIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource Indicator}" Stroke="DarkGreen" />
 
-    <Path x:Key="PackageLockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ClosedLock}" Fill="{DynamicResource ToolBarItem_ForegroundBrush}"/>
-    <Path x:Key="PackageUnlockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource OpenedLock}" Fill="{DynamicResource ToolBarItem_ForegroundBrush}"/>
+    <Path x:Key="PackageLockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ClosedLock}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
+    <Path x:Key="PackageUnlockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource OpenedLock}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
 
 </ResourceDictionary>
