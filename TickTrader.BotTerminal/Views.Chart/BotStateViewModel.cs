@@ -18,14 +18,14 @@ namespace TickTrader.BotTerminal
 {
     internal class BotStateViewModel : Screen
     {
-        private IShell _shell;
+        private AlgoEnvironment _algoEnv;
         private BotMessageFilter _botLogsFilter = new BotMessageFilter();
         private ObservableCollection<BotNameFilterEntry> _botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public BotStateViewModel(TradeBotModel bot, IShell shell)
+        public BotStateViewModel(TradeBotModel bot, AlgoEnvironment algoEnv)
         {
-            _shell = shell;
+            _algoEnv = algoEnv;
             this.Bot = bot;
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
@@ -140,22 +140,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenSettings()
         {
-            var key = $"BotSettings {Bot.InstanceId}";
-
-            _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
-            {
-                var pSetup = new SetupPluginViewModel(_shell.Agent, Bot.ToInfo());
-                pSetup.Closed += SetupPluginViewClosed;
-                return pSetup;
-            });
-        }
-
-        private void SetupPluginViewClosed(SetupPluginViewModel setupVM, bool dialogResult)
-        {
-            if (dialogResult)
-            {
-                Bot.Configurate(setupVM.GetConfig());
-            }
+            _algoEnv.LocalAgentVM.OpenBotSetup(Bot.ToInfo());
         }
 
         private void Bot_Removed(TradeBotModel bot)

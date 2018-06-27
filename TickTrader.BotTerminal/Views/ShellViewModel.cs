@@ -71,14 +71,14 @@ namespace TickTrader.BotTerminal
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
-            BotList = new BotListViewModel(this, _botAgentManager, BotManager);
+            BotList = new BotListViewModel(algoEnv, BotManager);
 
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
-            CanConnect = true;
             DockManagerService = new DockManagerService();
 
+            CanConnect = true;
             UpdateCommandStates();
             cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
             cManager.ConnectionStateChanged += (o, n) => UpdateCommandStates();

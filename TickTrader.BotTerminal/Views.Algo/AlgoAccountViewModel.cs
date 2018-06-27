@@ -8,6 +8,8 @@ namespace TickTrader.BotTerminal
     {
         public AccountModelInfo Info { get; }
 
+        public AccountKey Key => Info.Key;
+
         public AlgoAgentViewModel Agent { get; }
 
         public bool CanInteract => Agent.Model.SupportsAccountManagement;

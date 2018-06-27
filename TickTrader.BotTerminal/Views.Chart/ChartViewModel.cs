@@ -213,10 +213,10 @@ namespace TickTrader.BotTerminal
 
         public void OpenPlugin(object descriptorObj)
         {
-            OpenAlgoSetup((PluginCatalogItem)descriptorObj);
+            OpenAlgoSetup((AlgoPluginViewModel)descriptorObj);
         }
 
-        private void OpenAlgoSetup(PluginCatalogItem item)
+        private void OpenAlgoSetup(AlgoPluginViewModel item)
         {
             try
             {
@@ -226,7 +226,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                var model = new SetupPluginViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
+                var model = new LocalPluginSetupViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
                 if (!model.Setup.CanBeSkipped)
                     _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
@@ -240,7 +240,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void AttachPlugin(SetupPluginViewModel setupModel)
+        private void AttachPlugin(LocalPluginSetupViewModel setupModel)
         {
             if (setupModel == null)
             {
@@ -257,7 +257,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        void AlgoSetupClosed(SetupPluginViewModel setupModel, bool dlgResult)
+        void AlgoSetupClosed(LocalPluginSetupViewModel setupModel, bool dlgResult)
         {
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
@@ -271,7 +271,7 @@ namespace TickTrader.BotTerminal
             var plugin = o as AlgoPluginViewModel;
             if (plugin != null && (plugin.Type == AlgoTypes.Indicator || plugin.Type == AlgoTypes.Robot))
             {
-                OpenAlgoSetup(new PluginCatalogItem(plugin.Agent.Model, plugin.Info));
+                OpenAlgoSetup(plugin);
             }
         }
 

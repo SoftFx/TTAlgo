@@ -64,8 +64,8 @@ namespace TickTrader.BotTerminal
             this.Model = symbol;
             this.Journal = AlgoEnv.BotJournal;
 
-            AvailableIndicators = Agent.Catalog.Indicators.Chain().AsObservable();
-            AvailableBotTraders = Agent.Catalog.BotTraders.Chain().AsObservable();
+            AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Indicator).AsObservable();
+            AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
@@ -106,9 +106,9 @@ namespace TickTrader.BotTerminal
 
         public abstract Api.TimeFrames TimeFrame { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
-        public IObservableList<PluginCatalogItem> AvailableIndicators { get; private set; }
+        public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
-        public IObservableList<PluginCatalogItem> AvailableBotTraders { get; private set; }
+        public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }

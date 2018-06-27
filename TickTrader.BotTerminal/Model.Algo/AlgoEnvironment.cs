@@ -42,10 +42,10 @@ namespace TickTrader.BotTerminal
             BotJournal = new BotJournal(1000);
             ProfileResolver.Mappings = LocalAgent.Mappings;
 
-            LocalAgentVM = new AlgoAgentViewModel(Shell, LocalAgent);
+            LocalAgentVM = new AlgoAgentViewModel(LocalAgent, this);
             _localAgentStub = new VarList<AlgoAgentViewModel>();
             _localAgentStub.Add(LocalAgentVM);
-            BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, Shell));
+            BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, this));
             Agents = Dynamic.CombineChained(_localAgentStub, BotAgents.Select(b => b.Agent));
         }
     }

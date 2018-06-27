@@ -42,7 +42,7 @@ namespace TickTrader.BotTerminal
             _preferences = storage.PreferencesStorage.StorageModel;
             _shell = algoEnv.Shell;
 
-            Bots = BotManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, _shell, this, false, false));
+            Bots = BotManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, AlgoEnv, this, false, false));
 
             ClientModel.Connected += ClientModelOnConnected;
         }
@@ -50,35 +50,12 @@ namespace TickTrader.BotTerminal
 
         public void OpenBotSetup(PluginInfo item, IAlgoSetupContext context = null)
         {
-            try
-            {
-                var model = new SetupPluginViewModel(Agent, item.Key, AlgoTypes.Robot, (context ?? BotManagerModel).GetSetupContextInfo());
-                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
-                model.Closed += AlgoSetupClosed;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
+            AlgoEnv.LocalAgentVM.OpenBotSetup(item);
         }
 
         public void OpenBotSetup(TradeBotModel model)
         {
-            try
-            {
-                var key = $"BotSettings {model.InstanceId}";
-
-                _shell.ToolWndManager.OpenOrActivateWindow(key, () =>
-                {
-                    var pSetup = new SetupPluginViewModel(Agent, model.ToInfo());
-                    pSetup.Closed += AlgoSetupClosed;
-                    return pSetup;
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
+            AlgoEnv.LocalAgentVM.OpenBotSetup(model.ToInfo());
         }
 
         public void SaveBotsSnapshot(ProfileStorageModel profileStorage)
@@ -146,23 +123,7 @@ namespace TickTrader.BotTerminal
             Connected?.Invoke();
         }
 
-        private void AlgoSetupClosed(SetupPluginViewModel setupModel, bool dlgResult)
-        {
-            setupModel.Closed -= AlgoSetupClosed;
-            if (dlgResult)
-            {
-                if (setupModel.Setup.IsEditMode)
-                {
-                    UpdateBot(setupModel);
-                }
-                else
-                {
-                    AddBot(setupModel);
-                }
-            }
-        }
-
-        private void AddBot(SetupPluginViewModel setupModel)
+        private void AddBot(AgentPluginSetupViewModel setupModel)
         {
             AddBot(setupModel.GetConfig(), new AlgoSetupContextStub(setupModel.SetupContext), setupModel.RunBot);
         }
@@ -175,7 +136,7 @@ namespace TickTrader.BotTerminal
                 bot.Start();
         }
 
-        private void UpdateBot(SetupPluginViewModel setupModel)
+        private void UpdateBot(AgentPluginSetupViewModel setupModel)
         {
             BotManagerModel.ChangeBotConfig(setupModel.Bot.InstanceId, setupModel.GetConfig());
         }

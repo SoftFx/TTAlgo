@@ -8,7 +8,7 @@ namespace TickTrader.BotTerminal
 {
     internal class BotAgentViewModel : PropertyChangedBase, IDropHandler
     {
-        private IShell _shell;
+        private AlgoEnvironment _algoEnv;
 
 
         public BotAgentConnectionManager Connection { get; }
@@ -20,12 +20,12 @@ namespace TickTrader.BotTerminal
         public string Server { get; }
 
 
-        public BotAgentViewModel(BotAgentConnectionManager connection, IShell shell)
+        public BotAgentViewModel(BotAgentConnectionManager connection, AlgoEnvironment algoEnv)
         {
             Connection = connection;
-            _shell = shell;
+            _algoEnv = algoEnv;
 
-            Agent = new AlgoAgentViewModel(_shell, Connection.RemoteAgent);
+            Agent = new AlgoAgentViewModel(Connection.RemoteAgent, _algoEnv);
             Server = Connection.Creds.ServerAddress;
 
             Connection.StateChanged += ConnectionOnStateChanged;

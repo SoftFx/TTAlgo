@@ -6,7 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                
+
                 <!-- Caliburn bootstrapper-->
                 <ResourceDictionary>
                     <l:AppBootstrapper x:Key="bootstrapper" />
@@ -14,7 +14,7 @@
 
                 <!-- Converters -->
                 <ResourceDictionary Source="Resx/Converters.xaml"/>
-                
+
                 <!-- Images -->
                 <ResourceDictionary Source="Resx/Images/Images.xaml"/>
 
@@ -48,10 +48,11 @@
                 <ResourceDictionary Source="Views.Chart/BotControlView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
 
-                <ResourceDictionary Source="Views.Setup/SetupPluginView.xaml" />
-                
+                <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
+                <ResourceDictionary Source="Views.Setup/LocalPluginSetupView.xaml" />
+
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
-                
+
                 <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

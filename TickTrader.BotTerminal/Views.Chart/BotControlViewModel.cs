@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
 {
     internal class BotControlViewModel : PropertyChangedBase
     {
-        private IShell _shell;
+        private AlgoEnvironment _algoEnv;
         private BotManagerViewModel _botManager;
 
 
@@ -37,10 +37,10 @@ namespace TickTrader.BotTerminal
         public bool CanOpenChart => Model.PluginRef?.Metadata.Descriptor.SetupMainSymbol ?? false;
 
 
-        public BotControlViewModel(TradeBotModel model, IShell shell, BotManagerViewModel botManager, bool runBot, bool openState)
+        public BotControlViewModel(TradeBotModel model, AlgoEnvironment algoEnv, BotManagerViewModel botManager, bool runBot, bool openState)
         {
             Model = model;
-            _shell = shell;
+            _algoEnv = algoEnv;
             _botManager = botManager;
 
             model.StateChanged += BotStateChanged;
@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
             if (!manager.HasView(botId))
             {
 
-                var content = new BotStateViewModel(Model, _shell);
+                var content = new BotStateViewModel(Model, _algoEnv);
                 var view = new LayoutAnchorable { Title = botId, FloatingHeight = 300, FloatingWidth = 300, Content = content, ContentId = botId };
                 manager.AddView(botId, view);
                 manager.ShowView(botId);
@@ -101,7 +101,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenChart()
         {
-            _shell.ShowChart(Model.Config.MainSymbol, Model.Config.TimeFrame.Convert());
+            _algoEnv.Shell.ShowChart(Model.Config.MainSymbol, Model.Config.TimeFrame.Convert());
         }
 
         private void BotStateChanged(TradeBotModel model)

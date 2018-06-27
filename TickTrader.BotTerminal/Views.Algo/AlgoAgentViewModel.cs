@@ -13,8 +13,8 @@ namespace TickTrader.BotTerminal
     {
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private IShell _shell;
         private IAlgoAgent _agentModel;
+        private AlgoEnvironment _algoEnv;
 
 
         public IAlgoAgent Model => _agentModel;
@@ -38,10 +38,10 @@ namespace TickTrader.BotTerminal
         public IObservableList<AlgoAccountViewModel> AccountList { get; }
 
 
-        public AlgoAgentViewModel(IShell shell, IAlgoAgent agentModel)
+        public AlgoAgentViewModel(IAlgoAgent agentModel, AlgoEnvironment algoEnv)
         {
-            _shell = shell;
             _agentModel = agentModel;
+            _algoEnv = algoEnv;
 
             Plugins = _agentModel.Plugins.OrderBy((k, v) => k).Select(p => new AlgoPluginViewModel(p, this));
             Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this));
@@ -133,7 +133,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 var model = new BAAccountDialogViewModel(_agentModel, account);
-                _shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)
             {
@@ -145,8 +145,8 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new SetupPluginViewModel(_agentModel, bot);
-                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+                var key = $"{Name} BotSettings {bot.InstanceId}";
+                _algoEnv.Shell.ToolWndManager.OpenOrActivateWindow(key, () => new AgentPluginSetupViewModel(_algoEnv, Name, bot));
             }
             catch (Exception ex)
             {
@@ -158,8 +158,8 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new SetupPluginViewModel(_agentModel, plugin.Key, plugin.Descriptor.Type, null);
-                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor.Type, null);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)
             {

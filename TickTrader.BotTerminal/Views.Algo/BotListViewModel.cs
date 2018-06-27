@@ -11,8 +11,7 @@ namespace TickTrader.BotTerminal
     {
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private BotAgentManager _botAgentManager;
-        private IShell _shell;
+        private AlgoEnvironment _algoEnv;
         private BotManagerViewModel _botManager;
 
 
@@ -21,33 +20,29 @@ namespace TickTrader.BotTerminal
         public IObservableList<BotAgentViewModel> BotAgents { get; }
 
 
-        public BotListViewModel(IShell shell, BotAgentManager botAgentManager, BotManagerViewModel botManager)
+        public BotListViewModel(AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
-            _shell = shell;
-            _botAgentManager = botAgentManager;
+            _algoEnv = algoEnv;
             _botManager = botManager;
 
             LocalBots = _botManager.Bots.AsObservable();
 
-            BotAgents = _botAgentManager.BotAgents
-                .OrderBy((s, b) => s)
-                .Select(b => new BotAgentViewModel(b, _shell))
-                .AsObservable();
+            BotAgents = _algoEnv.BotAgents.AsObservable();
         }
 
 
         public void AddBotAgent()
         {
-            var viewModel = new BotAgentLoginDialogViewModel(_botAgentManager);
-            _shell.ToolWndManager.ShowDialog(viewModel);
+            var viewModel = new BotAgentLoginDialogViewModel(_algoEnv.BotAgentManager);
+            _algoEnv.Shell.ToolWndManager.ShowDialog(viewModel);
         }
 
         public void ChangeBotAgent(BotAgentViewModel connectionModel)
         {
             if (connectionModel != null)
             {
-                var viewModel = new BotAgentLoginDialogViewModel(_botAgentManager, connectionModel.Connection.Creds);
-                _shell.ToolWndManager.ShowDialog(viewModel);
+                var viewModel = new BotAgentLoginDialogViewModel(_algoEnv.BotAgentManager, connectionModel.Connection.Creds);
+                _algoEnv.Shell.ToolWndManager.ShowDialog(viewModel);
             }
         }
 
@@ -55,7 +50,7 @@ namespace TickTrader.BotTerminal
         {
             if (connectionModel != null)
             {
-                _botAgentManager.Remove(connectionModel.Server);
+                _algoEnv.BotAgentManager.Remove(connectionModel.Server);
             }
         }
 
@@ -63,7 +58,7 @@ namespace TickTrader.BotTerminal
         {
             if (connectionModel != null)
             {
-                _botAgentManager.Connect(connectionModel.Server);
+                _algoEnv.BotAgentManager.Connect(connectionModel.Server);
             }
         }
 
@@ -71,7 +66,7 @@ namespace TickTrader.BotTerminal
         {
             if (connectionModel != null)
             {
-                _botAgentManager.Disconnect(connectionModel.Server);
+                _algoEnv.BotAgentManager.Disconnect(connectionModel.Server);
             }
         }
 
@@ -80,59 +75,13 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null && algoBot.Type == AlgoTypes.Robot)
             {
-                _botManager.OpenBotSetup(algoBot.Info);
+                _algoEnv.LocalAgentVM.OpenBotSetup(algoBot.Info);
             }
         }
 
         public bool CanDrop(object o)
         {
             return o is AlgoPluginViewModel;
-        }
-
-        public void AddAccount(BotAgentViewModel botAgent)
-        {
-            try
-            {
-                var model = new BAAccountDialogViewModel(botAgent.Connection.RemoteAgent, null);
-                _shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-        }
-
-        public void AddBot(BotAgentViewModel botAgent)
-        {
-            try
-            {
-                var model = new SetupPluginViewModel(botAgent.Connection.RemoteAgent, null, AlgoTypes.Robot, botAgent.Connection.BotAgent.SetupContext);
-                _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
-                model.Closed += AlgoSetupClosed;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-        }
-
-
-        private void AlgoSetupClosed(SetupPluginViewModel setupModel, bool dlgResult)
-        {
-            setupModel.Closed -= AlgoSetupClosed;
-            if (dlgResult)
-            {
-                var remoteAgent = (RemoteAlgoAgent)setupModel.Agent;
-                var config = setupModel.GetConfig();
-                if (setupModel.Setup.IsEditMode)
-                {
-                    remoteAgent.ChangeBotConfig(setupModel.Setup.InstanceId, config);
-                }
-                else
-                {
-                    remoteAgent.AddBot(setupModel.SelectedAccount.Key, config);
-                }
-            }
         }
     }
 }

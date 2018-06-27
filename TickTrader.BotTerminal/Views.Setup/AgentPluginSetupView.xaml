@@ -23,13 +23,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="Plugin Host" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Agent.Name, Mode=OneWay}" IsEnabled="False" />
+            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="False"
+                      IsEnabled="{Binding IsNewMode}"
+                      ItemsSource="{Binding Agents}"
+                      DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedAgent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <Label Grid.Row="2" Grid.Column="0" Content="Account" />
-            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="False"
+            <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="False"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Accounts}"
-                      DisplayMemberPath="Key"
-                      SelectedValue="{Binding SelectedAccount}"/>
+                      DisplayMemberPath="DisplayName"
+                      SelectedItem="{Binding SelectedAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         </Grid>
     </ControlTemplate>
 
@@ -43,17 +47,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" />
-            <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="True"
+            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="True"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Plugins}"
-                      SelectedValue="{Binding SelectedPlugin}"
+                      SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       DisplayMemberPath="DisplayName"/>
         </Grid>
     </ControlTemplate>
 
     <!-- Old Template  -->
 
-    <ControlTemplate x:Key="SetupPluginView.Old">
+    <ControlTemplate x:Key="AgentPluginSetupView.Old">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -87,13 +91,13 @@
 
     <!-- Button Style  (Classic) -->
 
-    <Style x:Key="SetupPluginView.Classic.DlgButtonStyle" TargetType="Button">
+    <Style x:Key="AgentPluginSetupView.Classic.DlgButtonStyle" TargetType="Button">
         <Setter Property="Margin" Value="5"/>
     </Style>
 
     <!-- Classic Template  -->
 
-    <ControlTemplate x:Key="SetupPluginView.Classic">
+    <ControlTemplate x:Key="AgentPluginSetupView.Classic">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -125,6 +129,8 @@
                             <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
                         </Grid>
                     </GroupBox>
+
+                    <TextBlock TextWrapping="Wrap" Text="{Binding RequestError}" Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
                 </StackPanel>
             </ScrollViewer>
 
@@ -135,10 +141,10 @@
                 </Grid.ColumnDefinitions>
                 <Button Content="Ok" Grid.Column="0"
                         cal:Message.Attach="Ok"
-                        Style="{StaticResource SetupPluginView.Classic.DlgButtonStyle}"/>
+                        Style="{StaticResource AgentPluginSetupView.Classic.DlgButtonStyle}"/>
                 <Button Content="Cancel"
                         cal:Message.Attach="Cancel"
-                        Style="{StaticResource SetupPluginView.Classic.DlgButtonStyle}"
+                        Style="{StaticResource AgentPluginSetupView.Classic.DlgButtonStyle}"
                         Grid.Column="1"/>
             </Grid>
         </Grid>
@@ -160,7 +166,7 @@
 
     <!-- Common Style -->
 
-    <Style x:Key="SetupPluginViewStyle.Common" TargetType="Window">
+    <Style x:Key="AgentPluginSetupViewStyle.Common" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
@@ -170,8 +176,8 @@
 
     <!-- Old Style -->
 
-    <Style x:Key="SetupPluginViewStyle" TargetType="Window" BasedOn="{StaticResource SetupPluginViewStyle.Common}">
-        <Setter Property="Template" Value="{StaticResource SetupPluginView.Old}"/>
+    <Style x:Key="AgentPluginSetupViewStyle" TargetType="Window" BasedOn="{StaticResource AgentPluginSetupViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource AgentPluginSetupView.Old}"/>
         <Setter Property="MinHeight" Value="340"/>
         <Setter Property="MaxHeight" Value="600"/>
         <Setter Property="Height" Value="Auto" />
@@ -212,8 +218,8 @@
 
     <!-- Classic Style  -->
 
-    <Style x:Key="SetupPluginViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource SetupPluginViewStyle.Common}">
-        <Setter Property="Template" Value="{StaticResource SetupPluginView.Classic}"/>
+    <Style x:Key="AgentPluginSetupViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource AgentPluginSetupViewStyle.Common}">
+        <Setter Property="Template" Value="{StaticResource AgentPluginSetupView.Classic}"/>
         <Setter Property="Height" Value="Auto"/>
         <Setter Property="Width" Value="380"/>
         <Setter Property="ResizeMode" Value="NoResize"/>

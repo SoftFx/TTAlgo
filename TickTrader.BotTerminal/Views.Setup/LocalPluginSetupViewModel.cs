@@ -2,53 +2,25 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
-using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.Algo.Core;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
-using System.Threading;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class SetupPluginViewModel : Screen, IWindowModel
+    internal class LocalPluginSetupViewModel : Screen, IWindowModel
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private bool _dlgResult;
         private bool _runBot;
         private PluginCatalogItem _selectedPlugin;
-        private AccountModelInfo _selectedAccount;
-        private CancellationTokenSource _updateSetupMetadataSrc;
-        private TaskCompletionSource<SetupMetadata> _updateSetupMetadataTaskSrc;
-        private CancellationTokenSource _updateSetupCancelSrc;
 
 
         public IAlgoAgent Agent { get; }
 
         public SetupContextInfo SetupContext { get; }
-
-        public IObservableList<AccountModelInfo> Accounts { get; }
-
-        public AccountModelInfo SelectedAccount
-        {
-            get { return _selectedAccount; }
-            set
-            {
-                if (_selectedAccount == value)
-                    return;
-
-                _selectedAccount = value;
-                NotifyOfPropertyChange(nameof(SelectedAccount));
-                UpdateSetupMetadata();
-            }
-        }
 
         public IObservableList<PluginCatalogItem> Plugins { get; }
 
@@ -98,17 +70,14 @@ namespace TickTrader.BotTerminal
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
 
-        public event Action<SetupPluginViewModel, bool> Closed = delegate { };
+        public event Action<LocalPluginSetupViewModel, bool> Closed = delegate { };
 
 
-        private SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, PluginSetupMode mode)
+        private LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, AlgoTypes type, PluginSetupMode mode)
         {
             Agent = agent;
             Mode = mode;
             Type = type;
-
-            Accounts = Agent.Accounts.TransformToList().AsObservable();
-            SelectedAccount = Accounts.FirstOrDefault();
 
             switch (type)
             {
@@ -130,7 +99,7 @@ namespace TickTrader.BotTerminal
             RunBot = true;
         }
 
-        public SetupPluginViewModel(IAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext)
+        public LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, AlgoTypes type, SetupContextInfo setupContext)
             : this(agent, key, type, PluginSetupMode.New)
         {
             SetupContext = setupContext;
@@ -140,7 +109,7 @@ namespace TickTrader.BotTerminal
             Agent.Catalog.PluginList.Updated += AllPlugins_Updated;
         }
 
-        public SetupPluginViewModel(IAlgoAgent agent, BotModelInfo bot)
+        public LocalPluginSetupViewModel(LocalAlgoAgent agent, BotModelInfo bot)
             : this(agent, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
         {
             Bot = bot;
@@ -246,48 +215,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async void UpdateSetupMetadata()
-        {
-            if (SelectedAccount != null)
-            {
-                _updateSetupMetadataSrc?.Cancel();
-                _updateSetupMetadataSrc = new CancellationTokenSource();
-
-                var tcs = new TaskCompletionSource<SetupMetadata>();
-                _updateSetupMetadataTaskSrc = tcs;
-
-                var metadata = await Agent.GetSetupMetadata(SelectedAccount.Key, SetupContext);
-
-                if (_updateSetupMetadataSrc.IsCancellationRequested)
-                {
-                    tcs.SetCanceled();
-                    return;
-                }
-
-                tcs.SetResult(metadata);
-            }
-        }
-
-        private async void UpdateSetup()
+        private void UpdateSetup()
         {
             if (SelectedPlugin != null)
             {
-                _updateSetupCancelSrc?.Cancel();
-                _updateSetupCancelSrc = new CancellationTokenSource();
-
-                SetupMetadata metadata = null;
-                try
-                {
-                    metadata = await _updateSetupMetadataTaskSrc.Task;
-                }
-                catch (TaskCanceledException)
-                {
-                    UpdateSetup();
-                    return;
-                }
-
-                if (_updateSetupCancelSrc.IsCancellationRequested)
-                    return;
+                var metadata = Agent.GetSetupMetadata(null, SetupContext).Result;
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;

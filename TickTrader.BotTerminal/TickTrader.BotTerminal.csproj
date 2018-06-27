@@ -482,6 +482,7 @@
     <Compile Include="Views.Setup\Parameters\FileParamSetupViewModel.cs" />
     <Compile Include="Views.Setup\Parameters\GenericParameterSetupViewModel.cs" />
     <Compile Include="Views.Setup\Parameters\ParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\LocalPluginSetupViewModel.cs" />
     <Compile Include="Views.Setup\PluginSetupViewModel.cs" />
     <Compile Include="Views.Setup\PropertySetupViewModel.cs" />
     <Compile Include="Views.Setup\TradeBotSetupViewModel.cs" />
@@ -510,7 +511,7 @@
     </Compile>
     <Compile Include="Views\ChartCollectionViewModel.cs" />
     <Compile Include="Views.Chart\ChartViewModel.cs" />
-    <Compile Include="Views.Setup\SetupPluginViewModel.cs" />
+    <Compile Include="Views.Setup\AgentPluginSetupViewModel.cs" />
     <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
@@ -973,6 +974,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Setup\LocalPluginSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Setup\PluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1009,7 +1014,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Setup\SetupPluginView.xaml">
+    <Page Include="Views.Setup\AgentPluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
