@@ -72,6 +72,16 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.InternalServerError, Message = message ?? "" };
         }
 
+        public static Lib.RequestResult CreateErrorResult(Exception ex)
+        {
+            var aggregateEx = ex as AggregateException;
+            if (aggregateEx != null && aggregateEx.InnerExceptions.Count > 0)
+            {
+                return CreateErrorResult(aggregateEx.InnerExceptions[0].Message);
+            }
+            return CreateErrorResult(ex.Message);
+        }
+
 
         public void DisconnectAllClients()
         {
@@ -96,7 +106,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get packages list");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -111,7 +121,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get account list");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -126,7 +136,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get bot list");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -162,7 +172,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get api metadata");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -177,7 +187,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get mappings collection");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -192,7 +202,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get setup context");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -207,7 +217,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to get account metadata");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -222,7 +232,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to start bot");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -237,7 +247,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to stop bot");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -252,7 +262,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add bot");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
 
@@ -268,7 +278,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add bot");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
 
@@ -284,7 +294,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add bot");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
 
@@ -300,7 +310,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to add account");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -315,7 +325,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to remove account");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -330,7 +340,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to change account");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -345,7 +355,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to test account");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -360,7 +370,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to test account creds");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -375,7 +385,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to upload package");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -390,7 +400,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to remove package");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }
@@ -405,7 +415,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to download package");
-                res.ExecResult = CreateErrorResult(ex.Message);
+                res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
         }

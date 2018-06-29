@@ -23,6 +23,8 @@ namespace TickTrader.BotTerminal
 
         public SetupContextInfo SetupContext { get; private set; }
 
+        public PluginIdProvider IdProvider { get; }
+
 
         public IVarSet<PackageKey, PackageInfo> Packages => _packages;
 
@@ -48,6 +50,8 @@ namespace TickTrader.BotTerminal
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
             _bots = new VarDictionary<string, BotModelInfo>();
+
+            IdProvider = new PluginIdProvider();
         }
 
 
@@ -59,6 +63,7 @@ namespace TickTrader.BotTerminal
                 _plugins.Clear();
                 _accounts.Clear();
                 _bots.Clear();
+                IdProvider.Reset();
                 ApiMetadata = null;
                 Mappings = null;
                 SetupContext = null;
@@ -127,6 +132,7 @@ namespace TickTrader.BotTerminal
                 foreach (var bot in bots)
                 {
                     _bots.Add(bot.InstanceId, bot);
+                    IdProvider.RegisterBot(bot.InstanceId);
                 }
             });
         }
@@ -181,12 +187,18 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateType.Added:
+                        _bots.Add(bot.InstanceId, bot);
+                        IdProvider.RegisterBot(bot.InstanceId);
+                        break;
                     case UpdateType.Replaced:
                         _bots[bot.InstanceId] = bot;
                         break;
                     case UpdateType.Removed:
                         if (_bots.ContainsKey(bot.InstanceId))
+                        {
                             _bots.Remove(bot.InstanceId);
+                            IdProvider.UnregisterPlugin(bot.InstanceId);
+                        }
                         break;
                 }
             });

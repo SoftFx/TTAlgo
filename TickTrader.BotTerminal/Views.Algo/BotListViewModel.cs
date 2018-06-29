@@ -37,39 +37,6 @@ namespace TickTrader.BotTerminal
             _algoEnv.Shell.ToolWndManager.ShowDialog(viewModel);
         }
 
-        public void ChangeBotAgent(BotAgentViewModel connectionModel)
-        {
-            if (connectionModel != null)
-            {
-                var viewModel = new BotAgentLoginDialogViewModel(_algoEnv.BotAgentManager, connectionModel.Connection.Creds);
-                _algoEnv.Shell.ToolWndManager.ShowDialog(viewModel);
-            }
-        }
-
-        public void RemoveBotAgent(BotAgentViewModel connectionModel)
-        {
-            if (connectionModel != null)
-            {
-                _algoEnv.BotAgentManager.Remove(connectionModel.Server);
-            }
-        }
-
-        public void ConnectBotAgent(BotAgentViewModel connectionModel)
-        {
-            if (connectionModel != null)
-            {
-                _algoEnv.BotAgentManager.Connect(connectionModel.Server);
-            }
-        }
-
-        public void DisconnectBotAgent(BotAgentViewModel connectionModel)
-        {
-            if (connectionModel != null)
-            {
-                _algoEnv.BotAgentManager.Disconnect(connectionModel.Server);
-            }
-        }
-
         public void Drop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;

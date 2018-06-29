@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
@@ -159,6 +160,19 @@ namespace TickTrader.BotTerminal
             try
             {
                 var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor.Type, null);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open bot setup");
+            }
+        }
+
+        public void OpenBotSetup()
+        {
+            try
+            {
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, null, AlgoTypes.Robot, null);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)

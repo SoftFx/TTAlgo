@@ -15,7 +15,6 @@ namespace TickTrader.BotTerminal
         private ProtocolClient _protocolClient;
         private BotAgentConnectionManager _connectionManager;
         private BotAgentModel _botAgent;
-        private PluginIdProvider _idProvider;
 
 
         public string Name => _connectionManager.Creds.ServerAddress;
@@ -30,7 +29,7 @@ namespace TickTrader.BotTerminal
 
         public PluginCatalog Catalog { get; }
 
-        public IPluginIdProvider IdProvider => _idProvider;
+        public IPluginIdProvider IdProvider => _botAgent.IdProvider;
 
         public bool SupportsAccountManagement => true;
 
@@ -49,7 +48,6 @@ namespace TickTrader.BotTerminal
 
             _botAgent = _connectionManager.BotAgent;
             Catalog = new PluginCatalog(this);
-            _idProvider = new PluginIdProvider();
 
             _botAgent.PackageStateChanged += OnPackageStateChanged;
             _botAgent.AccountStateChanged += OnAccountStateChanged;

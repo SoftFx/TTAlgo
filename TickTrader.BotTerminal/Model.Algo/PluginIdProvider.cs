@@ -76,6 +76,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void Reset()
+        {
+            _bots.Clear();
+        }
+
 
         private string GenerateId(string pluginName, string suffix = "")
         {
