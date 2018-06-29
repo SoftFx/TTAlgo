@@ -67,20 +67,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.FDK.Common">
+    <Reference Include="TickTrader.FDK.Client">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.FDK.Common, Version=2.20.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SFX\TickTrader.FDK.Common.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.FDK.OrderEntry">
-      <HintPath>..\lib\SFX\TickTrader.FDK.OrderEntry.dll</HintPath>
+    <Reference Include="TickTrader.FDK.Extended">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Extended.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.FDK.QuoteFeed">
-      <HintPath>..\lib\SFX\TickTrader.FDK.QuoteFeed.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.QuoteStore">
-      <HintPath>..\lib\SFX\TickTrader.FDK.QuoteStore.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.TradeCapture">
-      <HintPath>..\lib\SFX\TickTrader.FDK.TradeCapture.dll</HintPath>
+    <Reference Include="TickTrader.FDK.Standard">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Standard.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

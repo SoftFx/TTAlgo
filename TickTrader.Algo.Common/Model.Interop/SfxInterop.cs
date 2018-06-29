@@ -13,8 +13,6 @@ using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
 using API = TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
-using TickTrader.FDK.QuoteStore;
-using TickTrader.FDK.TradeCapture;
 using ActorSharp;
 
 namespace TickTrader.Algo.Common.Model
@@ -34,10 +32,10 @@ namespace TickTrader.Algo.Common.Model
         public bool AutoAccountInfo => false;
         public bool AutoSymbols => false;
 
-        private FDK.QuoteFeed.Client _feedProxy;
-        private FDK.QuoteStore.Client _feedHistoryProxy;
-        private FDK.OrderEntry.Client _tradeProxy;
-        private FDK.TradeCapture.Client _tradeHistoryProxy;
+        private FDK.Client.QuoteFeed _feedProxy;
+        private FDK.Client.QuoteStore _feedHistoryProxy;
+        private FDK.Client.OrderEntry _tradeProxy;
+        private FDK.Client.TradeCapture _tradeHistoryProxy;
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
         
@@ -52,10 +50,14 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy", options.EnableLogs, 5030, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
-            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", options.EnableLogs, 5050, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
-            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", options.EnableLogs, 5040, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
-            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", options.EnableLogs, 5060, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
+            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, 5030,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, 5050,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, 5040,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, 5060,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
 
             _feedProxy.InitTaskAdapter();
             _tradeProxy.InitTaskAdapter();

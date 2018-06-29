@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Common.Model
     {
         #region Quote
 
-        public static void InitTaskAdapter(this FDK.QuoteFeed.Client client)
+        public static void InitTaskAdapter(this FDK.Client.QuoteFeed client)
         {
             client.ConnectResultEvent += (c, d) => SetCompleted(d);
             client.ConnectErrorEvent += (c, d, ex) => SetFailed(d, ex);
@@ -39,45 +39,45 @@ namespace TickTrader.Algo.Common.Model
             client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
         }
 
-        public static Task ConnectAsync(this FDK.QuoteFeed.Client client, string address)
+        public static Task ConnectAsync(this FDK.Client.QuoteFeed client, string address)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.ConnectAsync(taskSrc, address);
             return taskSrc.Task;
         }
 
-        public static Task LoginAsync(this FDK.QuoteFeed.Client client, string username, string password, string deviceId, string appId, string sessionId)
+        public static Task LoginAsync(this FDK.Client.QuoteFeed client, string username, string password, string deviceId, string appId, string sessionId)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
             return taskSrc.Task;
         }
 
-        public static Task<CurrencyInfo[]> GetCurrencyListAsync(this FDK.QuoteFeed.Client client)
+        public static Task<CurrencyInfo[]> GetCurrencyListAsync(this FDK.Client.QuoteFeed client)
         {
             var taskSrc = new TaskCompletionSource<CurrencyInfo[]>();
             client.GetCurrencyListAsync(taskSrc);
             return taskSrc.Task;
         }
 
-        public static Task<SymbolInfo[]> GetSymbolListAsync(this FDK.QuoteFeed.Client client)
+        public static Task<SymbolInfo[]> GetSymbolListAsync(this FDK.Client.QuoteFeed client)
         {
             var taskSrc = new TaskCompletionSource<SymbolInfo[]>();
             client.GetSymbolListAsync(taskSrc);
             return taskSrc.Task;
         }
 
-        public static Task<QuoteEntity[]> SubscribeQuotesAsync(this FDK.QuoteFeed.Client client, string[] symbolIds, int marketDepth)
+        public static Task<QuoteEntity[]> SubscribeQuotesAsync(this FDK.Client.QuoteFeed client, string[] symbolIds, int marketDepth)
         {
             var taskSrc = new TaskCompletionSource<QuoteEntity[]>();
-            client.SubscribeQuotesAsync(taskSrc, symbolIds, marketDepth);
+            client.SubscribeQuotesAsync(taskSrc, GetSymbolEntries(symbolIds, marketDepth));
             return taskSrc.Task;
         }
 
-        public static Task<Quote[]> GetQuotesAsync(this FDK.QuoteFeed.Client client, string[] symbolIds, int marketDepth)
+        public static Task<Quote[]> GetQuotesAsync(this FDK.Client.QuoteFeed client, string[] symbolIds, int marketDepth)
         {
             var taskSrc = new TaskCompletionSource<Quote[]>();
-            client.GetQuotesAsync(taskSrc, symbolIds, marketDepth);
+            client.GetQuotesAsync(taskSrc, GetSymbolEntries(symbolIds, marketDepth));
             return taskSrc.Task;
         }
 
@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Quote History
 
-        public static void InitTaskAdapter(this FDK.QuoteStore.Client client)
+        public static void InitTaskAdapter(this FDK.Client.QuoteStore client)
         {
             client.ConnectResultEvent += (c, d) => SetCompleted(d);
             client.ConnectErrorEvent += (c, d, ex) => SetFailed(d, ex);
@@ -101,21 +101,21 @@ namespace TickTrader.Algo.Common.Model
             //client.BarDownloadErrorEvent += (c, d, ex) => ((BlockingChannel<BarEntity>)d)?.Close(ex);
         }
 
-        public static Task ConnectAsync(this FDK.QuoteStore.Client client, string address)
+        public static Task ConnectAsync(this FDK.Client.QuoteStore client, string address)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.ConnectAsync(taskSrc, address);
             return taskSrc.Task;
         }
 
-        public static Task LoginAsync(this FDK.QuoteStore.Client client, string username, string password, string deviceId, string appId, string sessionId)
+        public static Task LoginAsync(this FDK.Client.QuoteStore client, string username, string password, string deviceId, string appId, string sessionId)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
             return taskSrc.Task;
         }
 
-        public static Task<Bar[]> GetBarListAsync(this FDK.QuoteStore.Client client, string symbol, PriceType priceType, BarPeriod barPeriod, DateTime from, int count)
+        public static Task<Bar[]> GetBarListAsync(this FDK.Client.QuoteStore client, string symbol, PriceType priceType, BarPeriod barPeriod, DateTime from, int count)
         {
             var taskSrc = new TaskCompletionSource<Bar[]>();
             client.GetBarListAsync(taskSrc, symbol, priceType, barPeriod, from, count);
@@ -131,7 +131,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Trade
 
-        public static void InitTaskAdapter(this FDK.OrderEntry.Client client)
+        public static void InitTaskAdapter(this FDK.Client.OrderEntry client)
         {
             client.ConnectResultEvent += (c, d) => SetCompleted(d);
             client.ConnectErrorEvent += (c, d, ex) => SetFailed(d, ex);
@@ -166,40 +166,40 @@ namespace TickTrader.Algo.Common.Model
             client.ClosePositionByErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
         }
 
-        public static Task ConnectAsync(this FDK.OrderEntry.Client client, string address)
+        public static Task ConnectAsync(this FDK.Client.OrderEntry client, string address)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.ConnectAsync(taskSrc, address);
             return taskSrc.Task;
         }
 
-        public static Task LoginAsync(this FDK.OrderEntry.Client client, string username, string password, string deviceId, string appId, string sessionId)
+        public static Task LoginAsync(this FDK.Client.OrderEntry client, string username, string password, string deviceId, string appId, string sessionId)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
             return taskSrc.Task;
         }
 
-        public static Task<AccountInfo> GetAccountInfoAsync(this FDK.OrderEntry.Client client)
+        public static Task<AccountInfo> GetAccountInfoAsync(this FDK.Client.OrderEntry client)
         {
             var taskSrc = new TaskCompletionSource<AccountInfo>();
             client.GetAccountInfoAsync(taskSrc);
             return taskSrc.Task;
         }
 
-        public static void GetOrdersAsync(this FDK.OrderEntry.Client client, BlockingChannel<ExecutionReport> stream)
+        public static void GetOrdersAsync(this FDK.Client.OrderEntry client, BlockingChannel<ExecutionReport> stream)
         {
             client.GetOrdersAsync(stream);
         }
 
-        public static Task<Position[]> GetPositionsAsync(this FDK.OrderEntry.Client client)
+        public static Task<Position[]> GetPositionsAsync(this FDK.Client.OrderEntry client)
         {
             var taskSrc = new TaskCompletionSource<Position[]>();
             client.GetPositionsAsync(taskSrc);
             return taskSrc.Task;
         }
 
-        public static Task<List<FDK2.ExecutionReport>> NewOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string symbol, OrderType type, OrderSide side,
+        public static Task<List<FDK2.ExecutionReport>> NewOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic)
         {
@@ -208,14 +208,14 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<List<FDK2.ExecutionReport>> CancelOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId)
+        public static Task<List<FDK2.ExecutionReport>> CancelOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string origClientOrderId, string orderId)
         {
             var taskSrc = new OrderResultSource();
             client.CancelOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId);
             return taskSrc.Task;
         }
 
-        public static Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(this FDK.OrderEntry.Client client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
+        public static Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
             OrderSide side, double newQty, double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
             double? takeProfit, string comment, string tag, int? magic)
         {
@@ -224,14 +224,14 @@ namespace TickTrader.Algo.Common.Model
             return taskSrc.Task;
         }
 
-        public static Task<List<FDK2.ExecutionReport>> ClosePositionAsync(this FDK.OrderEntry.Client client, string clientOrderId, string orderId, double? qty)
+        public static Task<List<FDK2.ExecutionReport>> ClosePositionAsync(this FDK.Client.OrderEntry client, string clientOrderId, string orderId, double? qty)
         {
             var taskSrc = new OrderResultSource();
             client.ClosePositionAsync(taskSrc, clientOrderId, orderId, qty);
             return taskSrc.Task;
         }
 
-        public static Task<List<FDK2.ExecutionReport>> ClosePositionByAsync(this FDK.OrderEntry.Client client, string clientOrderId, string orderId, string byOrderId)
+        public static Task<List<FDK2.ExecutionReport>> ClosePositionByAsync(this FDK.Client.OrderEntry client, string clientOrderId, string orderId, string byOrderId)
         {
             var taskSrc = new OrderResultSource();
             client.ClosePositionByAsync(taskSrc, clientOrderId, orderId, byOrderId);
@@ -242,7 +242,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Trade History
 
-        public static void InitTaskAdapter(this FDK.TradeCapture.Client client)
+        public static void InitTaskAdapter(this FDK.Client.TradeCapture client)
         {
             client.ConnectResultEvent += (c, d) => SetCompleted(d);
             client.ConnectErrorEvent += (c, d, ex) => SetFailed(d, ex);
@@ -250,36 +250,37 @@ namespace TickTrader.Algo.Common.Model
             client.LoginResultEvent += (c, d) => SetCompleted(d);
             client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
             
-            client.SubscribeTradesResultEvent += (c, d) => SetCompleted(d);
+            client.SubscribeTradesResultEvent += (c, d, r) => { }; // Required for SubscribeTradesResultEndEvent to work(should be fixed after 2.24.66). Just ignore trade reports we wil request them later with another request
+            client.SubscribeTradesResultEndEvent += (c, d) => SetCompleted(d);
             client.SubscribeTradesErrorEvent += (c, d, ex) => SetFailed(d, ex);
 
-            client.TradeDownloadResultEvent += (c, d, r) => ((BlockingChannel<TradeReportEntity>)d).Write(SfxInterop.Convert(r));
-            client.TradeDownloadResultEndEvent += (c, d) => ((BlockingChannel<TradeReportEntity>)d).Close();
-            client.TradeDownloadErrorEvent += (c, d, ex) => ((BlockingChannel<TradeReportEntity>)d).Close(ex);
+            client.DownloadTradesResultEvent += (c, d, r) => ((BlockingChannel<TradeReportEntity>)d).Write(SfxInterop.Convert(r));
+            client.DownloadTradesResultEndEvent += (c, d) => ((BlockingChannel<TradeReportEntity>)d).Close();
+            client.DownloadTradesErrorEvent += (c, d, ex) => ((BlockingChannel<TradeReportEntity>)d).Close(ex);
         }
 
-        public static Task ConnectAsync(this FDK.TradeCapture.Client client, string address)
+        public static Task ConnectAsync(this FDK.Client.TradeCapture client, string address)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.ConnectAsync(taskSrc, address);
             return taskSrc.Task;
         }
 
-        public static Task LoginAsync(this FDK.TradeCapture.Client client, string username, string password, string deviceId, string appId, string sessionId)
+        public static Task LoginAsync(this FDK.Client.TradeCapture client, string username, string password, string deviceId, string appId, string sessionId)
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
             return taskSrc.Task;
         }
 
-        public static Task SubscribeTradesAsync(this FDK.TradeCapture.Client client, bool skipCancel)
+        public static Task SubscribeTradesAsync(this FDK.Client.TradeCapture client, bool skipCancel)
         {
             var taskSrc = new TaskCompletionSource<object>();
-            client.SubscribeTradesAsync(taskSrc, skipCancel);
+            client.SubscribeTradesAsync(taskSrc, DateTime.UtcNow.AddMinutes(5), skipCancel); // Request 0 trade reports, we will download them later with separate request
             return taskSrc.Task;
         }
 
-        public static void DownloadTradesAsync(this FDK.TradeCapture.Client client, TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
+        public static void DownloadTradesAsync(this FDK.Client.TradeCapture client, TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
             BlockingChannel<TradeReportEntity> stream)
         {
             client.DownloadTradesAsync(stream, timeDirection, from, to, skipCancel);
@@ -301,6 +302,16 @@ namespace TickTrader.Algo.Common.Model
 
         private static void SetOrderFail(object state, Exception ex)
         {
+            var eex = ex as ExecutionException;
+            if (eex != null)
+            {
+                var report = eex.Report;
+                if (report.OrderType == OrderType.Market && report.OrderStatus == FDK2.OrderStatus.Rejected && report.InitialVolume != report.LeavesVolume)
+                {
+                    ((OrderResultSource)state).OnReport(report);
+                    return;
+                }
+            }
             ((OrderResultSource)state).SetException(Convert(ex));
         }
 
@@ -348,6 +359,11 @@ namespace TickTrader.Algo.Common.Model
             if (ex is FDK2.TimeoutException)
                 return new InteropException(ex.Message, ConnectionErrorCodes.Timeout);
             return ex;
+        }
+
+        private static FDK2.SymbolEntry[] GetSymbolEntries(string[] symbolIds, int marketDepth)
+        {
+            return symbolIds.Select(id => new FDK2.SymbolEntry { Id = id, MarketDepth = (ushort)marketDepth }).ToArray();
         }
 
         #endregion
