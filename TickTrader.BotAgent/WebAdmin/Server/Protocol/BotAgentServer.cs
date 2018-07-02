@@ -152,7 +152,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public byte[] DownloadPackage(PackageKey package)
         {
-            return new byte[0];
+            return _botAgent.DownloadPackage(package);
         }
 
 

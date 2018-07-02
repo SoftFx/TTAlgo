@@ -56,11 +56,11 @@ namespace TickTrader.BotTerminal
 
         Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
 
-        Task UploadPackage(string fileName, byte[] packageBinary);
+        Task UploadPackage(string fileName, string srcFilePath);
 
         Task RemovePackage(PackageKey package);
 
-        Task<byte[]> DownloadPackage(PackageKey package);
+        Task DownloadPackage(PackageKey package, string dstFilePath);
     }
 
 

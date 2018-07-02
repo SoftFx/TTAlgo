@@ -15,6 +15,7 @@ namespace TickTrader.BotAgent.BA
         List<PackageInfo> GetPackages();
         PackageInfo GetPackage(string package);
         void UpdatePackage(byte[] fileContent, string fileName);
+        byte[] DownloadPackage(PackageKey package);
         void RemovePackage(string package);
         void RemovePackage(PackageKey package);
         List<PluginInfo> GetAllPlugins();

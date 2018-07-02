@@ -71,6 +71,15 @@ namespace TickTrader.BotAgent.BA.Repository
             SavePackage(packageName, packageContent);
         }
 
+        public byte[] GetPackageBinary(PackageKey package)
+        {
+            var packageRef = Library.GetPackageRef(package);
+            if (packageRef == null)
+                throw new ArgumentException("Package not found");
+
+            return File.ReadAllBytes(packageRef.Identity.FilePath);
+        }
+
         public AlgoPackageRef GetPackageRef(string packageName)
         {
             return GetPackageRef(GetPackageKey(packageName));

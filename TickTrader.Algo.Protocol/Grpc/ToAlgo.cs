@@ -705,6 +705,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new PackageIdentity
             {
                 FileName = identity.FileName,
+                FilePath = identity.FilePath,
                 CreatedUtc = identity.CreatedUtc.ToDateTime(),
                 LastModifiedUtc = identity.LastModifiedUtc.ToDateTime(),
                 Size = identity.Size,

@@ -180,5 +180,57 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Failed to open bot setup");
             }
         }
+
+        public void OpenUploadPackageDialog()
+        {
+            try
+            {
+                var model = new UploadPackageViewModel(_algoEnv, Name);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open upload package dialog");
+            }
+        }
+
+        public void OpenUploadPackageDialog(PackageKey packageKey)
+        {
+            try
+            {
+                var model = new UploadPackageViewModel(_algoEnv, packageKey, Name);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open upload package dialog");
+            }
+        }
+
+        public void OpenDownloadPackageDialog()
+        {
+            try
+            {
+                var model = new DownloadPackageViewModel(_algoEnv, Name);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open download package dialog");
+            }
+        }
+
+        public void OpenDownloadPackageDialog(PackageKey packageKey)
+        {
+            try
+            {
+                var model = new DownloadPackageViewModel(_algoEnv, packageKey, Name);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open download package dialog");
+            }
+        }
     }
 }

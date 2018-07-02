@@ -40,15 +40,30 @@ namespace TickTrader.BotTerminal
         public void Drop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Type == AlgoTypes.Robot)
+            if (algoBot != null)
             {
                 _algoEnv.LocalAgentVM.OpenBotSetup(algoBot.Info);
+            }
+            var algoPackage = o as AlgoPackageViewModel;
+            if (algoPackage != null)
+            {
+                algoPackage.Agent.OpenDownloadPackageDialog(algoPackage.Key);
             }
         }
 
         public bool CanDrop(object o)
         {
-            return o is AlgoPluginViewModel;
+            var algoBot = o as AlgoPluginViewModel;
+            if (algoBot != null && algoBot.Agent.Name == _algoEnv.LocalAgentVM.Name && algoBot.Type == AlgoTypes.Robot)
+            {
+                return true;
+            }
+            var algoPackage = o as AlgoPackageViewModel;
+            if (algoPackage != null && algoPackage.Agent.Name != _algoEnv.LocalAgentVM.Name)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

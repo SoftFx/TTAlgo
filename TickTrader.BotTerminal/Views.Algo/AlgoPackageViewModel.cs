@@ -12,6 +12,10 @@ namespace TickTrader.BotTerminal
         public AlgoAgentViewModel Agent { get; }
 
 
+        public PackageKey Key => Info.Key;
+
+        public PackageIdentity Identity => Info.Identity;
+
         public bool IsValid => Info.IsValid;
 
         public bool IsLocked => Info.IsLocked;
@@ -19,6 +23,8 @@ namespace TickTrader.BotTerminal
         public RepositoryLocation Location => Info.Key.Location;
 
         public string DisplayName => Info.Identity.FileName;
+
+        public string FilePath => Info.Identity.FilePath;
 
         public IObservableList<AlgoPluginViewModel> Plugins { get; }
 

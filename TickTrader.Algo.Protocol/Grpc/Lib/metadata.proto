@@ -16,10 +16,11 @@ message PluginInfo
 message PackageIdentity
 {
 	string file_name = 1;
-	google.protobuf.Timestamp created_utc = 2;
-	google.protobuf.Timestamp last_modified_utc = 3;
-	int64 size = 4;
-	string hash = 5;
+	string file_path = 2;
+	google.protobuf.Timestamp created_utc = 3;
+	google.protobuf.Timestamp last_modified_utc = 4;
+	int64 size = 5;
+	string hash = 6;
 }
 
 message PackageInfo

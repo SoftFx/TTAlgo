@@ -64,6 +64,7 @@ namespace TickTrader.BotAgent.BA.Models
             public List<PackageInfo> GetPackages() => CallActor(a => a.GetPackages());
             public PackageInfo GetPackage(string package) => CallActor(a => a.GetPackage(package));
             public void UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
+            public byte[] DownloadPackage(PackageKey package) => CallActor(a => a.DownloadPackage(package));
             public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
             public void RemovePackage(PackageKey package) => CallActor(a => a.RemovePackage(package));
             public List<PluginInfo> GetAllPlugins() => CallActor(a => a.GetAllPlugins());
@@ -435,6 +436,11 @@ namespace TickTrader.BotAgent.BA.Models
         private void UpdatePackage(byte[] fileContent, string fileName)
         {
             _packageStorage.Update(fileContent, fileName);
+        }
+
+        private byte[] DownloadPackage(PackageKey package)
+        {
+            return _packageStorage.GetPackageBinary(package);
         }
 
         private void RemovePackage(string package)

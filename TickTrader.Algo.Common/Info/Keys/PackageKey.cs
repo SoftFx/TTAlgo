@@ -41,9 +41,9 @@ namespace TickTrader.Algo.Common.Info
 
         public int CompareTo(PackageKey other)
         {
-            var res = Name.CompareTo(other.Name);
+            var res = Location.CompareTo(other.Location);
             if (res == 0)
-                return Location.CompareTo(other.Location);
+                return Name.CompareTo(other.Name);
             return res;
         }
     }

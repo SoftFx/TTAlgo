@@ -6,7 +6,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Repository
 {
-    internal class PackageWatcher : IDisposable
+    public class PackageWatcher : IDisposable
     {
         public enum States { Created, Loading, WatingForRetry, Ready, Closing, Closed }
 
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core.Repository
             Location = location;
             _logger = logger;
 
-            PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName), null);
+            PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
 
             _stateControl = new StateMachine<States>();
 
@@ -113,7 +113,7 @@ namespace TickTrader.Algo.Core.Repository
                     {
                         PackageRef?.SetObsolete(); // mark old package obsolete, so it is disposed after all running plugins are gracefully stopped
                         var container = LoadContainer(filePath, out retry);
-                        var identity = PackageIdentity.CreateInvalid(info);
+                        var identity = CreateIdentity(info, out retry);
                         PackageRef = new IsolatedAlgoPackageRef(FileName, Location, identity, container);
                         _currentFileInfo = info;
                         _logger.Info("Loaded package " + FileName);
@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core.Repository
             catch (Exception ex)
             {
                 _logger?.Error($"Failed to update package {FileName} at {Location}", ex);
-                PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName), null);
+                PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
             }
 
             OnPackageUpdated();

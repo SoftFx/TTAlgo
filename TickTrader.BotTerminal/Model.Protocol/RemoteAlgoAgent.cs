@@ -1,5 +1,6 @@
 ﻿using Machinarium.Qnil;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
@@ -111,9 +112,10 @@ namespace TickTrader.BotTerminal
             return _protocolClient.TestAccountCreds(account, password, useNewProtocol);
         }
 
-        public Task UploadPackage(string fileName, byte[] packageBinary)
+        public Task UploadPackage(string fileName, string srcFilePath)
         {
-            return _protocolClient.UploadPackage(fileName, packageBinary);
+            var bytes = File.ReadAllBytes(srcFilePath);
+            return _protocolClient.UploadPackage(fileName, bytes);
         }
 
         public Task RemovePackage(PackageKey package)
@@ -121,9 +123,10 @@ namespace TickTrader.BotTerminal
             return _protocolClient.RemovePackage(package);
         }
 
-        public Task<byte[]> DownloadPackage(PackageKey package)
+        public async Task DownloadPackage(PackageKey package, string dstFilePath)
         {
-            return _protocolClient.DownloadPackage(package);
+            var bytes = await _protocolClient.DownloadPackage(package);
+            File.WriteAllBytes(dstFilePath, bytes);
         }
 
 

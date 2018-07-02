@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -161,21 +162,52 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task UploadPackage(string fileName, byte[] packageBinary)
+        public Task UploadPackage(string fileName, string srcFilePath)
         {
-            //_protocolClient.UploadPackage(fileName, packageBinary);
+            var dstFilePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, fileName);
+            File.Copy(srcFilePath, dstFilePath, true);
             return Task.FromResult(this);
         }
 
         public Task RemovePackage(PackageKey package)
         {
-            // _protocolClient.RemovePackage(package);
+            string filePath = null;
+            switch (package.Location)
+            {
+                case RepositoryLocation.LocalRepository:
+                    filePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, package.Name);
+                    break;
+                case RepositoryLocation.LocalExtensions:
+                    filePath = Path.Combine(EnvService.Instance.AlgoExtFolder, package.Name);
+                    break;
+                case RepositoryLocation.CommonRepository:
+                    filePath = Path.Combine(EnvService.Instance.AlgoCommonRepositoryFolder, package.Name);
+                    break;
+                default:
+                    throw new ArgumentException("Can't resolve path to package location");
+            }
+            File.Delete(filePath);
             return Task.FromResult(this);
         }
 
-        public Task<byte[]> DownloadPackage(PackageKey package)
+        public Task DownloadPackage(PackageKey package, string dstFilePath)
         {
-            // _protocolClient.DownloadPackage(package);
+            string srcFilePath = null;
+            switch (package.Location)
+            {
+                case RepositoryLocation.LocalRepository:
+                    srcFilePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, package.Name);
+                    break;
+                case RepositoryLocation.LocalExtensions:
+                    srcFilePath = Path.Combine(EnvService.Instance.AlgoExtFolder, package.Name);
+                    break;
+                case RepositoryLocation.CommonRepository:
+                    srcFilePath = Path.Combine(EnvService.Instance.AlgoCommonRepositoryFolder, package.Name);
+                    break;
+                default:
+                    throw new ArgumentException("Can't resolve path to package location");
+            }
+            File.Copy(srcFilePath, dstFilePath, true);
             return Task.FromResult(new byte[0]);
         }
 

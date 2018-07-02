@@ -9,6 +9,8 @@ namespace TickTrader.Algo.Core.Repository
     {
         public string FileName { get; set; }
 
+        public string FilePath { get; set; }
+
         public DateTime CreatedUtc { get; set; }
 
         public DateTime LastModifiedUtc { get; set; }
@@ -17,14 +19,15 @@ namespace TickTrader.Algo.Core.Repository
 
         public string Hash { get; set; }
 
-        public bool IsValid => Hash.Length == 32;
+        public bool IsValid => Hash.Length == 64;
 
 
         public PackageIdentity() { }
 
-        public PackageIdentity(string fileName, DateTime createdUtc, DateTime lastModifiedUtc, long size, string hash)
+        public PackageIdentity(string fileName, string filePath, DateTime createdUtc, DateTime lastModifiedUtc, long size, string hash)
         {
             FileName = fileName;
+            FilePath = filePath;
             CreatedUtc = createdUtc;
             LastModifiedUtc = lastModifiedUtc;
             Size = size;
@@ -44,17 +47,17 @@ namespace TickTrader.Algo.Core.Repository
             {
                 sb.AppendFormat("{0:x2}", b);
             }
-            return new PackageIdentity(info.Name, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, sb.ToString());
+            return new PackageIdentity(info.Name, info.FullName, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, sb.ToString());
         }
 
         public static PackageIdentity CreateInvalid(FileInfo info)
         {
-            return new PackageIdentity(info.Name, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, "");
+            return new PackageIdentity(info.Name, info.FullName, info.CreationTimeUtc, info.LastWriteTimeUtc, info.Length, "");
         }
 
-        public static PackageIdentity CreateInvalid(string fileName)
+        public static PackageIdentity CreateInvalid(string fileName, string filePath)
         {
-            return new PackageIdentity(fileName, DateTime.UtcNow, DateTime.UtcNow, -1, "");
+            return new PackageIdentity(fileName, filePath, DateTime.UtcNow, DateTime.UtcNow, -1, "");
         }
     }
 }

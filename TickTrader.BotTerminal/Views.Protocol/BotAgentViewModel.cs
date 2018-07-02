@@ -35,15 +35,30 @@ namespace TickTrader.BotTerminal
         public void Drop(object o)
         {
             var algoBot = o as AlgoPluginViewModel;
-            if (algoBot != null && algoBot.Type == AlgoTypes.Robot)
+            if (algoBot != null)
             {
                 Agent.OpenBotSetup(algoBot.Info);
+            }
+            var algoPackage = o as AlgoPackageViewModel;
+            if (algoPackage != null)
+            {
+                Agent.OpenUploadPackageDialog(algoPackage.Key);
             }
         }
 
         public bool CanDrop(object o)
         {
-            return o is AlgoPluginViewModel;
+            var algoBot = o as AlgoPluginViewModel;
+            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == AlgoTypes.Robot)
+            {
+                return true;
+            }
+            var algoPackage = o as AlgoPackageViewModel;
+            if (algoPackage != null && algoPackage.Agent.Name == _algoEnv.LocalAgentVM.Name)
+            {
+                return true;
+            }
+            return false;
         }
 
         public void ChangeBotAgent()
@@ -76,6 +91,16 @@ namespace TickTrader.BotTerminal
         public void AddBot()
         {
             Agent.OpenBotSetup();
+        }
+
+        public void UploadPackage()
+        {
+            Agent.OpenUploadPackageDialog();
+        }
+
+        public void DownloadPackage()
+        {
+            Agent.OpenDownloadPackageDialog();
         }
 
 

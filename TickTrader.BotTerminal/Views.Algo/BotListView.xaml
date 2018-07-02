@@ -169,6 +169,12 @@
         <MenuItem Header="Add Bot"
                   cal:Message.Attach="AddBot"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Upload Package"
+                  cal:Message.Attach="UploadPackage"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Download Package"
+                  cal:Message.Attach="DownloadPackage"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
     </ContextMenu>
 
     <ContextMenu x:Key="RemoteAccountContextMenu">
