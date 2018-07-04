@@ -237,7 +237,7 @@ namespace TickTrader.Algo.Common.Model
                     return OnOrderRemoved(report, OrderExecAction.Expired);
 
                 case ExecutionType.Canceled:
-                    return OnOrderRemoved(report, OrderExecAction.Canceled);
+                    return OnOrderCanceled(report, OrderExecAction.Canceled);
 
                 case ExecutionType.Rejected:
                     return OnOrderRejected(report, OrderExecAction.Rejected);
@@ -329,6 +329,11 @@ namespace TickTrader.Algo.Common.Model
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.None);
             //ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
             //OrderUpdate?.Invoke(report, null, algoAction);
+        }
+
+        private OrderUpdateAction OnOrderCanceled(ExecutionReport report, OrderExecAction algoAction)
+        {
+            return new OrderUpdateAction(report, algoAction, report.ImmediateOrCancel ? OrderEntityAction.None : OrderEntityAction.Removed);
         }
 
         #endregion

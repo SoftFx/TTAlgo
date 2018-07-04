@@ -23,6 +23,11 @@ namespace TickTrader.Algo.Common.Model
             client.LoginResultEvent += (c, d) => SetCompleted(d);
             client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
 
+            client.LogoutResultEvent += (c, d, i) => SetCompleted(d, i);
+            client.LogoutErrorEvent += (c, d, ex) => SetFailed<LogoutInfo>(d, ex);
+
+            client.DisconnectResultEvent += (c, d, t) => SetCompleted(d, t);
+
             client.QuotesResultEvent += (c, d, r) => SetCompleted(d, SfxInterop.Convert(r));
             client.QuotesErrorEvent += (c, d, ex) => SetFailed<QuoteEntity[]>(d, ex);
 
@@ -50,6 +55,20 @@ namespace TickTrader.Algo.Common.Model
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
+            return taskSrc.Task;
+        }
+
+        public static Task LogoutAsync(this FDK.Client.QuoteFeed client, string message)
+        {
+            var taskSrc = new TaskCompletionSource<LogoutInfo>();
+            client.LogoutAsync(taskSrc, message);
+            return taskSrc.Task;
+        }
+
+        public static Task DisconnectAsync(this FDK.Client.QuoteFeed client, string text)
+        {
+            var taskSrc = new TaskCompletionSource<string>();
+            client.DisconnectAsync(taskSrc, text);
             return taskSrc.Task;
         }
 
@@ -92,7 +111,12 @@ namespace TickTrader.Algo.Common.Model
 
             client.LoginResultEvent += (c, d) => SetCompleted(d);
             client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
-            
+
+            client.LogoutResultEvent += (c, d, i) => SetCompleted(d, i);
+            client.LogoutErrorEvent += (c, d, ex) => SetFailed<LogoutInfo>(d, ex);
+
+            client.DisconnectResultEvent += (c, d, t) => SetCompleted(d, t);
+
             client.BarListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.BarListErrorEvent += (c, d, ex) => SetFailed<Bar[]>(d, ex);
 
@@ -112,6 +136,20 @@ namespace TickTrader.Algo.Common.Model
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
+            return taskSrc.Task;
+        }
+
+        public static Task LogoutAsync(this FDK.Client.QuoteStore client, string message)
+        {
+            var taskSrc = new TaskCompletionSource<LogoutInfo>();
+            client.LogoutAsync(taskSrc, message);
+            return taskSrc.Task;
+        }
+
+        public static Task DisconnectAsync(this FDK.Client.QuoteStore client, string text)
+        {
+            var taskSrc = new TaskCompletionSource<string>();
+            client.DisconnectAsync(taskSrc, text);
             return taskSrc.Task;
         }
 
@@ -138,6 +176,11 @@ namespace TickTrader.Algo.Common.Model
 
             client.LoginResultEvent += (c, d) => SetCompleted(d);
             client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
+
+            client.LogoutResultEvent += (c, d, i) => SetCompleted(d, i);
+            client.LogoutErrorEvent += (c, d, ex) => SetFailed<LogoutInfo>(d, ex);
+
+            client.DisconnectResultEvent += (c, d, t) => SetCompleted(d, t);
 
             client.AccountInfoResultEvent += (c, d, r) => SetCompleted(d, r);
             client.AccountInfoErrorEvent += (c, d, ex) => SetFailed<AccountInfo>(d, ex);
@@ -177,6 +220,20 @@ namespace TickTrader.Algo.Common.Model
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
+            return taskSrc.Task;
+        }
+
+        public static Task LogoutAsync(this FDK.Client.OrderEntry client, string message)
+        {
+            var taskSrc = new TaskCompletionSource<LogoutInfo>();
+            client.LogoutAsync(taskSrc, message);
+            return taskSrc.Task;
+        }
+
+        public static Task DisconnectAsync(this FDK.Client.OrderEntry client, string text)
+        {
+            var taskSrc = new TaskCompletionSource<string>();
+            client.DisconnectAsync(taskSrc, text);
             return taskSrc.Task;
         }
 
@@ -249,7 +306,12 @@ namespace TickTrader.Algo.Common.Model
 
             client.LoginResultEvent += (c, d) => SetCompleted(d);
             client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
-            
+
+            client.LogoutResultEvent += (c, d, i) => SetCompleted(d, i);
+            client.LogoutErrorEvent += (c, d, ex) => SetFailed<LogoutInfo>(d, ex);
+
+            client.DisconnectResultEvent += (c, d, t) => SetCompleted(d, t);
+
             client.SubscribeTradesResultEvent += (c, d, r) => { }; // Required for SubscribeTradesResultEndEvent to work(should be fixed after 2.24.66). Just ignore trade reports we wil request them later with another request
             client.SubscribeTradesResultEndEvent += (c, d) => SetCompleted(d);
             client.SubscribeTradesErrorEvent += (c, d, ex) => SetFailed(d, ex);
@@ -270,6 +332,20 @@ namespace TickTrader.Algo.Common.Model
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
+            return taskSrc.Task;
+        }
+
+        public static Task LogoutAsync(this FDK.Client.TradeCapture client, string message)
+        {
+            var taskSrc = new TaskCompletionSource<LogoutInfo>();
+            client.LogoutAsync(taskSrc, message);
+            return taskSrc.Task;
+        }
+
+        public static Task DisconnectAsync(this FDK.Client.TradeCapture client, string text)
+        {
+            var taskSrc = new TaskCompletionSource<string>();
+            client.DisconnectAsync(taskSrc, text);
             return taskSrc.Task;
         }
 

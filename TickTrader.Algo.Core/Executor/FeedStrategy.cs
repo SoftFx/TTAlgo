@@ -178,32 +178,35 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder)
         {
-            const int pageSize = 1000;
+            const int pageSize = 500;
             List<BarEntity> page;
             int pageIndex;
+
+            from = from.ToUniversalTime();
+            to = to.ToUniversalTime().AddMilliseconds(-1);
 
             if (backwardOrder)
             {
                 page =  Feed.QueryBars(symbol, side, to, -pageSize, timeFrame);
-                pageIndex = 0;
+                pageIndex = page.Count - 1;
 
                 while (true)
                 {
-                    if (pageIndex >= page.Count)
+                    if (pageIndex < 0)
                     {
                         if (page.Count < pageSize)
-                            break; // last page
-                        var timeRef = page.Last().OpenTime;
+                            break; //last page
+                        var timeRef = page.First().OpenTime.AddMilliseconds(-1);
                         page = Feed.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
                         if (page.Count == 0)
                             break;
-                        pageIndex = 0;
+                        pageIndex = page.Count - 1;
                     } 
 
                     var item = page[pageIndex];
                     if (item.OpenTime < from)
                         break;
-                    pageIndex++;
+                    pageIndex--;
                     yield return item;
                 }
             }
@@ -217,8 +220,8 @@ namespace TickTrader.Algo.Core
                     if (pageIndex >= page.Count)
                     {
                         if (page.Count < pageSize)
-                            break; // last page
-                        var timeRef = page.Last().OpenTime + TimeSpan.FromMilliseconds(1);
+                            break; //last page
+                        var timeRef = page.Last().CloseTime.AddMilliseconds(1);
                         page = Feed.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
                         if (page.Count == 0)
                             break;

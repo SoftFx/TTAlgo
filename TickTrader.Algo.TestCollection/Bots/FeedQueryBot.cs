@@ -134,12 +134,12 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private DateTime GetHour(DateTime time, int shift)
         {
-            return new DateTime(time.Year, time.Month, time.Day, time.Hour, 0, 0) + TimeSpan.FromHours(shift);
+            return new DateTime(time.Year, time.Month, time.Day, time.Hour, 0, 0, time.Kind).AddHours(shift);
         }
 
         private DateTime GetMonth(DateTime time, int shift)
         {
-            return new DateTime(time.Year, time.Month, 1, 0, 0, 0).AddMonths(shift);
+            return new DateTime(time.Year, time.Month, 1, 0, 0, 0, time.Kind).AddMonths(shift);
         }
     }
 
