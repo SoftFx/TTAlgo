@@ -393,6 +393,7 @@
     <Compile Include="Views.Aux\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -850,6 +851,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterSymbolSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterTradeSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

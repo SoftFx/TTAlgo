@@ -105,4 +105,24 @@ namespace Machinarium.Var
             return 0;
         }
     }
+
+    public class StringToDouble : IValueConverter<double, string>
+    {
+        public string ConvertFrom(double val)
+        {
+            return val.ToString("G");
+        }
+
+        public double ConvertTo(string val, out string error)
+        {
+            double result;
+            if (double.TryParse(val, out result))
+            {
+                error = null;
+                return result;
+            }
+            error = "Not a valid floating number!";
+            return 0;
+        }
+    }
 }

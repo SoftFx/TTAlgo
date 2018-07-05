@@ -83,6 +83,14 @@ namespace TickTrader.Algo.Core
             return rate;
         }
 
+        internal RateUpdate GetCurrentRateOrThrow(string symbol)
+        {
+            RateUpdate rate;
+            if (!_lastRates.TryGetValue(symbol, out rate))
+                throw new OrderValidationError("Off Quotes: " + symbol, OrderCmdResultCodes.OffQuotes);
+            return rate;
+        }
+
         internal void CalculateOrder(OrderAccessor order)
         {
             if (acc.IsMarginType)
@@ -116,10 +124,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        #region Emulation
+
         public void ValidateNewOrder(OrderAccessor newOrder, OpenOrderRequest request, OrderCalculator fCalc)
         {
-            if (acc.AccountingType == BusinessObjects.AccountingTypes.Net
-                || acc.AccountingType == BusinessObjects.AccountingTypes.Gross)
+            if (acc.IsMarginType)
             {
                 fCalc.UpdateMargin(newOrder, acc);
 
@@ -144,6 +153,72 @@ namespace TickTrader.Algo.Core
 
             }   
         }
+
+        public void ValidateModifyOrder(OrderAccessor order, decimal newAmount, decimal? newPrice, decimal? newStopPrice)
+        {
+            if (Acc.IsMarginType)
+                ValidateModifyOrder_MarginAccount(order, newAmount);
+            else if(Acc.IsCashType)
+                ValidateModifyOrder_CashAccount(order, newAmount, newPrice, newStopPrice );
+        }
+
+        private void ValidateModifyOrder_MarginAccount(OrderAccessor order, decimal newAmount)
+        {
+            OrderCalculator fCalc = _state.GetCalculator(order.Symbol, Acc.BalanceCurrency);
+            //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
+
+            //decimal filledAmount = order.Amount - order.RemainingAmount;
+            //decimal newRemainingAmount = newAmount - filledAmount;
+            decimal volumeDelta = newAmount - order.Amount;
+
+            if (volumeDelta < 0)
+                return;
+
+            var additionalMargin = fCalc.CalculateMargin(newAmount, Acc.Leverage, TickTraderToAlgo.Convert(order.Type), TickTraderToAlgo.Convert(order.Side), false);
+            if (!marginCalc.HasSufficientMarginToOpenOrder(order, additionalMargin))
+                throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private void ValidateModifyOrder_CashAccount(OrderAccessor modifiedOrderModel, decimal newAmount, decimal? newPrice, decimal? newStopPrice)
+        {
+            //if (request.NewVolume.HasValue || request.Price.HasValue || request.StopPrice.HasValue)
+            //{
+            //    // Clone the order and update its price
+            //    OrderLightClone tempOrder = new OrderLightClone(modifiedOrderModel);
+            //    tempOrder.Price = request.Price ?? tempOrder.Price;
+            //    tempOrder.StopPrice = request.StopPrice ?? tempOrder.StopPrice;
+
+            //    if (request.NewVolume.HasValue && request.RemainingAmount.HasValue && modifiedOrderModel.IsPending)
+            //    {
+            //        tempOrder.Amount = request.Amount.Value;
+            //        tempOrder.RemainingAmount = request.RemainingAmount.Value;
+            //    }
+
+            //    // Calculate temp order margin
+            //    //ISymbolInfo symbol = ConfigurationManagerFull.ConvertFromEntity(modifiedOrderModel.SymbolRef);
+            //    tempOrder.Margin = CashAccountCalculator.CalculateMargin(tempOrder, symbol);
+
+            //    // Check for margin
+            //    try
+            //    {
+            //        decimal oldMargin = modifiedOrderModel.Margin.GetValueOrDefault();
+            //        decimal newMargin = tempOrder.Margin.GetValueOrDefault();
+            //        calc.HasSufficientMarginToOpenOrder(tempOrder, newMargin - oldMargin);
+            //    }
+            //    catch (NotEnoughMoneyException ex)
+            //    {
+            //        throw new ServerFaultException<NotEnoughMoneyFault>($"Not Enough Money. {ex.Message}");
+            //    }
+            //}
+        }
+
+        public AssetAccessor GetAsset(Currency currency)
+        {
+            AssetChangeType cType;
+            return Acc.Assets.GetOrCreateAsset(currency.Name, out cType);
+        }
+
+        #endregion
 
         private class MarginCalcAdapter : BL.AccountCalculator
         {

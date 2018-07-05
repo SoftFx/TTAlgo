@@ -20,8 +20,10 @@ namespace TickTrader.Algo.Core
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
         private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
+        private TradeApiAdapter _tradeApater;
         private bool _isolated;
         private string _instanceId;
+        private PluginPermissions _permissions;
 
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
@@ -36,6 +38,10 @@ namespace TickTrader.Algo.Core
             TimerApi = Null.TimerApi;
 
             syncContext.OnAsyncAction = OnPluginThread;
+
+            _tradeApater = new TradeApiAdapter(Symbols.SymbolProviderImpl, Account, logAdapter);
+
+            _permissions = new PluginPermissions();
 
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
@@ -53,7 +59,7 @@ namespace TickTrader.Algo.Core
         public Action SymbolDataRequested { get; set; }
         public Action CurrencyDataRequested { get; set; }
         public DiagnosticInfo Diagnostics { get; set; }
-        public ITradeApi TradeApi { get; set; }
+        public ITradeApi TradeApi { get => _tradeApater.ExternalApi; set => _tradeApater.ExternalApi = value; }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
         public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
@@ -63,7 +69,15 @@ namespace TickTrader.Algo.Core
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
-        public PluginPermissions Permissions { get; set; }
+        public PluginPermissions Permissions
+        {
+            get => _permissions;
+            set
+            {
+                _permissions = value ?? throw new InvalidOperationException("Permissions cannot be null!");
+                _tradeApater.Permissions = value;
+            }
+        }
         public bool Isolated
         {
             get { return _isolated; }
@@ -73,13 +87,14 @@ namespace TickTrader.Algo.Core
                 Account.Isolated = _isolated;
             }
         }
-        public string Id
+        public string InstanceId
         {
             get { return _instanceId; }
             set
             {
                 _instanceId = value;
-                Account.InstanceId = _instanceId;
+                Account.InstanceId = value;
+                _tradeApater.IsolationTag = value;
             }
         }
 
@@ -247,17 +262,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        TradeCommands IPluginContext.TradeApi
-        {
-            get
-            {
-                if (TradeApi == null)
-                    return new NullTradeApi();
-
-                return new TradeApiAdapter(TradeApi, Symbols.SymbolProviderImpl, Account, logAdapter, Permissions, Id);
-            }
-        }
-
+        TradeCommands IPluginContext.TradeApi => _tradeApater;
         IPluginMonitor IPluginContext.Logger => logAdapter;
         StatusApi IPluginContext.StatusApi => statusApi;
         EnvironmentInfo IPluginContext.Environment => this;

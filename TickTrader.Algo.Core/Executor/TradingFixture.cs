@@ -10,13 +10,14 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradingFixture : CrossDomainObject, ITradeApi
+    internal class TradingFixture : CrossDomainObject, ITradeApi, ITradeFixture
     {
         private IFixtureContext context;
         private Dictionary<string, Currency> currencies;
         private AccountAccessor _account;
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
+        private IAccountInfoProvider _dataProvider;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
 
@@ -25,21 +26,20 @@ namespace TickTrader.Algo.Core
             this.context = context;
         }
 
-        public IAccountInfoProvider DataProvider { get; set; }
-
-        internal ITradeExecutor Executor { get { return _executor; } set { _executor = value; } }
-
         public void Start()
         {
-            if (DataProvider != null)
-                DataProvider.SyncInvoke(Init);
+            _executor = context.TradeExecutor;
+            _dataProvider = context.AccInfoProvider;
+
+            if (_dataProvider != null)
+                _dataProvider.SyncInvoke(Init);
         }
 
         public void Restart()
         {
-            if (DataProvider != null)
+            if (_dataProvider != null)
             {
-                DataProvider.SyncInvoke(() =>
+                _dataProvider.SyncInvoke(() =>
                 {
                     Deinit();
                     Init();
@@ -54,11 +54,11 @@ namespace TickTrader.Algo.Core
             _account = builder.Account;
             _symbols = builder.Symbols;
 
-            DataProvider.OrderUpdated += DataProvider_OrderUpdated;
-            DataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
-            DataProvider.PositionUpdated += DataProvider_PositionUpdated;
+            _dataProvider.OrderUpdated += DataProvider_OrderUpdated;
+            _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
+            _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accType = DataProvider.AccountInfo.Type;
+            var accType = _dataProvider.AccountInfo.Type;
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
@@ -66,24 +66,24 @@ namespace TickTrader.Algo.Core
             builder.Account.NetPositions.Clear();
             builder.Account.Assets.Clear();
 
-            builder.Account.Update(DataProvider.AccountInfo, currencies);
+            builder.Account.Update(_dataProvider.AccountInfo, currencies);
 
-            foreach (var order in DataProvider.GetOrders())
+            foreach (var order in _dataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
-            foreach (var position in DataProvider.GetPositions())
+            foreach (var position in _dataProvider.GetPositions())
                 builder.Account.NetPositions.UpdatePosition(position);
         }
 
         public void Stop()
         {
-            DataProvider.SyncInvoke(Deinit);
+            _dataProvider.SyncInvoke(Deinit);
         }
 
         private void Deinit()
         {
-            DataProvider.OrderUpdated -= DataProvider_OrderUpdated;
-            DataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
-            DataProvider.PositionUpdated -= DataProvider_PositionUpdated;
+            _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
+            _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
+            _dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
         }
 
         private void CallListener(OrderExecReport eReport)

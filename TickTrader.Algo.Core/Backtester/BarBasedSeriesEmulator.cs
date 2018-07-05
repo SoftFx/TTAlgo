@@ -32,14 +32,17 @@ namespace TickTrader.Algo.Core
 
         public override void Start()
         {
-            _bidE = _bidSrc?.GetEnumerator();
-            _askE = _askSrc?.GetEnumerator();
+            if (_bidE == null)
+            {
+                _bidE = _bidSrc?.GetEnumerator();
+                _askE = _askSrc?.GetEnumerator();
 
-            if (_bidE != null)
-                MoveBid();
+                if (_bidE != null)
+                    MoveBid();
 
-            if (_askE != null)
-                MoveAsk();
+                if (_askE != null)
+                    MoveAsk();
+            }
         }
 
         public override void Stop()

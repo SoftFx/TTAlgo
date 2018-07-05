@@ -12,18 +12,23 @@ namespace TickTrader.Algo.Core
         private SymbolProvider symbols;
         private AccountAccessor account;
         private PluginLoggerAdapter logger;
-        private string _isolationTag;
-        private ITradePermissions _permissions;
 
-        public TradeApiAdapter(ITradeApi api, SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger, ITradePermissions tradePermissions, string isolationTag)
+        public TradeApiAdapter(SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger)
         {
-            this.api = api;
             this.symbols = symbols;
             this.account = account;
             this.logger = logger;
-            this._isolationTag = isolationTag;
-            this._permissions = tradePermissions;
+            api = Null.TradeApi;
         }
+
+        public ITradeApi ExternalApi
+        {
+            get => api;
+            set => api = value ?? throw new InvalidOperationException("TradeApi cannot be null!");
+        }
+
+        public ITradePermissions Permissions { get; set; }
+        public string IsolationTag { get; set; }
 
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
             double? sl, double? tp, string comment, OrderExecOptions options, string tag)
@@ -38,7 +43,7 @@ namespace TickTrader.Algo.Core
             double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
             OrderResultEntity resultEntity;
-            string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
+            string encodedTag = CompositeTag.NewTag(IsolationTag, tag);
 
             var logRequest = new OpenOrderRequest // mock request for logging
             {
@@ -63,7 +68,7 @@ namespace TickTrader.Algo.Core
                 TakeProfit = tp ?? double.NaN,
                 Comment = comment,
                 Tag = tag,
-                InstanceId = _isolationTag,
+                InstanceId = IsolationTag,
             };
 
             try
@@ -111,7 +116,7 @@ namespace TickTrader.Algo.Core
                     StopLoss = sl,
                     Comment = comment,
                     Options = options,
-                    Tag = isolationTag,
+                    Tag = encodedTag,
                     Expiration = expiration
                 };
 
@@ -256,7 +261,7 @@ namespace TickTrader.Algo.Core
                 Price = price,
                 StopPrice = stopPrice,
                 StopLoss = sl,
-                TrakeProfit = tp,
+                TakeProfit = tp,
             };
 
             try
@@ -304,7 +309,7 @@ namespace TickTrader.Algo.Core
                 logRequest.Price = price;
                 logRequest.StopPrice = stopPrice;
                 logRequest.StopLoss = sl;
-                logRequest.TrakeProfit = tp;
+                logRequest.TakeProfit = tp;
                 LogOrderModifying(logRequest);
 
                 var request = new ReplaceOrderRequest
@@ -318,7 +323,7 @@ namespace TickTrader.Algo.Core
                     Price = price,
                     StopPrice = stopPrice,
                     StopLoss = sl,
-                    TrakeProfit = tp,
+                    TakeProfit = tp,
                     Comment = comment,
                     Expiration = expiration,
                     MaxVisibleVolume = orderMaxVisibleVolume,
@@ -499,7 +504,7 @@ namespace TickTrader.Algo.Core
 
         private void ValidateTradePersmission()
         {
-            if (!_permissions.TradeAllowed)
+            if (!Permissions.TradeAllowed)
                 throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
         }
 
@@ -613,7 +618,7 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, ReplaceOrderRequest request)
         {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.StopPrice ?? request.Price ?? double.NaN, request.StopLoss, request.TrakeProfit);
+            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.StopPrice ?? request.Price ?? double.NaN, request.StopLoss, request.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)

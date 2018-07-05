@@ -399,7 +399,7 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForce(r.Expiration), r.Expiration,
-                r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null));
         }
 
         public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)

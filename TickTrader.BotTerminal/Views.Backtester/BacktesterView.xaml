@@ -25,6 +25,12 @@
                 <Setter Property="Width" Value="22" />
             </Style>
 
+            <Style x:Key="SideButtonStyle" TargetType="Button">
+                <Setter Property="Height" Value="22" />
+                <Setter Property="Width" Value="80" />
+                <Setter Property="Margin" Value="6,2,2,2"/>
+            </Style>
+
             <DataTemplate x:Key="PluginComboGroupTemplate">
                 <Grid IsEnabled="False">
                     <Grid.ColumnDefinitions>
@@ -80,8 +86,11 @@
                             <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
                         </ComboBox.GroupStyle>
                     </ComboBox>
-                    <Button Style="{DynamicResource TinyButton}" Grid.Column="2" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
-                            IsEnabled="{Binding IsPluginSelected.Value}"/>
+                    <Button Content="Settings..." Grid.Column="2" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
+                            IsEnabled="{Binding IsPluginSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
+
+                    <Button Content="Trade setup..." Grid.Column="2" Grid.Row="1" cal:Message.Attach="OpenTradeSetup"
+                            IsEnabled="{Binding IsTradeBotSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
 
                     <!--<Label Grid.Column="0" Grid.Row="1" Content="Main symbol:"/>
                     <ComboBox Grid.Column="1" Grid.Row="1" Width="120" HorizontalAlignment="Left"

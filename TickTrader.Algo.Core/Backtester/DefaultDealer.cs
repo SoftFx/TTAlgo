@@ -10,9 +10,20 @@ namespace TickTrader.Algo.Core
 {
     internal class DefaultDealer : DealerEmulator
     {
-        public DealerResponse ConfirmOrderOpen(Order order, RateUpdate rate)
+        public bool ConfirmOrderCancelation(Order order)
         {
-            return new DealerResponse();
+            return true;
+        }
+
+        public bool ConfirmOrderOpen(Order order, RateUpdate rate, out FillInfo? fill)
+        {
+            fill = null;
+            return true;
+        }
+
+        public bool ConfirmOrderReplace(Order order, OrderModifyInfo request)
+        {
+            return true;
         }
     }
 }

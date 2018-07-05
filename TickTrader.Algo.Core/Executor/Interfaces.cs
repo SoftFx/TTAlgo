@@ -91,6 +91,7 @@ namespace TickTrader.Algo.Core
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         IPluginLogger Logger { get; }
+
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
         void EnqueueEvent(Action<PluginBuilder> action);
@@ -101,10 +102,20 @@ namespace TickTrader.Algo.Core
         IPluginFeedProvider FeedProvider { get; }
         SubscriptionManager Dispenser { get; }
         FeedBufferStrategy BufferingStrategy { get; }
+        IAccountInfoProvider AccInfoProvider { get; }
+        ITradeExecutor TradeExecutor { get; }
+
         //void Subscribe(IRateSubscription subscriber);
         //void Unsubscribe(IRateSubscription subscriber);
         //void Subscribe(IAllRatesSubscription subscriber);
         //void Unsubscribe(IAllRatesSubscription subscriber);
+    }
+
+    internal interface ITradeFixture : ITradeApi, IDisposable
+    {
+        void Start();
+        void Stop();
+        void Restart();
     }
 
     //internal interface IFeedFixtureContext

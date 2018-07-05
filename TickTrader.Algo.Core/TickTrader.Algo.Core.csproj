@@ -75,6 +75,7 @@
     <Compile Include="Backtester\ActivationRegistry.cs" />
     <Compile Include="Backtester\BacktesterCollector.cs" />
     <Compile Include="Backtester\BarBasedSeriesEmulator.cs" />
+    <Compile Include="Backtester\CommisionEmulator.cs" />
     <Compile Include="Backtester\DefaultDealer.cs" />
     <Compile Include="Backtester\EmulationControlFixture.cs" />
     <Compile Include="Backtester\FeedSeriesEmulator.cs" />

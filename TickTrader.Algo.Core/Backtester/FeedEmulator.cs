@@ -19,6 +19,18 @@ namespace TickTrader.Algo.Core
             return GetJoinedStream().GetCrossDomainEnumerator(8000);
         }
 
+        internal bool Warmup(int quoteCount)
+        {
+            int i = 0;
+            foreach (var q in GetJoinedStream())
+            {
+                if (++i >= quoteCount)
+                    return true;
+            }
+
+            return false;
+        }
+
         private IEnumerable<QuoteEntity> GetJoinedStream()
         {
             var streams = _feedSources.Values.ToList();

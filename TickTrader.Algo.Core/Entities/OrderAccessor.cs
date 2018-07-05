@@ -191,5 +191,9 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
+        public override string ToString()
+        {
+            return $"#{Id} {Symbol} {Side} {RemainingAmount}";
+        }
     }
 }

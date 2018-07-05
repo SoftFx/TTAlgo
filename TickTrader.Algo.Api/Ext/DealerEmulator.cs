@@ -8,7 +8,37 @@ namespace TickTrader.Algo.Api.Ext
 {
     public interface DealerEmulator
     {
-        DealerResponse ConfirmOrderOpen(Order order, RateUpdate rate);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="order">Order ro confirm.</param>
+        /// <param name="rate">Current rate for corresponding symbol.</param>
+        /// <param name="fill">Immediate fill data. For Limit+IoC and Market orders only. Default values are used in case of null.</param>
+        /// <returns>True to confirm request, false to reject.</returns>
+        bool ConfirmOrderOpen(Order order, RateUpdate rate, out FillInfo? fill);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="order">Order to cancel.</param>
+        /// <returns>True to confirm request, false to reject.</returns>
+        bool ConfirmOrderCancelation(Order order);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="order">Order to modify.</param>
+        /// <param name="request">New values.</param>
+        /// <returns>True to confirm request, false to reject.</returns>
+        bool ConfirmOrderReplace(Order order, OrderModifyInfo request);
+    }
+
+    public interface OrderModifyInfo
+    {
+        double? NewVolume { get; }
+        double? NewPrice { get; }
+        double? NewStopPrice { get; }
+        string NewComment { get; }
     }
 
     //public interface DealerContext
@@ -31,20 +61,16 @@ namespace TickTrader.Algo.Api.Ext
     //    Task Delay(TimeSpan delay);
     //}
 
-    public struct DealerResponse
+    public struct FillInfo
     {
-        /// <summary>
-        /// Amount of transaction, confirmed by dealer. Can differ from requested amount in case of Market or Limit+IoC orders.
-        /// Note: In most cases you won't modify amount for other order types (Limit without IoC, Stop, StopLimit)
-        /// Set 0 to reject whole order.
-        /// Keep null to confirm whole order.
-        /// </summary>
-        public decimal? Amount { get; set; }
+        public FillInfo(decimal amount, decimal price)
+        {
+            ExecAmount = amount;
+            ExecPrice = price;
+        }
 
-        /// <summary>
-        /// Price, confirmed by dealer.
-        /// </summary>
-        public decimal? Price { get; set; }
+        public decimal ExecAmount { get; set; }
+        public decimal ExecPrice { get; set; }
     }
 
     [Serializable]

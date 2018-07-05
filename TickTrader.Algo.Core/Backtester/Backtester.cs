@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
-    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IAccountInfoProvider, IPluginMetadata
+    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IPluginMetadata, IBacktesterSettings
     {
         private static int IdSeed;
 
@@ -26,16 +26,15 @@ namespace TickTrader.Algo.Core
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
             _executor = pluginRef.CreateExecutor();
             _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
-            _executor.AccInfoProvider = this;
             _executor.Metadata = this;
 
             EmulationPeriodStart = from;
             EmulationPeriodEnd = to;
 
-            _control = _executor.InitEmulation(EmulationPeriodStart ?? DateTime.MinValue);
+            _control = _executor.InitEmulation(this);
 
             Leverage = 100;
-            Initialbalance = 10000;
+            InitialBalance = 10000;
             BalanceCurrency = "USD";
             AccountType = AccountTypes.Gross;
         }
@@ -44,7 +43,7 @@ namespace TickTrader.Algo.Core
         public AccountTypes AccountType { get; set; }
         public string BalanceCurrency { get; set; }
         public int Leverage { get; set; }
-        public double Initialbalance { get; set; }
+        public double InitialBalance { get; set; }
         public Dictionary<string, double> InitialAssets => _initialAssets;
         public Dictionary<string, SymbolEntity> Symbols => _symbols;
         public Dictionary<string, CurrencyEntity> Currencies => _currencies;
@@ -58,6 +57,8 @@ namespace TickTrader.Algo.Core
 
         public void Run(CancellationToken cToken)
         {
+            _feed.Warmup(1000);
+
             _executor.InitSlidingBuffering(4000);
 
             _executor.MainSymbolCode = MainSymbol;
@@ -68,6 +69,8 @@ namespace TickTrader.Algo.Core
             _executor.Start();
 
             _control.EmulateExecution();
+
+            _control.CollectTestResults();
         }
 
         public IPagedEnumerator<BotLogRecord> GetEvents()
@@ -104,34 +107,6 @@ namespace TickTrader.Algo.Core
         T IPluginSetupTarget.GetFeedStrategy<T>()
         {
             return _executor.GetFeedStrategy<T>();
-        }
-
-        #endregion
-
-        #region IAccountInfoProvider
-
-        event Action<OrderExecReport> IAccountInfoProvider.OrderUpdated { add { } remove { } }
-        event Action<PositionExecReport> IAccountInfoProvider.PositionUpdated { add { } remove { } }
-        event Action<BalanceOperationReport> IAccountInfoProvider.BalanceUpdated { add { } remove { } }
-
-        void IAccountInfoProvider.SyncInvoke(Action action) => action();
-        List<OrderEntity> IAccountInfoProvider.GetOrders() => new List<OrderEntity>();
-        IEnumerable<PositionExecReport> IAccountInfoProvider.GetPositions() => new List<PositionExecReport>();
-
-        AccountEntity IAccountInfoProvider.AccountInfo
-        {
-            get
-            {
-                return new AccountEntity()
-                {
-                    Type = AccountType,
-                    Balance = Initialbalance,
-                    BalanceCurrency = BalanceCurrency,
-                    Id = "0",
-                    Assets = _initialAssets.Select(a => new AssetEntity(a.Value, a.Key)).ToArray(),
-                    Leverage = Leverage
-                };
-            }
         }
 
         #endregion

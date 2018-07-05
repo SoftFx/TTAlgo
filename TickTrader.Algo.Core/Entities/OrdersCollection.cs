@@ -44,6 +44,14 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
+        public OrderAccessor GetOrderOrThrow(string id)
+        {
+            var order = fixture.GetOrNull(id);
+            if (order == null)
+                throw new OrderValidationError("Order Not Found " + id, OrderCmdResultCodes.OrderNotFound);
+            return order;
+        }
+
         public OrderAccessor GetOrderOrNull(string id)
         {
             return fixture.GetOrNull(id);

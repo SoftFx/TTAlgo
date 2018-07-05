@@ -18,13 +18,15 @@ namespace TickTrader.Algo.Core
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
         private Queue<Action<PluginBuilder>> _eventQueue = new Queue<Action<PluginBuilder>>();
         private FeedEmulator _feed;
+        private IBacktesterSettings _settings;
         private long _feedCount;
         private DateTime _timePoint;
         private long _safeTimePoint;
         private IEnumerator<QuoteEntity> _eFeed;
 
-        public InvokeEmulator()
+        public InvokeEmulator(IBacktesterSettings settings)
         {
+            _settings = settings;
             //var eventComparer = Comparer<EmulatedAction>.Create((x, y) => x.Time.CompareTo(y.Time));
             //_delayedQueue = new  C5.IntervalHeap<EmulatedAction>(eventComparer);
         }
@@ -74,19 +76,12 @@ namespace TickTrader.Algo.Core
             _feed = (FeedEmulator)FStartegy.Feed;
         }
 
-        public void EmulateEventsFlow(DateTime startTimePoint, CancellationToken cToken)
+        public void EmulateEventsFlow(CancellationToken cToken)
         {
-            lock (_sync)
-            {
-                _eFeed = _feed.GetFeedStream().JoinPages();
-                if (!_eFeed.MoveNext())
-                    _eFeed = null;
-
-                UpdateVirtualTimepoint(startTimePoint);
-            }
-
             try
             {
+                StartFeedRead();
+
                 while (true)
                 {
                     var nextItem = DequeueNext();
@@ -103,8 +98,7 @@ namespace TickTrader.Algo.Core
             }
             finally
             {
-                if (_eFeed != null)
-                    _eFeed.Dispose();
+                StopFeedRead();
             }
         }
 
@@ -123,6 +117,28 @@ namespace TickTrader.Algo.Core
             var handler = new TaskCompletionSource<object>();
             EmulateDelayed(delay, b => handler.SetResult(null), true);
             return handler.Task;
+        }
+
+        private void StartFeedRead()
+        {
+            lock (_sync)
+            {
+                if (_eFeed == null)
+                {
+                    _eFeed = _feed.GetFeedStream().JoinPages();
+                    if (!_eFeed.MoveNext())
+                        _eFeed = null;
+
+                    UpdateVirtualTimepoint(_settings.EmulationPeriodStart ?? DateTime.MinValue);
+                }
+            }
+        }
+
+        private void StopFeedRead()
+        {
+            if (_eFeed != null)
+                _eFeed.Dispose();
+            _eFeed = null;
         }
 
         private void EmulateDelayed(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTrade)
@@ -148,20 +164,20 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private IEnumerable<QuoteEntity> ReadFeedStream()
-        {
-            var e = _feed.GetFeedStream();
+        //private IEnumerable<QuoteEntity> ReadFeedStream()
+        //{
+        //    var e = _feed.GetFeedStream();
 
-            while (true)
-            {
-                var page = e.GetNextPage();
-                if (page.Count == 0)
-                    yield break;
+        //    while (true)
+        //    {
+        //        var page = e.GetNextPage();
+        //        if (page.Count == 0)
+        //            yield break;
 
-                foreach (var q in page)
-                    yield return q;
-            }
-        }
+        //        foreach (var q in page)
+        //            yield return q;
+        //    }
+        //}
 
         private void EmulateQuote(QuoteEntity quote)
         {

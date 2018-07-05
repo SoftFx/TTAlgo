@@ -68,6 +68,8 @@ namespace TickTrader.Algo.Core
 
         public string MarginCurrency => BaseCurrency;
         public string ProfitCurrency => CounterCurrency;
+        public Currency MarginCurrencyInfo => BaseCurrencyInfo;
+        public Currency ProfitCurrencyInfo => CounterCurrencyInfo;
 
         string BO.ISymbolInfo.Symbol => Name;
         int BO.ISymbolInfo.Precision => Digits;

@@ -65,5 +65,46 @@ namespace TickTrader.Algo.Core
                 default: throw new NotImplementedException("Unknown order side: " + apiSide);
             }
         }
+
+        public static float CmsValue(this SymbolAccessor symbol)
+        {
+            return (float)symbol.Commission;
+        }
+
+        public static float CmsValueBookOrders(this SymbolAccessor symbol)
+        {
+            return (float)symbol.LimitsCommission;
+        }
+
+        public static BO.CommissionValueType CmsValueType(this SymbolAccessor symbol)
+        {
+            switch (symbol.CommissionType)
+            {
+                case CommissionType.Percent: return BO.CommissionValueType.Percentage;
+            }
+
+            throw new InvalidOperationException("Unsupported commission type: " + symbol.Commission);
+        }
+
+        public static BO.CommissionChargeType CmsChType(this SymbolAccessor symbol)
+        {
+            switch (symbol.CommissionChargeType)
+            {
+                case CommissionChargeType.PerLot: return BO.CommissionChargeType.PerLot;
+                case CommissionChargeType.PerTrade: return BO.CommissionChargeType.PerDeal;
+            }
+
+            throw new InvalidOperationException("Unsupported commission type: " + symbol.Commission);
+        }
+
+        public static bool IsReducedOpenCommission(this OrderAccessor position)
+        {
+            return false;
+        }
+
+        public static bool IsReducedCloseCommission(this OrderAccessor position)
+        {
+            return false;
+        }
     }
 }

@@ -32,13 +32,23 @@ namespace TickTrader.BotTerminal
         private IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
         private VarContext _var = new VarContext();
         private TraderClientModel _client;
+        private WindowManager _localWnd;
+        private double _initialBalance = 10000;
+        private string _balanceCurrency = "USD";
+        private int _leverage = 100;
+        private AccountTypes _accType;
+        private int _emulatedPing = 200;
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
+            DisplayName = "Strategy/Indicator Tester";
+
             _env = env ?? throw new ArgumentNullException("env");
             _catalog = catalog ?? throw new ArgumentNullException("catalog");
             _shell = shell ?? throw new ArgumentNullException("shell");
             _client = client;
+
+            _localWnd = new WindowManager(this);
 
             ProgressMonitor = new ActionViewModel();
             FeedSources = new ObservableCollection<BacktesterSymbolSetupViewModel>();
@@ -56,6 +66,7 @@ namespace TickTrader.BotTerminal
 
             SelectedPlugin = new Property<AlgoItemViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
+            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.PluginItem.Descriptor.AlgoLogicType == AlgoTypes.Robot);
             IsStarted = ProgressMonitor.IsRunning;
             CanStart = !IsStarted & client.IsConnected;
             CanSetup = !IsStarted & client.IsConnected;
@@ -82,7 +93,7 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(SelectedPlugin.Var, a =>
             {
-                if(a.New != null)
+                if (a.New != null)
                     PluginSetupModel = new BarBasedPluginSetup(a.New.PluginItem.Ref, _mainSymbolToken, Algo.Api.BarPriceType.Bid, this);
             });
         }
@@ -92,6 +103,7 @@ namespace TickTrader.BotTerminal
         public Property<AlgoItemViewModel> SelectedPlugin { get; private set; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BoolVar IsPluginSelected { get; }
+        public BoolVar IsTradeBotSelected { get; }
         public BoolVar IsStarted { get; }
         public BoolVar CanSetup { get; }
         public BoolVar CanStart { get; }
@@ -106,7 +118,36 @@ namespace TickTrader.BotTerminal
         public void OpenPluginSetup()
         {
             var setup = new PluginSetupViewModel(PluginSetupModel, _env.Repo);
-            _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", setup);
+            _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
+            //_shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", setup);
+        }
+
+        public async void OpenTradeSetup()
+        {
+            var setup = new BacktesterTradeSetupViewModel();
+            setup.SelectedAccType.Value = _accType;
+            setup.InitialBalance.Value = _initialBalance;
+            setup.Leverage.Value = _leverage;
+            setup.BalanceCurrency.Value = _balanceCurrency;
+            setup.EmulatedServerPing.Value = _emulatedPing;
+
+            _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
+
+            if (await setup.Result)
+            {
+                _emulatedPing = setup.EmulatedServerPing.Value;
+                _accType = setup.SelectedAccType.Value;
+
+                if (_accType == AccountTypes.Cash || _accType == AccountTypes.Gross)
+                {
+                    _initialBalance = setup.InitialBalance.Value;
+                    _leverage = setup.Leverage.Value;
+                    _balanceCurrency = setup.BalanceCurrency.Value;
+                }
+                else if (_accType == AccountTypes.Cash)
+                {
+                }
+            }
         }
 
         public void Start()
@@ -165,10 +206,10 @@ namespace TickTrader.BotTerminal
                     //foreach (var rec in _client.Symbols.Snapshot)
                     //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
 
-                    tester.AccountType = AccountTypes.Net;
-                    tester.BalanceCurrency = "USD";
-                    tester.Leverage = 100;
-                    tester.Initialbalance = 10000;
+                    tester.AccountType = _accType;
+                    tester.BalanceCurrency = _balanceCurrency;
+                    tester.Leverage = _leverage;
+                    tester.InitialBalance = _initialBalance;
 
                     await Task.Run(() => tester.Run(cToken));
 

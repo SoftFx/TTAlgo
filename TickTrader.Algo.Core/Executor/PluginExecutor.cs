@@ -20,17 +20,19 @@ namespace TickTrader.Algo.Core
         private ITradeHistoryProvider tradeHistoryProvider;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
-        private SubscriptionManager dispenser;
+        private readonly SubscriptionManager dispenser;
         private InvokeStartegy iStrategy;
-        private CalculatorFixture calcFixture;
-        private TradingFixture accFixture;
-        private TimerFixture _timerFixture;
+        private readonly CalculatorFixture calcFixture;
+        private ITradeFixture accFixture;
+        private readonly TimerFixture _timerFixture;
         private StatusFixture statusFixture;
+        private IAccountInfoProvider _externalAccData;
+        private ITradeExecutor _externalTradeApi;
         private string mainSymbol;
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
-        private AlgoPluginDescriptor descriptor;
+        private readonly AlgoPluginDescriptor descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
         private string workingFolder;
@@ -39,12 +41,12 @@ namespace TickTrader.Algo.Core
         private bool _isolated;
         private PluginPermissions _permissions;
         private States state;
+        private Func<IFixtureContext, ITradeFixture> _tradeFixtureFactory = c => new TradingFixture(c);
 
         public PluginExecutor(string pluginId)
         {
-            this.descriptor = AlgoPluginDescriptor.Get(pluginId);
-            this.accFixture = new TradingFixture(this);
-            this.statusFixture = new StatusFixture(this);
+            descriptor = AlgoPluginDescriptor.Get(pluginId);
+            statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
             _timerFixture = new TimerFixture(this);
@@ -60,13 +62,13 @@ namespace TickTrader.Algo.Core
 
         public IAccountInfoProvider AccInfoProvider
         {
-            get { return accFixture.DataProvider; }
+            get => _externalAccData;
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-                    accFixture.DataProvider = value;
+                    _externalAccData = value;
                 }
             }
         }
@@ -129,13 +131,13 @@ namespace TickTrader.Algo.Core
 
         public ITradeExecutor TradeExecutor
         {
-            get { return accFixture.Executor; }
+            get => _externalTradeApi;
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-                    accFixture.Executor = value;
+                    _externalTradeApi = value;
                 }
             }
         }
@@ -248,6 +250,8 @@ namespace TickTrader.Algo.Core
 
                     Validate();
 
+                    accFixture = _tradeFixtureFactory(this);
+
                     // Setup builder
 
                     builder = new PluginBuilder(descriptor);
@@ -257,7 +261,7 @@ namespace TickTrader.Algo.Core
                     builder.TradeApi = accFixture;
                     builder.TimerApi = _timerFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
-                    builder.Id = _botInstanceId;
+                    builder.InstanceId = _botInstanceId;
                     builder.Isolated = _isolated;
                     builder.Permissions = _permissions;
                     builder.Diagnostics = this;
@@ -488,14 +492,16 @@ namespace TickTrader.Algo.Core
 
         #region Emulator Support
 
-        internal EmulationControlFixture InitEmulation(DateTime startTime)
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings)
         {
-            var fixture = new EmulationControlFixture(startTime, this, calcFixture);
+            var fixture = new EmulationControlFixture(settings, this, calcFixture);
             InvokeStrategy = fixture.InvokeEmulator;
-            TradeExecutor = fixture.TradeEmulator;
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector);
             _pluginLogger = fixture.Collector;
             return fixture;
         }
+
+        internal PluginBuilder GetBuilder() => builder;
 
         #endregion
 

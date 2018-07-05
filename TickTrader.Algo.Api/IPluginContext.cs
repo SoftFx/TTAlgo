@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Api
 {
     internal interface IPluginContext
     {
-        string Id { get; }
+        string InstanceId { get; }
         FeedProvider Feed { get; }
         AccountDataProvider AccountData { get; }
         SymbolProvider Symbols { get; }

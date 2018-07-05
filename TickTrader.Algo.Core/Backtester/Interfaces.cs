@@ -16,4 +16,19 @@ namespace TickTrader.Algo.Core
     {
         IEnumerable<BarEntity> Query(DateTime from, DateTime to);
     }
+
+    internal interface IBacktesterSettings
+    {
+        string MainSymbol { get; }
+        AccountTypes AccountType { get; }
+        string BalanceCurrency { get; }
+        int Leverage { get; }
+        double InitialBalance { get; }
+        Dictionary<string, double> InitialAssets { get; }
+        Dictionary<string, SymbolEntity> Symbols { get; }
+        Dictionary<string, CurrencyEntity> Currencies { get; }
+        TimeFrames MainTimeframe { get; }
+        DateTime? EmulationPeriodStart { get; }
+        DateTime? EmulationPeriodEnd { get; }
+    }
 }

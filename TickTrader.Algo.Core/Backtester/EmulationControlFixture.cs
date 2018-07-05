@@ -13,23 +13,34 @@ namespace TickTrader.Algo.Core
         private CancellationTokenSource _cancelEvent = new CancellationTokenSource();
 
         public DateTime EmulationTimePoint => InvokeEmulator.SafeVirtualTimePoint;
-        public TradeEmulator TradeEmulator { get; }
         public InvokeEmulator InvokeEmulator { get; }
         public BacktesterCollector Collector { get; }
-        public DateTime StartTimePoint { get; }
+        public PluginExecutor Executor { get; }
+        public IBacktesterSettings Settings { get; }
 
-        public EmulationControlFixture(DateTime startTime, PluginExecutor executor, CalculatorFixture calc)
+        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
         {
-            StartTimePoint = startTime;
-            InvokeEmulator = new InvokeEmulator();
+            Settings = settings;
+            InvokeEmulator = new InvokeEmulator(settings);
             Collector = new BacktesterCollector(executor, InvokeEmulator);
-            TradeEmulator = new TradeEmulator(executor, calc, InvokeEmulator, Collector);
+            Executor = executor;
         }
 
         public void EmulateExecution()
         {
-            TradeEmulator.OnStart();
-            InvokeEmulator.EmulateEventsFlow(StartTimePoint, _cancelEvent.Token);
+            InvokeEmulator.EmulateEventsFlow(_cancelEvent.Token);
+        }
+
+        public void CollectTestResults()
+        {
+            var builder = Executor.GetBuilder();
+            var acc = builder.Account;
+
+            if (acc.IsMarginType)
+            {
+                Collector.LogTrade("Initial equity: " + Settings.InitialBalance);
+                Collector.LogTrade("Final equity: " + acc.Equity);
+            }
         }
 
         public void CancelEmulation()

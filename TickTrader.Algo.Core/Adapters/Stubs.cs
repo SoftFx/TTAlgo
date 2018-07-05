@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Core
         private static readonly BarSeries barSeries = new BarSeriesProxy() { Buffer = new EmptyBuffer<Bar>() };
         private static readonly QuoteSeries quoteSeries = new QuoteSeriesProxy() { Buffer = new EmptyBuffer<Quote>() };
         private static readonly ITimerApi timerApi = new NullTimerApi();
+        private static readonly ITradeApi tradeApi = new NullTradeApi();
 
         public static DiagnosticInfo Diagnostics => nullDiagnostics;
         public static Order Order => order;
@@ -48,6 +49,7 @@ namespace TickTrader.Algo.Core
         public static BarSeries BarSeries => barSeries;
         public static QuoteSeries QuoteSeries => quoteSeries;
         internal static ITimerApi TimerApi => timerApi;
+        public static ITradeApi TradeApi => tradeApi;
     }
 
     internal class PluginLoggerAdapter : IPluginMonitor
@@ -184,44 +186,27 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    internal class NullTradeApi : TradeCommands
+    internal class NullTradeApi : ITradeApi
     {
-        private static Task<OrderCmdResult> rejectResult
-            = Task.FromResult<OrderCmdResult>(new OrderResultEntity(OrderCmdResultCodes.Unsupported, null));
+        private static Task<TradeResultEntity> rejectResult
+            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null));
 
-        public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
+        public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume)
+        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderRequest request)
         {
             return rejectResult;
         }
 
-        public Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderRequest request)
         {
             return rejectResult;
         }
 
-        [Obsolete]
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? tp, double? sl, string comment)
-        {
-            return rejectResult;
-        }
-
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
-        {
-            return rejectResult;
-        }
-
-        [Obsolete]
-        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double price, double volume, double? tp, double? sl, string comment, OrderExecOptions options, string tag)
-        {
-            return rejectResult;
-        }
-
-        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
+        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request)
         {
             return rejectResult;
         }
