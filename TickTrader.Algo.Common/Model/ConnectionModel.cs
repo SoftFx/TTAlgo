@@ -249,6 +249,14 @@ namespace TickTrader.Algo.Common.Model
                     await Deinitialize();
                     OnFailedConnect(request, new ConnectionErrorInfo(iex.ErrorCode, iex.Message));
                 }
+                if (fex is FDK.Common.RejectException)
+                {
+                    var rex = (FDK.Common.RejectException)fex;
+
+                    logger.Info("Connection sequence failed: " + rex.Message);
+                    await Deinitialize();
+                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorCodes.RejectedByServer, rex.Message));
+                }
                 else
                 {
                     logger.Error(ex);

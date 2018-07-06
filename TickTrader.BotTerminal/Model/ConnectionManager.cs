@@ -48,9 +48,17 @@ namespace TickTrader.BotTerminal
                 else if (IsUsualDisconnect(from, to))
                     journal.Info("{0}: logout from {1}", GetLast().Login, GetLast().Server.Name);
                 else if (IsFailedConnection(from, to))
-                    journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
+                {
+                    if (Connection.LastErrorCode == ConnectionErrorCodes.Unknown && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
+                        journal.Error("{0}: connect failed - {1}", Creds.Login, Connection.LastError.TextMessage);
+                    else journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
+                }
                 else if (IsUnexpectedDisconnect(from, to))
-                    journal.Error("{0}: connection to {1} lost [{2}]", GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
+                {
+                    if (Connection.LastErrorCode == ConnectionErrorCodes.Unknown && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
+                        journal.Error("{0}: connection to {1} lost - {2}", GetLast().Login, GetLast().Server.Name, Connection.LastError.TextMessage);
+                    else journal.Error("{0}: connection to {1} lost [{2}]", GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
+                }
 
                 logger.Debug("STATE {0}", to);
 
