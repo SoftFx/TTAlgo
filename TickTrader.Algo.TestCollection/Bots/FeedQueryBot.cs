@@ -46,6 +46,20 @@ namespace TickTrader.Algo.TestCollection.Bots
                         PrintBars(from, to);
                     //}
                 }
+                catch (AggregateException aex)
+                {
+                    aex = aex.Flatten();
+
+                    if (aex.InnerExceptions.Count == 1 && aex.InnerExceptions[0] is NotSupportedException)
+                    {
+                        var nsex = (NotSupportedException)aex.InnerExceptions[0];
+                        Status.WriteLine(nsex.Message);
+                    }
+                    else
+                    {
+                        Status.WriteLine("Exception: " + aex);
+                    }
+                }
                 catch (Exception ex)
                 {
                     Status.WriteLine("Exception: " + ex);

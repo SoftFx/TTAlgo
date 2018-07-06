@@ -120,6 +120,9 @@ namespace TickTrader.Algo.Common.Model
             client.BarListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.BarListErrorEvent += (c, d, ex) => SetFailed<Bar[]>(d, ex);
 
+            client.QuoteListResultEvent += (c, d, r) => SetCompleted(d, r);
+            client.QuoteListErrorEvent += (c, d, ex) => SetFailed<Bar[]>(d, ex);
+
             //client.BarDownloadResultEvent += (c, d, r) => ((BlockingChannel<BarEntity>)d)?.Write(SfxInterop.Convert(r));
             //client.BarDownloadResultEndEvent += (c, d) => ((BlockingChannel<BarEntity>)d)?.Close();
             //client.BarDownloadErrorEvent += (c, d, ex) => ((BlockingChannel<BarEntity>)d)?.Close(ex);
@@ -157,6 +160,13 @@ namespace TickTrader.Algo.Common.Model
         {
             var taskSrc = new TaskCompletionSource<Bar[]>();
             client.GetBarListAsync(taskSrc, symbol, priceType, barPeriod, from, count);
+            return taskSrc.Task;
+        }
+
+        public static Task<Quote[]> GetQuoteListAsync(this FDK.Client.QuoteStore client, string symbol, QuoteDepth quoteDepth, DateTime from, int count)
+        {
+            var taskSrc = new TaskCompletionSource<Quote[]>();
+            client.GetQuoteListAsync(taskSrc, symbol, quoteDepth, from, count);
             return taskSrc.Task;
         }
 

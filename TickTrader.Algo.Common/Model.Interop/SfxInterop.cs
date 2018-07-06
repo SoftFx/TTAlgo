@@ -304,7 +304,30 @@ namespace TickTrader.Algo.Common.Model
 
         public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), to.ToUniversalTime(), DownloadTimeoutMs);
+
+                    while (true)
+                    {
+                        var tick = e.Next(DownloadTimeoutMs);
+                        if (tick == null || !stream.Write(Convert(tick)))
+                        {
+                            e.Close();
+                            break;
+                        }
+                    }
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
+                    stream.Close(ex);
+                }
+            });
+
+            //throw new NotImplementedException();
 
             //var buffer = new QuoteSliceBuffer(from, to);
             //var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
@@ -345,9 +368,19 @@ namespace TickTrader.Algo.Common.Model
         //    }
         //}
 
-        public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
+        public async Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            var result = new List<QuoteEntity>();
+
+            try
+            {
+                var quotes = await _feedHistoryProxy.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), count);
+                return quotes.Select(Convert).ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new InteropException(ex.Message, ConnectionErrorCodes.NetworkError);
+            }
         }
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)

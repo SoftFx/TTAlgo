@@ -239,7 +239,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
         {
-            var ticks = Feed.QueryTicks(symbol, from, to, level2 ? 0 : 1);
+            var ticks = Feed.QueryTicks(symbol, from, to, level2);
 
             if (backwardOrder)
             {

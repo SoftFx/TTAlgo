@@ -366,7 +366,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("FDK does not support getting quotes");
         }
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
