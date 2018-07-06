@@ -40,8 +40,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                     //{
                     DateTime from, to;
                     GetBounds(out from, out to);
-                    if (TimeFrame == TimeFrames.Ticks)
-                        PrintQuotes(from, to);
+                    if (TimeFrame == TimeFrames.Ticks || TimeFrame == TimeFrames.TicksLevel2)
+                        PrintQuotes(from, to, TimeFrame == TimeFrames.TicksLevel2);
                     else
                         PrintBars(from, to);
                     //}
@@ -101,10 +101,10 @@ namespace TickTrader.Algo.TestCollection.Bots
             Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
         }
 
-        private void PrintQuotes(DateTime from, DateTime to)
+        private void PrintQuotes(DateTime from, DateTime to, bool level2)
         {
             int count = 0;
-            var quotes = Feed.GetQuotes(SafeSymbol, from, to, false, IsBackwarOrder);
+            var quotes = Feed.GetQuotes(SafeSymbol, from, to, level2, IsBackwarOrder);
             foreach (var quote in quotes)
             {
                 if (IsStopped)
