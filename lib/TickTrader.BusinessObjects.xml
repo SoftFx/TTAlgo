@@ -1263,6 +1263,11 @@
             
              </summary>
         </member>
+        <member name="P:TickTrader.BusinessObjects.Order.SymbolPrecision">
+             <summary>
+            
+             </summary>
+        </member>
         <member name="M:TickTrader.BusinessObjects.Order.Clone">
              <summary>
             
