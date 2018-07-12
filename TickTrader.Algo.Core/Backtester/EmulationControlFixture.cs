@@ -10,8 +10,6 @@ namespace TickTrader.Algo.Core
 {
     internal class EmulationControlFixture : CrossDomainObject
     {
-        private CancellationTokenSource _cancelEvent = new CancellationTokenSource();
-
         public DateTime EmulationTimePoint => InvokeEmulator.SafeVirtualTimePoint;
         public InvokeEmulator InvokeEmulator { get; }
         public BacktesterCollector Collector { get; }
@@ -28,7 +26,15 @@ namespace TickTrader.Algo.Core
 
         public void EmulateExecution()
         {
-            InvokeEmulator.EmulateEventsFlow(_cancelEvent.Token);
+            try
+            {
+                InvokeEmulator.EmulateEventsFlow();
+            }
+            catch (OperationCanceledException)
+            {
+                Collector.AddEvent(LogSeverities.Error, "Testing canceled!");
+                throw;
+            }
         }
 
         public void CollectTestResults()
@@ -40,12 +46,17 @@ namespace TickTrader.Algo.Core
             {
                 Collector.LogTrade("Initial equity: " + Settings.InitialBalance);
                 Collector.LogTrade("Final equity: " + acc.Equity);
+                Collector.LogTrade("Quotes emulated: " + Collector.TicksCount);
+                Collector.LogTrade("Orders opened: " + Collector.OrdersOpened);
+                Collector.LogTrade("Orders rejected: " + Collector.OrdersRejected);
+                Collector.LogTrade("Order modfications: " + Collector.Modifications);
+                Collector.LogTrade("Order modifications rejected: " + Collector.ModificationRejected);
             }
         }
 
         public void CancelEmulation()
         {
-            _cancelEvent.Cancel();
+            InvokeEmulator.Cancel();
         }
     }
 }

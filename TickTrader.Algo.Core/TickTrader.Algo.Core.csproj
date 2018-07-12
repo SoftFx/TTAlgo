@@ -196,6 +196,7 @@
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\RepositoryKey.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
+    <Compile Include="Backtester\TradeOperationSummary.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

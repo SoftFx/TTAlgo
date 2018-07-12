@@ -23,6 +23,7 @@ namespace TickTrader.Algo.Core
         private DateTime _timePoint;
         private long _safeTimePoint;
         private IEnumerator<QuoteEntity> _eFeed;
+        private volatile bool _canceled;
 
         public InvokeEmulator(IBacktesterSettings settings)
         {
@@ -76,7 +77,7 @@ namespace TickTrader.Algo.Core
             _feed = (FeedEmulator)FStartegy.Feed;
         }
 
-        public void EmulateEventsFlow(CancellationToken cToken)
+        public void EmulateEventsFlow()
         {
             try
             {
@@ -84,6 +85,9 @@ namespace TickTrader.Algo.Core
 
                 while (true)
                 {
+                    if (_canceled)
+                        throw new OperationCanceledException();
+
                     var nextItem = DequeueNext();
 
                     if (nextItem == null)
@@ -100,6 +104,11 @@ namespace TickTrader.Algo.Core
             {
                 StopFeedRead();
             }
+        }
+
+        public void Cancel()
+        {
+            _canceled = true;
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction)

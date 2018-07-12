@@ -50,13 +50,15 @@ namespace TickTrader.Algo.Core
         public TimeFrames MainTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; }
         public DateTime? EmulationPeriodEnd { get; }
-        public int EventsCount => _control?.Collector.EventsCount ?? 0;
+        public int EventsCount => _control.Collector.EventsCount;
         public FeedEmulator Feed => _feed;
 
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
 
         public void Run(CancellationToken cToken)
         {
+            cToken.Register(() => _control.CancelEmulation());
+
             _feed.Warmup(1000);
 
             _executor.InitSlidingBuffering(4000);
@@ -68,9 +70,19 @@ namespace TickTrader.Algo.Core
 
             _executor.Start();
 
-            _control.EmulateExecution();
+            try
+            {
+                _control.EmulateExecution();
+            }
+            finally
+            {
+                _control.CollectTestResults();
+            }
+        }
 
-            _control.CollectTestResults();
+        public void CancelTesting()
+        {
+            _control.CancelEmulation();
         }
 
         public IPagedEnumerator<BotLogRecord> GetEvents()

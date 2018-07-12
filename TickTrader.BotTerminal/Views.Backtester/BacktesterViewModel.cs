@@ -67,9 +67,11 @@ namespace TickTrader.BotTerminal
             SelectedPlugin = new Property<AlgoItemViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.PluginItem.Descriptor.AlgoLogicType == AlgoTypes.Robot);
-            IsStarted = ProgressMonitor.IsRunning;
-            CanStart = !IsStarted & client.IsConnected;
-            CanSetup = !IsStarted & client.IsConnected;
+            IsRunning = ProgressMonitor.IsRunning;
+            IsStopping = ProgressMonitor.IsCancelling;
+            CanStart = !IsRunning & client.IsConnected;
+            CanSetup = !IsRunning & client.IsConnected;
+            CanStop = ProgressMonitor.CanCancel;
 
             Plugins = env.Repo.AllPlugins
                 .Where((k, p) => !string.IsNullOrEmpty(k.FileName))
@@ -104,9 +106,11 @@ namespace TickTrader.BotTerminal
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
-        public BoolVar IsStarted { get; }
+        public BoolVar IsRunning { get; }
+        public BoolVar IsStopping { get; }
         public BoolVar CanSetup { get; }
         public BoolVar CanStart { get; }
+        public BoolVar CanStop { get; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ObservableCollection<BacktesterSymbolSetupViewModel> FeedSources { get; private set; }
@@ -155,6 +159,11 @@ namespace TickTrader.BotTerminal
             ProgressMonitor.Start(DoEmulation);
         }
 
+        public void Stop()
+        {
+            ProgressMonitor.Cancel();
+        }
+
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
             foreach (var symbolSetup in FeedSources)
@@ -193,6 +202,8 @@ namespace TickTrader.BotTerminal
                 };
                 updateTimer.Start();
 
+                Exception execError = null;
+
                 try
                 {
                     foreach (var symbolSetup in FeedSources)
@@ -215,6 +226,10 @@ namespace TickTrader.BotTerminal
 
                     observer.SetProgress(DateRange.To.GetAbsoluteDay());
                 }
+                catch (Exception ex)
+                {
+                    execError = ex;
+                }
                 finally
                 {
                     updateTimer.Stop();
@@ -224,7 +239,10 @@ namespace TickTrader.BotTerminal
 
                 await LoadChartData(tester, observer, tester.Feed.GetBarSeriesData(chartSymbol.Name, chartTimeframe, chartPriceLayer));
 
-                observer.SetMessage("Done.");
+                if (execError != null)
+                    observer.SetMessage(execError.Message);
+                else
+                    observer.SetMessage("Done.");
             }
         }
 
@@ -256,7 +274,6 @@ namespace TickTrader.BotTerminal
 
         private async Task LoadChartData(Backtester tester, IActionObserver observer, IReadOnlyList<BarEntity> data)
         {
-            observer.StartProgress(0, data.Count);
             observer.SetMessage("Loading chart data...");
 
             var series = await Task.Run(() =>

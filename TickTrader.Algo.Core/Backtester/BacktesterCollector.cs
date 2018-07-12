@@ -19,10 +19,17 @@ namespace TickTrader.Algo.Core
         private List<BotLogRecord> _events = new List<BotLogRecord>();
         private Dictionary<string, object> _outputBuffers = new Dictionary<string, object>();
 
+        public long TicksCount { get; set; }
+        public int OrdersOpened { get; set; }
+        public int OrdersRejected { get; set; }
+        public int Modifications { get; set; }
+        public int ModificationRejected { get; set; }
+
         public BacktesterCollector(PluginExecutor executor, InvokeEmulator emulator)
         {
             _executor = executor;
             _invokeEmulator = emulator;
+            _invokeEmulator.RateUpdated += r => TicksCount++;
         }
 
         private DateTime VirtualTimepoint => _invokeEmulator.VirtualTimePoint;
