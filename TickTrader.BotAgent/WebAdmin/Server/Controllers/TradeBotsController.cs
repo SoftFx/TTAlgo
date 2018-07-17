@@ -201,7 +201,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
                 var pluginCfg = setup.Parse();
                 var accountKey = new AccountKey(setup.Account.Server, setup.Account.Login);
 
-                pluginCfg.Key = new PluginKey(setup.PackageName, RepositoryLocation.LocalRepository, setup.PluginId);
+                pluginCfg.Key = new PluginKey(setup.PackageName.ToLowerInvariant(), RepositoryLocation.LocalRepository, setup.PluginId);
 
                 var tradeBot = _botAgent.AddBot(accountKey, pluginCfg);
                 setup.EnsureFiles(ServerModel.GetWorkingFolderFor(tradeBot.InstanceId));

@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void StartClient()
         {
-            _channel = new Channel($"{SessionSettings.ServerAddress}:{SessionSettings.ProtocolSettings.ListeningPort}", ChannelCredentials.Insecure);
+            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ProtocolSettings.ListeningPort, ChannelCredentials.Insecure);
 
             _client = new Lib.BotAgent.BotAgentClient(_channel);
 

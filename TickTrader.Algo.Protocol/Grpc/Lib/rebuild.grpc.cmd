@@ -1,7 +1,7 @@
 @echo off
 
-set COMPILER=%~dp0..\..\..\packages\Grpc.Tools.1.12.0\tools\windows_x64\protoc.exe
-set GRPC_PLUGIN=%~dp0..\..\..\packages\Grpc.Tools.1.12.0\tools\windows_x64\grpc_csharp_plugin.exe
+set COMPILER=%~dp0..\..\..\packages\Grpc.Tools.1.13.0\tools\windows_x64\protoc.exe
+set GRPC_PLUGIN=%~dp0..\..\..\packages\Grpc.Tools.1.13.0\tools\windows_x64\grpc_csharp_plugin.exe
 
 if exist Descriptors.cs del Descriptors.cs
 if exist Config.cs del Config.cs

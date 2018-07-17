@@ -204,7 +204,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void ManageConnection()
         {
             if (ConnectionState == ConnectionStates.Offline)
-            {                
+            {
                 var forcedConnect = (_startedBotsCount > 0 && _credsChanged) || _requestGate.WatingCount > 0;
                 var scheduledConnect = _startedBotsCount > 0 && _pendingReconnect < DateTime.UtcNow;
 
@@ -324,8 +324,8 @@ namespace TickTrader.BotAgent.BA.Models
 
             _connectCancellation = new CancellationTokenSource();
 
-            _lastError = await  _core.Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
-           
+            _lastError = await _core.Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
+
             if (_lastError.Code == ConnectionErrorCodes.None)
             {
                 _lostConnection = false;
@@ -338,6 +338,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 await _requestGate.ExecQueuedRequests();
 
+                ScheduleReconnect(_lastError.Code == ConnectionErrorCodes.BlockedAccount || _lastError.Code == ConnectionErrorCodes.InvalidCredentials);
                 ChangeState(ConnectionStates.Offline);
             }
         }
@@ -464,7 +465,7 @@ namespace TickTrader.BotAgent.BA.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            bot.Init(this, _packageProvider,  ServerModel.GetWorkingFolderFor(bot.Id));
+            bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id));
             BotInitialized?.Invoke(bot);
         }
 
