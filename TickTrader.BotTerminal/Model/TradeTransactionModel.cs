@@ -224,7 +224,7 @@ namespace TickTrader.BotTerminal
         {
             return IsBalanceTransaction ?
                 double.NaN : transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ?
-                transaction.StopPrice : transaction.Price;
+                transaction.StopPrice : transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
         }
     }
 
