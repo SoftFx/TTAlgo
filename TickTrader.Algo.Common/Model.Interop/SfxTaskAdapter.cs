@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Core;
@@ -363,7 +364,7 @@ namespace TickTrader.Algo.Common.Model
         {
             var taskSrc = new TaskCompletionSource<object>();
             client.SubscribeTradesAsync(taskSrc, DateTime.UtcNow.AddMinutes(5), skipCancel); // Request 0 trade reports, we will download them later with separate request
-            return taskSrc.Task;
+            return taskSrc.WithTimeout();
         }
 
         public static void DownloadTradesAsync(this FDK.Client.TradeCapture client, TimeDirection timeDirection, DateTime? from, DateTime? to, bool skipCancel,
@@ -450,6 +451,31 @@ namespace TickTrader.Algo.Common.Model
         private static FDK2.SymbolEntry[] GetSymbolEntries(string[] symbolIds, int marketDepth)
         {
             return symbolIds.Select(id => new FDK2.SymbolEntry { Id = id, MarketDepth = (ushort)marketDepth }).ToArray();
+        }
+
+        private static Task<T> WithTimeout<T>(this TaskCompletionSource<T> taskSrc)
+        {
+            var timeoutCancelSrc = new CancellationTokenSource();
+            Task.WhenAny(taskSrc.Task, Task.Delay(5 * 60 * 1000, timeoutCancelSrc.Token))
+                .ContinueWith(t =>
+                {
+                    try
+                    {
+                        if (t.Result == taskSrc.Task)
+                        {
+                            timeoutCancelSrc.Cancel();
+                        }
+                        else
+                        {
+                            taskSrc.SetException(new InteropException("Request timed out.", ConnectionErrorCodes.Timeout));
+                        }
+                    }
+                    finally
+                    {
+                        timeoutCancelSrc.Dispose();
+                    }
+                });
+            return taskSrc.Task;
         }
 
         #endregion
