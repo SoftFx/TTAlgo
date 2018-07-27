@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
@@ -9,6 +10,23 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
     public static class ConfigurationExtensions
     {
+        private static readonly X509Certificate2 _cert;
+
+
+        static ConfigurationExtensions()
+        {
+            var a = Assembly.GetExecutingAssembly();
+
+            using (var s = a.GetManifestResourceStream("TickTrader.BotAgent.bot-agent.pfx"))
+            using (var r = new BinaryReader(s))
+            {
+                var buffer = new byte[s.Length];
+                r.Read(buffer, 0, (int)s.Length);
+                _cert = new X509Certificate2(buffer);
+            }
+        }
+
+
         public static string GetSecretKey(this IConfiguration configuration)
         {
             return configuration.GetValue<string>(nameof(AppSettings.SecretKey));
@@ -31,20 +49,22 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 
         public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)
         {
-            var sslConf = config.GetSslSettings();
+            return _cert;
 
-            if (sslConf == null)
-                throw new ArgumentException("SSL configuration not found");
+            //var sslConf = config.GetSslSettings();
 
-            if (string.IsNullOrWhiteSpace(sslConf.File))
-                throw new ArgumentException("Certificate file is not defined");
+            //if (sslConf == null)
+            //    throw new ArgumentException("SSL configuration not found");
 
-            var pfxFile = sslConf.File;
+            //if (string.IsNullOrWhiteSpace(sslConf.File))
+            //    throw new ArgumentException("Certificate file is not defined");
 
-            if (!pfxFile.IsPathAbsolute())
-                pfxFile = Path.Combine(contentRoot, pfxFile);
+            //var pfxFile = sslConf.File;
 
-            return new X509Certificate2(pfxFile, sslConf.Password);
+            //if (!pfxFile.IsPathAbsolute())
+            //    pfxFile = Path.Combine(contentRoot, pfxFile);
+
+            //return new X509Certificate2(pfxFile, sslConf.Password);
         }
 
         public static ProtocolServerSettings GetProtocolServerSettings(this IConfiguration config, string contentRoot)

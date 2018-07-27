@@ -15,6 +15,12 @@ namespace TickTrader.Algo.Protocol.Grpc
         private GrpcCore.Server _server;
 
 
+        static GrpcServer()
+        {
+            CertificateProvider.InitServer();
+        }
+
+
         public GrpcServer(IBotAgentServer agentServer, IServerSettings settings) : base(agentServer, settings)
         {
         }
@@ -22,11 +28,13 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void StartServer()
         {
+            GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
             _impl = new BotAgentServerImpl(AgentServer, Logger);
+            var creds = new SslServerCredentials(new[] { new KeyCertificatePair(CertificateProvider.ServerCertificate, CertificateProvider.ServerKey), }); //,CertificateProvider.RootCertificate, true);
             _server = new GrpcCore.Server
             {
                 Services = { Lib.BotAgent.BindService(_impl) },
-                Ports = { new ServerPort("", Settings.ProtocolSettings.ListeningPort, ServerCredentials.Insecure) },
+                Ports = { new ServerPort("localhost", Settings.ProtocolSettings.ListeningPort, creds) },
             };
             _server.Start();
         }

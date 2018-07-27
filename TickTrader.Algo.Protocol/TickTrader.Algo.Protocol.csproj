@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Grpc\GrpcClient.cs" />
+    <Compile Include="Grpc\GrpcLoggerAdapter.cs" />
     <Compile Include="Grpc\GrpcServer.cs" />
     <Compile Include="Grpc\Lib\BotAgent.cs" />
     <Compile Include="Grpc\Lib\BotAgentGrpc.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Grpc\ToAlgo.cs" />
     <Compile Include="Grpc\ToGrpc.cs" />
     <Compile Include="Infrastructure\BAException.cs" />
+    <Compile Include="Infrastructure\CertificateProvider.cs" />
     <Compile Include="Infrastructure\LoggerHelper.cs" />
     <Compile Include="Infrastructure\VersionSpec.cs" />
     <Compile Include="Interface\Client\IBotAgentClient.cs" />
@@ -79,6 +81,9 @@
     <Compile Include="Interface\Server\IServerSettings.cs" />
     <Compile Include="Interface\Server\ProtocolServer.cs" />
     <None Include="app.config" />
+    <EmbeddedResource Include="certs\algo-ca.crt" />
+    <EmbeddedResource Include="certs\bot-agent.crt" />
+    <EmbeddedResource Include="certs\bot-agent.key" />
     <None Include="Sfx\Entities\ConnectionErrorEntity.cs" />
     <None Include="Sfx\Infrastructure\ToAlgo.cs" />
     <None Include="Sfx\Infrastructure\ToSfx.cs" />

@@ -104,6 +104,7 @@ namespace TickTrader.BotTerminal
         {
             _syncContext.Invoke(() =>
             {
+                _packages.Clear();
                 packages.ForEach(package =>
                 {
                     _packages.Add(package.Key, package);

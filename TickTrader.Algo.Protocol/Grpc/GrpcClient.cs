@@ -14,6 +14,12 @@ namespace TickTrader.Algo.Protocol.Grpc
         private Lib.BotAgent.BotAgentClient _client;
 
 
+        static GrpcClient()
+        {
+            CertificateProvider.InitClient();
+        }
+
+
         public GrpcClient(IBotAgentClient agentClient) : base(agentClient)
         {
         }
@@ -21,7 +27,10 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void StartClient()
         {
-            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ProtocolSettings.ListeningPort, ChannelCredentials.Insecure);
+            GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
+            var creds = new SslCredentials(CertificateProvider.RootCertificate); //, new KeyCertificatePair(CertificateProvider.ClientCertificate, CertificateProvider.ClientKey));
+            var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
+            _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ProtocolSettings.ListeningPort, creds, options);
 
             _client = new Lib.BotAgent.BotAgentClient(_channel);
 

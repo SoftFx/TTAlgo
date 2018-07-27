@@ -71,10 +71,10 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E8396A9005DA25F7DBBF71630A43306F76898D17</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>9AB9433E7C48D09FF7CF2E2A87B0C371226E3377</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>bot-terminal.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>softfx.ico</ApplicationIcon>
@@ -188,6 +188,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
+    <None Include="bot-terminal.pfx" />
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -195,7 +196,6 @@
     <None Include="Resx\Sounds\Negative.wav" />
     <None Include="Resx\Sounds\Blop.wav" />
     <None Include="Resx\Sounds\Clinking.wav" />
-    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
