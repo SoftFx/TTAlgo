@@ -58,6 +58,13 @@ keyUsage			= digitalSignature, keyEncipherment #, nonRepudiation, dataEncipherme
 extendedKeyUsage		= clientAuth, codeSigning
 nsComment			= "TTAlgo BotTerminal Certificate"
 
+[ client_sign_cert ] # That is what Visual Studio expects for ClickOnce deployment
+subjectKeyIdentifier		= hash
+authorityKeyIdentifier		= keyid,issuer
+keyUsage			= digitalSignature
+extendedKeyUsage		= codeSigning
+nsComment			= "TTAlgo BotTerminal Signing Certificate"
+
 [ server_cert ]
 basicConstraints	= CA:FALSE
 subjectKeyIdentifier		= hash
@@ -66,7 +73,6 @@ nsCertType			= server
 keyUsage			= digitalSignature, keyEncipherment
 extendedKeyUsage	= serverAuth, codeSigning, nsSGC, msSGC
 nsComment			= "TTAlgo BotAgent Certificate"
-#subjectAltName		= @alt_names
 
 [ ca_cert ]
 basicConstraints 		= CA:TRUE
@@ -74,9 +80,5 @@ subjectKeyIdentifier		= hash
 authorityKeyIdentifier		= keyid,issuer
 nsCertType			= sslCA #, emailCA
 keyUsage			= cRLSign, keyCertSign
-extendedKeyUsage		= serverAuth, clientAuth # nsSGC, msSGC
+extendedKeyUsage		= codeSigning, serverAuth, clientAuth # nsSGC, msSGC
 nsComment			= "TTAlgo CA Certificate"
-
-#[ alt_names ]
-#DNS.1 = *.soft-fx.lv
-#DNS.2 = localhost
