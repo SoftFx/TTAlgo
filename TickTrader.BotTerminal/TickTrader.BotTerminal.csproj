@@ -217,6 +217,7 @@
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
+    <Compile Include="Controls\AutoColumnsGrid.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
@@ -392,6 +393,8 @@
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.Aux\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
@@ -847,6 +850,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterChartPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterStatChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterReportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -44,9 +44,9 @@ namespace TickTrader.Algo.Core
 
         protected virtual void OnInit() { }
 
-        protected void OnFeedUpdate(RateUpdate update)
+        protected BufferUpdateResult OnFeedUpdate(RateUpdate update)
         {
-            FStartegy.ApplyUpdate(update);
+            return FStartegy.ApplyUpdate(update);
         }
 
         protected void OnError(ExecutorException ex)

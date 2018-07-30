@@ -9,8 +9,8 @@ namespace TickTrader.Algo.Core
 {
     internal abstract class FeedSeriesEmulator
     {
-        protected readonly Dictionary<TimeFrames, BarSeriesBuilder> _bidBars = new Dictionary<TimeFrames, BarSeriesBuilder>();
-        protected readonly Dictionary<TimeFrames, BarSeriesBuilder> _askBars = new Dictionary<TimeFrames, BarSeriesBuilder>();
+        protected readonly Dictionary<TimeFrames, BarVector> _bidBars = new Dictionary<TimeFrames, BarVector>();
+        protected readonly Dictionary<TimeFrames, BarVector> _askBars = new Dictionary<TimeFrames, BarVector>();
 
         //public abstract IEnumerable<QuoteEntity> GetEmulationStream();
 
@@ -40,17 +40,17 @@ namespace TickTrader.Algo.Core
             return new List<QuoteEntity>();
         }
 
-        public void InitSeries(TimeFrames timeframe, BarPriceType price)
+        public BarVector InitSeries(TimeFrames timeframe, BarPriceType price)
         {
-            GetOrAddBuilder(price, timeframe);
+            return GetOrAddBuilder(price, timeframe);
         }
 
         public IReadOnlyList<BarEntity> GetSeriesData(TimeFrames timeframe, BarPriceType price)
         {
-            return GetOrAddBuilder(price, timeframe).Elements;
+            return GetOrAddBuilder(price, timeframe);
         }
 
-        private BarSeriesBuilder GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
+        private BarVector GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
         {
             if (priceType == BarPriceType.Bid)
                 return GetOrAddBuilder(_bidBars, timeframe);
@@ -58,36 +58,36 @@ namespace TickTrader.Algo.Core
                 return GetOrAddBuilder(_askBars, timeframe);
         }
 
-        private BarSeriesBuilder GetOrAddBuilder(Dictionary<TimeFrames, BarSeriesBuilder> collection, TimeFrames timeframe)
+        private BarVector GetOrAddBuilder(Dictionary<TimeFrames, BarVector> collection, TimeFrames timeframe)
         {
-            BarSeriesBuilder builder;
+            BarVector builder;
             if (!collection.TryGetValue(timeframe, out builder))
             {
-                builder = new BarSeriesBuilder(timeframe);
+                builder = new BarVector(timeframe);
                 collection.Add(timeframe, builder);
             }
             return builder;
         }
 
-        protected class BarSeriesBuilder : BarVectorBase
-        {
-            private List<BarEntity> _collection = new List<BarEntity>();
-            private BarEntity _lastBar;
+        //protected class BarSeriesBuilder : BarVectorBase
+        //{
+        //    private List<BarEntity> _collection = new List<BarEntity>();
+        //    private BarEntity _lastBar;
 
-            public BarSeriesBuilder(TimeFrames timeframe) : base(timeframe)
-            {
-            }
+        //    public BarSeriesBuilder(TimeFrames timeframe) : base(timeframe)
+        //    {
+        //    }
 
-            public override bool HasElements => _collection.Count > 0;
-            public IReadOnlyList<BarEntity> Elements => _collection;
-            public override BarEntity Last { get => _lastBar; set => throw new NotImplementedException(); }
+        //    public override bool HasElements => _collection.Count > 0;
+        //    public IReadOnlyList<BarEntity> Elements => _collection;
+        //    public override BarEntity Last { get => _lastBar; set => throw new NotImplementedException(); }
 
-            protected override void AddToVector(BarEntity entity)
-            {
-                _lastBar = entity;
-                _collection.Add(entity);
-            }
-        }
+        //    protected override void AddToVector(BarEntity entity)
+        //    {
+        //        _lastBar = entity;
+        //        _collection.Add(entity);
+        //    }
+        //}
 
         internal class QuoteBased : FeedSeriesEmulator
         {

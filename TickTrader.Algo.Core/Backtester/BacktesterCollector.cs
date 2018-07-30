@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -14,27 +15,43 @@ namespace TickTrader.Algo.Core
     /// </summary>
     internal class BacktesterCollector : CrossDomainObject, IPluginLogger
     {
-        private InvokeEmulator _invokeEmulator;
         private PluginExecutor _executor;
         private List<BotLogRecord> _events = new List<BotLogRecord>();
         private Dictionary<string, object> _outputBuffers = new Dictionary<string, object>();
+        private BarSequenceBuilder _mainBarVector;
+        private BarSequenceBuilder _equityBuilder;
+        private BarSequenceBuilder _marginBuilder;
 
-        public long TicksCount { get; set; }
-        public int OrdersOpened { get; set; }
-        public int OrdersRejected { get; set; }
-        public int Modifications { get; set; }
-        public int ModificationRejected { get; set; }
-
-        public BacktesterCollector(PluginExecutor executor, InvokeEmulator emulator)
+        public BacktesterCollector(PluginExecutor executor)
         {
             _executor = executor;
-            _invokeEmulator = emulator;
-            _invokeEmulator.RateUpdated += r => TicksCount++;
+            //_invokeEmulator.RateUpdated += r => Stats.TicksCount++;
+
+            Stats = new TestingStatistics();
         }
 
-        private DateTime VirtualTimepoint => _invokeEmulator.VirtualTimePoint;
+        public TestingStatistics Stats { get; private set; }
+        public InvokeEmulator InvokeEmulator { get; internal set; }
+
+        private DateTime VirtualTimepoint => InvokeEmulator.VirtualTimePoint;
 
         public int EventsCount => _events.Count;
+
+        public void Init(IBacktesterSettings settings)
+        {
+            Stats = new TestingStatistics();
+
+            _mainBarVector = BarSequenceBuilder.Create(settings.MainTimeframe);
+            _mainBarVector.BarOpened += (b) => Stats.MainSymbolHistory.Add(b);
+
+            _equityBuilder = BarSequenceBuilder.Create(_mainBarVector);
+            _equityBuilder.BarOpened += (b) => Stats.EquityHistory.Add(b);
+
+            _marginBuilder = BarSequenceBuilder.Create(_mainBarVector);
+            _marginBuilder.BarOpened += (b) => Stats.MarginHistory.Add(b);
+        }
+
+        #region Journal
 
         public void AddEvent(LogSeverities severity, string message, string description = null)
         {
@@ -56,6 +73,10 @@ namespace TickTrader.Algo.Core
             return _events.GetCrossDomainEnumerator(1000);
         }
 
+        #endregion
+
+        #region Output collection
+
         public void InitOutputCollection<T>(string id)
         {
             var output = _executor.GetOutput<T>(id);
@@ -71,6 +92,66 @@ namespace TickTrader.Algo.Core
         {
             return (List<T>)_outputBuffers[id];
         }
+
+        #endregion
+
+        #region Stats collection
+
+        public void OnPositionClosed(DateTime timepoint, decimal profit)
+        {
+            if (profit < 0)
+            {
+                Stats.GrossLoss -= profit;
+                Stats.LossByHours[timepoint.Hour] -= profit;
+                Stats.LossByWeekDays[(int)timepoint.DayOfWeek] -= profit;
+            }
+            else
+            {
+                Stats.GrossProfit += profit;
+                Stats.ProfitByHours[timepoint.Hour] += profit;
+                Stats.ProfitByWeekDays[(int)timepoint.DayOfWeek] += profit;
+            }
+        }
+
+        public void OnOrderOpened()
+        {
+            Stats.OrdersOpened++;
+        }
+
+        public void OnOrderRejected()
+        {
+            Stats.OrdersRejected++;
+        }
+
+        public void OnOrderModified()
+        {
+            Stats.OrderModifications++;
+        }
+
+        public void OnOrderModificatinRejected()
+        {
+            Stats.OrderModificationRejected++;
+        }
+
+        public void OnBufferExtended(int by)
+        {
+            Stats.BarsCount += by;
+        }
+
+        public void OnTick(QuoteEntity tick)
+        {
+            Stats.TicksCount++;
+
+            _mainBarVector.AppendQuote(tick.Time, tick.Bid, 0);
+        }
+
+        public void RegisterEquity(DateTime timepoint, double equity, double margin)
+        {
+            _equityBuilder.AppendQuote(timepoint, equity, 0);
+            _marginBuilder.AppendQuote(timepoint, margin, 0);
+        }
+
+        #endregion
 
         #region IPluginLogger
 

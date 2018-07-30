@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Core
                 _askE = null;
         }
 
-        private void UpdateBars(IEnumerable<BarSeriesBuilder> collection, BarEntity bar)
+        private void UpdateBars(IEnumerable<BarVector> collection, BarEntity bar)
         {
             foreach (var rec in collection)
                 rec.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);

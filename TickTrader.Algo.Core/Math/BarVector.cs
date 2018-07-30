@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,15 +8,35 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class BarVector : BarVectorBase
+    [Serializable]
+    public class BarVector : IReadOnlyList<BarEntity>
     {
         private readonly List<BarEntity> _list = new List<BarEntity>();
+        private readonly BarSequenceBuilder _builder;
 
-        public BarVector(TimeFrames timeFrame) : base(timeFrame)
+        private BarVector(BarSequenceBuilder builder)
+        {
+            _builder = builder;
+
+            _builder.BarOpened += (b) => _list.Add(b);
+        }
+
+        public BarVector(TimeFrames timeFrame)
+            : this(BarSequenceBuilder.Create(timeFrame))
         {
         }
 
-        public override BarEntity Last
+        public BarVector(ITimeSequenceRef masterSequence)
+            : this(BarSequenceBuilder.Create(masterSequence))
+        {
+        }
+
+        public BarVector(BarVector masterVector)
+            : this(BarSequenceBuilder.Create(masterVector._builder))
+        {
+        }
+
+        public BarEntity Last
         {
             get { return _list[_list.Count - 1]; }
             set { _list[_list.Count - 1] = value; }
@@ -27,8 +48,26 @@ namespace TickTrader.Algo.Core
             set { _list[0] = value; }
         }
 
+        public ITimeSequenceRef Ref => _builder;
+
         public int Count => _list.Count;
-        public override bool HasElements => _list.Count > 0;
+
+        public BarEntity this[int index] => _list[index];
+
+        public void AppendQuote(DateTime time, double price, double volume)
+        {
+            _builder.AppendQuote(time, price, volume);
+        }
+
+        public void AppendBar(BarEntity bar)
+        {
+            _builder.AppendBar(bar);
+        }
+
+        public void AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
+        {
+            _builder.AppendBarPart(time, open, high, low, close, volume);
+        }
 
         public BarEntity[] ToArray()
         {
@@ -47,19 +86,14 @@ namespace TickTrader.Algo.Core
             return range;
         }
 
-        public void Clear()
+        public IEnumerator<BarEntity> GetEnumerator()
         {
-            _list.Clear();
+            return _list.GetEnumerator();
         }
 
-        protected override void AddToVector(BarEntity entity)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            _list.Add(entity);
-        }
-
-        private void InternalAdd(BarEntity bar)
-        {
-            _list.Add(bar);
+            return _list.GetEnumerator();
         }
     }
 }

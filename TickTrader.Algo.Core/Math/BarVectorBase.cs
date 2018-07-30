@@ -7,6 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class BarVectorBase
     {
         private readonly BarSampler _sampler;
@@ -27,7 +28,8 @@ namespace TickTrader.Algo.Core
         {
             var boundaries = _sampler.GetBar(bar.OpenTime);
 
-            CheckTime(boundaries.Open);
+            if (HasElements && Last.OpenTime >= boundaries.Open)
+                throw new ArgumentException("Invlid time sequnce!");
 
             if (boundaries.Open == bar.OpenTime || boundaries.Close != bar.CloseTime)
                 throw new ArgumentException("Bar has invalid time boundaries!");
@@ -38,14 +40,14 @@ namespace TickTrader.Algo.Core
         public void AppendQuote(DateTime time, double price, double volume)
         {
             var boundaries = _sampler.GetBar(time);
-            var last = Last;
 
-            CheckTime(boundaries.Open);
+            if (HasElements && Last.OpenTime > boundaries.Open)
+                throw new ArgumentException("Invlid time sequnce!");
 
-            if (HasElements && last.OpenTime == boundaries.Open)
+            if (HasElements && Last.OpenTime == boundaries.Open)
             {
                 // append last bar
-                last.Append(price, volume);
+                Last.Append(price, volume);
             }
             else
             {
@@ -59,7 +61,8 @@ namespace TickTrader.Algo.Core
         {
             var boundaries = _sampler.GetBar(time);
 
-            CheckTime(boundaries.Open);
+            if (HasElements && Last.OpenTime > boundaries.Open)
+                throw new ArgumentException("Invlid time sequnce!");
 
             if (HasElements && Last.OpenTime == boundaries.Open)
             {
@@ -79,12 +82,6 @@ namespace TickTrader.Algo.Core
                 entity.Volume = volume;
                 AddToVector(entity);
             }
-        }
-
-        private void CheckTime(DateTime barOpen)
-        {
-            if (HasElements && Last.OpenTime >= barOpen)
-                throw new ArgumentException("Invlid time sequnce!");
         }
 
         private BarEntity UpdateBar(BarEntity bar, double open, double high, double low, double close, double volume)

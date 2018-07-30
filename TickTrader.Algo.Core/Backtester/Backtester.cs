@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Core
         {
             cToken.Register(() => _control.CancelEmulation());
 
-            _feed.Warmup(1000);
+            //_feed.Warmup(1000);
 
             _executor.InitSlidingBuffering(4000);
 
@@ -67,6 +67,8 @@ namespace TickTrader.Algo.Core
             _executor.TimeFrame = MainTimeframe;
             _executor.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
+
+            _control.Init();
 
             _executor.Start();
 
@@ -107,6 +109,11 @@ namespace TickTrader.Algo.Core
             _control?.Dispose();
             _control = null;
             _executor?.Dispose();
+        }
+
+        public TestingStatistics GetStats()
+        {
+            return _control.Collector.Stats;
         }
 
         #region IPluginSetupTarget

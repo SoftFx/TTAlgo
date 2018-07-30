@@ -24,10 +24,13 @@ namespace TickTrader.Algo.Core
         private long _safeTimePoint;
         private IEnumerator<QuoteEntity> _eFeed;
         private volatile bool _canceled;
+        private BacktesterCollector _collector;
 
-        public InvokeEmulator(IBacktesterSettings settings)
+        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector)
         {
             _settings = settings;
+            _collector = collector;
+            _collector.InvokeEmulator = this;
             //var eventComparer = Comparer<EmulatedAction>.Create((x, y) => x.Time.CompareTo(y.Time));
             //_delayedQueue = new  C5.IntervalHeap<EmulatedAction>(eventComparer);
         }
@@ -191,8 +194,16 @@ namespace TickTrader.Algo.Core
         private void EmulateQuote(QuoteEntity quote)
         {
             var update = FStartegy.InvokeAggregate(null, quote);
-            OnFeedUpdate(update);
+            var bufferUpdate = OnFeedUpdate(update);
             RateUpdated?.Invoke(quote);
+            _collector.OnTick(quote);
+
+            if (bufferUpdate.ExtendedBy > 0)
+                _collector.OnBufferExtended(bufferUpdate.ExtendedBy);
+
+            var acc = Builder.Account;
+            if (acc.IsMarginType)
+                _collector.RegisterEquity(VirtualTimePoint, acc.Equity, acc.Margin);
         }
 
         public override Task Stop(bool quick)

@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             IsUpdating = _requestsCount.Var > 0;
 
             SelectedTimeframe.Value = TimeFrames.M1;
-            SelectedPriceType.Value = DownloadPriceChoices.Bid;
+            SelectedPriceType.Value = DownloadPriceChoices.Both;
 
             var isTicks = SelectedTimeframe.Var == TimeFrames.Ticks
                 | SelectedTimeframe.Var == TimeFrames.TicksLevel2;

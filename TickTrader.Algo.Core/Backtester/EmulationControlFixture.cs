@@ -19,9 +19,14 @@ namespace TickTrader.Algo.Core
         public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
         {
             Settings = settings;
-            InvokeEmulator = new InvokeEmulator(settings);
-            Collector = new BacktesterCollector(executor, InvokeEmulator);
+            Collector = new BacktesterCollector(executor);
+            InvokeEmulator = new InvokeEmulator(settings, Collector);
             Executor = executor;
+        }
+
+        public void Init()
+        {
+            Collector.Init(Settings);
         }
 
         public void EmulateExecution()
@@ -44,13 +49,19 @@ namespace TickTrader.Algo.Core
 
             if (acc.IsMarginType)
             {
-                Collector.LogTrade("Initial equity: " + Settings.InitialBalance);
-                Collector.LogTrade("Final equity: " + acc.Equity);
-                Collector.LogTrade("Quotes emulated: " + Collector.TicksCount);
-                Collector.LogTrade("Orders opened: " + Collector.OrdersOpened);
-                Collector.LogTrade("Orders rejected: " + Collector.OrdersRejected);
-                Collector.LogTrade("Order modfications: " + Collector.Modifications);
-                Collector.LogTrade("Order modifications rejected: " + Collector.ModificationRejected);
+                Collector.Stats.InitialBalance = (decimal)Settings.InitialBalance;
+                Collector.Stats.FinalBalance = (decimal)acc.Equity;
+            }
+
+            if (acc.IsMarginType)
+            {
+                //Collector.LogTrade("Initial equity: " + Settings.InitialBalance);
+                //Collector.LogTrade("Final equity: " + acc.Equity);
+                //Collector.LogTrade("Quotes emulated: " + Collector.TicksCount);
+                //Collector.LogTrade("Orders opened: " + Collector.OrdersOpened);
+                //Collector.LogTrade("Orders rejected: " + Collector.OrdersRejected);
+                //Collector.LogTrade("Order modfications: " + Collector.Modifications);
+                //Collector.LogTrade("Order modifications rejected: " + Collector.ModificationRejected);
             }
         }
 

@@ -61,6 +61,21 @@ namespace TickTrader.Algo.Core
             Volume += volume;
         }
 
+        internal void AppendNanProof(double price, double volume)
+        {
+            Close = price;
+            if (double.IsNaN(High) || price > High)
+                High = price;
+            if (double.IsNaN(Low) || price < Low)
+                Low = price;
+            if (double.IsNaN(Open))
+                Open = price;
+            if (double.IsNaN(Volume))
+                Volume = volume;
+            else
+                Volume += volume;
+        }
+
         public void Append(BarEntity anotherBar)
         {
             Close = anotherBar.Close;

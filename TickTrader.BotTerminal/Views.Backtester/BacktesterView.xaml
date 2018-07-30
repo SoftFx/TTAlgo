@@ -6,12 +6,7 @@
     <DataTemplate x:Key="CaliburnViewTemplate">
         <ContentControl cal:View.Model="{Binding}" />
     </DataTemplate>
-
-    <UserControl x:Key="LauncherPanel.Classic" x:Shared="false">
-        
-    </UserControl>
     
-
     <ControlTemplate x:Key="SetupPage.Classic">
 
         <ControlTemplate.Resources>
@@ -160,6 +155,9 @@
                 </TabItem>
                 <TabItem Header="Graph">
                     <ContentControl cal:View.Model="{Binding ChartPage}"/>
+                </TabItem>
+                <TabItem Header="Report">
+                    <ContentControl cal:View.Model="{Binding ResultsPage}"/>
                 </TabItem>
             </TabControl>
 

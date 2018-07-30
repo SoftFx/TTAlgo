@@ -159,7 +159,7 @@ namespace TickTrader.Algo.Core
 
                     //_collector.LogTrade($"Modified order #{order.Id} {order.Type} {order.Symbol} {order.Side} price={order.Price} amount={order.Amount}");
 
-                    _collector.Modifications++;
+                    _collector.OnOrderModified();
 
                     // set result
                     return new TradeResultEntity(OrderCmdResultCodes.Ok, order.Entity.Clone());
@@ -168,7 +168,7 @@ namespace TickTrader.Algo.Core
                 {
                     //_collector.LogTradeFail($"Rejected modify #{request.OrderId} {request.Type} {request.Symbol} {request.Side} reason={error.ErrorCode}");
 
-                    _collector.ModificationRejected++;
+                    _collector.OnOrderModificatinRejected();
 
                     // set error code
                     return new TradeResultEntity(error.ErrorCode);
@@ -200,7 +200,7 @@ namespace TickTrader.Algo.Core
 
                     _collector.LogTrade(_opSummary.PrintOpenInfo());
 
-                    _collector.OrdersOpened++;
+                    _collector.OnOrderOpened();
 
                     // set result
                     return new TradeResultEntity(OrderCmdResultCodes.Ok, order.Entity.Clone());
@@ -209,7 +209,7 @@ namespace TickTrader.Algo.Core
                 {
                     _collector.LogTradeFail(TradeOperationSummary.PrintOpenFail(request, error));
 
-                    _collector.OrdersRejected++;
+                    _collector.OnOrderRejected();
 
                     // set error code
                     return new TradeResultEntity(error.ErrorCode);
@@ -1134,6 +1134,8 @@ namespace TickTrader.Algo.Core
             {
                 _opSummary.AddAction(TradeActions.NetClose);
                 _opSummary.NetCloseInfo = settlementInfo;
+
+                _collector.OnPositionClosed(_scheduler.VirtualTimePoint, settlementInfo.BalanceMovement);
             }
 
             return settlementInfo;

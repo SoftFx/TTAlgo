@@ -80,6 +80,7 @@
     <Compile Include="Backtester\EmulationControlFixture.cs" />
     <Compile Include="Backtester\FeedSeriesEmulator.cs" />
     <Compile Include="Backtester\Interfaces.cs" />
+    <Compile Include="Backtester\TestingStatistics.cs" />
     <Compile Include="Backtester\TradeEmulator.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
@@ -162,10 +163,12 @@
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Math\BarSequenceBuilder.cs" />
     <Compile Include="Math\BarVector.cs" />
     <Compile Include="Math\BarVectorBase.cs" />
     <Compile Include="Math\MathExt.cs" />
     <Compile Include="Math\Rounding.cs" />
+    <Compile Include="Math\SyncBarVector.cs" />
     <Compile Include="Metadata\ReductionDescriptor.cs" />
     <Compile Include="Package\Package.cs" />
     <Compile Include="Package\PackageMetadata.cs" />

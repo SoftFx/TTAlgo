@@ -92,6 +92,7 @@ namespace TickTrader.BotTerminal
             };
 
             ChartPage = new BacktesterChartPageViewModel();
+            ResultsPage = new BacktesterReportViewModel();
 
             _var.TriggerOnChange(SelectedPlugin.Var, a =>
             {
@@ -116,6 +117,7 @@ namespace TickTrader.BotTerminal
         public ObservableCollection<BacktesterSymbolSetupViewModel> FeedSources { get; private set; }
         //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
+        public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
         public PluginSetup PluginSetupModel { get; private set; }
 
@@ -166,6 +168,10 @@ namespace TickTrader.BotTerminal
 
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
+            ChartPage.Clear();
+            ResultsPage.Clear();
+            _journalContent.Value = null;
+
             foreach (var symbolSetup in FeedSources)
                 await symbolSetup.PrecacheData(observer, cToken, DateRange.From, DateRange.To);
 
@@ -237,7 +243,13 @@ namespace TickTrader.BotTerminal
 
                 _journalContent.Value = await CollectEvents(tester, observer);
 
+                observer.SetMessage("Loading testing result data...");
+
+                ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
+
                 await LoadChartData(tester, observer, tester.Feed.GetBarSeriesData(chartSymbol.Name, chartTimeframe, chartPriceLayer));
+
+                ChartPage.AddStatSeries(ResultsPage.Stats);
 
                 if (execError != null)
                     observer.SetMessage(execError.Message);
@@ -280,7 +292,7 @@ namespace TickTrader.BotTerminal
             {
                 var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach(var bar in data)
+                foreach (var bar in data)
                     chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
 
                 return chartData;
