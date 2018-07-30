@@ -54,19 +54,6 @@ namespace TickTrader.Algo.Core
         void Invoke(Action action);
     }
 
-    public interface IIsolationContext
-    {
-        T ActivateIsolated<T>() where T : MarshalByRefObject, new();
-        ILink<T> CreateInLink<T>();
-        ILink<T> CreateOutLink<T>();
-    }
-
-    public interface ILink<T> : IDisposable
-    {
-        void Write(T msg);
-        ILinkOutput<T> Output { get; }
-    }
-
     public interface ILinkOutput<T> : IDisposable
     {
         event Action<T> MsgReceived;
