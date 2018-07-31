@@ -50,7 +50,7 @@ namespace TickTrader.Algo.CoreUsageSample
             return GetSymbolData(symbolCode).QueryBars(from, to, timeFrame).ToList();
         }
 
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
             return null;
         }
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.CoreUsageSample
             throw new NotImplementedException();
         }
 
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, int count, DateTime to, int depth)
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
             throw new NotImplementedException();
         }

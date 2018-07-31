@@ -83,6 +83,7 @@ namespace TickTrader.Algo.Core
                 Account.InstanceId = _instanceId;
             }
         }
+        public TimeFrames TimeFrame { get; set; }
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -265,6 +266,7 @@ namespace TickTrader.Algo.Core
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
         ITimerApi IPluginContext.TimerApi => TimerApi;
+        TimeFrames IPluginContext.TimeFrame => TimeFrame;
 
         void IPluginContext.OnExit()
         {

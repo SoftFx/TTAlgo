@@ -34,20 +34,20 @@ namespace TickTrader.Algo.Core
 
         public void LoadFeed(DateTime from, DateTime to)
         {
-            var data = Context.FeedProvider.QueryTicks(SymbolCode, from, to, 1);
+            var data = Context.FeedProvider.QueryTicks(SymbolCode, from, to, false);
             AppendData(data);
         }
 
         public void LoadFeed(int size)
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
-            var data = Context.FeedProvider.QueryTicks(SymbolCode, size, to, 1);
+            var data = Context.FeedProvider.QueryTicks(SymbolCode, to, -size, false);
             AppendData(data);
         }
 
-        public void LoadFeed(DateTime to, int size)
+        public void LoadFeed(DateTime from, int size)
         {
-            var data = Context.FeedProvider.QueryTicks(SymbolCode, size, to, 1);
+            var data = Context.FeedProvider.QueryTicks(SymbolCode, from, size, false);
             AppendData(data);
         }
 

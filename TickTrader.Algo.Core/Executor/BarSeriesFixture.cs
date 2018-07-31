@@ -206,9 +206,9 @@ namespace TickTrader.Algo.Core
             AppendData(data);
         }
 
-        public void LoadFeed(DateTime to, int size)
+        public void LoadFeed(DateTime from, int size)
         {
-            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
+            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, size, Context.TimeFrame);
             AppendData(data);
         }
     }

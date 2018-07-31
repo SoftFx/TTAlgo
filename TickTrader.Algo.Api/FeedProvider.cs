@@ -27,7 +27,9 @@ namespace TickTrader.Algo.Api
         BarSeries GetBarSeries(string symbol);
         BarSeries GetBarSeries(string symbol, BarPriceType side);
         IEnumerable<Bar> GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder);
+        IEnumerable<Bar> GetBars(string symbol, TimeFrames timeFrame, DateTime from, int count, BarPriceType side);
         IEnumerable<Quote> GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder);
+        IEnumerable<Quote> GetQuotes(string symbol, DateTime from, int count, bool level2);
     }
 
     public interface BarSeries : DataSeries<Bar>

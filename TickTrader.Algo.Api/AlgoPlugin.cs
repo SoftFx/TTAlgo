@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Api
         public BarSeries Bars { get { return context.Feed.Bars; } }
         public double Bid { get { return Symbol.Bid; } }
         public double Ask { get { return Symbol.Ask; } }
+        public TimeFrames TimeFrame { get { return context.TimeFrame; } }
 
         protected virtual void Init() { }
 

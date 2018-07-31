@@ -347,6 +347,7 @@ namespace TickTrader.Algo.Common.Model
                 {
                     var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
                     var barArray = FdkConvertor.Convert(result.Bars).ToArray();
+                    System.Diagnostics.Debug.WriteLine($"Downloaded {barArray.Length} bars");
                     if (count < 0)
                         Array.Reverse(barArray);
                     return barArray;
@@ -365,7 +366,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("FDK does not support getting quotes");
         }
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
