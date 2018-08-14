@@ -126,6 +126,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Data.SQLite.EF6">
@@ -273,6 +274,7 @@
     <Compile Include="Extensions\ValidationBinding.cs" />
     <Compile Include="Infrustructure\AppInstanceRestrictor.cs" />
     <Compile Include="Infrustructure\AutoViewManager.cs" />
+    <Compile Include="Infrustructure\NonBlockingFileCompressor.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
