@@ -13,6 +13,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using NLog;
 using System.Globalization;
+using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 
 namespace TickTrader.BotAgent
 {
@@ -51,6 +52,9 @@ namespace TickTrader.BotAgent
 
                 var config = EnsureDefaultConfiguration(pathToAppSettings);
 
+                var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(pathToContentRoot), new JwtProvider(config.GetJwtKey()));
+                protocolServer.Start();
+
                 var cert = config.GetCertificate(pathToContentRoot);
 
                 var host = new WebHostBuilder()
@@ -60,6 +64,7 @@ namespace TickTrader.BotAgent
                     .UseWebRoot(pathToWebRoot)
                     .UseStartup<Startup>()
                     .AddBotAgent(agent)
+                    .AddProtocolServer(protocolServer)
                     .Build();
 
                 Console.WriteLine($"Web root path: {pathToWebRoot}");

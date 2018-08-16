@@ -45,6 +45,8 @@ message RequestResult
 	{
 		SUCCESS = 0;
 		INTERNAL_SERVER_ERROR = 1;
+		UNAUTHORIZED = 2;
+		REJECT = 3;
 	}
 
 	RequestStatus status = 1;
@@ -72,6 +74,7 @@ message LoginResponse
 	LoginError error = 2;
 	int32 major_version = 3; // server version
 	int32 minor_version = 4; // server version
+	string access_token = 5;
 }
 
 message LogoutRequest

@@ -105,6 +105,7 @@ namespace TickTrader.BotTerminal
             _syncContext.Invoke(() =>
             {
                 _packages.Clear();
+                _plugins.Clear();
                 packages.ForEach(package =>
                 {
                     _packages.Add(package.Key, package);
@@ -130,6 +131,7 @@ namespace TickTrader.BotTerminal
             _syncContext.Invoke(() =>
             {
                 _bots.Clear();
+                IdProvider.Reset();
                 foreach (var bot in bots)
                 {
                     _bots.Add(bot.InstanceId, bot);

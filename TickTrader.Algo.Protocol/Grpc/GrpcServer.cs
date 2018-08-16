@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Google.Protobuf;
 using Grpc.Core;
 using NLog;
 using TickTrader.Algo.Common.Info;
@@ -11,6 +12,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     public class GrpcServer : ProtocolServer
     {
+        private IJwtProvider _jwtProvider;
         private BotAgentServerImpl _impl;
         private GrpcCore.Server _server;
 
@@ -21,15 +23,16 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
 
-        public GrpcServer(IBotAgentServer agentServer, IServerSettings settings) : base(agentServer, settings)
+        public GrpcServer(IBotAgentServer agentServer, IServerSettings settings, IJwtProvider jwtProvider) : base(agentServer, settings)
         {
+            _jwtProvider = jwtProvider;
         }
 
 
         protected override void StartServer()
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
-            _impl = new BotAgentServerImpl(AgentServer, Logger);
+            _impl = new BotAgentServerImpl(AgentServer, _jwtProvider, Logger);
             var creds = new SslServerCredentials(new[] { new KeyCertificatePair(CertificateProvider.ServerCertificate, CertificateProvider.ServerKey), }); //,CertificateProvider.RootCertificate, true);
             _server = new GrpcCore.Server
             {
@@ -50,15 +53,19 @@ namespace TickTrader.Algo.Protocol.Grpc
     internal class BotAgentServerImpl : Lib.BotAgent.BotAgentBase
     {
         private IBotAgentServer _botAgent;
+        private IJwtProvider _jwtProvider;
         private ILogger _logger;
+        private JsonFormatter _messageFormatter;
         private List<Tuple<TaskCompletionSource<object>, IServerStreamWriter<Lib.UpdateInfo>>> _updateListeners;
 
 
-        public BotAgentServerImpl(IBotAgentServer botAgent, ILogger logger)
+        public BotAgentServerImpl(IBotAgentServer botAgent, IJwtProvider jwtProvider, ILogger logger)
         {
             _botAgent = botAgent;
+            _jwtProvider = jwtProvider;
             _logger = logger;
 
+            _messageFormatter = new JsonFormatter(new JsonFormatter.Settings(true));
             _updateListeners = new List<Tuple<TaskCompletionSource<object>, IServerStreamWriter<Lib.UpdateInfo>>>();
 
             _botAgent.PackageUpdated += OnPackageUpdate;
@@ -70,24 +77,39 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
 
-        public static Lib.RequestResult CreateSuccessResult()
+        public static Lib.RequestResult CreateSuccessResult(string message = "")
         {
-            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Success, Message = "" };
+            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Success, Message = message ?? "" };
         }
 
-        public static Lib.RequestResult CreateErrorResult(string message)
+        public static Lib.RequestResult CreateErrorResult(string message = "")
         {
             return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.InternalServerError, Message = message ?? "" };
         }
 
         public static Lib.RequestResult CreateErrorResult(Exception ex)
         {
-            var aggregateEx = ex as AggregateException;
-            if (aggregateEx != null && aggregateEx.InnerExceptions.Count > 0)
-            {
-                return CreateErrorResult(aggregateEx.InnerExceptions[0].Message);
-            }
-            return CreateErrorResult(ex.Message);
+            return CreateErrorResult(ex.Flatten().Message);
+        }
+
+        public static Lib.RequestResult CreateUnauthorizedResult(string message = "")
+        {
+            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Unauthorized, Message = message ?? "" };
+        }
+
+        public static Lib.RequestResult CreateUnauthorizedResult(Exception ex)
+        {
+            return CreateUnauthorizedResult(ex.Flatten().Message);
+        }
+
+        public static Lib.RequestResult CreateRejectResult(string message = "")
+        {
+            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Reject, Message = message ?? "" };
+        }
+
+        public static Lib.RequestResult CreateRejectResult(Exception ex)
+        {
+            return CreateRejectResult(ex.Flatten().Message);
         }
 
 
@@ -103,6 +125,49 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
+
+        public override Task<Lib.LoginResponse> Login(Lib.LoginRequest request, ServerCallContext context)
+        {
+            var res = new Lib.LoginResponse
+            {
+                MajorVersion = VersionSpec.MajorVersion,
+                MinorVersion = VersionSpec.MinorVersion,
+                ExecResult = CreateSuccessResult(),
+                Error = Lib.LoginResponse.Types.LoginError.None,
+                AccessToken = "",
+            };
+
+            if (!VersionSpec.CheckClientCompatibility(request.MajorVersion, request.MinorVersion, out var error))
+            {
+                res.ExecResult = CreateRejectResult(error);
+                res.Error = Lib.LoginResponse.Types.LoginError.VersionMismatch;
+            }
+            else if (!_botAgent.ValidateCreds(request.Login, request.Password))
+            {
+                res.ExecResult = CreateRejectResult();
+                res.Error = Lib.LoginResponse.Types.LoginError.InvalidCredentials;
+            }
+            else
+            {
+                try
+                {
+                    var payload = new JwtPayload
+                    {
+                        Username = request.Login,
+                        SessionId = Guid.NewGuid().ToString(),
+                        MinorVersion = Math.Min(request.MinorVersion, VersionSpec.MinorVersion),
+                    };
+                    res.AccessToken = _jwtProvider.CreateToken(payload);
+                }
+                catch (Exception ex)
+                {
+                    res.ExecResult = CreateErrorResult(ex);
+                    _logger.Error(ex, $"Failed to create access token: {ex.Message}");
+                }
+            }
+
+            return Task.FromResult(res);
+        }
 
         public override Task<Lib.PackageListResponse> GetPackageList(Lib.PackageListRequest request, ServerCallContext context)
         {
@@ -147,17 +212,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                 res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
-        }
-
-        public override Task<Lib.LoginResponse> Login(Lib.LoginRequest request, ServerCallContext context)
-        {
-            return Task.FromResult(new Lib.LoginResponse
-            {
-                MajorVersion = VersionSpec.MajorVersion,
-                MinorVersion = VersionSpec.MinorVersion,
-                ExecResult = CreateSuccessResult(),
-                Error = Lib.LoginResponse.Types.LoginError.None
-            });
         }
 
         public override Task SubscribeToUpdates(Lib.SubscribeToUpdatesRequest request, IServerStreamWriter<Lib.UpdateInfo> responseStream, ServerCallContext context)

@@ -33,11 +33,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Google.Protobuf, Version=3.6.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Protobuf.3.6.0\lib\net45\Google.Protobuf.dll</HintPath>
+    <Reference Include="Google.Protobuf, Version=3.6.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Protobuf.3.6.1\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
     <Reference Include="Grpc.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d754f35622e28bad, processorArchitecture=MSIL">
-      <HintPath>..\packages\Grpc.Core.1.13.0\lib\net45\Grpc.Core.dll</HintPath>
+      <HintPath>..\packages\Grpc.Core.1.14.1\lib\net45\Grpc.Core.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.3.4\lib\net45\NLog.dll</HintPath>
@@ -69,8 +69,10 @@
     <Compile Include="Grpc\Lib\Metadata.cs" />
     <Compile Include="Grpc\ToAlgo.cs" />
     <Compile Include="Grpc\ToGrpc.cs" />
-    <Compile Include="Infrastructure\BAException.cs" />
+    <Compile Include="Infrastructure\BAExceptions.cs" />
     <Compile Include="Infrastructure\CertificateProvider.cs" />
+    <Compile Include="Infrastructure\ExceptionExtensions.cs" />
+    <Compile Include="Infrastructure\IJwtProvider.cs" />
     <Compile Include="Infrastructure\LoggerHelper.cs" />
     <Compile Include="Infrastructure\VersionSpec.cs" />
     <Compile Include="Interface\Client\IBotAgentClient.cs" />
@@ -162,11 +164,11 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Grpc.Core.1.13.0\build\net45\Grpc.Core.targets" Condition="Exists('..\packages\Grpc.Core.1.13.0\build\net45\Grpc.Core.targets')" />
+  <Import Project="..\packages\Grpc.Core.1.14.1\build\net45\Grpc.Core.targets" Condition="Exists('..\packages\Grpc.Core.1.14.1\build\net45\Grpc.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Grpc.Core.1.13.0\build\net45\Grpc.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Grpc.Core.1.13.0\build\net45\Grpc.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\Grpc.Core.1.14.1\build\net45\Grpc.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Grpc.Core.1.14.1\build\net45\Grpc.Core.targets'))" />
   </Target>
 </Project>

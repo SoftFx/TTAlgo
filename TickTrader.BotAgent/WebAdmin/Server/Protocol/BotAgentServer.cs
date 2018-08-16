@@ -31,9 +31,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<AccountModelInfo> AccountStateUpdated = delegate { };
 
 
-        public BotAgentServer(IServiceProvider services, IConfiguration serverConfig)
+        public BotAgentServer(IBotAgent botAgent, IConfiguration serverConfig)
         {
-            _botAgent = services.GetRequiredService<IBotAgent>();
+            _botAgent = botAgent;
             _serverCreds = serverConfig.GetCredentials();
 
             if (_serverCreds == null)

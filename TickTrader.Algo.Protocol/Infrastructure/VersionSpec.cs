@@ -25,17 +25,21 @@
         }
 
 
-        internal static string CheckClientCompatibility(int clientMajorVersion, int clientMinorVersion)
+        internal static bool CheckClientCompatibility(int clientMajorVersion, int clientMinorVersion, out string error)
         {
+            error = "";
+
             if (MajorVersion != clientMajorVersion)
             {
-                return $"Major version mismatch: server - {MajorVersion}, client - {clientMajorVersion}";
+                error = $"Major version mismatch: server - {MajorVersion}, client - {clientMajorVersion}";
+                return false;
             }
             if (MinorVersion > clientMinorVersion)
             {
-                return "Server doesn't support older clients";
+                error = "Server doesn't support older clients";
+                return false;
             }
-            return null;
+            return true;
         }
 
 

@@ -12,204 +12,204 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
   {
     static readonly string __ServiceName = "TickTrader.Algo.Protocol.Grpc.Lib.BotAgent";
 
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest> __Marshaller_LoginRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Marshaller_LoginResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest> __Marshaller_PackageListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Marshaller_PackageListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest> __Marshaller_AccountListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> __Marshaller_AccountListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest> __Marshaller_BotListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> __Marshaller_BotListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest> __Marshaller_SubscribeToUpdatesRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo> __Marshaller_UpdateInfo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest> __Marshaller_ApiMetadataRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse> __Marshaller_ApiMetadataResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest> __Marshaller_MappingsInfoRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse> __Marshaller_MappingsInfoResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest> __Marshaller_SetupContextRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse> __Marshaller_SetupContextResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest> __Marshaller_AccountMetadataRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse> __Marshaller_AccountMetadataResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest> __Marshaller_StartBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse> __Marshaller_StartBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest> __Marshaller_StopBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse> __Marshaller_StopBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest> __Marshaller_AddBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse> __Marshaller_AddBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest> __Marshaller_RemoveBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse> __Marshaller_RemoveBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest> __Marshaller_ChangeBotConfigRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse> __Marshaller_ChangeBotConfigResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest> __Marshaller_AddAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse> __Marshaller_AddAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest> __Marshaller_RemoveAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse> __Marshaller_RemoveAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest> __Marshaller_ChangeAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse> __Marshaller_ChangeAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest> __Marshaller_TestAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse> __Marshaller_TestAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest> __Marshaller_TestAccountCredsRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse> __Marshaller_TestAccountCredsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest> __Marshaller_UploadPackageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> __Marshaller_UploadPackageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest> __Marshaller_RemovePackageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse> __Marshaller_RemovePackageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest> __Marshaller_DownloadPackageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> __Marshaller_DownloadPackageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SubscribeToUpdatesRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UpdateInfo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ApiMetadataRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ApiMetadataResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_MappingsInfoRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_MappingsInfoResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SetupContextRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SetupContextResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountMetadataRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountMetadataResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StartBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StartBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StopBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StopBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveBotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveBotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeBotConfigRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeBotConfigResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountCredsRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountCredsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadPackageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadPackageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemovePackageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemovePackageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadPackageRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadPackageResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse.Parser.ParseFrom);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Method_Login = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "Login",
-        __Marshaller_LoginRequest,
-        __Marshaller_LoginResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Method_GetPackageList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetPackageList",
-        __Marshaller_PackageListRequest,
-        __Marshaller_PackageListResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse> __Method_GetAccountList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetAccountList",
-        __Marshaller_AccountListRequest,
-        __Marshaller_AccountListResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountListRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountListResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse> __Method_GetBotList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotListResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetBotList",
-        __Marshaller_BotListRequest,
-        __Marshaller_BotListResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotListRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotListResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo> __Method_SubscribeToUpdates = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UpdateInfo>(
         grpc::MethodType.ServerStreaming,
         __ServiceName,
         "SubscribeToUpdates",
-        __Marshaller_SubscribeToUpdatesRequest,
-        __Marshaller_UpdateInfo);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SubscribeToUpdatesRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UpdateInfo);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse> __Method_GetApiMetadata = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetApiMetadata",
-        __Marshaller_ApiMetadataRequest,
-        __Marshaller_ApiMetadataResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ApiMetadataRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ApiMetadataResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse> __Method_GetMappingsInfo = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.MappingsInfoResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetMappingsInfo",
-        __Marshaller_MappingsInfoRequest,
-        __Marshaller_MappingsInfoResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_MappingsInfoRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_MappingsInfoResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse> __Method_GetSetupContext = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetSetupContext",
-        __Marshaller_SetupContextRequest,
-        __Marshaller_SetupContextResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SetupContextRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SetupContextResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse> __Method_GetAccountMetadata = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetAccountMetadata",
-        __Marshaller_AccountMetadataRequest,
-        __Marshaller_AccountMetadataResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountMetadataRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountMetadataResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse> __Method_StartBot = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.StartBotResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "StartBot",
-        __Marshaller_StartBotRequest,
-        __Marshaller_StartBotResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StartBotRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StartBotResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse> __Method_StopBot = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.StopBotResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "StopBot",
-        __Marshaller_StopBotRequest,
-        __Marshaller_StopBotResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StopBotRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_StopBotResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse> __Method_AddBot = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AddBotResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "AddBot",
-        __Marshaller_AddBotRequest,
-        __Marshaller_AddBotResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddBotRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddBotResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse> __Method_RemoveBot = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveBotResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "RemoveBot",
-        __Marshaller_RemoveBotRequest,
-        __Marshaller_RemoveBotResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveBotRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveBotResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse> __Method_ChangeBotConfig = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeBotConfigResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "ChangeBotConfig",
-        __Marshaller_ChangeBotConfigRequest,
-        __Marshaller_ChangeBotConfigResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeBotConfigRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeBotConfigResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse> __Method_AddAccount = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AddAccountResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "AddAccount",
-        __Marshaller_AddAccountRequest,
-        __Marshaller_AddAccountResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddAccountRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AddAccountResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse> __Method_RemoveAccount = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.RemoveAccountResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "RemoveAccount",
-        __Marshaller_RemoveAccountRequest,
-        __Marshaller_RemoveAccountResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveAccountRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemoveAccountResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse> __Method_ChangeAccount = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ChangeAccountResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "ChangeAccount",
-        __Marshaller_ChangeAccountRequest,
-        __Marshaller_ChangeAccountResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeAccountRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ChangeAccountResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse> __Method_TestAccount = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "TestAccount",
-        __Marshaller_TestAccountRequest,
-        __Marshaller_TestAccountResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse> __Method_TestAccountCreds = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.TestAccountCredsResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "TestAccountCreds",
-        __Marshaller_TestAccountCredsRequest,
-        __Marshaller_TestAccountCredsResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountCredsRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_TestAccountCredsResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> __Method_UploadPackage = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "UploadPackage",
-        __Marshaller_UploadPackageRequest,
-        __Marshaller_UploadPackageResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadPackageRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadPackageResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse> __Method_RemovePackage = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "RemovePackage",
-        __Marshaller_RemovePackageRequest,
-        __Marshaller_RemovePackageResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemovePackageRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemovePackageResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> __Method_DownloadPackage = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "DownloadPackage",
-        __Marshaller_DownloadPackageRequest,
-        __Marshaller_DownloadPackageResponse);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadPackageRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadPackageResponse);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor

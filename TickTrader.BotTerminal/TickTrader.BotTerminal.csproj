@@ -189,7 +189,6 @@
     </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
     <None Include="bot-terminal-sign.pfx" />
-    <None Include="bot-terminal.pfx" />
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -197,7 +196,6 @@
     <None Include="Resx\Sounds\Negative.wav" />
     <None Include="Resx\Sounds\Blop.wav" />
     <None Include="Resx\Sounds\Clinking.wav" />
-    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

@@ -1,4 +1,5 @@
-﻿using Grpc.Core;
+﻿using Google.Protobuf;
+using Grpc.Core;
 using System;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     public class GrpcClient : ProtocolClient
     {
+        private JsonFormatter _messageFormatter;
         private Channel _channel;
         private Lib.BotAgent.BotAgentClient _client;
 
@@ -22,6 +24,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public GrpcClient(IBotAgentClient agentClient) : base(agentClient)
         {
+            _messageFormatter = new JsonFormatter(new JsonFormatter.Settings(true));
         }
 
 
@@ -60,7 +63,13 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void SendLogin()
         {
-            var response = _client.Login(new Lib.LoginRequest { MajorVersion = VersionSpec.MajorVersion, MinorVersion = VersionSpec.MinorVersion });
+            var response = _client.Login(new Lib.LoginRequest
+            {
+                Login = SessionSettings.Login,
+                Password = SessionSettings.Password,
+                MajorVersion = VersionSpec.MajorVersion,
+                MinorVersion = VersionSpec.MinorVersion
+            });
             OnLogin(response.MajorVersion, response.MinorVersion);
         }
 

@@ -9,7 +9,6 @@ using TickTrader.BotAgent.WebAdmin.Server.Core;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.Algo.Core;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using Microsoft.IdentityModel.Tokens;
@@ -20,14 +19,11 @@ using NLog.Extensions.Logging;
 using NLog.Web;
 using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
-using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
     public class Startup
     {
-        private ProtocolServer _protocolServer;
-
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -38,7 +34,7 @@ namespace TickTrader.BotAgent.WebAdmin
         }
 
         public IConfigurationRoot Configuration { get; private set; }
-        private string JwtKey => $"{Configuration.GetSecretKey()}{Configuration.GetCredentials().Password}";
+        private string JwtKey => Configuration.GetJwtKey();
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -124,16 +120,14 @@ namespace TickTrader.BotAgent.WebAdmin
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
-
-            _protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(services, Configuration), Configuration.GetProtocolServerSettings(env.ContentRootPath));
-            _protocolServer.Start();
         }
 
         private void Shutdown(IServiceProvider services)
         {
             var server = services.GetRequiredService<IBotAgent>();
+            var protocolServer = services.GetRequiredService<ProtocolServer>();
 
-            _protocolServer.Stop();
+            protocolServer.Stop();
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
         }
 

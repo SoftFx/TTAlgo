@@ -37,6 +37,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return configuration.GetSection(nameof(AppSettings.Credentials)).Get<ServerCredentials>();
         }
 
+        public static string GetJwtKey(this IConfiguration configuration)
+        {
+            return $"{configuration.GetSecretKey()}{configuration.GetCredentials().Password}";
+        }
+
         public static SslSettings GetSslSettings(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(AppSettings.Ssl)).Get<SslSettings>();
