@@ -69,7 +69,6 @@ namespace TickTrader.SeriesStorage
 
         #endregion
 
-
         #region Uint
 
         public static void WriteUintBe(uint val, System.IO.Stream s)

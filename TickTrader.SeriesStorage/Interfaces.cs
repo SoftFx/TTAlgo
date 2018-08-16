@@ -6,25 +6,69 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    public interface IMulticollectionBinaryStorage : IDisposable, IBinaryStorageFactory
+    public interface IKeyValueBinaryStorage : IDisposable
     {
-        bool SupportsByteSize { get; }
-        IEnumerable<string> Collections { get; }
+        //IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(bool reversed = false);
+        //IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] from, bool reversed = false);
+        bool SupportsRemoveAll { get; }
+
+        IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(bool reversed);
+        IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] seek, bool reversed);
+        IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] seek, byte[] min, byte[] max, bool reversed);
+        IEnumerable<byte[]> IterateKeys(bool reversed);
+        IEnumerable<byte[]> IterateKeys(byte[] seek, bool reversed);
+        IEnumerable<byte[]> IterateKeys(byte[] seek, byte[] min, byte[] max, bool reversed);
+        bool Read(byte[] key, out byte[] value);
+        void Write(byte[] key, byte[] value);
+        void Remove(byte[] key);
+        void RemoveRange(byte[] from, byte[] to);
+        void RemoveAll();
+        void CompactRange(byte[] from, byte[] to);
+        long GetSize();
+        long GetSize(byte[] from, byte[] to);
     }
 
-    public interface IBinaryCollection
+    public interface IKeyValueBinaryDatabase : IDisposable
+    {
+        bool SupportsTransactions { get; }
+
+        IKeyValueBinaryStorage GetCollection(string name);
+        IEnumerable<string> GetCollections();
+
+        IDisposable StartTransaction();
+        void Commit();
+    }
+
+    /// <summary>
+    /// Interface to manipulate (create, alter, delete) a multiple separate key-value databases (files).
+    /// This interface is necessary to create a database pool.
+    /// </summary>
+    public interface IBinaryStorageManager
+    {
+        IEnumerable<string> GetStorages();
+        IKeyValueBinaryStorage OpenStorage(string name);
+    }
+
+    public interface ISeriesDatabase : IDisposable
+    {
+        IEnumerable<string> Collections { get; }
+        IBinaryStorageCollection<TKey> GetBinaryCollection<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
+    }
+
+    internal interface IBinaryCollection
     {
         string Name { get; }
-        long ByteSize { get; }
     }
 
     public interface ICollectionStorage<TKey, TValue> : IDisposable
     {
+        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed = false);
         IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed = false);
         IEnumerable<TKey> IterateKeys(TKey from, bool reversed = false);
         bool Read(TKey key, out TValue value);
         void Write(TKey key, TValue value);
         void Remove(TKey key);
+        void RemoveRange(TKey from, TKey to);
         void RemoveAll();
         void Drop(); // deletes whole storage
         long GetSize();
@@ -34,10 +78,10 @@ namespace TickTrader.SeriesStorage
     {
     }
 
-    public interface IBinaryStorageFactory
-    {
-        IBinaryStorageCollection<TKey> GetBinaryCollection<TKey>(string storageName, IKeySerializer<TKey> keySerializer);
-    }
+    //public interface IBinaryStorageFactory
+    //{
+        
+    //}
 
     public interface IStorageFactory
     {
@@ -122,5 +166,19 @@ namespace TickTrader.SeriesStorage
         {
             return string.Format("{0} - {1}", From, To);
         }
+    }
+
+    public interface ISeriesStorage
+    {
+        double GetSize();
+        void Drop();
+    }
+
+    public interface ISeriesStorage<TKey> : ISeriesStorage
+        where TKey : IComparable
+    {
+        KeyRange<TKey> GetFirstRange(TKey from, TKey to);
+        KeyRange<TKey> GetLastRange(TKey from, TKey to);
+        IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false);
     }
 }

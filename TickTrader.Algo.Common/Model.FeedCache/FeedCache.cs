@@ -17,12 +17,12 @@ namespace TickTrader.Algo.Common.Model
     public class FeedCache : Actor
     {
         private VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>> _series = new VarDictionary<FeedCacheKey, ISeriesStorage<DateTime>>();
-        private LevelDbStorage _diskStorage;
+        private ISeriesDatabase _diskStorage;
         private ActorEvent<FeedCacheKey> _addListeners = new ActorEvent<FeedCacheKey>();
         private ActorEvent<FeedCacheKey> _removeListeners = new ActorEvent<FeedCacheKey>();
 
         protected IVarSet<FeedCacheKey> Keys => _series.Keys;
-        protected LevelDbStorage Database => _diskStorage;
+        protected ISeriesDatabase Database => _diskStorage;
 
         public FeedCache()
         {
@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Common.Model
             if (_diskStorage != null)
                 throw new InvalidOperationException("Already started!");
 
-            _diskStorage = new LevelDbStorage(folder);
+            _diskStorage = SeriesDatabase.Create(new LevelDbStorage(folder));
 
             var loadedKeys = new List<FeedCacheKey>();
 
@@ -327,9 +327,9 @@ namespace TickTrader.Algo.Common.Model
             ISeriesStorage<DateTime> collection;
 
             if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
-                collection = SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.Serialize());
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.Serialize());
             else
-                collection = SeriesStorage.SeriesStorage.Create(_diskStorage, new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.Serialize());
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.Serialize());
 
             _series.Add(key, collection);
             return collection;

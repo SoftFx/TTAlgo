@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
-    internal class BinStorageAdapter<TKey, TValue> : ICollectionStorage<TKey, TValue>
+    internal class CollectionSerializer<TKey, TValue> : ICollectionStorage<TKey, TValue>
     {
         private IBinaryStorageCollection<TKey> _binStorage;
         private IValueSerializer<TValue> _serializer;
 
-        public BinStorageAdapter(IBinaryStorageCollection<TKey> binStorage, IValueSerializer<TValue> serializer)
+        public CollectionSerializer(IBinaryStorageCollection<TKey> binStorage, IValueSerializer<TValue> serializer)
         {
             _binStorage = binStorage;
             _serializer = serializer;
@@ -25,6 +25,15 @@ namespace TickTrader.SeriesStorage
         public void Drop()  
         {
             _binStorage.Drop();
+        }
+
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed)
+        {
+            foreach (var item in _binStorage.Iterate(reversed))
+            {
+                var value = _serializer.Deserialize(item.Value);
+                yield return new KeyValuePair<TKey, TValue>(item.Key, value);
+            }
         }
 
         public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed)
@@ -58,6 +67,11 @@ namespace TickTrader.SeriesStorage
         public void Remove(TKey key)
         {
             _binStorage.Remove(key);
+        }
+
+        public void RemoveRange(TKey from, TKey to)
+        {
+            _binStorage.RemoveRange(from, to);
         }
 
         public void RemoveAll()

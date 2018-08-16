@@ -42,6 +42,20 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             }
         }
 
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed = false)
+        {
+            if (reversed)
+            {
+                for (int i = list.Count -1; i >= 0; i--)
+                    yield return new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
+            }
+            else
+            {
+                for (int i = 0; i < list.Count; i++)
+                    yield return new KeyValuePair<TKey, TValue>(list.Keys[i], list.Values[i]);
+            }
+        }
+
         public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
         {
             var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
@@ -63,6 +77,11 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
         public void RemoveAll()
         {
             list.Clear();
+        }
+
+        public void RemoveRange(TKey from, TKey to)
+        {
+            throw new NotImplementedException();
         }
 
         public void Write(TKey key, TValue value)

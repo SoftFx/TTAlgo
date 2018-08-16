@@ -81,11 +81,11 @@ namespace TickTrader.SeriesStorage
         }
 
         public static ICollectionStorage<TKey, TValue> GetCollection<TKey, TValue>(
-            this IMulticollectionBinaryStorage storage, string name,
+            this ISeriesDatabase storage, string name,
             IKeySerializer<TKey> keySerializer, IValueSerializer<TValue> valueSerializer)
         {
             var collection = storage.GetBinaryCollection(name, keySerializer);
-            return new BinStorageAdapter<TKey, TValue>(collection, valueSerializer);
+            return new CollectionSerializer<TKey, TValue>(collection, valueSerializer);
         }
     }
 

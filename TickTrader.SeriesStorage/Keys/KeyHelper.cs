@@ -55,5 +55,50 @@ namespace TickTrader.SeriesStorage
         {
             return IsLess(key1, key2) ? key2 : key1;
         }
+
+        #region Binary Keys
+
+        public static bool IsLess(byte[] key1, byte[] key2)
+        {
+            return Compare(key1, key2) < 0;
+        }
+
+        public static bool IsLessOrEqual(byte[] key1, byte[] key2)
+        {
+            return Compare(key1, key2) <= 0;
+        }
+
+        public static bool IsGreater(byte[] key1, byte[] key2)
+        {
+            return Compare(key1, key2) > 0;
+        }
+
+        public static bool IsGreaterOrEqual(byte[] key1, byte[] key2)
+        {
+            return Compare(key1, key2) >= 0;
+        }
+
+        public static bool IsInRange(byte[] key, byte[] from, byte[] to)
+        {
+            return IsGreaterOrEqual(key, from) && IsLessOrEqual(key, to);
+        }
+
+        public static int Compare(byte[] key1, byte[] key2)
+        {
+            if (key1.Length != key2.Length)
+                return key1.Length.CompareTo(key2.Length);
+
+            for (int i = 0; i < key1.Length; i++)
+            {
+                var cmp = key1[i].CompareTo(key2[i]);
+                if (cmp != 0)
+                    return cmp;
+            }
+
+            return 0;
+        }
+
+
+        #endregion
     }
 }

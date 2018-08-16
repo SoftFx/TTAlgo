@@ -5,14 +5,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 using System.Text;
+using TickTrader.SeriesStorage.Lmdb;
+using System.IO;
 
 namespace TickTrader.SeriesStorage.UnitTest
 {
     [TestClass]
-    public class LevelDbTests
+    public abstract class BinaryStorageTests
     {
         private readonly static IKeySerializer<DateTime> keySerializer = new DatTimeKeySerializer();
-        private readonly static string tempdbPath = "test.db";
+
+        protected string WorkingFolder;
+
+        [TestInitialize]
+        public void Init()
+        {
+            WorkingFolder = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(WorkingFolder);
+        }
+
+        [TestCleanup]
+        public void Deinit()
+        {
+            Directory.Delete(WorkingFolder, true);
+        }
 
         // Setup 1:
 
@@ -31,54 +47,97 @@ namespace TickTrader.SeriesStorage.UnitTest
         //    2017, 08, 05 - 8
         //    2017, 08, 15 - 9
 
-        [TestMethod]
-        public void LevelDbStorage_SimpleWrite()
-        {
-            LevelDB.DB.Destroy(tempdbPath);
+        protected abstract ISeriesDatabase OpenDatabase();
+        //protected abstract void DestroyDatabase(string dbPath);
 
-            using (var storage = new LevelDbStorage(tempdbPath))
+        private void WriteSetup1()
+        {
+            ClearWorkingFolder();
+
+            using (var db = OpenDatabase())
             {
-                using (var collection1 = storage.GetBinaryCollection("collection1", keySerializer))
+                using (var collection1 = db.GetBinaryCollection("collection1", keySerializer))
                 {
                     collection1.Write(new DateTime(2017, 08, 01), ByteSegment(1));
                     collection1.Write(new DateTime(2017, 08, 05), ByteSegment(2));
                     collection1.Write(new DateTime(2017, 08, 15), ByteSegment(3));
                 }
 
-                using (var collection2 = storage.GetBinaryCollection("collection2", keySerializer))
+                using (var collection2 = db.GetBinaryCollection("collection2", keySerializer))
                 {
                     collection2.Write(new DateTime(2017, 08, 15), ByteSegment(6));
                     collection2.Write(new DateTime(2017, 08, 05), ByteSegment(5));
                     collection2.Write(new DateTime(2017, 08, 01), ByteSegment(4));
                 }
 
-                using (var collection3 = storage.GetBinaryCollection("collection3", keySerializer))
+                using (var collection3 = db.GetBinaryCollection("collection3", keySerializer))
                 {
                     collection3.Write(new DateTime(2017, 08, 05), ByteSegment(8));
                     collection3.Write(new DateTime(2017, 08, 15), ByteSegment(9));
                     collection3.Write(new DateTime(2017, 08, 01), ByteSegment(7));
                 }
             }
+        }
 
-            using (var rawDb = new LevelDB.DB(tempdbPath))
+        private void WriteSetup2()
+        {
+        }
+
+        private void ClearWorkingFolder()
+        {
+            EmptyFolder(new DirectoryInfo(WorkingFolder));
+        }
+
+        [TestMethod]
+        public void BinaryStorage_WriteRead()
+        {
+            WriteSetup1();
+
+            using (var db = OpenDatabase())
             {
-                var expected = Setup1();
-                var actual = ReadAll(rawDb);
-                AssertCollectionsAreEqual(expected, actual);
+                var list1 = ReadCollection(db, "collection1");
+
+                Assert.AreEqual(3, list1.Count);
+                Assert.AreEqual(new DateTime(2017, 08, 01), list1[0].Key);
+                Assert.AreEqual(new DateTime(2017, 08, 05), list1[1].Key);
+                Assert.AreEqual(new DateTime(2017, 08, 15), list1[2].Key);
+
+                AssertCollectionsAreEqual(ByteSegment(1), list1[0].Value);
+                AssertCollectionsAreEqual(ByteSegment(2), list1[1].Value);
+                AssertCollectionsAreEqual(ByteSegment(3), list1[2].Value);
+
+                var list2 = ReadCollection(db, "collection2");
+
+                Assert.AreEqual(3, list2.Count);
+                Assert.AreEqual(new DateTime(2017, 08, 01), list2[0].Key);
+                Assert.AreEqual(new DateTime(2017, 08, 05), list2[1].Key);
+                Assert.AreEqual(new DateTime(2017, 08, 15), list2[2].Key);
+
+                AssertCollectionsAreEqual(ByteSegment(4), list2[0].Value);
+                AssertCollectionsAreEqual(ByteSegment(5), list2[1].Value);
+                AssertCollectionsAreEqual(ByteSegment(6), list2[2].Value);
+
+                var list3 = ReadCollection(db, "collection3");
+
+                Assert.AreEqual(3, list3.Count);
+                Assert.AreEqual(new DateTime(2017, 08, 01), list3[0].Key);
+                Assert.AreEqual(new DateTime(2017, 08, 05), list3[1].Key);
+                Assert.AreEqual(new DateTime(2017, 08, 15), list3[2].Key);
+
+                AssertCollectionsAreEqual(ByteSegment(7), list3[0].Value);
+                AssertCollectionsAreEqual(ByteSegment(8), list3[1].Value);
+                AssertCollectionsAreEqual(ByteSegment(9), list3[2].Value);
             }
         }
 
         [TestMethod]
-        public void LevelDbStorage_Seek_Exact()
+        public void BinaryStorage_Seek_Exact()
         {
-            LevelDB.DB.Destroy(tempdbPath);
+            WriteSetup1();
 
-            using (var db = new LevelDB.DB(tempdbPath, new LevelDB.Options { CreateIfMissing = true }))
-                db.Write(Setup1().ToLevelDbBatch());
-
-            using (var storage = new LevelDbStorage(tempdbPath))
+            using (var db = OpenDatabase())
             {
-                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection1", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, forward.Count);
@@ -91,7 +150,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     AssertCollectionsAreEqual(backward[1].Value, Bytes(1));
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection2", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, forward.Count);
@@ -104,7 +163,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     AssertCollectionsAreEqual(backward[1].Value, Bytes(4));
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection3", keySerializer))
                 {
                     var actual = collection.Iterate(new DateTime(2017, 08, 05)).ToList();
                     Assert.AreEqual(2, actual.Count);
@@ -120,16 +179,13 @@ namespace TickTrader.SeriesStorage.UnitTest
         }
 
         [TestMethod]
-        public void LevelDbStorage_Seek_Above()
+        public void BinaryStorage_Seek_Above()
         {
-            LevelDB.DB.Destroy(tempdbPath);
+            WriteSetup1();
 
-            using (var db = new LevelDB.DB(tempdbPath, new LevelDB.Options { CreateIfMissing = true }))
-                db.Write(Setup1().ToLevelDbBatch());
-
-            using (var storage = new LevelDbStorage(tempdbPath))
+            using (var db = OpenDatabase())
             {
-                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection1", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
                     Assert.AreEqual(1, forward.Count);
@@ -142,7 +198,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     AssertCollectionsAreEqual(backward[2].Value, Bytes(1));
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection2", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
                     Assert.AreEqual(1, forward.Count);
@@ -155,7 +211,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     AssertCollectionsAreEqual(backward[2].Value, Bytes(4));
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection3", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 08, 16)).ToList();
                     Assert.AreEqual(1, forward.Count);
@@ -171,16 +227,13 @@ namespace TickTrader.SeriesStorage.UnitTest
         }
 
         [TestMethod]
-        public void LevelDbStorage_Seek_Below()
+        public void BinaryStorage_Seek_Below()
         {
-            LevelDB.DB.Destroy(tempdbPath);
+            WriteSetup1();
 
-            using (var db = new LevelDB.DB(tempdbPath, new LevelDB.Options { CreateIfMissing = true }))
-                db.Write(Setup1().ToLevelDbBatch());
-
-            using (var storage = new LevelDbStorage(tempdbPath))
+            using (var db = OpenDatabase())
             {
-                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection1", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(3, forward.Count);
@@ -192,7 +245,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     Assert.AreEqual(0, backward.Count);
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection2", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection2", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(3, forward.Count);
@@ -204,7 +257,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     Assert.AreEqual(0, backward.Count);
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection3", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(3, forward.Count);
@@ -219,16 +272,13 @@ namespace TickTrader.SeriesStorage.UnitTest
         }
 
         [TestMethod]
-        public void LevelDbStorage_Seek_Empty()
+        public void BinaryStorage_Seek_Empty()
         {
-            LevelDB.DB.Destroy(tempdbPath);
+            WriteSetup2();
 
-            using (var db = new LevelDB.DB(tempdbPath, new LevelDB.Options { CreateIfMissing = true }))
-                db.Write(Setup2().ToLevelDbBatch());
-
-            using (var storage = new LevelDbStorage(tempdbPath))
+            using (var db = OpenDatabase())
             {
-                using (var collection = storage.GetBinaryCollection("collection1", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection1", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(0, forward.Count);
@@ -237,7 +287,7 @@ namespace TickTrader.SeriesStorage.UnitTest
                     Assert.AreEqual(0, backward.Count);
                 }
 
-                using (var collection = storage.GetBinaryCollection("collection3", keySerializer))
+                using (var collection = db.GetBinaryCollection("collection3", keySerializer))
                 {
                     var forward = collection.Iterate(new DateTime(2017, 07, 30)).ToList();
                     Assert.AreEqual(0, forward.Count);
@@ -246,50 +296,6 @@ namespace TickTrader.SeriesStorage.UnitTest
                     Assert.AreEqual(0, backward.Count);
                 }
             }
-        }
-
-        private static KeyValueSnapshot Setup1()
-        {
-            var snapshot = new KeyValueSnapshot();
-            snapshot.Add(Bytes(0, 0, 0, 0, 1), Encoding.UTF8.GetBytes("collection1"));
-            snapshot.Add(Bytes(0, 0, 0, 0, 2), Encoding.UTF8.GetBytes("collection2"));
-            snapshot.Add(Bytes(0, 0, 0, 0, 3), Encoding.UTF8.GetBytes("collection3"));
-            snapshot.Add(Bytes(0, 1, 8, 212, 216, 112, 64, 186, 192, 0), Bytes(1));
-            snapshot.Add(Bytes(0, 1, 8, 212, 219, 148, 234, 97, 192, 0), Bytes(2));
-            snapshot.Add(Bytes(0, 1, 8, 212, 227, 112, 146, 131, 64, 0), Bytes(3));
-            snapshot.Add(Bytes(0, 2, 8, 212, 216, 112, 64, 186, 192, 0), Bytes(4));
-            snapshot.Add(Bytes(0, 2, 8, 212, 219, 148, 234, 97, 192, 0), Bytes(5));
-            snapshot.Add(Bytes(0, 2, 8, 212, 227, 112, 146, 131, 64, 0), Bytes(6));
-            snapshot.Add(Bytes(0, 3, 8, 212, 216, 112, 64, 186, 192, 0), Bytes(7));
-            snapshot.Add(Bytes(0, 3, 8, 212, 219, 148, 234, 97, 192, 0), Bytes(8));
-            snapshot.Add(Bytes(0, 3, 8, 212, 227, 112, 146, 131, 64, 0), Bytes(9));
-            return snapshot;
-        }
-
-        private static KeyValueSnapshot Setup2()
-        {
-            var snapshot = new KeyValueSnapshot();
-            snapshot.Add(Bytes(0, 0, 0, 0, 1), Encoding.UTF8.GetBytes("collection1"));
-            snapshot.Add(Bytes(0, 0, 0, 0, 2), Encoding.UTF8.GetBytes("collection2"));
-            snapshot.Add(Bytes(0, 0, 0, 0, 3), Encoding.UTF8.GetBytes("collection3"));
-            snapshot.Add(Bytes(0, 2, 8, 212, 219, 148, 234, 97, 192, 0), Bytes(5));
-            return snapshot;
-        }
-
-        public static KeyValueSnapshot ReadAll(LevelDB.DB db)
-        {
-            var result = new KeyValueSnapshot();
-            var records = (IEnumerable<KeyValuePair<byte[], byte[]>>)db;
-
-            foreach (var r in records)
-                result.Add(r.Key, r.Value);
-
-            return result;
-        }
-
-        public static byte[] Bytes(params byte[] bytes)
-        {
-            return bytes;
         }
 
         public static ArraySegment<byte> ByteSegment(params byte[] bytes)
@@ -297,67 +303,53 @@ namespace TickTrader.SeriesStorage.UnitTest
             return new ArraySegment<byte>(bytes);
         }
 
-        public class DatTimeKeySerializer : IKeySerializer<DateTime>
+        public static byte[] Bytes(params byte[] bytes)
         {
-            public int KeySize => 8;
-
-            public DateTime Deserialize(IKeyReader reader)
-            {
-                var ticks = reader.ReadBeLong();
-                return new DateTime(ticks);
-            }
-
-            public void Serialize(DateTime key, IKeyBuilder builder)
-            {
-                builder.WriteBe(key.Ticks);
-            }
+            return bytes;
         }
 
-        public class KeyValueSnapshot : List<BinKeyValue>
-        {
-            public void Add(byte[] key, byte[] value)
-            {
-                Add(new BinKeyValue(key, value));
-            }
-
-            public LevelDB.WriteBatch ToLevelDbBatch()
-            {
-                var batch = new LevelDB.WriteBatch();
-                foreach (var item in this)
-                    batch.Put(item.Key, item.Value);
-                return batch;
-            }
-        }
-
-        public class BinKeyValue
-        {
-            public BinKeyValue(byte[] key, byte[] value)
-            {
-                Key = key;
-                Value = value;
-            }
-
-            public byte[] Key { get; }
-            public byte[] Value { get; }
-
-            public override bool Equals(object obj)
-            {
-                var other = obj as BinKeyValue;
-                return other != null
-                    && Enumerable.SequenceEqual(other.Key, Key)
-                    && Enumerable.SequenceEqual(other.Value, Value);
-            }
-
-            public override int GetHashCode()
-            {
-                return base.GetHashCode();
-            }
-        }
-
-        //[System.Diagnostics.DebuggerHidden]
+        [System.Diagnostics.DebuggerHidden]
         private static void AssertCollectionsAreEqual<T>(ICollection<T> collection1, ICollection<T> collection2)
         {
             CollectionAssert.AreEqual(collection1.ToArray(), collection2.ToArray());
+        }
+
+        private List<KeyValuePair<DateTime, ArraySegment<byte>>> ReadCollection(ISeriesDatabase db, string collectionName)
+        {
+            using (var collection = db.GetBinaryCollection(collectionName, keySerializer))
+                return collection.Iterate().ToList();
+        }
+
+        private void EmptyFolder(DirectoryInfo directoryInfo)
+        {
+            foreach (FileInfo file in directoryInfo.GetFiles())
+            {
+                file.Delete();
+            }
+
+            foreach (DirectoryInfo subfolder in directoryInfo.GetDirectories())
+            {
+                EmptyFolder(subfolder);
+            }
+        }
+    }
+
+    [TestClass]
+    public class LevelDbStorageTests : BinaryStorageTests
+    {
+        protected override ISeriesDatabase OpenDatabase()
+        {
+            return SeriesDatabase.Create(new LevelDbStorage(WorkingFolder));
+        }
+    }
+
+    [TestClass]
+    public class LightningDbStorageTests : BinaryStorageTests
+    {
+        protected override ISeriesDatabase OpenDatabase()
+        {
+            var manager = new LmdbManager(WorkingFolder);
+            return SeriesDatabase.Create(manager);
         }
     }
 }
