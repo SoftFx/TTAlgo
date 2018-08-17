@@ -19,6 +19,7 @@ namespace TickTrader.SeriesStorage.Lmdb
         //private Dictionary<string, IBinaryCollection> _collections = new Dictionary<string, IBinaryCollection>();
 
         public bool SupportsRemoveAll => true;
+        public bool SupportsCursorRemove => true;
 
         public LmdbStorage(string path)
         {
@@ -42,70 +43,9 @@ namespace TickTrader.SeriesStorage.Lmdb
             _env.Dispose();
         }
 
-        public IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(bool reversed)
+        public IKeyValueBinaryCursor CreateCursor()
         {
-            using (var tr = _env.BeginTransaction())
-            {
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                var cursor = tr.CreateCursor(db);
-
-                while (cursor.MoveNext())
-                {
-                    yield return cursor.Current;
-                }
-            }
-        }
-
-        public IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] seek, bool reversed)
-        {
-            using (var tr = _env.BeginTransaction())
-            {
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                var cursor = tr.CreateCursor(db);
-
-                SeekNear(cursor, seek);
-
-                while (cursor.MoveNext())
-                {
-                    yield return cursor.Current;
-                }
-            }
-        }
-
-        public IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] seek, byte[] min, byte[] max, bool reversed)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<byte[]> IterateKeys(bool reversed)
-        {
-            using (var tr = _env.BeginTransaction())
-            {
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                var cursor = tr.CreateCursor(db);
-
-                while (cursor.MoveNext())
-                    yield return cursor.Current.Key;
-            }
-        }
-
-        public IEnumerable<byte[]> IterateKeys(byte[] seek, bool reversed)
-        {
-            using (var tr = _env.BeginTransaction())
-            {
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                var cursor = tr.CreateCursor(db);
-
-                SeekNear(cursor, seek, reversed);
-
-                while (cursor.MoveNext())
-                    yield return cursor.Current.Key;
-            }
-        }
-
-        public IEnumerable<byte[]> IterateKeys(byte[] seek, byte[] min, byte[] max, bool reversed)
-        {
-            throw new NotImplementedException();
+            return new LmdbCursor(_env, DefaultDatabaseName, defaultDbCfg);
         }
 
         public bool Read(byte[] key, out byte[] value)
@@ -183,7 +123,7 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public long GetSize(byte[] from, byte[] to)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         private bool SeekNear(LightningCursor cursor, byte[] key, bool reversed = false)

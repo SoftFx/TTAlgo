@@ -21,18 +21,7 @@ namespace TickTrader.SeriesStorage
         public CollectionEmulator(IKeyValueBinaryStorage binSorage)
         {
             _binStorage = binSorage;
-
-            //var options = new LevelDB.Options { CreateIfMissing = true };
-            //_database = new LevelDB.DB(name, options);
-            //try
-            //{
-            //    Init();
-            //}
-            //catch
-            //{
-            //    _database.Dispose();
-            //    throw;
-            //}
+            Init();
         }
 
         public IBinaryStorageCollection<TKey> GetBinaryCollection<TKey>(string name, IKeySerializer<TKey> keySerializer)
@@ -75,14 +64,24 @@ namespace TickTrader.SeriesStorage
 
         private void Init()
         {
-            foreach (var record in _binStorage.Iterate(false))
+            using (var cursor = _binStorage.CreateCursor())
             {
-                if (!CollectionHeader.IsNameRecord(record))
-                    break;
+                cursor.SeekToFirst();
 
-                var nameHeader = new CollectionHeader(record);
-                var collectionName = Encoding.UTF8.GetString(nameHeader.Content);
-                AddCollectionMapping(nameHeader.CollectionId, collectionName);
+                while (cursor.IsValid)
+                {
+                    var record = cursor.GetRecord();
+
+                    if (!CollectionHeader.IsNameRecord(record))
+                        break;
+
+                    var nameHeader = new CollectionHeader(record);
+                    var collectionName = Encoding.UTF8.GetString(nameHeader.Content);
+                    AddCollectionMapping(nameHeader.CollectionId, collectionName);
+
+                    cursor.MoveToNext();
+                }
+
             }
         }
 

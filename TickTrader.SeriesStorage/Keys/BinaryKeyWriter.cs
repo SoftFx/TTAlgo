@@ -59,11 +59,17 @@ namespace TickTrader.SeriesStorage
 
         public void WriteBe(DateTime val)
         {
+            ByteConverter.WriteLongBe(val.Ticks, Buffer, ref _index);
         }
 
         public void WriteBe(long val)
         {
             ByteConverter.WriteLongBe(val, Buffer, ref _index);
+        }
+
+        public void WriteLe(long val)
+        {
+            ByteConverter.WriteLongLe(val, Buffer, ref _index);
         }
 
         public void WriteBe(ulong val)

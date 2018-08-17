@@ -35,31 +35,87 @@ namespace TickTrader.SeriesStorage
 
         public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(bool reversed)
         {
-            byte[] fromKey = reversed ? _maxKey : _minKey;
-            byte[] toKey = reversed ? _minKey : _maxKey;
+            using (var dbIterator = _emulator.Database.CreateCursor())
+            {
+                if (reversed)
+                    dbIterator.SeekTo(_maxKey);
+                else
+                    dbIterator.SeekTo(_minKey);
 
-            return _emulator.Database.Iterate(fromKey, fromKey, toKey, reversed)
-                .Select(p => new KeyValuePair<TKey, ArraySegment<byte>>(GetKey(p.Key), new ArraySegment<byte>(p.Value)));
+                while (true)
+                {
+                    if (!dbIterator.IsValid)
+                        yield break; // end of db
+
+                    TKey key;
+
+                    if (!TryGetKey(dbIterator.GetKey(), out key))
+                        yield break; // end of collection
+
+                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                    if (reversed)
+                        dbIterator.MoveToPrev();
+                    else
+                        dbIterator.MoveToNext();
+                }
+            }
         }
 
         public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(TKey from, bool reversed)
         {
-            byte[] seekKey = GetBinKey(from);
-            byte[] fromKey = reversed ? _maxKey : _minKey;
-            byte[] toKey = reversed ? _minKey : _maxKey;
+            byte[] refKey = GetBinKey(from);
 
-            return _emulator.Database.Iterate(seekKey, fromKey, toKey, reversed)
-                .Select(p => new KeyValuePair<TKey, ArraySegment<byte>>(GetKey(p.Key), new ArraySegment<byte>(p.Value)));
+            using (var dbIterator = _emulator.Database.CreateCursor())
+            {
+                Seek(dbIterator, refKey.ToArray(), reversed);
+
+                while (true)
+                {
+                    if (!dbIterator.IsValid)
+                        yield break; // end of db
+
+                    TKey key;
+
+                    if (!TryGetKey(dbIterator.GetKey(), out key))
+                        yield break; // end of collection
+
+                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                    if (reversed)
+                        dbIterator.MoveToPrev();
+                    else
+                        dbIterator.MoveToNext();
+                }
+            }
         }
 
         public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
         {
-            byte[] seekKey = GetBinKey(from);
-            byte[] fromKey = reversed ? _maxKey : _minKey;
-            byte[] toKey = reversed ? _minKey : _maxKey;
+            byte[] refKey = GetBinKey(from);
 
-            return _emulator.Database.IterateKeys(fromKey, fromKey, toKey, reversed)
-                .Select(binKey => GetKey(binKey));
+            using (var dbIterator = _emulator.Database.CreateCursor())
+            {
+                Seek(dbIterator, refKey.ToArray(), reversed);
+
+                while (true)
+                {
+                    if (!dbIterator.IsValid)
+                        yield break; // end of db
+
+                    TKey key;
+
+                    if (!TryGetKey(dbIterator.GetKey(), out key))
+                        yield break; // end of collection
+
+                    yield return key;
+
+                    if (reversed)
+                        dbIterator.MoveToPrev();
+                    else
+                        dbIterator.MoveToNext();
+                }
+            }
         }
 
         public bool Read(TKey key, out ArraySegment<byte> value)
@@ -122,37 +178,36 @@ namespace TickTrader.SeriesStorage
             _isDisposed = true;
         }
 
-        //private void Seek(LevelDB.Iterator dbIterator, byte[] refKey, bool reversed = false)
-        //{
-        //    dbIterator.Seek(refKey);
+        private void Seek(IKeyValueBinaryCursor dbIterator, byte[] refKey, bool reversed = false)
+        {
+            dbIterator.SeekTo(refKey);
 
-        //    if (dbIterator.Valid())
-        //    {
-        //        var iKey = dbIterator.Key();
-        //        if (Enumerable.SequenceEqual(iKey, refKey))
-        //            return; // exact position
+            if (dbIterator.IsValid)
+            {
+                var iKey = dbIterator.GetKey();
+                if (Enumerable.SequenceEqual(iKey, refKey))
+                    return; // exact position
 
-        //        // try step back
-        //        dbIterator.Prev();
+                // try step back
+                dbIterator.MoveToPrev();
 
-        //        if (dbIterator.Valid())
-        //        {
-        //            TKey key;
+                if (dbIterator.IsValid)
+                {
+                    TKey key;
 
-        //            if (TryGetKey(dbIterator.Key(), out key))
-        //                return; // prev key is from this collection 
-        //        }
+                    if (TryGetKey(dbIterator.GetKey(), out key))
+                        return; // prev key is from this collection 
+                }
 
-        //        if (!reversed)
-        //            dbIterator.Next();  // revert stepping back
-        //    }
-        //    else
-        //    {
-        //        // I have to use a hack :(
-        //        // the only case seems to be end of base
-        //        dbIterator.SeekToLast();
-        //    }
-        //}
+                if (!reversed)
+                    dbIterator.MoveToNext();  // revert stepping back
+            }
+            else
+            {
+                // end of base
+                dbIterator.SeekToLast();
+            }
+        }
 
         private byte[] GetBinKey(TKey key)
         {
@@ -173,14 +228,17 @@ namespace TickTrader.SeriesStorage
             return keyBuilder.Buffer;
         }
 
-        private TKey GetKey(byte[] binKey)
+        private bool TryGetKey(byte[] binKey, out TKey key)
         {
             var reader = new BinaryKeyReader(binKey);
             var collectionId = reader.ReadBeUshort();
             if (collectionId != _collectionId)
-                throw new Exception("Invalid key!");
-
-            return _keySerializer.Deserialize(reader);
+            {
+                key = default(TKey);
+                return false;
+            }
+            key = _keySerializer.Deserialize(reader);
+            return true;
         }
 
         private void EnsureNameHeaderWritten()

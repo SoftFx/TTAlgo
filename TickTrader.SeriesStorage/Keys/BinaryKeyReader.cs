@@ -36,6 +36,11 @@ namespace TickTrader.SeriesStorage
             return ByteConverter.ReadLongBe(_buffer, ref _index);
         }
 
+        public long ReadLeLong()
+        {
+            return ByteConverter.ReadLongLe(_buffer, ref _index);
+        }
+
         public uint ReadBeUnit()
         {
             throw new NotImplementedException();

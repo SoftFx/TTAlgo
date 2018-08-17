@@ -51,12 +51,24 @@ namespace TickTrader.SeriesStorage
             OnStartAccess();
             try
             {
-                foreach (var pair in Storage.Iterate(reversed))
+                using (var dbIterator = Storage.CreateCursor())
                 {
-                    var key = GetTypedKey(pair.Key);
-                    var value = new ArraySegment<byte>(pair.Value);
+                    if (reversed)
+                        dbIterator.SeekToLast();
+                    else
+                        dbIterator.SeekToFirst();
 
-                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, value);
+                    while (dbIterator.IsValid)
+                    {                        
+                        TKey key = GetTypedKey(dbIterator.GetKey());
+
+                        yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                        if (reversed)
+                            dbIterator.MoveToPrev();
+                        else
+                            dbIterator.MoveToNext();
+                    }
                 }
             }
             finally
@@ -70,12 +82,26 @@ namespace TickTrader.SeriesStorage
             OnStartAccess();
             try
             {
-                foreach (var pair in Storage.Iterate(GetBinKey(from), reversed))
-                {
-                    var key = GetTypedKey(pair.Key);
-                    var value = new ArraySegment<byte>(pair.Value);
+                byte[] refKey = GetBinKey(from);
 
-                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, value);
+                using (var dbIterator = Storage.CreateCursor())
+                {
+                    Seek(dbIterator, refKey.ToArray(), reversed);
+
+                    while (true)
+                    {
+                        if (!dbIterator.IsValid)
+                            yield break; // end of db
+
+                        TKey key = GetTypedKey(dbIterator.GetKey());
+
+                        yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                        if (reversed)
+                            dbIterator.MoveToPrev();
+                        else
+                            dbIterator.MoveToNext();
+                    }
                 }
             }
             finally
@@ -89,8 +115,25 @@ namespace TickTrader.SeriesStorage
             OnStartAccess();
             try
             {
-                foreach (var k in Storage.IterateKeys(GetBinKey(from), reversed))
-                    yield return GetTypedKey(k);
+                byte[] refKey = GetBinKey(from);
+
+                using (var dbIterator = Storage.CreateCursor())
+                {
+                    Seek(dbIterator, refKey.ToArray(), reversed);
+
+                    while (true)
+                    {
+                        if (!dbIterator.IsValid)
+                            yield break; // end of db
+
+                        yield return GetTypedKey(dbIterator.GetKey());
+
+                        if (reversed)
+                            dbIterator.MoveToPrev();
+                        else
+                            dbIterator.MoveToNext();
+                    }
+                }
             }
             finally
             {
@@ -167,6 +210,32 @@ namespace TickTrader.SeriesStorage
             finally
             {
                 OnStopAccess();
+            }
+        }
+
+        private void Seek(IKeyValueBinaryCursor dbIterator, byte[] refKey, bool reversed = false)
+        {
+            dbIterator.SeekTo(refKey);
+
+            if (dbIterator.IsValid)
+            {
+                var iKey = dbIterator.GetKey();
+                if (Enumerable.SequenceEqual(iKey, refKey))
+                    return; // exact position
+
+                // try step back
+                dbIterator.MoveToPrev();
+
+                if (!dbIterator.IsValid)
+                {
+                    if(!reversed)
+                        dbIterator.SeekToFirst(); // revert stepping back
+                }
+            }
+            else
+            {
+                // end of base
+                dbIterator.SeekToLast();
             }
         }
 

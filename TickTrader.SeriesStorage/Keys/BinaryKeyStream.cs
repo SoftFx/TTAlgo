@@ -56,5 +56,10 @@ namespace TickTrader.SeriesStorage
         public void WriteBe(ulong val)
         {
         }
+
+        public void WriteLe(long val)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

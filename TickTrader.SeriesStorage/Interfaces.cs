@@ -6,18 +6,31 @@ using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
 {
+    public interface IKeyValueBinaryCursor : IDisposable
+    {
+        bool IsValid { get; } 
+
+        byte[] GetKey();
+        byte[] GetValue();
+
+        KeyValuePair<byte[], byte[]> GetRecord();
+
+        void SeekTo(byte[] key);
+        void SeekToLast();
+        void SeekToFirst();
+
+        void MoveToNext();
+        void MoveToPrev();
+
+        void Remove();
+    }
+
     public interface IKeyValueBinaryStorage : IDisposable
     {
-        //IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(bool reversed = false);
-        //IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] from, bool reversed = false);
         bool SupportsRemoveAll { get; }
+        bool SupportsCursorRemove { get; }
 
-        IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(bool reversed);
-        IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] seek, bool reversed);
-        IEnumerable<KeyValuePair<byte[], byte[]>> Iterate(byte[] seek, byte[] min, byte[] max, bool reversed);
-        IEnumerable<byte[]> IterateKeys(bool reversed);
-        IEnumerable<byte[]> IterateKeys(byte[] seek, bool reversed);
-        IEnumerable<byte[]> IterateKeys(byte[] seek, byte[] min, byte[] max, bool reversed);
+        IKeyValueBinaryCursor CreateCursor();
         bool Read(byte[] key, out byte[] value);
         void Write(byte[] key, byte[] value);
         void Remove(byte[] key);
@@ -113,6 +126,7 @@ namespace TickTrader.SeriesStorage
         void WriteBe(uint val);
         void WriteBe(DateTime val);
         void WriteBe(long val);
+        void WriteLe(long val);
         void WriteBe(ulong val);
         void Write(string val);
         void WriteReversed(string val);
@@ -127,6 +141,7 @@ namespace TickTrader.SeriesStorage
         ushort ReadBeUshort();
         DateTime ReadBeDateTime();
         long ReadBeLong();
+        long ReadLeLong();
         ulong RadBeUlong();
         string ReadString();
         string ReadReversedString();
