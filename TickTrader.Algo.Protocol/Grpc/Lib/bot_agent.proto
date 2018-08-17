@@ -10,7 +10,8 @@ import "config.proto";
 
 service BotAgent
 {
-	rpc Login (LoginRequest) returns (LoginResponse);
+	rpc Login(LoginRequest) returns (LoginResponse);
+	rpc Logout(LogoutRequest) returns (LogoutResponse);
 
 	rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
 	rpc GetAccountList(AccountListRequest) returns (AccountListResponse);

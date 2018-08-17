@@ -110,14 +110,17 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void SendLogout()
         {
-            OnLogout("because");
-            //throw new System.NotImplementedException();
+            var response = _client.Logout(new Lib.LogoutRequest());
+            OnLogout(response.Reason.ToString());
         }
 
         protected override void SendDisconnect()
         {
-            OnDisconnected();
-            //throw new System.NotImplementedException();
+            _channel.ShutdownAsync()
+                .ContinueWith(t =>
+                {
+                    OnDisconnected();
+                });
         }
 
 

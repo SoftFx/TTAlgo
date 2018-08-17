@@ -8,6 +8,9 @@ namespace TickTrader.Algo.Protocol
 {
     internal static class LoggerHelper
     {
+        public const string SessionLoggerPrefix = "Session";
+
+
         internal static ILogger GetLogger(string loggerName, string logsDir, string folderName)
         {
             var logTarget = $"all-{folderName}";

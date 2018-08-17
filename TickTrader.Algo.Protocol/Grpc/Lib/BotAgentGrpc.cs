@@ -14,6 +14,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AccountListRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountListRequest.Parser.ParseFrom);
@@ -63,6 +65,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         "Login",
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginRequest,
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginResponse);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> __Method_Logout = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "Logout",
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> __Method_GetPackageList = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse>(
         grpc::MethodType.Unary,
@@ -225,6 +234,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> Logout(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse> GetPackageList(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -370,6 +384,22 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> LoginAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_Login, null, options, request);
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse Logout(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return Logout(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse Logout(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_Logout, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> LogoutAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return LogoutAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> LogoutAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_Logout, null, options, request);
       }
       public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListResponse GetPackageList(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageListRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -712,6 +742,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_Login, serviceImpl.Login)
+          .AddMethod(__Method_Logout, serviceImpl.Logout)
           .AddMethod(__Method_GetPackageList, serviceImpl.GetPackageList)
           .AddMethod(__Method_GetAccountList, serviceImpl.GetAccountList)
           .AddMethod(__Method_GetBotList, serviceImpl.GetBotList)
