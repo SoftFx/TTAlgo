@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         private JsonFormatter _messageFormatter;
         private Channel _channel;
         private Lib.BotAgent.BotAgentClient _client;
+        private string _accessToken;
 
 
         static GrpcClient()
@@ -34,6 +35,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var creds = new SslCredentials(CertificateProvider.RootCertificate); //, new KeyCertificatePair(CertificateProvider.ClientCertificate, CertificateProvider.ClientKey));
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
             _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ProtocolSettings.ListeningPort, creds, options);
+            _accessToken = "";
 
             _client = new Lib.BotAgent.BotAgentClient(_channel);
 
@@ -63,64 +65,105 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void SendLogin()
         {
-            var response = _client.Login(new Lib.LoginRequest
+            _client.LoginAsync(new Lib.LoginRequest
             {
                 Login = SessionSettings.Login,
                 Password = SessionSettings.Password,
                 MajorVersion = VersionSpec.MajorVersion,
                 MinorVersion = VersionSpec.MinorVersion
+            }).ResponseAsync.ContinueWith(t =>
+            {
+                switch (t.Status)
+                {
+                    case TaskStatus.RanToCompletion:
+                        _accessToken = t.Result.AccessToken;
+                        OnLogin(t.Result.MajorVersion, t.Result.MinorVersion);
+                        break;
+                    case TaskStatus.Canceled:
+                        OnConnectionError("Login timeout");
+                        break;
+                    case TaskStatus.Faulted:
+                        Logger.Error(t.Exception, "Login failed");
+                        OnConnectionError("Login failed");
+                        break;
+                }
             });
-            OnLogin(response.MajorVersion, response.MinorVersion);
         }
 
         protected override void Init()
         {
-            var apiMetadata = _client.GetApiMetadata(new Lib.ApiMetadataRequest());
-            if (FailConnectionForNonSuccess(apiMetadata.ExecResult))
-                return;
-            AgentClient.SetApiMetadata(apiMetadata.ApiMetadata.Convert());
+            Task.Run(() =>
+            {
+                var apiMetadata = _client.GetApiMetadata(new Lib.ApiMetadataRequest(), GetCallOptions());
+                if (FailConnectionForNonSuccess(apiMetadata.ExecResult))
+                    return;
+                AgentClient.SetApiMetadata(apiMetadata.ApiMetadata.Convert());
 
-            var mappings = _client.GetMappingsInfo(new Lib.MappingsInfoRequest());
-            if (FailConnectionForNonSuccess(mappings.ExecResult))
-                return;
-            AgentClient.SetMappingsInfo(mappings.Mappings.Convert());
+                var mappings = _client.GetMappingsInfo(new Lib.MappingsInfoRequest(), GetCallOptions());
+                if (FailConnectionForNonSuccess(mappings.ExecResult))
+                    return;
+                AgentClient.SetMappingsInfo(mappings.Mappings.Convert());
 
-            var setupContext = _client.GetSetupContext(new Lib.SetupContextRequest());
-            if (FailConnectionForNonSuccess(setupContext.ExecResult))
-                return;
-            AgentClient.SetSetupContext(setupContext.SetupContext.Convert());
+                var setupContext = _client.GetSetupContext(new Lib.SetupContextRequest(), GetCallOptions());
+                if (FailConnectionForNonSuccess(setupContext.ExecResult))
+                    return;
+                AgentClient.SetSetupContext(setupContext.SetupContext.Convert());
 
-            var packages = _client.GetPackageList(new Lib.PackageListRequest());
-            if (FailConnectionForNonSuccess(packages.ExecResult))
-                return;
-            AgentClient.InitPackageList(packages.Packages.Select(ToAlgo.Convert).ToList());
+                var packages = _client.GetPackageList(new Lib.PackageListRequest(), GetCallOptions());
+                if (FailConnectionForNonSuccess(packages.ExecResult))
+                    return;
+                AgentClient.InitPackageList(packages.Packages.Select(ToAlgo.Convert).ToList());
 
-            var accounts = _client.GetAccountList(new Lib.AccountListRequest());
-            if (FailConnectionForNonSuccess(accounts.ExecResult))
-                return;
-            AgentClient.InitAccountList(accounts.Accounts.Select(ToAlgo.Convert).ToList());
+                var accounts = _client.GetAccountList(new Lib.AccountListRequest(), GetCallOptions());
+                if (FailConnectionForNonSuccess(accounts.ExecResult))
+                    return;
+                AgentClient.InitAccountList(accounts.Accounts.Select(ToAlgo.Convert).ToList());
 
-            var bots = _client.GetBotList(new Lib.BotListRequest());
-            if (FailConnectionForNonSuccess(bots.ExecResult))
-                return;
-            AgentClient.InitBotList(bots.Bots.Select(ToAlgo.Convert).ToList());
+                var bots = _client.GetBotList(new Lib.BotListRequest(), GetCallOptions());
+                if (FailConnectionForNonSuccess(bots.ExecResult))
+                    return;
+                AgentClient.InitBotList(bots.Bots.Select(ToAlgo.Convert).ToList());
 
-            ListenToUpdates();
+                ListenToUpdates();
+            }).ContinueWith(t =>
+            {
+                switch (t.Status)
+                {
+                    case TaskStatus.Canceled:
+                        OnConnectionError("Request timeout during init");
+                        break;
+                    case TaskStatus.Faulted:
+                        Logger.Error(t.Exception, "Init failed");
+                        OnConnectionError("Init failed");
+                        break;
+                }
+            });
         }
 
         protected override void SendLogout()
         {
-            var response = _client.Logout(new Lib.LogoutRequest());
-            OnLogout(response.Reason.ToString());
+            _client.LogoutAsync(new Lib.LogoutRequest(), GetCallOptions())
+                .ResponseAsync.ContinueWith(t =>
+                {
+                    switch (t.Status)
+                    {
+                        case TaskStatus.RanToCompletion:
+                            OnLogout(t.Result.Reason.ToString());
+                            break;
+                        case TaskStatus.Canceled:
+                            OnConnectionError("Logout timeout");
+                            break;
+                        case TaskStatus.Faulted:
+                            Logger.Error(t.Exception, "Login failed");
+                            OnConnectionError("Logout failed");
+                            break;
+                    }
+                });
         }
 
         protected override void SendDisconnect()
         {
-            _channel.ShutdownAsync()
-                .ContinueWith(t =>
-                {
-                    OnDisconnected();
-                });
+            OnDisconnected();
         }
 
 
@@ -150,7 +193,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             AsyncServerStreamingCall<Lib.UpdateInfo> updateStream;
             try
             {
-                updateStream = _client.SubscribeToUpdates(new Lib.SubscribeToUpdatesRequest());
+                updateStream = _client.SubscribeToUpdates(new Lib.SubscribeToUpdatesRequest(), GetCallOptions(false));
             }
             catch (Exception ex)
             {
@@ -199,93 +242,99 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
+        private CallOptions GetCallOptions(bool setDeadline = true)
+        {
+            return !setDeadline ? new CallOptions(credentials: AlgoGrpcCredentials.FromAccessToken(_accessToken))
+                 : new CallOptions(deadline: DateTime.UtcNow.AddMilliseconds(DefaultRequestTimeout), credentials: AlgoGrpcCredentials.FromAccessToken(_accessToken));
+        }
+
 
         #region Requests
 
         public override async Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account)
         {
-            var response = await _client.GetAccountMetadataAsync(new Lib.AccountMetadataRequest { Account = account.Convert() });
+            var response = await _client.GetAccountMetadataAsync(new Lib.AccountMetadataRequest { Account = account.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
             return response.AccountMetadata.Convert();
         }
 
         public override async Task StartBot(string botId)
         {
-            var response = await _client.StartBotAsync(new Lib.StartBotRequest { BotId = botId });
+            var response = await _client.StartBotAsync(new Lib.StartBotRequest { BotId = botId }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task StopBot(string botId)
         {
-            var response = await _client.StopBotAsync(new Lib.StopBotRequest { BotId = botId });
+            var response = await _client.StopBotAsync(new Lib.StopBotRequest { BotId = botId }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task AddBot(AccountKey account, PluginConfig config)
         {
-            var response = await _client.AddBotAsync(new Lib.AddBotRequest { Account = account.Convert(), Config = config.Convert() });
+            var response = await _client.AddBotAsync(new Lib.AddBotRequest { Account = account.Convert(), Config = config.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
-            var response = await _client.RemoveBotAsync(new Lib.RemoveBotRequest { BotId = ToGrpc.Convert(botId), CleanLog = cleanLog, CleanAlgoData = cleanAlgoData });
+            var response = await _client.RemoveBotAsync(new Lib.RemoveBotRequest { BotId = ToGrpc.Convert(botId), CleanLog = cleanLog, CleanAlgoData = cleanAlgoData }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task ChangeBotConfig(string botId, PluginConfig newConfig)
         {
-            var response = await _client.ChangeBotConfigAsync(new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert() });
+            var response = await _client.ChangeBotConfigAsync(new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task AddAccount(AccountKey account, string password, bool useNewProtocol)
         {
-            var response = await _client.AddAccountAsync(new Lib.AddAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            var response = await _client.AddAccountAsync(new Lib.AddAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task RemoveAccount(AccountKey account)
         {
-            var response = await _client.RemoveAccountAsync(new Lib.RemoveAccountRequest { Account = account.Convert() });
+            var response = await _client.RemoveAccountAsync(new Lib.RemoveAccountRequest { Account = account.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task ChangeAccount(AccountKey account, string password, bool useNewProtocol)
         {
-            var response = await _client.ChangeAccountAsync(new Lib.ChangeAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            var response = await _client.ChangeAccountAsync(new Lib.ChangeAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task<ConnectionErrorInfo> TestAccount(AccountKey account)
         {
-            var response = await _client.TestAccountAsync(new Lib.TestAccountRequest { Account = account.Convert() });
+            var response = await _client.TestAccountAsync(new Lib.TestAccountRequest { Account = account.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo.Convert();
         }
 
         public override async Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
         {
-            var response = await _client.TestAccountCredsAsync(new Lib.TestAccountCredsRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            var response = await _client.TestAccountCredsAsync(new Lib.TestAccountCredsRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo.Convert();
         }
 
         public override async Task UploadPackage(string fileName, byte[] packageBinary)
         {
-            var response = await _client.UploadPackageAsync(new Lib.UploadPackageRequest { FileName = ToGrpc.Convert(fileName), PackageBinary = packageBinary.Convert() });
+            var response = await _client.UploadPackageAsync(new Lib.UploadPackageRequest { FileName = ToGrpc.Convert(fileName), PackageBinary = packageBinary.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task RemovePackage(PackageKey package)
         {
-            var response = await _client.RemovePackageAsync(new Lib.RemovePackageRequest { Package = package.Convert() });
+            var response = await _client.RemovePackageAsync(new Lib.RemovePackageRequest { Package = package.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
         }
 
         public override async Task<byte[]> DownloadPackage(PackageKey package)
         {
-            var response = await _client.DownloadPackageAsync(new Lib.DownloadPackageRequest { Package = package.Convert() });
+            var response = await _client.DownloadPackageAsync(new Lib.DownloadPackageRequest { Package = package.Convert() }, GetCallOptions());
             FailForNonSuccess(response.ExecResult);
             return response.PackageBinary.Convert();
         }

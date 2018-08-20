@@ -140,7 +140,7 @@ namespace TickTrader.BotTerminal
         {
             _algoEnv = algoEnv;
 
-            DisplayName = "Upload package";
+            DisplayName = "Download package";
 
             BotAgents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
         }

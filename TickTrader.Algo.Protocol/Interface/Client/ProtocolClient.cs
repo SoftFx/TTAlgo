@@ -15,6 +15,9 @@ namespace TickTrader.Algo.Protocol
 
     public abstract class ProtocolClient
     {
+        public const int DefaultRequestTimeout = 10000;
+
+
         protected ILogger Logger { get; set; }
 
         protected StateMachine<ClientStates> StateMachine { get; }
@@ -178,7 +181,7 @@ namespace TickTrader.Algo.Protocol
             {
                 StartClient();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.Error(ex, "Failed to start client");
                 OnConnectionError("Client failed to start");
@@ -193,7 +196,7 @@ namespace TickTrader.Algo.Protocol
                 {
                     StopClient();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Logger.Error(ex, "Failed to stop client");
                 }

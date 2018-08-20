@@ -316,13 +316,13 @@ namespace TickTrader.Algo.Protocol.Grpc
         private void LogRequest(ILogger logger, IMessage request)
         {
             if (_logMessages)
-                logger.Info($"client > {request.GetType().Name}: {_messageFormatter.Format(request)}");
+                logger?.Info($"client > {request.GetType().Name}: {_messageFormatter.Format(request)}");
         }
 
         private void LogResponse(ILogger logger, IMessage response)
         {
             if (_logMessages)
-                logger.Info($"client < {response.GetType().Name}: {_messageFormatter.Format(response)}");
+                logger?.Info($"client < {response.GetType().Name}: {_messageFormatter.Format(response)}");
         }
 
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
@@ -354,9 +354,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var session = GetSession(context, request, out var execResult);
 
-                LogRequest(session.Logger, request);
+                LogRequest(session?.Logger, request);
                 var response = await requestAction(request, context, session, execResult);
-                LogResponse(session.Logger, response);
+                LogResponse(session?.Logger, response);
 
                 return response;
             }
@@ -377,7 +377,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var session = GetSession(context, request, out var execResult);
 
-                LogRequest(session.Logger, request);
+                LogRequest(session?.Logger, request);
                 return requestAction(request, responseStream, context, session, execResult);
             }
             catch (Exception ex)
@@ -393,7 +393,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                var entry = context.RequestHeaders.LastOrDefault(e => e.Key == "Authorization");
+                var entry = context.RequestHeaders.LastOrDefault(e => e.Key == "authorization");
                 if (entry == null)
                 {
                     _logger.Error($"Missing authorization header for request of type {request.GetType().Name}");
@@ -424,7 +424,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                     execResult = CreateErrorResult("Failed to parse access token");
                 }
 
-                if (jwtPayload != null && string.IsNullOrWhiteSpace(jwtPayload.SessionId))
+                if (jwtPayload != null && !string.IsNullOrWhiteSpace(jwtPayload.SessionId))
                 {
                     if (_sessions.TryGetValue(jwtPayload.SessionId, out var session))
                     {

@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Grpc\AlgoGrpcCredentials.cs" />
     <Compile Include="Grpc\GrpcClient.cs" />
     <Compile Include="Grpc\GrpcLoggerAdapter.cs" />
     <Compile Include="Grpc\GrpcServer.cs" />
