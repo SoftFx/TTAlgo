@@ -10,7 +10,6 @@ using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.SeriesStorage;
-using TickTrader.SeriesStorage.LevelDb;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -39,6 +38,7 @@ namespace TickTrader.Algo.Common.Model
         {
             private VarDictionary<FeedCacheKey, object> _series;
             private Ref<FeedCache> _ref;
+            private string _baseFolder;
             private ActorCallback<FeedCacheKey> addCallback;
             private ActorCallback<FeedCacheKey> removeCallback;
 
@@ -81,7 +81,12 @@ namespace TickTrader.Algo.Common.Model
 
             public IVarSet<FeedCacheKey> Keys => _series?.Keys;
 
-            public Task Start(string folder) => _ref.Call(a => a.Start(folder));
+            public Task Start(string folder)
+            {
+                _baseFolder = folder;
+                return _ref.Call(a => a.Start(folder));
+            }
+
             public Task Stop() => _ref.Call(a => a.Stop());
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteEntity[] values)
@@ -129,6 +134,11 @@ namespace TickTrader.Algo.Common.Model
 
             public Task RemoveSeries(FeedCacheKey seriesKey)
                 => _ref.Call(a => a.RemoveSeries(seriesKey));
+
+            public IBarStorage CreateCrossDomainReader(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                return new BarCrossDomainReader(_baseFolder, key, from, to);
+            }
         }
 
         protected virtual void Start(string folder)
@@ -138,7 +148,7 @@ namespace TickTrader.Algo.Common.Model
             if (_diskStorage != null)
                 throw new InvalidOperationException("Already started!");
 
-            _diskStorage = SeriesDatabase.Create(new LevelDbStorage(folder));
+            _diskStorage = SeriesDatabase.Create(new SeriesStorage.Lmdb.LmdbManager(folder));
 
             var loadedKeys = new List<FeedCacheKey>();
 
@@ -146,8 +156,9 @@ namespace TickTrader.Algo.Common.Model
             {
                 if (!IsSpecialCollection(collectionName))
                 {
-                    var key = FeedCacheKey.Deserialize(collectionName);
-                    loadedKeys.Add(key);
+                    FeedCacheKey key;
+                    if(FeedCacheKey.TryParse(collectionName, out key))
+                        loadedKeys.Add(key);                    
                 }
             }
 
@@ -327,9 +338,9 @@ namespace TickTrader.Algo.Common.Model
             ISeriesStorage<DateTime> collection;
 
             if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.Serialize());
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.ToCodeString());
             else
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.Serialize());
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.ToCodeString());
 
             _series.Add(key, collection);
             return collection;

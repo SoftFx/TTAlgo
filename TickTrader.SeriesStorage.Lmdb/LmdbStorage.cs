@@ -14,6 +14,7 @@ namespace TickTrader.SeriesStorage.Lmdb
         private static DatabaseConfiguration defaultDbCfg = new DatabaseConfiguration() { Flags = DatabaseOpenFlags.Create };
 
         private LightningEnvironment _env;
+        private bool _readonlyMode;
         //private Dictionary<ushort, string> _idToNameMap = new Dictionary<ushort, string>();
         //private Dictionary<string, ushort> _nameToIdMap = new Dictionary<string, ushort>();
         //private Dictionary<string, IBinaryCollection> _collections = new Dictionary<string, IBinaryCollection>();
@@ -21,14 +22,22 @@ namespace TickTrader.SeriesStorage.Lmdb
         public bool SupportsRemoveAll => true;
         public bool SupportsCursorRemove => true;
 
-        public LmdbStorage(string path)
+        public LmdbStorage(string path, bool readOnly = false)
         {
             _env = new LightningEnvironment(path);
+            _readonlyMode = readOnly;
             try
             {
                 _env.MaxDatabases = 1000;
                 _env.MapSize = 1024 * 1024 * 1024;
-                _env.Open(EnvironmentOpenFlags.WriteMap | EnvironmentOpenFlags.NoSync | EnvironmentOpenFlags.NoSubDir);
+                _env.MaxReaders = 1000;
+
+                var flags = EnvironmentOpenFlags.WriteMap | EnvironmentOpenFlags.NoSync | EnvironmentOpenFlags.NoSubDir;
+
+                if (readOnly)
+                    flags |= EnvironmentOpenFlags.ReadOnly;
+
+                _env.Open(flags);
             }
             catch
             {
@@ -40,12 +49,13 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public void Dispose()
         {
+            //_env.Flush(true);
             _env.Dispose();
         }
 
         public IKeyValueBinaryCursor CreateCursor()
         {
-            return new LmdbCursor(_env, DefaultDatabaseName, defaultDbCfg);
+            return new LmdbCursor(_env, DefaultDatabaseName, defaultDbCfg, _readonlyMode);
         }
 
         public bool Read(byte[] key, out byte[] value)

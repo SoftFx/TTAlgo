@@ -89,6 +89,11 @@ namespace TickTrader.Algo.Core
             _feedSources.Add(symbol, new BarBasedSeriesEmulator(symbol, timeFrame, bidStream, askStream));
         }
 
+        public void AddSource(string symbol, TimeFrames timeFrame, IBarStorage bidStream, IBarStorage askStream)
+        {
+            _feedSources.Add(symbol, new BarBasedSeriesEmulator(symbol, timeFrame, bidStream, askStream));
+        }
+
         private FeedSeriesEmulator GetFeedSrcOrNull(string symbol)
         {
             FeedSeriesEmulator src;

@@ -135,14 +135,14 @@ namespace TickTrader.BotTerminal
                 var precacheFrom = GetLocalFrom(fromLimit);
                 var precacheTo = GetLocalTo(toLimit);
 
-                IEnumerable<BarEntity> bidFeed = null;
-                IEnumerable<BarEntity> askFeed = null;
+                IBarStorage bidFeed = null;
+                IBarStorage askFeed = null;
 
                 if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                    bidFeed = ReadSlices(smbData.ReadCachedBars(timeframe, BarPriceType.Bid, precacheFrom, precacheTo));
+                    bidFeed = smbData.GetCrossDomainBarReader(timeframe, BarPriceType.Bid, precacheFrom, precacheTo);
 
                 if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                    askFeed = ReadSlices(smbData.ReadCachedBars(timeframe, BarPriceType.Ask, precacheFrom, precacheTo));
+                    askFeed = smbData.GetCrossDomainBarReader(timeframe, BarPriceType.Ask, precacheFrom, precacheTo);
 
                 tester.Feed.AddSource(smbData.Name, timeframe, bidFeed, askFeed);
                 tester.Symbols.Add(smbData.Name, smbData.InfoEntity);
@@ -174,15 +174,15 @@ namespace TickTrader.BotTerminal
             return availableTo;
         }
 
-        private IEnumerable<BarEntity> ReadSlices(BlockingChannel<Slice<DateTime, BarEntity>> channel)
-        {
-            Slice<DateTime, BarEntity> slice;
-            while (channel.Read(out slice))
-            {
-                foreach (var bar in slice.Content)
-                    yield return bar;
-            }
-        }
+        //private IEnumerable<BarEntity> ReadSlices(BlockingChannel<Slice<DateTime, BarEntity>> channel)
+        //{
+        //    Slice<DateTime, BarEntity> slice;
+        //    while (channel.Read(out slice))
+        //    {
+        //        foreach (var bar in slice.Content)
+        //            yield return bar;
+        //    }
+        //}
     }
 
     internal enum DownloadPriceChoices { Bid, Ask, Both }

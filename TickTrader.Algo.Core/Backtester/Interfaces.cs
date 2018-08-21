@@ -7,14 +7,14 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IQuoteSeriesStorage : IEnumerable<QuoteEntity>
+    public interface IQuoteStorage
     {
-        IEnumerable<QuoteEntity> Query(DateTime from, DateTime to);
+        IEnumerable<QuoteEntity> GetQuoteStream();
     }
 
-    public interface IBarSeriesStorage : IEnumerable<BarEntity>
+    public interface IBarStorage
     {
-        IEnumerable<BarEntity> Query(DateTime from, DateTime to);
+        IEnumerable<BarEntity> GrtBarStream();
     }
 
     internal interface IBacktesterSettings

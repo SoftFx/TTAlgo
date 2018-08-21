@@ -20,6 +20,11 @@ namespace TickTrader.Algo.Core
         private double? _lastBidRate;
         private double? _lastAskRate;
 
+        public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
+            : this(symbol, baseTimeFrame, bidSrc.GrtBarStream(), askSrc.GrtBarStream())
+        {
+        }
+
         public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IEnumerable<BarEntity> bidSrc, IEnumerable<BarEntity> askSrc)
         {
             _symbol = symbol;

@@ -45,6 +45,11 @@ namespace TickTrader.BotTerminal
 
         public abstract Task Remove();
 
+        public IBarStorage GetCrossDomainBarReader(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to)
+        {
+            return _storage.CreateCrossDomainReader(new FeedCacheKey(Name, frame, priceType), from, to);
+        }
+
         public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
         {
             _storage.Put(Name, frame, priceType, from, to, values);

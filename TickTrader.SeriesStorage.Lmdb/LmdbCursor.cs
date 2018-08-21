@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LightningDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +9,14 @@ namespace TickTrader.SeriesStorage.Lmdb
 {
     internal class LmdbCursor : IKeyValueBinaryCursor
     {
-        private LightningDB.LightningTransaction _tr;
-        private LightningDB.LightningCursor _cursor;
+        private LightningTransaction _tr;
+        private LightningCursor _cursor;
 
-        public LmdbCursor(LightningDB.LightningEnvironment env, string dbName, LightningDB.DatabaseConfiguration cfg)
+        public LmdbCursor(LightningEnvironment env, string dbName, DatabaseConfiguration cfg, bool readOnly)
         {
-            _tr = env.BeginTransaction();
+            var trFlags = readOnly ? TransactionBeginFlags.ReadOnly : TransactionBeginFlags.None;
+
+            _tr = env.BeginTransaction(trFlags);
             var db = _tr.OpenDatabase(dbName, cfg);
             _cursor = _tr.CreateCursor(db);
         }
