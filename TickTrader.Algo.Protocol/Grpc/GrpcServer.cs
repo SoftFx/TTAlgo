@@ -77,17 +77,21 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public Task SetupUpdateStream(IServerStreamWriter<Lib.UpdateInfo> updateStream)
         {
+            if (_updateStreamTaskSrc != null)
+                throw new BAException($"Session {SessionId} already has opened update stream");
+
             _updateStream = updateStream;
             _updateStreamTaskSrc = new TaskCompletionSource<object>();
             return _updateStreamTaskSrc.Task;
         }
 
-        public void SendUpdate(Lib.UpdateInfo update)
+        public bool SendUpdate(Lib.UpdateInfo update)
         {
             if (_updateStreamTaskSrc == null)
-                return;
+                return false;
 
             _updateStream.WriteAsync(update);
+            return true;
         }
 
         public void CloseUpdateStream() // client disconnect
@@ -202,19 +206,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(LogoutInternal, request, context);
         }
 
-        public override Task<Lib.PackageListResponse> GetPackageList(Lib.PackageListRequest request, ServerCallContext context)
+        public override Task<Lib.SnapshotResponse> GetSnapshot(Lib.SnapshotRequest request, ServerCallContext context)
         {
-            return ExecuteUnaryRequestAuthorized(GetPackageListInternal, request, context);
-        }
-
-        public override Task<Lib.AccountListResponse> GetAccountList(Lib.AccountListRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetAccountListInternal, request, context);
-        }
-
-        public override Task<Lib.BotListResponse> GetBotList(Lib.BotListRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(GetBotListInternal, request, context);
+            return ExecuteUnaryRequestAuthorized(GetSnapshotInternal, request, context);
         }
 
         public override Task SubscribeToUpdates(Lib.SubscribeToUpdatesRequest request, IServerStreamWriter<Lib.UpdateInfo> responseStream, ServerCallContext context)
@@ -242,14 +236,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(GetAccountMetadataInternal, request, context);
         }
 
-        public override Task<Lib.StartBotResponse> StartBot(Lib.StartBotRequest request, ServerCallContext context)
+        public override Task<Lib.BotListResponse> GetBotList(Lib.BotListRequest request, ServerCallContext context)
         {
-            return ExecuteUnaryRequestAuthorized(StartBotInternal, request, context);
-        }
-
-        public override Task<Lib.StopBotResponse> StopBot(Lib.StopBotRequest request, ServerCallContext context)
-        {
-            return ExecuteUnaryRequestAuthorized(StopBotInternal, request, context);
+            return ExecuteUnaryRequestAuthorized(GetBotListInternal, request, context);
         }
 
         public override Task<Lib.AddBotResponse> AddBot(Lib.AddBotRequest request, ServerCallContext context)
@@ -261,13 +250,26 @@ namespace TickTrader.Algo.Protocol.Grpc
         public override Task<Lib.RemoveBotResponse> RemoveBot(Lib.RemoveBotRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(RemoveBotInternal, request, context);
+        }
 
+        public override Task<Lib.StartBotResponse> StartBot(Lib.StartBotRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(StartBotInternal, request, context);
+        }
+
+        public override Task<Lib.StopBotResponse> StopBot(Lib.StopBotRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(StopBotInternal, request, context);
         }
 
         public override Task<Lib.ChangeBotConfigResponse> ChangeBotConfig(Lib.ChangeBotConfigRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, request, context);
+        }
 
+        public override Task<Lib.AccountListResponse> GetAccountList(Lib.AccountListRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetAccountListInternal, request, context);
         }
 
         public override Task<Lib.AddAccountResponse> AddAccount(Lib.AddAccountRequest request, ServerCallContext context)
@@ -293,6 +295,11 @@ namespace TickTrader.Algo.Protocol.Grpc
         public override Task<Lib.TestAccountCredsResponse> TestAccountCreds(Lib.TestAccountCredsRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, request, context);
+        }
+
+        public override Task<Lib.PackageListResponse> GetPackageList(Lib.PackageListRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetPackageListInternal, request, context);
         }
 
         public override Task<Lib.UploadPackageResponse> UploadPackage(Lib.UploadPackageRequest request, ServerCallContext context)
@@ -533,58 +540,27 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.PackageListResponse> GetPackageListInternal(Lib.PackageListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private async Task<Lib.SnapshotResponse> GetSnapshotInternal(Lib.SnapshotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
         {
-            var res = new Lib.PackageListResponse { ExecResult = execResult };
+            var res = new Lib.SnapshotResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
 
             try
             {
-                res.Packages.AddRange(_botAgent.GetPackageList().Select(ToGrpc.Convert));
+                res.ApiMetadata = await GetApiMetadataInternal(new Lib.ApiMetadataRequest(), context, session, execResult);
+                res.MappingsInfo = await GetMappingsInfoInternal(new Lib.MappingsInfoRequest(), context, session, execResult);
+                res.SetupContext = await GetSetupContextInternal(new Lib.SetupContextRequest(), context, session, execResult);
+                res.PackageList = await GetPackageListInternal(new Lib.PackageListRequest(), context, session, execResult);
+                res.AccountList = await GetAccountListInternal(new Lib.AccountListRequest(), context, session, execResult);
+                res.BotList = await GetBotListInternal(new Lib.BotListRequest(), context, session, execResult);
             }
             catch (Exception ex)
             {
-                session.Logger.Error(ex, "Failed to get packages list");
+                session.Logger.Error(ex, "Failed to get snapshot");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
-        }
-
-        private Task<Lib.AccountListResponse> GetAccountListInternal(Lib.AccountListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
-        {
-            var res = new Lib.AccountListResponse { ExecResult = execResult };
-            if (session == null)
-                return Task.FromResult(res);
-
-            try
-            {
-                res.Accounts.AddRange(_botAgent.GetAccountList().Select(ToGrpc.Convert));
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get account list");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return Task.FromResult(res);
-        }
-
-        private Task<Lib.BotListResponse> GetBotListInternal(Lib.BotListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
-        {
-            var res = new Lib.BotListResponse { ExecResult = execResult };
-            if (session == null)
-                return Task.FromResult(res);
-
-            try
-            {
-                res.Bots.AddRange(_botAgent.GetBotList().Select(ToGrpc.Convert));
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to get bot list");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return Task.FromResult(res);
+            return res;
         }
 
         private Task SubscribeToUpdatesInternal(Lib.SubscribeToUpdatesRequest request, IServerStreamWriter<Lib.UpdateInfo> responseStream, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
@@ -667,37 +643,19 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.StartBotResponse> StartBotInternal(Lib.StartBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.BotListResponse> GetBotListInternal(Lib.BotListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
         {
-            var res = new Lib.StartBotResponse { ExecResult = execResult };
+            var res = new Lib.BotListResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
 
             try
             {
-                _botAgent.StartBot(request.BotId);
+                res.Bots.AddRange(_botAgent.GetBotList().Select(ToGrpc.Convert));
             }
             catch (Exception ex)
             {
-                session.Logger.Error(ex, "Failed to start bot");
-                res.ExecResult = CreateErrorResult(ex);
-            }
-            return Task.FromResult(res);
-        }
-
-        private Task<Lib.StopBotResponse> StopBotInternal(Lib.StopBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
-        {
-            var res = new Lib.StopBotResponse { ExecResult = execResult };
-            if (session == null)
-                return Task.FromResult(res);
-
-            try
-            {
-                _botAgent.StopBot(request.BotId);
-            }
-            catch (Exception ex)
-            {
-                session.Logger.Error(ex, "Failed to stop bot");
+                session.Logger.Error(ex, "Failed to get bot list");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
@@ -741,6 +699,42 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         }
 
+        private Task<Lib.StartBotResponse> StartBotInternal(Lib.StartBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.StartBotResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                _botAgent.StartBot(request.BotId);
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to start bot");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.StopBotResponse> StopBotInternal(Lib.StopBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.StopBotResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                _botAgent.StopBot(request.BotId);
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to stop bot");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
         private Task<Lib.ChangeBotConfigResponse> ChangeBotConfigInternal(Lib.ChangeBotConfigRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
         {
             var res = new Lib.ChangeBotConfigResponse { ExecResult = execResult };
@@ -758,6 +752,24 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             return Task.FromResult(res);
 
+        }
+
+        private Task<Lib.AccountListResponse> GetAccountListInternal(Lib.AccountListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.AccountListResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                res.Accounts.AddRange(_botAgent.GetAccountList().Select(ToGrpc.Convert));
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get account list");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
         }
 
         private Task<Lib.AddAccountResponse> AddAccountInternal(Lib.AddAccountRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
@@ -845,6 +857,24 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to test account creds");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.PackageListResponse> GetPackageListInternal(Lib.PackageListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.PackageListResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                res.Packages.AddRange(_botAgent.GetPackageList().Select(ToGrpc.Convert));
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get packages list");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);
@@ -945,16 +975,27 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 try
                 {
+                    var sessionsToRemove = new List<string>();
                     foreach (var session in _sessions.Values)
                     {
                         try
                         {
-                            session.SendUpdate(update);
+                            if (session.SendUpdate(update))
+                            {
+                                LogResponse(session.Logger, update);
+                            }
                         }
                         catch (Exception ex)
                         {
                             session.Logger.Error(ex, $"Failed to send update: {_messageFormatter.Format(update)}");
+                            sessionsToRemove.Add(session.SessionId);
                         }
+                    }
+
+                    foreach (var sessionId in sessionsToRemove)
+                    {
+                        _sessions[sessionId].CancelUpdateStream();
+                        _sessions.Remove(sessionId);
                     }
                 }
                 catch (Exception ex)

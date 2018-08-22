@@ -1,6 +1,7 @@
 ﻿using Machinarium.State;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
@@ -15,7 +16,7 @@ namespace TickTrader.Algo.Protocol
 
     public abstract class ProtocolClient
     {
-        public const int DefaultRequestTimeout = 10000;
+        public const int DefaultRequestTimeout = 10;
 
 
         protected ILogger Logger { get; set; }
@@ -246,17 +247,27 @@ namespace TickTrader.Algo.Protocol
 
         #region Requests
 
+        public abstract Task<ApiMetadataInfo> GetApiMetadata();
+
+        public abstract Task<MappingCollectionInfo> GetMappingsInfo();
+
+        public abstract Task<SetupContextInfo> GetSetupContext();
+
         public abstract Task<AccountMetadataInfo> GetAccountMetadata(AccountKey account);
 
-        public abstract Task StartBot(string botId);
-
-        public abstract Task StopBot(string botId);
+        public abstract Task<List<BotModelInfo>> GetBotList();
 
         public abstract Task AddBot(AccountKey account, PluginConfig config);
 
         public abstract Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
 
+        public abstract Task StartBot(string botId);
+
+        public abstract Task StopBot(string botId);
+
         public abstract Task ChangeBotConfig(string botId, PluginConfig newConfig);
+
+        public abstract Task<List<AccountModelInfo>> GetAccountList();
 
         public abstract Task AddAccount(AccountKey account, string password, bool useNewProtocol);
 
@@ -267,6 +278,8 @@ namespace TickTrader.Algo.Protocol
         public abstract Task<ConnectionErrorInfo> TestAccount(AccountKey account);
 
         public abstract Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+
+        public abstract Task<List<PackageInfo>> GetPackageList();
 
         public abstract Task UploadPackage(string fileName, byte[] packageBinary);
 

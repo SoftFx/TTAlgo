@@ -13,9 +13,7 @@ service BotAgent
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Logout(LogoutRequest) returns (LogoutResponse);
 
-	rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
-	rpc GetAccountList(AccountListRequest) returns (AccountListResponse);
-	rpc GetBotList(BotListRequest) returns (BotListResponse);
+	rpc GetSnapshot(SnapshotRequest) returns (SnapshotResponse);
 	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
 
 	rpc GetApiMetadata(ApiMetadataRequest) returns (ApiMetadataResponse);
@@ -23,18 +21,21 @@ service BotAgent
 	rpc GetSetupContext(SetupContextRequest) returns (SetupContextResponse);
 	rpc GetAccountMetadata(AccountMetadataRequest) returns (AccountMetadataResponse);
 
-	rpc StartBot(StartBotRequest) returns (StartBotResponse);
-	rpc StopBot(StopBotRequest) returns (StopBotResponse);
+	rpc GetBotList(BotListRequest) returns (BotListResponse);
 	rpc AddBot(AddBotRequest) returns (AddBotResponse);
 	rpc RemoveBot(RemoveBotRequest) returns (RemoveBotResponse);
+	rpc StartBot(StartBotRequest) returns (StartBotResponse);
+	rpc StopBot(StopBotRequest) returns (StopBotResponse);
 	rpc ChangeBotConfig(ChangeBotConfigRequest) returns (ChangeBotConfigResponse);
 
+	rpc GetAccountList(AccountListRequest) returns (AccountListResponse);
 	rpc AddAccount(AddAccountRequest) returns (AddAccountResponse);
 	rpc RemoveAccount(RemoveAccountRequest) returns (RemoveAccountResponse);
 	rpc ChangeAccount(ChangeAccountRequest) returns (ChangeAccountResponse);
 	rpc TestAccount(TestAccountRequest) returns (TestAccountResponse);
 	rpc TestAccountCreds(TestAccountCredsRequest) returns (TestAccountCredsResponse);
 
+	rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
 	rpc UploadPackage(UploadPackageRequest) returns (UploadPackageResponse);
 	rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
 	rpc DownloadPackage(DownloadPackageRequest) returns (DownloadPackageResponse);
@@ -76,6 +77,7 @@ message LoginResponse
 	int32 major_version = 3; // server version
 	int32 minor_version = 4; // server version
 	string access_token = 5;
+	string session_id = 6;
 }
 
 message LogoutRequest
@@ -95,34 +97,20 @@ message LogoutResponse
 	string text = 3;
 }
 
-message PackageListRequest
+
+message SnapshotRequest
 {
 }
 
-message PackageListResponse
+message SnapshotResponse
 {
 	RequestResult exec_result = 1;
-	repeated PackageInfo packages = 2;
-}
-
-message AccountListRequest
-{
-}
-
-message AccountListResponse
-{
-	RequestResult exec_result = 1;
-	repeated AccountModelInfo accounts = 2;
-}
-
-message BotListRequest
-{
-}
-
-message BotListResponse
-{
-	RequestResult exec_result = 1;
-	repeated BotModelInfo bots = 2;
+	ApiMetadataResponse api_metadata = 2;
+	MappingsInfoResponse mappings_info = 3;
+	SetupContextResponse setup_context = 4;
+	PackageListResponse package_list = 5;
+	AccountListResponse account_list = 6;
+	BotListResponse bot_list = 7;
 }
 
 message SubscribeToUpdatesRequest
@@ -180,59 +168,6 @@ message BotStateUpdateInfo
 	BotModelInfo bot = 1;
 }
 
-message StartBotRequest
-{
-	string bot_id = 1;
-}
-
-message StartBotResponse
-{
-	RequestResult exec_result = 1;
-}
-
-message StopBotRequest
-{
-	string bot_id = 1;
-}
-
-message StopBotResponse
-{
-	RequestResult exec_result = 1;
-}
-
-message AddBotRequest
-{
-	AccountKey account = 1;
-	PluginConfig config = 2;
-}
-
-message AddBotResponse
-{
-	RequestResult exec_result = 1;
-}
-
-message RemoveBotRequest
-{
-	string bot_id = 1;
-	bool clean_log = 2;
-	bool clean_algo_data = 3;
-}
-
-message RemoveBotResponse
-{
-	RequestResult exec_result = 1;
-}
-
-message ChangeBotConfigRequest
-{
-	string bot_id = 1;
-	PluginConfig new_config = 2;
-}
-
-message ChangeBotConfigResponse
-{
-	RequestResult exec_result = 1;
-}
 
 message ApiMetadataRequest
 {
@@ -274,6 +209,82 @@ message AccountMetadataResponse
 	RequestResult exec_result = 1;
 	ConnectionErrorInfo error_info = 2;
 	AccountMetadataInfo account_metadata = 3;
+}
+
+
+message BotListRequest
+{
+}
+
+message BotListResponse
+{
+	RequestResult exec_result = 1;
+	repeated BotModelInfo bots = 2;
+}
+
+message AddBotRequest
+{
+	AccountKey account = 1;
+	PluginConfig config = 2;
+}
+
+message AddBotResponse
+{
+	RequestResult exec_result = 1;
+}
+
+message RemoveBotRequest
+{
+	string bot_id = 1;
+	bool clean_log = 2;
+	bool clean_algo_data = 3;
+}
+
+message RemoveBotResponse
+{
+	RequestResult exec_result = 1;
+}
+
+message StartBotRequest
+{
+	string bot_id = 1;
+}
+
+message StartBotResponse
+{
+	RequestResult exec_result = 1;
+}
+
+message StopBotRequest
+{
+	string bot_id = 1;
+}
+
+message StopBotResponse
+{
+	RequestResult exec_result = 1;
+}
+
+message ChangeBotConfigRequest
+{
+	string bot_id = 1;
+	PluginConfig new_config = 2;
+}
+
+message ChangeBotConfigResponse
+{
+	RequestResult exec_result = 1;
+}
+
+
+message AccountListRequest
+{
+}
+
+message AccountListResponse
+{
+	RequestResult exec_result = 1;
+	repeated AccountModelInfo accounts = 2;
 }
 
 message AddAccountRequest
@@ -332,6 +343,17 @@ message TestAccountCredsResponse
 {
 	RequestResult exec_result = 1;
 	ConnectionErrorInfo error_info = 2;
+}
+
+
+message PackageListRequest
+{
+}
+
+message PackageListResponse
+{
+	RequestResult exec_result = 1;
+	repeated PackageInfo packages = 2;
 }
 
 message UploadPackageRequest
