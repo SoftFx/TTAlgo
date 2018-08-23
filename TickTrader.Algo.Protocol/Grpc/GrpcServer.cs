@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             _server = new GrpcCore.Server
             {
                 Services = { Lib.BotAgent.BindService(_impl) },
-                Ports = { new ServerPort("localhost", Settings.ProtocolSettings.ListeningPort, creds) },
+                Ports = { new ServerPort("", Settings.ProtocolSettings.ListeningPort, creds) },
             };
             _server.Start();
         }
@@ -82,6 +82,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             _updateStream = updateStream;
             _updateStreamTaskSrc = new TaskCompletionSource<object>();
+            Logger.Info("Opened update stream");
             return _updateStreamTaskSrc.Task;
         }
 
@@ -102,6 +103,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             _updateStreamTaskSrc.SetResult(null);
             _updateStreamTaskSrc = null;
             _updateStream = null;
+
+            Logger.Info("Closed update stream - client request");
         }
 
         public void CancelUpdateStream() // server disconnect
@@ -112,6 +115,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             _updateStreamTaskSrc.SetCanceled();
             _updateStreamTaskSrc = null;
             _updateStream = null;
+
+            Logger.Info("Closed update stream - server request");
         }
     }
 
@@ -490,6 +495,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                             SessionId = session.SessionId,
                             MinorVersion = session.VersionSpec.CurrentVersion,
                         };
+                        res.SessionId = session.SessionId;
                         res.AccessToken = _jwtProvider.CreateToken(payload);
                     }
                     catch (Exception ex)
@@ -504,6 +510,8 @@ namespace TickTrader.Algo.Protocol.Grpc
                         {
                             _sessions.Add(session.SessionId, session);
                         }
+                        session.Logger.Info($"Server version - {VersionSpec.LatestVersion}; Client version - {request.MajorVersion}.{request.MinorVersion}");
+                        session.Logger.Info($"Current version set to {session.VersionSpec.CurrentVersionStr}");
                     }
                 }
             }

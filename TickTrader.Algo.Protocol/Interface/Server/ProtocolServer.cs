@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Protocol
             AgentServer = agentServer;
             Settings = settings;
 
-            Logger = LoggerHelper.GetLogger(GetType().Name, Settings.ProtocolSettings.LogDirectoryName, Settings.ServerName);
+            Logger = LoggerHelper.GetLogger(GetType().Name, Settings.ProtocolSettings.LogDirectoryName, GetType().Name);
 
             State = ServerStates.Stopped;
         }
@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Protocol
                     throw new Exception($"Server is already {State}");
 
                 VersionSpec = new VersionSpec();
+                Logger.Info("Server started");
                 Logger.Info($"Server current version: {VersionSpec.CurrentVersionStr}");
 
                 StartServer();
@@ -61,6 +62,8 @@ namespace TickTrader.Algo.Protocol
                     State = ServerStates.Stopped;
 
                     StopServer();
+
+                    Logger.Info("Server stopped");
                 }
             }
             catch (Exception ex)

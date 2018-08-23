@@ -52,7 +52,7 @@ namespace TickTrader.BotAgent
 
                 var config = EnsureDefaultConfiguration(pathToAppSettings);
 
-                var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(pathToContentRoot), new JwtProvider(config.GetJwtKey()));
+                var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(), new JwtProvider(config.GetJwtKey()));
                 protocolServer.Start();
 
                 var cert = config.GetCertificate(pathToContentRoot);
@@ -68,6 +68,8 @@ namespace TickTrader.BotAgent
                     .Build();
 
                 Console.WriteLine($"Web root path: {pathToWebRoot}");
+
+                logger.Info("Starting web host");
 
                 if (isService)
                     host.RunAsCustomService();

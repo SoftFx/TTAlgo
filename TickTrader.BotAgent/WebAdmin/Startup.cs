@@ -63,10 +63,10 @@ namespace TickTrader.BotAgent.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-            appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
-
             loggerFactory.AddNLog();
             app.AddNLogWeb();
+
+            appLifeTime.ApplicationStopping.Register(() => Shutdown(services, loggerFactory));
 
             LogUnhandledExceptions(loggerFactory);
 
@@ -122,13 +122,16 @@ namespace TickTrader.BotAgent.WebAdmin
             });
         }
 
-        private void Shutdown(IServiceProvider services)
+        private void Shutdown(IServiceProvider services, ILoggerFactory loggerFactory)
         {
             var server = services.GetRequiredService<IBotAgent>();
             var protocolServer = services.GetRequiredService<ProtocolServer>();
 
             protocolServer.Stop();
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
+
+            var logger = loggerFactory.CreateLogger(nameof(Startup));
+            logger.LogInformation("Web host stopped");
         }
 
         private void LogUnhandledExceptions(ILoggerFactory loggerFactory)
@@ -136,7 +139,7 @@ namespace TickTrader.BotAgent.WebAdmin
             var logger = loggerFactory.CreateLogger("AppDomain.UnhandledException");
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
-                logger.LogCritical($"(This is definitely a bug!) {e.ExceptionObject}");
+                logger.LogError($"(This is definitely a bug!) {e.ExceptionObject}");
             };
         }
     }

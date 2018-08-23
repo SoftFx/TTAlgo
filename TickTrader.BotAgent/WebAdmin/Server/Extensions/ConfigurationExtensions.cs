@@ -72,7 +72,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             //return new X509Certificate2(pfxFile, sslConf.Password);
         }
 
-        public static ProtocolServerSettings GetProtocolServerSettings(this IConfiguration config, string contentRoot)
+        public static ProtocolServerSettings GetProtocolServerSettings(this IConfiguration config)
         {
             var protocolConfig = config.GetProtocolSettings();
 
@@ -82,14 +82,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             if (protocolConfig.ListeningPort < 0 || protocolConfig.ListeningPort > 65535)
                 throw new ArgumentException("Invalid port number");
 
-            protocolConfig.LogDirectoryName = Path.Combine(contentRoot, protocolConfig.LogDirectoryName);
-
-            var certificate = config.GetCertificate(contentRoot);
+            protocolConfig.LogDirectoryName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, protocolConfig.LogDirectoryName);
 
             var serverSettings = new ProtocolServerSettings
             {
                 ServerName = "BotAgentServer",
-                Certificate = certificate,
+                Certificate = _cert,
                 ProtocolSettings = protocolConfig,
             };
 
