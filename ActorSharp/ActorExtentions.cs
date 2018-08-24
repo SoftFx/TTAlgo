@@ -51,7 +51,10 @@ namespace ActorSharp
                 var e = enumerableFactory();
 
                 foreach (var item in e)
-                    await channel.Write(item);
+                {
+                    if (!await channel.Write(item))
+                        break;
+                }
 
                 await channel.Close();
             }
@@ -104,6 +107,11 @@ namespace ActorSharp
             }
 
             public TResult Current => _selector(_src.Current);
+
+            public IAwaitable Close(Exception ex = null)
+            {
+                return _src.Close(ex);
+            }
 
             public IAwaitable<bool> ReadNext()
             {

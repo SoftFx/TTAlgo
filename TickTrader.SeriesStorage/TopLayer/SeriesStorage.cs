@@ -20,11 +20,12 @@ namespace TickTrader.SeriesStorage
         where TKey : IComparable
     {
         private Func<TValue, TKey> _keyFunc;
-        
-        internal SeriesStorage(Func<TValue, TKey> keyFunc) //ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage,
+        private bool _allowDuplicates;
+
+        internal SeriesStorage(Func<TValue, TKey> keyFunc, bool allowDuplicates) //ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage,
         {
-            //SliceStorage = sliceStorage;
             _keyFunc = keyFunc;
+            _allowDuplicates = allowDuplicates;
         }
 
         //protected ICollectionStorage<KeyRange<TKey>, TValue[]> SliceStorage { get; }
@@ -46,7 +47,7 @@ namespace TickTrader.SeriesStorage
 
         public void Write(TKey from, TKey to, params TValue[] values)
         {
-            Slice<TKey, TValue>.CheckSlice(from, to, new ArraySegment<TValue>(values), _keyFunc);
+            Slice<TKey, TValue>.CheckSlice(from, to, new ArraySegment<TValue>(values), _keyFunc, _allowDuplicates);
             WriteInternal(new KeyRange<TKey>(from, to), values);
         }
 

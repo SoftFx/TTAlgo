@@ -24,9 +24,9 @@ namespace TickTrader.Algo.Core
             Executor = executor;
         }
 
-        public void Init()
+        public void OnStart()
         {
-            Collector.Init(Settings);
+            Collector.OnStart(Settings);
         }
 
         public void EmulateExecution()
@@ -42,27 +42,10 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void CollectTestResults()
+        public void OnStop()
         {
             var builder = Executor.GetBuilder();
-            var acc = builder.Account;
-
-            if (acc.IsMarginType)
-            {
-                Collector.Stats.InitialBalance = (decimal)Settings.InitialBalance;
-                Collector.Stats.FinalBalance = (decimal)acc.Equity;
-            }
-
-            if (acc.IsMarginType)
-            {
-                //Collector.LogTrade("Initial equity: " + Settings.InitialBalance);
-                //Collector.LogTrade("Final equity: " + acc.Equity);
-                //Collector.LogTrade("Quotes emulated: " + Collector.TicksCount);
-                //Collector.LogTrade("Orders opened: " + Collector.OrdersOpened);
-                //Collector.LogTrade("Orders rejected: " + Collector.OrdersRejected);
-                //Collector.LogTrade("Order modfications: " + Collector.Modifications);
-                //Collector.LogTrade("Order modifications rejected: " + Collector.ModificationRejected);
-            }
+            Collector.OnStop(Settings, builder.Account);
         }
 
         public void CancelEmulation()

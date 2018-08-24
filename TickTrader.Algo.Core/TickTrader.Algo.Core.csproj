@@ -69,25 +69,26 @@
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
-    <Compile Include="Backtester\ActivationEmulator.cs" />
-    <Compile Include="Backtester\ActivationIndex.cs" />
-    <Compile Include="Backtester\ActivationRecord.cs" />
-    <Compile Include="Backtester\ActivationRegistry.cs" />
-    <Compile Include="Backtester\BacktesterCollector.cs" />
-    <Compile Include="Backtester\BarBasedSeriesEmulator.cs" />
-    <Compile Include="Backtester\CommisionEmulator.cs" />
-    <Compile Include="Backtester\DefaultDealer.cs" />
+    <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
+    <Compile Include="Backtester\Trade\ActivationIndex.cs" />
+    <Compile Include="Backtester\Trade\ActivationRecord.cs" />
+    <Compile Include="Backtester\Trade\ActivationRegistry.cs" />
+    <Compile Include="Backtester\Stats\BacktesterCollector.cs" />
+    <Compile Include="Backtester\Feed\BarBasedSeriesEmulator.cs" />
+    <Compile Include="Backtester\Trade\CommisionEmulator.cs" />
+    <Compile Include="Backtester\Trade\DefaultDealer.cs" />
     <Compile Include="Backtester\EmulationControlFixture.cs" />
-    <Compile Include="Backtester\FeedSeriesEmulator.cs" />
+    <Compile Include="Backtester\Feed\FeedSeriesEmulator.cs" />
     <Compile Include="Backtester\Interfaces.cs" />
-    <Compile Include="Backtester\TestingStatistics.cs" />
-    <Compile Include="Backtester\TradeEmulator.cs" />
+    <Compile Include="Backtester\Stats\TestingStatistics.cs" />
+    <Compile Include="Backtester\Trade\TradeEmulator.cs" />
+    <Compile Include="Backtester\Feed\TickBasedSeriesEmulator.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
     <Compile Include="Backtester\Backtester.cs" />
-    <Compile Include="Backtester\FeedEmulator.cs" />
+    <Compile Include="Backtester\Feed\FeedEmulator.cs" />
     <Compile Include="Backtester\InvokeEmulator.cs" />
     <Compile Include="CoreExtentions.cs" />
     <Compile Include="Entities.Requests\CancelOrderRequest.cs" />
@@ -197,7 +198,7 @@
     <Compile Include="Buffers\TypedProxies.cs" />
     <Compile Include="Repository\RepositoryKey.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
-    <Compile Include="Backtester\TradeOperationSummary.cs" />
+    <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

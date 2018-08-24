@@ -53,6 +53,14 @@ namespace TickTrader.BotTerminal
             newPropertis.Add("Gross profit", newStats.GrossProfit.ToString("N2"));
             newPropertis.Add("Gross loss", newStats.GrossLoss.ToString("N2"));
 
+            newPropertis.Add("Testing time", newStats.Elapsed.ToString("c"));
+
+            var tickPerSecond = "N/A";
+            if (newStats.Elapsed.Seconds > 0)
+                tickPerSecond = (newStats.TicksCount / newStats.Elapsed.Seconds).ToString("N0");
+
+            newPropertis.Add("Testing speed (tps)", tickPerSecond);
+
             newPropertis.Add("Orders opened", newStats.OrdersOpened.ToString());
             newPropertis.Add("Orders rejected", newStats.OrdersRejected.ToString());
             newPropertis.Add("Order modifications", newStats.OrderModifications.ToString());
@@ -67,7 +75,6 @@ namespace TickTrader.BotTerminal
             newCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
                 .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns)
                 .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns));
-
 
             _charts.Value = newCharts;
             _statProperties.Value = newPropertis;

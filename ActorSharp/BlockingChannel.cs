@@ -178,7 +178,7 @@ namespace ActorSharp
                 {
                     _isClosed = true;
 
-                    _readPage.Clear();
+                    _readPage?.Clear();
                     _readPage = null;
                     _readIndex = 0;
 

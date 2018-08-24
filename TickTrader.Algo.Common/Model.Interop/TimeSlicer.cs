@@ -25,31 +25,40 @@ namespace TickTrader.Algo.Common.Model
     {
         private DateTime? _from;
         private DateTime? _to;
-        private DateTime? _i;
+        //private DateTime? _i;
         private Func<T, DateTime> _getTime;
         private Func<T, DateTime> _getEndTime;
         private List<T> _cachedPage = new List<T>();
         private int _pageSize;
+        private DateTime _lastItemTime;
+        private int _count;
         
         public TimeSlicer(int pageSize, DateTime? from, DateTime? to, Func<T, DateTime> getItemTime, Func<T, DateTime> getItemEndTime = null)
         {
             _pageSize = pageSize;
             _from = from;
             _to = to;
-            _i = from;
             _getTime = getItemTime;
             _getEndTime = getItemEndTime;
         }
 
         public bool Write(T item)
         {
+            var itemTime = _getTime(item);
+            bool dupTime = _lastItemTime == itemTime;
+            _lastItemTime = itemTime;
+
             _cachedPage.Add(item);
-            return _cachedPage.Count >= _pageSize + 1;
+
+            // items with same time coordinate should be in same page
+            // so page size may be slightly larger than requested
+            return _cachedPage.Count >= _pageSize + 1 && !dupTime;
         }
 
         public Slice<T> CompleteSlice(bool last)
         {
-            var sliceFrom = GetSliceStartTime();
+            var sliceFrom = _count == 0 && _from != null ? _from.Value : _getTime(_cachedPage.First());
+            _count++;
 
             if (!last)
             {
@@ -58,7 +67,6 @@ namespace TickTrader.Algo.Common.Model
                 var content = _cachedPage.ToArray();
                 _cachedPage.Clear();
                 _cachedPage.Add(lastItem);
-                _i = sliceTo;
                 return new Slice<T>(sliceFrom, sliceTo, content);
             }
             else
@@ -77,18 +85,9 @@ namespace TickTrader.Algo.Common.Model
 
                 var content = _cachedPage.ToArray();
                 _cachedPage.Clear();
-                _i = sliceTo;
 
                 return new Slice<T>(sliceFrom, sliceTo, content);
             }
-        }
-
-        private DateTime GetSliceStartTime()
-        {
-            if(_i == null)
-                return _getTime(_cachedPage.First());
-            else
-                return _i.Value;
         }
 
         private T RemoveLastItem()

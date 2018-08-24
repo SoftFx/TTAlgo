@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Common.Model
 
             using (var db = SeriesDatabase.Create(poolManager))
             {
-                var series = db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString());
+                var series = db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString(), false);
 
                 foreach (var bar in series.Iterate(_from, _to))
                     yield return bar;

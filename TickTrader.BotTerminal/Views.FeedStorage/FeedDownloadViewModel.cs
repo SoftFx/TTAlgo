@@ -117,24 +117,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task DownloadAsync(IActionObserver observer, CancellationToken cancelToken)
+        private async Task<long> DownloadBars(IActionObserver observer, CancellationToken cancelToken, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            var symbol = SelectedSymbol.Value.Name;
-            var timeFrame = SelectedTimeFrame.Value;
-            var priceType = SelectedPriceType.Value;
-            var from = DateRange.From;
-            var to = DateRange.To + TimeSpan.FromDays(1);
+            observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
-            observer?.SetMessage("Downloading... \n");
+            var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
 
-            var watch = Stopwatch.StartNew();
-            int downloadedCount = 0;
-
-            if (!timeFrame.IsTicks())
+            try
             {
-                observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
-
-                var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
+                var watch = Stopwatch.StartNew();
+                long downloadedCount = 0;
 
                 while (await barEnumerator.ReadNext())
                 {
@@ -154,21 +146,31 @@ namespace TickTrader.BotTerminal
                     {
                         await barEnumerator.Close();
                         observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
-                        return;
+                        return downloadedCount;
                     }
                 }
 
                 observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
+
+                return downloadedCount;
             }
-            else // ticks
+            finally
             {
-                //var endDay = to.GetAbsoluteDay();
-                //var totalDays = endDay - from.GetAbsoluteDay();
+                await barEnumerator.Close();
+            }
+        }
 
-                observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
+        private async Task<long> DownloadTicks(IActionObserver observer, CancellationToken cancelToken, string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        {
+            var watch = Stopwatch.StartNew();
+            long downloadedCount = 0;
 
-                var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
+            observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
+            var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
+
+            try
+            {
                 while (await tickEnumerator.ReadNext())
                 {
                     var info = tickEnumerator.Current;
@@ -186,11 +188,40 @@ namespace TickTrader.BotTerminal
                     if (cancelToken.IsCancellationRequested)
                     {
                         observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
-                        return;
+                        return downloadedCount;
                     }
                 }
 
                 observer.SetMessage("Completed: " + downloadedCount + " ticks were downloaded.");
+
+                return downloadedCount;
+            }
+            finally
+            {
+                 await tickEnumerator.Close();
+            }
+        }
+
+        private async Task DownloadAsync(IActionObserver observer, CancellationToken cancelToken)
+        {
+            var symbol = SelectedSymbol.Value.Name;
+            var timeFrame = SelectedTimeFrame.Value;
+            var priceType = SelectedPriceType.Value;
+            var from = DateRange.From;
+            var to = DateRange.To + TimeSpan.FromDays(1);
+
+            observer?.SetMessage("Downloading... \n");
+
+            try
+            {
+                if (timeFrame.IsTicks())
+                    await DownloadTicks(observer, cancelToken, symbol, timeFrame, from, to);
+                else
+                    await DownloadBars(observer, cancelToken, symbol, timeFrame, priceType, from, to);
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
     }

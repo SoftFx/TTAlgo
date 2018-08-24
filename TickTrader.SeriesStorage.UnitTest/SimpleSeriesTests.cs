@@ -255,7 +255,7 @@ namespace TickTrader.SeriesStorage.UnitTest
         private SeriesStorage<int, MockItem> Setup0()
         {
             var storage = new MockStorage<KeyRange<int>, MockItem[]>();
-            return storage.GetSeries(i => i.Id);
+            return storage.GetSeries(i => i.Id, false);
         }
 
         private SeriesStorage<int, MockItem> Setup1()
@@ -264,7 +264,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             Write(storage, 1, 8, new MockItem(2, "two"), new MockItem(4, "four"), new MockItem(7, "seven"));
             Write(storage, 8, 10, new MockItem(8, "eight"), new MockItem(9, "nine"));
             Write(storage, 10, 16, new MockItem(11, "eleven"), new MockItem(15, "fifteen"));
-            return storage.GetSeries(i => i.Id);
+            return storage.GetSeries(i => i.Id, false);
         }
 
         private void Write(MockStorage<KeyRange<int>, MockItem[]> storage, int from, int to, params MockItem[] items)

@@ -166,41 +166,48 @@ namespace TickTrader.Algo.Common.Model
 
             var correctedTo = to - TimeSpan.FromTicks(1);
 
-            _feedProxy.DownloadBars(CreateBlocingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
-
-            var i = from;
-            while (await inputStream.ReadNext())
+            try
             {
-                if (barSlicer.Write(inputStream.Current))
-                {
-                    var slice = barSlicer.CompleteSlice(false);
+                _feedProxy.DownloadBars(CreateBlocingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
 
-                    logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
-                    //var slice = new BarStreamSlice(i, sliceTo, bars);
-                    await Cache.Put(key, slice.From, slice.To, slice.Items);
-                    if (!await outputAction(slice))
+                var i = from;
+                while (await inputStream.ReadNext())
+                {
+                    if (barSlicer.Write(inputStream.Current))
+                    {
+                        var slice = barSlicer.CompleteSlice(false);
+
+                        logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
+                        //var slice = new BarStreamSlice(i, sliceTo, bars);
+                        await Cache.Put(key, slice.From, slice.To, slice.Items);
+                        if (!await outputAction(slice))
+                        {
+                            logger.Debug("Downloading canceled!");
+                            throw new TaskCanceledException();
+                        }
+                        i = slice.To;
+                    }
+                }
+
+                var lastSlice = barSlicer.CompleteSlice(true);
+                if (lastSlice != null)
+                {
+                    logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
+                    await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
+                    if (!await outputAction(lastSlice))
                     {
                         logger.Debug("Downloading canceled!");
                         throw new TaskCanceledException();
                     }
-                    i = slice.To;
+                    i = lastSlice.To;
                 }
-            }
 
-            var lastSlice = barSlicer.CompleteSlice(true);
-            if (lastSlice != null)
+                return i;
+            }
+            finally
             {
-                logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
-                await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
-                if (!await outputAction(lastSlice))
-                {
-                    logger.Debug("Downloading canceled!");
-                    throw new TaskCanceledException();
-                }
-                i = lastSlice.To;
+                await inputStream.Close();
             }
-
-            return i;
         }
 
         private Task<DateTime> DownloadTicksInternal(Channel<Slice<QuoteEntity>> buffer, FeedCacheKey key, DateTime from, DateTime to)
@@ -221,41 +228,48 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Start downloading quotes (" + from + " - " + to + ")");
 
-            _feedProxy.DownloadQuotes(CreateBlocingChannel(inputStream), key.Symbol, from, to, level2);
-
-            var i = from;
-            while (await inputStream.ReadNext())
+            try
             {
-                if (quoteSlicer.Write(inputStream.Current))
-                {
-                    var slice = quoteSlicer.CompleteSlice(false);
+                _feedProxy.DownloadQuotes(CreateBlocingChannel(inputStream), key.Symbol, from, to, level2);
 
-                    logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
-                    //var slice = new BarStreamSlice(i, sliceTo, bars);
-                    await Cache.Put(key, slice.From, slice.To, slice.Items);
-                    if (!await outputAction(slice))
+                var i = from;
+                while (await inputStream.ReadNext())
+                {
+                    if (quoteSlicer.Write(inputStream.Current))
+                    {
+                        var slice = quoteSlicer.CompleteSlice(false);
+
+                        logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
+                        //var slice = new BarStreamSlice(i, sliceTo, bars);
+                        await Cache.Put(key, slice.From, slice.To, slice.Items);
+                        if (!await outputAction(slice))
+                        {
+                            logger.Debug("Downloading canceled!");
+                            throw new TaskCanceledException();
+                        }
+                        i = slice.To;
+                    }
+                }
+
+                var lastSlice = quoteSlicer.CompleteSlice(true);
+                if (lastSlice != null)
+                {
+                    logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
+                    await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
+                    if (!await outputAction(lastSlice))
                     {
                         logger.Debug("Downloading canceled!");
                         throw new TaskCanceledException();
                     }
-                    i = slice.To;
+                    i = lastSlice.To;
                 }
-            }
 
-            var lastSlice = quoteSlicer.CompleteSlice(true);
-            if (lastSlice != null)
+                return i;
+            }
+            finally
             {
-                await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
-                logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
-                if (!await outputAction(lastSlice))
-                {
-                    logger.Debug("Downloading canceled!");
-                    throw new TaskCanceledException();
-                }
-                i = lastSlice.To;
+                await inputStream.Close();
             }
-
-            return i;
         }
 
         private async void GetSeriesData<TOut>(Channel<TOut> buffer,
@@ -269,28 +283,37 @@ namespace TickTrader.Algo.Common.Model
                 var key = new FeedCacheKey(symbol, timeFrame, priceType);
                 var i = from;
                 var cache = cacheProvider(key, from, to);
-                while (await cache.ReadNext())
+                try
                 {
-                    var cacheItem = cache.Current;
-
-                    if (cacheItem.From == i)
+                    while (await cache.ReadNext())
                     {
-                        if (!await buffer.Write(cacheItem))
-                            return;
-                        i = cacheItem.To;
+                        var cacheItem = cache.Current;
+
+                        if (cacheItem.From == i)
+                        {
+                            if (!await buffer.Write(cacheItem))
+                                return;
+                            i = cacheItem.To;
+                        }
+                        else
+                            i = await download(buffer, key, i, cacheItem.From);
                     }
-                    else
-                        i = await download(buffer, key, i, cacheItem.From);
+
+                    if (i < to)
+                        i = await download(buffer, key, i, to);
                 }
-
-                if (i < to)
-                    i = await download(buffer, key, i, to);
-
-                await buffer.Close();
+                finally
+                {
+                    await cache.Close();
+                }
             }
             catch (Exception ex)
             {
                 await buffer.Close(ex);
+            }
+            finally
+            {
+                await buffer.Close();
             }
         }
     }

@@ -15,7 +15,8 @@ namespace ActorSharp
     {
         public CloseWriterRequest(Exception ex)
         {
-            Error = ExceptionDispatchInfo.Capture(ex);
+            if (ex != null)
+                Error = ExceptionDispatchInfo.Capture(ex);
         }
 
         public ExceptionDispatchInfo Error { get; }

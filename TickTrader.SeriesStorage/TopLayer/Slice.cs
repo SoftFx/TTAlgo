@@ -71,9 +71,9 @@ namespace TickTrader.SeriesStorage
             return GetSliceSegment(newRange, Range, Content, _keyFunc);
         }
 
-        public void Check()
+        public void Check(bool allowDuplicates)
         {
-            CheckSlice(From, To, Content, _keyFunc);
+            CheckSlice(From, To, Content, _keyFunc, allowDuplicates);
         }
 
         public override string ToString()
@@ -117,7 +117,7 @@ namespace TickTrader.SeriesStorage
             return Create(newRange.From, newRange.To, keyFunc, segment);
         }
 
-        public static void CheckSlice(TKey from, TKey to, ArraySegment<TValue> content, Func<TValue, TKey> keyFunc)
+        public static void CheckSlice(TKey from, TKey to, ArraySegment<TValue> content, Func<TValue, TKey> keyFunc, bool allowDuplicates)
         {
             var list = (IList<TValue>)content;
 
@@ -132,7 +132,7 @@ namespace TickTrader.SeriesStorage
                 if (i > 0)
                 {
                     var cr = key.CompareTo(prevKey);
-                    if (cr == 0)
+                    if (!allowDuplicates && cr == 0)
                         throw new ArgumentException("Slice is invalid: Duplicate key at position " + i);
                     else if (cr < 0)
                         throw new ArgumentException("Slice is invalid: Unsorted key at position " + i);

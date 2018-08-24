@@ -168,13 +168,32 @@ namespace TickTrader.BotTerminal
 
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
-            ChartPage.Clear();
-            ResultsPage.Clear();
-            _journalContent.Value = null;
+            try
+            {
+                ChartPage.Clear();
+                ResultsPage.Clear();
+                _journalContent.Value = null;
 
+                await PrecacheData(observer, cToken);
+
+                cToken.ThrowIfCancellationRequested();
+
+                await SetupAndRunBacktester(observer, cToken);
+            }
+            catch (OperationCanceledException)
+            {
+                observer.SetMessage("Canceled.");
+            }
+        }
+
+        private async Task PrecacheData(IActionObserver observer, CancellationToken cToken)
+        {
             foreach (var symbolSetup in FeedSources)
                 await symbolSetup.PrecacheData(observer, cToken, DateRange.From, DateRange.To);
+        }
 
+        private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
+        {
             var chartSymbol = FeedSources[0].SelectedSymbol.Value;
             var chartTimeframe = FeedSources[0].SelectedTimeframe.Value;
             var chartPriceLayer = BarPriceType.Bid;

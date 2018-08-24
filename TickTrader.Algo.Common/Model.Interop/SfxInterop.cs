@@ -286,48 +286,41 @@ namespace TickTrader.Algo.Common.Model
             return bars.Select(Convert).ToArray();
         }
 
+        //public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
+        //{
+        //    var buffer = new QuoteSliceBuffer(from, to);
+        //    var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
+        //    var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
+        //    DownloadQuotesToBuffer(buffer, eTask);
+        //    return buffer;
+        //}
+
         public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, depth, from, to, DownloadTimeoutMs);
 
-            //var buffer = new QuoteSliceBuffer(from, to);
-            //var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
-            //var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
-            //DownloadQuotesToBuffer(buffer, eTask);
-            //return buffer;
+                    while (true)
+                    {
+                        var bar = e.Next(DownloadTimeoutMs);
+                        if (bar == null || !stream.Write(Convert(bar)))
+                        {
+                            e.Close();
+                            break;
+                        }
+                    }
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
+                    stream.Close(ex);
+                }
+            });
         }
-
-        //private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
-        //{
-        //    const int pageSize = 2000;
-
-        //    DateTime lastTickTime = DateTime.MinValue;
-
-        //    try
-        //    {
-        //        using (var e = await enumTask)
-        //        {
-        //            var page = new SFX.Quote[pageSize];
-
-        //            while (true)
-        //            {
-        //                var count = await e.NextAsync(page).ConfigureAwait(false);
-        //                if (count <= 0)
-        //                    break;
-
-        //                var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
-        //                await buffer.WriteAsync(tickArray).ConfigureAwait(false);
-        //            }
-        //        }
-
-        //        await buffer.CompleteWriteAsync();
-        //        buffer.Dispose();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        buffer.SetFailed(ex);
-        //    }
-        //}
 
         public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
@@ -352,8 +345,8 @@ namespace TickTrader.Algo.Common.Model
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<TradeReportEntity> TradeTransactionReport;
         public event Action<BalanceOperationReport> BalanceOperation;
-        public event Action<SymbolEntity[]> SymbolInfo;
-        public event Action<CurrencyEntity[]> CurrencyInfo;
+        public event Action<SymbolEntity[]> SymbolInfo { add { } remove { } }
+        public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
 
         public Task<AccountEntity> GetAccountInfo()
         {

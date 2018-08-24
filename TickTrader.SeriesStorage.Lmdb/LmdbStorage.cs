@@ -29,7 +29,10 @@ namespace TickTrader.SeriesStorage.Lmdb
             try
             {
                 _env.MaxDatabases = 1000;
-                _env.MapSize = 1024 * 1024 * 1024;
+                if (Environment.Is64BitProcess)
+                    _env.MapSize = 1024L * 1024L * 1024L * 50L;
+                else
+                    _env.MapSize = 1024L * 1024L * 1024L;
                 _env.MaxReaders = 1000;
 
                 var flags = EnvironmentOpenFlags.WriteMap | EnvironmentOpenFlags.NoSync | EnvironmentOpenFlags.NoSubDir;

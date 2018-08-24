@@ -8,7 +8,8 @@ namespace TickTrader.SeriesStorage
 {
     internal class SeriesStorageNoMetadata<TKey, TValue> : SeriesStorage<TKey, TValue> where TKey : IComparable
     {
-        public SeriesStorageNoMetadata(ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage, Func<TValue, TKey> keyFunc) : base(keyFunc)
+        public SeriesStorageNoMetadata(ICollectionStorage<KeyRange<TKey>, TValue[]> sliceStorage, Func<TValue, TKey> keyFunc, bool allowDuplicates)
+            : base(keyFunc, allowDuplicates)
         {
             SliceStorage = sliceStorage;
         }

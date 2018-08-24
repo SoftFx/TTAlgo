@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public interface IQuoteStorage
+    public interface ITickStorage
     {
         IEnumerable<QuoteEntity> GetQuoteStream();
     }

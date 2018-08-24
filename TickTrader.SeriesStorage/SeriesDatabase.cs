@@ -31,19 +31,19 @@ namespace TickTrader.SeriesStorage
         }
 
         public static SeriesStorage<TKey, TValue> GetSeries<TKey, TValue>(this ISeriesDatabase factory,
-            IKeySerializer<TKey> keySerializer, ISliceSerializer<TValue> valueSerializer, Func<TValue, TKey> keyGetter, string name = null)
+            IKeySerializer<TKey> keySerializer, ISliceSerializer<TValue> valueSerializer, Func<TValue, TKey> keyGetter, string name, bool allowDuplicates)
             where TKey : IComparable
         {
             var sliceKeySerializer = new KeyRangeSerializer<TKey>(keySerializer);
             var binCollection = factory.GetBinaryCollection(name, sliceKeySerializer);
             var sliceCollection = new CollectionSerializer<KeyRange<TKey>, TValue[]>(binCollection, valueSerializer);
-            return new SeriesStorageNoMetadata<TKey, TValue>(sliceCollection, keyGetter);
+            return new SeriesStorageNoMetadata<TKey, TValue>(sliceCollection, keyGetter, allowDuplicates);
         }
 
-        public static SeriesStorage<TKey, TValue> GetSeries<TKey, TValue>(this ICollectionStorage<KeyRange<TKey>, TValue[]> collection, Func<TValue, TKey> keyGetter)
+        public static SeriesStorage<TKey, TValue> GetSeries<TKey, TValue>(this ICollectionStorage<KeyRange<TKey>, TValue[]> collection, Func<TValue, TKey> keyGetter, bool allowDuplicates)
            where TKey : IComparable
         {
-            return new SeriesStorageNoMetadata<TKey, TValue>(collection, keyGetter);
+            return new SeriesStorageNoMetadata<TKey, TValue>(collection, keyGetter, allowDuplicates);
         }
     }
 }

@@ -33,6 +33,7 @@ namespace ActorSharp
     {
         IAwaitable<bool> ReadNext();
         T Current { get; }
+        IAwaitable Close(Exception ex = null);
     }
 
     public interface IContextFactory

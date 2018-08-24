@@ -120,6 +120,7 @@
     <Compile Include="Model.FeedCache\DateTimeKeySerializer.cs" />
     <Compile Include="Model.FeedCache\FeedCacheKey.cs" />
     <Compile Include="Model.FeedCache\GuidKeySerializer.cs" />
+    <Compile Include="Model.FeedCache\TickCrossDomainReader.cs" />
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.FeedCache\BarCrossDomainReader.cs" />
     <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />

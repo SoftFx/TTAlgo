@@ -135,9 +135,14 @@ namespace TickTrader.Algo.Common.Model
             public Task RemoveSeries(FeedCacheKey seriesKey)
                 => _ref.Call(a => a.RemoveSeries(seriesKey));
 
-            public IBarStorage CreateCrossDomainReader(FeedCacheKey key, DateTime from, DateTime to)
+            public IBarStorage CreateBarCrossDomainReader(FeedCacheKey key, DateTime from, DateTime to)
             {
                 return new BarCrossDomainReader(_baseFolder, key, from, to);
+            }
+
+            public ITickStorage CreateTickCrossDomainReader(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                return new TickCrossDomainReader(_baseFolder, key, from, to);
             }
         }
 
@@ -338,9 +343,9 @@ namespace TickTrader.Algo.Common.Model
             ISeriesStorage<DateTime> collection;
 
             if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.ToCodeString());
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.ToCodeString(), true);
             else
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.ToCodeString());
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.ToCodeString(), false);
 
             _series.Add(key, collection);
             return collection;
