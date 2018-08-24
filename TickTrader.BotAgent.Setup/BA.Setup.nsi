@@ -36,7 +36,7 @@
 !endif
 
 !ifndef SETUP_FILENAME
-  !define SETUP_FILENAME "TickTrader.BotAgent.Setup ${PRODUCT_BUILD}.exe"
+  !define SETUP_FILENAME "BotAgent ${PRODUCT_BUILD}.Setup.x64.exe"
 !endif
 
 !ifndef LICENSE_FILE

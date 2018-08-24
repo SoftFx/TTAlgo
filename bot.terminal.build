@@ -161,7 +161,7 @@
       </fileset>
     </zip>
 
-    <property name="ServerDestArchive" value="${OutpuFolder}BotAgent ${Build}.zip" />
+    <property name="ServerDestArchive" value="${OutpuFolder}BotAgent ${Build}.x64.zip" />
 
     <zip zipfile="${ServerDestArchive}">
       <fileset basedir="${BADir}">
