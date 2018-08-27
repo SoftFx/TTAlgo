@@ -89,7 +89,7 @@ namespace TickTrader.Algo.Core
                 while (true)
                 {
                     if (_canceled)
-                        throw new OperationCanceledException();
+                        throw new OperationCanceledException("Canceled.");
 
                     var nextItem = DequeueNext();
 
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Core
             {
                 if (_eFeed == null)
                 {
-                    _eFeed = _feed.GetFeedStream().JoinPages();
+                    _eFeed = _feed.GetFeedStream().GetEnumerator();
                     if (!_eFeed.MoveNext())
                         _eFeed = null;
 

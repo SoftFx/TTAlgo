@@ -15,10 +15,6 @@ namespace TickTrader.Algo.Core
             LossByHours = new decimal[24];
             ProfitByWeekDays = new decimal[7];
             LossByWeekDays = new decimal[7];
-
-            EquityHistory = new List<BarEntity>();
-            MarginHistory = new List<BarEntity>();
-            MainSymbolHistory = new List<BarEntity>();
         }
 
         public long BarsCount { get; internal set; }
@@ -39,9 +35,5 @@ namespace TickTrader.Algo.Core
         public decimal[] LossByHours { get; }
         public decimal[] ProfitByWeekDays { get; }
         public decimal[] LossByWeekDays { get; }
-
-        public List<BarEntity> MainSymbolHistory { get; }
-        public List<BarEntity> EquityHistory { get; }
-        public List<BarEntity> MarginHistory { get; }
     }
 }

@@ -50,41 +50,25 @@ namespace TickTrader.BotTerminal
             _panes.Clear();
         }
 
-        public void AddMainSeries(OhlcDataSeries<DateTime, double> chartData)
-        {
-            //var viewModel = new OhlcRenderableSeriesViewModel() { DataSeries = chartData, StyleKey = "BarChart_OhlcStyle" };
-
-            //if (_mainSeriesCollection.Count > 0)
-            //    _mainSeriesCollection.Clear();
-
-            //_mainSeriesCollection.Add(viewModel);
-        }
-
-        public void AddStatSeries(TestingStatistics stats)
+        public void SetFeedSeries(OhlcDataSeries<DateTime, double> chartData)
         {
             var mainSeries = new OhlcRenderableSeriesViewModel();
             mainSeries.StyleKey = "BarChart_OhlcStyle";
-            mainSeries.DataSeries = ToOhlc(stats.MainSymbolHistory);
+            mainSeries.DataSeries = chartData;
             _mainSeriesCollection.Add(mainSeries);
+        }
 
+        public void SetEquitySeries(OhlcDataSeries<DateTime, double> chartData)
+        {
             var equitySeries = new OhlcRenderableSeriesViewModel();
-            equitySeries.DataSeries = ToOhlc(stats.EquityHistory);
+            equitySeries.DataSeries = chartData;
             equitySeries.StyleKey = "EquityChart_OhlcStyle";
-
-            //var marginSeries = new OhlcRenderableSeriesViewModel();
-            //marginSeries.DataSeries = ToOhlc(stats.MarginHistory);
-
             _panes.Add(new BacktesterChartPaneModel(this, equitySeries));
         }
 
-        private OhlcDataSeries<DateTime, double> ToOhlc(List<BarEntity> vector)
+        public void SetMarginSeries(OhlcDataSeries<DateTime, double> chartData)
         {
-            var chartData = new OhlcDataSeries<DateTime, double>();
-
-            foreach (var bar in vector)
-                chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
-
-            return chartData;
+            
         }
     }
 

@@ -14,11 +14,13 @@ namespace TickTrader.Algo.Core
         public InvokeEmulator InvokeEmulator { get; }
         public BacktesterCollector Collector { get; }
         public PluginExecutor Executor { get; }
+        public FeedEmulator Feed { get; }
         public IBacktesterSettings Settings { get; }
 
         public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
         {
             Settings = settings;
+            Feed = new FeedEmulator();
             Collector = new BacktesterCollector(executor);
             InvokeEmulator = new InvokeEmulator(settings, Collector);
             Executor = executor;

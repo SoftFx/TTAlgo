@@ -22,6 +22,10 @@ namespace TickTrader.Algo.Core
         private BarSequenceBuilder _equityBuilder;
         private BarSequenceBuilder _marginBuilder;
         private DateTime _startTime;
+        private List<BarEntity> _mainSymbolHistory;
+        private List<BarEntity> _equityHistory;
+        private List<BarEntity> _marginHistory;
+        private TimeFrames _mainTimeframe;
 
         public BacktesterCollector(PluginExecutor executor)
         {
@@ -37,20 +41,26 @@ namespace TickTrader.Algo.Core
         private DateTime VirtualTimepoint => InvokeEmulator.VirtualTimePoint;
 
         public int EventsCount => _events.Count;
+        public int BarCount => _mainSymbolHistory.Count;
 
         public void OnStart(IBacktesterSettings settings)
         {
+            _mainSymbolHistory = new List<BarEntity>();
+            _equityHistory = new List<BarEntity>();
+            _marginHistory = new List<BarEntity>();
+
             Stats = new TestingStatistics();
             _startTime = DateTime.UtcNow;
+            _mainTimeframe = settings.MainTimeframe;
 
-            _mainBarVector = BarSequenceBuilder.Create(settings.MainTimeframe);
-            _mainBarVector.BarOpened += (b) => Stats.MainSymbolHistory.Add(b);
+            _mainBarVector = BarSequenceBuilder.Create(_mainTimeframe);
+            _mainBarVector.BarOpened += (b) => _mainSymbolHistory.Add(b);
 
             _equityBuilder = BarSequenceBuilder.Create(_mainBarVector);
-            _equityBuilder.BarOpened += (b) => Stats.EquityHistory.Add(b);
+            _equityBuilder.BarOpened += (b) => _equityHistory.Add(b);
 
             _marginBuilder = BarSequenceBuilder.Create(_mainBarVector);
-            _marginBuilder.BarOpened += (b) => Stats.MarginHistory.Add(b);
+            _marginBuilder.BarOpened += (b) => _marginHistory.Add(b);
         }
 
         public void OnStop(IBacktesterSettings settings, AccountAccessor acc)
@@ -83,7 +93,32 @@ namespace TickTrader.Algo.Core
 
         public IPagedEnumerator<BotLogRecord> GetEvents()
         {
-            return _events.GetCrossDomainEnumerator(1000);
+            return _events.GetCrossDomainEnumerator(4000);
+        }
+
+        public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
+        {
+            return MarshalBars(_mainSymbolHistory, timeFrame);
+        }
+
+        public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
+        {
+            return MarshalBars(_equityHistory, timeFrame);
+        }
+
+        public IPagedEnumerator<BarEntity> GetMarginHistory(TimeFrames timeFrame)
+        {
+            return MarshalBars(_marginHistory, timeFrame);
+        }
+
+        private IPagedEnumerator<BarEntity> MarshalBars(IEnumerable<BarEntity> barCollection, TimeFrames targeTimeframe)
+        {
+            const int pageSize = 4000;
+
+            if (_mainTimeframe == targeTimeframe)
+                return barCollection.GetCrossDomainEnumerator(pageSize);
+            else
+                return barCollection.Transform(targeTimeframe).GetCrossDomainEnumerator(pageSize);
         }
 
         #endregion

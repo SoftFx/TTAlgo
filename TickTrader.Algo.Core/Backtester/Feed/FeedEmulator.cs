@@ -14,9 +14,9 @@ namespace TickTrader.Algo.Core
 
         ISynchronizationContext IPluginFeedProvider.Sync => this;
 
-        internal IPagedEnumerator<QuoteEntity> GetFeedStream()
+        internal IEnumerable<QuoteEntity> GetFeedStream()
         {
-            return GetJoinedStream().GetCrossDomainEnumerator(8000);
+            return GetJoinedStream();
         }
 
         internal bool Warmup(int quoteCount)

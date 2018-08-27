@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
+    [Serializable]
     public class FeedCacheKey
     {
         public string Symbol { get; private set; }

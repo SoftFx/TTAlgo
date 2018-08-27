@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Core
             Append(bar);
         }
 
-        public void AppendQuote(DateTime time, double price, double volume)
+        public BarEntity AppendQuote(DateTime time, double price, double volume)
         {
             var boundaries = _sampler.GetBar(time);
 
@@ -66,11 +66,12 @@ namespace TickTrader.Algo.Core
             {
                 // add new bar
                 var newBar = new BarEntity(boundaries.Open, boundaries.Close, price, volume);
-                Append(newBar);
+                return Append(newBar);
             }
+            return null;
         }
 
-        public void AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
+        public BarEntity AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
         {
             var boundaries = _sampler.GetBar(time);
 
@@ -93,16 +94,35 @@ namespace TickTrader.Algo.Core
                 entity.Low = low;
                 entity.Close = close;
                 entity.Volume = volume;
-                Append(entity);
+                return Append(entity);
             }
+
+            return null;
         }
 
-        protected virtual void Append(BarEntity newBar)
+        public BarEntity CloseSequence()
         {
+            BarEntity closedBar = null;
             if (_currentBar != null)
+            {
+                closedBar = _currentBar;
+                _currentBar = null;
+                
+            }
+            return closedBar;
+        }
+
+        protected virtual BarEntity Append(BarEntity newBar)
+        {
+            BarEntity closedBar = null;
+            if (_currentBar != null)
+            {
                 BarClosed?.Invoke(_currentBar);
+                closedBar = _currentBar;
+            }
             _currentBar = newBar;
             OnBarOpened(newBar);
+            return closedBar;
         }
 
         protected void OnBarOpened(BarEntity newBar)
@@ -165,14 +185,17 @@ namespace TickTrader.Algo.Core
 
             private bool IsSync(BarEntity someBar) => _master.TimeEdge == someBar.OpenTime;
 
-            protected override void Append(BarEntity newBar)
+            protected override BarEntity Append(BarEntity newBar)
             {
                 var masterTime = _master.TimeEdge;
 
                 if (IsSync(newBar))
-                    base.Append(newBar);
+                    return base.Append(newBar);
                 else
+                {
                     _currentBar = newBar;
+                    return null;
+                }
             }
 
             //private void MasterSequence_Appended()

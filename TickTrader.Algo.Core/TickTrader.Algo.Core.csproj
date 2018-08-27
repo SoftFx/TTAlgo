@@ -162,6 +162,7 @@
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />
     <Compile Include="Math\BarVector.cs" />
     <Compile Include="Math\BarVectorBase.cs" />

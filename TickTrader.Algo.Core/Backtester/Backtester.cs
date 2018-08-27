@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
         private static int IdSeed;
 
         //private AlgoPluginRef _pluginRef;
-        private readonly FeedEmulator _feed = new FeedEmulator();
+        private readonly FeedEmulator _feed;
         private readonly PluginExecutor _executor;
         private EmulationControlFixture _control;
         private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
@@ -25,13 +25,14 @@ namespace TickTrader.Algo.Core
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
             _executor = pluginRef.CreateExecutor();
-            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
             _executor.Metadata = this;
 
             EmulationPeriodStart = from;
             EmulationPeriodEnd = to;
 
             _control = _executor.InitEmulation(this);
+            _feed = _control.Feed;
+            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
 
             Leverage = 100;
             InitialBalance = 10000;
@@ -51,6 +52,7 @@ namespace TickTrader.Algo.Core
         public DateTime? EmulationPeriodStart { get; }
         public DateTime? EmulationPeriodEnd { get; }
         public int EventsCount => _control.Collector.EventsCount;
+        public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
 
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
@@ -90,6 +92,21 @@ namespace TickTrader.Algo.Core
         public IPagedEnumerator<BotLogRecord> GetEvents()
         {
             return _control.Collector.GetEvents();
+        }
+
+        public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
+        {
+            return _control.Collector.GetMainSymbolHistory(timeFrame);
+        }
+
+        public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
+        {
+            return _control.Collector.GetEquityHistory(timeFrame);
+        }
+
+        public IPagedEnumerator<BarEntity> GetMarginHistory(TimeFrames timeFrame)
+        {
+            return _control.Collector.GetMarginHistory(timeFrame);
         }
 
         public void InitOutputCollection<T>(string id)

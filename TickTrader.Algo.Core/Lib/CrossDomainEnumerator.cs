@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core.Lib
             return new Adapter<T>(src, pageSize);
         }
 
-        public static IEnumerator<T> JoinPages<T>(this IPagedEnumerator<T> pagedEnumerator)
+        public static IEnumerable<T> JoinPages<T>(this IPagedEnumerator<T> pagedEnumerator)
         {
             while (true)
             {
@@ -34,6 +34,24 @@ namespace TickTrader.Algo.Core.Lib
 
                 foreach (var e in page)
                     yield return e;
+            }
+        }
+
+        public static IEnumerable<T> JoinPages<T>(this IPagedEnumerator<T> pagedEnumerator, Action<int> pageReadCallback)
+        {
+            var totalCount = 0;
+
+            while (true)
+            {
+                var page = pagedEnumerator.GetNextPage();
+                if (page.Count == 0)
+                    yield break;
+
+                foreach (var e in page)
+                    yield return e;
+
+                totalCount += page.Count;
+                pageReadCallback(totalCount);
             }
         }
 

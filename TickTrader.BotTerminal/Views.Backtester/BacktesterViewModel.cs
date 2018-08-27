@@ -16,6 +16,7 @@ using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 
@@ -260,15 +261,18 @@ namespace TickTrader.BotTerminal
                     updateTimer.Stop();
                 }
 
-                _journalContent.Value = await CollectEvents(tester, observer);
+                if (execError == null || execError is OperationCanceledException)
+                {
+                    _journalContent.Value = await CollectEvents(tester, observer);
 
-                observer.SetMessage("Loading testing result data...");
+                    observer.SetMessage("Loading testing result data...");
 
-                ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
+                    ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
 
-                await LoadChartData(tester, observer, tester.Feed.GetBarSeriesData(chartSymbol.Name, chartTimeframe, chartPriceLayer));
+                    await LoadChartData(tester, observer, tester);
 
-                ChartPage.AddStatSeries(ResultsPage.Stats);
+                    //ChartPage.AddStatSeries(ResultsPage.Stats);
+                }
 
                 if (execError != null)
                     observer.SetMessage(execError.Message);
@@ -287,37 +291,63 @@ namespace TickTrader.BotTerminal
             return Task.Run(() =>
             {
                 var events = new List<BotLogRecord>(totalCount);
-                var e = tester.GetEvents();
 
-                for (int i = 0; i < totalCount;)
-                {
-                    var page = e.GetNextPage();
-                    if (page == null)
-                        break;
-                    events.AddRange(page);
-                    i += page.Count;
-                    observer.SetProgress(i);
-                }
+                foreach (var record in tester.GetEvents().JoinPages(i => observer.SetProgress(i)))
+                    events.Add(record);
 
                 return events;
             });
         }
 
-        private async Task LoadChartData(Backtester tester, IActionObserver observer, IReadOnlyList<BarEntity> data)
+        private async Task LoadChartData(Backtester tester, IActionObserver observer, Backtester backtester)
         {
-            observer.SetMessage("Loading chart data...");
+            var timeFrame = backtester.MainTimeframe;
+            var count = backtester.BarHistoryCount;
 
-            var series = await Task.Run(() =>
+            timeFrame = AdjustTimeframe(timeFrame, count, out count);
+
+            observer.SetMessage("Loading feed chart data ...");
+            var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
+
+            observer.SetMessage("Loading equity chart data...");
+            var equityChartData = await LoadBarSeriesAsync(tester.GetEquityHistory(timeFrame), observer, timeFrame, count);
+
+            observer.SetMessage("Loading margin chart data...");
+            var marginChartData = await LoadBarSeriesAsync(tester.GetMarginHistory(timeFrame), observer, timeFrame, count);
+
+            ChartPage.SetFeedSeries(feedChartData);
+            ChartPage.SetEquitySeries(equityChartData);
+            ChartPage.SetMarginSeries(marginChartData);
+        }
+
+        private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarEntity> src, IActionObserver observer, TimeFrames timeFrame, int totalCount)
+        {
+            observer.StartProgress(0, totalCount);
+
+            return Task.Run(() =>
             {
                 var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in data)
+                foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
                     chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
 
                 return chartData;
             });
+        }
 
-            ChartPage.AddMainSeries(series);
+        private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)
+        {
+            const int maxGraphSize = 1000;
+
+            for (var i = currentFrame; i > TimeFrames.MN; i--)
+            {
+                aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, i);
+                if (aproxNewSize <= maxGraphSize)
+                    return i;
+            }
+
+            aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, TimeFrames.MN);
+            return TimeFrames.MN;
         }
 
         private void AddSymbol()
