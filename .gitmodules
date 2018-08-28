@@ -1,0 +1,4 @@
+[submodule "modules/FDK2"]
+	path = modules/FDK2
+	url = https://git.soft-fx.lv/tt-net-group/FDK2.git
+	branch = develop
