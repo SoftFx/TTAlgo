@@ -61,21 +61,31 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
+        public bool Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
         {
-            _client = client;
-            _packageRepo = packageRepo;
+            try
+            {
+                _client = client;
+                _packageRepo = packageRepo;
 
-            UpdatePackage();
+                UpdatePackage();
 
-            _client.StateChanged += Client_StateChanged;
+                _client.StateChanged += Client_StateChanged;
 
-            _botLog = new BotLog.ControlHandler(Id);
+                _botLog = new BotLog.ControlHandler(Id);
 
-            _algoData = new AlgoData(workingFolder);
+                _algoData = new AlgoData(workingFolder);
 
-            if (IsRunning && State != BotStates.Broken)
-                Start();
+                if (IsRunning && State != BotStates.Broken)
+                    Start();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, $"Failed to init bot {Id}");
+            }
+            return false;
         }
 
         public void ChangeBotConfig(TradeBotConfig config)
@@ -87,6 +97,9 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (IsStopped())
             {
+                if (config.Key == null)
+                    config.Key = Config.Key;
+
                 Config = config;
                 ConfigurationChanged?.Invoke(this);
             }

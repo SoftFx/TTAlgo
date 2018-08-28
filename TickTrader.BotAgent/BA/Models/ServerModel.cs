@@ -162,7 +162,6 @@ namespace TickTrader.BotAgent.BA.Models
             var acc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
             await acc.Init(_packageStorage);
 
-            await acc.Init(_packageStorage);
             var testResult = await acc.TestConnection();
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))

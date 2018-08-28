@@ -53,56 +53,63 @@ namespace TickTrader.BotAgent.BA.Models
 
         public async Task Init(PackageStorage packageProvider)
         {
-            _packageProvider = packageProvider;
-            _requestGate = new AsyncGate();
-            _requestGate.OnWait += ManageConnection;
-            _requestGate.OnExit += KeepAlive;
-
-            if (_bots == null)
-                _bots = new List<TradeBotModel>();
-
-            var toRemove = new List<TradeBotModel>();
-
-            foreach (var bot in _bots)
+            try
             {
-                try
+                _packageProvider = packageProvider;
+                _requestGate = new AsyncGate();
+                _requestGate.OnWait += ManageConnection;
+                _requestGate.OnExit += KeepAlive;
+
+                if (_bots == null)
+                    _bots = new List<TradeBotModel>();
+
+                var toRemove = new List<TradeBotModel>();
+
+                foreach (var bot in _bots)
                 {
-                    BotValidation?.Invoke(bot);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "Bot '{0}' failed validation and was removed! {1}", bot.Id);
-                    toRemove.Add(bot);
-                    continue;
+                    try
+                    {
+                        BotValidation?.Invoke(bot);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Bot '{0}' failed validation and was removed! {1}", bot.Id);
+                        toRemove.Add(bot);
+                        continue;
+                    }
+
+                    if (bot.IsRunning)
+                        _startedBotsCount++;
+                    InitBot(bot);
                 }
 
-                if (bot.IsRunning)
-                    _startedBotsCount++;
-                InitBot(bot);
+                foreach (var bot in toRemove)
+                    _bots.Remove(bot);
+
+                var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder };
+
+                _core = new Algo.Common.Model.ClientModel.ControlHandler2(options,
+                    ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
+
+                await _core.OpenHandler();
+
+                _core.Connection.Disconnected += () =>
+                {
+                    _lostConnection = true;
+                    ManageConnection();
+                };
+
+                PluginTradeApi = await _core.CreateTradeApi();
+                PluginTradeInfo = await _core.CreateTradeProvider();
+
+                _isInitialized = true;
+
+                ManageConnectionLoop();
             }
-
-            foreach (var bot in toRemove)
-                _bots.Remove(bot);
-
-            var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder };
-
-            _core = new Algo.Common.Model.ClientModel.ControlHandler2(options,
-                ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
-
-            await _core.OpenHandler();
-
-            _core.Connection.Disconnected += () =>
+            catch (Exception ex)
             {
-                _lostConnection = true;
-                ManageConnection();
-            };
-
-            PluginTradeApi = await _core.CreateTradeApi();
-            PluginTradeInfo = await _core.CreateTradeProvider();
-
-            _isInitialized = true;
-
-            ManageConnectionLoop();
+                _log.Error(ex, $"Failed to init account {Username} on {Address}");
+            }
         }
 
         public ConnectionStates ConnectionState { get; private set; }
@@ -465,8 +472,10 @@ namespace TickTrader.BotAgent.BA.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id));
-            BotInitialized?.Invoke(bot);
+            if (bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id)))
+            {
+                BotInitialized?.Invoke(bot);
+            }
         }
 
         private void OnBotConfigurationChanged(TradeBotModel bot)

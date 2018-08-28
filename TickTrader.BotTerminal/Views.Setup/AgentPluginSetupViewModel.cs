@@ -327,7 +327,7 @@ namespace TickTrader.BotTerminal
 
         private async void UpdateSetup()
         {
-            if (SelectedPlugin != null)
+            if (SelectedPlugin != null && _updateSetupMetadataSrc != null)
             {
                 _updateSetupCancelSrc?.Cancel();
                 _updateSetupCancelSrc = new CancellationTokenSource();
