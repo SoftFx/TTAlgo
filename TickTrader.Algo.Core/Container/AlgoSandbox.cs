@@ -13,10 +13,12 @@ namespace TickTrader.Algo.Core.Container
     internal class AlgoSandbox : CrossDomainObject
     {
         private IPluginLoader loader;
+        private List<Assembly> _loadedAssemblies = new List<Assembly>();
 
-        public AlgoSandbox(IPluginLoader src)
+        public AlgoSandbox(IPluginLoader src, bool isolated)
         {
             this.loader = src;
+
             try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -58,7 +60,9 @@ namespace TickTrader.Algo.Core.Container
             if (assemblyBytes == null)
                 throw new FileNotFoundException($"Package {loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
 
-            return Assembly.Load(assemblyBytes, symbolsBytes);
+            var assembly = Assembly.Load(assemblyBytes, symbolsBytes);
+            _loadedAssemblies.Add(assembly);
+            return assembly;
         }
 
         public override void Dispose()
@@ -71,6 +75,11 @@ namespace TickTrader.Algo.Core.Container
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var name = new AssemblyName(args.Name);
+
+            bool belongsToThisPackage = _loadedAssemblies.Contains(args.RequestingAssembly);
+
+            if (!belongsToThisPackage)
+                return null;
 
             // force plugins to use loaded Api
             if (name.Name == "TickTrader.Algo.Api")

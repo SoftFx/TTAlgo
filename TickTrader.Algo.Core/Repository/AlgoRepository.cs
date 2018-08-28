@@ -27,12 +27,14 @@ namespace TickTrader.Algo.Core.Repository
         private bool isWatcherFailed;
         private Task scanTask;
         private string repPath;
+        private bool _isolation;
         private Dictionary<string, FileWatcher> assemblies = new Dictionary<string, FileWatcher>();
 
-        public AlgoRepository(string repPath, IAlgoCoreLogger logger = null)
+        public AlgoRepository(string repPath, bool isolate = true, IAlgoCoreLogger logger = null)
         {
             this.repPath = repPath;
             this.logger = logger;
+            _isolation = isolate;
 
             stateControl.AddTransition(States.Created, Events.Start, States.Scanning);
             stateControl.AddTransition(States.Scanning, Events.DoneScanning, States.Watching);
@@ -127,7 +129,7 @@ namespace TickTrader.Algo.Core.Repository
 
         private void AddItem(string file)
         {
-            var item = new FileWatcher(file, logger);
+            var item = new FileWatcher(file, logger, _isolation);
             item.Added += (a, m) => Added(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
             item.Removed += (a, m) => Removed(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
             item.Replaced += (a, m) => Replaced(new AlgoRepositoryEventArgs(this, m, a.FileName, a.FilePath));
@@ -152,7 +154,7 @@ namespace TickTrader.Algo.Core.Repository
                     assembly.CheckForChanges();
                 else
                 {
-                    assembly = new FileWatcher(e.FullPath, logger);
+                    assembly = new FileWatcher(e.FullPath, logger, _isolation);
                     assemblies.Add(e.FullPath, assembly);
                 }
             }

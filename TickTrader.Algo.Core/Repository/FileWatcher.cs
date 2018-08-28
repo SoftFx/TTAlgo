@@ -23,12 +23,14 @@ namespace TickTrader.Algo.Core.Repository
         private Task scanTask;
         private IAlgoCoreLogger logger;
         private PluginContainer item;
+        private bool _isolation;
 
-        public FileWatcher(string filePath, IAlgoCoreLogger logger)
+        public FileWatcher(string filePath, IAlgoCoreLogger logger, bool isolation)
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
             this.logger = logger;
+            _isolation = isolation;
 
             stateControl.AddTransition(States.Created, Events.Start, States.Loading);
             stateControl.AddTransition(States.Loading, Events.DoneLoad, States.Ready);
@@ -101,7 +103,7 @@ namespace TickTrader.Algo.Core.Repository
 
                     if (!skipFileScan)
                     {
-                        newItem = PluginContainer.Load(filePath, logger);
+                        newItem = PluginContainer.Load(filePath, _isolation, logger);
                         currentFileInfo = info;
                         logger.Info("Loaded package " + FileName);
                         Merge(newItem.Plugins); // this will fire events

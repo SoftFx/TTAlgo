@@ -9,10 +9,10 @@ namespace TickTrader.Algo.Core
 {
     internal class TickBasedSeriesEmulator : FeedSeriesEmulator
     {
-        private string _symbol;
+        //private string _symbol;
         private IEnumerable<QuoteEntity> _src;
         private IEnumerator<QuoteEntity> _e;
-        private QuoteEntity _current;
+        //private QuoteEntity _current;
 
         public TickBasedSeriesEmulator(string symbol, IEnumerable<QuoteEntity> src)
         {

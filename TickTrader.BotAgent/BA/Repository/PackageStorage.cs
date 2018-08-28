@@ -173,7 +173,7 @@ namespace TickTrader.BotAgent.BA.Repository
         {
             try
             {
-                var container = PluginContainer.Load(fileInfo.FullName);
+                var container = PluginContainer.Load(fileInfo.FullName, true);
                 return new PackageModel(fileInfo.Name, fileInfo.LastWriteTime, container);
             }
             catch (Exception ex)
