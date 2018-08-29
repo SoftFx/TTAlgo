@@ -50,85 +50,13 @@ namespace TickTrader.Algo.Protocol.Grpc
     }
 
 
-    internal class ServerSession
-    {
-        private TaskCompletionSource<object> _updateStreamTaskSrc;
-        private IServerStreamWriter<Lib.UpdateInfo> _updateStream;
-
-
-        public ILogger Logger { get; }
-
-        public string Username { get; }
-
-        public string SessionId { get; }
-
-        public VersionSpec VersionSpec { get; }
-
-
-        public ServerSession(string username, int clientMinorVersion, LogFactory logFactory)
-        {
-            Username = username;
-            SessionId = Guid.NewGuid().ToString();
-            VersionSpec = new VersionSpec(Math.Min(clientMinorVersion, VersionSpec.MinorVersion));
-
-            Logger = logFactory.GetLogger($"{LoggerHelper.SessionLoggerPrefix}{SessionId}");
-        }
-
-
-        public Task SetupUpdateStream(IServerStreamWriter<Lib.UpdateInfo> updateStream)
-        {
-            if (_updateStreamTaskSrc != null)
-                throw new BAException($"Session {SessionId} already has opened update stream");
-
-            _updateStream = updateStream;
-            _updateStreamTaskSrc = new TaskCompletionSource<object>();
-            Logger.Info("Opened update stream");
-            return _updateStreamTaskSrc.Task;
-        }
-
-        public bool SendUpdate(Lib.UpdateInfo update)
-        {
-            if (_updateStreamTaskSrc == null)
-                return false;
-
-            _updateStream.WriteAsync(update);
-            return true;
-        }
-
-        public void CloseUpdateStream() // client disconnect
-        {
-            if (_updateStreamTaskSrc == null)
-                return;
-
-            _updateStreamTaskSrc.SetResult(null);
-            _updateStreamTaskSrc = null;
-            _updateStream = null;
-
-            Logger.Info("Closed update stream - client request");
-        }
-
-        public void CancelUpdateStream() // server disconnect
-        {
-            if (_updateStreamTaskSrc == null)
-                return;
-
-            _updateStreamTaskSrc.SetCanceled();
-            _updateStreamTaskSrc = null;
-            _updateStream = null;
-
-            Logger.Info("Closed update stream - server request");
-        }
-    }
-
-
     internal class BotAgentServerImpl : Lib.BotAgent.BotAgentBase
     {
         private IBotAgentServer _botAgent;
         private IJwtProvider _jwtProvider;
         private ILogger _logger;
-        private bool _logMessages;
-        private JsonFormatter _messageFormatter;
-        private Dictionary<string, ServerSession> _sessions;
+        private MessageFormatter _messageFormatter;
+        private Dictionary<string, ServerSession.Handler> _sessions;
 
 
         public BotAgentServerImpl(IBotAgentServer botAgent, IJwtProvider jwtProvider, ILogger logger, bool logMessages)
@@ -136,10 +64,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             _botAgent = botAgent;
             _jwtProvider = jwtProvider;
             _logger = logger;
-            _logMessages = logMessages;
 
-            _messageFormatter = new JsonFormatter(new JsonFormatter.Settings(true));
-            _sessions = new Dictionary<string, ServerSession>();
+            _messageFormatter = new MessageFormatter { LogMessages = logMessages };
+            _sessions = new Dictionary<string, ServerSession.Handler>();
 
             _botAgent.PackageUpdated += OnPackageUpdate;
             _botAgent.PackageStateUpdated += OnPackageStateUpdate;
@@ -325,18 +252,6 @@ namespace TickTrader.Algo.Protocol.Grpc
         #endregion Grpc request handlers overrides
 
 
-        private void LogRequest(ILogger logger, IMessage request)
-        {
-            if (_logMessages)
-                logger?.Info($"client > {request.GetType().Name}: {_messageFormatter.Format(request)}");
-        }
-
-        private void LogResponse(ILogger logger, IMessage response)
-        {
-            if (_logMessages)
-                logger?.Info($"client < {response.GetType().Name}: {_messageFormatter.Format(response)}");
-        }
-
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
             Func<TRequest, ServerCallContext, Task<TResponse>> requestAction, TRequest request, ServerCallContext context)
             where TRequest : IMessage
@@ -344,21 +259,21 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
-                LogRequest(_logger, request);
+                _messageFormatter.LogClientRequest(_logger, request);
                 var response = await requestAction(request, context);
-                LogResponse(_logger, response);
+                _messageFormatter.LogClientResponse(_logger, response);
 
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to execute request of type {request.GetType().Name}");
+                _logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
 
         private async Task<TResponse> ExecuteUnaryRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, ServerCallContext, ServerSession, Lib.RequestResult, Task<TResponse>> requestAction, TRequest request, ServerCallContext context)
+            Func<TRequest, ServerCallContext, ServerSession.Handler, Lib.RequestResult, Task<TResponse>> requestAction, TRequest request, ServerCallContext context)
             where TRequest : IMessage
             where TResponse : IMessage
         {
@@ -366,21 +281,21 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var session = GetSession(context, request, out var execResult);
 
-                LogRequest(session?.Logger, request);
+                _messageFormatter.LogClientRequest(session?.Logger, request);
                 var response = await requestAction(request, context, session, execResult);
-                LogResponse(session?.Logger, response);
+                _messageFormatter.LogClientResponse(session?.Logger, response);
 
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to execute request of type {request.GetType().Name}");
+                _logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
 
         private Task ExecuteServerStreamingRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerSession, Lib.RequestResult, Task> requestAction,
+            Func<TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerSession.Handler, Lib.RequestResult, Task> requestAction,
             TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context)
             where TRequest : IMessage
             where TResponse : IMessage
@@ -389,17 +304,17 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var session = GetSession(context, request, out var execResult);
 
-                LogRequest(session?.Logger, request);
+                _messageFormatter.LogClientRequest(session?.Logger, request);
                 return requestAction(request, responseStream, context, session, execResult);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to execute request of type {request.GetType().Name}");
+                _logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
 
-        private ServerSession GetSession<TRequest>(ServerCallContext context, TRequest request, out Lib.RequestResult execResult)
+        private ServerSession.Handler GetSession<TRequest>(ServerCallContext context, TRequest request, out Lib.RequestResult execResult)
         {
             execResult = CreateSuccessResult();
 
@@ -486,7 +401,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 }
                 else
                 {
-                    var session = new ServerSession(request.Login, request.MinorVersion, _logger.Factory);
+                    var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter);
                     try
                     {
                         var payload = new JwtPayload
@@ -518,13 +433,13 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 res.ExecResult = CreateErrorResult("Failed to process login request");
-                _logger.Error(ex, $"Failed to process login request: {_messageFormatter.Format(request)}");
+                _logger.Error(ex, $"Failed to process login request: {_messageFormatter.ToJson(request)}");
             }
 
             return Task.FromResult(res);
         }
 
-        private Task<Lib.LogoutResponse> LogoutInternal(Lib.LogoutRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.LogoutResponse> LogoutInternal(Lib.LogoutRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.LogoutResponse { ExecResult = execResult };
             if (session == null)
@@ -542,13 +457,13 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 res.ExecResult = CreateErrorResult("Failed to process logout request");
-                _logger.Error(ex, $"Failed to process logout request: {_messageFormatter.Format(request)}");
+                _logger.Error(ex, $"Failed to process logout request: {_messageFormatter.ToJson(request)}");
             }
 
             return Task.FromResult(res);
         }
 
-        private async Task<Lib.SnapshotResponse> GetSnapshotInternal(Lib.SnapshotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private async Task<Lib.SnapshotResponse> GetSnapshotInternal(Lib.SnapshotRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.SnapshotResponse { ExecResult = execResult };
             if (session == null)
@@ -571,7 +486,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        private Task SubscribeToUpdatesInternal(Lib.SubscribeToUpdatesRequest request, IServerStreamWriter<Lib.UpdateInfo> responseStream, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task SubscribeToUpdatesInternal(Lib.SubscribeToUpdatesRequest request, IServerStreamWriter<Lib.UpdateInfo> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             if (session == null)
                 return Task.FromResult(this);
@@ -579,7 +494,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return session.SetupUpdateStream(responseStream);
         }
 
-        private Task<Lib.ApiMetadataResponse> GetApiMetadataInternal(Lib.ApiMetadataRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.ApiMetadataResponse> GetApiMetadataInternal(Lib.ApiMetadataRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.ApiMetadataResponse { ExecResult = execResult };
             if (session == null)
@@ -597,7 +512,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.MappingsInfoResponse> GetMappingsInfoInternal(Lib.MappingsInfoRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.MappingsInfoResponse> GetMappingsInfoInternal(Lib.MappingsInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.MappingsInfoResponse { ExecResult = execResult };
             if (session == null)
@@ -615,7 +530,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.SetupContextResponse> GetSetupContextInternal(Lib.SetupContextRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.SetupContextResponse> GetSetupContextInternal(Lib.SetupContextRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.SetupContextResponse { ExecResult = execResult };
             if (session == null)
@@ -633,7 +548,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.AccountMetadataResponse> GetAccountMetadataInternal(Lib.AccountMetadataRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.AccountMetadataResponse> GetAccountMetadataInternal(Lib.AccountMetadataRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.AccountMetadataResponse { ExecResult = execResult };
             if (session == null)
@@ -651,7 +566,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.BotListResponse> GetBotListInternal(Lib.BotListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.BotListResponse> GetBotListInternal(Lib.BotListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.BotListResponse { ExecResult = execResult };
             if (session == null)
@@ -669,7 +584,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.AddBotResponse> AddBotInternal(Lib.AddBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.AddBotResponse> AddBotInternal(Lib.AddBotRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.AddBotResponse { ExecResult = execResult };
             if (session == null)
@@ -688,7 +603,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         }
 
-        private Task<Lib.RemoveBotResponse> RemoveBotInternal(Lib.RemoveBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.RemoveBotResponse> RemoveBotInternal(Lib.RemoveBotRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.RemoveBotResponse { ExecResult = execResult };
             if (session == null)
@@ -707,7 +622,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         }
 
-        private Task<Lib.StartBotResponse> StartBotInternal(Lib.StartBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.StartBotResponse> StartBotInternal(Lib.StartBotRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.StartBotResponse { ExecResult = execResult };
             if (session == null)
@@ -725,7 +640,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.StopBotResponse> StopBotInternal(Lib.StopBotRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.StopBotResponse> StopBotInternal(Lib.StopBotRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.StopBotResponse { ExecResult = execResult };
             if (session == null)
@@ -743,7 +658,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.ChangeBotConfigResponse> ChangeBotConfigInternal(Lib.ChangeBotConfigRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.ChangeBotConfigResponse> ChangeBotConfigInternal(Lib.ChangeBotConfigRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.ChangeBotConfigResponse { ExecResult = execResult };
             if (session == null)
@@ -762,7 +677,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         }
 
-        private Task<Lib.AccountListResponse> GetAccountListInternal(Lib.AccountListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.AccountListResponse> GetAccountListInternal(Lib.AccountListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.AccountListResponse { ExecResult = execResult };
             if (session == null)
@@ -780,7 +695,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.AddAccountResponse> AddAccountInternal(Lib.AddAccountRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.AddAccountResponse> AddAccountInternal(Lib.AddAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.AddAccountResponse { ExecResult = execResult };
             if (session == null)
@@ -798,7 +713,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.RemoveAccountResponse> RemoveAccountInternal(Lib.RemoveAccountRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.RemoveAccountResponse> RemoveAccountInternal(Lib.RemoveAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.RemoveAccountResponse { ExecResult = execResult };
             if (session == null)
@@ -816,7 +731,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.ChangeAccountResponse> ChangeAccountInternal(Lib.ChangeAccountRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.ChangeAccountResponse> ChangeAccountInternal(Lib.ChangeAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.ChangeAccountResponse { ExecResult = execResult };
             if (session == null)
@@ -834,7 +749,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.TestAccountResponse> TestAccountInternal(Lib.TestAccountRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.TestAccountResponse> TestAccountInternal(Lib.TestAccountRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.TestAccountResponse { ExecResult = execResult };
             if (session == null)
@@ -852,7 +767,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.TestAccountCredsResponse> TestAccountCredsInternal(Lib.TestAccountCredsRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.TestAccountCredsResponse> TestAccountCredsInternal(Lib.TestAccountCredsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.TestAccountCredsResponse { ExecResult = execResult };
             if (session == null)
@@ -870,7 +785,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.PackageListResponse> GetPackageListInternal(Lib.PackageListRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.PackageListResponse> GetPackageListInternal(Lib.PackageListRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.PackageListResponse { ExecResult = execResult };
             if (session == null)
@@ -888,7 +803,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.UploadPackageResponse> UploadPackageInternal(Lib.UploadPackageRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.UploadPackageResponse> UploadPackageInternal(Lib.UploadPackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.UploadPackageResponse { ExecResult = execResult };
             if (session == null)
@@ -906,7 +821,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.RemovePackageResponse> RemovePackageInternal(Lib.RemovePackageRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.RemovePackageResponse> RemovePackageInternal(Lib.RemovePackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.RemovePackageResponse { ExecResult = execResult };
             if (session == null)
@@ -924,7 +839,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.DownloadPackageResponse> DownloadPackageInternal(Lib.DownloadPackageRequest request, ServerCallContext context, ServerSession session, Lib.RequestResult execResult)
+        private Task<Lib.DownloadPackageResponse> DownloadPackageInternal(Lib.DownloadPackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.DownloadPackageResponse { ExecResult = execResult };
             if (session == null)
@@ -986,18 +901,9 @@ namespace TickTrader.Algo.Protocol.Grpc
                     var sessionsToRemove = new List<string>();
                     foreach (var session in _sessions.Values)
                     {
-                        try
-                        {
-                            if (session.SendUpdate(update))
-                            {
-                                LogResponse(session.Logger, update);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            session.Logger.Error(ex, $"Failed to send update: {_messageFormatter.Format(update)}");
+                        session.SendUpdate(update);
+                        if (session.IsFaulted)
                             sessionsToRemove.Add(session.SessionId);
-                        }
                     }
 
                     foreach (var sessionId in sessionsToRemove)
@@ -1008,7 +914,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, $"Failed to multicast update: {_messageFormatter.Format(update)}");
+                    _logger.Error(ex, $"Failed to multicast update: {_messageFormatter.ToJson(update)}");
                 }
             }
         }

@@ -76,8 +76,8 @@ message LoginResponse
 	LoginError error = 2;
 	int32 major_version = 3; // server version
 	int32 minor_version = 4; // server version
-	string access_token = 5;
-	string session_id = 6;
+	string session_id = 5;
+	string access_token = 6;
 }
 
 message LogoutRequest

@@ -37,8 +37,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkoKBWVycm9yGAIgASgO",
             "MjsuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ2luUmVz",
             "cG9uc2UuTG9naW5FcnJvchIVCg1tYWpvcl92ZXJzaW9uGAMgASgFEhUKDW1p",
-            "bm9yX3ZlcnNpb24YBCABKAUSFAoMYWNjZXNzX3Rva2VuGAUgASgJEhIKCnNl",
-            "c3Npb25faWQYBiABKAkiRQoKTG9naW5FcnJvchIICgROT05FEAASFwoTSU5W",
+            "bm9yX3ZlcnNpb24YBCABKAUSEgoKc2Vzc2lvbl9pZBgFIAEoCRIUCgxhY2Nl",
+            "c3NfdG9rZW4YBiABKAkiRQoKTG9naW5FcnJvchIICgROT05FEAASFwoTSU5W",
             "QUxJRF9DUkVERU5USUFMUxABEhQKEFZFUlNJT05fTUlTTUFUQ0gQAiIPCg1M",
             "b2dvdXRSZXF1ZXN0IuwBCg5Mb2dvdXRSZXNwb25zZRJFCgtleGVjX3Jlc3Vs",
             "dBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5S",
@@ -249,7 +249,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult), global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Parser, new[]{ "Status", "Message" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Types.RequestStatus) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser, new[]{ "Login", "Password", "MajorVersion", "MinorVersion" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser, new[]{ "ExecResult", "Error", "MajorVersion", "MinorVersion", "AccessToken", "SessionId" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Types.LoginError) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser, new[]{ "ExecResult", "Error", "MajorVersion", "MinorVersion", "SessionId", "AccessToken" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Types.LoginError) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest.Parser, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Parser, new[]{ "ExecResult", "Reason", "Text" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Types.LogoutReason) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest.Parser, null, null, null, null),
@@ -727,8 +727,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       error_ = other.error_;
       majorVersion_ = other.majorVersion_;
       minorVersion_ = other.minorVersion_;
-      accessToken_ = other.accessToken_;
       sessionId_ = other.sessionId_;
+      accessToken_ = other.accessToken_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -787,25 +787,25 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
     }
 
-    /// <summary>Field number for the "access_token" field.</summary>
-    public const int AccessTokenFieldNumber = 5;
-    private string accessToken_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string AccessToken {
-      get { return accessToken_; }
-      set {
-        accessToken_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
     /// <summary>Field number for the "session_id" field.</summary>
-    public const int SessionIdFieldNumber = 6;
+    public const int SessionIdFieldNumber = 5;
     private string sessionId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SessionId {
       get { return sessionId_; }
       set {
         sessionId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "access_token" field.</summary>
+    public const int AccessTokenFieldNumber = 6;
+    private string accessToken_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string AccessToken {
+      get { return accessToken_; }
+      set {
+        accessToken_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -826,8 +826,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (Error != other.Error) return false;
       if (MajorVersion != other.MajorVersion) return false;
       if (MinorVersion != other.MinorVersion) return false;
-      if (AccessToken != other.AccessToken) return false;
       if (SessionId != other.SessionId) return false;
+      if (AccessToken != other.AccessToken) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -838,8 +838,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (Error != 0) hash ^= Error.GetHashCode();
       if (MajorVersion != 0) hash ^= MajorVersion.GetHashCode();
       if (MinorVersion != 0) hash ^= MinorVersion.GetHashCode();
-      if (AccessToken.Length != 0) hash ^= AccessToken.GetHashCode();
       if (SessionId.Length != 0) hash ^= SessionId.GetHashCode();
+      if (AccessToken.Length != 0) hash ^= AccessToken.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -869,13 +869,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(32);
         output.WriteInt32(MinorVersion);
       }
-      if (AccessToken.Length != 0) {
-        output.WriteRawTag(42);
-        output.WriteString(AccessToken);
-      }
       if (SessionId.Length != 0) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(42);
         output.WriteString(SessionId);
+      }
+      if (AccessToken.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(AccessToken);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -897,11 +897,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (MinorVersion != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(MinorVersion);
       }
-      if (AccessToken.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(AccessToken);
-      }
       if (SessionId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(SessionId);
+      }
+      if (AccessToken.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(AccessToken);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -929,11 +929,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other.MinorVersion != 0) {
         MinorVersion = other.MinorVersion;
       }
-      if (other.AccessToken.Length != 0) {
-        AccessToken = other.AccessToken;
-      }
       if (other.SessionId.Length != 0) {
         SessionId = other.SessionId;
+      }
+      if (other.AccessToken.Length != 0) {
+        AccessToken = other.AccessToken;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -966,11 +966,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           }
           case 42: {
-            AccessToken = input.ReadString();
+            SessionId = input.ReadString();
             break;
           }
           case 50: {
-            SessionId = input.ReadString();
+            AccessToken = input.ReadString();
             break;
           }
         }

@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     public class GrpcClient : ProtocolClient
     {
-        private JsonFormatter _messageFormatter;
+        private MessageFormatter _messageFormatter;
         private Channel _channel;
         private Lib.BotAgent.BotAgentClient _client;
         private string _accessToken;
@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public GrpcClient(IBotAgentClient agentClient) : base(agentClient)
         {
-            _messageFormatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            _messageFormatter = new MessageFormatter();
         }
 
 
@@ -38,6 +38,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var options = new[] { new ChannelOption(ChannelOptions.SslTargetNameOverride, "bot-agent.soft-fx.lv"), };
             _channel = new Channel(SessionSettings.ServerAddress, SessionSettings.ProtocolSettings.ListeningPort, creds, options);
             _accessToken = "";
+            _messageFormatter.LogMessages = SessionSettings.ProtocolSettings.LogMessages;
 
             _client = new Lib.BotAgent.BotAgentClient(_channel);
 
@@ -63,6 +64,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         protected override void StopClient()
         {
+            _messageFormatter.LogMessages = false;
             _channel.ShutdownAsync().Wait();
         }
 
@@ -79,9 +81,16 @@ namespace TickTrader.Algo.Protocol.Grpc
                 switch (t.Status)
                 {
                     case TaskStatus.RanToCompletion:
-                        _accessToken = t.Result.AccessToken;
-                        Logger.Info($"Server session id: {t.Result.SessionId}");
-                        OnLogin(t.Result.MajorVersion, t.Result.MinorVersion);
+                        if (t.Result.Error == Lib.LoginResponse.Types.LoginError.None)
+                        {
+                            _accessToken = t.Result.AccessToken;
+                            Logger.Info($"Server session id: {t.Result.SessionId}");
+                            OnLogin(t.Result.MajorVersion, t.Result.MinorVersion);
+                        }
+                        else
+                        {
+                            OnConnectionError(t.Result.Error.ToString());
+                        }
                         break;
                     case TaskStatus.Canceled:
                         Logger.Error("Login request timed out");
@@ -162,6 +171,8 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
+                FailForNonSuccess(snapshot.ExecResult);
+
                 var apiMetadata = snapshot.ApiMetadata;
                 FailForNonSuccess(apiMetadata.ExecResult);
                 AgentClient.SetApiMetadata(apiMetadata.ApiMetadata.Convert());
@@ -185,6 +196,12 @@ namespace TickTrader.Algo.Protocol.Grpc
                 var bots = snapshot.BotList;
                 FailForNonSuccess(bots.ExecResult);
                 AgentClient.InitBotList(bots.Bots.Select(ToAlgo.Convert).ToList());
+            }
+            catch (UnauthorizedException uex)
+            {
+                Logger.Error(uex, "Init failed: Bad access token");
+                OnConnectionError("Bad access token");
+                return;
             }
             catch (Exception ex)
             {
@@ -222,7 +239,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 while (await updateStream.MoveNext(cancelTokenSrc.Token))
                 {
                     var update = updateStream.Current;
-                    LogResponse(Logger, update);
+                    _messageFormatter.LogServerResponse(Logger, update);
                     switch (update.UpdateInfoCase)
                     {
                         case Lib.UpdateInfo.UpdateInfoOneofCase.Package:
@@ -267,18 +284,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                  : new CallOptions(deadline: DateTime.UtcNow.AddSeconds(DefaultRequestTimeout), credentials: AlgoGrpcCredentials.FromAccessToken(accessToken));
         }
 
-        private void LogRequest(ILogger logger, IMessage request)
-        {
-            if (SessionSettings.ProtocolSettings.LogMessages)
-                logger?.Info($"server < {request.GetType().Name}: {_messageFormatter.Format(request)}");
-        }
-
-        private void LogResponse(ILogger logger, IMessage response)
-        {
-            if (SessionSettings.ProtocolSettings.LogMessages)
-                logger?.Info($"server > {response.GetType().Name}: {_messageFormatter.Format(response)}");
-        }
-
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(
             Func<TRequest, CallOptions, Task<TResponse>> requestAction, TRequest request)
             where TRequest : IMessage
@@ -286,15 +291,15 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
-                LogRequest(Logger, request);
+                _messageFormatter.LogServerRequest(Logger, request);
                 var response = await requestAction(request, GetCallOptions());
-                LogResponse(Logger, response);
+                _messageFormatter.LogServerResponse(Logger, response);
 
                 return response;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute request of type {request.GetType().Name}");
+                Logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -306,15 +311,20 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
-                LogRequest(Logger, request);
+                _messageFormatter.LogServerRequest(Logger, request);
                 var response = await requestAction(request, GetCallOptions(_accessToken));
-                LogResponse(Logger, response);
+                _messageFormatter.LogServerResponse(Logger, response);
 
                 return response;
             }
+            catch (UnauthorizedException uex)
+            {
+                Logger.Error(uex, $"Bad access token for request: {_messageFormatter.ToJson(request)}");
+                throw;
+            }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute request of type {request.GetType().Name}");
+                Logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -326,12 +336,17 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
-                LogRequest(Logger, request);
+                _messageFormatter.LogServerRequest(Logger, request);
                 return requestAction(request, GetCallOptions(_accessToken, false));
+            }
+            catch (UnauthorizedException uex)
+            {
+                Logger.Error(uex, $"Bad access token for request: {_messageFormatter.ToJson(request)}");
+                throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute request of type {request.GetType().Name}");
+                Logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
