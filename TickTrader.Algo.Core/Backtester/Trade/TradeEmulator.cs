@@ -1221,7 +1221,7 @@ namespace TickTrader.Algo.Core
             //GroupSecurityCfg securityCfg = account.GetSecurityCfg(smbInfo);
             if ((record.ActivationType == ActivationTypes.Pending) && (record.Order.Type == OrderType.Stop))
             {
-                bool needCancelation = false;
+                //bool needCancelation = false;
 
                 // Check margin of the activated pending order
                 try
@@ -1231,11 +1231,11 @@ namespace TickTrader.Algo.Core
                 }
                 catch (ServerFaultException<NotEnoughMoneyFault>)
                 {
-                    needCancelation = true;
+                    //needCancelation = true;
                 }
                 catch (ServerFaultException<OffQuotesFault>)
                 {
-                    needCancelation = true;
+                    //needCancelation = true;
                 }
 
                 // Insufficient margin. Cancel pending order

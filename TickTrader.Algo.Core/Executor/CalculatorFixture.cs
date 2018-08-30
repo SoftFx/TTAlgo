@@ -14,7 +14,6 @@ namespace TickTrader.Algo.Core
         double? CalculateOrderMargin(OrderEntity orderEntity, SymbolAccessor symbol);
     }
 
-
     internal class CalculatorFixture : ICalculatorApi
     {
         private BL.MarketState _state;

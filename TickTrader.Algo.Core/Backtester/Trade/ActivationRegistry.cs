@@ -145,12 +145,12 @@ namespace TickTrader.Algo.Core
             }
             else if (order.Type == OrderType.Position)
             {
-                if (order.TakeProfit != null)
+                if (order.TakeProfit.AsNullable() != null)
                 {
                     ActivationIndex index = GetPositionIndex(order.Side, ActivationTypes.TakeProfit);
                     index.ResetOrderActivation(order, ActivationTypes.TakeProfit);
                 }
-                if (order.StopLoss != null)
+                if (order.StopLoss.AsNullable() != null)
                 {
                     ActivationIndex index = GetPositionIndex(order.Side, ActivationTypes.StopLoss);
                     index.ResetOrderActivation(order, ActivationTypes.StopLoss);

@@ -28,7 +28,6 @@ namespace TickTrader.Algo.Core
         }
 
         public ICalculatorApi Calc { get; set; }
-
         public ITradePermissions Permissions { get; set; }
         public string IsolationTag { get; set; }
 
@@ -593,7 +592,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options,
             };
 
-            if (!Calc.HasEnoughMarginToOpenOrder(orderEntity, symbol))
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(orderEntity, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -617,7 +616,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options ?? oldOrder.Entity.Options,
             };
 
-            if (!Calc.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
+            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 

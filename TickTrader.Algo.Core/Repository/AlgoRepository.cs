@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core.Repository
         private object globalLockObj = new object();
         private FileSystemWatcher watcher;
         private IAlgoCoreLogger logger;
-        private bool isWatcherFailed;
+        //private bool isWatcherFailed;
         private Task scanTask;
         private string repPath;
         private bool _isolation;
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core.Repository
 
             stateControl.AddTransition(States.Created, Events.Start, States.Scanning);
             stateControl.AddTransition(States.Scanning, Events.DoneScanning, States.Watching);
-            stateControl.AddTransition(States.Scanning, Events.WatcherFail, () => isWatcherFailed = true);
+            //stateControl.AddTransition(States.Scanning, Events.WatcherFail, () => isWatcherFailed = true);
             stateControl.AddTransition(States.Scanning, Events.CloseRequested, States.Closing);
             stateControl.AddTransition(States.Scanning, Events.ScanFailed, States.Waiting);
             stateControl.AddTransition(States.Waiting, Events.NextAttempt, States.Scanning);
@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Core.Repository
                     watcher.Error += watcher_Error;
                 }
 
-                isWatcherFailed = false;
+                //isWatcherFailed = false;
 
                 watcher = new FileSystemWatcher(repPath);
                 watcher.Path = repPath;
