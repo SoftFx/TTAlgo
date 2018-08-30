@@ -50,13 +50,13 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, 5030,
+            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, port: 5030,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, 5050,
+            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, port: 5050,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, 5040,
+            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, port: 5040,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, 5060,
+            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, port: 5060,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
 
             _feedProxy.InitTaskAdapter();
@@ -724,10 +724,10 @@ namespace TickTrader.Algo.Common.Model
             return new AccountEntity()
             {
                 Id = info.AccountId,
-                Balance = info.Balance,
+                Balance = info.Balance ?? 0.0D,
                 BalanceCurrency = info.Currency,
                 Type = Convert(info.Type),
-                Leverage = info.Leverage,
+                Leverage = info.Leverage ?? 1,
                 Assets = info.Assets.Select(Convert).ToArray()
             };
         }

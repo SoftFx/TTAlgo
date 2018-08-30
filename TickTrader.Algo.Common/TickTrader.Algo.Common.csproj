@@ -44,10 +44,6 @@
     <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
       <HintPath>..\packages\SoftFX.FDK.1.35.1309\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Net.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SFX\SoftFX.Net.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -70,19 +66,6 @@
     <Reference Include="TickTrader.Common">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.Client">
-      <HintPath>..\lib\SFX\TickTrader.FDK.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.Common, Version=2.20.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\SFX\TickTrader.FDK.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.Extended">
-      <HintPath>..\lib\SFX\TickTrader.FDK.Extended.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.Standard">
-      <HintPath>..\lib\SFX\TickTrader.FDK.Standard.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +164,26 @@
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\FDK2\Client\Client.csproj">
+      <Project>{23d9de1a-92c0-42fc-875b-5881ce8433d4}</Project>
+      <Name>Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\FDK2\Common\Common.csproj">
+      <Project>{d52da7c0-3cf2-4e26-bbce-f9a2dc09589d}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\FDK2\Extended\Extended.csproj">
+      <Project>{ec1a8251-1b9a-4bbe-8a8c-bc8cd7da60e0}</Project>
+      <Name>Extended</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\FDK2\modules\sfx\DotNet\Core\Core.csproj">
+      <Project>{2a4856e5-8d40-41f7-88d1-57d1888db660}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\modules\FDK2\Standard\Standard.csproj">
+      <Project>{ec1a8251-119a-44be-8a8c-bc7823876763}</Project>
+      <Name>Standard</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
