@@ -58,6 +58,7 @@
     <PackageReference Include="System.Net.Http" Version="4.3.1" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.5.24" />
     <PackageReference Include="SoftFX.FDK" Version="1.35.1309" />
+    <PackageReference Include="TickTrader.Common.Dlls" Version="1.35.4" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -91,18 +92,6 @@
 
   <ItemGroup>
     <Folder Include="WebAdmin\wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="TickTrader.BusinessLogic">
-      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.BusinessObjects">
-      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.Common">
-      <HintPath>..\lib\TickTrader.Common.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
