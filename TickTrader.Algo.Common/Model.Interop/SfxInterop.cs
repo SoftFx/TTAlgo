@@ -14,6 +14,8 @@ using SFX = TickTrader.FDK.Common;
 using API = TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using ActorSharp;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -50,13 +52,13 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, port: 5030,
+            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, port: 5030, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, port: 5050,
+            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, port: 5050, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, port: 5040,
+            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, port: 5040, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, port: 5060,
+            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, port: 5060, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
 
             _feedProxy.InitTaskAdapter();
@@ -149,6 +151,12 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxy.SubscribeTradesAsync(false);
             logger.Debug("Trade.History: Subscribed.");
+        }
+
+        private bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // TODO: Add message indicating that certificate is not valid
+            return true;
         }
 
         private void OnLogout(LogoutInfo info)
