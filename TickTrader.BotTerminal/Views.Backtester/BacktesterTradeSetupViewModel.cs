@@ -22,8 +22,11 @@ namespace TickTrader.BotTerminal
             SelectedAccType = _proprs.AddProperty<Algo.Api.AccountTypes>();
             BalanceCurrency = _proprs.AddProperty<string>();
 
+            AvailableAccountTypes = new AccountTypes[] { AccountTypes.Gross, AccountTypes.Net };
+
             Leverage = _proprs.AddIntValidable();
             LeverageStr = _proprs.AddConverter(Leverage, new StringToInt());
+            Leverage.AddValidationRule(l => l > 0, "Leverage must be positive integer.");
 
             InitialBalance = _proprs.AddDoubleValidable();
             InitialBalanceStr = _proprs.AddConverter(InitialBalance, new StringToDouble());
@@ -31,14 +34,17 @@ namespace TickTrader.BotTerminal
             SelectedEmulator = _proprs.AddProperty<string>();
 
             EmulatedServerPing = _proprs.AddIntValidable();
+            EmulatedServerPing.AddValidationRule(p => p > 0, "Server ping be positive integer.");
+
             PingStr = _proprs.AddConverter(EmulatedServerPing, new StringToInt());
 
             var isMargin = SelectedAccType.Var.Check(t => t == AccountTypes.Net || t == AccountTypes.Gross);
             var isCash = SelectedAccType.Var == AccountTypes.Cash;
 
             var isMarginSetupValid = InitialBalance.IsValid() & InitialBalanceStr.IsValid() & Leverage.IsValid() & LeverageStr.IsValid();
+            var isNonAccSettingValid = EmulatedServerPing.IsValid() & SelectedEmulator.Var.IsNotNull();
 
-            IsValid = (isMargin & isMarginSetupValid ) | (isCash);
+            IsValid = isNonAccSettingValid & ((isMargin & isMarginSetupValid) | (isCash));
 
             //IsValid = InitialBalance.IsValid() & Leverage.IsValid();
 
@@ -47,7 +53,7 @@ namespace TickTrader.BotTerminal
             SelectedEmulator.Value = AvailableEmulators.First();
         }
 
-        public IEnumerable<AccountTypes> AvailableAccountTypes => EnumHelper.AllValues<AccountTypes>();
+        public IEnumerable<AccountTypes> AvailableAccountTypes { get; }
         public IEnumerable<string> AvailableCurrencies => new string[] { "USD" };
         public IEnumerable<string> AvailableEmulators => new string[] { "Default" };
         public Property<AccountTypes> SelectedAccType { get; }

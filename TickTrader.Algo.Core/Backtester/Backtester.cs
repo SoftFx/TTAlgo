@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Core
         public int EventsCount => _control.Collector.EventsCount;
         public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
-
+        public TimeSpan ServerPing { get; set; }
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
 
         public void Run(CancellationToken cToken)

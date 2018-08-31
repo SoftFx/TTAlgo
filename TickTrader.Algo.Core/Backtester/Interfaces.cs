@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Core
         string BalanceCurrency { get; }
         int Leverage { get; }
         double InitialBalance { get; }
+        TimeSpan ServerPing { get; }
         Dictionary<string, double> InitialAssets { get; }
         Dictionary<string, SymbolEntity> Symbols { get; }
         Dictionary<string, CurrencyEntity> Currencies { get; }

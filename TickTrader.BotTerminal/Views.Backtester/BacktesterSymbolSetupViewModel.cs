@@ -27,6 +27,11 @@ namespace TickTrader.BotTerminal
 
             AvailableSymbols = symbols;
 
+            if (type == SymbolSetupType.MainSymbol)
+                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>().Where(t => !t.IsTicks());
+            else
+                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>();
+
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
             SelectedSymbol = AddProperty<SymbolData>();
@@ -57,7 +62,7 @@ namespace TickTrader.BotTerminal
         }
         
         public SymbolSetupType SetupType { get; private set; }
-        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
+        public IEnumerable<TimeFrames> AvailableTimeFrames { get; }
         public IEnumerable<DownloadPriceChoices> AvailablePriceTypes => EnumHelper.AllValues<DownloadPriceChoices>();
         public Property<List<TimeFrames>> AvailableBases { get; }
         public IObservableList<SymbolData> AvailableSymbols { get; }

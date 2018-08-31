@@ -34,11 +34,11 @@ namespace TickTrader.Algo.Core
             _collector = collector;
             _settings = settings;
 
-            VirtualServerPing = TimeSpan.FromMilliseconds(100);
+            VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += CheckActivation;
         }
 
-        public TimeSpan VirtualServerPing { get; }
+        public TimeSpan VirtualServerPing { get; set; }
 
         public void Start()
         {

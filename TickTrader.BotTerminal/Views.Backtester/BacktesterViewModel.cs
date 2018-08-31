@@ -36,6 +36,7 @@ namespace TickTrader.BotTerminal
         private WindowManager _localWnd;
         private double _initialBalance = 10000;
         private string _balanceCurrency = "USD";
+        private int _serverPingMs = 200;
         private int _leverage = 100;
         private AccountTypes _accType;
         private int _emulatedPing = 200;
@@ -144,6 +145,7 @@ namespace TickTrader.BotTerminal
             {
                 _emulatedPing = setup.EmulatedServerPing.Value;
                 _accType = setup.SelectedAccType.Value;
+                _serverPingMs = setup.EmulatedServerPing.Value;
 
                 if (_accType == AccountTypes.Cash || _accType == AccountTypes.Gross)
                 {
@@ -247,6 +249,7 @@ namespace TickTrader.BotTerminal
                     tester.BalanceCurrency = _balanceCurrency;
                     tester.Leverage = _leverage;
                     tester.InitialBalance = _initialBalance;
+                    tester.ServerPing = TimeSpan.FromMilliseconds(_serverPingMs);
 
                     await Task.Run(() => tester.Run(cToken));
 
@@ -390,11 +393,6 @@ namespace TickTrader.BotTerminal
         {
             UpdateRangeState();
         }
-
-        //PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
-        //{
-        //    return new BarBasedPluginSetup(catalogItem, _mainSymbolToken, Algo.Api.BarPriceType.Bid, _env);
-        //}
 
         #region IAlgoGuiMetadata
 

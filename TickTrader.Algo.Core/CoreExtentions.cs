@@ -33,5 +33,10 @@ namespace TickTrader.Algo.Core
         {
             return (decimal)price;
         }
+
+        public static bool IsTicks(this TimeFrames timeFrame)
+        {
+            return timeFrame == TimeFrames.Ticks || timeFrame == TimeFrames.TicksLevel2;
+        }
     }
 }
