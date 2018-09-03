@@ -20,6 +20,8 @@ namespace TickTrader.SeriesStorage.Lmdb
             Directory.CreateDirectory(baseFolder);
         }
 
+        public bool SupportsStorageDrop => true;
+
         public IEnumerable<string> GetStorages()
         {
             try
@@ -37,6 +39,11 @@ namespace TickTrader.SeriesStorage.Lmdb
         public IKeyValueBinaryStorage OpenStorage(string name)
         {
             return new LmdbStorage(Path.Combine(_baseFolder, name + ".dat"), _readOnly);
+        }
+
+        public void DropStorage(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }

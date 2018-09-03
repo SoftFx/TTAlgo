@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
             _storage = storage;
             Name = name;
             _keys = storage.Keys.Where(k => k.Symbol == Name);
-            SeriesCollection = _keys.Transform(k => new SymbolStorageSeries(k, this, storage)).AsObservable();
+            SeriesCollection = _keys.Transform(k => new SymbolStorageSeries(k, this, storage));
         }
 
         public string Name { get; }
@@ -37,7 +37,7 @@ namespace TickTrader.BotTerminal
         public abstract bool IsCustom { get; }
         public abstract SymbolEntity InfoEntity { get; }
 
-        public IObservableList<SymbolStorageSeries> SeriesCollection { get; }
+        public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
         public abstract Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null);
         public abstract Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,

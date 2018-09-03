@@ -28,7 +28,7 @@ namespace TickTrader.SeriesStorage
             Storage.Dispose();
         }
 
-        public void Drop()
+        public virtual void Drop()
         {
             throw new NotSupportedException();
         }

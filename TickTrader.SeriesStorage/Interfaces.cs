@@ -29,6 +29,7 @@ namespace TickTrader.SeriesStorage
     {
         bool SupportsRemoveAll { get; }
         bool SupportsCursorRemove { get; }
+        bool SupportsCompaction { get; }
 
         IKeyValueBinaryCursor CreateCursor();
         bool Read(byte[] key, out byte[] value);
@@ -58,8 +59,11 @@ namespace TickTrader.SeriesStorage
     /// </summary>
     public interface IBinaryStorageManager
     {
+        bool SupportsStorageDrop { get; }
+
         IEnumerable<string> GetStorages();
         IKeyValueBinaryStorage OpenStorage(string name);
+        void DropStorage(string name);
     }
 
     public interface ISeriesDatabase : IDisposable

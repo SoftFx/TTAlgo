@@ -21,6 +21,7 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public bool SupportsRemoveAll => true;
         public bool SupportsCursorRemove => true;
+        public bool SupportsCompaction => false;
 
         public LmdbStorage(string path, bool readOnly = false)
         {

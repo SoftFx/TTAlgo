@@ -87,6 +87,8 @@ namespace TickTrader.Algo.Common.Model
                 return _ref.Call(a => a.Start(folder));
             }
 
+            //public Task Refresh() => _ref.Call(r => r.Refresh());
+
             public Task Stop() => _ref.Call(a => a.Stop());
 
             public Task Put(FeedCacheKey key, DateTime from, DateTime to, QuoteEntity[] values)
@@ -148,12 +150,17 @@ namespace TickTrader.Algo.Common.Model
 
         protected virtual void Start(string folder)
         {
-            _series.Clear();
-
             if (_diskStorage != null)
                 throw new InvalidOperationException("Already started!");
 
             _diskStorage = SeriesDatabase.Create(new SeriesStorage.Lmdb.LmdbManager(folder));
+
+            Refresh();
+        }
+
+        protected virtual void Refresh()
+        {
+            _series.Clear();
 
             var loadedKeys = new List<FeedCacheKey>();
 
@@ -162,8 +169,8 @@ namespace TickTrader.Algo.Common.Model
                 if (!IsSpecialCollection(collectionName))
                 {
                     FeedCacheKey key;
-                    if(FeedCacheKey.TryParse(collectionName, out key))
-                        loadedKeys.Add(key);                    
+                    if (FeedCacheKey.TryParse(collectionName, out key))
+                        loadedKeys.Add(key);
                 }
             }
 

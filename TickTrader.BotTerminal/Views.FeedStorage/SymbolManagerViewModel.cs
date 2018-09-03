@@ -37,8 +37,8 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Symbol Manager";
 
-            //var onlineCacheKeys = _historyProvider.Cache.Keys;
-            //var customCacheKeys = customStorage.Keys;
+            //var onlineCacheKeys = _historyProvider.Cache;
+            //var customCacheKeys = customStorage;
 
             //var onlineSeries = onlineCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, _historyProvider.Cache, false));
             //var customSeries = customCacheKeys.Transform(k => new CacheSeriesInfoViewModel(k, this, customStorage, true));
@@ -47,10 +47,10 @@ namespace TickTrader.BotTerminal
             _customManagedSymbols = catalog.CustomSymbols.Select((k, v) => new ManagedSymbolViewModel(this, v, "Custom Symbols"));
 
             var symbolsBySecurity = _onlineManagedSymbols.GroupBy((k, v) => v.Security);
-            var groupsBySecurity = symbolsBySecurity.TransformToList((k, v) => new ManageSymbolGrouping(v.GroupKey, v.TransformToList((k1, v1) => (ManagedSymbolViewModel)v1)));
+            var groupsBySecurity = symbolsBySecurity.TransformToList((k, v) => new ManageSymbolGrouping(v.GroupKey, v.TransformToList((k1, v1) => v1)));
 
-            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols.TransformToList((k,v) => (ManagedSymbolViewModel)v), groupsBySecurity);
-            var customGroup = new ManageSymbolGrouping("Custom", _customManagedSymbols.TransformToList((k, v) => (ManagedSymbolViewModel)v));
+            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols.TransformToList((k,v) => v), groupsBySecurity);
+            var customGroup = new ManageSymbolGrouping("Custom", _customManagedSymbols.TransformToList((k, v) => v));
 
             RootGroups = new ManageSymbolGrouping[] { customGroup, onlineGroup };
             SelectedGroup = _varContext.AddProperty<ManageSymbolGrouping>(customGroup);
@@ -206,13 +206,11 @@ namespace TickTrader.BotTerminal
     internal class CacheSeriesInfoViewModel : ObservableObject
     {
         private SymbolManagerViewModel _parent;
-        private SymbolStorageSeries _series;
-        //private FeedCache.Handler _cache;
 
         public CacheSeriesInfoViewModel(SymbolStorageSeries series, SymbolManagerViewModel parent)
         {
             _parent = parent;
-            _series = series;
+            Model = series;
             Key = series.Key;
             Symbol = Key.Symbol;
             Cfg = Key.Frame + " " + Key.PriceType;
@@ -222,12 +220,11 @@ namespace TickTrader.BotTerminal
         public string Symbol { get; }
         public string Cfg { get; }
         public double? Size { get; private set; }
-        public SymbolStorageSeries Model => _series;
-        //public FeedCache.Handler Storage => _cache;
+        public SymbolStorageSeries Model { get; }
 
         public async Task UpdateSize()
         {
-            var newSize = await _series.GetCollectionSize();
+            var newSize = await Model.GetCollectionSize();
             Size = Math.Round(newSize.Value / (1024 * 1024), 2);
             NotifyOfPropertyChange(nameof(Size));
         }
@@ -252,31 +249,26 @@ namespace TickTrader.BotTerminal
     internal class ManagedSymbolViewModel : ObservableObject, IDisposable
     {
         private IVarSet<CacheSeriesInfoViewModel> _series;
-        private SymbolData _symbol;
 
         public ManagedSymbolViewModel(SymbolManagerViewModel parent, SymbolData model, string category)
         {
-            _symbol = model;
+            Model = model;
             Parent = parent;
             Category = category;
-        }
 
-        //protected void Init(SymbolManagerViewModel parent, IVarSet<CacheSeriesInfoViewModel> storageCollection)
-        //{
-            
-        //    _series = storageCollection.Where(i => i.Key.Symbol == Name);
-        //    Series = _series.TransformToList().AsObservable();
-        //}
+            _series = model.SeriesCollection.Select(s => new CacheSeriesInfoViewModel(s, parent));
+            Series = _series.TransformToList().AsObservable();
+        }
 
         protected SymbolManagerViewModel Parent { get; private set; }
 
-        public SymbolData Model => _symbol;
-        public string Description => _symbol.Description;
-        public string Security => _symbol.Security;
-        public string Name => _symbol.Name;
+        public SymbolData Model { get; }
+        public string Description => Model.Description;
+        public string Security => Model.Security;
+        public string Name => Model.Name;
         public string Category { get; }
-        public bool IsCustom => _symbol.IsCustom;
-        public bool IsOnline => !_symbol.IsCustom;
+        public bool IsCustom => Model.IsCustom;
+        public bool IsOnline => !Model.IsCustom;
         public double? DiskSize { get; private set; }
 
         public IEnumerable<CacheSeriesInfoViewModel> Series { get; private set; }
@@ -311,105 +303,24 @@ namespace TickTrader.BotTerminal
 
         public void Download()
         {
-            Parent.Download(_symbol);
+            Parent.Download(Model);
         }
 
         public void Remove()
         {
-            Parent.RemoveSymbol(_symbol);
+            Parent.RemoveSymbol(Model);
         }
 
         public void Import()
         {
-            Parent.Import(_symbol);
+            Parent.Import(Model);
         }
 
         public void Edit()
         {
-            Parent.EditSymbol(_symbol);
+            Parent.EditSymbol(Model);
         }
-
-        //public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
-        //{
-        //    _storage.Put(Name, frame, priceType, from, to, values);
-        //}
-
-        //public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
-        //{
-        //    _storage.Put(Name, timeFrame, from, to, values);
-        //}
     }
-
-    //internal class ManagedOnlineSymbol : ManagedSymbol
-    //{
-    //    private SymbolModel _model;
-
-    //    public ManagedOnlineSymbol(SymbolModel symbolModel, SymbolManagerViewModel parent, IVarSet<CacheSeriesInfoViewModel> storageCollection)
-    //    {
-    //        _model = symbolModel;
-    //        Init(parent, storageCollection);
-    //    }
-
-    //    public override string Description => _model.Description;
-    //    public override string Security => _model.Descriptor.SecurityName;
-    //    public override string Name => _model.Name;
-    //    public override string Category => "Online Symbols";
-    //    public override bool IsCustom => false;
-    //    public override bool IsOnline => true;
-    //    public SymbolModel Model => _model;
-
-    //    public void Download()
-    //    {
-    //        Parent.Download(this);
-    //    }
-    //}
-
-    //internal class ManagedCustomSymbol : ManagedSymbol
-    //{
-    //    private CustomSymbol _model;
-    //    private CustomFeedStorage.Handler _storage;
-
-    //    public ManagedCustomSymbol(CustomSymbol symbolModel, SymbolManagerViewModel parent, CustomFeedStorage.Handler storage,
-    //        IVarSet<CacheSeriesInfoViewModel> storageCollection)
-    //    {
-    //        _model = symbolModel;
-    //        _storage = storage;
-    //        Init(parent, storageCollection);
-    //    }
-
-    //    public override string Description => _model.Description;
-    //    public override string Security => "";
-    //    public override string Name => _model.Name;
-    //    public override string Category => "Custom Symbols";
-    //    public override bool IsCustom => true;
-    //    public override bool IsOnline => false;
-    //    public CustomSymbol Model => _model;
-
-    //    public void Remove()
-    //    {
-    //        Parent.RemoveSymbol(this);
-    //    }
-
-    //    public void Import()
-    //    {
-    //        Parent.Import(this);
-    //    }
-
-    //    public void Edit()
-    //    {
-    //        Parent.EditSymbol(this);
-    //    }
-
-    //    public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
-    //    {
-    //        _storage.Put(Name, frame, priceType, from, to, values);
-    //    }
-
-    //    public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
-    //    {
-    //        _storage.Put(Name, timeFrame, from, to, values);
-    //    }
-    //}
 
     internal class ManageSymbolGrouping
     {

@@ -67,12 +67,12 @@ namespace TickTrader.SeriesStorage
 
         public override void Drop()
         {
-            throw new NotImplementedException();
+            SliceStorage.Drop();
         }
 
         public override double GetSize()
         {
-            throw new NotImplementedException();
+            return SliceStorage.GetSize();
         }
 
         protected override IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed)

@@ -12,6 +12,7 @@ namespace TickTrader.SeriesStorage.LevelDb
 
         public bool SupportsRemoveAll => false;
         public bool SupportsCursorRemove => false;
+        public bool SupportsCompaction => true;
 
         public LevelDbStorage(string name)
         {

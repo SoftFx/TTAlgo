@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TickTrader.SeriesStorage
@@ -56,6 +57,7 @@ namespace TickTrader.SeriesStorage
             private IBinaryStorageManager _manager;
             private int _accessCount;
             private bool _isClosed;
+            private bool _isLockedByDrop;
 
             public Database(string name, IBinaryStorageManager manager, IKeySerializer<TKey> keySerializer)
                 : base(name, null, keySerializer)
@@ -69,6 +71,39 @@ namespace TickTrader.SeriesStorage
                     _isClosed = true;
             }
 
+            public override void Drop()
+            {
+                if (Storage.SupportsCompaction)
+                {
+                    Storage.RemoveAll();
+                    Storage.CompactRange(null, null);
+                }
+                else if (_manager.SupportsStorageDrop)
+                {
+                    lock (_accessLock)
+                    {
+                        if (_isLockedByDrop)
+                            throw new InvalidOperationException("Concurrent drop!");
+
+                        _isLockedByDrop = true;
+
+                        while (_accessCount > 0)
+                            Monitor.Wait(_accessCount);
+                    }
+
+                    try
+                    {
+                        _manager.DropStorage(Name);
+                    }
+                    finally
+                    {
+                        lock (_accessLock) _isLockedByDrop = false;
+                    }
+                }
+                else
+                    base.Drop(); // throws exception
+            }
+
             public override void Dispose()
             {
                 // do nothing
@@ -79,6 +114,9 @@ namespace TickTrader.SeriesStorage
             {
                 lock (_accessLock)
                 {
+                    while (_isLockedByDrop)
+                        Monitor.Wait(_accessLock);
+
                     if (_isClosed)
                         throw new InvalidOperationException("Database has been closed!");
 
