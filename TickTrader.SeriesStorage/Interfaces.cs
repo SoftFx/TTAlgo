@@ -60,11 +60,15 @@ namespace TickTrader.SeriesStorage
     public interface IBinaryStorageManager
     {
         bool SupportsStorageDrop { get; }
+        GetStorageSizeMode GetSizeMode { get; }
 
         IEnumerable<string> GetStorages();
         IKeyValueBinaryStorage OpenStorage(string name);
         void DropStorage(string name);
+        long GetStorageSize(string name);
     }
+
+    public enum GetStorageSizeMode { ByStorage, ByManager, NotSupported }
 
     public interface ISeriesDatabase : IDisposable
     {

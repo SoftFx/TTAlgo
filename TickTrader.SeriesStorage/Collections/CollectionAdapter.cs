@@ -33,7 +33,7 @@ namespace TickTrader.SeriesStorage
             throw new NotSupportedException();
         }
 
-        public long GetSize()
+        public virtual long GetSize()
         {
             OnStartAccess();
             try

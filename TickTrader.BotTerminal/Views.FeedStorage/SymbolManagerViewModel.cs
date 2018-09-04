@@ -242,7 +242,7 @@ namespace TickTrader.BotTerminal
 
         public void Remove()
         {
-            _parent.RemoveSeries(this);
+            Model.Remove();
         }
     }
 

@@ -21,6 +21,7 @@ namespace TickTrader.SeriesStorage.Lmdb
         }
 
         public bool SupportsStorageDrop => true;
+        public GetStorageSizeMode GetSizeMode => GetStorageSizeMode.ByManager;
 
         public IEnumerable<string> GetStorages()
         {
@@ -38,12 +39,29 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public IKeyValueBinaryStorage OpenStorage(string name)
         {
-            return new LmdbStorage(Path.Combine(_baseFolder, name + ".dat"), _readOnly);
+            return new LmdbStorage(GetDataFileName(name), _readOnly);
         }
 
         public void DropStorage(string name)
         {
-            throw new NotImplementedException();
+            File.Delete(GetDataFileName(name));
+            File.Delete(GetLockFileName(name));
+        }
+
+        public long GetStorageSize(string name)
+        {
+            var info = new FileInfo(GetDataFileName(name));
+            return info.Length;
+        }
+
+        private string GetDataFileName(string dbName)
+        {
+            return Path.Combine(_baseFolder, dbName + ".dat");
+        }
+
+        private string GetLockFileName(string dbName)
+        {
+            return Path.Combine(_baseFolder, dbName + ".dat-lock");
         }
     }
 }

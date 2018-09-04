@@ -71,14 +71,19 @@ namespace TickTrader.SeriesStorage
                     _isClosed = true;
             }
 
+            public override long GetSize()
+            {
+                if (_manager.GetSizeMode == GetStorageSizeMode.ByStorage)
+                    return base.GetSize();
+                else if (_manager.GetSizeMode == GetStorageSizeMode.ByManager)
+                    return _manager.GetStorageSize(Name);
+
+                throw new NotSupportedException("GetSize() is not supported!");
+            }
+
             public override void Drop()
             {
-                if (Storage.SupportsCompaction)
-                {
-                    Storage.RemoveAll();
-                    Storage.CompactRange(null, null);
-                }
-                else if (_manager.SupportsStorageDrop)
+                if (_manager.SupportsStorageDrop)
                 {
                     lock (_accessLock)
                     {
@@ -97,7 +102,11 @@ namespace TickTrader.SeriesStorage
                     }
                     finally
                     {
-                        lock (_accessLock) _isLockedByDrop = false;
+                        lock (_accessLock)
+                        {
+                            _isLockedByDrop = false;
+                            Monitor.PulseAll(_accessLock);
+                        }
                     }
                 }
                 else
@@ -137,6 +146,8 @@ namespace TickTrader.SeriesStorage
                     {
                         Storage.Dispose();
                         Storage = null;
+
+                        Monitor.PulseAll(_accessLock);
                     }
                 }
             }
