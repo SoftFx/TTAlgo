@@ -902,7 +902,7 @@ namespace TickTrader.Algo.Common.Model
                 Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
-                Swap = p.Swap
+                Swap = p.Swap,
             };
         }
 
