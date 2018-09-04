@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Api;
 using BL = TickTrader.BusinessLogic;
 using BO = TickTrader.BusinessObjects;
@@ -37,7 +38,7 @@ namespace TickTrader.Algo.Core
             _lastRates.Clear();
 
             _state = new BL.MarketState(BL.NettingCalculationTypes.OneByOne);
-            _state.Set(_context.Builder.Symbols);
+            _state.Set(_context.Builder.Symbols.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name));
             _state.Set(_context.Builder.Currencies);
 
             foreach (var smb in _context.Builder.Symbols)

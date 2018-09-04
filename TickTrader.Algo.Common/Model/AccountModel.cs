@@ -333,7 +333,8 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderCanceled(ExecutionReport report, OrderExecAction algoAction)
         {
-            return new OrderUpdateAction(report, algoAction, report.ImmediateOrCancel ? OrderEntityAction.None : OrderEntityAction.Removed);
+            // Limit Ioc don't get into order collection
+            return new OrderUpdateAction(report, algoAction, (report.OrderType == OrderType.Limit && report.ImmediateOrCancel) ? OrderEntityAction.None : OrderEntityAction.Removed);
         }
 
         #endregion
