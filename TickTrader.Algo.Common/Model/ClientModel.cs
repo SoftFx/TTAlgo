@@ -300,7 +300,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Loaded quotes snaphsot.");
 
             var orderStream = Channel.NewInput<OrderEntity>();
-            tradeApi.GetTradeRecords(CreateBlocingChannel(orderStream));
+            tradeApi.GetTradeRecords(CreateBlockingChannel(orderStream));
 
             while (await orderStream.ReadNext())
                 await ApplyUpdate(new AccountModel.LoadOrderUpdate(orderStream.Current));

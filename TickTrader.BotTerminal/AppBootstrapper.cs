@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
 
             ConfigureCaliburn();
             ConfigurateLogger();
-            ConfigureGlobalWpfExceptionHandling();
+            ConfigureGlobalExceptionHandling();
         }
 
         public static AutoViewManager AutoViewLocator => autoViewLocator;
@@ -84,12 +84,17 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void ConfigureGlobalWpfExceptionHandling()
+        private void ConfigureGlobalExceptionHandling()
         {
             Application.DispatcherUnhandledException += (s, e) =>
             {
                 e.Handled = true;
-                logger.Error(e.Exception, "Unhandled Exception on Dispatcher level! Note to QA: this is definitly a bug!");
+                logger.Error(e.Exception, "Unhandled Exception on Dispatcher level!");
+            };
+
+            Actor.UnhandledException += (e) =>
+            {
+                logger.Error(e, "Unhandled Exception on Actor level!");
             };
         }
 

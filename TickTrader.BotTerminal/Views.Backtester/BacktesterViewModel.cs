@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.PluginItem.Descriptor.AlgoLogicType == AlgoTypes.Robot);
             IsRunning = ProgressMonitor.IsRunning;
             IsStopping = ProgressMonitor.IsCancelling;
-            CanStart = !IsRunning & client.IsConnected;
+            CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected;
             CanSetup = !IsRunning & client.IsConnected;
             CanStop = ProgressMonitor.CanCancel;
 

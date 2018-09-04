@@ -241,7 +241,7 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                _feedProxy.DownloadBars(CreateBlocingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
+                _feedProxy.DownloadBars(CreateBlockingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
 
                 var i = from;
                 while (await inputStream.ReadNext())
@@ -303,7 +303,7 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                _feedProxy.DownloadQuotes(CreateBlocingChannel(inputStream), key.Symbol, from, to, level2);
+                _feedProxy.DownloadQuotes(CreateBlockingChannel(inputStream), key.Symbol, from, to, level2);
 
                 var i = from;
                 while (await inputStream.ReadNext())

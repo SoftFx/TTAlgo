@@ -169,7 +169,7 @@ namespace ActorSharp
 
         private void CloseWriter(Exception ex)
         {
-            if (_reader == null)
+            if (_writer == null)
                 return;
 
             lock (_readLock)
@@ -183,7 +183,7 @@ namespace ActorSharp
                     _readIndex = 0;
 
                     var closeReq = new CloseWriterRequest(ex);
-                    _reader.PostMessage(closeReq);
+                    _writer.PostMessage(closeReq);
 
                     Monitor.PulseAll(_readLock);
 

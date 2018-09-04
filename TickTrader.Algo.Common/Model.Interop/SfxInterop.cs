@@ -268,10 +268,20 @@ namespace TickTrader.Algo.Common.Model
                 try
                 {
                     var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
+                    var timeEdge = from;
 
                     while (true)
                     {
                         var bar = e.Next(DownloadTimeoutMs);
+
+                        if (bar != null)
+                        {
+                            if (bar.From <= timeEdge)
+                                continue;
+
+                            timeEdge = bar.From;
+                        }
+
                         if (bar == null || !stream.Write(Convert(bar)))
                         {
                             e.Close();
