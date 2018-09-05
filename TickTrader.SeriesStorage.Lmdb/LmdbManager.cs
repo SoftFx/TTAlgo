@@ -29,7 +29,7 @@ namespace TickTrader.SeriesStorage.Lmdb
             {
                 return Directory.GetFiles(_baseFolder, "*.dat")
                     .Where(f => Path.GetExtension(f).ToLower() == ".dat")
-                    .Select(f => Path.GetFileNameWithoutExtension(f))
+                    .Select(f => DecodeName(Path.GetFileNameWithoutExtension(f)))
                     .ToList();
             }
             catch (DirectoryNotFoundException) { }
@@ -56,12 +56,24 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         private string GetDataFileName(string dbName)
         {
-            return Path.Combine(_baseFolder, dbName + ".dat");
+            var safeFileName = EncodeName(dbName);
+            return Path.Combine(_baseFolder, safeFileName + ".dat");
         }
 
         private string GetLockFileName(string dbName)
         {
-            return Path.Combine(_baseFolder, dbName + ".dat-lock");
+            var safeFileName = EncodeName(dbName);
+            return Path.Combine(_baseFolder, safeFileName + ".dat-lock");
+        }
+
+        private string EncodeName(string dbName)
+        {
+            return Uri.EscapeDataString(dbName);
+        }
+
+        private string DecodeName(string safeFileName)
+        {
+            return Uri.UnescapeDataString(safeFileName);
         }
     }
 }
