@@ -288,7 +288,7 @@ namespace TickTrader.Algo.Common.Model
             double? takeProfit, string comment, string tag, int? magic)
         {
             var taskSrc = new OrderResultSource();
-            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, true, qty, comment, tag, magic);
+            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, false, qty, comment, tag, magic);
             return taskSrc.Task;
         }
 
