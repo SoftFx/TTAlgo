@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core.Lib
 {
-    public interface IPagedEnumerator<T>
+    public interface IPagedEnumerator<T> : IDisposable
     {
         List<T> GetNextPage();
     }

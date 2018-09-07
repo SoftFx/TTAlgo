@@ -31,6 +31,11 @@ namespace TickTrader.Algo.Core
             Collector.OnStart(Settings);
         }
 
+        public bool WarmUp(int quoteCount)
+        {
+            return InvokeEmulator.Warmup(quoteCount);
+        }
+
         public void EmulateExecution()
         {
             try
@@ -53,6 +58,14 @@ namespace TickTrader.Algo.Core
         public void CancelEmulation()
         {
             InvokeEmulator.Cancel();
+        }
+
+        public override void Dispose()
+        {
+            Feed.Dispose();
+            Collector.Dispose();
+
+            base.Dispose();
         }
     }
 }

@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Metadata;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 using TickTrader.BusinessObjects.Messaging;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradeEmulator : CrossDomainObject, ITradeFixture
+    internal class TradeEmulator : ITradeFixture
     {
         private ActivationEmulator _activator = new ActivationEmulator();
         private CalculatorFixture _calcFixture;
@@ -77,6 +78,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void Restart()
+        {
+        }
+
+        public void Dispose()
         {
         }
 
@@ -217,11 +222,15 @@ namespace TickTrader.Algo.Core
             });
         }
 
+        private static int requestSeed;
+
         private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
             Func<TRequest, Task<TradeResultEntity>> executorInvoke)
             where TRequest : OrderRequest
         {
             var task = executorInvoke(orderRequest);
+
+            var id = requestSeed++;
 
             if (!isAsync)
             {

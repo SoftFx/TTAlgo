@@ -295,10 +295,13 @@ namespace TickTrader.BotTerminal
             {
                 var events = new List<BotLogRecord>(totalCount);
 
-                foreach (var record in tester.GetEvents().JoinPages(i => observer.SetProgress(i)))
-                    events.Add(record);
+                using (var cde = tester.GetEvents())
+                {
+                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
+                        events.Add(record);
 
-                return events;
+                    return events;
+                }
             });
         }
 
@@ -329,12 +332,15 @@ namespace TickTrader.BotTerminal
 
             return Task.Run(() =>
             {
-                var chartData = new OhlcDataSeries<DateTime, double>();
+                using (src)
+                {
+                    var chartData = new OhlcDataSeries<DateTime, double>();
 
-                foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
-                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
+                        chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
 
-                return chartData;
+                    return chartData;
+                }
             });
         }
 

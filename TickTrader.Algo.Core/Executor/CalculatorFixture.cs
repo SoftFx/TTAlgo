@@ -138,6 +138,8 @@ namespace TickTrader.Algo.Core
             {
                 fCalc.UpdateMargin(newOrder, acc);
 
+                ValidateOrderState(newOrder);
+
                 // Update order initial margin rate.
                 //newOrder.MarginRateInitial = newOrder.MarginRateCurrent;
 
@@ -172,6 +174,8 @@ namespace TickTrader.Algo.Core
         {
             BL.OrderCalculator fCalc = _state.GetCalculator(order.Symbol, Acc.BalanceCurrency);
             //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
+
+            ValidateOrderState(order);
 
             //decimal filledAmount = order.Amount - order.RemainingAmount;
             //decimal newRemainingAmount = newAmount - filledAmount;
@@ -222,6 +226,17 @@ namespace TickTrader.Algo.Core
         {
             AssetChangeType cType;
             return Acc.Assets.GetOrCreateAsset(currency.Name, out cType);
+        }
+
+        private void ValidateOrderState(OrderAccessor order)
+        {
+            if (order.CalculationError != null)
+            {
+                if (order.CalculationError.Code == OrderErrorCode.Misconfiguration)
+                    throw new OrderValidationError(order.CalculationError.Description, OrderCmdResultCodes.Misconfiguration);
+                else
+                    throw new OrderValidationError(order.CalculationError.Description, OrderCmdResultCodes.OffQuotes);
+            }
         }
 
         #endregion

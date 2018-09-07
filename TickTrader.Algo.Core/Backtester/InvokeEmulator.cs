@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core
         private IEnumerator<QuoteEntity> _eFeed;
         private volatile bool _canceled;
         private BacktesterCollector _collector;
+        private bool _stopFlag;
 
         public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector)
         {
@@ -73,6 +74,11 @@ namespace TickTrader.Algo.Core
         public override void ProcessNextTrade()
         {
             var item = DequeueNext();
+
+            if (item == null)
+                throw new Exception("Detected empty queue while ProcessNextTrade()!");
+
+            ExecItem(item);
         }
 
         public override void Start()
@@ -86,7 +92,7 @@ namespace TickTrader.Algo.Core
             {
                 StartFeedRead();
 
-                while (true)
+                while (!_stopFlag)
                 {
                     if (_canceled)
                         throw new OperationCanceledException("Canceled.");
@@ -96,17 +102,37 @@ namespace TickTrader.Algo.Core
                     if (nextItem == null)
                         return;
 
-                    var action = nextItem as Action<PluginBuilder>;
-                    if (action != null)
-                        action(Builder);
-                    else
-                        EmulateQuote((QuoteEntity)nextItem);
+                    ExecItem(nextItem);
                 }
             }
             finally
             {
                 StopFeedRead();
             }
+        }
+
+        public bool Warmup(int quoteCount)
+        {
+            StartFeedRead();
+
+            for (int i = 0; i < quoteCount; i++)
+            {
+                if (!_eFeed.MoveNext())
+                    return false;
+
+                ExecItem(_eFeed.Current);
+            }
+
+            return true;
+        }
+
+        private void ExecItem(object item)
+        {
+            var action = item as Action<PluginBuilder>;
+            if (action != null)
+                action(Builder);
+            else
+                EmulateQuote((QuoteEntity)item);
         }
 
         public void Cancel()
@@ -148,8 +174,7 @@ namespace TickTrader.Algo.Core
 
         private void StopFeedRead()
         {
-            if (_eFeed != null)
-                _eFeed.Dispose();
+            _eFeed?.Dispose();
             _eFeed = null;
         }
 
@@ -208,6 +233,7 @@ namespace TickTrader.Algo.Core
 
         public override Task Stop(bool quick)
         {
+            _stopFlag = true;
             return Task.FromResult(true);
         }
 

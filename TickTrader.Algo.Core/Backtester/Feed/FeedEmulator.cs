@@ -19,16 +19,12 @@ namespace TickTrader.Algo.Core
             return GetJoinedStream();
         }
 
-        internal bool Warmup(int quoteCount)
+        public override void Dispose()
         {
-            int i = 0;
-            foreach (var q in GetJoinedStream())
-            {
-                if (++i >= quoteCount)
-                    return true;
-            }
+            foreach (var src in _feedSources.Values)
+                src.Stop();
 
-            return false;
+            base.Dispose();
         }
 
         private IEnumerable<QuoteEntity> GetJoinedStream()

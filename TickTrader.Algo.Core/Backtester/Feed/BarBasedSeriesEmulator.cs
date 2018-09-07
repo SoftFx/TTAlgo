@@ -20,9 +20,14 @@ namespace TickTrader.Algo.Core
         private double? _lastBidRate;
         private double? _lastAskRate;
 
+        //private IBarStorage _bidStorage;
+        //private IBarStorage _askStorage;
+
         public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
             : this(symbol, baseTimeFrame, bidSrc.GrtBarStream(), askSrc.GrtBarStream())
         {
+            //_bidStorage = bidSrc;
+            //_askStorage = askSrc;
         }
 
         public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IEnumerable<BarEntity> bidSrc, IEnumerable<BarEntity> askSrc)
@@ -52,10 +57,8 @@ namespace TickTrader.Algo.Core
 
         public override void Stop()
         {
-            if (_bidE != null)
-                _bidE.Dispose();
-            if (_askE != null)
-                _askE.Dispose();
+            _bidE?.Dispose();
+            _askE?.Dispose();
         }
 
         private void MoveBid()

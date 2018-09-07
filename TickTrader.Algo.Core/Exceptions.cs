@@ -4,8 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+namespace TickTrader.Algo.Core
+{
+    [Serializable]
+    public class MisconfigException : AlgoException
+    {
+        public MisconfigException(string message) : base(message)
+        {
+        }
+    }
+}
+
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class AlgoException : Exception
     {
         public AlgoException(string msg)
@@ -14,6 +26,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
+    [Serializable]
     public class InvalidPluginType : AlgoException
     {
         public InvalidPluginType(string msg)
@@ -22,6 +35,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
+    [Serializable]
     public class AlgoMetadataException : AlgoException
     {
         public AlgoMetadataException(AlgoMetadataErrors errorCode, IEnumerable<AlgoPropertyDescriptor> invalidProperties = null)

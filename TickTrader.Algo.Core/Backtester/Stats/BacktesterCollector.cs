@@ -74,6 +74,22 @@ namespace TickTrader.Algo.Core
             Stats.Elapsed = DateTime.UtcNow - _startTime;
         }
 
+        public override void Dispose()
+        {
+            Stats = null;
+
+            _mainSymbolHistory = null;
+            _equityHistory = null;
+            _marginHistory = null;
+
+            _mainBarVector = null;
+            _equityBuilder = null;
+            _marginBuilder = null;
+            _events = null;
+
+            base.Dispose();
+        }
+
         #region Journal
 
         public void AddEvent(LogSeverities severity, string message, string description = null)
@@ -219,6 +235,7 @@ namespace TickTrader.Algo.Core
 
         void IPluginLogger.OnExit()
         {
+            AddEvent(LogSeverities.Info, "Bot called Exit()");
         }
 
         void IPluginLogger.OnInitialized()
@@ -252,14 +269,18 @@ namespace TickTrader.Algo.Core
 
         void IPluginLogger.OnPrintTrade(string entry)
         {
+
+            AddEvent(LogSeverities.Trade, entry);
         }
 
         void IPluginLogger.OnPrintTradeFail(string entry)
         {
+            AddEvent(LogSeverities.TradeFail, entry);
         }
 
         void IPluginLogger.OnPrintTradeSuccess(string entry)
         {
+            AddEvent(LogSeverities.TradeSuccess, entry);
         }
 
         void IPluginLogger.OnStart()

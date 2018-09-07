@@ -61,8 +61,6 @@ namespace TickTrader.Algo.Core
         {
             cToken.Register(() => _control.CancelEmulation());
 
-            //_feed.Warmup(1000);
-
             _executor.InitSlidingBuffering(4000);
 
             _executor.MainSymbolCode = MainSymbol;
@@ -71,12 +69,12 @@ namespace TickTrader.Algo.Core
             _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             _control.OnStart();
-
             _executor.Start();
 
             try
             {
-                _control.EmulateExecution();
+                if (_control.WarmUp(10))
+                    _control.EmulateExecution();
             }
             finally
             {
@@ -123,9 +121,9 @@ namespace TickTrader.Algo.Core
         {
             base.Dispose();
 
+            _executor?.Dispose();
             _control?.Dispose();
             _control = null;
-            _executor?.Dispose();
         }
 
         public TestingStatistics GetStats()
