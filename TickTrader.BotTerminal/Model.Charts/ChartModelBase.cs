@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             AlgoEnv = algoEnv;
             this.Model = symbol;
-            this.Journal = AlgoEnv.BotJournal;
+            this.Journal = AlgoEnv.LocalAgent.BotJournal;
 
             AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Indicator).AsObservable();
             AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).AsObservable();

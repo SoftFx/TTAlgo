@@ -15,7 +15,7 @@ using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotManagerViewModel : PropertyChangedBase, IAlgoPluginHost
+    internal class BotManagerViewModel : PropertyChangedBase
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -43,8 +43,6 @@ namespace TickTrader.BotTerminal
             _shell = algoEnv.Shell;
 
             Bots = BotManagerModel.Bots.OrderBy((id, bot) => id).Select(b => new BotControlViewModel(b, AlgoEnv, this, false, false));
-
-            ClientModel.Connected += ClientModelOnConnected;
         }
 
 
@@ -118,22 +116,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void ClientModelOnConnected()
+        private void AddBot(PluginConfig config, bool runBot)
         {
-            Connected?.Invoke();
-        }
-
-        private void AddBot(AgentPluginSetupViewModel setupModel)
-        {
-            AddBot(setupModel.GetConfig(), new AlgoSetupContextStub(setupModel.SetupContext), setupModel.RunBot);
-        }
-
-        private void AddBot(PluginConfig config, IAlgoSetupContext context, bool runBot)
-        {
-            var bot = new TradeBotModel(config, Agent, this, context, new WindowStorageModel { Width = 300, Height = 300 });
-            BotManagerModel.AddBot(bot);
+            Agent.AddBot(null, config);
             if (runBot)
-                bot.Start();
+                Agent.StartBot(config.InstanceId);
         }
 
         private void UpdateBot(AgentPluginSetupViewModel setupModel)
@@ -157,63 +144,7 @@ namespace TickTrader.BotTerminal
                 _logger.Error("Trade bot key missing!");
             }
 
-            AddBot(entry.Config, BotManagerModel, entry.Started && _preferences.RestartBotsOnStartup);
+            AddBot(entry.Config, entry.Started && _preferences.RestartBotsOnStartup);
         }
-
-
-        #region IAlgoPluginHost
-
-        void IAlgoPluginHost.Lock()
-        {
-            _shell.ConnectionLock.Lock();
-        }
-
-        void IAlgoPluginHost.Unlock()
-        {
-            _shell.ConnectionLock.Release();
-        }
-
-        ITradeExecutor IAlgoPluginHost.GetTradeApi()
-        {
-            return ClientModel.TradeApi;
-        }
-
-        ITradeHistoryProvider IAlgoPluginHost.GetTradeHistoryApi()
-        {
-            return ClientModel.TradeHistory.AlgoAdapter;
-        }
-
-        BotJournal IAlgoPluginHost.Journal => AlgoEnv.BotJournal;
-
-        public virtual void InitializePlugin(PluginExecutor plugin)
-        {
-            plugin.InvokeStrategy = new PriorityInvokeStartegy();
-            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
-            var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            plugin.Metadata = feedProvider;
-            switch (plugin.TimeFrame)
-            {
-                case Algo.Api.TimeFrames.Ticks:
-                    plugin.InitQuoteStrategy(feedProvider);
-                    break;
-                default:
-                    plugin.InitBarStrategy(feedProvider, Algo.Api.BarPriceType.Bid);
-                    break;
-            }
-            plugin.InitSlidingBuffering(1024);
-        }
-
-        public virtual void UpdatePlugin(PluginExecutor plugin)
-        {
-        }
-
-        bool IAlgoPluginHost.IsStarted => false;
-
-        public event System.Action ParamsChanged = delegate { };
-        public event System.Action StartEvent = delegate { };
-        public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
-        public event System.Action Connected;
-
-        #endregion
     }
 }

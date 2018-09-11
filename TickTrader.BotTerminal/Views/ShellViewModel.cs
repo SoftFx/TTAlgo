@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
             cManager = new ConnectionManager(commonClient, storage, eventJournal);
             clientModel = new TraderClientModel(commonClient, eventJournal);
 
-            Agent = new LocalAlgoAgent(clientModel);
+            Agent = new LocalAlgoAgent(this, clientModel);
 
             _botAgentManager = new BotAgentManager(storage);
 

@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
@@ -67,6 +68,23 @@ namespace TickTrader.BotTerminal
                 Agent.IdProvider.UnregisterPlugin(instanceId);
                 botModel.StateChanged -= StateChanged;
             }
+        }
+
+        public void StartBot(string instanceId)
+        {
+            if (_bots.TryGetValue(instanceId, out var bot))
+            {
+                bot.Start();
+            }
+        }
+
+        public Task StopBot(string instanceId)
+        {
+            if (_bots.TryGetValue(instanceId, out var bot))
+            {
+                return bot.Stop();
+            }
+            return Task.FromResult(this);
         }
 
 

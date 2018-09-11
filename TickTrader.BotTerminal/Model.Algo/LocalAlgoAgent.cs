@@ -10,11 +10,13 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.BotTerminal.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class LocalAlgoAgent : IAlgoAgent, IAlgoSetupMetadata
+    internal class LocalAlgoAgent : IAlgoAgent, IAlgoSetupMetadata, IAlgoPluginHost
     {
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
 
@@ -55,6 +57,10 @@ namespace TickTrader.BotTerminal
 
         public BotManager BotManager { get; }
 
+        public IShell Shell { get; }
+
+        public BotJournal BotJournal { get; }
+
 
         public event Action<PackageInfo> PackageStateChanged;
 
@@ -63,13 +69,15 @@ namespace TickTrader.BotTerminal
         public event Action<BotModelInfo> BotStateChanged;
 
 
-        public LocalAlgoAgent(TraderClientModel clientModel)
+        public LocalAlgoAgent(IShell shell, TraderClientModel clientModel)
         {
+            Shell = shell;
             ClientModel = clientModel;
 
             _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             IdProvider = new PluginIdProvider();
             Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
+            BotJournal = new BotJournal(1000);
             BotManager = new BotManager(this);
             _botsWarden = new BotsWarden(BotManager);
             _syncContext = new DispatcherSync();
@@ -82,6 +90,7 @@ namespace TickTrader.BotTerminal
             Library.PluginUpdated += LibraryOnPluginUpdated;
             Library.PackageStateChanged += OnPackageStateChanged;
             Library.Reset += LibraryOnReset;
+            ClientModel.Connected += ClientModelOnConnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
             BotManager.StateChanged += OnBotStateChanged;
 
@@ -109,19 +118,20 @@ namespace TickTrader.BotTerminal
 
         public Task StartBot(string instanceId)
         {
-            //BotManager.StartBot(instanceId);
+            BotManager.StartBot(instanceId);
             return Task.FromResult(this);
         }
 
         public Task StopBot(string instanceId)
         {
-            //BotManager.StopBot(instanceId);
+            BotManager.StopBot(instanceId);
             return Task.FromResult(this);
         }
 
         public Task AddBot(AccountKey account, PluginConfig config)
         {
-            //BotManager.AddBot(account, config);
+            var bot = new TradeBotModel(config, this, this, BotManager, new WindowStorageModel { Width = 300, Height = 300 });
+            BotManager.AddBot(bot);
             return Task.FromResult(this);
         }
 
@@ -312,5 +322,67 @@ namespace TickTrader.BotTerminal
         IPluginIdProvider IAlgoSetupMetadata.IdProvider => IdProvider;
 
         #endregion IAlgoSetupMetadata implementation
+
+
+        #region IAlgoPluginHost
+
+        void IAlgoPluginHost.Lock()
+        {
+            Shell.ConnectionLock.Lock();
+        }
+
+        void IAlgoPluginHost.Unlock()
+        {
+            Shell.ConnectionLock.Release();
+        }
+
+        ITradeExecutor IAlgoPluginHost.GetTradeApi()
+        {
+            return ClientModel.TradeApi;
+        }
+
+        ITradeHistoryProvider IAlgoPluginHost.GetTradeHistoryApi()
+        {
+            return ClientModel.TradeHistory.AlgoAdapter;
+        }
+
+        BotJournal IAlgoPluginHost.Journal => BotJournal;
+
+        public virtual void InitializePlugin(PluginExecutor plugin)
+        {
+            plugin.InvokeStrategy = new PriorityInvokeStartegy();
+            plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
+            var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
+            plugin.Metadata = feedProvider;
+            switch (plugin.TimeFrame)
+            {
+                case Algo.Api.TimeFrames.Ticks:
+                    plugin.InitQuoteStrategy(feedProvider);
+                    break;
+                default:
+                    plugin.InitBarStrategy(feedProvider, Algo.Api.BarPriceType.Bid);
+                    break;
+            }
+            plugin.InitSlidingBuffering(1024);
+        }
+
+        public virtual void UpdatePlugin(PluginExecutor plugin)
+        {
+        }
+
+        bool IAlgoPluginHost.IsStarted => false;
+
+        public event Action ParamsChanged = delegate { };
+        public event Action StartEvent = delegate { };
+        public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
+        public event Action Connected;
+
+
+        private void ClientModelOnConnected()
+        {
+            Connected?.Invoke();
+        }
+
+        #endregion
     }
 }

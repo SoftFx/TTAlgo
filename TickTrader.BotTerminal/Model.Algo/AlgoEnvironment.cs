@@ -24,8 +24,6 @@ namespace TickTrader.BotTerminal
 
         public BotAgentManager BotAgentManager { get; }
 
-        public BotJournal BotJournal { get; }
-
         public AlgoAgentViewModel LocalAgentVM { get; }
 
         public IVarList<BotAgentViewModel> BotAgents { get; }
@@ -39,7 +37,6 @@ namespace TickTrader.BotTerminal
             LocalAgent = localAgent;
             BotAgentManager = botAgentManager;
 
-            BotJournal = new BotJournal(1000);
             ProfileResolver.Mappings = LocalAgent.Mappings;
 
             LocalAgentVM = new AlgoAgentViewModel(LocalAgent, this);
