@@ -113,6 +113,10 @@
     <Compile Include="Entities\CompositeTag.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
     <Compile Include="Entities\CurrencyEntity.cs" />
+    <Compile Include="Entities\Dealer\CancelOrderDealerRequest.cs" />
+    <Compile Include="Entities\Dealer\ClosePositionDealerRequest.cs" />
+    <Compile Include="Entities\Dealer\ModifyOrderDealerRequest.cs" />
+    <Compile Include="Entities\Dealer\OpenOrderDealerRequest.cs" />
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
@@ -161,6 +165,7 @@
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
+    <Compile Include="Lib\Ref.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />

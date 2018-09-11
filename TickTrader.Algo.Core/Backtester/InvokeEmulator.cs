@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core
         private volatile bool _canceled;
         private BacktesterCollector _collector;
         private bool _stopFlag;
+        private Exception _fatalError;
 
         public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector)
         {
@@ -97,6 +98,9 @@ namespace TickTrader.Algo.Core
                     if (_canceled)
                         throw new OperationCanceledException("Canceled.");
 
+                    if (_fatalError != null)
+                        throw _fatalError;
+
                     var nextItem = DequeueNext();
 
                     if (nextItem == null)
@@ -120,19 +124,19 @@ namespace TickTrader.Algo.Core
                 if (!_eFeed.MoveNext())
                     return false;
 
-                ExecItem(_eFeed.Current);
+                ExecItem(_eFeed.Current, true);
             }
 
             return true;
         }
 
-        private void ExecItem(object item)
+        private void ExecItem(object item, bool warmup = false)
         {
             var action = item as Action<PluginBuilder>;
             if (action != null)
                 action(Builder);
             else
-                EmulateQuote((QuoteEntity)item);
+                EmulateQuote((QuoteEntity)item, warmup);
         }
 
         public void Cancel()
@@ -155,6 +159,15 @@ namespace TickTrader.Algo.Core
             var handler = new TaskCompletionSource<object>();
             EmulateDelayed(delay, b => handler.SetResult(null), true);
             return handler.Task;
+        }
+
+        public void SetFatalError(Exception error)
+        {
+            lock (_sync)
+            {
+                if (_fatalError != error)
+                    _fatalError = error;
+            }
         }
 
         private void StartFeedRead()
@@ -216,10 +229,10 @@ namespace TickTrader.Algo.Core
         //    }
         //}
 
-        private void EmulateQuote(QuoteEntity quote)
+        private void EmulateQuote(QuoteEntity quote, bool hidden)
         {
             var update = FStartegy.InvokeAggregate(null, quote);
-            var bufferUpdate = OnFeedUpdate(update);
+            var bufferUpdate = OnFeedUpdate(update, hidden);
             RateUpdated?.Invoke(quote);
             _collector.OnTick(quote);
 
@@ -233,8 +246,16 @@ namespace TickTrader.Algo.Core
 
         public override Task Stop(bool quick)
         {
-            _stopFlag = true;
-            return Task.FromResult(true);
+            var stopEvent = new TaskCompletionSource<object>();
+
+            _eventQueue.Enqueue(b =>
+            {
+                b.InvokeOnStop();
+                _stopFlag = true;
+                stopEvent.SetResult(this);
+            });
+
+            return stopEvent.Task;
         }
 
         private object DequeueNext()

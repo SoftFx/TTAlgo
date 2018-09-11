@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
+            _context.Logger = this;
+
             var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
             var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
 

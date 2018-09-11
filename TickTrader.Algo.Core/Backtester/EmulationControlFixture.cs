@@ -52,6 +52,7 @@ namespace TickTrader.Algo.Core
         public void OnStop()
         {
             var builder = Executor.GetBuilder();
+
             Collector.OnStop(Settings, builder.Account);
         }
 

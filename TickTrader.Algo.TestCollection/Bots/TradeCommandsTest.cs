@@ -275,7 +275,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             catch (Exception e)
             {
                 _errorCount++;
-                _errorTextList.Add(e.Message + " in test market order");
+                _errorTextList.Add(e.Message + "     market order");
 
             }
         }

@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core
         private List<BarEntity> _equityHistory;
         private List<BarEntity> _marginHistory;
         private TimeFrames _mainTimeframe;
+        private string _lastStatus;
 
         public BacktesterCollector(PluginExecutor executor)
         {
@@ -53,6 +54,8 @@ namespace TickTrader.Algo.Core
             _startTime = DateTime.UtcNow;
             _mainTimeframe = settings.MainTimeframe;
 
+            _lastStatus = null;
+
             _mainBarVector = BarSequenceBuilder.Create(_mainTimeframe);
             _mainBarVector.BarOpened += (b) => _mainSymbolHistory.Add(b);
 
@@ -72,6 +75,9 @@ namespace TickTrader.Algo.Core
             }
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
+
+            if (_lastStatus != null)
+                AddEvent(LogSeverities.Custom, _lastStatus);
         }
 
         public override void Dispose()
@@ -295,6 +301,7 @@ namespace TickTrader.Algo.Core
 
         void IPluginLogger.UpdateStatus(string status)
         {
+            _lastStatus = status;
         }
 
         #endregion

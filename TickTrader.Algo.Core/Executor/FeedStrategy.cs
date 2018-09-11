@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Core
                 ExecContext.EnqueueQuote(update);
         }
 
-        internal BufferUpdateResult ApplyUpdate(RateUpdate update)
+        internal BufferUpdateResult ApplyUpdate(RateUpdate update, bool hidden)
         {
             var lastQuote = update.LastQuote;
 
@@ -129,7 +129,8 @@ namespace TickTrader.Algo.Core
 
             _rateUpdateCallback((QuoteEntity)lastQuote);
 
-            RateDispenser.OnUpdateEvent(lastQuote);
+            if (!hidden)
+                RateDispenser.OnUpdateEvent(lastQuote);
 
             return result;
         }

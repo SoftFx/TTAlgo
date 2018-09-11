@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
@@ -86,7 +87,7 @@ namespace TickTrader.Algo.Core
             _builder.Clear();
             _builder.Append($"Opened order ");
             PrintOrderDescription(NewOrder);
-            _builder.Append($", amount={order.Amount} price={order.Price}");
+            PrintAmountAndPrice(NewOrder.Entity);
 
             //if (order.Commission != 0)
             //    _builder.Append(" commission =").Append(order.Commission);
@@ -99,9 +100,19 @@ namespace TickTrader.Algo.Core
             return _builder.ToString();
         }
 
-        public static string PrintOpenFail(OpenOrderRequest request, OrderValidationError error)
+        public static string PrintOpenFail(OrderType type, string symbol, OrderSide side, OrderCmdResultCodes error)
         {
-            return $"Rejected order {request.Type} {request.Symbol} {request.Side} reason={error.ErrorCode}";
+            return $"Rejected order {type} {symbol} {side} reason={error}";
+        }
+
+        public string PrintModificationInfo()
+        {
+            _builder.Clear();
+            _builder.Append($"Order is modified ");
+            PrintOrderDescription(NewOrder);
+            PrintAmountAndPrice(NewOrder.Entity);
+
+            return _builder.ToString();
         }
 
         public string PrintActivationInfo()
@@ -151,6 +162,15 @@ namespace TickTrader.Algo.Core
         {
             if (!string.IsNullOrEmpty(order.Comment))
                 _builder.Append("  \"").Append(order.Comment).Append('"');
+        }
+
+        private void PrintAmountAndPrice(OrderEntity order)
+        {
+            _builder.Append($", amount=").Append(order.RemainingVolume);
+            if (order.Price != null)
+                _builder.Append(" price=").Append(order.Price);
+            if (order.StopPrice != null)
+                _builder.Append(" stopPrice=").Append(order.StopPrice);
         }
     }
 }

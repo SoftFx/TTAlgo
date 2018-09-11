@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Core
         PluginBuilder Builder { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
-        IPluginLogger Logger { get; }
+        IPluginLogger Logger { get; set; }
 
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
@@ -98,7 +98,7 @@ namespace TickTrader.Algo.Core
         //void Unsubscribe(IAllRatesSubscription subscriber);
     }
 
-    internal interface ITradeFixture : ITradeApi, IDisposable
+    internal interface IExecutorFixture : IDisposable
     {
         void Start();
         void Stop();

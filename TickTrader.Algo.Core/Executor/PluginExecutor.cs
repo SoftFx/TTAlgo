@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core
         private readonly SubscriptionManager dispenser;
         private InvokeStartegy iStrategy;
         private readonly CalculatorFixture calcFixture;
-        private ITradeFixture accFixture;
+        private IExecutorFixture accFixture;
         private readonly TimerFixture _timerFixture;
         private StatusFixture statusFixture;
         private IAccountInfoProvider _externalAccData;
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core
         private bool _isolated;
         private PluginPermissions _permissions;
         private States state;
-        private Func<IFixtureContext, ITradeFixture> _tradeFixtureFactory = c => new TradingFixture(c);
+        private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
 
         public PluginExecutor(string pluginId)
         {
@@ -259,7 +259,7 @@ namespace TickTrader.Algo.Core
                     builder.TimeFrame = TimeFrame;
                     InitMetadata();
                     InitWorkingFolder();
-                    builder.TradeApi = accFixture;
+                    //builder.TradeApi = accFixture;
                     builder.TimerApi = _timerFixture;
                     builder.Calculator = calcFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
@@ -626,7 +626,7 @@ namespace TickTrader.Algo.Core
         string IFixtureContext.MainSymbolCode => mainSymbol;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
-        IPluginLogger IFixtureContext.Logger => _pluginLoggerFixture;
+        IPluginLogger IFixtureContext.Logger { get => _pluginLogger; set => _pluginLogger = value; }
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {

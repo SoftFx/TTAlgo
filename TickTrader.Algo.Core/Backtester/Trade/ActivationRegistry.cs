@@ -19,12 +19,12 @@ namespace TickTrader.Algo.Core
 
         public ActivationRegistry()
         {
-            buyLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Ask.PriceToDecimal(), agg => agg.AskLow.ToDecimal());
-            buyStopIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask.PriceToDecimal(), agg => agg.AskHigh.ToDecimal());
-            buyStopLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask.PriceToDecimal(), agg => agg.AskHigh.ToDecimal());
-            sellLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Bid.PriceToDecimal(), agg => agg.BidHigh.ToDecimal());
-            sellStopIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.PriceToDecimal(), agg => agg.BidLow.ToDecimal());
-            sellStopLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.PriceToDecimal(), agg => agg.BidLow.ToDecimal());
+            buyLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Ask.NanAwareToDecimal(), agg => agg.AskLow.ToDecimal());
+            buyStopIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask.NanAwareToDecimal(), agg => agg.AskHigh.ToDecimal());
+            buyStopLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask.NanAwareToDecimal(), agg => agg.AskHigh.ToDecimal());
+            sellLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidHigh.ToDecimal());
+            sellStopIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidLow.ToDecimal());
+            sellStopLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidLow.ToDecimal());
         }
 
         public ActivationRecord AddOrder(OrderAccessor order, RateUpdate currentRate)

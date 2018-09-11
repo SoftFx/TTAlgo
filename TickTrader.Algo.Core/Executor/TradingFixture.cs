@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradingFixture : CrossDomainObject, ITradeApi, ITradeFixture
+    internal class TradingFixture : CrossDomainObject, ITradeApi, IExecutorFixture
     {
         private IFixtureContext context;
         private Dictionary<string, Currency> currencies;
@@ -30,6 +30,8 @@ namespace TickTrader.Algo.Core
         {
             _executor = context.TradeExecutor;
             _dataProvider = context.AccInfoProvider;
+
+            context.Builder.TradeApi = this;
 
             if (_dataProvider != null)
                 _dataProvider.SyncInvoke(Init);

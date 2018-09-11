@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
-        public void ValidateNewOrder(OrderAccessor newOrder, OpenOrderRequest request, BL.OrderCalculator fCalc)
+        public void ValidateNewOrder(OrderAccessor newOrder, BL.OrderCalculator fCalc)
         {
             if (acc.IsMarginType)
             {
@@ -148,7 +148,7 @@ namespace TickTrader.Algo.Core
                     // Check for margin
                     decimal oldMargin;
                     decimal newMargin;
-                    if (!marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin.PriceToDecimal(), out oldMargin, out newMargin))
+                    if (!marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin.NanAwareToDecimal(), out oldMargin, out newMargin))
                         throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
                 }
                 catch (BL.MarketConfigurationException e)
@@ -232,8 +232,8 @@ namespace TickTrader.Algo.Core
         {
             if (order.CalculationError != null)
             {
-                if (order.CalculationError.Code == OrderErrorCode.Misconfiguration)
-                    throw new OrderValidationError(order.CalculationError.Description, OrderCmdResultCodes.Misconfiguration);
+                if (order.CalculationError.Code == BL.OrderErrorCode.Misconfiguration)
+                    throw new MisconfigException(order.CalculationError.Description);
                 else
                     throw new OrderValidationError(order.CalculationError.Description, OrderCmdResultCodes.OffQuotes);
             }

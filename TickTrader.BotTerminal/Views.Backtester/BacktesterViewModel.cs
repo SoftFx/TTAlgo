@@ -264,34 +264,25 @@ namespace TickTrader.BotTerminal
                     updateTimer.Stop();
                 }
 
-                if (execError == null || execError is OperationCanceledException)
-                {
-                    _journalContent.Value = await CollectEvents(tester, observer);
-
-                    observer.SetMessage("Loading testing result data...");
-
-                    ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
-
-                    await LoadChartData(tester, observer, tester);
-
-                    //ChartPage.AddStatSeries(ResultsPage.Stats);
-                }
+                await CollectEvents(tester, observer);
+                await LoadStats(observer, tester);
+                await LoadChartData(tester, observer, tester);
 
                 if (execError != null)
-                    observer.SetMessage(execError.Message);
+                    throw execError; //observer.SetMessage(execError.Message);
                 else
                     observer.SetMessage("Done.");
             }
         }
 
-        private Task<List<BotLogRecord>> CollectEvents(Backtester tester, IActionObserver observer)
+        private async Task CollectEvents(Backtester tester, IActionObserver observer)
         {
             var totalCount = tester.EventsCount;
 
             observer.StartProgress(0, totalCount);
             observer.SetMessage("Updating journal...");
 
-            return Task.Run(() =>
+            _journalContent.Value = await Task.Run(() =>
             {
                 var events = new List<BotLogRecord>(totalCount);
 
@@ -303,6 +294,13 @@ namespace TickTrader.BotTerminal
                     return events;
                 }
             });
+        }
+
+        private async Task LoadStats(IActionObserver observer, Backtester tester)
+        {
+            observer.SetMessage("Loading testing result data...");
+
+            ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
         }
 
         private async Task LoadChartData(Backtester tester, IActionObserver observer, Backtester backtester)
@@ -338,6 +336,8 @@ namespace TickTrader.BotTerminal
 
                     foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
                         chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+
+                    observer.SetProgress(totalCount);
 
                     return chartData;
                 }

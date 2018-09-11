@@ -10,20 +10,24 @@ namespace TickTrader.Algo.Core
 {
     internal class DefaultDealer : DealerEmulator
     {
-        public bool ConfirmOrderCancelation(Order order)
+        public void ConfirmOrderCancelation(Api.Ext.CancelOrderRequest request)
         {
-            return true;
+            request.Confirm();
         }
 
-        public bool ConfirmOrderOpen(Order order, RateUpdate rate, out FillInfo? fill)
+        public void ConfirmOrderOpen(Api.Ext.OpenOrderRequest request)
         {
-            fill = null;
-            return true;
+            request.Confirm();
         }
 
-        public bool ConfirmOrderReplace(Order order, OrderModifyInfo request)
+        public void ConfirmOrderReplace(ModifyOrderRequest request)
         {
-            return true;
+            request.Confirm();
+        }
+
+        public void ConfirmPositionClose(ClosePositionRequest request)
+        {
+            request.Confirm();
         }
     }
 }

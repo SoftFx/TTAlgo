@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.BusinessLogic;
@@ -13,7 +14,7 @@ using TickTrader.BusinessObjects.Messaging;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradeEmulator : ITradeFixture
+    internal class TradeEmulator : TradeCommands, IExecutorFixture
     {
         private ActivationEmulator _activator = new ActivationEmulator();
         private CalculatorFixture _calcFixture;
@@ -37,12 +38,17 @@ namespace TickTrader.Algo.Core
 
             VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += CheckActivation;
+
+            LogModifications = false;
         }
 
         public TimeSpan VirtualServerPing { get; set; }
+        public bool LogModifications { get; set; }
 
         public void Start()
         {
+            _context.Builder.SetCustomTradeAdapter(this);
+
             _acc = _context.Builder.Account;
 
             _acc.Orders.Clear();
@@ -85,12 +91,79 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        #region ITradeApi
+        #region TradeCommands
 
-        Task<TradeResultEntity> ITradeApi.CancelOrder(bool isAysnc, CancelOrderRequest request)
+        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
+            double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
-            return ExecTradeRequest(isAysnc, request, async r =>
+            var limPrice = type != OrderType.Stop ? price : (double?)null;
+            var stopPrice = type == OrderType.Stop ? price : (double?)null;
+
+            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
+        }
+
+        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
+            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
+        {
+            return ExecTradeRequest(isAysnc, async () =>
             {
+                OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
+
+                _opSummary.Clear();
+
+                var calc = _calcFixture.GetCalculator(symbol, _calcFixture.Acc.BalanceCurrency);
+                var smbMetadata = (SymbolAccessor)calc.SymbolInfo;
+
+                try
+                {
+                    volumeLots = RoundVolume(volumeLots, smbMetadata);
+                    maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
+                    double volume = ConvertVolume(volumeLots, smbMetadata);
+                    double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
+                    price = RoundPrice(price, smbMetadata, side);
+                    stopPrice = RoundPrice(stopPrice, smbMetadata, side);
+                    sl = RoundPrice(sl, smbMetadata, side);
+                    tp = RoundPrice(tp, smbMetadata, side);
+                   
+                    // emulate server ping
+                    await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+
+                    ValidateOrderTypeForAccount(orderType, calc.SymbolInfo);
+                    ValidateTypeAndPrice(orderType, price, stopPrice, sl, tp, maxVisibleVolume, options, calc.SymbolInfo);
+
+                    //Facade.ValidateExpirationTime(Request.Expiration, _acc);
+
+                    var order = OpenOrder(calc, orderType, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag, expiration, OpenOrderOptions.None);
+
+                    _collector.LogTrade(_opSummary.PrintOpenInfo());
+                    _collector.OnOrderOpened();
+
+                    // set result
+                    return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone());
+                }
+                catch (OrderValidationError ex)
+                {
+                    error = ex.ErrorCode;
+                }
+                catch (MisconfigException ex)
+                {
+                    error = OrderCmdResultCodes.Misconfiguration;
+                    _scheduler.SetFatalError(ex);
+                }
+
+                _collector.LogTradeFail(TradeOperationSummary.PrintOpenFail(orderType, symbol, side, error));
+                _collector.OnOrderRejected();
+
+                return new OrderResultEntity(error);
+            });
+        }
+
+        public Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
+        {
+            return ExecTradeRequest(isAysnc, async () =>
+            {
+                OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
+
                 try
                 {
                     // emulate server ping
@@ -99,7 +172,7 @@ namespace TickTrader.Algo.Core
                     //Logger.Info(() => LogPrefix + "Processing cancel order request " + Request);
 
                     // Check schedule for the symbol
-                    var order = _acc.Orders.GetOrderOrThrow(request.OrderId);
+                    var order = _acc.Orders.GetOrderOrThrow(orderId);
                     //var symbol = node.GetSymbolEntity(order.Symbol);
 
                     //Facade.Infrustructure.LogTransactionDetails(() => "Processing cancel order request " + Request, JournalEntrySeverities.Info, Token, TransactDetails.Create(order.OrderId, symbol.Name));
@@ -112,123 +185,200 @@ namespace TickTrader.Algo.Core
                     //if (Request.StopoutFlag)
                     //    trReason = TradeTransReasons.StopOut;
 
-                    CancelOrder(order, request, trReason);
+                    CancelOrder(order, trReason);
 
-                    _collector.LogTrade($"Canceled order #{request.OrderId} {order.Type} {order.Symbol} {order.Side} amount={order.Amount}");
+                    _collector.LogTrade($"Canceled order #{orderId} {order.Type} {order.Symbol} {order.Side} amount={order.Amount}");
 
                     // set result
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, order.Entity);
+                    return new OrderResultEntity(OrderCmdResultCodes.Ok, order);
                 }
-                catch (OrderValidationError error)
+                catch (OrderValidationError ex)
                 {
-                    //_collector.LogTradeFail($"Rejected order #{request.OrderId}");
-
-                    // set error code
-                    return new TradeResultEntity(error.ErrorCode);
+                    error = ex.ErrorCode;
                 }
+                catch (MisconfigException ex)
+                {
+                    error = OrderCmdResultCodes.Misconfiguration;
+                    _scheduler.SetFatalError(ex);
+                }
+
+                return new OrderResultEntity(error);
             });
         }
 
-        Task<TradeResultEntity> ITradeApi.CloseOrder(bool isAysnc, CloseOrderRequest request)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ExecTradeRequest(isAysnc, request, async r =>
-            {
-                try
-                {
-                    // emulate server ping
-                    await _scheduler.EmulateAsyncDelay(VirtualServerPing);
-
-                    // set result
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok);
-                }
-                catch (OrderValidationError error)
-                {
-                    //_collector.LogTradeFail($"Rejected order {request.Type} {request.Symbol} {request.Side} reason={error.ErrorCode}");
-
-                    // set error code
-                    return new TradeResultEntity(error.ErrorCode);
-                }
-            });
+            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null, null);
         }
 
-        Task<TradeResultEntity> ITradeApi.ModifyOrder(bool isAysnc, ReplaceOrderRequest request)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
         {
-            return ExecTradeRequest(isAysnc, request, async r =>
+            return ExecTradeRequest(isAysnc, async () =>
             {
+                OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
+
                 try
                 {
+                    var orderToModify = _acc.GetOrderOrThrow(orderId);
+                    var smbMetadata = orderToModify.SymbolInfo;
+
+                    double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
+                    double orderVolumeInLots = orderVolume / smbMetadata.ContractSize;
+
+                    volume = RoundVolume(volume, smbMetadata);
+                    maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
+
+                    double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
+                    double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
+                    price = RoundPrice(price, smbMetadata, orderToModify.Side);
+                    stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
+                    sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
+                    tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
+
+                    var request = new ReplaceOrderRequest
+                    {
+                        OrderId = orderId,
+                        Symbol = orderToModify.Symbol,
+                        Type = orderToModify.Type,
+                        Side = orderToModify.Side,
+                        CurrentVolume = orderVolume,
+                        NewVolume = newOrderVolume,
+                        Price = price,
+                        StopPrice = stopPrice,
+                        StopLoss = sl,
+                        TakeProfit = tp,
+                        Comment = comment,
+                        Expiration = expiration,
+                        MaxVisibleVolume = orderMaxVisibleVolume,
+                        Options = options
+                    };
+
+
                     // emulate server ping
                     await _scheduler.EmulateAsyncDelay(VirtualServerPing);
 
                     var order = ReplaceOrder(request);
 
-                    //_collector.LogTrade($"Modified order #{order.Id} {order.Type} {order.Symbol} {order.Side} price={order.Price} amount={order.Amount}");
+                    if (LogModifications)
+                        _collector.LogTrade(_opSummary.PrintModificationInfo());
 
                     _collector.OnOrderModified();
 
                     // set result
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, order.Entity.Clone());
+                    return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone());
                 }
-                catch (OrderValidationError error)
+                catch (OrderValidationError ex)
                 {
-                    //_collector.LogTradeFail($"Rejected modify #{request.OrderId} {request.Type} {request.Symbol} {request.Side} reason={error.ErrorCode}");
-
-                    _collector.OnOrderModificatinRejected();
-
-                    // set error code
-                    return new TradeResultEntity(error.ErrorCode);
+                    error = ex.ErrorCode;
                 }
+                catch (MisconfigException ex)
+                {
+                    error = OrderCmdResultCodes.Misconfiguration;
+                    _scheduler.SetFatalError(ex);
+                }
+
+                if (LogModifications)
+                    _collector.LogTradeFail($"Rejected modify #{orderId} reason={error}");
+
+                _collector.OnOrderModificatinRejected();
+                return new OrderResultEntity(error);
             });
         }
 
-        Task<TradeResultEntity> ITradeApi.OpenOrder(bool isAysnc, OpenOrderRequest request)
+        Task<OrderCmdResult> TradeCommands.CloseOrder(bool isAysnc, string orderId, double? volume)
         {
-            return ExecTradeRequest(isAysnc, request, async r =>
+            var req = new CloseOrderRequest();
+            req.OrderId = orderId;
+            req.Volume = volume;
+            return CloseOrder(isAysnc, req);
+        }
+
+        Task<OrderCmdResult> TradeCommands.CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        {
+            var req = new CloseOrderRequest();
+            req.OrderId = orderId;
+            req.ByOrderId = byOrderId;
+            return CloseOrder(isAysnc, req);
+        }
+
+        private Task<OrderCmdResult> CloseOrder(bool isAysnc, CloseOrderRequest request)
+        {
+            return ExecTradeRequest(isAysnc, async () =>
             {
+                OrderCmdResultCodes error = OrderCmdResultCodes.UnknownError;
+
                 try
                 {
-                    // emulate server ping
-                    await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+                    if (_acc.Type == AccountTypes.Gross)
+                    {
+                        var order = _acc.GetOrderOrThrow(request.OrderId);
+                        var smbMetadata = order.SymbolInfo;
+                        var closeVolume = (double?)null;
 
-                    _opSummary.Clear();
+                        if (request.Volume != null)
+                        {
+                            var closeVolumeLots = RoundVolume(request.Volume, smbMetadata);
+                            ValidateVolumeLots(closeVolumeLots, smbMetadata);
+                            closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
+                        }
 
-                    var calc = _calcFixture.GetCalculator(request.Symbol, _calcFixture.Acc.BalanceCurrency);
+                        if (request.ByOrderId == null)
+                        {
+                            // emulate server ping
+                            await _scheduler.EmulateAsyncDelay(VirtualServerPing);
 
-                    ValidatePrice(calc.SymbolInfo, request);
+                            EnsureOrderIsPosition(order);
 
-                    ValidateOrderTypeForAccount(request, calc.SymbolInfo);
-                    ValidateTypeAndPrice(request, calc.SymbolInfo);
+                            var currentRate = smbMetadata.LastQuote;
+                            var dealerRequest = new ClosePositionDealerRequest(order, currentRate);
+                            dealerRequest.CloseAmount = request.Volume;
 
-                    //Facade.ValidateExpirationTime(Request.Expiration, _acc);
+                            _dealer.ConfirmPositionClose(dealerRequest);
 
-                    var order = OpenOrder(request, calc, false);
+                            if (!dealerRequest.Confirmed || dealerRequest.DealerPrice <= 0)
+                                throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
 
-                    _collector.LogTrade(_opSummary.PrintOpenInfo());
+                            ClosePosition(order, TradeTransReasons.ClientRequest, closeVolume.NanAwareToDecimal(), dealerRequest.DealerPrice, smbMetadata,
+                                ClosePositionOptions.None, request.ByOrderId);
+                        }
+                        else
+                        {
+                            var byOrder = _acc.GetOrderOrThrow(request.OrderId);
 
-                    _collector.OnOrderOpened();
+                            // emulate server ping
+                            await _scheduler.EmulateAsyncDelay(VirtualServerPing);
 
-                    // set result
-                    return new TradeResultEntity(OrderCmdResultCodes.Ok, order.Entity.Clone());
+                            EnsureOrderIsPosition(order);
+                            EnsureOrderIsPosition(byOrder);
+
+                            ConfirmPositionCloseBy(order, byOrder, TradeTransReasons.ClientRequest, true); 
+                        }
+
+                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone());
+                    }
+                    else
+                        throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
                 }
-                catch (OrderValidationError error)
+                catch (OrderValidationError ex)
                 {
-                    _collector.LogTradeFail(TradeOperationSummary.PrintOpenFail(request, error));
-
-                    _collector.OnOrderRejected();
-
-                    // set error code
-                    return new TradeResultEntity(error.ErrorCode);
+                    error = ex.ErrorCode;
                 }
+                catch (MisconfigException ex)
+                {
+                    error = OrderCmdResultCodes.Misconfiguration;
+                    _scheduler.SetFatalError(ex);
+                }
+
+                //_collector.LogTradeFail($"Rejected order {request.Type} {request.Symbol} {request.Side} reason={error.ErrorCode}");
+                return new OrderResultEntity(OrderCmdResultCodes.Misconfiguration);
             });
         }
 
         private static int requestSeed;
 
-        private Task<TradeResultEntity> ExecTradeRequest<TRequest>(bool isAsync, TRequest orderRequest,
-            Func<TRequest, Task<TradeResultEntity>> executorInvoke)
-            where TRequest : OrderRequest
+        private Task<OrderCmdResult> ExecTradeRequest(bool isAsync, Func<Task<OrderCmdResult>> executorInvoke)
         {
-            var task = executorInvoke(orderRequest);
+            var task = executorInvoke();
 
             var id = requestSeed++;
 
@@ -250,24 +400,22 @@ namespace TickTrader.Algo.Core
             return (++_orderIdSeed).ToString();
         }
 
-        private OrderAccessor OpenOrder(OpenOrderRequest request, OrderCalculator orderCalc, bool isStopout = false)
+        private OrderAccessor OpenOrder(OrderCalculator orderCalc, OrderType orderType, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice,
+            double? sl, double? tp, string comment, OrderExecOptions execOptions, string tag, DateTime? expiration, OpenOrderOptions options)
         {
             var symbolInfo = orderCalc.SymbolInfo;
 
-            // create order object
-            //OrderModel order = OrderModel.CreateNew(acc, symbolInfo, infrustructure.NewOrderId());
-
             var orderEntity = new OrderEntity(NewOrderId());
             //order.SymbolPrecision = symbolInfo.Digits;
-            orderEntity.RequestedVolume = request.Volume;
-            orderEntity.RemainingVolume = request.Volume;
-            orderEntity.MaxVisibleVolume = request.MaxVisibleVolume;
+            orderEntity.RequestedVolume = volume;
+            orderEntity.RemainingVolume = volume;
+            orderEntity.MaxVisibleVolume = maxVisibleVolume;
 
-            orderEntity.Side = request.Side;
-            orderEntity.Type = request.Type;
+            orderEntity.Side = side;
+            orderEntity.Type = orderType;
             orderEntity.Symbol = symbolInfo.Symbol;
             orderEntity.Created = _scheduler.VirtualTimePoint;
-            orderEntity.Comment = request.Comment;
+            orderEntity.Comment = comment;
 
             //order.ClientOrderId = request.ClientOrderId;
             //order.Status = OrderStatuses.New;
@@ -301,46 +449,47 @@ namespace TickTrader.Algo.Core
             //    //LogTransactionDetails(() => slippageCalculationMessage, JournalEntrySeverities.Info);
             //}
 
-            orderEntity.StopLoss = request.StopLoss;
-            orderEntity.TakeProfit = request.TakeProfit;
+            orderEntity.StopLoss = sl;
+            orderEntity.TakeProfit = tp;
             //order.TransferringCoefficient = request.TransferringCoefficient;
-            orderEntity.UserTag = CompositeTag.ExtarctUserTarg(request.Tag);
+            orderEntity.UserTag = tag;
             orderEntity.InstanceId = _acc.InstanceId;
-            orderEntity.Expiration = request.Expiration;
-            orderEntity.Options = request.Options;
+            orderEntity.Expiration = expiration;
+            orderEntity.Options = execOptions;
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
-            if (request.Type != OrderType.Stop)
-                orderEntity.Price = request.Price;
-            if (request.Type == OrderType.Stop || request.Type == OrderType.StopLimit)
-                orderEntity.StopPrice = request.StopPrice;
+            if (orderType != OrderType.Stop)
+                orderEntity.Price = price;
+            if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                orderEntity.StopPrice = stopPrice;
 
             var order = new OrderAccessor(orderEntity, (SymbolAccessor)symbolInfo);
 
-            _calcFixture.ValidateNewOrder(order, request, orderCalc);
+            _calcFixture.ValidateNewOrder(order, orderCalc);
 
             //string comment = null;
 
             // add new order
             //acc.AddTemporaryNewOrder(order);
 
-            RateUpdate currentRate = _calcFixture.GetCurrentRateOrThrow(request.Symbol);
+            RateUpdate currentRate = _calcFixture.GetCurrentRateOrThrow(symbolInfo.Symbol);
 
-            // Dealer request
-            FillInfo? fill;
-            if (!_dealer.ConfirmOrderOpen(order, currentRate, out fill))
-                throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
+            TradeTransReasons trReason = options.HasFlag(OpenOrderOptions.Stopout) ? TradeTransReasons.StopOut : TradeTransReasons.DealerDecision;
 
-            if (fill != null && (fill.Value.ExecAmount <= 0 || fill.Value.ExecPrice <= 0))
-                throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
+            if (!options.HasFlag(OpenOrderOptions.SkipDealing))
+            {
+                // Dealer request
+                var dealerRequest = new OpenOrderDealerRequest(order, currentRate.LastQuote);
+                _dealer.ConfirmOrderOpen(dealerRequest);
 
-            TradeTransReasons trReason = isStopout ? TradeTransReasons.StopOut : TradeTransReasons.DealerDecision;
+                if (!dealerRequest.Confirmed || dealerRequest.DealerAmount < 0 || dealerRequest.DealerPrice <= 0)
+                    throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
 
-            return ConfirmOrderOpening(order, trReason, fill?.ExecPrice, fill?.ExecAmount);
+                return ConfirmOrderOpening(order, trReason, dealerRequest.DealerPrice, dealerRequest.DealerAmount);
+            }
 
-            //    // remove new order
-            //    acc.RemoveTemporaryNewOrder(order);
+            return ConfirmOrderOpening(order, trReason, null, null);
         }
 
         private OrderAccessor ConfirmOrderOpening(OrderAccessor order, TradeTransReasons trReason, decimal? execPrice, decimal? execAmount)
@@ -427,8 +576,8 @@ namespace TickTrader.Algo.Core
             //GroupSecurityCfg securityCfg = Acc.GetSecurityCfgAndThrowIfInoperable(symbolInfo, Request.IsClientRequest);
 
             //if (Request.IsClientRequest)
-            if (request.Price != null)
-                ValidatePrice(request.Price.Value, symbol);
+            //if (request.Price != null)
+            //    ValidatePrice(request.Price.Value, symbol);
 
             // Optimistic check the previous order remaining amount
             //if (request.PrevRemainingAmount.HasValue)
@@ -459,9 +608,9 @@ namespace TickTrader.Algo.Core
             //}
 
             //if (Request.MaxVisibleAmount.HasValue && (Request.MaxVisibleAmount.Value >= 0))
-            //    Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
+                //Facade.VerifyMaxVisibleAmout(Request.MaxVisibleAmount, securityCfg, symbolInfo, Request.IsClientRequest);
 
-            var newVolume = (decimal?)request.NewVolume ?? order.Amount;
+            var newVolume = request.NewVolume.NanAwareToDecimal() ?? order.Amount;
             var newPrice = request.Price ?? order.Price;
             var newStopPrice = request.StopPrice ?? order.StopPrice;
 
@@ -469,9 +618,17 @@ namespace TickTrader.Algo.Core
 
             // Check margin of the modified order
             if (volumeChanged)
-                _calcFixture.ValidateModifyOrder(order, newVolume, (decimal?)newPrice, (decimal?)newStopPrice);
+                _calcFixture.ValidateModifyOrder(order, newVolume, newPrice.NanAwareToDecimal(), newStopPrice.NanAwareToDecimal());
 
-            if (!_dealer.ConfirmOrderReplace(order, request))
+            // dealer request
+            var dealerRequest = new ModifyOrderDealerRequest(order, symbol.LastQuote);
+            dealerRequest.NewComment = request.Comment;
+            dealerRequest.NewPrice = request.Price;
+            dealerRequest.NewVolume = request.NewVolume;
+            dealerRequest.NewStopPrice = request.StopPrice;
+            _dealer.ConfirmOrderReplace(dealerRequest);
+
+            if (!dealerRequest.Confirmed)
                 throw new OrderValidationError("Rejected By Dealer", OrderCmdResultCodes.DealerReject);
 
             return ConfirmOrderReplace(order, request);
@@ -567,18 +724,18 @@ namespace TickTrader.Algo.Core
             }
 
             // Update or reset max visible amount value
-            //if (order.IsPending && request.MaxVisibleAmount.HasValue)
-            //{
-            //    if (request.MaxVisibleAmount.Value < 0)
-            //    {
-            //        order.MaxVisibleAmount = null;
-            //    }
-            //    else
-            //    {
-            //        order.MaxVisibleAmount = request.MaxVisibleAmount.Value;
-            //        order.Options = order.Options.SetFlag(OrderExecutionOptions.HiddenIceberg);
-            //    }
-            //}
+            if (order.IsPending && request.MaxVisibleVolume.HasValue)
+            {
+                if (request.MaxVisibleVolume.Value < 0)
+                {
+                    order.Entity.MaxVisibleVolume = null;
+                }
+                else
+                {
+                    order.Entity.MaxVisibleVolume = request.MaxVisibleVolume;
+                    //order.Options = order.Options.SetFlag(OrderExecutionOptions.HiddenIceberg);
+                }
+            }
 
             if (request.Price.HasValue)
             {
@@ -672,8 +829,9 @@ namespace TickTrader.Algo.Core
 
             RecalculateAccount();
 
-            // journal
-            //LogTransactionDetails(() => "Confirmed Order Replace #" + orderId, JournalEntrySeverities.Info, order.Clone());
+            _opSummary.AddAction(TradeActions.Replace);
+            _opSummary.SrcOrder = oldOrderCopy;
+            _opSummary.NewOrder = order;
 
             //Order orderCopy = FinalizeOrderOperation(order, orderPrev, order.SymbolRef, acc, OrderStatuses.Calculated, OrderExecutionEvents.Modified, request.RequestClientId);
             return order;
@@ -807,12 +965,15 @@ namespace TickTrader.Algo.Core
             _opSummary.FillPrice = fillPrice;
         }
 
-        private OrderAccessor CancelOrder(OrderAccessor order, CancelOrderRequest request, TradeTransReasons trReason)
+        private OrderAccessor CancelOrder(OrderAccessor order, TradeTransReasons trReason)
         {
             if (order.Type != OrderType.Limit && order.Type != OrderType.Stop && order.Type != OrderType.StopLimit)
                 throw new OrderValidationError("Only Limit, Stop and StopLimit orders can be canceled. Please check the type of the order #" + order.OrderId, OrderCmdResultCodes.OrderNotFound);
 
-            if (!_dealer.ConfirmOrderCancelation(order))
+            var dealerReq = new CancelOrderDealerRequest(order, order.SymbolInfo.LastQuote);
+            _dealer.ConfirmOrderCancelation(dealerReq);
+
+            if (!dealerReq.Confirmed)
                 throw new OrderValidationError("Cancellation is rejected by dealer", OrderCmdResultCodes.DealerReject);
 
             return ConfirmOrderCancelation(trReason, order);
@@ -1289,7 +1450,7 @@ namespace TickTrader.Algo.Core
                     trReason = TradeTransReasons.TakeProfitAct;
 
                 var smb = _context.Builder.Symbols.GetOrDefault(record.Order.Symbol);
-                ClosePosition(record.Order, trReason, null, null, record.Order.RemainingAmount, record.Price, smb, 0, null);
+                ClosePosition(record.Order, trReason, record.Order.RemainingAmount, record.Price, smb, 0, null);
             }
 
             _opSummary.SrcOrder = record.Order;
@@ -1323,31 +1484,12 @@ namespace TickTrader.Algo.Core
             //    report.FillAccountBalanceConversionRates(mAcc.BalanceCurrency, mAcc.Balance);
             //}
 
-            OpenOrderRequest request = new OpenOrderRequest();
-            request.Symbol = order.Symbol;
-            //request.InitialType = order.InitialType;
-            request.Type = OrderType.Limit;
-            //request.ParentOrderId = order.OrderId;
-            request.Volume = order.RemainingVolume;
-            request.Price = order.Price;
-            request.StopPrice = order.StopPrice;
-            request.Side = order.Side;
-            //request.MaxVisibleAmount = order.MaxVisibleAmount;
-            //request.HiddenAmount = order.HiddenAmount;
-            request.StopLoss = order.StopLoss;
-            request.TakeProfit = order.TakeProfit;
-            request.Comment = order.Comment;
-            request.Tag = order.Tag;
-            //request.TransferringCoefficient = order.TransferringCoefficient;
-            //request.Magic = order.Magic;
-            request.Expiration = order.Expiration;
-            request.Options = order.Entity.Options;
-
-            OpenOrder(request, order.Calculator);
+            OpenOrder(order.Calculator, OrderType.Limit, order.Side, order.RemainingVolume, null, order.Price,
+                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.Entity.Options, order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
         }
 
-        private void ClosePosition(OrderAccessor position, TradeTransReasons trReason,
-            decimal? reqAmount, decimal? reqPrice, decimal? amount, decimal? price, SymbolAccessor smb, ClosePositionOptions options, long? posById = null)
+        private void ClosePosition(OrderAccessor position, TradeTransReasons trReason, 
+            decimal? amount, decimal? price, SymbolAccessor smb, ClosePositionOptions options, string posById = null)
         {
             OrderCalculator fCalc = position.Calculator;
 
@@ -1518,6 +1660,40 @@ namespace TickTrader.Algo.Core
             //return profitInfo;
         }
 
+        public void ConfirmPositionCloseBy(OrderAccessor position1, OrderAccessor position2, TradeTransReasons trReason, bool usePartialClosing)
+        {
+            var smb = position1.SymbolInfo;
+            OrderCalculator fCalc = position1.Calculator;
+
+            decimal closeAmount = Math.Min(position1.RemainingAmount, position2.RemainingAmount);
+
+            if (position1.RemainingAmount < position2.RemainingAmount)
+                Ref.Swap(ref position1, ref position2);
+
+            // journal
+            //LogTransactionDetails(() => "Confirmed Close #" + position1.OrderId + " By #" + position2.OrderId + " amount=" + closeAmount + ", reason=" + trReason, JournalEntrySeverities.Info);
+
+            ClosePositionOptions pos1options = 0;
+            ClosePositionOptions pos2options = 0;
+
+            if (!usePartialClosing)
+                pos1options |= ClosePositionOptions.ReopenRemaining;
+
+            //if (grSecurity.CloseByMod == CloseByModifications.AllByCurrentPrice || acc.AccountingType == AccountingTypes.Net)
+            //{
+            //    decimal closeByPrice = fCalc.CurrentRate.Ask;
+            //    ClosePosition(isExecutedAsClient, position1, acc, trReason, null, null, closeAmount, closeByPrice, smb, pos1options, clientRequestId, managerComment, true, position2.OrderId);
+            //    ClosePosition(isExecutedAsClient, position2, acc, trReason, null, null, closeAmount, closeByPrice, smb, pos2options, clientRequestId, managerComment, true, position1.OrderId);
+            //}
+            //else
+            //{
+                pos2options |= ClosePositionOptions.Nullify;
+                pos2options |= ClosePositionOptions.DropCommision;
+                ClosePosition(position1, trReason, closeAmount, (decimal)position2.Price, smb, pos1options, position2.Id);
+                ClosePosition(position2, trReason, closeAmount, (decimal)position2.Price, smb, pos2options, position1.Id);
+            //}
+        }
+
         #endregion
 
         #region Price Logic
@@ -1622,17 +1798,28 @@ namespace TickTrader.Algo.Core
 
         #region Validation
 
-        private void ValidatePrice(ISymbolInfo symbol, OpenOrderRequest request)
+        //private void ValidatePrice(ISymbolInfo symbol, OrderType type, double? limitPrice, double? stopPrice)
+        //{
+        //    if (((type == OrderType.Market) || (type == OrderType.Limit) || (type == OrderType.StopLimit)) && limitPrice != null)
+        //        ValidatePrice((decimal)limitPrice, symbol);
+        //    else if (((type == OrderType.Stop) || (type == OrderType.StopLimit)) && stopPrice != null)
+        //        ValidatePrice((decimal)stopPrice, symbol);
+        //}
+
+        private void ValidateLimitPrice(double? price, ISymbolInfo smbInfo)
         {
-            if (((request.Type == OrderType.Market) || (request.Type == OrderType.Limit) || (request.Type == OrderType.StopLimit)) && request.Price != null)
-                ValidatePrice((decimal)request.Price, symbol);
-            else if (((request.Type == OrderType.Stop) || (request.Type == OrderType.StopLimit)) && request.StopPrice != null)
-                ValidatePrice((decimal)request.StopPrice, symbol);
+            if (price == null || price <= 0.0)
+                throw new OrderValidationError("Price not specified.", OrderCmdResultCodes.IncorrectPrice);
+
+            ValidatePrice((decimal)price, smbInfo);
         }
 
-        private void ValidatePrice(double price, ISymbolInfo smbInfo)
+        private void ValidateStopPrice(double? stopPrice, ISymbolInfo smbInfo)
         {
-            ValidatePrice((decimal)price, smbInfo);
+            if (stopPrice == null || stopPrice <= 0.0)
+                throw new OrderValidationError("Stop price not specified.", OrderCmdResultCodes.IncorrectStopPrice);
+
+            ValidatePrice((decimal)stopPrice, smbInfo);
         }
 
         private void ValidatePrice(decimal price, ISymbolInfo smbInfo)
@@ -1641,12 +1828,12 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError("Price precision is more than symbol digits.", OrderCmdResultCodes.IncorrectPrice);
         }
 
-        private void ValidateOrderTypeForAccount(OpenOrderRequest Request, ISymbolInfo symbolInfo)
+        private void ValidateOrderTypeForAccount(OrderType orderType, ISymbolInfo symbolInfo)
         {
             var currentQuote = _calcFixture.GetCurrentRateOrNull(symbolInfo.Symbol);
             if (currentQuote == null)
             {
-                if ((_acc.AccountingType != AccountingTypes.Cash) || (Request.Type == OrderType.Market))
+                if ((_acc.AccountingType != AccountingTypes.Cash) || (orderType == OrderType.Market))
                     throw new OrderValidationError("No quote for symbol " + symbolInfo.Symbol, OrderCmdResultCodes.OffQuotes);
             }
 
@@ -1693,85 +1880,126 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private void ValidateTypeAndPrice(OpenOrderRequest Request, ISymbolInfo symbol)
+        private void ValidateTypeAndPrice(OrderType orderType, double? price, double? stopPrice, double? sl, double? tp, double? maxVisibleVolume, OrderExecOptions options, ISymbolInfo symbol)
         {
-            if ((Request.Type != OrderType.Limit) && (Request.Type != OrderType.Market) && (Request.Type != OrderType.Stop) && (Request.Type != OrderType.StopLimit))
+            if ((orderType != OrderType.Limit) && (orderType != OrderType.Market) && (orderType != OrderType.Stop) && (orderType != OrderType.StopLimit))
                 throw new OrderValidationError("Invalid order type.", OrderCmdResultCodes.Unsupported);
 
             if ((_acc.AccountingType == AccountingTypes.Cash) &&
-                ((Request.Type == OrderType.Limit) || (Request.Type == OrderType.Stop) || (Request.Type == OrderType.StopLimit)) &&
-                (Request.StopLoss.HasValue || Request.TakeProfit.HasValue))
+                ((orderType == OrderType.Limit) || (orderType == OrderType.Stop) || (orderType == OrderType.StopLimit)) &&
+                (sl.HasValue || tp.HasValue))
                 throw new OrderValidationError("SL/TP is not supported by pending order for cash account!", OrderCmdResultCodes.Unsupported);
 
-            if (Request.Type == OrderType.Market)
+            if (orderType == OrderType.Market)
             {
                 //if (Request.IsOptionSet(OrderExecutionOptions.MarketWithSlippage))
                 //    throw new OrderValidationError("'MarketWithSlippage' flag is not supported for market orders", FaultCodes.InvalidOption);
-                if (Request.IsOptionSet(OrderExecOptions.ImmediateOrCancel))
+                if (options.HasFlag(OrderExecOptions.ImmediateOrCancel))
                     throw new OrderValidationError("'ImmediateOrCancel' flag is not supported for market orders", OrderCmdResultCodes.Unsupported);
                 //if (Request.IsOptionSet(OrderExecutionOptions.HiddenIceberg))
                 //    throw new OrderValidationError("'HiddenIceberg' flag is not supported for market orders", FaultCodes.InvalidOption);
                 //if (Request.IsOptionSet(OrderExecutionOptions.FillOrKill))
                 //    throw new OrderValidationError("'FillOrKill' flag is not supported for market orders", FaultCodes.InvalidOption);
 
-                if (Request.MaxVisibleVolume.HasValue)
+                if (maxVisibleVolume.HasValue)
                     throw new OrderValidationError("Max visible amount is not valid for market orders", OrderCmdResultCodes.IncorrectMaxVisibleVolume);
 
-                if (Request.Price == null || Request.Price <= 0.0)
-                    throw new OrderValidationError("Price not specified.", OrderCmdResultCodes.IncorrectPrice);
-
-                ValidatePrice(Request.Price.Value, symbol);
+                if (price != null)
+                    ValidateLimitPrice(price.Value, symbol);
             }
-            else if (Request.Type == OrderType.Limit)
+            else if (orderType == OrderType.Limit)
             {
-                if (Request.MaxVisibleVolume.HasValue && Request.MaxVisibleVolume.Value < 0)
-                    throw new OrderValidationError("Max visible amount shoud be positive for limit order", OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+                if (maxVisibleVolume.HasValue && maxVisibleVolume.Value < 0)
+                    throw new OrderValidationError("Max visible amount must be positive", OrderCmdResultCodes.IncorrectMaxVisibleVolume);
 
-                if (Request.Price == null || Request.Price <= 0.0)
+                if (price == null || price <= 0.0)
                     throw new OrderValidationError("Price not specified.", OrderCmdResultCodes.IncorrectPrice);
 
                 //if (Request.MaxVisibleVolume.HasValue && Request.MaxVisibleVolume.Value >= 0)
                 //    Request.SetOption(OrderExecutionOptions.HiddenIceberg);
 
-                ValidatePrice(Request.Price.Value, symbol);
+                ValidateLimitPrice(price.Value, symbol);
             }
-            else if (Request.Type == OrderType.Stop)
+            else if (orderType == OrderType.Stop)
             {
                 //if (Request.IsOptionSet(OrderExecOptions.MarketWithSlippage))
                 //    throw new OrderValidationError("'MarketWithSlippage' flag is not supported for stop orders", FaultCodes.InvalidOption);
-                if (Request.IsOptionSet(OrderExecOptions.ImmediateOrCancel))
+                if (options.HasFlag(OrderExecOptions.ImmediateOrCancel))
                     throw new OrderValidationError("'ImmediateOrCancel' flag is not supported for stop orders", OrderCmdResultCodes.Unsupported);
                 //if (Request.IsOptionSet(OrderExecOptions.HiddenIceberg))
                 //    throw new OrderValidationError("'HiddenIceberg' flag is not supported for stop orders", FaultCodes.InvalidOption);
                 //if (Request.IsOptionSet(OrderExecOptions.FillOrKill))
                 //    throw new OrderValidationError("'FillOrKill' flag is not supported for stop orders", FaultCodes.InvalidOption);
 
-                if (Request.MaxVisibleVolume.HasValue)
+                if (maxVisibleVolume.HasValue)
                     throw new OrderValidationError("Max visible amount is not valid for stop orders", OrderCmdResultCodes.IncorrectMaxVisibleVolume);
 
-                if (Request.StopPrice == null || Request.StopPrice <= 0.0)
-                    throw new OrderValidationError("Stop price not specified.", OrderCmdResultCodes.IncorrectStopPrice);
-
-                ValidatePrice(Request.StopPrice.Value, symbol);
+                ValidateStopPrice(stopPrice, symbol);
             }
-            else if (Request.Type == OrderType.StopLimit)
+            else if (orderType == OrderType.StopLimit)
             {
                 //if (Request.IsOptionSet(OrderExecOptions.MarketWithSlippage))
                 //    throw new OrderValidationError("'MarketWithSlippage' flag is not supported for stop limit orders", FaultCodes.InvalidOption);
-                if (Request.MaxVisibleVolume.HasValue && Request.MaxVisibleVolume.Value < 0)
-                    throw new OrderValidationError("Max visible amount shoud be positive for stop limit order", OrderCmdResultCodes.IncorrectVolume);
+                if (maxVisibleVolume.HasValue && maxVisibleVolume.Value < 0)
+                    throw new OrderValidationError("Max visible amount must be positive", OrderCmdResultCodes.IncorrectVolume);
 
-                if (Request.Price == null || Request.Price <= 0.0)
-                    throw new OrderValidationError("Price not specified.", OrderCmdResultCodes.IncorrectPrice);
-                if (Request.StopPrice == null || Request.StopPrice <= 0.0)
-                    throw new OrderValidationError("Stop price not specified.", OrderCmdResultCodes.IncorrectStopPrice);
+                ValidateLimitPrice(price, symbol);
+                ValidateStopPrice(stopPrice, symbol);
 
                 //if (Request.MaxVisibleAmount.HasValue && Request.MaxVisibleAmount.Value >= 0)
                 //    Request.SetOption(OrderExecutionOptions.HiddenIceberg);
-
-                ValidatePrice(Request.Price.Value, symbol);
-                ValidatePrice(Request.StopPrice.Value, symbol);
             }
+        }
+
+        private void ValidateVolumeLots(double? volumeLots, Symbol smbMetadata)
+        {
+            if (!volumeLots.HasValue)
+                return;
+
+            if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private void EnsureOrderIsPosition(OrderAccessor order)
+        {
+            if (order.Type != OrderType.Position)
+                throw new OrderValidationError("Position #" + order.OrderId + " was not found.", OrderCmdResultCodes.OrderNotFound);
+        }
+
+        #endregion
+
+        #region Volume Logic
+
+        private double RoundVolume(double volumeInLots, Symbol smbMetadata)
+        {
+            return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
+        }
+
+        private double? RoundVolume(double? volumeInLots, Symbol smbMetadata)
+        {
+            return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
+        }
+
+        private double RoundPrice(double price, Symbol smbMetadata, OrderSide side)
+        {
+            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+        }
+
+        private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
+        {
+            return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
+        }
+
+        private double? ConvertNullableVolume(double? volumeInLots, Symbol smbMetadata)
+        {
+            if (volumeInLots == null)
+                return null;
+            return ConvertVolume(volumeInLots.Value, smbMetadata);
+        }
+
+        private double ConvertVolume(double volumeInLots, Symbol smbMetadata)
+        {
+            return smbMetadata.ContractSize * volumeInLots;
         }
 
         #endregion
@@ -1796,10 +2024,19 @@ namespace TickTrader.Algo.Core
     [Flags]
     public enum ClosePositionOptions
     {
+        None = 0,
         Nullify = 0x01,
         DropCommision = 0x02,
         ReopenRemaining = 0x04,
         NoRecalculate = 0x08,
         NoPositionReport = 0x10
+    }
+
+    [Flags]
+    internal enum OpenOrderOptions
+    {
+        None = 0,
+        SkipDealing = 0x01,
+        Stopout = 0x02
     }
 }

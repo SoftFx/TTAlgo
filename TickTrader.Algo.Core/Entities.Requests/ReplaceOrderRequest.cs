@@ -9,7 +9,7 @@ using TickTrader.Algo.Api.Ext;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class ReplaceOrderRequest : OrderRequest, OrderModifyInfo
+    public class ReplaceOrderRequest : OrderRequest
     {
         public string OrderId { get; set; }
         public string Symbol { get; set; }
@@ -27,9 +27,5 @@ namespace TickTrader.Algo.Core
         public DateTime? Expiration { get; set; }
         public OrderExecOptions? Options { get; set; }
         public bool? OverrideIoC => Options.HasValue ? Options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) : (bool?)null;
-
-        double? OrderModifyInfo.NewPrice => Price;
-        double? OrderModifyInfo.NewStopPrice => StopPrice;
-        string OrderModifyInfo.NewComment => Comment;
     }
 }

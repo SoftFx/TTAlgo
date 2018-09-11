@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Core
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
         private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
         private TradeApiAdapter _tradeApater;
+        private TradeCommands _commands;
         private bool _isolated;
         private string _instanceId;
         private PluginPermissions _permissions;
@@ -41,6 +42,7 @@ namespace TickTrader.Algo.Core
             syncContext.OnAsyncAction = OnPluginThread;
 
             _tradeApater = new TradeApiAdapter(Symbols, Account, logAdapter);
+            _commands = _tradeApater;
 
             _permissions = new PluginPermissions();
 
@@ -229,6 +231,15 @@ namespace TickTrader.Algo.Core
             return waithandler.Task;
         }
 
+        #region Emulation
+
+        internal void SetCustomTradeAdapter(TradeCommands adapter)
+        {
+            _commands = adapter;
+        }
+
+        #endregion
+
         #region IPluginContext
 
         FeedProvider IPluginContext.Feed => marketData;
@@ -273,7 +284,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        TradeCommands IPluginContext.TradeApi => _tradeApater;
+        TradeCommands IPluginContext.TradeApi => _commands;
         IPluginMonitor IPluginContext.Logger => logAdapter;
         StatusApi IPluginContext.StatusApi => statusApi;
         EnvironmentInfo IPluginContext.Environment => this;

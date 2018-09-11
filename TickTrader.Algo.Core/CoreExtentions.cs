@@ -11,12 +11,12 @@ namespace TickTrader.Algo.Core
     {
         public static decimal? NullableAsk(this RateUpdate rate)
         {
-            return rate.Ask.PriceToDecimal();
+            return rate.Ask.NanAwareToDecimal();
         }
 
         public static decimal? NullableBid(this RateUpdate rate)
         {
-            return rate.Bid.PriceToDecimal();
+            return rate.Bid.NanAwareToDecimal();
         }
 
         public static double? AsNullable(this double value)
@@ -24,9 +24,14 @@ namespace TickTrader.Algo.Core
             return double.IsNaN(value) ? null : (double?)value;
         }
 
-        public static decimal? PriceToDecimal(this double price)
+        public static decimal? NanAwareToDecimal(this double value)
         {
-            return double.IsNaN(price) ? null : (decimal?)price;
+            return double.IsNaN(value) ? null : (decimal?)value;
+        }
+
+        public static decimal? NanAwareToDecimal(this double? value)
+        {
+            return value == null || double.IsNaN(value.Value) ? null : (decimal?)value;
         }
 
         public static decimal ToDecimal(this double price)
