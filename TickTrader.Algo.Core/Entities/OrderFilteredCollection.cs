@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Core
         public event Action<OrderFilledEventArgs> Filled;
         public event Action<OrderModifiedEventArgs> Modified;
         public event Action<OrderOpenedEventArgs> Opened;
-        public event Action<Order> Added;
-        public event Action<Order> Removed;
-        public event Action<Order> Replaced;
+        public event Action<Order> Added { add { } remove { } }
+        public event Action<Order> Removed { add { } remove { } }
+        public event Action<Order> Replaced { add { } remove { } }
         public event Action<OrderActivatedEventArgs> Activated;
 
 

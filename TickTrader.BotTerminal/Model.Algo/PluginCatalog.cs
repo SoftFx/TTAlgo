@@ -40,7 +40,8 @@ namespace TickTrader.BotTerminal
 
         public void AddFolder(string path)
         {
-            AlgoRepository rep = new AlgoRepository(path, new AlgoLogAdapter("AlgoRepository"));
+            var isolation = Properties.Settings.Default.EnablePluginIsolation;
+            AlgoRepository rep = new AlgoRepository(path, isolation, new AlgoLogAdapter("AlgoRepository"));
             repositories.Add(rep);
 
             repositoryToIdMap.Add(rep, Guid.NewGuid());

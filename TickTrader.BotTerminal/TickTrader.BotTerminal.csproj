@@ -46,7 +46,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>3</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -214,9 +214,11 @@
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
+    <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
+    <Compile Include="Controls\AutoColumnsGrid.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
@@ -252,12 +254,15 @@
     <Compile Include="Converters\BoolConverters.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DoubleToGridLengthConverter.cs" />
     <Compile Include="Converters\FallbackConverter.cs" />
+    <Compile Include="Converters\LogSeverityToBrushConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
+    <Compile Include="Converters\DoubleCmpConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
@@ -313,7 +318,8 @@
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
-    <Compile Include="Model\SymbolModel.cs" />
+    <Compile Include="Model\SymbolCatalog.cs" />
+    <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
@@ -366,7 +372,6 @@
     <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\RateSplitModel.cs" />
-    <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -389,6 +394,11 @@
     <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.Aux\ActionViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -546,7 +556,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Behaviors\DragDrop\TransparentContainer.xaml">
@@ -841,6 +853,26 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Backtester\BacktesterChartPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterStatChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterReportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterSymbolSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterTradeSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Backtester\BacktesterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1026,6 +1058,10 @@
     <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
       <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
       <Name>TickTrader.SeriesStorage.LevelDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj">
+      <Project>{6a279398-a13b-4462-8cb9-f7514b92c584}</Project>
+      <Name>TickTrader.SeriesStorage.Lmdb</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj">
       <Project>{af05ccd3-0e2f-4f8a-8124-27b16162a0c1}</Project>

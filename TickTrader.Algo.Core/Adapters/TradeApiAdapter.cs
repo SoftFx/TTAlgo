@@ -12,20 +12,24 @@ namespace TickTrader.Algo.Core
         private SymbolsCollection symbols;
         private AccountAccessor account;
         private PluginLoggerAdapter logger;
-        private string _isolationTag;
-        private ITradePermissions _permissions;
-        private ICalculatorApi _calculator;
 
-        public TradeApiAdapter(PluginBuilder builder, PluginLoggerAdapter logger)
+        public TradeApiAdapter(SymbolsCollection symbols, AccountAccessor account, PluginLoggerAdapter logger)
         {
-            this.api = builder.TradeApi;
-            this.symbols = builder.Symbols;
-            this.account = builder.Account;
+            this.symbols = symbols;
+            this.account = account;
             this.logger = logger;
-            _isolationTag = builder.Id;
-            _permissions = builder.Permissions;
-            _calculator = builder.Calculator;
+            api = Null.TradeApi;
         }
+
+        public ITradeApi ExternalApi
+        {
+            get => api;
+            set => api = value ?? throw new InvalidOperationException("TradeApi cannot be null!");
+        }
+
+        public ICalculatorApi Calc { get; set; }
+        public ITradePermissions Permissions { get; set; }
+        public string IsolationTag { get; set; }
 
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
             double? sl, double? tp, string comment, OrderExecOptions options, string tag)
@@ -40,7 +44,7 @@ namespace TickTrader.Algo.Core
             double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
             OrderResultEntity resultEntity;
-            string isolationTag = CompositeTag.NewTag(_isolationTag, tag);
+            string encodedTag = CompositeTag.NewTag(IsolationTag, tag);
 
             var logRequest = new OpenOrderRequest // mock request for logging
             {
@@ -65,7 +69,7 @@ namespace TickTrader.Algo.Core
                 TakeProfit = tp ?? double.NaN,
                 Comment = comment,
                 Tag = tag,
-                InstanceId = _isolationTag,
+                InstanceId = IsolationTag,
             };
 
             try
@@ -114,7 +118,7 @@ namespace TickTrader.Algo.Core
                     StopLoss = sl,
                     Comment = comment,
                     Options = options,
-                    Tag = isolationTag,
+                    Tag = encodedTag,
                     Expiration = expiration
                 };
 
@@ -275,7 +279,7 @@ namespace TickTrader.Algo.Core
                 Price = price,
                 StopPrice = stopPrice,
                 StopLoss = sl,
-                TrakeProfit = tp,
+                TakeProfit = tp,
             };
 
             try
@@ -327,7 +331,7 @@ namespace TickTrader.Algo.Core
                 logRequest.Price = price;
                 logRequest.StopPrice = stopPrice;
                 logRequest.StopLoss = sl;
-                logRequest.TrakeProfit = tp;
+                logRequest.TakeProfit = tp;
 
                 var request = new ReplaceOrderRequest
                 {
@@ -340,7 +344,7 @@ namespace TickTrader.Algo.Core
                     Price = price,
                     StopPrice = stopPrice,
                     StopLoss = sl,
-                    TrakeProfit = tp,
+                    TakeProfit = tp,
                     Comment = comment,
                     Expiration = expiration,
                     MaxVisibleVolume = orderMaxVisibleVolume,
@@ -555,7 +559,7 @@ namespace TickTrader.Algo.Core
 
         private void ValidateTradePersmission()
         {
-            if (!_permissions.TradeAllowed)
+            if (!Permissions.TradeAllowed)
                 throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
         }
 
@@ -588,7 +592,7 @@ namespace TickTrader.Algo.Core
                 Options = request.Options,
             };
 
-            if (!_calculator.HasEnoughMarginToOpenOrder(orderEntity, symbol))
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(orderEntity, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -607,12 +611,12 @@ namespace TickTrader.Algo.Core
                 RemainingVolume = request.NewVolume ?? request.CurrentVolume,
                 MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
                 StopLoss = request.StopLoss ?? oldOrder.StopLoss,
-                TakeProfit = request.TrakeProfit ?? oldOrder.TakeProfit,
+                TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
                 Expiration = request.Expiration ?? oldOrder.Expiration,
                 Options = request.Options ?? oldOrder.Entity.Options,
             };
 
-            if (!_calculator.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
+            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -750,7 +754,7 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, ReplaceOrderRequest request)
         {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TrakeProfit);
+            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp)
@@ -791,6 +795,12 @@ namespace TickTrader.Algo.Core
     internal class OrderValidationError : Exception
     {
         public OrderValidationError(OrderCmdResultCodes code)
+            : this(null, code)
+        {
+        }
+
+        public OrderValidationError(string message, OrderCmdResultCodes code)
+            : base(message ?? "Validation error: " + code)
         {
             ErrorCode = code;
         }

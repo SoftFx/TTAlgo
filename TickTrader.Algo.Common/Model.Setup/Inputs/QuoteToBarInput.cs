@@ -33,8 +33,8 @@ namespace TickTrader.Algo.Common.Model.Setup
             };
 
 
-        public QuoteToBarInputSetup(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType)
-            : base(descriptor, symbolCode, defPriceType)
+        public QuoteToBarInputSetup(InputDescriptor descriptor, ISymbolInfo defaultSymbol, BarPriceType defPriceType)
+            : base(descriptor, defaultSymbol, defPriceType)
         {
             SetMetadata(descriptor);
         }

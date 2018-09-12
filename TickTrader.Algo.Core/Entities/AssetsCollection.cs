@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
 
         public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
         {
-            var result = fixture.Update(entity, currencies, out cType);
+            var result = fixture.Update(entity, builder.Currencies.GetOrNull, out cType);
             if (cType != AssetChangeType.NoChanges)
                 AssetChanged?.Invoke(result, cType);
             return result;
@@ -60,6 +60,15 @@ namespace TickTrader.Algo.Core
         }
 
         public event Action<AssetAccessor, AssetChangeType> AssetChanged;
+
+        #region Emulation
+
+        internal AssetAccessor GetOrCreateAsset(string currency, out AssetChangeType cType)
+        {
+            return fixture.GetOrAdd(currency, builder.Currencies.GetOrNull, out cType);
+        }
+
+        #endregion
 
         internal class AssetsFixture : AssetList
         {
@@ -94,12 +103,12 @@ namespace TickTrader.Algo.Core
 
             public event Action<AssetModifiedEventArgs> Modified = delegate { };
 
-            public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
+            public AssetAccessor Update(AssetEntity entity, Func<string, Currency> currencyInfoProvider, out AssetChangeType cType)
             {
                 AssetAccessor asset;
                 if (!assets.TryGetValue(entity.Currency, out asset))
                 {
-                    asset = new AssetAccessor(entity, currencies);
+                    asset = new AssetAccessor(entity, currencyInfoProvider);
                     assets.Add(entity.Currency, asset);
                     cType = AssetChangeType.Added;
                 }
@@ -112,13 +121,26 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-
-                    if (asset.Update(entity.Volume))
+                    if (asset.Update((decimal)entity.Volume))
                         cType = AssetChangeType.Updated;
                     else
                         cType = AssetChangeType.NoChanges;
                 }
 
+                return asset;
+            }
+
+            public AssetAccessor GetOrAdd(string currency, Func<string, Currency> currencyInfoProvider, out AssetChangeType cType)
+            {
+                AssetAccessor asset;
+                if (!assets.TryGetValue(currency, out asset))
+                {
+                    asset = new AssetAccessor(new AssetEntity(0, currency), currencyInfoProvider);
+                    assets.Add(currency, asset);
+                    cType = AssetChangeType.Added;
+                }
+                else
+                    cType = AssetChangeType.Updated;
                 return asset;
             }
 

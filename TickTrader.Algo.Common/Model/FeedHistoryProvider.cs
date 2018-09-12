@@ -12,7 +12,6 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Math;
 using TickTrader.SeriesStorage;
 using TickTrader.Server.QuoteHistory.Serialization;
 using TT = TickTrader.BusinessObjects;
@@ -26,7 +25,7 @@ namespace TickTrader.Algo.Common.Model
         private const int SliceMaxSize = 8000;
         private string _dataFolder;
         private FeedHistoryFolderOptions _folderOptions;
-        private FeedCache _diskCache = new FeedCache();
+        private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
         private IFeedServerApi _feedProxy;
 
         private void Init(string onlieDataFolder, FeedHistoryFolderOptions folderOptions)
@@ -53,11 +52,12 @@ namespace TickTrader.Algo.Common.Model
         {
             public Handler(Ref<FeedHistoryProviderModel> aRef) : base(aRef) { }
 
-            public FeedCache Cache { get; private set; }
+            public FeedCache.Handler Cache { get; private set; }
 
             public async Task Init()
             {
                 Cache = await Actor.Call(a => a.Cache);
+                await Cache.SyncData();
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
@@ -102,7 +102,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public FeedCache Cache => _diskCache;
+        protected FeedCache.Handler Cache => _diskCache;
 
         private async Task Start(IFeedServerApi feed, string server, string login)
         {
@@ -114,7 +114,8 @@ namespace TickTrader.Algo.Common.Model
             if (_folderOptions == FeedHistoryFolderOptions.ServerClientHierarchy)
                 onlineFolder = Path.Combine(onlineFolder, PathEscaper.Escape(login));
 
-            await Task.Factory.StartNew(() => _diskCache.Start(onlineFolder));
+            //await _diskCache.SyncData();
+            await _diskCache.Start(onlineFolder);
         }
 
         private async Task Stop()
@@ -122,7 +123,8 @@ namespace TickTrader.Algo.Common.Model
             try
             {
                 _feedProxy = null;
-                await Task.Factory.StartNew(() => _diskCache.Stop());
+                await _diskCache.Stop();
+                //_diskCache.Dispose();
             }
             catch (Exception ex)
             {
@@ -213,7 +215,7 @@ namespace TickTrader.Algo.Common.Model
             GetSeriesData(stream, symbol, timeFrame, null, from, to, GetCacheInfo, DownloadTicksInternal);
         }
 
-        private IEnumerable<SliceInfo> GetCacheInfo(FeedCacheKey key, DateTime from, DateTime to)
+        private IAsyncReader<SliceInfo> GetCacheInfo(FeedCacheKey key, DateTime from, DateTime to)
         {
             return _diskCache.IterateCacheKeys(key, from, to).Select(s => new SliceInfo(s.From, s.To, 0));
         }
@@ -233,43 +235,52 @@ namespace TickTrader.Algo.Common.Model
             var inputStream = Channel.NewInput<BarEntity>();
             var barSlicer = TimeSlicer.GetBarSlicer(SliceMaxSize, from, to);
 
-            logger.Debug("Start downloading bars (" + from + " - " + to + ")");
+            logger.Debug("start downloading bars (" + from + " - " + to + ")");
 
-            _feedProxy.DownloadBars(CreateBlocingChannel(inputStream), key.Symbol, from, to, key.PriceType.Value, key.Frame);
+            var correctedTo = to - TimeSpan.FromTicks(1);
 
-            var i = from;
-            while (await inputStream.ReadNext())
+            try
             {
-                if (barSlicer.Write(inputStream.Current))
-                {
-                    var slice = barSlicer.CompleteSlice(false);
+                _feedProxy.DownloadBars(CreateBlockingChannel(inputStream), key.Symbol, from, correctedTo, key.PriceType.Value, key.Frame);
 
-                    logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
-                    //var slice = new BarStreamSlice(i, sliceTo, bars);
-                    Cache.Put(key, slice.From, slice.To, slice.Items);
-                    if (!await outputAction(slice))
+                var i = from;
+                while (await inputStream.ReadNext())
+                {
+                    if (barSlicer.Write(inputStream.Current))
+                    {
+                        var slice = barSlicer.CompleteSlice(false);
+
+                        logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
+                        //var slice = new BarStreamSlice(i, sliceTo, bars);
+                        await Cache.Put(key, slice.From, slice.To, slice.Items);
+                        if (!await outputAction(slice))
+                        {
+                            logger.Debug("Downloading canceled!");
+                            throw new TaskCanceledException();
+                        }
+                        i = slice.To;
+                    }
+                }
+
+                var lastSlice = barSlicer.CompleteSlice(true);
+                if (lastSlice != null)
+                {
+                    logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
+                    await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
+                    if (!await outputAction(lastSlice))
                     {
                         logger.Debug("Downloading canceled!");
                         throw new TaskCanceledException();
                     }
-                    i = slice.To;
+                    i = lastSlice.To;
                 }
-            }
 
-            var lastSlice = barSlicer.CompleteSlice(true);
-            if (lastSlice != null)
+                return i;
+            }
+            finally
             {
-                Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
-                logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
-                if (!await outputAction(lastSlice))
-                {
-                    logger.Debug("Downloading canceled!");
-                    throw new TaskCanceledException();
-                }
-                i = lastSlice.To;
+                await inputStream.Close();
             }
-
-            return i;
         }
 
         private Task<DateTime> DownloadTicksInternal(Channel<Slice<QuoteEntity>> buffer, FeedCacheKey key, DateTime from, DateTime to)
@@ -290,46 +301,53 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Start downloading quotes (" + from + " - " + to + ")");
 
-            _feedProxy.DownloadQuotes(CreateBlocingChannel(inputStream), key.Symbol, from, to, level2);
-
-            var i = from;
-            while (await inputStream.ReadNext())
+            try
             {
-                if (quoteSlicer.Write(inputStream.Current))
-                {
-                    var slice = quoteSlicer.CompleteSlice(false);
+                _feedProxy.DownloadQuotes(CreateBlockingChannel(inputStream), key.Symbol, from, to, level2);
 
-                    logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
-                    //var slice = new BarStreamSlice(i, sliceTo, bars);
-                    Cache.Put(key, slice.From, slice.To, slice.Items);
-                    if (!await outputAction(slice))
+                var i = from;
+                while (await inputStream.ReadNext())
+                {
+                    if (quoteSlicer.Write(inputStream.Current))
+                    {
+                        var slice = quoteSlicer.CompleteSlice(false);
+
+                        logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
+                        //var slice = new BarStreamSlice(i, sliceTo, bars);
+                        await Cache.Put(key, slice.From, slice.To, slice.Items);
+                        if (!await outputAction(slice))
+                        {
+                            logger.Debug("Downloading canceled!");
+                            throw new TaskCanceledException();
+                        }
+                        i = slice.To;
+                    }
+                }
+
+                var lastSlice = quoteSlicer.CompleteSlice(true);
+                if (lastSlice != null)
+                {
+                    logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
+                    await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
+                    if (!await outputAction(lastSlice))
                     {
                         logger.Debug("Downloading canceled!");
                         throw new TaskCanceledException();
                     }
-                    i = slice.To;
+                    i = lastSlice.To;
                 }
-            }
 
-            var lastSlice = quoteSlicer.CompleteSlice(true);
-            if (lastSlice != null)
+                return i;
+            }
+            finally
             {
-                Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
-                logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
-                if (!await outputAction(lastSlice))
-                {
-                    logger.Debug("Downloading canceled!");
-                    throw new TaskCanceledException();
-                }
-                i = lastSlice.To;
+                await inputStream.Close();
             }
-
-            return i;
         }
 
         private async void GetSeriesData<TOut>(Channel<TOut> buffer,
             string symbol, TimeFrames timeFrame, BarPriceType? priceType, DateTime from, DateTime to,
-            Func<FeedCacheKey, DateTime, DateTime, IEnumerable<TOut>> cacheProvider,
+            Func<FeedCacheKey, DateTime, DateTime, IAsyncReader<TOut>> cacheProvider,
             Func<Channel<TOut>, FeedCacheKey, DateTime, DateTime, Task<DateTime>> download)
             where TOut : SliceInfo
         {
@@ -337,26 +355,38 @@ namespace TickTrader.Algo.Common.Model
             {
                 var key = new FeedCacheKey(symbol, timeFrame, priceType);
                 var i = from;
-                foreach (var cacheItem in cacheProvider(key, from, to))
+                var cache = cacheProvider(key, from, to);
+                try
                 {
-                    if (cacheItem.From == i)
+                    while (await cache.ReadNext())
                     {
-                        if (!await buffer.Write(cacheItem))
-                            return;
-                        i = cacheItem.To;
+                        var cacheItem = cache.Current;
+
+                        if (cacheItem.From == i)
+                        {
+                            if (!await buffer.Write(cacheItem))
+                                return;
+                            i = cacheItem.To;
+                        }
+                        else
+                            i = await download(buffer, key, i, cacheItem.From);
                     }
-                    else
-                        i = await download(buffer, key, i, cacheItem.From);
+
+                    if (i < to)
+                        i = await download(buffer, key, i, to);
                 }
-
-                if (i < to)
-                    i = await download(buffer, key, i, to);
-
-                await buffer.Close();
+                finally
+                {
+                    await cache.Close();
+                }
             }
             catch (Exception ex)
             {
                 await buffer.Close(ex);
+            }
+            finally
+            {
+                await buffer.Close();
             }
         }
     }

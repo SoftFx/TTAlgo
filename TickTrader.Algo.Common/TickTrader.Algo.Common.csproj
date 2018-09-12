@@ -94,6 +94,7 @@
     <Compile Include="Lib\SetSynchronizer.cs" />
     <Compile Include="Lib\TaskExt.cs" />
     <Compile Include="Lib\TaskMahcine.cs" />
+    <Compile Include="Lib\TextParser.cs" />
     <Compile Include="Model.Config\Inputs.cs" />
     <Compile Include="Model.Config\Outputs.cs" />
     <Compile Include="Model.Config\Parameters.cs" />
@@ -104,7 +105,9 @@
     <Compile Include="Model.FeedCache\DateTimeKeySerializer.cs" />
     <Compile Include="Model.FeedCache\FeedCacheKey.cs" />
     <Compile Include="Model.FeedCache\GuidKeySerializer.cs" />
+    <Compile Include="Model.FeedCache\TickCrossDomainReader.cs" />
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
+    <Compile Include="Model.FeedCache\BarCrossDomainReader.cs" />
     <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
     <Compile Include="Model.Interop\FdkInterop.cs" />
     <Compile Include="Model.Interop\OrderInteropResult.cs" />
@@ -196,6 +199,10 @@
     <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
       <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
       <Name>TickTrader.SeriesStorage.LevelDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj">
+      <Project>{6a279398-a13b-4462-8cb9-f7514b92c584}</Project>
+      <Name>TickTrader.SeriesStorage.Lmdb</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj">
       <Project>{af05ccd3-0e2f-4f8a-8124-27b16162a0c1}</Project>

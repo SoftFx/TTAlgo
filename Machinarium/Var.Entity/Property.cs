@@ -65,4 +65,6 @@ namespace Machinarium.Var
     public class Property<T> : PropertyBase<Var<T>, T> { }
     public class IntProperty : PropertyBase<IntVar, int> { }
     public class BoolProperty : PropertyBase<BoolVar, bool> { }
+    public class DoubleProperty : PropertyBase<DoubleVar, double> { }
+    //public class DecimalProperty : PropertyBase<DecimalVar, double> { }
 }

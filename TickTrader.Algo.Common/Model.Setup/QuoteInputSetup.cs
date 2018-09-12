@@ -11,15 +11,13 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         private bool _useL2;
 
-
-        public QuoteToQuoteInputSetup(InputDescriptor descriptor, string symbolCode, bool useL2)
-            : base(descriptor, symbolCode, null)
+        public QuoteToQuoteInputSetup(InputDescriptor descriptor, ISymbolInfo defaultSymbol, bool useL2)
+            : base(descriptor, defaultSymbol, null)
         {
             _useL2 = useL2;
 
             SetMetadata(descriptor);
         }
-
 
         public override void Apply(IPluginSetupTarget target)
         {
@@ -75,7 +73,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 
     public enum QuoteToDoubleMappings { Ask, Bid, Median }
 
-
     public class QuoteToDoubleInputSetup : InputSetup
     {
         private QuoteToDoubleMappings _mapping;
@@ -94,14 +91,13 @@ namespace TickTrader.Algo.Common.Model.Setup
         public IEnumerable<QuoteToDoubleMappings> AvailableMappings { get; private set; }
 
 
-        public QuoteToDoubleInputSetup(InputDescriptor descriptor, string symbolCode)
-            : base(descriptor, symbolCode, null)
+        public QuoteToDoubleInputSetup(InputDescriptor descriptor, ISymbolInfo defaultSymbol)
+            : base(descriptor, defaultSymbol, null)
         {
             SetMetadata(descriptor);
 
             AvailableMappings = Enum.GetValues(typeof(QuoteToDoubleMappings)).Cast<QuoteToDoubleMappings>();
         }
-
 
         public override void Apply(IPluginSetupTarget target)
         {

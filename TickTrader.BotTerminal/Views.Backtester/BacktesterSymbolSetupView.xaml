@@ -1,0 +1,62 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:local="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="BacktesterSymbolSetupViewTemplate.Classic">
+
+        <ControlTemplate.Resources>
+            <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}" >
+                <Setter Property="Margin" Value="4,0,0,0"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+            </Style>
+            <DataTemplate x:Key="SymbolTemplate">
+                <TextBlock Text="{Binding Name}"/>
+            </DataTemplate>
+
+        </ControlTemplate.Resources>
+
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="2*" MaxWidth="180"/>
+                <ColumnDefinition MaxWidth="120"/>
+                <ColumnDefinition MaxWidth="70"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Name="SymbolLabel" Content="Feed:" Grid.Column="0" HorizontalAlignment="Right" Margin="0,0,5,0" />
+            <ComboBox Name="SymbolCombo" Grid.Column="1" Margin="0" ItemsSource="{Binding AvailableSymbols}" SelectedItem="{Binding SelectedSymbol.Value}"
+                      ItemTemplate="{StaticResource SymbolTemplate}"/>
+            <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeframe.Value}"/>
+            <ComboBox Name="PriceTypeCombo" Grid.Column="3" ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"
+                      IsEnabled="{Binding CanChangePrice.Value}"/>
+            <Button Name="RemoveBtn" Content="-" Style="{DynamicResource TinyButton}" cal:Message.Attach="Remove" Grid.Column="4" />
+            <Button Name="AddBtn" Content="+" Style="{DynamicResource TinyButton}" cal:Message.Attach="Add" Grid.Column="4" Visibility="Hidden" />
+        </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding SetupType}" Value="MainSymbol">
+                <Setter TargetName="SymbolLabel" Property="Content" Value="Main symbol:"/>
+                <Setter TargetName="RemoveBtn" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="AddBtn" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="PriceTypeCombo" Property="Visibility" Value="Hidden"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding SetupType}" Value="MainFeed">
+                <Setter TargetName="RemoveBtn" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="AddBtn" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="SymbolCombo" Property="IsEnabled" Value="False"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+        
+    </ControlTemplate>
+
+    <Style x:Key="BacktesterSymbolSetupViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BacktesterSymbolSetupViewTemplate.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

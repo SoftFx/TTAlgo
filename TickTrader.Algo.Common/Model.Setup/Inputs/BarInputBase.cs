@@ -7,8 +7,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public abstract class BarInputSetupBase : InputSetup
     {
-        public BarInputSetupBase(InputDescriptor descriptor, string symbolCode, IReadOnlyList<ISymbolInfo> symbols = null)
-            : base(descriptor, symbolCode, symbols)
+        public BarInputSetupBase(InputDescriptor descriptor, ISymbolInfo defaultSymbol, IReadOnlyList<ISymbolInfo> symbols = null)
+            : base(descriptor, defaultSymbol, symbols)
         {
             SetMetadata(descriptor);
         }
@@ -31,8 +31,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
 
-        public SingleBarInputSetupBase(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IReadOnlyList<ISymbolInfo> symbols = null)
-            : base(descriptor, symbolCode, symbols)
+        public SingleBarInputSetupBase(InputDescriptor descriptor, ISymbolInfo defaultSymbol, BarPriceType defPriceType, IReadOnlyList<ISymbolInfo> symbols = null)
+            : base(descriptor, defaultSymbol, symbols)
         {
             _defPriceType = defPriceType;
         }

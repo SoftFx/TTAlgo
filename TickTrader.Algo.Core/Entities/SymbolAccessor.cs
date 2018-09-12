@@ -69,9 +69,12 @@ namespace TickTrader.Algo.Core
 
         #region BO.ISymbolInfo
 
+        public string MarginCurrency => BaseCurrency;
+        public string ProfitCurrency => CounterCurrency;
+        public Currency MarginCurrencyInfo => BaseCurrencyInfo;
+        public Currency ProfitCurrencyInfo => CounterCurrencyInfo;
+
         string BO.ISymbolInfo.Symbol => Name;
-        string BO.ISymbolInfo.MarginCurrency => BaseCurrency;
-        string BO.ISymbolInfo.ProfitCurrency => CounterCurrency;
         int BO.ISymbolInfo.Precision => Digits;
 
         #endregion

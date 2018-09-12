@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.Core
 {
@@ -212,12 +211,4 @@ namespace TickTrader.Algo.Core
             AppendData(data);
         }
     }
-
-    //internal class TimeSyncBarSeriesFixture : BarSeriesFixture
-    //{
-    //    public TimeSyncBarSeriesFixture(string symbolCode, IFeedFixtureContext context, ITimeRef syncRef)
-    //        : base(symbolCode, context)
-    //    {
-    //    }
-    //}
 }

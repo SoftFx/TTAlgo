@@ -276,10 +276,20 @@ namespace TickTrader.Algo.Common.Model
                 try
                 {
                     var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), to.ToUniversalTime(), DownloadTimeoutMs);
+                    var timeEdge = from;
 
                     while (true)
                     {
                         var bar = e.Next(DownloadTimeoutMs);
+
+                        if (bar != null)
+                        {
+                            if (bar.From <= timeEdge)
+                                continue;
+
+                            timeEdge = bar.From;
+                        }
+
                         if (bar == null || !stream.Write(Convert(bar)))
                         {
                             e.Close();
@@ -334,47 +344,7 @@ namespace TickTrader.Algo.Common.Model
                     stream.Close(ex);
                 }
             });
-
-            //throw new NotImplementedException();
-
-            //var buffer = new QuoteSliceBuffer(from, to);
-            //var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
-            //var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
-            //DownloadQuotesToBuffer(buffer, eTask);
-            //return buffer;
         }
-
-        //private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
-        //{
-        //    const int pageSize = 2000;
-
-        //    DateTime lastTickTime = DateTime.MinValue;
-
-        //    try
-        //    {
-        //        using (var e = await enumTask)
-        //        {
-        //            var page = new SFX.Quote[pageSize];
-
-        //            while (true)
-        //            {
-        //                var count = await e.NextAsync(page).ConfigureAwait(false);
-        //                if (count <= 0)
-        //                    break;
-
-        //                var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
-        //                await buffer.WriteAsync(tickArray).ConfigureAwait(false);
-        //            }
-        //        }
-
-        //        await buffer.CompleteWriteAsync();
-        //        buffer.Dispose();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        buffer.SetFailed(ex);
-        //    }
-        //}
 
         public async Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
@@ -409,8 +379,8 @@ namespace TickTrader.Algo.Common.Model
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<TradeReportEntity> TradeTransactionReport;
         public event Action<BalanceOperationReport> BalanceOperation;
-        public event Action<SymbolEntity[]> SymbolInfo;
-        public event Action<CurrencyEntity[]> CurrencyInfo;
+        public event Action<SymbolEntity[]> SymbolInfo { add { } remove { } }
+        public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
 
         public Task<AccountEntity> GetAccountInfo()
         {
@@ -456,7 +426,7 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null));
         }
 
         public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
@@ -909,7 +879,7 @@ namespace TickTrader.Algo.Common.Model
                 Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
-                Swap = p.Swap
+                Swap = p.Swap,
             };
         }
 

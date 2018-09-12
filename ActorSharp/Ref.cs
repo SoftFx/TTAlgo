@@ -17,6 +17,7 @@ namespace ActorSharp
         public abstract Task Call(Func<TActor, Task> method);
         public abstract Task<TResult> Call<TResult>(Func<TActor, TResult> method);
         public abstract Task<TResult> Call<TResult>(Func<TActor, Task<TResult>> method);
+        public abstract void SendChannel<T>(Channel<T> channel, Action<TActor, Channel<T>> actorMethod);
         public abstract Task OpenChannel<T>(Channel<T> channel, Action<TActor, Channel<T>> actorMethod);
         public abstract Task<TResult> OpenChannel<T, TResult>(Channel<T> channel, Func<TActor, Channel<T>, TResult> actorMethod);
     }

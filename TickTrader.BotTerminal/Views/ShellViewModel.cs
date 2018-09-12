@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
@@ -30,10 +31,13 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment algoEnv;
         private BotsWarden botsWarden;
         private SymbolManagerViewModel _smbManager;
-        private CustomFeedStorage _userSymbols = new CustomFeedStorage();
+        private SymbolCatalog _symbolsData;
+        private CustomFeedStorage.Handler _userSymbols;
 
-        public ShellViewModel(ClientModel.Data commonClient)
+        public ShellViewModel(ClientModel.Data commonClient, CustomFeedStorage.Handler customFeedStorage)
         {
+            _userSymbols = customFeedStorage;
+
             DisplayName = EnvService.Instance.ApplicationName;
 
             //var botNameAggregator = new BotNameAggregator();
@@ -57,6 +61,8 @@ namespace TickTrader.BotTerminal
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             Trade = new TradeInfoViewModel(clientModel, cManager);
+
+            _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
 
@@ -93,8 +99,6 @@ namespace TickTrader.BotTerminal
             //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
 
             LogStateLoop();
-
-            _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
         }
 
         private void OpenDefaultChart()
@@ -265,6 +269,7 @@ namespace TickTrader.BotTerminal
         public UiLock ConnectionLock { get; private set; }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
+        public BacktesterViewModel Backtester { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
         public WindowManager ToolWndManager => wndManager;
 
@@ -281,7 +286,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await _userSymbols.Stop();
                 await storage.Stop();
             }
             catch (Exception ex)
@@ -294,7 +299,13 @@ namespace TickTrader.BotTerminal
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            ConnectLastOrConnectDefault();
+
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new System.Action(OnLoaded));
+        }
+
+        public void OnLoaded()
+        {
+            Connect(null); // show connect window
         }
 
         private async void PrintSystemInfo()
@@ -368,9 +379,17 @@ namespace TickTrader.BotTerminal
         public void OpenStorageManager()
         {
             if (_smbManager == null)
-                _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
+                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsData, ToolWndManager);
 
             wndManager.ShowDialog(_smbManager, this);
+        }
+
+        public void OpenBacktester()
+        {
+            if (Backtester == null)
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this);
+
+            wndManager.OpenMdiWindow(Backtester);
         }
 
         public void CloseChart(object chart)

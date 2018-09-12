@@ -12,50 +12,82 @@ namespace TickTrader.Algo.Core
 {
     public class PluginContainer : IDisposable
     {
-        private IAlgoCoreLogger logger;
-        private Isolated<ChildDomainProxy> subDomain;
+        protected IAlgoCoreLogger Logger { get; }
 
         public IEnumerable<AlgoPluginRef> Plugins { get; protected set; }
 
-        internal PluginContainer(IPluginLoader loader, IAlgoCoreLogger logger = null)
+        private PluginContainer(IAlgoCoreLogger logger = null)
         {
-            this.logger = logger;
-
-            try
-            {
-                subDomain = new Isolated<ChildDomainProxy>();
-                var sandbox = subDomain.Value.CreateDotNetSanbox(loader);
-                Plugins = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
-            }
-            catch (Exception)
-            {
-                Dispose();
-                throw;
-            }
+            Logger = logger;
         }
 
-        public static PluginContainer Load(string filePath, IAlgoCoreLogger logger = null)
+        internal virtual void DoLoad(IPluginLoader loader)
+        {
+            var sandbox =  new AlgoSandbox(loader, false);
+            Plugins = sandbox.AlgoMetadata.Select(d => new AlgoPluginRef(d));
+        }
+
+        public static PluginContainer Load(string filePath, bool isolate, IAlgoCoreLogger logger = null)
         {
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
 
+            IPluginLoader loader;
+            PluginContainer container;
+
             if (ext == ".ttalgo")
-                return new PluginContainer(new PackageLoader(filePath), logger);
+                loader = new PackageLoader(filePath);
             else if (ext == ".dll")
-                return new PluginContainer(new DllLoader(filePath), logger);
+                loader = new DllLoader(filePath);
             else
                 throw new ArgumentException("Unrecognized file type: " + ext);
+
+            if (isolate)
+                container = new IsolatedContainer(logger);
+            else
+                container = new PluginContainer(logger);
+
+            container.DoLoad(loader);
+
+            return container;
         }
 
-        public void Dispose()
+        public virtual void Dispose() { }
+
+        private class IsolatedContainer : PluginContainer
         {
-            try
+            private Isolated<ChildDomainProxy> subDomain;
+
+            public IsolatedContainer(IAlgoCoreLogger logger = null)
+                : base(logger)
             {
-                if (subDomain != null)
-                    subDomain.Dispose();
             }
-            catch (Exception ex)
+
+            internal override void DoLoad(IPluginLoader loader)
             {
-                logger?.Debug("Failed to unload child domain: " + ex.Message);
+                try
+                {
+                    subDomain = new Isolated<ChildDomainProxy>();
+                    var sandbox = subDomain.Value.CreateDotNetSanbox(loader);
+                    Plugins = sandbox.AlgoMetadata.Select(d => new IsolatedPluginRef(d, sandbox));
+                }
+                catch (Exception)
+                {
+                    Dispose();
+                    throw;
+                }
+            }
+
+            public override void Dispose()
+            {
+                try
+                {
+                    if (subDomain != null)
+                        subDomain.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger?.Debug("Failed to unload child domain: " + ex.Message);
+                }
             }
         }
 
@@ -63,7 +95,7 @@ namespace TickTrader.Algo.Core
         {
             public AlgoSandbox CreateDotNetSanbox(IPluginLoader netPackage)
             {
-                return new AlgoSandbox(netPackage);
+                return new AlgoSandbox(netPackage, true);
             }
         }
     }

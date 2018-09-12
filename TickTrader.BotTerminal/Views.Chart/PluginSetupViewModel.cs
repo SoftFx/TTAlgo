@@ -81,6 +81,25 @@ namespace TickTrader.BotTerminal
             Init();
         }
 
+        public PluginSetupViewModel(PluginSetup existingSetup, PluginCatalog repository) : this()
+        {
+            Mode = PluginSetupMode.Edit;
+            DisplayName = $"Settings - {existingSetup.PluginRef.DisplayName}";
+            Setup = existingSetup.Clone() as BarBasedPluginSetup;
+            _catalog = repository;
+
+            _catalog.AllPlugins.Updated += AllPlugins_Updated;
+
+
+            //InstanceId = bot.InstanceId;
+            //Permissions = new PluginPermissions { TradeAllowed = bot.Permissions.TradeAllowed };
+            //Isolated = flase;
+
+            //_bot.StateChanged += BotStateChanged;
+
+            Init();
+        }
+
         public PluginSetupViewModel(TradeBotModel bot) : this()
         {
             _bot = bot;

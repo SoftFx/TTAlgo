@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
-using CoreMath = TickTrader.Algo.Core.Math;
+using CoreMath = TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,17 +20,17 @@ namespace TickTrader.BotTerminal
         private VarContext _context = new VarContext();
         private List<FeedImporter> _importers = new List<FeedImporter>();
 
-        public FeedImportViewModel(IVarList<ManagedCustomSymbol> symbols, ManagedCustomSymbol initialSymbol)
+        public FeedImportViewModel(SymbolCatalog catalog, SymbolData initialSymbol)
         {
             _importers.Add(new CsvFeedImporter());
 
-            Symbols = symbols.AsObservable();
+            Symbols = catalog.ObservableSymbols;
 
             DisplayName = "Import Series";
 
             SelectedTimeFrame = _context.AddProperty(TimeFrames.M1);
             SelectedPriceType = _context.AddProperty(BarPriceType.Bid);
-            SelectedSymbol = _context.AddProperty<ManagedCustomSymbol>(initialSymbol);
+            SelectedSymbol = _context.AddProperty<SymbolData>(initialSymbol);
             SelectedImporter = _context.AddProperty<FeedImporter>(_importers[0]);
             ActionRunner = new ActionViewModel();
             IsActionVisible = _context.AddBoolProperty();
@@ -53,10 +53,10 @@ namespace TickTrader.BotTerminal
         public ActionViewModel ActionRunner { get; }
         public Property<TimeFrames> SelectedTimeFrame { get; }
         public Property<BarPriceType> SelectedPriceType { get; }
-        public Property<ManagedCustomSymbol> SelectedSymbol { get; }
+        public Property<SymbolData> SelectedSymbol { get; }
         public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
-        public IObservableList<ManagedCustomSymbol> Symbols { get; }
+        public IObservableList<SymbolData> Symbols { get; }
         public BoolVar CanImport { get; }
         public BoolVar CanCancel { get; }
         public BoolVar IsInputEnabled { get; }
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
 
                 foreach (var bar in importer.ImportBars())
                 {
-                    vector.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                    vector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
                     count++;
 
                     if (vector.Count >= pageSize + 1)

@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Common.Model.Interop
 
                 _tradeProxy.Server.ModifyTradeRecordEx(request.OperationId, orderId, request.Symbol,
                     ToRecordType(orderType), Convert(request.Side), request.NewVolume, maxVisVolume, px, stopPx,
-                    request.StopLoss, request.TrakeProfit, request.Expiration, request.Comment, null, null, request.CurrentVolume, request.OverrideIoC, null);
+                    request.StopLoss, request.TakeProfit, request.Expiration, request.Comment, null, null, request.CurrentVolume, request.OverrideIoC, null);
             });
         }
 

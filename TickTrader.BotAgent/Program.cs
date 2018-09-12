@@ -23,6 +23,7 @@ using NLog;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.BotAgent.BA.Entities;
 using System.Globalization;
+using ActorSharp;
 
 namespace TickTrader.BotAgent
 {
@@ -413,9 +414,14 @@ namespace TickTrader.BotAgent
             {
                 var ex = e.ExceptionObject as Exception;
                 if (ex != null)
-                    log.Fatal(ex);
+                    log.Fatal(ex, "Unhandled Exception on Domain level!");
                 else
-                    log.Fatal("Unhandled Exception!");
+                    log.Fatal("Unhandled Exception on Domain level! No exception specified!");
+            };
+
+            Actor.UnhandledException += (ex) =>
+            {
+                log.Error(ex, "Unhandled Exception on Actor level!");
             };
         }
 

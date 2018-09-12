@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 
@@ -18,7 +19,7 @@ namespace ActorSharp
         private int maxPageSize;
         private bool _isClosed;
         private bool _isCloseCompleted;
-        private Exception _writerError;
+        private ExceptionDispatchInfo _writerError;
 
         internal BlockingChannel(Channel<T> channel)
         {
@@ -145,6 +146,8 @@ namespace ActorSharp
 
                 _readPage = page;
                 _isClosed = page.Last;
+                if (_isClosed && _readPage.Count == 0)
+                    _readPage = null;
                 _writerError = page.Error;
                 Monitor.PulseAll(_readLock);
             }
@@ -166,7 +169,7 @@ namespace ActorSharp
 
         private void CloseWriter(Exception ex)
         {
-            if (_reader == null)
+            if (_writer == null)
                 return;
 
             lock (_readLock)
@@ -175,12 +178,12 @@ namespace ActorSharp
                 {
                     _isClosed = true;
 
-                    _readPage.Clear();
+                    _readPage?.Clear();
                     _readPage = null;
                     _readIndex = 0;
 
                     var closeReq = new CloseWriterRequest(ex);
-                    _reader.PostMessage(closeReq);
+                    _writer.PostMessage(closeReq);
 
                     Monitor.PulseAll(_readLock);
 
@@ -389,7 +392,8 @@ namespace ActorSharp
                 {
                     _isClosed = true;
                     _queuePage.Last = true;
-                    _queuePage.Error = ex;
+                    if (ex != null)
+                        _queuePage.Error = ExceptionDispatchInfo.Capture(ex);
                     _confirmationCounter = 1;
                     TrySendPage();
                 }

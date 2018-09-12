@@ -1,0 +1,60 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+
+    <ControlTemplate x:Key="BacktesterReportView.Classic">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+
+                <!--  Properties  -->
+
+                <ItemsControl ItemsSource="{Binding StatProperties.Value}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <l:AutoColumnsGrid VerticalAlignment="Top" MaxColumns="4" MinColumnWidth="220"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="4,1,4,1" HorizontalAlignment="Stretch" Background="WhiteSmoke">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Key}" Grid.Column="0" Margin="3,0,0,0" />
+                                <TextBlock Text="{Binding Value}" Grid.Column="1" Margin="0,0,3,0"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!--  Charts  -->
+
+                <ItemsControl ItemsSource="{Binding Charts.Value}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <l:AutoColumnsGrid VerticalAlignment="Top" MaxColumns="4" MinColumnWidth="220"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ContentControl cal:View.Model="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+
+            </StackPanel>
+        </ScrollViewer>
+        
+    </ControlTemplate>
+
+    <Style x:Key="BacktesterReportViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BacktesterReportView.Classic}"/>
+    </Style>
+    
+
+
+</ResourceDictionary>

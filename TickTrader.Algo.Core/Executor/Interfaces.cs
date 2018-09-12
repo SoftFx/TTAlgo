@@ -54,19 +54,6 @@ namespace TickTrader.Algo.Core
         void Invoke(Action action);
     }
 
-    public interface IIsolationContext
-    {
-        T ActivateIsolated<T>() where T : MarshalByRefObject, new();
-        ILink<T> CreateInLink<T>();
-        ILink<T> CreateOutLink<T>();
-    }
-
-    public interface ILink<T> : IDisposable
-    {
-        void Write(T msg);
-        ILinkOutput<T> Output { get; }
-    }
-
     public interface ILinkOutput<T> : IDisposable
     {
         event Action<T> MsgReceived;
@@ -90,7 +77,8 @@ namespace TickTrader.Algo.Core
         PluginBuilder Builder { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
-        IPluginLogger Logger { get; }
+        IPluginLogger Logger { get; set; }
+
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
         void EnqueueEvent(Action<PluginBuilder> action);
@@ -101,10 +89,20 @@ namespace TickTrader.Algo.Core
         IPluginFeedProvider FeedProvider { get; }
         SubscriptionManager Dispenser { get; }
         FeedBufferStrategy BufferingStrategy { get; }
+        IAccountInfoProvider AccInfoProvider { get; }
+        ITradeExecutor TradeExecutor { get; }
+
         //void Subscribe(IRateSubscription subscriber);
         //void Unsubscribe(IRateSubscription subscriber);
         //void Subscribe(IAllRatesSubscription subscriber);
         //void Unsubscribe(IAllRatesSubscription subscriber);
+    }
+
+    internal interface IExecutorFixture : IDisposable
+    {
+        void Start();
+        void Stop();
+        void Restart();
     }
 
     //internal interface IFeedFixtureContext
