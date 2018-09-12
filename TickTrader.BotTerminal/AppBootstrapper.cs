@@ -96,6 +96,8 @@ namespace TickTrader.BotTerminal
 
         private void ConfigurateLogger()
         {
+            NonBlockingFileCompressor.Setup();
+
             ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("botName", typeof(BotNameLayoutRenderer));
 
             var debuggerTarget = new DebuggerTarget() { Layout = "${logger} -> ${message} ${exception:format=tostring}" };
@@ -173,7 +175,7 @@ namespace TickTrader.BotTerminal
         //{
         //    base.OnExit(sender, e);
 
-            
+
         //}
 
         protected override object GetInstance(Type service, string key)

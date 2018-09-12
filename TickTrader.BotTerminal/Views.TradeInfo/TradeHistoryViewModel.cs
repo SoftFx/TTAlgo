@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
             _tradeClient.TradeHistory.OnTradeReport += OnReport;
 
-            tradeClient.Connected += ()=>
+            tradeClient.Connected += () =>
             {
                 _isNewConnection = true;
                 RefreshHistory();
@@ -429,7 +429,7 @@ namespace TickTrader.BotTerminal
 
         private void OnReport(TradeReportEntity tradeTransaction)
         {
-            if (MatchesCurrentFilter(tradeTransaction))
+            if (_tradeClient.Account.Type.HasValue && MatchesCurrentFilter(tradeTransaction))
                 AddToList(CreateReportModel(tradeTransaction));
         }
 

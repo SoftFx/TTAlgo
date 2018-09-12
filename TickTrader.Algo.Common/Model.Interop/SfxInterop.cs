@@ -13,8 +13,6 @@ using TickTrader.FDK.Common;
 using SFX = TickTrader.FDK.Common;
 using API = TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
-using TickTrader.FDK.QuoteStore;
-using TickTrader.FDK.TradeCapture;
 using ActorSharp;
 using TickTrader.Algo.Common.Info;
 
@@ -35,13 +33,13 @@ namespace TickTrader.Algo.Common.Model
         public bool AutoAccountInfo => false;
         public bool AutoSymbols => false;
 
-        private FDK.QuoteFeed.Client _feedProxy;
-        private FDK.QuoteStore.Client _feedHistoryProxy;
-        private FDK.OrderEntry.Client _tradeProxy;
-        private FDK.TradeCapture.Client _tradeHistoryProxy;
+        private FDK.Client.QuoteFeed _feedProxy;
+        private FDK.Client.QuoteStore _feedHistoryProxy;
+        private FDK.Client.OrderEntry _tradeProxy;
+        private FDK.Client.TradeCapture _tradeHistoryProxy;
 
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
-        
+
         public SfxInterop(ConnectionOptions options)
         {
             const int connectInterval = 10000;
@@ -53,10 +51,14 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            _feedProxy = new FDK.QuoteFeed.Client("feed.proxy", options.EnableLogs, 5030, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
-            _feedHistoryProxy = new FDK.QuoteStore.Client("feed.history.proxy", options.EnableLogs, 5050, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
-            _tradeProxy = new FDK.OrderEntry.Client("trade.proxy", options.EnableLogs, 5040, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
-            _tradeHistoryProxy = new FDK.TradeCapture.Client("trade.history.proxy", options.EnableLogs, 5060, connectAttempts, reconnectAttempts, connectInterval, heartbeatInterval, options.LogsFolder);
+            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, 5030,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, 5050,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, 5040,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, 5060,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
 
             _feedProxy.InitTaskAdapter();
             _tradeProxy.InitTaskAdapter();
@@ -64,13 +66,17 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.InitTaskAdapter();
 
             _feedProxy.QuoteUpdateEvent += (c, q) => Tick?.Invoke(Convert(q));
+            _feedProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
+            _tradeProxy.LogoutEvent += (c, m) => OnLogout(m);
             _tradeProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeProxy.OrderUpdateEvent += (c, rep) => ExecutionReport?.Invoke(ConvertToEr(rep));
             _tradeProxy.PositionUpdateEvent += (c, rep) => PositionReport?.Invoke(Convert(rep));
             _tradeProxy.BalanceUpdateEvent += (c, rep) => BalanceOperation?.Invoke(Convert(rep));
+            _tradeHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _tradeHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
+            _feedHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
         }
 
@@ -92,6 +98,10 @@ namespace TickTrader.Algo.Common.Model
                 {
                     var code = ((LoginException)ex).LogoutReason;
                     return new ConnectionErrorInfo(Convert(code), ex.Message);
+                }
+                if (ex is ConnectException)
+                {
+                    return new ConnectionErrorInfo(ConnectionErrorCodes.NetworkError, ex.Message);
                 }
 
                 return new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, ex.Message);
@@ -142,6 +152,11 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Subscribed.");
         }
 
+        private void OnLogout(LogoutInfo info)
+        {
+            Disconnected?.Invoke(this, new ConnectionErrorInfo(Convert(info.Reason), info.Message));
+        }
+
         private void OnDisconnect(string text)
         {
             Disconnected?.Invoke(this, new ConnectionErrorInfo(ConnectionErrorCodes.Unknown, text));
@@ -158,78 +173,66 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task DisconnectFeed()
         {
-            await Task.Factory.StartNew(() =>
+            logger.Debug("Feed: Disconnecting...");
+            try
             {
-                try
-                {
-                    _feedProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _feedProxy.Disconnect("");
-                }
+                await _feedProxy.LogoutAsync("");
+                logger.Debug("Feed: Logged out.");
+                await _feedProxy.DisconnectAsync("");
+            }
+            catch (Exception) { }
 
-                _feedProxy.Dispose();
+            await Task.Factory.StartNew(() => _feedProxy.Dispose());
 
-                logger.Debug("Feed dicconnected.");
-            });
+            logger.Debug("Feed: Disconnected.");
         }
 
         private async Task DisconnectFeedHstory()
         {
-            await Task.Factory.StartNew(() =>
+            logger.Debug("Feed.History: Disconnecting...");
+            try
             {
-                try
-                {
-                    _feedHistoryProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _feedHistoryProxy.Disconnect("");
-                }
+                await _feedHistoryProxy.LogoutAsync("");
+                logger.Debug("Feed.History: Logged out.");
+                await _feedHistoryProxy.DisconnectAsync("");
+            }
+            catch (Exception) { }
 
-                _feedHistoryProxy.Dispose();
+            await Task.Factory.StartNew(() => _feedHistoryProxy.Dispose());
 
-                logger.Debug("Feed history dicconnected.");
-            });
+            logger.Debug("Feed.History: Disconnected.");
         }
 
         private async Task DisconnectTrade()
         {
-            await Task.Factory.StartNew(() =>
+            logger.Debug("Trade: Disconnecting...");
+            try
             {
-                try
-                {
-                    _tradeProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _tradeProxy.Disconnect("");
-                }
+                await _tradeProxy.LogoutAsync("");
+                logger.Debug("Trade: Logged out.");
+                await _tradeProxy.DisconnectAsync("");
+            }
+            catch (Exception) { }
 
-                _tradeProxy.Dispose();
+            await Task.Factory.StartNew(() => _tradeProxy.Dispose());
 
-                logger.Debug("Trade dicconnected.");
-            });
+            logger.Debug("Trade: Disconnected.");
         }
 
         private async Task DisconnectTradeHstory()
         {
-            await Task.Factory.StartNew(() =>
+            logger.Debug("Trade.History: Disconnecting...");
+            try
             {
-                try
-                {
-                    _tradeHistoryProxy.Logout("", -1);
-                }
-                catch (Exception)
-                {
-                    _tradeHistoryProxy.Disconnect("");
-                }
+                await _tradeHistoryProxy.LogoutAsync("");
+                logger.Debug("Trade.History: Logged out.");
+                await _tradeHistoryProxy.DisconnectAsync("");
+            }
+            catch (Exception) { }
 
-                _tradeHistoryProxy.Dispose();
+            await Task.Factory.StartNew(() => _tradeHistoryProxy.Dispose());
 
-                logger.Debug("Trade history dicconnected.");
-            });
+            logger.Debug("Trade.History: Disconnected.");
         }
 
         #region IFeedServerApi
@@ -302,7 +305,30 @@ namespace TickTrader.Algo.Common.Model
 
         public void DownloadQuotes(BlockingChannel<QuoteEntity> stream, string symbol, DateTime from, DateTime to, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), to.ToUniversalTime(), DownloadTimeoutMs);
+
+                    while (true)
+                    {
+                        var tick = e.Next(DownloadTimeoutMs);
+                        if (tick == null || !stream.Write(Convert(tick)))
+                        {
+                            e.Close();
+                            break;
+                        }
+                    }
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
+                    stream.Close(ex);
+                }
+            });
+
+            //throw new NotImplementedException();
 
             //var buffer = new QuoteSliceBuffer(from, to);
             //var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
@@ -343,9 +369,19 @@ namespace TickTrader.Algo.Common.Model
         //    }
         //}
 
-        public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
+        public async Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            var result = new List<QuoteEntity>();
+
+            try
+            {
+                var quotes = await _feedHistoryProxy.GetQuoteListAsync(symbol, includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top, from.ToUniversalTime(), count);
+                return quotes.Select(Convert).ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new InteropException(ex.Message, ConnectionErrorCodes.NetworkError);
+            }
         }
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
@@ -529,7 +565,7 @@ namespace TickTrader.Algo.Common.Model
                 IsTradeEnabled = info.IsTradeEnabled,
                 Description = info.Description,
                 DefaultSlippage = info.DefaultSlippage,
-                HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction                
+                HiddenLimitOrderMarginReduction = info.HiddenLimitOrderMarginReduction
             };
         }
 
@@ -793,7 +829,7 @@ namespace TickTrader.Algo.Common.Model
                 OrderType = Convert(report.OrderType),
                 OrderSide = Convert(report.OrderSide),
                 Price = report.Price,
-                Balance = report.Balance ?? 0,
+                Balance = report.Balance ?? double.NaN,
             };
         }
 
@@ -866,6 +902,7 @@ namespace TickTrader.Algo.Common.Model
                 Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
+                Swap = p.Swap
             };
         }
 
@@ -1114,5 +1151,5 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #endregion
-    }    
+    }
 }

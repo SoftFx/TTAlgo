@@ -62,15 +62,14 @@ namespace TickTrader.Algo.Common.Model
             return history.GetBarPage(symbolCode, priceType, timeFrame, from, size).Result.ToList();
         }
 
-        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
-            //return history.IterateTicks(symbolCode, from, to, depth).Result;
-            throw new NotImplementedException();
+            return history.GetQuoteList(symbolCode, from, to, level2).Result;
         }
 
-        public List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth)
+        public List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
-            throw new NotImplementedException();
+            return history.GetQuotePage(symbolCode, from, count, level2).Result.ToList();
         }
 
         public void Subscribe(Action<QuoteEntity[]> handler)

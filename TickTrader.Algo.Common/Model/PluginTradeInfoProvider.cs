@@ -23,6 +23,7 @@ namespace TickTrader.Algo.Common.Model
 
             _cache.Account.OrderUpdate += Account_OrderUpdate;
             _cache.Account.BalanceUpdate += Account_BalanceUpdate;
+            _cache.Account.PositionUpdate += Account_PositionUpdate;
         }
 
         private void Account_OrderUpdate(OrderUpdateInfo update)
@@ -33,6 +34,11 @@ namespace TickTrader.Algo.Common.Model
         private void Account_BalanceUpdate(BalanceOperationReport rep)
         {
             AlgoEvent_BalanceUpdated?.Invoke(rep);
+        }
+
+        private void Account_PositionUpdate(PositionModel position, OrderExecAction action)
+        {
+            AlgoEvent_PositionUpdated(position.ToReport(action));
         }
 
         private void ExecReportToAlgo(OrderExecAction action, OrderEntityAction entityAction, ExecutionReport report, OrderModel newOrder = null)
@@ -67,6 +73,8 @@ namespace TickTrader.Algo.Common.Model
             base.Dispose();
 
             _cache.Account.OrderUpdate -= Account_OrderUpdate;
+            _cache.Account.BalanceUpdate -= Account_BalanceUpdate;
+            _cache.Account.PositionUpdate -= Account_PositionUpdate;
         }
 
         #region IAccountInfoProvider

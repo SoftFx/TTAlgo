@@ -250,13 +250,29 @@ namespace TickTrader.Algo.Common.Model
                     await Deinitialize();
                     OnFailedConnect(request, new ConnectionErrorInfo(iex.ErrorCode, iex.Message));
                 }
+                else if (fex is FDK.Common.RejectException)
+                {
+                    var rex = (FDK.Common.RejectException)fex;
+
+                    logger.Info("Connection sequence failed: " + rex.Message);
+                    await Deinitialize();
+                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorCodes.RejectedByServer, rex.Message));
+                }
+                else if (fex is SoftFX.Net.Core.DisconnectedException)
+                {
+                    var dex = (SoftFX.Net.Core.DisconnectedException)fex;
+
+                    logger.Info("Connection sequence failed: " + dex.Message);
+                    await Deinitialize();
+                    OnFailedConnect(request, new ConnectionErrorInfo(ConnectionErrorCodes.NetworkError, dex.Message));
+                }
                 else
                 {
                     logger.Error(ex);
                     await Deinitialize();
                     OnFailedConnect(request, ConnectionErrorInfo.UnknownNoText);
-                    return;
                 }
+                return;
             }
 
             wasConnected = true;

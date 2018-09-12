@@ -38,11 +38,15 @@
     <Reference Include="protobuf-net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.3.0\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net, Version=1.33.0.1, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.33.1127\lib\net40\SoftFX.Extended.Net.dll</HintPath>
+    <Reference Include="SoftFX.Extended.Net, Version=1.35.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.35.1309\lib\net40\SoftFX.Extended.Net.dll</HintPath>
     </Reference>
     <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.33.1127\lib\net40\SoftFX.Lrp.dll</HintPath>
+      <HintPath>..\packages\SoftFX.FDK.1.35.1309\lib\net40\SoftFX.Lrp.dll</HintPath>
+    </Reference>
+    <Reference Include="SoftFX.Net.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\SFX\SoftFX.Net.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,20 +71,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.FDK.Common">
+    <Reference Include="TickTrader.FDK.Client">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.FDK.Common, Version=2.20.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SFX\TickTrader.FDK.Common.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.FDK.OrderEntry">
-      <HintPath>..\lib\SFX\TickTrader.FDK.OrderEntry.dll</HintPath>
+    <Reference Include="TickTrader.FDK.Extended">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Extended.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.FDK.QuoteFeed">
-      <HintPath>..\lib\SFX\TickTrader.FDK.QuoteFeed.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.QuoteStore">
-      <HintPath>..\lib\SFX\TickTrader.FDK.QuoteStore.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.FDK.TradeCapture">
-      <HintPath>..\lib\SFX\TickTrader.FDK.TradeCapture.dll</HintPath>
+    <Reference Include="TickTrader.FDK.Standard">
+      <HintPath>..\lib\SFX\TickTrader.FDK.Standard.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

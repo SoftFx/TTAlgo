@@ -71,7 +71,7 @@ namespace ApiCheckerBot
         protected override async void OnStart()
         {
             var beginTestTime = DateTime.Now.Ticks / 10_000 - RepeatMsec;
-
+            
             try
             {
                 while (true)
@@ -101,12 +101,16 @@ namespace ApiCheckerBot
 
                         PrintResultStatus(perfomanceInfo);
                     }
+
+                    if (residueTime == 0)
+                        break;
                 }
             }
             catch (Exception e)
             {
                 ExitWithError(e.Message);
             }
+            Exit();
         }
 
         private void InitHttpClient()

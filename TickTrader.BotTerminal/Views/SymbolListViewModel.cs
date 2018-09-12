@@ -31,5 +31,12 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<SymbolViewModel> Symbols { get; }
         public Property<SymbolViewModel> SelectedSymbol { get; }
+
+
+        public void OpenChart(object o)
+        {
+            var symbolVM = o as SymbolViewModel;
+            symbolVM?.OpenChart();
+        }
     }
 }

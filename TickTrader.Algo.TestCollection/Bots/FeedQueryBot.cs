@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Custom Feed Query Bot", Version = "1.0", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Custom Feed Query Bot", Version = "1.1", Category = "Test Plugin Info",
         Description = "Queries and prints series of quotes/bars for specified time period, periodicity and side.")]
     public class FeedQueryBot : TradeBot
     {
@@ -14,44 +16,70 @@ namespace TickTrader.Algo.TestCollection.Bots
         public FeedQueryPeriods Period { get; set; }
 
         [Parameter(DefaultValue = TimeFrames.H1)]
-        public TimeFrames TimeFrame { get; set; }
+        public new TimeFrames TimeFrame { get; set; }
 
         [Parameter(DefaultValue = QueryResultOrders.Backward)]
         public QueryResultOrders Direction { get; set; }
+
+        [Parameter(DefaultValue = false, DisplayName = "Use count based request")]
+        public bool UseCount { get; set; }
+
+        [Parameter(DefaultValue = 100)]
+        public int Count { get; set; }
 
         private bool IsBackwarOrder => Direction == QueryResultOrders.Backward;
         private string SafeSymbol => string.IsNullOrEmpty(QuerySymbol) ? Symbol.Name : QuerySymbol;
 
         protected override void OnStart()
         {
-            try
-            {
-                //if (Period == FeedQueryPeriods.Input)
-                //{
-                //    if (TimeFrame != TimeFrames.Ticks)
-                //        PrintBarSeries();
-                //}
-                //else
-                //{
+            if (Symbols.Select(v => v.Name).Contains(SafeSymbol))
+                try
+                {
+                    //if (Period == FeedQueryPeriods.Input)
+                    //{
+                    //    if (TimeFrame != TimeFrames.Ticks)
+                    //        PrintBarSeries();
+                    //}
+                    //else
+                    //{
                     DateTime from, to;
                     GetBounds(out from, out to);
-                    if (TimeFrame == TimeFrames.Ticks)
-                        PrintQuotes(from, to);
+                    if (TimeFrame == TimeFrames.Ticks || TimeFrame == TimeFrames.TicksLevel2)
+                        PrintQuotes(from, to, TimeFrame == TimeFrames.TicksLevel2);
                     else
                         PrintBars(from, to);
-                //}
-            }
-            catch (Exception ex)
-            {
-                Status.WriteLine("Exception: " + ex);
-            }
+                    //}
+                }
+                catch (AggregateException aex)
+                {
+                    aex = aex.Flatten();
+
+                    if (aex.InnerExceptions.Count == 1 && aex.InnerExceptions[0] is NotSupportedException)
+                    {
+                        var nsex = (NotSupportedException)aex.InnerExceptions[0];
+                        Status.WriteLine(nsex.Message);
+                    }
+                    else
+                    {
+                        Status.WriteLine("Exception: " + aex);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Status.WriteLine("Exception: " + ex);
+                }
+            else
+                Status.WriteLine($"Symbols collection doesn't contain symbol {SafeSymbol}.");
             Exit();
         }
 
         private void PrintBars(DateTime from, DateTime to)
         {
             int count = 0;
-            var bars = Feed.GetBars(SafeSymbol, TimeFrame, from, to, BarPriceType.Bid, IsBackwarOrder);
+            IEnumerable<Bar> bars;
+            if (UseCount)
+                bars = Feed.GetBars(SafeSymbol, TimeFrame, from, IsBackwarOrder ? -Count : Count, BarPriceType.Bid);
+            else bars = Feed.GetBars(SafeSymbol, TimeFrame, from, to, BarPriceType.Bid, IsBackwarOrder);
             foreach (var bar in bars)
             {
                 if (IsStopped)
@@ -78,7 +106,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             }
             else
             {
-                for(int i=bars.Count -1; i >=0; i--)
+                for (int i = bars.Count - 1; i >= 0; i--)
                 {
                     if (IsStopped)
                         break;
@@ -91,19 +119,22 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintBar(Bar bar)
         {
-            Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+            Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime.ToLocalTime(), bar.Open, bar.High, bar.Low, bar.Close);
         }
 
-        private void PrintQuotes(DateTime from, DateTime to)
+        private void PrintQuotes(DateTime from, DateTime to, bool level2)
         {
             int count = 0;
-            var quotes = Feed.GetQuotes(SafeSymbol, from, to, false, IsBackwarOrder);
+            IEnumerable<Quote> quotes;
+            if (UseCount)
+                quotes = Feed.GetQuotes(SafeSymbol, from, IsBackwarOrder ? -Count : Count, level2);
+            else quotes = Feed.GetQuotes(SafeSymbol, from, to, level2, IsBackwarOrder);
             foreach (var quote in quotes)
             {
                 if (IsStopped)
                     break;
 
-                Print("{0} b:{1} a:{2}", quote.Time, quote.Bid, quote.Ask);
+                Print("{0} b:{1} a:{2}", quote.Time.ToLocalTime(), quote.Bid, quote.Ask);
                 count++;
             }
             Status.WriteLine("Done. Printed {0} quotes.", count);
@@ -127,12 +158,12 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private DateTime GetHour(DateTime time, int shift)
         {
-            return new DateTime(time.Year, time.Month, time.Day, time.Hour, 0, 0) + TimeSpan.FromHours(shift);
+            return new DateTime(time.Year, time.Month, time.Day, time.Hour, 0, 0, time.Kind).AddHours(shift);
         }
 
         private DateTime GetMonth(DateTime time, int shift)
         {
-            return new DateTime(time.Year, time.Month, 1, 0, 0, 0).AddMonths(shift);
+            return new DateTime(time.Year, time.Month, 1, 0, 0, 0, time.Kind).AddMonths(shift);
         }
     }
 

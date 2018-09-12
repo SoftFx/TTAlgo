@@ -291,6 +291,11 @@ namespace TickTrader.Algo.Core
             return Null.BarSeries;
         }
 
+        public IEnumerable<Bar> GetBars(string symbol, TimeFrames timeFrame, DateTime from, int count, BarPriceType side)
+        {
+            return Null.BarSeries;
+        }
+
         public BarSeries GetBarSeries(string symbol)
         {
             return Null.BarSeries;
@@ -302,6 +307,11 @@ namespace TickTrader.Algo.Core
         }
 
         public IEnumerable<Quote> GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
+        {
+            return Null.QuoteSeries;
+        }
+
+        public IEnumerable<Quote> GetQuotes(string symbol, DateTime from, int count, bool level2)
         {
             return Null.QuoteSeries;
         }
