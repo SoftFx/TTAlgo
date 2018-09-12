@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Common.Model
         private QuoteDistributor _rootDistributor;
         private ActorSharp.Lib.AsyncLock _updateLock;
         private ActorSharp.Lib.AsyncLock _feedLock;
+        private Dictionary<ActorRef, IFeedSubscription> _feedSubcribers = new Dictionary<ActorRef, IFeedSubscription>();
 
         protected override void ActorInit()
         {
@@ -66,11 +67,11 @@ namespace TickTrader.Algo.Common.Model
 
             _connection.AsyncDisconnected += (s, t) =>
             {
-                _connection.FeedProxy.Tick += FeedProxy_Tick;
-                _connection.TradeProxy.ExecutionReport += TradeProxy_ExecutionReport;
-                _connection.TradeProxy.PositionReport += TradeProxy_PositionReport;
-                _connection.TradeProxy.TradeTransactionReport += TradeProxy_TradeTransactionReport;
-                _connection.TradeProxy.BalanceOperation += TradeProxy_BalanceOperation;
+                _connection.FeedProxy.Tick -= FeedProxy_Tick;
+                _connection.TradeProxy.ExecutionReport -= TradeProxy_ExecutionReport;
+                _connection.TradeProxy.PositionReport -= TradeProxy_PositionReport;
+                _connection.TradeProxy.TradeTransactionReport -= TradeProxy_TradeTransactionReport;
+                _connection.TradeProxy.BalanceOperation -= TradeProxy_BalanceOperation;
 
                 return Stop();
             };
@@ -208,12 +209,19 @@ namespace TickTrader.Algo.Common.Model
                 var quoteStream = Channel.NewOutput<QuoteEntity>(1000);
                 await Actor.OpenChannel(quoteStream, (a, c) => a._feedListeners.Add(Ref, c));
                 ApplyQuotes(quoteStream);
+
+                await Actor.Call(a =>
+                {
+                    var subscription = a._rootDistributor.SubscribeAll();
+                    a._feedSubcribers.Add(Ref, subscription);
+                });
             }
 
             public async Task Deinit()
             {
                 await Actor.Call(a => a.UnsyncListener(Ref));
                 await Actor.Call(a => a._feedListeners.Remove(Ref));
+                await Actor.Call(a => a._feedSubcribers.Remove(Ref));
                 await Connection.CloseHandler();
             }
 
@@ -235,7 +243,7 @@ namespace TickTrader.Algo.Common.Model
 
             void IQuoteDistributorSource.ModifySubscription(string symbol, int depth)
             {
-                Actor.Send(a => a.ModifySubscription(symbol, depth));
+                Actor.Send(a => a._feedSubcribers[Ref].Add(symbol, depth));
             }
         }
 

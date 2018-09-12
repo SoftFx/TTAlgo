@@ -97,7 +97,8 @@ namespace TickTrader.Algo.Core
         decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => _margin = value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.Price { get => GetDecPrice(); set => throw new NotImplementedException(); }
+        decimal? BL.ICommonOrder.Price { get => (decimal?)_entity.Price; set => throw new NotImplementedException(); }
+        decimal? BL.ICommonOrder.StopPrice { get => (decimal?)_entity.StopPrice; set => throw new NotImplementedException(); }
         bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
         bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
         string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
@@ -183,6 +184,7 @@ namespace TickTrader.Algo.Core
         decimal? BO.IOrder.ReqOpenPrice => throw new NotImplementedException();
         decimal? BO.IOrder.ReqOpenAmount => throw new NotImplementedException();
         string BO.IOrder.ClientApp => throw new NotImplementedException();
+        int? BO.IOrder.SymbolPrecision => _symbol?.Digits;
 
         internal bool IsSameOrder(OrderAccessor order)
         {

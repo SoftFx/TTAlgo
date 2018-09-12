@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Core.Lib
                     _page = await taskProxy.Task;
                     if (_page != null && _page.Length > 0)
                     {
-                        _index = 0;
+                        _index = 1;
                         Current = _page[0];
                         return true;
                     }

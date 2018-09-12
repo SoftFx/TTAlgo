@@ -9,6 +9,7 @@ namespace TickTrader.Algo.Common.Model.Interop
     public class InteropException : Exception
     {
         public InteropException(string message, ConnectionErrorCodes errorCode)
+            : base(message)
         {
             ErrorCode = errorCode;
         }
@@ -49,6 +50,7 @@ namespace TickTrader.Algo.Common.Model.Interop
         ServerError,
         LoginDeleted,
         ServerLogout,
-        Canceled
+        Canceled,
+        RejectedByServer
     }
 }

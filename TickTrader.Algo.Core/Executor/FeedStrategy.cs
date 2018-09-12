@@ -180,32 +180,35 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder)
         {
-            const int pageSize = 1000;
+            const int pageSize = 500;
             List<BarEntity> page;
             int pageIndex;
+
+            from = from.ToUniversalTime();
+            to = to.ToUniversalTime().AddMilliseconds(-1);
 
             if (backwardOrder)
             {
                 page =  Feed.QueryBars(symbol, side, to, -pageSize, timeFrame);
-                pageIndex = 0;
+                pageIndex = page.Count - 1;
 
                 while (true)
                 {
-                    if (pageIndex >= page.Count)
+                    if (pageIndex < 0)
                     {
                         if (page.Count < pageSize)
-                            break; // last page
-                        var timeRef = page.Last().OpenTime;
+                            break; //last page
+                        var timeRef = page.First().OpenTime.AddMilliseconds(-1);
                         page = Feed.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
                         if (page.Count == 0)
                             break;
-                        pageIndex = 0;
+                        pageIndex = page.Count - 1;
                     } 
 
                     var item = page[pageIndex];
                     if (item.OpenTime < from)
                         break;
-                    pageIndex++;
+                    pageIndex--;
                     yield return item;
                 }
             }
@@ -219,8 +222,8 @@ namespace TickTrader.Algo.Core
                     if (pageIndex >= page.Count)
                     {
                         if (page.Count < pageSize)
-                            break; // last page
-                        var timeRef = page.Last().OpenTime + TimeSpan.FromMilliseconds(1);
+                            break; //last page
+                        var timeRef = page.Last().CloseTime.AddMilliseconds(1);
                         page = Feed.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
                         if (page.Count == 0)
                             break;
@@ -236,19 +239,170 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeFrame, DateTime from, int count, BarPriceType side)
+        {
+            const int pageSize = 500;
+            List<BarEntity> page;
+            int pageIndex;
+
+            from = from.ToUniversalTime();
+            var backwardOrder = count < 0;
+            count = System.Math.Abs(count);
+
+            while (count > 0)
+            {
+                if (backwardOrder)
+                {
+                    page = Feed.QueryBars(symbol, side, from, -pageSize, timeFrame);
+                    pageIndex = page.Count - 1;
+
+                    while (pageIndex > 0)
+                    {
+                        var item = page[pageIndex];
+                        pageIndex--;
+                        yield return item;
+                        count--;
+                        if (count <= 0)
+                            break;
+                    }
+
+                    if (page.Count < pageSize)
+                        break; //last page
+                    from = page.First().OpenTime.AddMilliseconds(-1);
+                }
+                else
+                {
+                    page = Feed.QueryBars(symbol, side, from, pageSize, timeFrame);
+                    pageIndex = 0;
+
+                    while (pageIndex < page.Count)
+                    {
+                        var item = page[pageIndex];
+                        pageIndex++;
+                        yield return item;
+                        count--;
+                        if (count <= 0)
+                            break;
+                    }
+
+                    if (page.Count < pageSize)
+                        break; //last page
+                    from = page.Last().CloseTime.AddMilliseconds(1);
+                }
+            }
+        }
+
         IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, DateTime to, bool level2, bool backwardOrder)
         {
-            var ticks = Feed.QueryTicks(symbol, from, to, level2 ? 0 : 1);
+            const int pageSize = 500;
+            List<QuoteEntity> page;
+            int pageIndex;
+
+            from = from.ToUniversalTime();
+            to = to.ToUniversalTime();
 
             if (backwardOrder)
             {
-                for (int i = ticks.Count - 1; i >= 0; i--)
-                    yield return ticks[i];
+                page = Feed.QueryTicks(symbol, to, -pageSize, level2);
+                pageIndex = page.Count - 1;
+
+                while (true)
+                {
+                    if (pageIndex < 0)
+                    {
+                        if (page.Count < pageSize)
+                            break; //last page
+                        var timeRef = page.First().Time.AddMilliseconds(-1);
+                        page = Feed.QueryTicks(symbol, timeRef, -pageSize, level2);
+                        if (page.Count == 0)
+                            break;
+                        pageIndex = page.Count - 1;
+                    }
+
+                    var item = page[pageIndex];
+                    if (item.Time < from)
+                        break;
+                    pageIndex--;
+                    yield return item;
+                }
             }
             else
             {
-                for (int i = 0; i < ticks.Count; i++)
-                    yield return ticks[i];
+                page = Feed.QueryTicks(symbol, from, pageSize, level2);
+                pageIndex = 0;
+
+                while (true)
+                {
+                    if (pageIndex >= page.Count)
+                    {
+                        if (page.Count < pageSize)
+                            break; //last page
+                        var timeRef = page.Last().Time.AddMilliseconds(1);
+                        page = Feed.QueryTicks(symbol, timeRef, pageSize, level2);
+                        if (page.Count == 0)
+                            break;
+                        pageIndex = 0;
+                    }
+
+                    var item = page[pageIndex];
+                    if (item.Time > to)
+                        break;
+                    pageIndex++;
+                    yield return item;
+                }
+            }
+        }
+
+        IEnumerable<Quote> CustomFeedProvider.GetQuotes(string symbol, DateTime from, int count, bool level2)
+        {
+            const int pageSize = 500;
+            List<QuoteEntity> page;
+            int pageIndex;
+
+            from = from.ToUniversalTime();
+            var backwardOrder = count < 0;
+            count = System.Math.Abs(count);
+
+            while (count > 0)
+            {
+                if (backwardOrder)
+                {
+                    page = Feed.QueryTicks(symbol, from, -pageSize, level2);
+                    pageIndex = page.Count - 1;
+
+                    while (pageIndex > 0)
+                    {
+                        var item = page[pageIndex];
+                        pageIndex--;
+                        yield return item;
+                        count--;
+                        if (count <= 0)
+                            break;
+                    }
+
+                    if (page.Count < pageSize)
+                        break; //last page
+                    from = page.First().Time.AddMilliseconds(-1);
+                }
+                else
+                {
+                    page = Feed.QueryTicks(symbol, from, pageSize, level2);
+                    pageIndex = 0;
+
+                    while (pageIndex < page.Count)
+                    {
+                        var item = page[pageIndex];
+                        pageIndex++;
+                        yield return item;
+                        count--;
+                        if (count <= 0)
+                            break;
+                    }
+
+                    if (page.Count < pageSize)
+                        break; //last page
+                    from = page.Last().Time.AddMilliseconds(1);
+                }
             }
         }
 

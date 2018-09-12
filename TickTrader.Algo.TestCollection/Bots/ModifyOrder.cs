@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
@@ -50,28 +51,40 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
+            if (string.IsNullOrWhiteSpace(OrderId))
+                OrderId = Account.Orders.FirstOrDefault()?.Id;
+
             var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
                 ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options);
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
-                Status.WriteLine(ToObjectPropertiesString(typeof(Order), result.ResultingOrder));
+                Status.WriteLine(ToObjectPropertiesString(result.ResultingOrder));
 
             Exit();
         }
 
         private void ValidateVolume()
         {
-            if (Volume.HasValue && Volume <= 0)
+            if (Volume.HasValue)
             {
-                Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
-                Exit();
-                throw new Exception("Ivalid parameter. Volume cannot be negative.");
-            }
-            else if (Volume.HasValue && Volume < Symbol.MinTradeVolume)
-            {
-                Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
-                Exit();
-                throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                if (Volume <= 0)
+                {
+                    Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
+                    Exit();
+                    throw new Exception("Ivalid parameter. Volume cannot be negative.");
+                }
+                var order = Account.Orders[OrderId];
+                if (order?.IsNull ?? true)
+                    return;
+                var symbol = Symbols[order.Symbol];
+                if (symbol?.IsNull ?? true)
+                    return;
+                else if (Volume < symbol.MinTradeVolume)
+                {
+                    Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                    Exit();
+                    throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
+                }
             }
         }
     }

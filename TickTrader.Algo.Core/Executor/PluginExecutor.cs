@@ -256,10 +256,12 @@ namespace TickTrader.Algo.Core
 
                     builder = new PluginBuilder(descriptor);
                     builder.MainSymbol = MainSymbolCode;
+                    builder.TimeFrame = TimeFrame;
                     InitMetadata();
                     InitWorkingFolder();
                     builder.TradeApi = accFixture;
                     builder.TimerApi = _timerFixture;
+                    builder.Calculator = calcFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
                     builder.InstanceId = _botInstanceId;
                     builder.Isolated = _isolated;

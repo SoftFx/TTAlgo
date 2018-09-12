@@ -22,6 +22,7 @@ using TickTrader.BotAgent.Extensions;
 using NLog;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.BotAgent.BA.Entities;
+using System.Globalization;
 
 namespace TickTrader.BotAgent
 {
@@ -29,6 +30,11 @@ namespace TickTrader.BotAgent
     {
         public static void Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+            NonBlockingFileCompressor.Setup();
+
             CoreLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
 
             var logger = LogManager.GetLogger(nameof(Startup));
@@ -36,7 +42,7 @@ namespace TickTrader.BotAgent
             SetupGlobalExceptionLogging(logger);
 
             var agent = new ServerModel.Handler(ServerModel.Load());
-            
+
             try
             {
                 bool isService = true;
@@ -100,7 +106,7 @@ namespace TickTrader.BotAgent
             if (sslConf == null)
                 throw new ArgumentException("SSL configuration not found");
 
-            if(string.IsNullOrWhiteSpace(sslConf.File))
+            if (string.IsNullOrWhiteSpace(sslConf.File))
                 throw new ArgumentException("Certificate file is not defined");
         }
 
@@ -412,6 +418,6 @@ namespace TickTrader.BotAgent
                     log.Fatal("Unhandled Exception!");
             };
         }
-       
+
     }
 }

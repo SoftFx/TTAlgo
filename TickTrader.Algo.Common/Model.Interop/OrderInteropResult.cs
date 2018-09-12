@@ -9,13 +9,23 @@ namespace TickTrader.Algo.Common.Model.Interop
 {
     internal class OrderInteropResult
     {
-        public OrderInteropResult(OrderCmdResultCodes code, ExecutionReport report = null)
+        public OrderInteropResult(OrderCmdResultCodes code, List<ExecutionReport> reports = null)
         {
             ResultCode = code;
-            Report = report;
+            Reports = reports;
+        }
+
+        public OrderInteropResult(OrderCmdResultCodes code, ExecutionReport report)
+        {
+            ResultCode = code;
+            if (report != null)
+            {
+                Reports = new List<ExecutionReport>();
+                Reports.Add(report);
+            }
         }
 
         public OrderCmdResultCodes ResultCode { get; }
-        public ExecutionReport Report { get; }
+        public List<ExecutionReport> Reports { get; }
     }
 }

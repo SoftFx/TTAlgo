@@ -126,14 +126,14 @@ namespace TickTrader.Algo.Core
             return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, size) ?? new List<BarEntity>();
         }
 
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, int depth)
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryTicks(from, to, depth) ?? new List<QuoteEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteEntity>();
         }
 
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, int count, DateTime to, int depth)
+        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryTicks(count, to, depth) ?? new List<QuoteEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteEntity>();
         }
 
         void IPluginFeedProvider.Subscribe(Action<QuoteEntity[]> FeedUpdated)

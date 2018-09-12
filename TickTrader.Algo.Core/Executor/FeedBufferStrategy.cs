@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
 
         void LoadFeed(DateTime from, DateTime to);
         void LoadFeed(int size);
-        void LoadFeed(DateTime to, int size);
+        void LoadFeed(DateTime from, int size);
     }
 
     public interface IFeedBuffer : IFeedLoader, ITimeRef

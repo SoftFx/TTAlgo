@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Core
         private bool _isolated;
         private string _instanceId;
         private PluginPermissions _permissions;
+        private ICalculatorApi _calc;
 
         internal PluginBuilder(AlgoPluginDescriptor descriptor)
         {
@@ -39,7 +40,7 @@ namespace TickTrader.Algo.Core
 
             syncContext.OnAsyncAction = OnPluginThread;
 
-            _tradeApater = new TradeApiAdapter(Symbols.SymbolProviderImpl, Account, logAdapter);
+            _tradeApater = new TradeApiAdapter(Symbols, Account, logAdapter);
 
             _permissions = new PluginPermissions();
 
@@ -60,6 +61,15 @@ namespace TickTrader.Algo.Core
         public Action CurrencyDataRequested { get; set; }
         public DiagnosticInfo Diagnostics { get; set; }
         public ITradeApi TradeApi { get => _tradeApater.ExternalApi; set => _tradeApater.ExternalApi = value; }
+        public ICalculatorApi Calculator
+        {
+            get => _calc;
+            set
+            {
+                _calc = value;
+                _tradeApater.Calc = value;
+            }
+        }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
         public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
@@ -97,6 +107,7 @@ namespace TickTrader.Algo.Core
                 _tradeApater.IsolationTag = value;
             }
         }
+        public TimeFrames TimeFrame { get; set; }
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -269,6 +280,7 @@ namespace TickTrader.Algo.Core
         IHelperApi IPluginContext.Helper => this;
         bool IPluginContext.IsStopped => isStopped;
         ITimerApi IPluginContext.TimerApi => TimerApi;
+        TimeFrames IPluginContext.TimeFrame => TimeFrame;
 
         void IPluginContext.OnExit()
         {

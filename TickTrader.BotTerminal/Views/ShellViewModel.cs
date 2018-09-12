@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
             wndManager = new WindowManager(this);
 
             algoEnv = new AlgoEnvironment();
-            cManager = new ConnectionManager(commonClient, storage, eventJournal, algoEnv);
+            cManager = new ConnectionManager(commonClient, storage, eventJournal);
             clientModel = new TraderClientModel(commonClient, eventJournal);
             algoEnv.Init(clientModel.ObservableSymbolList);
 
@@ -80,6 +80,7 @@ namespace TickTrader.BotTerminal
             UpdateCommandStates();
             cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
             cManager.ConnectionStateChanged += (o, n) => UpdateCommandStates();
+            cManager.ConnectionStateChanged += (o, n) => UpdateRunningBotsState();
             cManager.LoggedIn += () => UpdateCommandStates();
             cManager.LoggedOut += () => UpdateCommandStates();
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
@@ -130,10 +131,16 @@ namespace TickTrader.BotTerminal
         private void UpdateCommandStates()
         {
             var state = cManager.State;
-            CanConnect = !ConnectionLock.IsLocked;
-            CanDisconnect = cManager.IsLoggedIn && !ConnectionLock.IsLocked;
+            CanDisconnect = cManager.IsLoggedIn;
+            ProfileManager.CanLoadProfile = !ConnectionLock.IsLocked;
             NotifyOfPropertyChange(nameof(CanConnect));
             NotifyOfPropertyChange(nameof(CanDisconnect));
+        }
+
+        private void UpdateRunningBotsState()
+        {
+            if(cManager.Connection.LastError?.Code == Algo.Common.Model.Interop.ConnectionErrorCodes.BlockedAccount)
+                Charts.Items.SelectMany(c => c.Bots).Where(c => c.IsStarted).Foreach(c => c.StartStop());
         }
 
         private async Task LoadConnectionProfile(object sender, CancellationToken token)
@@ -144,16 +151,44 @@ namespace TickTrader.BotTerminal
         public bool CanConnect { get; private set; }
         public bool CanDisconnect { get; private set; }
 
+        public void ShootBots(out bool isConfirmed)
+        {
+            isConfirmed = true;
+
+            if (ConnectionLock.IsLocked)
+            {
+                var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots), ShootMode.Logout);
+                wndManager.ShowDialog(exit, this);
+
+                isConfirmed = exit.IsConfirmed;
+                if (isConfirmed)
+                {
+                    storage.ProfileManager.Stop();
+                    if (exit.HasStartedBots)
+                    {
+                        var shutdown = new ShutdownDialogViewModel(Charts);
+                        wndManager.ShowDialog(shutdown, this);
+                    }
+                }
+            }
+        }
+
         public void Connect()
         {
-            Connect(null);
+            ShootBots(out var isConfirmed);
+
+            if(isConfirmed)
+                Connect(null);
         }
 
         public void Disconnect()
         {
             try
             {
-                cManager.TriggerDisconnect();
+                ShootBots(out var isConfirmed);
+
+                if (isConfirmed)
+                    cManager.TriggerDisconnect();
             }
             catch (Exception ex)
             {
@@ -161,15 +196,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override void OnDeactivate(bool close)
-        {
-            if (close)
-                Shutdown();
-        }
+        //protected override void OnDeactivate(bool close)
+        //{
+        //    if (close)
+        //        App.Current.Shutdown();
+        //        //Shutdown();
+        //}
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots));
+            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots), ShootMode.Exit);
             wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
@@ -243,34 +279,33 @@ namespace TickTrader.BotTerminal
 
         public NotificationsViewModel Notifications { get; private set; }
 
-        private async void Shutdown()
+        public async Task Shutdown()
         {
             isClosed = true;
 
             try
             {
                 await cManager.Disconnect();
-                await _userSymbols.Stop();
+                await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await storage.Stop();
             }
-            catch (Exception) { }
-
-            await storage.Stop();
-
-            App.Current.Shutdown();
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Shutdown() failed.");
+            }
         }
 
         protected override void OnViewLoaded(object view)
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            //ConnectLast();
 
             App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new System.Action(OnLoaded));
         }
 
         public void OnLoaded()
         {
-            Connect(null); // show connect window
+            ConnectLastOrConnectDefault();
         }
 
         private async void PrintSystemInfo()
@@ -297,11 +332,13 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void ConnectLast()
+        private void ConnectLastOrConnectDefault()
         {
             var last = cManager.GetLast();
             if (last != null)
                 Connect(last);
+            else
+                Connect();
         }
 
         private async void LogStateLoop()
@@ -385,7 +422,7 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo);
             wndManager.ShowDialog(loading, this);
         }
 

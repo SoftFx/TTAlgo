@@ -28,12 +28,12 @@ namespace TickTrader.Algo.Core
             return new List<BarEntity>();
         }
 
-        public List<QuoteEntity> QueryTicks(DateTime from, DateTime to, int depth)
+        public List<QuoteEntity> QueryTicks(DateTime from, DateTime to, bool level2)
         {
             return new List<QuoteEntity>();
         }
 
-        public List<QuoteEntity> QueryTicks(int count, DateTime to, int depth)
+        public List<QuoteEntity> QueryTicks(DateTime from, int count, bool level2)
         {
             return new List<QuoteEntity>();
         }

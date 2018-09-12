@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
             _tradeClient.TradeHistory.OnTradeReport += OnReport;
 
-            tradeClient.Connected += ()=>
+            tradeClient.Connected += () =>
             {
                 _isNewConnection = true;
                 RefreshHistory();
@@ -336,7 +336,9 @@ namespace TickTrader.BotTerminal
 
         private bool MatchesCurrentFilter(TradeReportEntity tradeTransaction)
         {
-            if (tradeTransaction.ActionType == TradeExecActions.OrderCanceled && _skipCancel)
+            if (_skipCancel && (tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderCanceled
+                || tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderExpired
+                || tradeTransaction.TradeTransactionReportType == TradeExecActions.OrderActivated))
                 return false;
             return MatchesCurrentBoundaries(tradeTransaction.CloseTime);
         }
@@ -427,7 +429,7 @@ namespace TickTrader.BotTerminal
 
         private void OnReport(TradeReportEntity tradeTransaction)
         {
-            if (MatchesCurrentFilter(tradeTransaction))
+            if (_tradeClient.Account.Type.HasValue && MatchesCurrentFilter(tradeTransaction))
                 AddToList(CreateReportModel(tradeTransaction));
         }
 

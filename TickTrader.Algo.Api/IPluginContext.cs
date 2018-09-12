@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Api
         ITimerApi TimerApi { get; }
         DiagnosticInfo Diagnostics { get; }
         bool IsStopped { get; }
+        TimeFrames TimeFrame { get; }
         void OnExit();
         void OnPluginThread(Action action);
         void BeginOnPluginThread(Action action);

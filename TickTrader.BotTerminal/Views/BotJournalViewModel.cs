@@ -25,6 +25,7 @@ namespace TickTrader.BotTerminal
 
             Journal = CollectionViewSource.GetDefaultView(_botJournal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
+            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
 
             _botNameFilterEntries.Add(new BotNameFilterEntry("Nothing", BotNameFilterType.Nothing));
             _botNameFilterEntries.Add(new BotNameFilterEntry("All", BotNameFilterType.All));

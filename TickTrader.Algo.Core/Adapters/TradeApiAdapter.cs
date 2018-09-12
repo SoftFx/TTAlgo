@@ -9,11 +9,11 @@ namespace TickTrader.Algo.Core
     internal class TradeApiAdapter : TradeCommands
     {
         private ITradeApi api;
-        private SymbolProvider symbols;
+        private SymbolsCollection symbols;
         private AccountAccessor account;
         private PluginLoggerAdapter logger;
 
-        public TradeApiAdapter(SymbolProvider symbols, AccountAccessor account, PluginLoggerAdapter logger)
+        public TradeApiAdapter(SymbolsCollection symbols, AccountAccessor account, PluginLoggerAdapter logger)
         {
             this.symbols = symbols;
             this.account = account;
@@ -26,6 +26,8 @@ namespace TickTrader.Algo.Core
             get => api;
             set => api = value ?? throw new InvalidOperationException("TradeApi cannot be null!");
         }
+
+        public ICalculatorApi Calc { get; set; }
 
         public ITradePermissions Permissions { get; set; }
         public string IsolationTag { get; set; }
@@ -73,12 +75,15 @@ namespace TickTrader.Algo.Core
 
             try
             {
-                var smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradePersmission();
+                var smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradeEnabled(smbMetadata);
 
                 volumeLots = RoundVolume(volumeLots, smbMetadata);
                 maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
+                ValidateVolumeLots(volumeLots, smbMetadata);
+                ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
+                ValidateOptions(options, orderType);
                 double volume = ConvertVolume(volumeLots, smbMetadata);
                 double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
                 price = RoundPrice(price, smbMetadata, side);
@@ -101,8 +106,6 @@ namespace TickTrader.Algo.Core
                 logRequest.StopLoss = sl;
                 logRequest.TakeProfit = tp;
 
-                LogOrderOpening(logRequest);
-
                 var request = new OpenOrderRequest
                 {
                     Symbol = symbol,
@@ -120,6 +123,10 @@ namespace TickTrader.Algo.Core
                     Expiration = expiration
                 };
 
+                ValidateMargin(request, smbMetadata);
+
+                LogOrderOpening(logRequest);
+
                 var orderResp = await api.OpenOrder(isAysnc, request);
 
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
@@ -129,7 +136,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen);
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen) { IsServerResponse = false };
             }
 
             LogOrderOpenResults(resultEntity, logRequest);
@@ -144,23 +151,25 @@ namespace TickTrader.Algo.Core
             {
                 ValidateTradePersmission();
                 orderToCancel = GetOrderOrThrow(orderId);
+                var smbMetadata = GetSymbolOrThrow(orderToCancel.Symbol);
+                ValidateTradeEnabled(smbMetadata);
 
-                logger.PrintTrade("Canceling order #" + orderId);
+                logger.PrintTrade("[Out] Canceling order #" + orderId);
 
                 var request = new CancelOrderRequest { OrderId = orderId, Side = orderToCancel.Side };
                 var result = await api.CancelOrder(isAysnc, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
-                    logger.PrintTradeSuccess("→ SUCCESS: Order #" + orderId + " canceled");
+                    logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " canceled");
                 else
-                    logger.PrintTradeFail("→ FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
+                    logger.PrintTradeFail("[In] FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
                 return new OrderResultEntity(result.ResultCode, orderToCancel);
             }
             catch (OrderValidationError ex)
             {
-                logger.PrintTradeFail("→ FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToCancel);
+                logger.PrintTradeFail("[Self] FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToCancel) { IsServerResponse = false };
             }
         }
 
@@ -177,14 +186,18 @@ namespace TickTrader.Algo.Core
                 double? closeVolume = null;
                 orderToClose = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
+                ValidateTradeEnabled(smbMetadata);
 
                 if (closeVolumeLots != null)
                 {
                     closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
+                    ValidateVolumeLots(closeVolumeLots, smbMetadata);
                     closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
                 }
 
-                logger.PrintTrade("Closing order #" + orderId);
+                ValidateVolume(closeVolume);
+
+                logger.PrintTrade("[Out] Closing order #" + orderId);
 
                 var request = new CloseOrderRequest { OrderId = orderId, Volume = closeVolume };
 
@@ -192,19 +205,19 @@ namespace TickTrader.Algo.Core
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    logger.PrintTradeSuccess("→ SUCCESS: Order #" + orderId + " closed");
+                    logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed");
                     return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
                 }
                 else
                 {
-                    logger.PrintTradeFail("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                    logger.PrintTradeFail("[Out] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
                     return new OrderResultEntity(result.ResultCode, orderToClose);
                 }
             }
             catch (OrderValidationError ex)
             {
-                logger.PrintTradeFail("→ FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose);
+                logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToClose) { IsServerResponse = false };
             }
         }
 
@@ -218,25 +231,31 @@ namespace TickTrader.Algo.Core
 
                 orderToClose = GetOrderOrThrow(orderId);
                 Order orderByClose = GetOrderOrThrow(byOrderId);
+
+                var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
+                ValidateTradeEnabled(smbMetadata);
+
+                logger.PrintTrade("[Out] Closing order #" + orderId + " by order #" + byOrderId);
+
                 var request = new CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
 
                 var result = await api.CloseOrder(isAysnc, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    logger.PrintTradeSuccess("→ SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
+                    logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
                     return new OrderResultEntity(result.ResultCode, orderToClose);
                 }
                 else
                 {
-                    logger.PrintTradeFail("→ FAILED Closing order #" + orderId + " error=" + result.ResultCode);
+                    logger.PrintTradeFail("[In] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
                     return new OrderResultEntity(result.ResultCode, orderToClose);
                 }
             }
             catch (OrderValidationError ex)
             {
-                logger.PrintTradeFail("→ FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose);
+                logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
+                return new OrderResultEntity(ex.ErrorCode, orderToClose) { IsServerResponse = false };
             }
         }
 
@@ -288,8 +307,12 @@ namespace TickTrader.Algo.Core
                 //    ValidateStopPrice(stopPrice);
 
                 double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
+                double orderVolumeInLots = orderVolume / GetSymbolOrThrow(orderToModify.Symbol).ContractSize;
+
                 volume = RoundVolume(volume, smbMetadata);
                 maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
+                ValidateVolumeLots(volume, smbMetadata);
+                ValidateMaxVisibleVolumeLots(maxVisibleVolume, smbMetadata, orderType, volume ?? orderVolumeInLots);
                 double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
                 double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
@@ -310,7 +333,6 @@ namespace TickTrader.Algo.Core
                 logRequest.StopPrice = stopPrice;
                 logRequest.StopLoss = sl;
                 logRequest.TakeProfit = tp;
-                LogOrderModifying(logRequest);
 
                 var request = new ReplaceOrderRequest
                 {
@@ -330,6 +352,10 @@ namespace TickTrader.Algo.Core
                     Options = options
                 };
 
+                ValidateMargin(request, smbMetadata);
+
+                LogOrderModifying(logRequest);
+
                 var result = await api.ModifyOrder(isAysnc, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
@@ -343,7 +369,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify);
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify) { IsServerResponse = false };
             }
 
             LogOrderModifyResults(logRequest, resultEntity);
@@ -398,8 +424,8 @@ namespace TickTrader.Algo.Core
 
         private SymbolAccessor GetSymbolOrThrow(string symbolName)
         {
-            var smbMetadata = (SymbolAccessor)symbols.List[symbolName];
-            if (smbMetadata.IsNull)
+            var smbMetadata = symbols.GetOrDefault(symbolName);
+            if (smbMetadata == null)
                 throw new OrderValidationError(OrderCmdResultCodes.SymbolNotFound);
             return smbMetadata;
         }
@@ -444,6 +470,36 @@ namespace TickTrader.Algo.Core
                 return;
 
             if (volume < 0 || IsInvalidValue(volume.Value))
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+        }
+
+        private void ValidateVolumeLots(double volumeLots, Symbol smbMetadata)
+        {
+            if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private void ValidateVolumeLots(double? volumeLots, Symbol smbMetadata)
+        {
+            if (!volumeLots.HasValue)
+                return;
+
+            if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
+                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private void ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, OrderType orderType, double? volumeLots)
+        {
+            if (!maxVisibleVolumeLots.HasValue)
+                return;
+
+            var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
+                || maxVisibleVolumeLots < 0
+                || maxVisibleVolumeLots < smbMetadata.MinTradeVolume
+                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume
+                || maxVisibleVolumeLots > volumeLots;
+
+            if (isIncorrectMaxVisibleVolume)
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
         }
 
@@ -513,8 +569,85 @@ namespace TickTrader.Algo.Core
             if (options == null)
                 return;
 
-            if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel) && (orderType != OrderType.StopLimit))
+            var isOrderTypeCompatibleToIoC = orderType == OrderType.Limit || orderType == OrderType.StopLimit;
+
+            if (options == OrderExecOptions.ImmediateOrCancel && !isOrderTypeCompatibleToIoC)
                 throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+        }
+
+        private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
+        {
+            var orderEntity = new OrderEntity("-1")
+            {
+                Symbol = request.Symbol,
+                Type = request.Type,
+                Side = request.Side,
+                Price = request.Price,
+                StopPrice = request.StopPrice,
+                RequestedVolume = request.Volume,
+                RemainingVolume = request.Volume,
+                MaxVisibleVolume = request.MaxVisibleVolume,
+                StopLoss = request.StopLoss,
+                TakeProfit = request.TakeProfit,
+                Expiration = request.Expiration,
+                Options = request.Options,
+            };
+
+            if (!Calc.HasEnoughMarginToOpenOrder(orderEntity, symbol))
+                throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private void ValidateMargin(ReplaceOrderRequest request, SymbolAccessor symbol)
+        {
+            var oldOrder = account.Orders.GetOrderOrNull(request.OrderId);
+
+            var orderEntity = new OrderEntity(request.OrderId)
+            {
+                Symbol = request.Symbol,
+                Type = request.Type,
+                Side = request.Side,
+                Price = request.Price ?? oldOrder.Price,
+                StopPrice = request.StopPrice ?? oldOrder.StopPrice,
+                RequestedVolume = request.NewVolume ?? request.CurrentVolume,
+                RemainingVolume = request.NewVolume ?? request.CurrentVolume,
+                MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
+                StopLoss = request.StopLoss ?? oldOrder.StopLoss,
+                TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
+                Expiration = request.Expiration ?? oldOrder.Expiration,
+                Options = request.Options ?? oldOrder.Entity.Options,
+            };
+
+            if (!Calc.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
+                throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
+        {
+            //add prices for market orders
+            if (order.Type == OrderType.Market && order.Price == null)
+            {
+                order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
+                if (account.Type == AccountTypes.Cash)
+                {
+                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
+                }
+            }
+
+            //convert order types for cash accounts
+            if (account.Type == AccountTypes.Cash)
+            {
+                switch (order.Type)
+                {
+                    case OrderType.Market:
+                        order.Type = OrderType.Limit;
+                        order.Options |= OrderExecOptions.ImmediateOrCancel;
+                        break;
+                    case OrderType.Stop:
+                        order.Type = OrderType.StopLimit;
+                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
+                        break;
+                }
+            }
         }
 
         #endregion
@@ -524,7 +657,7 @@ namespace TickTrader.Algo.Core
         private void LogOrderOpening(OpenOrderRequest request)
         {
             var logEntry = new StringBuilder();
-            logEntry.Append("Opening ");
+            logEntry.Append("[Out] Opening ");
             AppendOrderParams(logEntry, " Order to ", request);
 
             logger.PrintTrade(logEntry.ToString());
@@ -537,7 +670,8 @@ namespace TickTrader.Algo.Core
             if (result.IsCompleted)
             {
                 var order = result.ResultingOrder;
-                logEntry.Append("→ SUCCESS: Opened ");
+                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
+                logEntry.Append("SUCCESS: Opened ");
                 if (order != null)
                 {
                     if (!double.IsNaN(order.LastFillPrice) && !double.IsNaN(order.LastFillVolume))
@@ -558,7 +692,8 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                logEntry.Append("→ FAILED Opening ");
+                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
+                logEntry.Append("FAILED Opening ");
                 AppendOrderParams(logEntry, " Order to ", request);
                 logEntry.Append(" error=").Append(result.ResultCode);
 
@@ -569,7 +704,7 @@ namespace TickTrader.Algo.Core
         private void LogOrderModifying(ReplaceOrderRequest request)
         {
             var logEntry = new StringBuilder();
-            logEntry.Append("Modifying order #").Append(request.OrderId).Append(" to ");
+            logEntry.Append("[Out] Modifying order #").Append(request.OrderId).Append(" to ");
             AppendOrderParams(logEntry, " ", request);
 
             logger.PrintTrade(logEntry.ToString());
@@ -581,7 +716,8 @@ namespace TickTrader.Algo.Core
 
             if (result.IsCompleted)
             {
-                logEntry.Append("→ SUCCESS: Modified order #").Append(request.OrderId).Append(" to ");
+                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
+                logEntry.Append("SUCCESS: Modified order #").Append(request.OrderId).Append(" to ");
                 if (result.ResultingOrder != null)
                 {
                     AppendOrderParams(logEntry, " ", result.ResultingOrder);
@@ -593,7 +729,8 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                logEntry.Append("→ FAILED Modifying order #").Append(request.OrderId).Append(" to ");
+                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
+                logEntry.Append("FAILED Modifying order #").Append(request.OrderId).Append(" to ");
                 AppendOrderParams(logEntry, " ", request);
                 logEntry.Append(" error=").Append(result.ResultCode);
 
@@ -603,25 +740,25 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit);
         }
 
         private void AppendIocOrderParams(StringBuilder logEntry, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, OpenOrderRequest request)
         {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.Volume, request.StopPrice ?? request.Price ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.Volume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, string suffix, ReplaceOrderRequest request)
         {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.StopPrice ?? request.Price ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double? sl, double? tp)
+        private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp)
         {
             logEntry.Append(type)
                 .Append(suffix).Append(side)
@@ -641,8 +778,16 @@ namespace TickTrader.Algo.Core
                 logEntry.Append(")");
             }
 
-            if (!double.IsNaN(price) && price != 0)
+            if (!double.IsNaN(price))
                 logEntry.Append(" at price ").Append(price);
+
+            if (!double.IsNaN(stopPrice))
+            {
+                if (!double.IsNaN(price))
+                    logEntry.Append(", stop price ").Append(stopPrice);
+                else
+                    logEntry.Append(" at stop price ").Append(stopPrice);
+            }
         }
 
         #endregion

@@ -275,6 +275,14 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        private Exception Convert(Exception fdkException)
+        {
+            if (fdkException is AggregateException)
+                return Convert((AggregateException)fdkException).InnerException;
+
+            return new InteropException(fdkException.Message, ConnectionErrorCodes.NetworkError);
+        }
+
         #region IFeedServerApi
 
         public event Action<QuoteEntity> Tick;
@@ -335,11 +343,19 @@ namespace TickTrader.Algo.Common.Model
 
             return requestProcessor.EnqueueTask(() =>
             {
-                var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
-                var barArray = FdkConvertor.Convert(result.Bars).ToArray();
-                if (count < 0)
-                    Array.Reverse(barArray);
-                return barArray;
+                try
+                {
+                    var result = _feedProxy.Server.GetHistoryBars(symbol, from, count, fdkPriceType, fdkBarPeriod);
+                    var barArray = FdkConvertor.Convert(result.Bars).ToArray();
+                    System.Diagnostics.Debug.WriteLine($"Downloaded {barArray.Length} bars");
+                    if (count < 0)
+                        Array.Reverse(barArray);
+                    return barArray;
+                }
+                catch (Exception ex)
+                {
+                    throw Convert(ex);
+                }
             });
         }
 
@@ -350,7 +366,7 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("FDK does not support getting quotes");
         }
 
         public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)

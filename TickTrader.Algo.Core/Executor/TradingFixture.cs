@@ -198,14 +198,11 @@ namespace TickTrader.Algo.Core
             }
             else if (eReport.ExecAction == OrderExecAction.Canceled)
             {
-                var oldOrder = orderCollection.GetOrderOrNull(eReport.OrderId);
-                if (oldOrder != null)
-                {
-                    var order = ApplyOrderEntity(eReport, orderCollection);
-                    var clone = order.Clone();
-                    CallListener(eReport);
-                    context.EnqueueEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone)));
-                }
+                // Limit Ioc doesn't appear in order collection
+                var order = ApplyOrderEntity(eReport, orderCollection);
+                var clone = order.Clone();
+                CallListener(eReport);
+                context.EnqueueEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Expired)
             {
@@ -250,6 +247,15 @@ namespace TickTrader.Algo.Core
                         var order = ApplyOrderEntity(eReport, orderCollection);
                         var clone = order.Clone();
                         context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, clone)));
+                    }
+                    else
+                    {
+                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                        if (clone != null)
+                        {
+                            context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                        }
+                        CallListener(eReport);
                     }
                 }
             }

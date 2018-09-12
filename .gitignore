@@ -250,3 +250,5 @@ algo.metadata
 /TickTrader.BotAgent/server.config.xml
 /build.ouput
 /TickTrader.BotAgent/WebAdmin/appsettings.json
+
+package-lock.json

@@ -22,11 +22,10 @@ namespace TickTrader.BotTerminal
 
         private AuthStorageModel authStorage;
         private EventJournal journal;
-        private Task initTask;
         private bool _loginFlag;
         private ClientModel.Data _client;
 
-        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal, AlgoEnvironment algoEnv)
+        public ConnectionManager(ClientModel.Data client, PersistModel appStorage, EventJournal journal)
         {
             _client = client;
 
@@ -34,8 +33,6 @@ namespace TickTrader.BotTerminal
             this.authStorage = appStorage.AuthSettingsStorage;
             this.authStorage.Accounts.Updated += Storage_Changed;
             this.journal = journal;
-
-            initTask = InitCatalog(algoEnv.Repo);
 
             Accounts = new ObservableCollection<AccountAuthEntry>();
             Servers = new ObservableCollection<ServerAuthEntry>();
@@ -51,19 +48,22 @@ namespace TickTrader.BotTerminal
                 else if (IsUsualDisconnect(from, to))
                     journal.Info("{0}: logout from {1}", GetLast().Login, GetLast().Server.Name);
                 else if (IsFailedConnection(from, to))
-                    journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
+                {
+                    if (Connection.LastErrorCode == ConnectionErrorCodes.Unknown && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
+                        journal.Error("{0}: connect failed - {1}", Creds.Login, Connection.LastError.TextMessage);
+                    else journal.Error("{0}: connect failed [{1}]", Creds.Login, Connection.LastErrorCode);
+                }
                 else if (IsUnexpectedDisconnect(from, to))
-                    journal.Error("{0}: connection to {1} lost [{2}]",  GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
+                {
+                    if (Connection.LastErrorCode == ConnectionErrorCodes.Unknown && !string.IsNullOrEmpty(Connection.LastError.TextMessage))
+                        journal.Error("{0}: connection to {1} lost - {2}", GetLast().Login, GetLast().Server.Name, Connection.LastError.TextMessage);
+                    else journal.Error("{0}: connection to {1} lost [{2}]", GetLast().Login, GetLast().Server.Name, Connection.LastErrorCode);
+                }
 
                 logger.Debug("STATE {0}", to);
 
                 ConnectionStateChanged?.Invoke(from, to);
             };
-        }
-
-        private async Task InitCatalog(PluginCatalog catalog)
-        {
-            await catalog.Init();
         }
 
         private bool IsConnected(ConnectionModel.States from, ConnectionModel.States to)
@@ -134,8 +134,6 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                await initTask;
-
                 var result = await Connection.Connect(login, password, server, useSfx, cToken);
 
                 if (result.Code == ConnectionErrorCodes.None)

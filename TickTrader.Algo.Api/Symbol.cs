@@ -29,6 +29,7 @@ namespace TickTrader.Algo.Api
         CommissionChargeMethod CommissionChargeMethod { get; }
         CommissionChargeType CommissionChargeType { get; }
         CommissionType CommissionType { get; }
+        double HedgingFactor { get; }
 
         void Subscribe(int depth = 1);
         void Unsubscribe();

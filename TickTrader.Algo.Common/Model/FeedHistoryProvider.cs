@@ -60,9 +60,26 @@ namespace TickTrader.Algo.Common.Model
                 await Cache.SyncData();
             }
 
+            /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
+            public Task<List<BarEntity>> GetBarList(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime from, DateTime to)
+            {
+                return Actor.Call(a => a.GetBarList(symbol, priceType, timeFrame, from, to));
+            }
+
+            /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
+            public Task<List<QuoteEntity>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
+            {
+                return Actor.Call(a => a.GetQuoteList(symbol, from, to, includeLevel2));
+            }
+
             public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
             {
                 return Actor.Call(a => a.GetBarPage(symbol, priceType, timeFrame, startTime, count));
+            }
+
+            public Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+            {
+                return Actor.Call(a => a.GetQuotePage(symbol, startTime, count, includeLevel2));
             }
 
             public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
@@ -125,14 +142,70 @@ namespace TickTrader.Algo.Common.Model
             return _feedProxy.DownloadBarPage(symbol, startTime, count, priceType, timeFrame);
         }
 
-        //public IAsyncEnumerator<BarStreamSlice> GetBars(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
-        //{
-        //    var buffer = new AsyncBuffer<BarStreamSlice>(2);
-        //    EnumerateBarsInternal(buffer, symbol, timeFrame, priceType, from, to);
-        //    return buffer;
-        //}
+        private Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+        {
+            return _feedProxy.DownloadQuotePage(symbol, startTime, count, includeLevel2);
+        }
 
-        private void  DownloadBarSeriesToStorage(Channel<SliceInfo> stream, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        private async Task<List<BarEntity>> GetBarList(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime from, DateTime to)
+        {
+            var result = new List<BarEntity>();
+
+            while (true)
+            {
+                var page = await _feedProxy.DownloadBarPage(symbol, from, 4000, priceType, timeFrame);
+
+                if (page == null || page.Length == 0)
+                    return result;
+
+                logger.Debug("Downloaded bar page {0} : {1} ({2} {3} {4})", from, page.Length, symbol, timeFrame, priceType);
+
+                foreach (var bar in page)
+                {
+                    if (bar.OpenTime <= to)
+                    {
+                        result.Add(bar);
+                        from = bar.CloseTime;
+                    }
+                    else
+                        return result;
+                }
+
+                if (page.Length < 5)
+                    return result;
+            }
+        }
+
+        private async Task<List<QuoteEntity>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
+        {
+            var result = new List<QuoteEntity>();
+
+            while (true)
+            {
+                var page = await _feedProxy.DownloadQuotePage(symbol, from, 4000, includeLevel2);
+
+                if (page == null || page.Length == 0)
+                    return result;
+
+                logger.Debug("Downloaded quote page {0} : {1} ({2} {3})", from, page.Length, symbol, includeLevel2 ? "l2" : "top");
+
+                foreach (var quote in page)
+                {
+                    if (quote.Time <= to)
+                    {
+                        result.Add(quote);
+                        from = quote.Time;
+                    }
+                    else
+                        return result;
+                }
+
+                if (page.Length < 5)
+                    return result;
+            }
+        }
+
+        private void DownloadBarSeriesToStorage(Channel<SliceInfo> stream, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
             GetSeriesData(stream, symbol, timeFrame, priceType, from, to, GetCacheInfo, DownloadBarsInternal);
         }

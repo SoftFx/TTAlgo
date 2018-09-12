@@ -101,7 +101,8 @@
     </Style>
 
     <ControlTemplate x:Key="SymbolListView.Classic">
-        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}" CellStyle="{StaticResource DataGridCell.Classic}">
+        <DataGrid FrozenColumnCount="1" ItemsSource="{Binding Symbols}" Style="{DynamicResource DataGrid_Style}" CellStyle="{StaticResource DataGridCell.Classic}"
+                  cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenChart($originalsourcecontext)]">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding SymbolName}" Header="Symbol" Width="Auto" ElementStyle="{StaticResource DataGridCell.SymbolName.Classic}" CanUserResize="False" />
                 <DataGridTextColumn Header="Bid" Width="Auto" ElementStyle="{StaticResource BidTextStyle.Classic}" CanUserResize="False">

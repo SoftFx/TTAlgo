@@ -23,6 +23,7 @@ using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
+using TickTrader.Algo.Common.Model.Interop;
 
 namespace TickTrader.BotTerminal
 {
@@ -261,7 +262,12 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                logger.Error("Update ERROR " + ex);
+                var fex = ex.FlattenAsPossible();
+
+                if (fex is InteropException)
+                    logger.Info("Chart[" + Model.Name + "] : load failed due disconnection.");
+                else
+                    logger.Error("Update ERROR " + ex);
                 stateController.PushEvent(Events.LoadFailed);
             }
 

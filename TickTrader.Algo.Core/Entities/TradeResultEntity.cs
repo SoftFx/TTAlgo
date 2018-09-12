@@ -29,11 +29,13 @@ namespace TickTrader.Algo.Core
                 this.ResultingOrder = entity;
             else
                 this.ResultingOrder = OrderEntity.Null;
+            IsServerResponse = true;
         }
 
         public bool IsCompleted { get { return ResultCode == OrderCmdResultCodes.Ok; } }
         public bool IsFaulted { get { return ResultCode != OrderCmdResultCodes.Ok; } }
         public OrderCmdResultCodes ResultCode { get; private set; }
         public Order ResultingOrder { get; private set; }
+        public bool IsServerResponse { get; set; }
     }
 }

@@ -42,8 +42,8 @@ namespace TickTrader.Algo.Core
         IEnumerable<QuoteEntity> GetSnapshot();
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame);
-        List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, int depth);
-        List<QuoteEntity> QueryTicks(string symbolCode, int count, DateTime to, int depth);
+        List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2);
+        List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, int count, bool level2);
         void Subscribe(Action<QuoteEntity[]> FeedUpdated);
         void Unsubscribe();
         void SetSymbolDepth(string symbolCode, int depth);
