@@ -347,38 +347,6 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        //private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
-        //{
-        //    const int pageSize = 2000;
-
-        //    DateTime lastTickTime = DateTime.MinValue;
-
-        //    try
-        //    {
-        //        using (var e = await enumTask)
-        //        {
-        //            var page = new SFX.Quote[pageSize];
-
-        //            while (true)
-        //            {
-        //                var count = await e.NextAsync(page).ConfigureAwait(false);
-        //                if (count <= 0)
-        //                    break;
-
-        //                var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
-        //                await buffer.WriteAsync(tickArray).ConfigureAwait(false);
-        //            }
-        //        }
-
-        //        await buffer.CompleteWriteAsync();
-        //        buffer.Dispose();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        buffer.SetFailed(ex);
-        //    }
-        //}
-
         public async Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
             var result = new List<QuoteEntity>();

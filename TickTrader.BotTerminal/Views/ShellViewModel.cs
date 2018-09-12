@@ -286,7 +286,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await _userSymbols.Stop();
                 await storage.Stop();
             }
             catch (Exception ex)
@@ -305,7 +305,7 @@ namespace TickTrader.BotTerminal
 
         public void OnLoaded()
         {
-            ConnectLastOrConnectDefault();
+            Connect(null); // show connect window
         }
 
         private async void PrintSystemInfo()

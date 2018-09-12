@@ -224,7 +224,6 @@ namespace TickTrader.BotTerminal
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();
 
-                var shell = _container.GetInstance<ShellViewModel>();
                 _shell = _container.GetInstance<ShellViewModel>();
                 _shell.Deactivated += Shell_Deactivated;
 
