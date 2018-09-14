@@ -50,6 +50,15 @@ namespace TickTrader.BotAgent.WebAdmin
             });
             services.AddTransient<IAuthManager, AuthManager>();
 
+            // .NET Core SDK 2.1.4 has broken compatibility with 1.X
+            // This workaround should avoid problematic code paths
+            //var manager = new ApplicationPartManager();
+            //var assemblies = new[] { typeof(Startup).Assembly };
+            //foreach (var assembly in assemblies)
+            //{
+            //    manager.ApplicationParts.Add(new AssemblyPart(assembly));
+            //}
+
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
             services.AddMvc().AddJsonOptions(options =>
             {

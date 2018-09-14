@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
             _agentModel = agentModel;
             _algoEnv = algoEnv;
 
-            Plugins = _agentModel.Plugins.OrderBy((k, v) => k).Select(p => new AlgoPluginViewModel(p, this));
+            Plugins = _agentModel.Plugins.OrderBy((k, v) => v.Descriptor.UiDisplayName).Select(p => new AlgoPluginViewModel(p, this));
             Packages = _agentModel.Packages.OrderBy((k, v) => k).Select(p => new AlgoPackageViewModel(p, this));
             Bots = _agentModel.Bots.OrderBy((k, v) => k).Select(p => new AlgoBotViewModel(p, this));
             Accounts = _agentModel.Accounts.OrderBy((k, v) => k).Select(p => new AlgoAccountViewModel(p, this));

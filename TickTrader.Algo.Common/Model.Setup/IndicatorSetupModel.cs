@@ -9,6 +9,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public IndicatorSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
             : base(pRef, metadata, context)
         {
+            Init();
         }
 
 

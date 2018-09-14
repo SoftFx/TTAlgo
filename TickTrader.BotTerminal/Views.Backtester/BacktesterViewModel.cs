@@ -99,9 +99,6 @@ namespace TickTrader.BotTerminal
             {
                 if (a.New != null)
                 {
-                    PackageRef = _env.LocalAgent.Library.GetPackageRef(a.New.Info.Key.GetPackageKey());
-                    PluginRef = _env.LocalAgent.Library.GetPluginRef(a.New.Info.Key);
-                    PluginSetupModel = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(PluginRef, this, this);
                     PluginConfig = null;
                 }
             });
@@ -125,10 +122,7 @@ namespace TickTrader.BotTerminal
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
-        public PluginSetupModel PluginSetupModel { get; private set; }
         public PluginConfig PluginConfig { get; private set; }
-        public AlgoPackageRef PackageRef { get; private set; }
-        public AlgoPluginRef PluginRef { get; private set; }
 
         public void OpenPluginSetup()
         {
@@ -224,18 +218,23 @@ namespace TickTrader.BotTerminal
             observer.StartProgress(DateRange.From.GetAbsoluteDay(), DateRange.To.GetAbsoluteDay());
             observer.SetMessage("Emulating...");
 
-            PluginSetupModel.Load(PluginConfig);
-            PluginSetupModel.MainSymbolPlaceholder.Id = chartSymbol.Key;
+            var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
+            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SelectedPlugin.Value.Info.Key);
+            var pluginSetupModel = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(pluginRef, this, this);
+
+            if (PluginConfig != null)
+                pluginSetupModel.Load(PluginConfig);
+            pluginSetupModel.MainSymbolPlaceholder.Id = chartSymbol.Name;
 
             // TODO: place correctly to avoid domain unload during backtester run
-            //PackageRef.IncrementRef();
-            //PackageRef.DecrementRef();
+            //packageRef.IncrementRef();
+            //packageRef.DecrementRef();
 
-            using (var tester = new Backtester(PluginRef, DateRange.From, DateRange.To))
+            using (var tester = new Backtester(pluginRef, DateRange.From, DateRange.To))
             {
-                PluginSetupModel.Apply(tester);
+                pluginSetupModel.Apply(tester);
 
-                foreach (var outputSetup in PluginSetupModel.Outputs)
+                foreach (var outputSetup in pluginSetupModel.Outputs)
                 {
                     if (outputSetup is ColoredLineOutputSetupModel)
                         tester.InitOutputCollection<double>(outputSetup.Id);
