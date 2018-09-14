@@ -37,7 +37,12 @@ export class BotDetailsComponent implements OnInit {
                 this.BotRequest = new ObservableRequest(params['id'] ?
                     this._api.GetTradeBot(params['id']) :
                     Observable.of(<TradeBotModel>null)
-                ).Subscribe(result => this.Bot = result);
+                ).Subscribe(result => {
+                    this.Bot = result;
+                    this._api.Feed.ChangeBotState
+                        .filter(state => this.Bot && this.Bot.Id == state.Id)
+                        .subscribe(botState => this.updateBotState(botState));
+                });
 
                 this.LogRequest = new ObservableRequest(params['id'] ?
                     this._api.GetTradeBotLog(params['id']) :
@@ -59,10 +64,6 @@ export class BotDetailsComponent implements OnInit {
                     else { this.Status = ""; }
                 });
             });
-
-        this._api.Feed.ChangeBotState
-            .filter(state => this.Bot && this.Bot.Id == state.Id)
-            .subscribe(botState => this.updateBotState(botState));
     }
 
     public InitDeletion() {

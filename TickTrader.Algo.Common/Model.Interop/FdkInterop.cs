@@ -14,6 +14,7 @@ using System.Threading.Tasks.Dataflow;
 using TickTrader.Algo.Common.Lib;
 using SoftFX.Extended.Reports;
 using ActorSharp;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model
 {

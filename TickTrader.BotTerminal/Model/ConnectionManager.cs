@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {

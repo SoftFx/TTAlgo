@@ -1,0 +1,84 @@
+[ ca ]
+default_ca			= CA_default
+
+[ CA_default ]
+dir				= .
+certs				= $dir/certs
+database			= $dir/index.txt
+unique_subject		= no
+new_certs_dir		= $dir/certs
+certificate			= $dir/certs/ca.crt
+serial				= $dir/serial
+private_key			= $dir/keys/ca.key
+RANDFILE			= $dir/seed.rnd
+
+x509_extensions			= client_cert
+default_days			= 36500
+default_md			= sha512
+preserve			= no
+email_in_dn			= no
+
+policy				= policy_match
+
+[ policy_match ]
+countryName			= match
+stateOrProvinceName		= optional
+localityName			= match
+organizationName		= match
+organizationalUnitName		= supplied
+commonName			= optional
+emailAddress			= optional
+
+[ req ]
+default_bits			= 4096
+default_keyfile 		= private.key
+distinguished_name		= req_distinguished_name
+x509_extensions 		= ca_cert
+
+[ req_distinguished_name ]
+countryName			= Country Name (2 letter code)
+countryName_default		= LV
+countryName_min			= 2
+countryName_max			= 2
+stateOrProvinceName		= State or Province Name (full name)
+localityName			= Locality Name (eg, city)
+localityName_default		= Riga
+0.organizationName		= Organization Name (eg, company)
+0.organizationName_default	= softFX
+organizationalUnitName		= Organizational Unit Name (eg, section)
+commonName			= Common Name (eg, your website's domain name)
+commonName_max			= 64
+
+[ client_cert ]
+basicConstraints		= CA:FALSE
+subjectKeyIdentifier		= hash
+authorityKeyIdentifier		= keyid,issuer
+nsCertType			= client #, email, objsign
+keyUsage			= digitalSignature, keyEncipherment #, nonRepudiation, dataEncipherment
+extendedKeyUsage		= clientAuth, codeSigning
+nsComment			= "TTAlgo BotTerminal Certificate"
+
+[ client_sign_cert ] # That is what Visual Studio expects for ClickOnce deployment
+subjectKeyIdentifier		= hash
+authorityKeyIdentifier		= keyid,issuer
+keyUsage			= digitalSignature
+extendedKeyUsage		= codeSigning
+nsComment			= "TTAlgo BotTerminal Signing Certificate"
+
+[ server_cert ]
+basicConstraints	= CA:FALSE
+subjectKeyIdentifier		= hash
+authorityKeyIdentifier		= keyid,issuer
+nsCertType			= server
+keyUsage			= digitalSignature, keyEncipherment
+extendedKeyUsage	= serverAuth, codeSigning, nsSGC, msSGC
+nsComment			= "TTAlgo BotAgent Certificate"
+
+[ ca_cert ]
+basicConstraints 		= CA:TRUE
+subjectKeyIdentifier		= hash
+authorityKeyIdentifier		= keyid,issuer
+nsCertType			= sslCA #, emailCA
+keyUsage			= cRLSign, keyCertSign
+extendedKeyUsage		= codeSigning, serverAuth, clientAuth # nsSGC, msSGC
+nsComment			= "TTAlgo CA Certificate"

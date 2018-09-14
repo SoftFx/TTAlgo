@@ -1,6 +1,4 @@
-﻿using TickTrader.Algo.Core;
-
-namespace TickTrader.BotAgent.WebAdmin.Server.Dto
+﻿namespace TickTrader.BotAgent.WebAdmin.Server.Dto
 {
     public class TradeBotDto
     {
@@ -12,6 +10,5 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Dto
         public string FaultMessage { get; set; }
         public TradeBotConfigDto Config { get; set; }
         public PermissionsDto Permissions { get; set; }
-        public bool Isolated { get; internal set; }
     }
 }

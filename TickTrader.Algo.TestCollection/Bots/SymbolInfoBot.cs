@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Symbol Info Bot", Version = "2.2", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Symbol Info Bot", Version = "2.2", Category = "Test Plugin Info", SetupMainSymbol = false,
         Description = "Prints info about current chart symbol and all symbols plugin can see to bot status window")]
     public class SymbolInfoBot : TradeBotCommon
     {

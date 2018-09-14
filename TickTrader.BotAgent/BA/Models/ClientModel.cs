@@ -1,5 +1,4 @@
-﻿using SoftFX.Extended;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -8,14 +7,12 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.BA.Exceptions;
-using TickTrader.BotAgent.Infrastructure;
-using TickTrader.BotAgent.Extensions;
-using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.Algo.Core;
 using Machinarium.Qnil;
-using TickTrader.BotAgent.BA.Entities;
 using NLog;
 using ActorSharp.Lib;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -24,13 +21,13 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static ILogger _log = LogManager.GetLogger(nameof(ClientModel));
 
-        private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan KeepAliveThreshold = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan ReconnectThreshold = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ReconnectThreshold_BadCreds = TimeSpan.FromMinutes(1);
 
         private CancellationTokenSource _connectCancellation;
         private AsyncGate _requestGate;
-        private ConnectionErrorInfo _lastError;
+        private ConnectionErrorInfo _lastError = ConnectionErrorInfo.Ok;
         private Algo.Common.Model.ClientModel.ControlHandler2 _core;
         private TaskCompletionSource<object> _shutdownCompletedSrc;
         private DateTime _pendingDisconnect;
@@ -56,65 +53,73 @@ namespace TickTrader.BotAgent.BA.Models
 
         public async Task Init(PackageStorage packageProvider)
         {
-            _packageProvider = packageProvider;
-            _requestGate = new AsyncGate();
-            _requestGate.OnWait += ManageConnection;
-            _requestGate.OnExit += KeepAlive;
-
-            if (_bots == null)
-                _bots = new List<TradeBotModel>();
-
-            var toRemove = new List<TradeBotModel>();
-
-            foreach (var bot in _bots)
+            try
             {
-                try
+                _packageProvider = packageProvider;
+                _requestGate = new AsyncGate();
+                _requestGate.OnWait += ManageConnection;
+                _requestGate.OnExit += KeepAlive;
+
+                if (_bots == null)
+                    _bots = new List<TradeBotModel>();
+
+                var toRemove = new List<TradeBotModel>();
+
+                foreach (var bot in _bots)
                 {
-                    BotValidation?.Invoke(bot);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "Bot '{0}' failed validation and was removed! {1}", bot.Id);
-                    toRemove.Add(bot);
-                    continue;
+                    try
+                    {
+                        BotValidation?.Invoke(bot);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Bot '{0}' failed validation and was removed! {1}", bot.Id);
+                        toRemove.Add(bot);
+                        continue;
+                    }
+
+                    if (bot.IsRunning)
+                        _startedBotsCount++;
+                    InitBot(bot);
                 }
 
-                if (bot.IsRunning)
-                    _startedBotsCount++;
-                InitBot(bot);
+                foreach (var bot in toRemove)
+                    _bots.Remove(bot);
+
+                var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder };
+
+                _core = new Algo.Common.Model.ClientModel.ControlHandler2(options,
+                    ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
+
+                await _core.OpenHandler();
+
+                _core.Connection.Disconnected += () =>
+                {
+                    _lostConnection = true;
+                    ManageConnection();
+                };
+
+                PluginTradeApi = await _core.CreateTradeApi();
+                PluginTradeInfo = await _core.CreateTradeProvider();
+
+                _isInitialized = true;
+
+                ManageConnectionLoop();
             }
-
-            foreach (var bot in toRemove)
-                _bots.Remove(bot);
-
-            var options = new ConnectionOptions() { EnableLogs = false };
-
-            _core = new Algo.Common.Model.ClientModel.ControlHandler2(options,
-                ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
-
-            await _core.OpenHandler();
-
-            _core.Connection.Disconnected += () =>
+            catch (Exception ex)
             {
-                _lostConnection = true;
-                ManageConnection();
-            };
-
-            PluginTradeApi = await _core.CreateTradeApi();
-            PluginTradeInfo = await _core.CreateTradeProvider();
-
-            _isInitialized = true;
-
-            ManageConnectionLoop();
+                _log.Error(ex, $"Failed to init account {Username} on {Address}");
+            }
         }
 
         public ConnectionStates ConnectionState { get; private set; }
+        public ConnectionErrorInfo LastError => _lastError;
         public PluginTradeApiProvider.Handler PluginTradeApi { get; private set; }
         public PluginTradeInfoProvider PluginTradeInfo { get; private set; }
 
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;
-        public bool HasError => _lastError != null;
+        public bool HasError => _lastError != null && _lastError.Code != ConnectionErrorCodes.None;
         public string ErrorText => _lastError?.TextMessage ?? _lastError?.Code.ToString();
 
         public event Action<ClientModel> StateChanged;
@@ -134,14 +139,14 @@ namespace TickTrader.BotAgent.BA.Models
         [DataMember(Name = "useNewProtocol")]
         public bool UseNewProtocol { get; private set; }
 
-        public async Task<TradeMetadataInfo> GetMetadata()
+        public async Task<AccountMetadataInfo> GetMetadata()
         {
             using (await _requestGate.Enter())
             {
                 if (_lastError.Code != ConnectionErrorCodes.None)
                     throw new CommunicationException("Connection error! Code: " + _lastError.Code, _lastError.Code);
 
-                return new TradeMetadataInfo(await _core.GetAccountType(), await _core.GetSymbols(), await _core.GetCurrecnies());
+                return new AccountMetadataInfo(GetKey(), (await _core.GetSymbols()).Select(s => new SymbolInfo(s.Name, SymbolOrigin.Online)).ToList());
             }
 
             //if (ConnectionState == ConnectionStates.Online)
@@ -160,7 +165,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public AccountKey GetKey()
         {
-            return new AccountKey(Username, Address);
+            return new AccountKey(Address, Username);
         }
 
         public PluginFeedProvider CreatePluginFeedAdapter()
@@ -206,7 +211,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void ManageConnection()
         {
             if (ConnectionState == ConnectionStates.Offline)
-            {                
+            {
                 var forcedConnect = (_startedBotsCount > 0 && _credsChanged) || _requestGate.WatingCount > 0;
                 var scheduledConnect = _startedBotsCount > 0 && _pendingReconnect < DateTime.UtcNow;
 
@@ -326,8 +331,8 @@ namespace TickTrader.BotAgent.BA.Models
 
             _connectCancellation = new CancellationTokenSource();
 
-            _lastError = await  _core.Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
-           
+            _lastError = await _core.Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
+
             if (_lastError.Code == ConnectionErrorCodes.None)
             {
                 _lostConnection = false;
@@ -340,6 +345,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 await _requestGate.ExecQueuedRequests();
 
+                ScheduleReconnect(_lastError.Code == ConnectionErrorCodes.BlockedAccount || _lastError.Code == ConnectionErrorCodes.InvalidCredentials);
                 ChangeState(ConnectionStates.Offline);
             }
         }
@@ -356,6 +362,24 @@ namespace TickTrader.BotAgent.BA.Models
             OnCredsChanged();
         }
 
+        public void ChangeConnectionSettings(string password, bool useNewProtocol)
+        {
+            var updated = false;
+            if (!string.IsNullOrEmpty(password))
+            {
+                Password = password;
+                updated = true;
+            }
+            if (UseNewProtocol != useNewProtocol)
+            {
+                UseNewProtocol = useNewProtocol;
+                updated = true;
+            }
+
+            if (updated)
+                OnCredsChanged();
+        }
+
         private void OnCredsChanged()
         {
             _credsChanged = true;
@@ -368,18 +392,18 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Bot Management
 
-        public TradeBotModel AddBot(string id, TradeBotConfig config)
+        public TradeBotModel AddBot(TradeBotConfig config)
         {
             CheckInitialized();
 
-            var algoKey = config.Plugin;
+            var algoKey = config.Key;
 
-            var package = _packageProvider.Get(algoKey.PackageName);
+            var package = _packageProvider.GetPackageRef(algoKey.PackageName);
 
             if (package == null)
-                throw new PackageNotFoundException($"Package '{algoKey.PackageName}' cannot be found!");
+                throw new PackageNotFoundException($"Package {algoKey.PackageName} at {algoKey.PackageLocation} cannot be found!");
 
-            var newBot = new TradeBotModel(id, algoKey, config);
+            var newBot = new TradeBotModel(config);
             BotValidation?.Invoke(newBot);
             InitBot(newBot);
             _bots.Add(newBot);
@@ -448,8 +472,10 @@ namespace TickTrader.BotAgent.BA.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            bot.Init(this, _packageProvider,  ServerModel.GetWorkingFolderFor(bot.Id));
-            BotInitialized?.Invoke(bot);
+            if (bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id)))
+            {
+                BotInitialized?.Invoke(bot);
+            }
         }
 
         private void OnBotConfigurationChanged(TradeBotModel bot)
@@ -471,7 +497,7 @@ namespace TickTrader.BotAgent.BA.Models
             BotStateChanged?.Invoke(bot);
         }
 
-        internal void RemoveBotsFromPackage(PackageModel package)
+        internal void RemoveBotsFromPackage(AlgoPackageRef package)
         {
             var toRemove = _bots.Where(b => b.Package == package).ToList();
             toRemove.ForEach(b => _bots.Remove(b));

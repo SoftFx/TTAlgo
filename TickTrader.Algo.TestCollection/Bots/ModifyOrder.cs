@@ -5,8 +5,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.3", Category = "Test Orders",
-        Description = "Modify Order by OrderId" +
-                      "Prints order execution result to bot status window. ")]
+        SetupMainSymbol = false, Description = "Modifies order by OrderId. Prints order execution result to bot status window.")]
     public class ModifyOrder : TradeBotCommon
     {
         [Parameter(DefaultValue = "")]
@@ -89,5 +88,5 @@ namespace TickTrader.Algo.TestCollection.Bots
         }
     }
 
-    public enum IocTypes { NoneFlag, DropFlag, SetFlag}
+    public enum IocTypes { NoneFlag, DropFlag, SetFlag }
 }

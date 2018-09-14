@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
-        private readonly AlgoPluginDescriptor descriptor;
+        private readonly PluginMetadata descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
         private string workingFolder;
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core
 
         public PluginExecutor(string pluginId)
         {
-            descriptor = AlgoPluginDescriptor.Get(pluginId);
+            descriptor = AlgoAssemblyInspector.GetPlugin(pluginId);
             statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
@@ -203,20 +203,6 @@ namespace TickTrader.Algo.Core
                     ThrowIfRunning();
 
                     _botInstanceId = value;
-                }
-            }
-        }
-
-        public bool Isolated 
-        {
-            get { return _isolated; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    _isolated = value;
                 }
             }
         }

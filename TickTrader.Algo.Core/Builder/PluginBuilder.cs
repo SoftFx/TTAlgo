@@ -27,9 +27,9 @@ namespace TickTrader.Algo.Core
         private PluginPermissions _permissions;
         private ICalculatorApi _calc;
 
-        internal PluginBuilder(AlgoPluginDescriptor descriptor)
+        internal PluginBuilder(PluginMetadata descriptor)
         {
-            Descriptor = descriptor;
+            Metadata = descriptor;
             marketData = new MarketDataImpl(this);
             Symbols = new SymbolsCollection(marketData);
             Currencies = new CurrenciesCollection();
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
         public SymbolsCollection Symbols { get; private set; }
         public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
-        public AlgoPluginDescriptor Descriptor { get; private set; }
+        public PluginMetadata Metadata { get; private set; }
         public AccountAccessor Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }

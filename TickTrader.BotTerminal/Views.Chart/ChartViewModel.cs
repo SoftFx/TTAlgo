@@ -25,42 +25,46 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Metadata;
 using System.Windows.Input;
 using TickTrader.Algo.Common.Model;
+using Xceed.Wpf.AvalonDock.Layout;
+using System.Windows.Controls;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
+    public enum ChartPeriods { MN1, W1, D1, H4, H1, M30, M15, M5, M1, S10, S1, Ticks };
+
+
     class ChartViewModel : Screen, IDropHandler
     {
-        private static int idSeed;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private readonly TraderClientModel clientModel;
-        private readonly AlgoEnvironment algoEnv;
         private ChartModelBase activeChart;
         private readonly BarChartModel barChart;
         private readonly TickChartModel tickChart;
-        private readonly IShell shell;
-        private readonly VarList<BotControlViewModel> bots = new VarList<BotControlViewModel>();
+        private readonly IShell _shell;
+        private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
-        private PreferencesStorageModel _preferences;
+        private BotManagerViewModel _botManager;
+        private IVarList<BotControlViewModel> _botsBySymbol;
 
-        public ChartViewModel(string symbol, string period, IShell shell, TraderClientModel clientModel, AlgoEnvironment algoEnv, PersistModel storage)
+
+        public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
         {
-            this.Symbol = symbol;
-            this.DisplayName = symbol;
-            this.clientModel = clientModel;
-            this.algoEnv = algoEnv;
-            this.shell = shell;
-            _preferences = storage.PreferencesStorage.StorageModel;
+            Symbol = symbol;
+            DisplayName = symbol;
+            _algoEnv = algoEnv;
+            _botManager = botManager;
 
-            ChartWindowId = "Chart" + ++idSeed;
+            ChartWindowId = chartId;
 
-            smb = clientModel.Symbols.GetOrDefault(symbol);
+            _shell = _algoEnv.Shell;
+            smb = _algoEnv.LocalAgent.ClientModel.Symbols.GetOrDefault(symbol);
 
             Precision = smb.Descriptor.Precision;
             UpdateLabelFormat();
 
-            this.barChart = new BarChartModel(smb, algoEnv, clientModel);
-            this.tickChart = new TickChartModel(smb, algoEnv, clientModel);
+            this.barChart = new BarChartModel(smb, _algoEnv);
+            this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
             var allIndicators = charts.SelectMany(c => c.Indicators);
@@ -76,20 +80,20 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            Bots = bots.AsObservable();
+            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Config.MainSymbol.Name == Symbol);// && bc.Model.Setup.Descriptor.SetupMainSymbol);
 
-            periodActivatos.Add("MN1", () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
-            periodActivatos.Add("W1", () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
-            periodActivatos.Add("D1", () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
-            periodActivatos.Add("H4", () => ActivateBarChart(TimeFrames.H4, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("H1", () => ActivateBarChart(TimeFrames.H1, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M30", () => ActivateBarChart(TimeFrames.M30, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M15", () => ActivateBarChart(TimeFrames.M15, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M5", () => ActivateBarChart(TimeFrames.M5, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("M1", () => ActivateBarChart(TimeFrames.M1, "d MMMM yyyy HH:mm"));
-            periodActivatos.Add("S10", () => ActivateBarChart(TimeFrames.S10, "d MMMM yyyy HH:mm:ss"));
-            periodActivatos.Add("S1", () => ActivateBarChart(TimeFrames.S1, "d MMMM yyyy HH:mm:ss"));
-            periodActivatos.Add("Ticks", () => ActivateTickChart());
+            periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.D1, () => ActivateBarChart(TimeFrames.D, "d MMMM yyyy"));
+            periodActivatos.Add(ChartPeriods.H4, () => ActivateBarChart(TimeFrames.H4, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.H1, () => ActivateBarChart(TimeFrames.H1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M30, () => ActivateBarChart(TimeFrames.M30, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M15, () => ActivateBarChart(TimeFrames.M15, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M5, () => ActivateBarChart(TimeFrames.M5, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.M1, () => ActivateBarChart(TimeFrames.M1, "d MMMM yyyy HH:mm"));
+            periodActivatos.Add(ChartPeriods.S10, () => ActivateBarChart(TimeFrames.S10, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add(ChartPeriods.S1, () => ActivateBarChart(TimeFrames.S1, "d MMMM yyyy HH:mm:ss"));
+            periodActivatos.Add(ChartPeriods.Ticks, () => ActivateTickChart());
 
             SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
 
@@ -98,12 +102,12 @@ namespace TickTrader.BotTerminal
 
         #region Bindable Properties
 
-        private readonly Dictionary<string, System.Action> periodActivatos = new Dictionary<string, System.Action>();
-        private KeyValuePair<string, System.Action> selectedPeriod;
+        private readonly Dictionary<ChartPeriods, System.Action> periodActivatos = new Dictionary<ChartPeriods, System.Action>();
+        private KeyValuePair<ChartPeriods, System.Action> selectedPeriod;
 
-        public string ChartWindowId { get; private set; }
+        public string ChartWindowId { get; }
 
-        public Dictionary<string, System.Action> AvailablePeriods { get { return periodActivatos; } }
+        public Dictionary<ChartPeriods, System.Action> AvailablePeriods => periodActivatos;
 
         public ChartModelBase Chart
         {
@@ -118,13 +122,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public KeyValuePair<string, System.Action> SelectedPeriod
+        public KeyValuePair<ChartPeriods, System.Action> SelectedPeriod
         {
             get { return selectedPeriod; }
             set
             {
                 selectedPeriod = value;
-                NotifyOfPropertyChange("SelectedPeriod");
+                NotifyOfPropertyChange(nameof(SelectedPeriod));
                 DisplayName = $"{Symbol}, {SelectedPeriod.Key}";
                 selectedPeriod.Value();
             }
@@ -137,7 +141,6 @@ namespace TickTrader.BotTerminal
         public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
-        public bool HasStartedBots => Bots.Any(b => b.IsStarted);
 
         public int Precision { get; private set; }
         public string YAxisLabelFormat { get; private set; }
@@ -149,26 +152,11 @@ namespace TickTrader.BotTerminal
 
         public override void TryClose(bool? dialogResult = null)
         {
-            if (dialogResult == null && HasStartedBots)
-            {
-                var closeDlg = new CloseChartDialogViewModel(this);
-                shell.ToolWndManager.ShowDialog(closeDlg, this);
-                dialogResult = closeDlg.IsConfirmed;
-            }
-
-            if (dialogResult == false)
-            {
-                return;
-            }
-
-            StopBots();
-
             base.TryClose(dialogResult);
 
-            Indicators.Foreach(i => algoEnv.IdProvider.RemovePlugin(i.Model.InstanceId));
-            Bots.Foreach(b => algoEnv.IdProvider.RemovePlugin(b.Model.InstanceId));
+            Indicators.Foreach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
 
-            shell.ToolWndManager.CloseWindowByKey(this);
+            _shell.ToolWndManager.CloseWindowByKey(this);
 
             barChart.Dispose();
             tickChart.Dispose();
@@ -176,37 +164,21 @@ namespace TickTrader.BotTerminal
 
         public void OpenOrder()
         {
-            shell.OrderCommands.OpenMarkerOrder(Symbol);
+            _shell.OrderCommands.OpenMarkerOrder(Symbol);
         }
 
         public ChartStorageEntry GetSnapshot()
         {
             return new ChartStorageEntry
             {
+                Id = ChartWindowId,
                 Symbol = Symbol,
                 SelectedPeriod = SelectedPeriod.Key,
                 SelectedChartType = Chart.SelectedChartType,
                 CrosshairEnabled = Chart.IsCrosshairEnabled,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    DescriptorId = i.Model.Setup.Descriptor.Id,
-                    PluginFilePath = i.Model.PluginFilePath,
-                    InstanceId = i.Model.InstanceId,
-                    Isolated = i.Model.Isolated,
                     Config = i.Model.Setup.Save(),
-                    Permissions = i.Model.Permissions,
-                }).ToList(),
-                Bots = Bots.Select(b => new TradeBotStorageEntry
-                {
-                    DescriptorId = b.Model.Setup.Descriptor.Id,
-                    PluginFilePath = b.Model.PluginFilePath,
-                    InstanceId = b.Model.InstanceId,
-                    Isolated = b.Model.Isolated,
-                    Started = b.Model.State == BotModelStates.Running,
-                    Config = b.Model.Setup.Save(),
-                    Permissions = b.Model.Permissions,
-                    StateViewOpened = b.Model.StateViewOpened,
-                    StateSettings = b.Model.StateViewSettings.StorageModel,
                 }).ToList(),
             };
         }
@@ -221,97 +193,42 @@ namespace TickTrader.BotTerminal
             Chart.SelectedChartType = snapshot.SelectedChartType;
             Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
-            snapshot.Bots?.ForEach(b => RestoreTradeBot(b));
-        }
-
-        private PluginSetupViewModel RestorePlugin<T>(PluginStorageEntry<T> snapshot) where T : PluginStorageEntry<T>, new()
-        {
-            var catalogItem = algoEnv.Repo.AllPlugins.Where((k, i) => i.CanBeUseForSnapshot(snapshot)).Snapshot.FirstOrDefault().Value;
-            if (catalogItem == null)
-            {
-                return null;
-            }
-            var setupModel = new PluginSetupViewModel(algoEnv, catalogItem, Chart)
-            {
-                InstanceId = snapshot.InstanceId,
-                Isolated = snapshot.Isolated,
-                Permissions = snapshot.Permissions,
-            };
-            if (snapshot is TradeBotStorageEntry)
-            {
-                setupModel.RunBot = (snapshot as TradeBotStorageEntry).Started && _preferences.RestartBotsOnStartup;
-            }
-            if (snapshot.Config != null)
-            {
-                setupModel.Setup.Load(snapshot.Config);
-            }
-            return setupModel;
         }
 
         private void RestoreIndicator(IndicatorStorageEntry entry)
         {
-            var setupModel = RestorePlugin(entry);
-
-            if (setupModel == null)
+            if (entry.Config == null)
             {
-                logger.Error($"Indicator '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
-                return;
+                logger.Error("Indicator not configured!");
+            }
+            if (entry.Config.Key == null)
+            {
+                logger.Error("Indicator key missing!");
             }
 
-            if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Indicator)
-            {
-                logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not an indicator!");
-            }
-
-            AttachPlugin(setupModel);
-        }
-
-        private void RestoreTradeBot(TradeBotStorageEntry entry)
-        {
-            var setupModel = RestorePlugin(entry);
-
-            if (setupModel == null)
-            {
-                logger.Error($"Trade bot '{entry.DescriptorId}' from {entry.PluginFilePath} not found!");
-                return;
-            }
-
-            if (setupModel.Setup.Descriptor.AlgoLogicType != AlgoTypes.Robot)
-            {
-                logger.Error($"Plugin '{entry.DescriptorId}' from {entry.PluginFilePath} is not a trade bot!");
-                return;
-            }
-
-            //AttachTradeBot(setupModel, entry.StateSettings.Clone(), entry.StateViewOpened);
-            AttachTradeBot(setupModel, new WindowStorageModel { Width = 300, Height = 300 }, false);
+            Chart.AddIndicator(entry.Config);
         }
 
         #region Algo
 
         public void OpenPlugin(object descriptorObj)
         {
-            OpenAlgoSetup((PluginCatalogItem)descriptorObj);
+            OpenAlgoSetup((AlgoPluginViewModel)descriptorObj);
         }
 
-        public void StopBots()
-        {
-            foreach (var bot in Bots)
-            {
-                if (bot.IsStarted)
-                {
-                    bot.StartStop();
-                }
-                shell.ToolWndManager.CloseWindowByKey(bot.Model);
-            }
-        }
-
-        private void OpenAlgoSetup(PluginCatalogItem item)
+        private void OpenAlgoSetup(AlgoPluginViewModel item)
         {
             try
             {
-                var model = new PluginSetupViewModel(algoEnv, item, Chart);
-                if (!model.SetupCanBeSkipped)
-                    shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
+                if (item.Descriptor.Type == AlgoTypes.Robot)
+                {
+                    _botManager.OpenBotSetup(item.Info, Chart);
+                    return;
+                }
+
+                var model = new LocalPluginSetupViewModel(_shell.Agent, item.Key, AlgoTypes.Indicator, Chart.GetSetupContextInfo());
+                if (!model.Setup.CanBeSkipped)
+                    _shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
                 else
                     AttachPlugin(model);
 
@@ -323,60 +240,38 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void AttachPlugin(PluginSetupViewModel setupModel)
+        private void AttachPlugin(LocalPluginSetupViewModel setupModel)
         {
             if (setupModel == null)
             {
                 return;
             }
 
-            var pluginType = setupModel.Setup.Descriptor.AlgoLogicType;
-
-            if (pluginType == AlgoTypes.Indicator)
+            switch (setupModel.Setup.Descriptor.Type)
             {
-                Chart.AddIndicator(setupModel);
-            }
-            else if (pluginType == AlgoTypes.Robot)
-            {
-                AttachTradeBot(setupModel, new WindowStorageModel { Width = 300, Height = 300 }, true);
+                case AlgoTypes.Indicator:
+                    Chart.AddIndicator(setupModel.GetConfig());
+                    break;
+                default:
+                    throw new Exception($"Unknown plugin type '{setupModel.Setup.Descriptor.Type}'");
             }
         }
 
-        private void AttachTradeBot(PluginSetupViewModel setupModel, WindowStorageModel stateSettings, bool openState)
-        {
-            var bot = new TradeBotModel(setupModel, Chart, stateSettings);
-            var viewModel = new BotControlViewModel(bot, shell.ToolWndManager, setupModel.RunBot, openState);
-            viewModel.Closed += BotClosed;
-            bots.Add(viewModel);
-            algoEnv.IdProvider.AddPlugin(bot);
-        }
-
-        void AlgoSetupClosed(PluginSetupViewModel setupModel, bool dlgResult)
+        void AlgoSetupClosed(LocalPluginSetupViewModel setupModel, bool dlgResult)
         {
             setupModel.Closed -= AlgoSetupClosed;
             if (dlgResult)
                 AttachPlugin(setupModel);
         }
 
-        private void BotClosed(BotControlViewModel sender)
-        {
-            bots.Remove(sender);
-            algoEnv.IdProvider.RemovePlugin(sender.Model.InstanceId);
-            sender.Dispose();
-            sender.Closed -= BotClosed;
-            //sender.Model.StateChanged -= Bot_StateChanged;
-        }
-
         #endregion
 
         public void Drop(object o)
         {
-            var algo = o as AlgoItemViewModel;
-            if (algo != null)
+            var plugin = o as AlgoPluginViewModel;
+            if (plugin != null && (plugin.Type == AlgoTypes.Indicator || plugin.Type == AlgoTypes.Robot))
             {
-                var pluginType = algo.PluginItem.Descriptor.AlgoLogicType;
-                if (pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot)
-                    OpenAlgoSetup(algo.PluginItem);
+                OpenAlgoSetup(plugin);
             }
         }
 
@@ -385,6 +280,7 @@ namespace TickTrader.BotTerminal
             barChart.DateAxisLabelFormat = dateLabelFormat;
             this.Chart = barChart;
             barChart.Activate(timeFrame);
+            FilterBots();
         }
 
         private void ActivateTickChart()
@@ -392,17 +288,24 @@ namespace TickTrader.BotTerminal
             this.Chart = tickChart;
             tickChart.Activate();
             //barChart.Deactivate();
+            FilterBots();
+        }
+
+        private void FilterBots()
+        {
+            Bots = _botsBySymbol.Where(bc => bc.Model.Config.TimeFrame == Chart.TimeFrame).AsObservable();
+            NotifyOfPropertyChange(nameof(Bots));
         }
 
         private void Chart_ParamsLocked()
         {
-            shell.ConnectionLock.Lock();
+            _shell.ConnectionLock.Lock();
             UiLock.Lock();
         }
 
         private void Chart_ParamsUnlocked()
         {
-            shell.ConnectionLock.Release();
+            _shell.ConnectionLock.Release();
             UiLock.Release();
         }
 
@@ -436,7 +339,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanDrop(object o)
         {
-            return o is AlgoItemViewModel;
+            return o is AlgoPluginViewModel;
         }
 
         private void UpdateLabelFormat()

@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core
         }
 
         public ICalculatorApi Calc { get; set; }
-        public ITradePermissions Permissions { get; set; }
+        public IPluginPermissions Permissions { get; set; }
         public string IsolationTag { get; set; }
 
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,

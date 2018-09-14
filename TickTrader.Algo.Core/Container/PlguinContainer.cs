@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Container;
 using TickTrader.Algo.Core.Lib;
-using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -23,7 +21,7 @@ namespace TickTrader.Algo.Core
 
         internal virtual void DoLoad(IPluginLoader loader)
         {
-            var sandbox =  new AlgoSandbox(loader, false);
+            var sandbox = new AlgoSandbox(loader, false);
             Plugins = sandbox.AlgoMetadata.Select(d => new AlgoPluginRef(d));
         }
 

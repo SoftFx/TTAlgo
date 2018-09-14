@@ -9,6 +9,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Linq;
 using System.Collections.Generic;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,6 +22,7 @@ namespace TickTrader.BotTerminal
         public string CustomStatus { get; private set; }
         public bool StateViewOpened { get; set; }
         public SettingsStorage<WindowStorageModel> StateViewSettings { get; private set; }
+        public bool IsRunning => State == BotModelStates.Running || State == BotModelStates.Stopping;
 
 
         public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
@@ -29,8 +31,8 @@ namespace TickTrader.BotTerminal
         public event System.Action<TradeBotModel> ConfigurationChanged = delegate { };
 
 
-        public TradeBotModel(PluginSetupViewModel pSetup, IAlgoPluginHost host, WindowStorageModel stateSettings)
-            : base(pSetup, host)
+        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, WindowStorageModel stateSettings)
+            : base(config, agent, host, setupContext)
         {
             host.Journal.RegisterBotLog(InstanceId);
             host.Connected += Host_Connected;
@@ -86,12 +88,12 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
-        new internal void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        internal override void Configurate(PluginConfig config)
         {
             if (State != BotModelStates.Stopped)
                 return;
 
-            base.Configurate(setup, permissions, isolated);
+            base.Configurate(config);
 
             ConfigurationChanged(this);
         }

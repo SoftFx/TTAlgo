@@ -16,21 +16,29 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;NET462</DefineConstants>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="bot-agent.pfx" />
     <None Remove="Properties\PublishProfiles\local.pubxml" />
-    <None Remove="WebAdmin\Client\admin\accounts\account-change-protocol.component.ts" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="WebAdmin\Server\Views\**\*;WebAdmin\wwwroot\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+    <ProjectReference Include="..\ActorSharp\ActorSharp.csproj" />
     <ProjectReference Include="..\Machinarium\Machinarium.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj" />
+    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -91,11 +99,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="WebAdmin\wwwroot\" />
+    <EmbeddedResource Include="bot-agent.pfx" />
   </ItemGroup>
 
   <ItemGroup>
-    <TypeScriptCompile Include="WebAdmin\Client\admin\accounts\account-change-protocol.component.ts" />
+    <Folder Include="WebAdmin\wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>

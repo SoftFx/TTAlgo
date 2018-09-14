@@ -24,9 +24,9 @@ namespace TickTrader.BotTerminal
             Panes = new VarList<IndicatorPaneViewModel>();
             Precision = 0;
 
-            foreach (OutputSetup output in indicator.Setup.Outputs.Where(o => o.Target == OutputTargets.Overlay))
+            foreach (OutputSetupModel output in indicator.Setup.Outputs.Where(o => o.Metadata.Descriptor.Target == OutputTargets.Overlay))
             {
-                Precision = Math.Max(Precision, output.Precision == -1 ? symbol.Descriptor.Precision : output.Precision);
+                Precision = Math.Max(Precision, output.Metadata.Descriptor.Precision == -1 ? symbol.Descriptor.Precision : output.Metadata.Descriptor.Precision);
                 var seriesViewModel = SeriesViewModel.CreateIndicatorSeries(indicator, output);
                 if (seriesViewModel != null)
                     Series.Values.Add(seriesViewModel);
@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
 
         private void CreatePane(OutputTargets target, SymbolModel symbol)
         {
-            if (Model.Setup.Outputs.Any(o => o.Target == target))
+            if (Model.Setup.Outputs.Any(o => o.Metadata.Descriptor.Target == target))
             {
                 Panes.Values.Add(new IndicatorPaneViewModel(this, _chart, target, symbol));
             }

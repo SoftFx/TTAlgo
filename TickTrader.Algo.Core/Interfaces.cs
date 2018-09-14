@@ -5,9 +5,11 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public interface ITradePermissions
+    public interface IPluginPermissions
     {
         bool TradeAllowed { get; }
+
+        bool Isolated { get; }
     }
 
     public interface IPluginSubscriptionHandler

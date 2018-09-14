@@ -15,6 +15,24 @@
             <Separator/>
             <MenuItem Header="{l:Resx Menu_ExitBotTrader}" cal:Message.Attach="Exit"/>
         </MenuItem>
+
+        <MenuItem Header="View" DataContext="{Binding DockManagerService}">
+            <MenuItem Header="{l:Resx Tab_Symbols}"
+                      IsCheckable="True" IsChecked="{Binding IsSymbolsOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Bots}" 
+                      IsCheckable="True" IsChecked="{Binding IsBotsOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Algo}" 
+                      IsCheckable="True" IsChecked="{Binding IsAlgoOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Trade}" 
+                      IsCheckable="True" IsChecked="{Binding IsTradeOpened}"/>
+            <MenuItem Header="{l:Resx Tab_History}" 
+                      IsCheckable="True" IsChecked="{Binding IsHistoryOpened}"/>
+            <MenuItem Header="{l:Resx Tab_Journal}" 
+                      IsCheckable="True" IsChecked="{Binding IsJournalOpened}"/>
+            <!--<MenuItem Header="{l:Resx Tab_BotJournal}" 
+                      IsCheckable="True" IsChecked="{Binding IsBotJournalOpened}"/>-->
+        </MenuItem>
+
         <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">
             <!--<l:MenuItemSelector Header="{l:Resx Menu_Language}"
                                         ItemsSource="{Binding Source={x:Static l:LocaleSelector.Instance},  Path=Locales, Mode=OneWay}"
@@ -48,9 +66,9 @@
             <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>
         </MenuItem>
     </Menu>
-    
+
     <!-- Connection State Indicator (Classsic)-->
-    
+
     <ControlTemplate x:Key="ConnectionStateIndicator">
         <StackPanel Name="statePanel" Orientation="Horizontal">
             <Ellipse x:Name="statusCircle" Width="9" Height="9" Margin="1 1 4 0" VerticalAlignment="Center"/>
@@ -70,7 +88,7 @@
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Disconnecting..."/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Offline}">
-                <Setter TargetName="statusCircle" Property="Fill" Value="Gray"/>
+                <Setter TargetName="statusCircle" Property="Fill" Value="LightGray"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Offline"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.OfflineRetry}">
@@ -186,14 +204,14 @@
                 <TabItem Header="{l:Resx Tab_Journal}" IsSelected="True">
                     <ContentControl  cal:View.Model="{Binding Journal}"/>
                 </TabItem>
-                <TabItem Header="{l:Resx Tab_BotJournal}">
+                <!--<TabItem Header="{l:Resx Tab_BotJournal}">
                     <ContentControl  cal:View.Model="{Binding BotJournal}"/>
-                </TabItem>
+                </TabItem>-->
             </l:TabControl>
 
         </Grid>
     </ControlTemplate>
-    
+
     <!-- Classic Template -->
 
     <Grid x:Key="ShellViewTemplate.Classic">
@@ -205,33 +223,36 @@
 
         <ContentControl Content="{StaticResource ShellMenu}" />
 
-        <dk:DockingManager Grid.Row="1" DocumentsSource="{Binding Charts.Items}"
-                           ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" Margin="5,0,5,4" >
+        <l:CustomDockManager x:Name="DockManager" Grid.Row="1" 
+                                    DocumentsSource="{Binding Charts.Items}"
+                                    ActiveContent="{Binding Charts.SelectedChartProxy, Mode=TwoWay}" Margin="5,0,5,4" 
+                                    DockManagerService="{Binding DockManagerService, Mode=TwoWay}">
 
-            <dk:DockingManager.LayoutItemContainerStyleSelector>
+            <l:CustomDockManager.LayoutItemContainerStyleSelector>
                 <l:AvalonDockStyleSelector>
                     <l:AvalonDockStyleSelector.DocumentStyle>
                         <Style TargetType="{x:Type dkctrl:LayoutItem}">
                             <Setter Property="Title" Value="{Binding Model.DisplayName}" />
                             <Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}" />
+                            <Setter Property="ContentId" Value="{Binding Model.ChartWindowId}"/>
                             <!--<Setter Property="CanClose" Value="{Binding Model.CanClose}" />-->
                         </Style>
                     </l:AvalonDockStyleSelector.DocumentStyle>
 
                 </l:AvalonDockStyleSelector>
-            </dk:DockingManager.LayoutItemContainerStyleSelector>
-            
-            <dk:DockingManager.LayoutItemTemplateSelector>
+            </l:CustomDockManager.LayoutItemContainerStyleSelector>
+
+            <l:CustomDockManager.LayoutItemTemplateSelector>
                 <l:AvalonDockTemplateSelector>
                     <l:AvalonDockTemplateSelector.DocumentTemplate>
                         <DataTemplate>
-                            <ContentControl cal:View.Model="{Binding}" IsTabStop="False" />
+                            <ContentControl cal:View.Model="{Binding}" IsTabStop="False"/>
                         </DataTemplate>
                     </l:AvalonDockTemplateSelector.DocumentTemplate>
                 </l:AvalonDockTemplateSelector>
-            </dk:DockingManager.LayoutItemTemplateSelector>
+            </l:CustomDockManager.LayoutItemTemplateSelector>
 
-            <dk:DockingManager.AnchorableHeaderTemplateSelector>
+            <l:CustomDockManager.AnchorableHeaderTemplateSelector>
                 <l:AvalonAnchorTemplateSelector>
                     <l:AvalonAnchorTemplateSelector.AnchorTemplate>
                         <DataTemplate>
@@ -296,7 +317,7 @@
                         </DataTemplate>
                     </l:AvalonAnchorTemplateSelector.HistoryTemplate>
                 </l:AvalonAnchorTemplateSelector>
-            </dk:DockingManager.AnchorableHeaderTemplateSelector>
+            </l:CustomDockManager.AnchorableHeaderTemplateSelector>
 
             <!--<dk:DockingManager.Theme>
                 <dk:AeroTheme/>
@@ -306,38 +327,50 @@
                 <dk:LayoutPanel Orientation="Horizontal">
                     <dk:LayoutPanel DockMinWidth="200" DockWidth="290" Orientation="Vertical">
                         <dk:LayoutAnchorablePane>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="False">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Symbols}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Symbols}">
                                 <ContentControl cal:View.Model="{Binding SymbolList}" />
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
                         <dk:LayoutAnchorablePane>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="False" >
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Bots}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Bots}" >
+                                <ContentControl cal:View.Model="{Binding BotList}" />
+                            </dk:LayoutAnchorable>
+                        </dk:LayoutAnchorablePane>
+                        <dk:LayoutAnchorablePane>
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Algo}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Algo}">
                                 <ContentControl cal:View.Model="{Binding AlgoList}" />
                             </dk:LayoutAnchorable>
                         </dk:LayoutAnchorablePane>
                     </dk:LayoutPanel>
                     <dk:LayoutPanel Orientation="Vertical">
                         <dk:LayoutDocumentPaneGroup>
-                            <dk:LayoutDocumentPane />
+                            <dk:LayoutDocumentPane/>
                         </dk:LayoutDocumentPaneGroup>
                         <dk:LayoutAnchorablePane DockHeight="300" DockMinHeight="150">
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Trade}">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Trade}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Trade}">
                                 <ContentControl cal:View.Model="{Binding Trade}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_History}">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_History}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_History}">
                                 <ContentControl cal:View.Model="{Binding TradeHistory}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_Journal}">
+                            <dk:LayoutAnchorable Title="{l:Resx Tab_Journal}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_Journal}">
                                 <ContentControl cal:View.Model="{Binding Journal}"/>
                             </dk:LayoutAnchorable>
-                            <dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}">
+                            <!--<dk:LayoutAnchorable Title="{l:Resx Tab_BotJournal}" CanClose="False" CanHide="True" 
+                                                 ContentId="{x:Static l:DockManagerService.Tab_BotJournal}">
                                 <ContentControl cal:View.Model="{Binding BotJournal}"/>
-                            </dk:LayoutAnchorable>
+                            </dk:LayoutAnchorable>-->
                         </dk:LayoutAnchorablePane>
                     </dk:LayoutPanel>
                 </dk:LayoutPanel>
             </dk:LayoutRoot>
-        </dk:DockingManager>
+        </l:CustomDockManager>
 
         <StatusBar Grid.Row="2" Background="Transparent">
             <StatusBarItem DockPanel.Dock="Right" Width="100"/>

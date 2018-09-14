@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Lifecycle Trade Bot", Version = "1.0", Category = "Test Bot Routine",
-        Description = "Calls sync/async open order in Init, OnStart, AsyncStop, OnStop")]
+        SetupMainSymbol = false, Description = "Calls sync/async open order in Init, OnStart, AsyncStop, OnStop")]
     public class LifecycleTradeBot : TradeBot
     {
         [Parameter(DisplayName = "Use async calls", DefaultValue = true)]

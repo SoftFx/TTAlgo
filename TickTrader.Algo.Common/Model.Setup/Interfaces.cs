@@ -1,23 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Repository;
+﻿using System.Collections.Generic;
+using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Library;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public interface IAlgoGuiMetadata
-    {
-        IReadOnlyList<ISymbolInfo> Symbols { get; }
-        ExtCollection Extentions { get; }
-    }
-
     public interface ISymbolInfo
     {
         string Name { get; }
+
+        SymbolOrigin Origin { get; }
+
         string Id { get; }
+    }
+
+
+    public interface IAlgoSetupMetadata
+    {
+        IReadOnlyList<ISymbolInfo> Symbols { get; }
+
+        MappingCollection Mappings { get; }
+
+        IPluginIdProvider IdProvider { get; }
+    }
+
+
+    public interface IAlgoSetupContext
+    {
+        TimeFrames DefaultTimeFrame { get; }
+
+        ISymbolInfo DefaultSymbol { get; }
+
+        MappingKey DefaultMapping { get; }
+    }
+
+
+    public interface IPluginIdProvider
+    {
+        string GeneratePluginId(PluginDescriptor descriptor);
+
+        bool IsValidPluginId(PluginDescriptor descriptor, string pluginId);
     }
 }

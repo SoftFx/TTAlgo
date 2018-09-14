@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Account Info Display Bot", Version = "1.0", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Account Info Display Bot", Version = "1.0", Category = "Test Plugin Info", SetupMainSymbol = false,
         Description = "Prints account info to bot status window. This include account id, type, balance, assets, pending orders, positions")]
     public class AccDisplayBot : TradeBot
     {

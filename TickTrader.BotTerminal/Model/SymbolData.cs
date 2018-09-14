@@ -8,8 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.SeriesStorage;
@@ -44,6 +46,8 @@ namespace TickTrader.BotTerminal
             TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to);
 
         public abstract Task Remove();
+
+        public abstract SymbolToken ToSymbolToken();
 
         public IBarStorage GetCrossDomainBarReader(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to)
         {
@@ -181,6 +185,11 @@ namespace TickTrader.BotTerminal
         {
             throw new InvalidOperationException("Cannot remove online symbol!");
         }
+
+        public override SymbolToken ToSymbolToken()
+        {
+            return new SymbolToken(Name, SymbolOrigin.Online);
+        }
     }
 
     internal class CustomSymbolData : SymbolData
@@ -215,6 +224,11 @@ namespace TickTrader.BotTerminal
         public override Task Remove()
         {
             throw new NotImplementedException();
+        }
+
+        public override SymbolToken ToSymbolToken()
+        {
+            return new SymbolToken(Name, SymbolOrigin.Custom);
         }
     }
 

@@ -4,14 +4,17 @@ using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "", Name = "Chart")]
+    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Chart")]
     internal class ChartStorageEntry
     {
+        [DataMember]
+        public string Id { get; set; }
+
         [DataMember]
         public string Symbol { get; set; }
 
         [DataMember(Name = "Period")]
-        public string SelectedPeriod { get; set; }
+        public ChartPeriods SelectedPeriod { get; set; }
 
         [DataMember(Name = "ChartType")]
         public SelectableChartTypes SelectedChartType { get; set; }
@@ -21,9 +24,6 @@ namespace TickTrader.BotTerminal
 
         [DataMember]
         public List<IndicatorStorageEntry> Indicators { get; set; }
-
-        [DataMember]
-        public List<TradeBotStorageEntry> Bots { get; set; }
 
 
         public ChartStorageEntry()
@@ -35,12 +35,12 @@ namespace TickTrader.BotTerminal
         {
             return new ChartStorageEntry
             {
+                Id = Id,
                 Symbol = Symbol,
                 SelectedPeriod = SelectedPeriod,
                 SelectedChartType = SelectedChartType,
                 CrosshairEnabled = CrosshairEnabled,
                 Indicators = Indicators != null ? new List<IndicatorStorageEntry>(Indicators.Select(c => c.Clone())) : null,
-                Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
             };
         }
     }

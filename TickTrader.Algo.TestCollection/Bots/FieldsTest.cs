@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Test Available Fields", Version = "1.0", Category = "Test Bot Routine",
-        Description = "Prints the value of the introduced fields")]
+        SetupMainSymbol = false, Description = "Prints the value of the introduced fields")]
     public class FieldsTest : TradeBotCommon
     {
         [Parameter(DefaultValue = 0)]

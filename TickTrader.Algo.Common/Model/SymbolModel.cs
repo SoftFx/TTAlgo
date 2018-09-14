@@ -110,6 +110,12 @@ namespace TickTrader.Algo.Common.Model
             return Descriptor;
         }
 
+        #region ISymbolInfo
+
         string Setup.ISymbolInfo.Id => Name;
+
+        Info.SymbolOrigin Setup.ISymbolInfo.Origin => Info.SymbolOrigin.Online;
+
+        #endregion ISymbolInfo
     }
 }

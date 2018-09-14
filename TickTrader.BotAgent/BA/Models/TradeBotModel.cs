@@ -1,21 +1,18 @@
 ﻿using ActorSharp;
 using NLog;
 using System;
-using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.BotAgent.BA.Builders;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Core.Repository;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
 using TickTrader.BotAgent.Extensions;
-using TickTrader.BotAgent.Infrastructure;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -35,40 +32,28 @@ namespace TickTrader.BotAgent.BA.Models
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
 
-        public TradeBotModel(string id, PluginKey key, TradeBotConfig config)
+        public TradeBotModel(PluginConfig config)
         {
-            Id = id;
-            Config = config.PluginConfig;
-            PackageName = key.PackageName;
-            Descriptor = key.DescriptorId;
-            Isolated = config.Isolated;
-            Permissions = config.Permissions;
+            Config = config;
         }
 
         [DataMember(Name = "configuration")]
         public PluginConfig Config { get; private set; }
-        [DataMember(Name = "id")]
-        public string Id { get; private set; }
-        [DataMember(Name = "package")]
-        public string PackageName { get; private set; }
-        [DataMember(Name = "descriptor")]
-        public string Descriptor { get; private set; }
         [DataMember(Name = "running")]
         public bool IsRunning { get; private set; }
-        [DataMember(Name = "isolated")]
-        public bool Isolated { get; private set; }
-        [DataMember(Name = "permissions")]
-        public PluginPermissions Permissions { get; private set; }
 
+
+        public string Id => Config.InstanceId;
+        public PluginPermissions Permissions => Config.Permissions;
+        public PluginKey PluginKey => Config.Key;
+        public PackageKey PackageKey { get; private set; }
         public BotStates State { get; private set; }
-        public PackageModel Package { get; private set; }
+        public AlgoPackageRef Package { get; private set; }
         public Exception Fault { get; private set; }
         public string FaultMessage { get; private set; }
         public AccountKey Account => _client.GetKey();
         public Ref<BotLog> LogRef => _botLog.Ref;
-        public string BotName => _ref?.DisplayName;
         public AlgoPluginRef AlgoRef => _ref;
-        public PluginKey PluginId => new PluginKey(PackageName, Descriptor);
 
         public IAlgoData AlgoData => _algoData;
 
@@ -76,25 +61,31 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public void Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
+        public bool Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
         {
-            _client = client;
+            try
+            {
+                _client = client;
+                _packageRepo = packageRepo;
 
-            if (Permissions == null)
-                Permissions = new DefaultPermissionsBuilder().Build();
+                UpdatePackage();
 
-            _packageRepo = packageRepo;
-            UpdatePackage();
+                _client.StateChanged += Client_StateChanged;
 
-            _packageRepo.PackageChanged += _packageRepo_PackageChanged;
-            _client.StateChanged += Client_StateChanged;
+                _botLog = new BotLog.ControlHandler(Id);
 
-            _botLog = new BotLog.ControlHandler(Id);
+                _algoData = new AlgoData(workingFolder);
 
-            _algoData = new AlgoData(workingFolder);
+                if (IsRunning && State != BotStates.Broken)
+                    Start();
 
-            if (IsRunning && State != BotStates.Broken)
-                Start();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, $"Failed to init bot {Id}");
+            }
+            return false;
         }
 
         public void ChangeBotConfig(TradeBotConfig config)
@@ -106,9 +97,10 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (IsStopped())
             {
-                Config = config.PluginConfig;
-                Isolated = config.Isolated;
-                Permissions = config.Permissions;
+                if (config.Key == null)
+                    config.Key = Config.Key;
+
+                Config = config;
                 ConfigurationChanged?.Invoke(this);
             }
             else
@@ -145,14 +137,17 @@ namespace TickTrader.BotAgent.BA.Models
         {
             CheckShutdownFlag();
 
-            if (State == BotStates.Broken)
-                throw new InvalidStateException("Trade bot is broken!");
-
             if (!IsStopped())
                 throw new InvalidStateException("Trade bot has been already started!");
 
-            SetRunning(true);
+            UpdatePackage();
+
+            if (State == BotStates.Broken)
+                throw new InvalidStateException("Trade bot is broken!");
+
             Package.IncrementRef();
+
+            SetRunning(true);
 
             ChangeState(BotStates.Starting);
 
@@ -201,13 +196,12 @@ namespace TickTrader.BotAgent.BA.Models
 
         public void Dispose()
         {
-            _packageRepo.PackageChanged -= _packageRepo_PackageChanged;
             _client.StateChanged -= Client_StateChanged;
         }
 
         private bool IsStopped()
         {
-            return State == BotStates.Offline || State == BotStates.Faulted;
+            return State == BotStates.Offline || State == BotStates.Faulted || State == BotStates.Broken;
         }
 
         private bool TaskIsNullOrStopped(Task task)
@@ -226,18 +220,18 @@ namespace TickTrader.BotAgent.BA.Models
 
                 executor = _ref.CreateExecutor();
 
-                if (!(Config is BarBasedConfig))
+                if (!(Config is TradeBotConfig))
                     throw new Exception("Unsupported configuration!");
 
-                var setupModel = new BarBasedPluginSetup(_ref, null);
+                var setupModel = new TradeBotSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());
                 setupModel.Load(Config);
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
-                executor.InitBarStrategy(feedAdapter, setupModel.PriceType);
-                executor.MainSymbolCode = setupModel.MainSymbol.Name;
-                executor.TimeFrame = Algo.Api.TimeFrames.M1;
+                executor.InitBarStrategy(feedAdapter, Algo.Api.BarPriceType.Bid);
+                executor.MainSymbolCode = setupModel.MainSymbol.Id;
+                executor.TimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;
                 executor.InitSlidingBuffering(1024);
 
@@ -247,7 +241,6 @@ namespace TickTrader.BotAgent.BA.Models
                 //executor.TradeHistoryProvider =  new TradeHistoryProvider(_client.Connection);
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
-                executor.Isolated = Isolated;
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
                 _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
@@ -334,29 +327,24 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void UpdatePackage()
         {
-            Package = _packageRepo.Get(PackageName);
+            PackageKey = PluginKey.GetPackageKey();
+            Package = _packageRepo.GetPackageRef(PackageKey);
 
             if (Package == null)
             {
-                ChangeState(BotStates.Broken, "Package '" + PackageName + "' is not found in repository!");
+                ChangeState(BotStates.Broken, $"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
                 return;
             }
 
-            _ref = Package.GetPluginRef(Descriptor);
-            if (_ref == null || _ref.Descriptor.AlgoLogicType != AlgoTypes.Robot)
+            _ref = _packageRepo.Library.GetPluginRef(PluginKey);
+            if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
-                ChangeState(BotStates.Broken, $"Trade bot '{Descriptor}' is missing in package '{PackageName}'!");
+                ChangeState(BotStates.Broken, $"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
                 return;
             }
 
             if (State == BotStates.Broken)
                 ChangeState(BotStates.Offline, null);
-        }
-
-        private void _packageRepo_PackageChanged(PackageModel pckg, ChangeAction action)
-        {
-            if (pckg.NameEquals(PackageName))
-                UpdatePackage();
         }
 
         public void Abort()

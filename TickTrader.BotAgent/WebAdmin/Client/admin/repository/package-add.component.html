@@ -1,0 +1,66 @@
+﻿<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card max_height_600">
+                    <div class="header">
+                        <h4 class="title truncate">
+                            Add Package
+                        </h4>
+                    </div>
+                    <div id="uploadPanel" class="content">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>File</label>
+                                    <div class="input-group">
+                                        <input [ngModel]="SelectedFileName" type="text" class="form-control" placeholder="Select the file" readonly>
+                                        <label class="input-group-btn">
+                                            <span class="btn btn-primary btn-fill">
+                                                <i class="fa fa-folder-o"></i>
+                                                <input #PackageInput (change)="OnFileInputChange($event)" type="file" style="display: none;" accept=".ttalgo">
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="pull-right">
+                                    <button [disabled]="!CanUpload" (click)="InitUploadPackage()" class="btn btn-primary">Upload</button>
+                                    <button (click)="Cancel()" class="btn btn-primary">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <overlay-cmp *ngIf="CheckPackageRequest && CheckPackageRequest.IsRunning">
+                        <div class="text-center">
+                            <span class="fa fa-circle-o-notch fa-spin black"></span>
+                            Checking package ...
+                        </div>
+                    </overlay-cmp>
+
+                    <overlay-cmp *ngIf="CheckPackageRequest && CheckPackageRequest.IsCompleted && !CheckPackageRequest.IsFaulted">
+                        <div class="text-center">
+                            <p class="text-info">Package with same name already exists on the server. Do you want to update the existing package?</p>
+                            <button (click)="UploadPackage()" class="btn btn-primary">Upload</button>
+                            <button (click)="CancelUploadingPackage()" class="btn btn-danger">Cancel</button>
+                        </div>
+                    </overlay-cmp>
+
+                    <overlay-cmp *ngIf="UploadRequest && UploadRequest.IsFaulted && UploadRequest.Error.Handled">
+                        <div class="text-center">
+                            <p class="text-error">{{UploadRequest.Error.Message}}</p>
+                            <button (click)="Cancel()" class="btn btn-primary ">Ok</button>
+                        </div>
+                    </overlay-cmp>
+
+                    <overlay-cmp *ngIf="UploadRequest && UploadRequest.IsRunning">
+                        <div class="text-center">
+                            <span class="fa fa-circle-o-notch fa-spin black"></span>
+                            Uploading...
+                        </div>
+                    </overlay-cmp>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -179,7 +179,7 @@ namespace TickTrader.BotTerminal
         public TradeHistoryProvider.Handler TradeHistory => _core.TradeHistory;
         public IVarSet<string, SymbolModel> Symbols { get; private set; }
         public EntityCache Cache => _core.Cache;
-        public IReadOnlyList<SymbolModel> ObservableSymbolList { get; private set; }
+        public IObservableList<SymbolModel> ObservableSymbolList { get; private set; }
         public QuoteDistributor Distributor => _core.Distributor;
         public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
         public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;

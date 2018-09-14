@@ -6,6 +6,7 @@ using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using System.Linq;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -14,16 +15,16 @@ namespace TickTrader.BotTerminal
         private Dictionary<string, IXyDataSeries> _series = new Dictionary<string, IXyDataSeries>();
 
 
-        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Target == OutputTargets.Overlay); } }
-        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Target != OutputTargets.Overlay); } }
+        public bool HasOverlayOutputs => Setup.Outputs.Any(o => o.Metadata.Descriptor.Target == OutputTargets.Overlay);
+        public bool HasPaneOutputs => Setup.Outputs.Any(o => o.Metadata.Descriptor.Target != OutputTargets.Overlay);
 
 
         private bool IsRunning { get; set; }
         private bool IsStopping { get; set; }
 
 
-        public IndicatorModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
-            : base(pSetup, host)
+        public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
+            : base(config, agent, host, setupContext)
         {
             host.StartEvent += Host_StartEvent;
             host.StopEvent += Host_StopEvent;
@@ -55,16 +56,16 @@ namespace TickTrader.BotTerminal
 
             foreach (var outputSetup in Setup.Outputs)
             {
-                if (outputSetup is ColoredLineOutputSetup)
+                if (outputSetup is ColoredLineOutputSetupModel)
                 {
                     var buffer = executor.GetOutput<double>(outputSetup.Id);
-                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetup)outputSetup);
+                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
-                else if (outputSetup is MarkerSeriesOutputSetup)
+                else if (outputSetup is MarkerSeriesOutputSetupModel)
                 {
                     var buffer = executor.GetOutput<Marker>(outputSetup.Id);
-                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetup)outputSetup);
+                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetupModel)outputSetup);
                     _series.Add(outputSetup.Id, adapter.SeriesData);
                 }
             }

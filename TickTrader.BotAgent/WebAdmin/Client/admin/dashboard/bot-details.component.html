@@ -69,7 +69,8 @@
                             </h6>
                         </div>
                         <ul class="list-unstyled">
-                            <li>Isolated: {{Bot.Isolated}}</li>
+                            <li>Isolated: {{Bot.Permissions.Isolated}}</li>
+                            <li>Allow trade: {{Bot.Permissions.TradeAllowed}}</li>
                             <li>Symbol: {{Bot.Config.Symbol}}</li>
                             <li *ngFor="let param of Bot.Config.Parameters">{{param.Descriptor ? param.Descriptor.DisplayName : param.Id}}: {{param.Value}}</li>
                         </ul>
@@ -100,9 +101,8 @@
                             <span class="text-error">Failed to get status message</span>
                         </div>
                         <div *ngIf="StatusRequest.IsCompleted && Status">
-                            <textarea class="form-control" style="max-height:350px; border: none; resize:none; margin: 0px; padding: 0px;" placeholder="Bot status..." rows="5">
-                                {{Status}}
-                            </textarea>
+                            <textarea class="form-control" style="max-height:350px; border: none; resize:none; margin: 0px; padding: 0px;" placeholder="Bot status..."
+                                      rows="15">{{Status}}</textarea>
                             <br />
                         </div>
                     </div>

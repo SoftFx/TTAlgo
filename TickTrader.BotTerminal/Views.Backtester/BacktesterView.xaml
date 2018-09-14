@@ -36,7 +36,7 @@
             </DataTemplate>
 
             <DataTemplate x:Key="PluginComboItemTemplate">
-                <TextBlock Text="{Binding Name}"/>
+                <TextBlock Text="{Binding DisplayName}"/>
             </DataTemplate>
 
             <Style TargetType="Label">

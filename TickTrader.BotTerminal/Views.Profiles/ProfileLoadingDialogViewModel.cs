@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -10,19 +11,26 @@ namespace TickTrader.BotTerminal
     {
         public const int Delay = 100;
 
+
         private Logger _logger;
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
         private CancellationToken _token;
-        private PluginCatalog _repo;
+        private LocalAlgoLibrary _library;
+        private BotManagerViewModel _botManager;
+        private DockManagerService _dockManagerService;
 
-        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token, PluginCatalog repo)
+
+        public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token,
+            LocalAlgoLibrary library, BotManagerViewModel botManager, DockManagerService dockManagerService)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
             _profileManager = profileManager;
             _token = token;
-            _repo = repo;
+            _library = library;
+            _botManager = botManager;
+            _dockManagerService = dockManagerService;
         }
 
         protected override void OnInitialize()
@@ -39,12 +47,15 @@ namespace TickTrader.BotTerminal
                 await Task.Delay(Delay, _token); //give UI some time to display this window
 
                 _charts.CloseAllItems(_token);
+                _botManager.CloseAllBots(_token);
 
                 _token.ThrowIfCancellationRequested();
 
-                await _repo.WaitInit();
+                await _library.WaitInit();
 
                 _token.ThrowIfCancellationRequested();
+
+                _botManager.LoadBotsSnapshot(_profileManager.CurrentProfile, _token);
 
                 if (_profileManager.CurrentProfile.Charts == null)
                 {
@@ -58,7 +69,11 @@ namespace TickTrader.BotTerminal
                     await Task.Delay(Delay, _token);
                 }
 
-                _charts.LoadProfileSnapshot(_profileManager.CurrentProfile, _token);
+                _charts.LoadChartsSnaphot(_profileManager.CurrentProfile, _token);
+
+                _token.ThrowIfCancellationRequested();
+
+                _dockManagerService.LoadLayoutSnapshot(_profileManager.CurrentProfile);
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

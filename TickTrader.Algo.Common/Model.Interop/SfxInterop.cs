@@ -16,6 +16,7 @@ using BO = TickTrader.BusinessObjects;
 using ActorSharp;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -509,7 +510,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Convertors
 
-        private static SymbolEntity Convert(SymbolInfo info)
+        private static SymbolEntity Convert(SFX.SymbolInfo info)
         {
             return new SymbolEntity(info.Name)
             {
@@ -606,7 +607,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static CurrencyEntity Convert(CurrencyInfo info)
+        private static CurrencyEntity Convert(SFX.CurrencyInfo info)
         {
             return new CurrencyEntity(info.Name)
             {

@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
         public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(60);
 
 
-        private ChartCollectionViewModel _charts;
+        private BotManager _botManager;
         private int _totalBots;
         private int _stoppedBots;
 
@@ -41,12 +41,12 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ShutdownDialogViewModel(ChartCollectionViewModel charts)
+        public ShutdownDialogViewModel(BotManager botManager)
         {
-            _charts = charts;
+            _botManager = botManager;
 
             DisplayName = $"Shuting down - {EnvService.Instance.ApplicationName}";
-            TotalBots = _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+            TotalBots = _botManager.RunningBotsCnt;
             StoppedBots = 0;
 
             StopBots();
@@ -55,14 +55,14 @@ namespace TickTrader.BotTerminal
 
         private async void StopBots()
         {
-            _charts.Items.Foreach(c => c.StopBots());
+            _botManager.StopBots();
 
-            StoppedBots = TotalBots - _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+            StoppedBots = TotalBots - _botManager.RunningBotsCnt;
             var startTime = DateTime.Now;
-            while (_charts.Items.Any(c => c.HasStartedBots) && DateTime.Now - startTime < WaitTimeout)
+            while (_botManager.HasRunningBots && DateTime.Now - startTime < WaitTimeout)
             {
                 await Task.Delay(Delay);
-                StoppedBots = TotalBots - _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+                StoppedBots = TotalBots - _botManager.RunningBotsCnt;
             }
 
             TryClose();

@@ -1,19 +1,31 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
+using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
+using Xceed.Wpf.AvalonDock.Controls;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotStateViewModel : Screen, IWindowModel
+    internal class BotStateViewModel : Screen
     {
-        private WindowManager _wndManager;
+        private AlgoEnvironment _algoEnv;
+        private BotMessageFilter _botLogsFilter = new BotMessageFilter();
+        private ObservableCollection<BotNameFilterEntry> _botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public BotStateViewModel(TradeBotModel bot, WindowManager wndManager)
+        public BotStateViewModel(TradeBotModel bot, AlgoEnvironment algoEnv)
         {
-            _wndManager = wndManager;
+            _algoEnv = algoEnv;
             this.Bot = bot;
             Bot.Removed += Bot_Removed;
             Bot.StateChanged += Bot_StateChanged;
@@ -24,6 +36,28 @@ namespace TickTrader.BotTerminal
             BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
             Bot_CustomStatusChanged(Bot);
+
+            _botNameFilterEntries.Add(new BotNameFilterEntry("All", BotNameFilterType.All));
+            if (!Bot.Host.Journal.Records.ContainsKey(Bot.InstanceId))
+                Bot.Host.Journal.Records.Add(Bot.InstanceId, new Journal<BotMessage>(1000));
+            BotLogs = CollectionViewSource.GetDefaultView(Bot.Host.Journal.Records[Bot.InstanceId].Records);
+            Bot.Host.Journal.Records[Bot.InstanceId].Records.CollectionChanged += (sender, e) => NotifyOfPropertyChange(nameof(ErrorsCount));
+            Bot.Host.Journal.Statistics.Items.Updated += args =>
+            {
+                if (args.Action == DLinqAction.Insert)
+                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.Key, BotNameFilterType.SpecifiedName));
+                else if (args.Action == DLinqAction.Remove)
+                {
+                    var entry = _botNameFilterEntries.FirstOrDefault((e) => e.Type == BotNameFilterType.SpecifiedName && e.Name == args.Key);
+
+                    if (selectedBotNameFilter == entry)
+                        SelectedBotNameFilter = _botNameFilterEntries.First();
+
+                    if (entry != null)
+                        _botNameFilterEntries.Remove(entry);
+                }
+            };
+            SelectedBotNameFilter = _botNameFilterEntries.First();
         }
 
         private void BotConfigurationChanged(TradeBotModel obj)
@@ -40,6 +74,48 @@ namespace TickTrader.BotTerminal
         public bool CanOpenSettings { get { return Bot.State == BotModelStates.Stopped; } }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public bool HasParams => Bot.Setup.Parameters.Any();
+        public ICollectionView BotLogs { get; private set; }
+        public int ErrorsCount => Bot.Host.Journal.Records[Bot.InstanceId].Records.Where(v => v.Type == JournalMessageType.Error).Count();
+
+        public MessageTypeFilter TypeFilter
+        {
+            get { return _botLogsFilter.MessageTypeCondition; }
+            set
+            {
+                if (_botLogsFilter.MessageTypeCondition != value)
+                {
+                    _botLogsFilter.MessageTypeCondition = value;
+                    NotifyOfPropertyChange(nameof(TypeFilter));
+                    ApplyFilter();
+                }
+            }
+        }
+        public string TextFilter
+        {
+            get { return _botLogsFilter.TextFilter; }
+            set
+            {
+                if (_botLogsFilter.TextFilter != value)
+                {
+                    _botLogsFilter.TextFilter = value;
+                    NotifyOfPropertyChange(nameof(TextFilter));
+                    ApplyFilter();
+                }
+            }
+        }
+        private BotNameFilterEntry selectedBotNameFilter;
+        public BotNameFilterEntry SelectedBotNameFilter
+        {
+            get { return selectedBotNameFilter; }
+            set
+            {
+                _botLogsFilter.BotCondition = value;
+
+                selectedBotNameFilter = value;
+                NotifyOfPropertyChange(nameof(SelectedBotNameFilter));
+                ApplyFilter();
+            }
+        }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
@@ -64,22 +140,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenSettings()
         {
-            var key = $"BotSettings {Bot.InstanceId}";
-
-            _wndManager.OpenOrActivateWindow(key, () =>
-            {
-                var pSetup = new PluginSetupViewModel(Bot);
-                pSetup.Closed += PluginSetupViewClosed;
-                return pSetup;
-            });
-        }
-
-        private void PluginSetupViewClosed(PluginSetupViewModel setupVM, bool dialogResult)
-        {
-            if (dialogResult)
-            {
-                Bot.Configurate(setupVM.Setup, setupVM.Permissions, setupVM.Isolated);
-            }
+            _algoEnv.LocalAgentVM.OpenBotSetup(Bot.ToInfo());
         }
 
         private void Bot_Removed(TradeBotModel bot)
@@ -114,21 +175,48 @@ namespace TickTrader.BotTerminal
         {
             var res = new List<string>();
             res.Add($"Instance Id: {Bot.InstanceId}");
-            res.Add($"Isolation: {(Bot.Isolated ? "Enabled" : "Disabled")}");
-            res.Add("");
             res.Add("------------ Permissions ------------");
-            res.Add(Bot.Permissions.ToString());
-            res.Add("------------ Plugin Info ------------");
-            res.Add($"Name: {Bot.Setup.Descriptor.UserDisplayName}");
-            res.Add($"Version: {Bot.Setup.Descriptor.Version}");
-            res.Add($"File Path: {Bot.PluginFilePath}");
-            if (Bot.Setup.HasParams)
+            res.Add(Bot.Config.Permissions.ToString());
+            if (Bot.PluginRef != null)
+            {
+                res.Add("------------ Plugin Info ------------");
+                res.Add($"Name: {Bot.PluginRef.Metadata.Descriptor.DisplayName}");
+                res.Add($"Version: {Bot.PluginRef.Metadata.Descriptor.Version}");
+                res.Add($"Package Name: {Bot.PackageRef.Name}");
+                res.Add($"Package Location: {Bot.PackageRef.Location}");
+            }
+            if (Bot.Setup?.Parameters.Any() ?? false)
             {
                 res.Add("");
                 res.Add("------------ Parameters ------------");
                 res.AddRange(Bot.Setup.Parameters.Select(x => x.ToString()).OrderBy(x => x).ToArray());
             }
             return res;
+        }
+
+        private void ApplyFilter()
+        {
+            if (BotLogs != null)
+                BotLogs.Filter = msg => _botLogsFilter.Filter((BotMessage)msg);
+        }
+
+        public void Clear()
+        {
+            Bot.Host.Journal.Records[Bot.InstanceId].Clear();
+        }
+
+        public void Browse()
+        {
+            try
+            {
+                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, Bot.InstanceId);
+                Directory.CreateDirectory(logDir);
+                Process.Start(logDir);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Failed to browse bot journal folder");
+            }
         }
     }
 }

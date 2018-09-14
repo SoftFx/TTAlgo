@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
@@ -12,7 +7,7 @@ namespace TickTrader.Algo.Core
     {
         public DataSeriesImpl()
         {
-            ValueFactory = Metadata.ValueFactory.Get<T>();
+            ValueFactory = Core.ValueFactory.Get<T>();
         }
             
         public virtual IPluginDataBuffer<T> Buffer { get; set; }

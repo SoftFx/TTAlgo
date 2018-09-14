@@ -16,14 +16,19 @@ namespace TickTrader.Algo.Api.Ext
         double Reduce(Bar bidBar, Bar askBar);
     }
 
+    public interface FullBarToBarReduction
+    {
+        void Reduce(Bar bidBar, Bar askBar, IBarWriter result);
+    }
+
     public interface QuoteToDoubleReduction
     {
         double Reduce(Quote quote);
     }
 
-    public interface FullBarToBarReduction
+    public interface QuoteToBarReduction
     {
-        void Reduce(Bar bidBar, Bar askBar, IBarWriter result);
+        void Reduce(Quote quote, IBarWriter result);
     }
 
     public interface IBarWriter

@@ -14,6 +14,7 @@ using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,8 +25,8 @@ namespace TickTrader.BotTerminal
         private Api.TimeFrames timeframe;
         private readonly BarVector barCollection = new BarVector();
 
-        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel clientModel)
-            : base(symbol, algoEnv, clientModel)
+        public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+            : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.OHLC);
             Support(SelectableChartTypes.Candle);
@@ -85,14 +86,9 @@ namespace TickTrader.BotTerminal
                 InitBoundaries(barArray.Length, barArray.First().OpenTime, barArray.Last().OpenTime);
         }
 
-        protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
+        protected override IndicatorModel CreateIndicator(PluginConfig config)
         {
-            return new BarBasedPluginSetup(catalogItem, Model, Algo.Api.BarPriceType.Bid, AlgoEnv);
-        }
-
-        protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)
-        {
-            return new IndicatorModel(setup, this);
+            return new IndicatorModel(config, Agent, this, this);
         }
 
         public override void InitializePlugin(PluginExecutor plugin)
@@ -128,7 +124,7 @@ namespace TickTrader.BotTerminal
         //        High = b.High,
         //        Low = b.Low,
         //        OpenTime = b.From,
-        //        CloseTime =  b.To,
+        //        CloseTime = b.To,
         //        Volume = b.Volume
         //    }));
         //}
@@ -161,4 +157,3 @@ namespace TickTrader.BotTerminal
         }
     }
 }
-    

@@ -17,6 +17,8 @@ namespace TickTrader.BotTerminal
 
         public ProfileManager ProfileManager { get; }
 
+        public BotAgentStorageModel BotAgentStorage { get; }
+
 
         public PersistModel()
         {
@@ -25,6 +27,8 @@ namespace TickTrader.BotTerminal
             var preferencesController = CreateStorageController<PreferencesStorageModel>("Preferences", EnvService.Instance.UserDataStorage);
             PreferencesStorage = new SettingsStorage<PreferencesStorageModel>(preferencesController.Value);
             ProfileManager = new ProfileManager(CreateStorageController<ProfileStorageModel>("stub.profile", EnvService.Instance.ProfilesCacheStorage));
+            var botAgentsLoginController = CreateStorageController<BotAgentStorageModel>("BotAgentsAuth", EnvService.Instance.ProtectedUserDataStorage);
+            BotAgentStorage = botAgentsLoginController.Value;
         }
 
 

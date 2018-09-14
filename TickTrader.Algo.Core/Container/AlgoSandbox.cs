@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Core.Container
             }
         }
 
-        public IEnumerable<AlgoPluginDescriptor> AlgoMetadata { get; private set; }
+        public IEnumerable<PluginMetadata> AlgoMetadata { get; private set; }
 
         internal T Activate<T>() where T : MarshalByRefObject, new()
         {
@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core.Container
         private void LoadAndInspect(string filePath)
         {
             Assembly algoAssembly = LoadAssembly(filePath);
-            AlgoMetadata = AlgoPluginDescriptor.InspectAssembly(algoAssembly);
+            AlgoMetadata = AlgoAssemblyInspector.FindPlugins(algoAssembly);
         }
 
         private Assembly LoadAssembly(string assemblyFileName)

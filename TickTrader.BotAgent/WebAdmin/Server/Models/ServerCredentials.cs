@@ -7,9 +7,9 @@
 
         }
 
-        public ServerCredentials(string loign, string password)
+        public ServerCredentials(string login, string password)
         {
-            Login = loign;
+            Login = login;
             Password = password;
         }
 

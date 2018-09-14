@@ -6,7 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                
+
                 <!-- Caliburn bootstrapper-->
                 <ResourceDictionary>
                     <l:AppBootstrapper x:Key="bootstrapper" />
@@ -14,7 +14,7 @@
 
                 <!-- Converters -->
                 <ResourceDictionary Source="Resx/Converters.xaml"/>
-                
+
                 <!-- Images -->
                 <ResourceDictionary Source="Resx/Images/Images.xaml"/>
 
@@ -37,24 +37,31 @@
                 <ResourceDictionary Source="Views.Aux/ActionDialogView.xaml" />
                 <ResourceDictionary Source="Views.Aux/ActionView.xaml" />
 
-                <ResourceDictionary Source="Views/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
                 <ResourceDictionary Source="Views/JournalView.xaml" />
-                
+
+                <ResourceDictionary Source="Views.Algo/AlgoListView.xaml" />
+                <ResourceDictionary Source="Views.Algo/BotListView.xaml" />
+                <ResourceDictionary Source="Views.Algo/UploadPackageView.xaml" />
+                <ResourceDictionary Source="Views.Algo/DownloadPackageView.xaml" />
+
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotControlView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
-                <ResourceDictionary Source="Views.Chart/PluginSetupView.xaml" />
-                
+
+                <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
+                <ResourceDictionary Source="Views.Setup/LocalPluginSetupView.xaml" />
+
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
-                
+
                 <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterSymbolSetupView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterChartPage.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterTradeSetupView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterReportView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterStatChartView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterPluginSetupView.xaml" />
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

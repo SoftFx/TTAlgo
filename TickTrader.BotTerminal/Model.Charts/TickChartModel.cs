@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
@@ -24,8 +25,8 @@ namespace TickTrader.BotTerminal
         private XyDataSeries<DateTime, double> bidData = new XyDataSeries<DateTime, double>();
         private QuoteEntity lastSeriesQuote;
 
-        public TickChartModel(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel clientModel)
-            : base(symbol, algoEnv, clientModel)
+        public TickChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
+            : base(symbol, algoEnv)
         {
             Support(SelectableChartTypes.Line);
             Support(SelectableChartTypes.Mountain);
@@ -104,14 +105,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginSetup CreateSetup(AlgoPluginRef catalogItem)
+        protected override IndicatorModel CreateIndicator(PluginConfig config)
         {
-            return new TickBasedPluginSetup(catalogItem, Model);
-        }
-
-        protected override IndicatorModel CreateIndicator(PluginSetupViewModel setup)
-        {
-            return new IndicatorModel(setup, this);
+            return new IndicatorModel(config, Agent, this, this);
         }
 
         public override void InitializePlugin(PluginExecutor plugin)

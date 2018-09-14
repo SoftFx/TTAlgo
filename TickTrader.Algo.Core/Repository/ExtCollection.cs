@@ -1,40 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
 {
     public class ExtCollection
     {
-        private List<ReductionDescriptor> barToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> quoteToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> fullbarToDouble = new List<ReductionDescriptor>();
-        private List<ReductionDescriptor> fullbarToBar = new List<ReductionDescriptor>();
+        private IAlgoCoreLogger _logger;
+        private List<ReductionMetadata> _barToDouble = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _fullbarToDouble = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _fullbarToBar = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _quoteToDouble = new List<ReductionMetadata>();
+        private List<ReductionMetadata> _quoteToBar = new List<ReductionMetadata>();
 
-        public IEnumerable<ReductionDescriptor> BarToDoubleReductions => barToDouble;
-        public IEnumerable<ReductionDescriptor> QuoteToDoubleReductions => quoteToDouble;
-        public IEnumerable<ReductionDescriptor> FullBarToDoubleReductions => fullbarToDouble;
-        public IEnumerable<ReductionDescriptor> FullBarToBarReductions => fullbarToBar;
 
-        public void Add(ReductionDescriptor reduction)
+        public IEnumerable<ReductionMetadata> BarToDoubleReductions => _barToDouble;
+        public IEnumerable<ReductionMetadata> FullBarToDoubleReductions => _fullbarToDouble;
+        public IEnumerable<ReductionMetadata> FullBarToBarReductions => _fullbarToBar;
+        public IEnumerable<ReductionMetadata> QuoteToDoubleReductions => _quoteToDouble;
+        public IEnumerable<ReductionMetadata> QuoteToBarReductions => _quoteToBar;
+
+
+        public ExtCollection(IAlgoCoreLogger logger)
         {
-            switch (reduction.Type)
+            _logger = logger;
+        }
+
+
+        public void Add(ReductionMetadata reduction)
+        {
+            switch (reduction.Descriptor.Type)
             {
-                case ReductionType.BarToDouble: barToDouble.Add(reduction); break;
-                case ReductionType.FullBarToDouble: fullbarToDouble.Add(reduction); break;
-                case ReductionType.QuoteToDouble: quoteToDouble.Add(reduction); break;
-                case ReductionType.FullBarToBar: fullbarToBar.Add(reduction); break;
+                case ReductionType.BarToDouble: _barToDouble.Add(reduction); break;
+                case ReductionType.FullBarToDouble: _fullbarToDouble.Add(reduction); break;
+                case ReductionType.FullBarToBar: _fullbarToBar.Add(reduction); break;
+                case ReductionType.QuoteToDouble: _quoteToDouble.Add(reduction); break;
+                case ReductionType.QuoteToBar: _quoteToBar.Add(reduction); break;
             }
         }
 
-        public void LoadExtentions(string path, IAlgoCoreLogger logger)
+        public void LoadExtentions(string path)
         {
-            var plugins = System.IO.Directory.GetFiles(path, "*.ttalgo");
+            var plugins = Directory.GetFiles(path, "*.ttalgo");
 
             foreach (var file in plugins)
             {
@@ -42,26 +51,43 @@ namespace TickTrader.Algo.Core.Repository
                 {
                     using (var st = File.OpenRead(file))
                     {
-                        var pckg = Algo.Core.Package.Load(st);
+                        var pckg = Package.Load(st);
                         if (!string.IsNullOrEmpty(pckg.Metadata.MainBinaryFile))
                         {
                             var extFile = pckg.GetFile(pckg.Metadata.MainBinaryFile);
                             if (extFile != null)
                             {
                                 var extAssembly = Assembly.Load(extFile, null);
-                                var reductions = ReductionDescriptor.InspectAssembly(extAssembly);
+                                var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
                                 foreach (var r in reductions)
                                     Add(r);
                             }
                         }
                     }
 
-                    logger.Info("Loadded extensions from " + file);
+                    _logger.Info("Loadded extensions from " + file);
                 }
                 catch (Exception ex)
                 {
-                    logger.Error("Cannot extensions from " + file + "!", ex);
+                    _logger.Error("Cannot load extensions from " + file + "!", ex);
                 }
+            }
+        }
+
+        public void AddAssembly(string extAssemblyName)
+        {
+            try
+            {
+                var extAssembly = Assembly.Load(extAssemblyName);
+                var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
+                foreach (var r in reductions)
+                    Add(r);
+
+                _logger.Info($"Loaded extensions from {extAssemblyName}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Cannot load extensions from {extAssemblyName}!", ex);
             }
         }
     }

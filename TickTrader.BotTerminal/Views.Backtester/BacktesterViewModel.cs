@@ -12,8 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -22,7 +25,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterViewModel : Screen, IWindowModel, IAlgoGuiMetadata
+    internal class BacktesterViewModel : Screen, IWindowModel, IAlgoSetupMetadata, IPluginIdProvider, IAlgoSetupContext
     {
         private AlgoEnvironment _env;
         private IShell _shell;
@@ -66,30 +69,26 @@ namespace TickTrader.BotTerminal
             AddSymbol(SymbolSetupType.MainSymbol);
             AddSymbol(SymbolSetupType.MainFeed, FeedSources[0].SelectedSymbol.Var);
 
-            SelectedPlugin = new Property<AlgoItemViewModel>();
+            SelectedPlugin = new Property<AlgoPluginViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
-            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.PluginItem.Descriptor.AlgoLogicType == AlgoTypes.Robot);
+            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
             IsRunning = ProgressMonitor.IsRunning;
             IsStopping = ProgressMonitor.IsCancelling;
             CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected;
             CanSetup = !IsRunning & client.IsConnected;
             CanStop = ProgressMonitor.CanCancel;
 
-            Plugins = env.Repo.AllPlugins
-                .Where((k, p) => !string.IsNullOrEmpty(k.FileName))
-                .Select((k, p) => new AlgoItemViewModel(p))
-                .OrderBy((k, p) => p.Name)
-                .AsObservable();
+            Plugins = env.LocalAgentVM.PluginList;
 
-            _mainSymbolToken = new SymbolToken("[main symbol]", null);
+            _mainSymbolToken = SpecialSymbols.MainSymbolPlaceholder;
             var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
-            var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISymbolInfo)new SymbolToken(s.Name, s.Description));
+            var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISymbolInfo)s.ToSymbolToken());
             _symbolTokens = VarCollection.Combine<ISymbolInfo>(predefinedSymbolTokens, existingSymbolTokens);
             _observableSymbolTokens = _symbolTokens.AsObservable();
 
-            env.Repo.AllPlugins.Updated += a =>
+            env.LocalAgentVM.Plugins.Updated += a =>
             {
-                if (a.Action == DLinqAction.Remove && a.OldItem.Key == SelectedPlugin.Value?.PluginItem.Key)
+                if (a.Action == DLinqAction.Remove && a.OldItem.Key == SelectedPlugin.Value?.Key)
                     SelectedPlugin.Value = null;
             };
 
@@ -99,13 +98,18 @@ namespace TickTrader.BotTerminal
             _var.TriggerOnChange(SelectedPlugin.Var, a =>
             {
                 if (a.New != null)
-                    PluginSetupModel = new BarBasedPluginSetup(a.New.PluginItem.Ref, _mainSymbolToken, Algo.Api.BarPriceType.Bid, this);
+                {
+                    PackageRef = _env.LocalAgent.Library.GetPackageRef(a.New.Info.Key.GetPackageKey());
+                    PluginRef = _env.LocalAgent.Library.GetPluginRef(a.New.Info.Key);
+                    PluginSetupModel = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(PluginRef, this, this);
+                    PluginConfig = null;
+                }
             });
         }
 
         public ActionViewModel ProgressMonitor { get; private set; }
-        public IObservableList<AlgoItemViewModel> Plugins { get; private set; }
-        public Property<AlgoItemViewModel> SelectedPlugin { get; private set; }
+        public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
+        public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
@@ -121,12 +125,18 @@ namespace TickTrader.BotTerminal
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
-        public PluginSetup PluginSetupModel { get; private set; }
+        public PluginSetupModel PluginSetupModel { get; private set; }
+        public PluginConfig PluginConfig { get; private set; }
+        public AlgoPackageRef PackageRef { get; private set; }
+        public AlgoPluginRef PluginRef { get; private set; }
 
         public void OpenPluginSetup()
         {
-            var setup = new PluginSetupViewModel(PluginSetupModel, _env.Repo);
+            var setup = PluginConfig == null
+                ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo())
+                : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginConfig);
             _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
+            setup.Closed += PluginSetupClosed;
             //_shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", setup);
         }
 
@@ -169,6 +179,14 @@ namespace TickTrader.BotTerminal
             ProgressMonitor.Cancel();
         }
 
+        private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
+        {
+            if (dlgResult)
+                PluginConfig = setup.GetConfig();
+
+            setup.Closed -= PluginSetupClosed;
+        }
+
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
             try
@@ -206,17 +224,22 @@ namespace TickTrader.BotTerminal
             observer.StartProgress(DateRange.From.GetAbsoluteDay(), DateRange.To.GetAbsoluteDay());
             observer.SetMessage("Emulating...");
 
-            var pluginRef = SelectedPlugin.Value.PluginItem.Ref;
+            PluginSetupModel.Load(PluginConfig);
+            PluginSetupModel.MainSymbolPlaceholder.Id = chartSymbol.Key;
 
-            using (var tester = new Backtester(pluginRef, DateRange.From, DateRange.To))
+            // TODO: place correctly to avoid domain unload during backtester run
+            //PackageRef.IncrementRef();
+            //PackageRef.DecrementRef();
+
+            using (var tester = new Backtester(PluginRef, DateRange.From, DateRange.To))
             {
                 PluginSetupModel.Apply(tester);
 
                 foreach (var outputSetup in PluginSetupModel.Outputs)
                 {
-                    if (outputSetup is ColoredLineOutputSetup)
+                    if (outputSetup is ColoredLineOutputSetupModel)
                         tester.InitOutputCollection<double>(outputSetup.Id);
-                    else if (outputSetup is MarkerSeriesOutputSetup)
+                    else if (outputSetup is MarkerSeriesOutputSetupModel)
                         tester.InitOutputCollection<Marker>(outputSetup.Id);
                 }
 
@@ -400,23 +423,39 @@ namespace TickTrader.BotTerminal
             UpdateRangeState();
         }
 
-        #region IAlgoGuiMetadata
+        #region IAlgoSetupMetadata
 
-        IReadOnlyList<ISymbolInfo> IAlgoGuiMetadata.Symbols => _observableSymbolTokens;
-        ExtCollection IAlgoGuiMetadata.Extentions => _env.Extentions;
+        IReadOnlyList<ISymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
+
+        MappingCollection IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
+
+        IPluginIdProvider IAlgoSetupMetadata.IdProvider => this;
 
         #endregion
 
-        public class SymbolToken : ISymbolInfo
-        {
-            public SymbolToken(string name, string id)
-            {
-                Name = name;
-                Id = id;
-            }
 
-            public string Name { get; }
-            public string Id { get; set; }
+        #region IPluginIdProvider
+
+        string IPluginIdProvider.GeneratePluginId(PluginDescriptor descriptor)
+        {
+            return descriptor.DisplayName;
         }
+
+        bool IPluginIdProvider.IsValidPluginId(PluginDescriptor descriptor, string pluginId)
+        {
+            return true;
+        }
+
+        #endregion IPluginIdProvider
+
+        #region IAlgoSetupContext
+
+        TimeFrames IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
+
+        ISymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
+
+        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
+
+        #endregion IAlgoSetupContext
     }
 }

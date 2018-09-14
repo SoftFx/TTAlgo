@@ -19,7 +19,7 @@ namespace TickTrader.BotTerminal.Resx.Locales {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class gui {
@@ -493,6 +493,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PluginError_None {
+            get {
+                return ResourceManager.GetString("PluginError_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Amount##.
         /// </summary>
         internal static string Position_Amount {
@@ -561,6 +570,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         internal static string Tab_BotJournal {
             get {
                 return ResourceManager.GetString("Tab_BotJournal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Tab_Bots##.
+        /// </summary>
+        internal static string Tab_Bots {
+            get {
+                return ResourceManager.GetString("Tab_Bots", resourceCulture);
             }
         }
         

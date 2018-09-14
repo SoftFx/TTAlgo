@@ -6,78 +6,85 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
     internal class PluginModel : CrossDomainObject
     {
-        private enum States { Strating, Running, Stopping }
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        private StateMachine<States> _stateControl = new StateMachine<States>();
         private PluginExecutor _executor;
-        private IAlgoPluginHost _host;
 
-        public AlgoPluginRef PluginRef { get; }
 
-        public string PluginFilePath { get; }
+        public PluginConfig Config { get; private set; }
 
-        public PluginSetup Setup { get; private set; }
+        public string InstanceId => Config.InstanceId;
 
-        public string InstanceId { get; private set; }
+        public AlgoPackageRef PackageRef { get; private set; }
 
-        public bool Isolated { get; private set; }
+        public AlgoPluginRef PluginRef { get; private set; }
 
-        public PluginPermissions Permissions { get; private set; }
+        public PluginSetupModel Setup { get; private set; }
 
-        public IAlgoPluginHost Host => _host;
+        public IAlgoPluginHost Host { get; }
 
-        public PluginModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
+        protected LocalAlgoAgent Agent { get; }
+
+        protected IAlgoSetupContext SetupContext { get; }
+
+
+        public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
         {
-            _host = host;
-            Setup = pSetup.Setup;
-            PluginRef = Setup.PluginRef;
-            PluginFilePath = pSetup.PluginItem.FilePath;
-            InstanceId = pSetup.InstanceId;
-            Isolated = pSetup.Isolated;
-            Permissions = pSetup.Permissions;
-
-            _executor = CreateExecutor();
-            Setup.SetWorkingFolder(_executor.WorkingFolder);
-            Setup.Apply(_executor);
+            Config = config;
+            Agent = agent;
+            Host = host;
+            SetupContext = setupContext;
         }
 
         protected bool StartExcecutor()
         {
             try
             {
-                _host.UpdatePlugin(_executor);
+                PackageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
+                PackageRef.IncrementRef();
+                PluginRef = Agent.Library.GetPluginRef(Config.Key);
+                Setup = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(PluginRef, Agent, SetupContext);
+                Setup.Load(Config);
+
+                _executor = CreateExecutor();
+                Setup.SetWorkingFolder(_executor.WorkingFolder);
+                Setup.Apply(_executor);
+
+                Host.UpdatePlugin(_executor);
                 _executor.Start();
                 return true;
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "StartExcecutor() failed!");
+                _logger.Error(ex, "StartExcecutor() failed!");
+                PackageRef?.DecrementRef();
+
                 return false;
             }
         }
 
-        protected void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        internal virtual void Configurate(PluginConfig config)
         {
-            Setup = setup;
-            Permissions = permissions;
-            Isolated = isolated;
-
-            Setup.SetWorkingFolder(_executor.WorkingFolder);
-            Setup.Apply(_executor);
-            _executor.Permissions = permissions;
-            _executor.Isolated = isolated;
+            Config = config;
         }
 
         protected Task StopExecutor()
         {
-            return Task.Factory.StartNew(() => _executor.Stop());
+            return Task.Factory.StartNew(() =>
+            {
+                _executor.Stop();
+
+                PackageRef?.DecrementRef();
+                PackageRef = null;
+                PluginRef = null;
+            });
         }
 
         protected void AbortExecutor()
@@ -91,13 +98,14 @@ namespace TickTrader.BotTerminal
 
             executor.OnRuntimeError += Executor_OnRuntimeError;
 
+            executor.TimeFrame = Setup.SelectedTimeFrame;
+            executor.MainSymbolCode = Setup.MainSymbol.Id;
             executor.InstanceId = InstanceId;
-            executor.Isolated = Isolated;
-            executor.Permissions = Permissions;
+            executor.Permissions = Setup.Permissions;
             executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 
-            _host.InitializePlugin(executor);
+            Host.InitializePlugin(executor);
 
             return executor;
         }
@@ -109,7 +117,7 @@ namespace TickTrader.BotTerminal
 
         private void Executor_OnRuntimeError(Exception ex)
         {
-            logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
+            _logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
         }
     }
 
