@@ -490,9 +490,8 @@ namespace TickTrader.Algo.Core
 
             var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
                 || maxVisibleVolumeLots < 0
-                || maxVisibleVolumeLots < smbMetadata.MinTradeVolume
-                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume
-                || maxVisibleVolumeLots > volumeLots;
+                || (maxVisibleVolumeLots > 0 && maxVisibleVolumeLots < smbMetadata.MinTradeVolume)
+                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume;
 
             if (isIncorrectMaxVisibleVolume)
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
