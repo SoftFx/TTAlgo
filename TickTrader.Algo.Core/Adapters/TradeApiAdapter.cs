@@ -74,11 +74,11 @@ namespace TickTrader.Algo.Core
                 var smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradeEnabled(smbMetadata);
 
-                volumeLots = RoundVolume(volumeLots, smbMetadata);
-                maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
                 ValidateVolumeLots(volumeLots, smbMetadata);
                 ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
                 ValidateOptions(options, orderType);
+                volumeLots = RoundVolume(volumeLots, smbMetadata);
+                maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
                 double volume = ConvertVolume(volumeLots, smbMetadata);
                 double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
                 price = RoundPrice(price, smbMetadata, side);
@@ -304,10 +304,10 @@ namespace TickTrader.Algo.Core
                 double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
                 double orderVolumeInLots = orderVolume / GetSymbolOrThrow(orderToModify.Symbol).ContractSize;
 
-                volume = RoundVolume(volume, smbMetadata);
-                maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
                 ValidateVolumeLots(volume, smbMetadata);
                 ValidateMaxVisibleVolumeLots(maxVisibleVolume, smbMetadata, orderType, volume ?? orderVolumeInLots);
+                volume = RoundVolume(volume, smbMetadata);
+                maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
                 double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
                 double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
@@ -490,9 +490,8 @@ namespace TickTrader.Algo.Core
 
             var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
                 || maxVisibleVolumeLots < 0
-                || maxVisibleVolumeLots < smbMetadata.MinTradeVolume
-                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume
-                || maxVisibleVolumeLots > volumeLots;
+                || (maxVisibleVolumeLots > 0 && maxVisibleVolumeLots < smbMetadata.MinTradeVolume)
+                || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume;
 
             if (isIncorrectMaxVisibleVolume)
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
