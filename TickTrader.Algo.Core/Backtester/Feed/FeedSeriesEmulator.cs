@@ -18,14 +18,57 @@ namespace TickTrader.Algo.Core
         public abstract void Stop();
         public abstract bool MoveNext();
 
-        public List<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
+        public IEnumerable<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            return new List<BarEntity>();
+            if (from > to)
+                Ref.Swap(ref from, ref to);
+
+            var vector = GetOrAddBuilder(priceType, timeFrame);
+            var index = vector.BinarySearch(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
+
+            if (index < 0)
+                yield break;
+
+            for (int i = index; i < vector.Count; i++)
+            {
+                var bar = vector[i];
+                if (bar.OpenTime > to)
+                    yield break;
+
+                yield return bar;
+            }
         }
 
-        public List<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, int size)
+        public IEnumerable<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, int size)
         {
-            return new List<BarEntity>();
+            var vector = GetOrAddBuilder(priceType, timeFrame);
+
+            if (size == 0)
+                yield break;
+            else if (size > 0)
+            {
+                var index = vector.BinarySearch(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
+
+                if (index < 0)
+                    yield break;
+
+                int resultSize = Math.Min(vector.Count - index, size);
+
+                for (int i = index; i < index + resultSize; i++)
+                    yield return vector[i];
+            }
+            else
+            {
+                var index = vector.BinarySearch(b => b.OpenTime, from, BinarySearchTypes.NearestLower);
+
+                if (index < 0)
+                    yield break;
+
+                int resultSize = Math.Min(index + 1, -size);
+
+                for (int i = index; i > index - resultSize; i--)
+                    yield return vector[i];
+            }
         }
 
         public List<QuoteEntity> QueryTicks(DateTime from, DateTime to, bool level2)
@@ -48,8 +91,10 @@ namespace TickTrader.Algo.Core
             return GetOrAddBuilder(price, timeframe);
         }
 
-        private BarVector GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
+        protected BarVector GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
         {
+            // TO DO : build-up series data basing on data from other time frames
+
             if (priceType == BarPriceType.Bid)
                 return GetOrAddBuilder(_bidBars, timeframe);
             else

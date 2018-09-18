@@ -44,9 +44,9 @@ namespace TickTrader.Algo.Core
 
         protected virtual void OnInit() { }
 
-        protected BufferUpdateResult OnFeedUpdate(RateUpdate update, bool hidden)
+        protected BufferUpdateResult OnFeedUpdate(RateUpdate update)
         {
-            return FStartegy.ApplyUpdate(update, hidden);
+            return FStartegy.ApplyUpdate(update);
         }
 
         protected void OnError(ExecutorException ex)
@@ -218,7 +218,7 @@ namespace TickTrader.Algo.Core
             try
             {
                 if (item is RateUpdate)
-                    OnFeedUpdate((RateUpdate)item, false);
+                    OnFeedUpdate((RateUpdate)item);
                 else if (item is Action<PluginBuilder>)
                     ((Action<PluginBuilder>)item)(Builder);
             }

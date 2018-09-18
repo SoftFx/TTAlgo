@@ -65,8 +65,12 @@ namespace TickTrader.Algo.Core
         public override void OnBufferExtended()
         {
             var bufferSize = MainBuffer.LastIndex + 1;
+
             if (bufferSize > _size)
-                TruncateBuffers(_size);
+            {
+                var trucateBy = bufferSize - _size;
+                TruncateBuffers(trucateBy);
+            }
         }
 
         public override void InitBuffer(IFeedLoader buffer)

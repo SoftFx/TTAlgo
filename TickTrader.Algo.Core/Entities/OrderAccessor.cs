@@ -127,6 +127,11 @@ namespace TickTrader.Algo.Core
         internal SymbolAccessor SymbolInfo => _symbol;
         public decimal? ClosePrice { get; set; }
 
+        internal void FireChanged()
+        {
+            EssentialParametersChanged?.Invoke(this);
+        }
+
         #endregion
 
         #region TickTrader.BusinessObjects.IOrder

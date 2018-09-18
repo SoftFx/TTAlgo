@@ -37,7 +37,11 @@ namespace TickTrader.Algo.Core
             _settings = settings;
 
             VirtualServerPing = settings.ServerPing;
-            _scheduler.RateUpdated += CheckActivation;
+            _scheduler.RateUpdated += r =>
+            {
+                CheckActivation(r);
+                RecalculateAccount();
+            };
 
             LogModifications = false;
         }
@@ -823,6 +827,7 @@ namespace TickTrader.Algo.Core
                 RegisterOrder(order, currentRate);
 
             //_acc.CalculateOrder(order, infrustructure);
+            order.FireChanged();
 
             // fire API event
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrderCopy, order)));
@@ -956,6 +961,8 @@ namespace TickTrader.Algo.Core
             //_collector.LogTrade($"Filled Order #{copy.Id} {order.Type} {order.Symbol} Price={fillPrice} Amount={fillAmount} RemainingAmount={copy.RemainingAmount} Profit={profit} Comment=\"{copy.Comment}\"");
 
             //_acc.AfterFillOrder(order, this, fillPrice, fillAmount, partialFill, tradeReport, execReport, fillReport);
+
+            order.FireChanged();
 
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
 
@@ -1148,6 +1155,8 @@ namespace TickTrader.Algo.Core
             // register order
             RegisterOrder(position, (RateUpdate)fCalc.CurrentRate);
 
+            position.FireChanged();
+
             // journal
             //LogTransactionDetails(() => "Created Position #" + position.OrderId + " price=" + position.Price + " amount=" + position.Amount
             //                            + " {" + FormatRate(fCalc.CurrentRate) + "}", JournalEntrySeverities.Info, position.Clone());
@@ -1210,6 +1219,7 @@ namespace TickTrader.Algo.Core
 
         private void OnStopOut()
         {
+            _scheduler.SetFatalError(new StopOutException("Stop out!"));
         }
 
         internal void UpdateAssetsOnFill(OrderAccessor order, decimal fillPrice, decimal fillAmount)
@@ -1630,6 +1640,9 @@ namespace TickTrader.Algo.Core
             //                            + " remaining=" + position.RemainingAmount + " profit=" + profit + " charges=" + charges.Total + " totalProfit=" + totalProfit + " reason=" + trReason,
             //    JournalEntrySeverities.Info, orderCopy);
             //LogTransactionDetails(() => "Final position " + orderCopy, JournalEntrySeverities.Info, orderCopy);
+
+            if (!remove)
+                position.FireChanged();
 
             // Recalculate account if it is not disabled.
             if ((options & ClosePositionOptions.NoRecalculate) == 0)

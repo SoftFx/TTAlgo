@@ -80,6 +80,9 @@ namespace TickTrader.Algo.Core
                 overallResult = bidResult;
             }
 
+            if (overallResult.ExtendedBy > 0)
+                BufferingStrategy.OnBufferExtended();
+
             return overallResult;
         }
 

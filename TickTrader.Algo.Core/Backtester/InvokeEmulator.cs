@@ -28,11 +28,12 @@ namespace TickTrader.Algo.Core
         private bool _stopFlag;
         private Exception _fatalError;
 
-        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector)
+        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed)
         {
             _settings = settings;
             _collector = collector;
             _collector.InvokeEmulator = this;
+            _feed = feed;
             //var eventComparer = Comparer<EmulatedAction>.Create((x, y) => x.Time.CompareTo(y.Time));
             //_delayedQueue = new  C5.IntervalHeap<EmulatedAction>(eventComparer);
         }
@@ -84,7 +85,6 @@ namespace TickTrader.Algo.Core
 
         public override void Start()
         {
-            _feed = (FeedEmulator)FStartegy.Feed;
         }
 
         public void EmulateEventsFlow()
@@ -124,19 +124,19 @@ namespace TickTrader.Algo.Core
                 if (!_eFeed.MoveNext())
                     return false;
 
-                ExecItem(_eFeed.Current, true);
+                //ExecItem(_eFeed.Current, true);
             }
 
             return true;
         }
 
-        private void ExecItem(object item, bool warmup = false)
+        private void ExecItem(object item)
         {
             var action = item as Action<PluginBuilder>;
             if (action != null)
                 action(Builder);
             else
-                EmulateQuote((QuoteEntity)item, warmup);
+                EmulateQuote((QuoteEntity)item);
         }
 
         public void Cancel()
@@ -229,10 +229,10 @@ namespace TickTrader.Algo.Core
         //    }
         //}
 
-        private void EmulateQuote(QuoteEntity quote, bool hidden)
+        private void EmulateQuote(QuoteEntity quote)
         {
             var update = FStartegy.InvokeAggregate(null, quote);
-            var bufferUpdate = OnFeedUpdate(update, hidden);
+            var bufferUpdate = OnFeedUpdate(update);
             RateUpdated?.Invoke(quote);
             _collector.OnTick(quote);
 

@@ -19,6 +19,19 @@ namespace TickTrader.Algo.Core
         {
         }
     }
+
+    [Serializable]
+    public class StopOutException : AlgoException
+    {
+        public StopOutException(string message) : base(message)
+        {
+        }
+
+        protected StopOutException(SerializationInfo info, StreamingContext context)
+           : base(info, context)
+        {
+        }
+    }
 }
 
 namespace TickTrader.Algo.Core.Metadata

@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
         //private IBarStorage _askStorage;
 
         public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
-            : this(symbol, baseTimeFrame, bidSrc.GrtBarStream(), askSrc.GrtBarStream())
+            : this(symbol, baseTimeFrame, bidSrc?.GrtBarStream(), askSrc?.GrtBarStream())
         {
             //_bidStorage = bidSrc;
             //_askStorage = askSrc;
@@ -38,6 +38,14 @@ namespace TickTrader.Algo.Core
 
             if (bidSrc == null && askSrc == null)
                 throw new InvalidOperationException("Both ask and bid streams are null!");
+
+            // add base builders
+
+            if (bidSrc != null)
+                GetOrAddBuilder(BarPriceType.Bid, baseTimeFrame);
+
+            if (askSrc != null)
+                GetOrAddBuilder(BarPriceType.Ask, baseTimeFrame);
         }
 
         public override void Start()

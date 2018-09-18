@@ -70,12 +70,15 @@ namespace TickTrader.Algo.Core
             _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             _control.OnStart();
+
+            if (!_control.WarmUp(10))
+                return;
+
             _executor.Start();
 
             try
             {
-                if (_control.WarmUp(10))
-                    _control.EmulateExecution();
+                _control.EmulateExecution();
             }
             finally
             {

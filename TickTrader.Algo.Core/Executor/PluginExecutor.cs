@@ -38,7 +38,6 @@ namespace TickTrader.Algo.Core
         private string workingFolder;
         private string botWorkingFolder;
         private string _botInstanceId;
-        private bool _isolated;
         private PluginPermissions _permissions;
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
@@ -250,7 +249,7 @@ namespace TickTrader.Algo.Core
                     builder.Calculator = calcFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
                     builder.InstanceId = _botInstanceId;
-                    builder.Isolated = _isolated;
+                    builder.Isolated = _permissions.Isolated;
                     builder.Permissions = _permissions;
                     builder.Diagnostics = this;
                     builder.Logger = _pluginLogger;

@@ -114,12 +114,12 @@ namespace TickTrader.Algo.Core
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, to) ?? new List<BarEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, to).ToList() ?? new List<BarEntity>();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, size) ?? new List<BarEntity>();
+            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, size).ToList() ?? new List<BarEntity>();
         }
 
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)

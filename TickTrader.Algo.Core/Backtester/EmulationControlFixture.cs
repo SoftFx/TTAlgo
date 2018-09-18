@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
             Settings = settings;
             Feed = new FeedEmulator();
             Collector = new BacktesterCollector(executor);
-            InvokeEmulator = new InvokeEmulator(settings, Collector);
+            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed);
             Executor = executor;
         }
 
