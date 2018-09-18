@@ -203,7 +203,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedTimeFrame = cfg.TimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
-                ?? AvailableSymbols.GetSymbolOrDefault(SetupMetadata.Context.DefaultSymbol);
+                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
@@ -231,7 +231,7 @@ namespace TickTrader.BotTerminal
         public virtual void Reset()
         {
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(SetupMetadata.Context.DefaultSymbol);
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 

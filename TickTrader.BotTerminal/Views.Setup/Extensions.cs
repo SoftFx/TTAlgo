@@ -21,9 +21,10 @@ namespace TickTrader.BotTerminal
             return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
         }
 
-        public static SymbolInfo GetSymbolOrDefault(this IReadOnlyList<SymbolInfo> availableSymbols, SymbolInfo info)
+        public static SymbolInfo GetSymbolOrAny(this IReadOnlyList<SymbolInfo> availableSymbols, SymbolInfo info)
         {
-            return availableSymbols.FirstOrDefault(s => s.Origin == info.Origin && s.Name == info.Name);
+            return availableSymbols.FirstOrDefault(s => s.Origin == info.Origin && s.Name == info.Name)
+                ?? availableSymbols.First();
         }
     }
 

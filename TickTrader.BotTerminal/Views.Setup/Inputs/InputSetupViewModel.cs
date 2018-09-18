@@ -54,14 +54,14 @@ namespace TickTrader.BotTerminal
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.GetSymbolOrDefault(_defaultSymbol);
+            SelectedSymbol = AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
 
         protected virtual void LoadConfig(Input input)
         {
             _selectedSymbol = AvailableSymbols.GetSymbolOrDefault(input.SelectedSymbol)
-                ?? AvailableSymbols.GetSymbolOrDefault(_defaultSymbol);
+                ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
         protected virtual void SaveConfig(Input input)

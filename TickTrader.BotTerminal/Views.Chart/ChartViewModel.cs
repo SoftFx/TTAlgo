@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Config.MainSymbol.Name == Symbol);// && bc.Model.Setup.Descriptor.SetupMainSymbol);
+            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Config.MainSymbol.Name == Symbol); // && bc.Model.PluginRef.Metadata.Descriptor.SetupMainSymbol);
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
