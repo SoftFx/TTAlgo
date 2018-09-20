@@ -34,9 +34,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             }
         }
 
-        public static TradeBotConfig Parse(this PluginSetupDto setup)
+        public static PluginConfig Parse(this PluginSetupDto setup)
         {
-            var botConfig = new TradeBotConfig()
+            var botConfig = new PluginConfig()
             {
                 TimeFrame = TimeFrames.M1,
                 MainSymbol = new SymbolConfig { Name = setup.Symbol, Origin = Algo.Common.Info.SymbolOrigin.Online },

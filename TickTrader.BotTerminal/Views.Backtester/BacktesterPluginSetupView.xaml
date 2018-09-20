@@ -3,10 +3,6 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="../Views.Setup/PluginSetupView.xaml" />
-    </ResourceDictionary.MergedDictionaries>
-
     <!-- Old Template  -->
 
     <ControlTemplate x:Key="BacktesterPluginSetupView.Old">
@@ -19,7 +15,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False" Grid.Row="0"
                       Style="{DynamicResource DialogScrollViewer_Style}">
-                <Control Template="{StaticResource PluginSetupView.Old}" DataContext="{Binding Setup}" />
+                <ContentControl cal:View.Model="{Binding Setup}" />
             </ScrollViewer>
 
             <Grid Name="ButtonsPanel" Grid.Row="1">
@@ -59,9 +55,7 @@
             <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
                 <StackPanel IsEnabled="{Binding PluginIsStopped}">
-
-                    <Control Template="{StaticResource PluginSetupView.Classic}" DataContext="{Binding Setup}" />
-                    
+                    <ContentControl cal:View.Model="{Binding Setup}" />
                 </StackPanel>
             </ScrollViewer>
 

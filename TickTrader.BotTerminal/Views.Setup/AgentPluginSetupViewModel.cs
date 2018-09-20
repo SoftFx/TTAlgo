@@ -90,7 +90,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public PluginSetupViewModel Setup { get; private set; }
+        public PluginConfigViewModel Setup { get; private set; }
 
         public BotModelInfo Bot { get; private set; }
 
@@ -348,7 +348,7 @@ namespace TickTrader.BotTerminal
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
-                Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, SelectedAgent.Model.IdProvider, Mode);
+                Setup = new PluginConfigViewModel(SelectedPlugin.Info, metadata, SelectedAgent.Model.IdProvider, Mode);
                 Init();
                 if (Bot != null)
                     Setup.Load(Bot.Config);

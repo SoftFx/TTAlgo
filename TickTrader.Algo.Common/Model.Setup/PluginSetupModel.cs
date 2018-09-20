@@ -11,7 +11,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
-    public abstract class PluginSetupModel
+    public sealed class PluginSetupModel
     {
         private List<PropertySetupModel> _allProperties;
         private List<ParameterSetupModel> _parameters;
@@ -19,12 +19,11 @@ namespace TickTrader.Algo.Common.Model.Setup
         private List<InputSetupModel> _tickBasedInputs;
         private List<OutputSetupModel> _outputs;
 
+        public TimeFrames SelectedTimeFrame { get; private set; }
 
-        public TimeFrames SelectedTimeFrame { get; protected set; }
+        public ISymbolInfo MainSymbol { get; private set; }
 
-        public ISymbolInfo MainSymbol { get; protected set; }
-
-        public Mapping SelectedMapping { get; protected set; }
+        public Mapping SelectedMapping { get; private set; }
 
         public IEnumerable<ParameterSetupModel> Parameters => _parameters;
 
@@ -36,15 +35,15 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public AlgoPluginRef PluginRef { get; }
 
-        public bool IsValid { get; protected set; }
+        public bool IsValid { get; private set; }
 
         public IAlgoSetupMetadata SetupMetadata { get; }
 
         public IAlgoSetupContext SetupContext { get; }
 
-        public string InstanceId { get; protected set; }
+        public string InstanceId { get; private set; }
 
-        public PluginPermissions Permissions { get; protected set; }
+        public PluginPermissions Permissions { get; private set; }
 
         public bool AllowTrade
         {
@@ -60,12 +59,9 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public SymbolToken MainSymbolPlaceholder { get; private set; }
 
-
-        protected List<InputSetupModel> ActiveInputs => SelectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
-
+        private List<InputSetupModel> ActiveInputs => SelectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
 
         public event Action ValidityChanged = delegate { };
-
 
         public PluginSetupModel(AlgoPluginRef pRef, IAlgoSetupMetadata metadata, IAlgoSetupContext context)
         {
@@ -75,8 +71,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetupContext = context;
         }
 
-
-        public virtual void Apply(IPluginSetupTarget target)
+        public void Apply(IPluginSetupTarget target)
         {
             MainSymbolPlaceholder.Id = MainSymbol.Id;
 
@@ -85,24 +80,29 @@ namespace TickTrader.Algo.Common.Model.Setup
             ActiveInputs.Foreach(p => p.Apply(target));
         }
 
-        public virtual void Load(PluginConfig cfg)
+        public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame;
             MainSymbol = cfg.MainSymbol.ResolveMainSymbol(SetupMetadata, SetupContext, MainSymbolPlaceholder);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
+
             foreach (var scrProperty in cfg.Properties)
             {
                 var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
                 if (thisProperty != null)
                     thisProperty.Load(scrProperty);
             }
+
+            InstanceId = cfg.InstanceId;
+            AllowTrade = cfg.Permissions.TradeAllowed;
+            Isolated = cfg.Permissions.Isolated;
         }
 
-        public virtual PluginConfig Save()
+        public PluginConfig Save()
         {
-            var cfg = SaveToConfig();
+            var cfg = new PluginConfig();
             cfg.TimeFrame = SelectedTimeFrame;
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-        public virtual void Reset()
+        public void Reset()
         {
             SelectedTimeFrame = SetupContext.DefaultTimeFrame;
             MainSymbol = SetupContext.DefaultSymbol;
@@ -135,6 +135,8 @@ namespace TickTrader.Algo.Common.Model.Setup
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
                 p.Reset();
+
+            Permissions.Reset();
         }
 
         public void Validate()
@@ -143,17 +145,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             ValidityChanged();
         }
 
-
-        protected abstract PluginConfig SaveToConfig();
-
-
-        protected virtual bool CheckValidity()
+        private bool CheckValidity()
         {
             return Metadata.Descriptor.IsValid && _allProperties.All(p => !p.HasError);
         }
 
-
-        protected void Init()
+        private void Init()
         {
             _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
@@ -167,7 +164,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             Reset();
             Validate();
         }
-
 
         private ParameterSetupModel CreateParameter(ParameterMetadata descriptor)
         {

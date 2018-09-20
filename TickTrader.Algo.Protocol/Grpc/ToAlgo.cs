@@ -607,18 +607,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public static PluginConfig Convert(this Lib.PluginConfig config)
         {
-            PluginConfig res;
-            switch (config.ConfigCase)
-            {
-                case Lib.PluginConfig.ConfigOneofCase.Indicator:
-                    res = config.Indicator.Convert();
-                    break;
-                case Lib.PluginConfig.ConfigOneofCase.TradeBot:
-                    res = config.TradeBot.Convert();
-                    break;
-                default:
-                    throw new ArgumentException();
-            }
+            var res = new PluginConfig();
             res.Key = config.Key.Convert();
             res.TimeFrame = config.TimeFrame.Convert();
             res.MainSymbol = config.MainSymbol.Convert();
@@ -629,18 +618,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static IndicatorConfig Convert(this Lib.IndicatorConfig config)
-        {
-            return new IndicatorConfig();
-        }
-
-        public static TradeBotConfig Convert(this Lib.TradeBotConfig config)
-        {
-            return new TradeBotConfig();
-        }
-
         #endregion config.proto
-
 
         #region keys.proto
 
@@ -711,7 +689,6 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #endregion keys.proto
-
 
         #region metadata.proto
 
@@ -950,7 +927,6 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         #endregion metadata.proto
 
-
         public static UpdateType Convert(this Lib.UpdateInfo.Types.UpdateType type)
         {
             switch (type)
@@ -964,7 +940,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                 default:
                     throw new ArgumentException();
             }
-
         }
 
         public static UpdateInfo Convert(this Lib.UpdateInfo update)

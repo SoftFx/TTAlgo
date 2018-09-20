@@ -480,9 +480,7 @@
     <Compile Include="Views.Protocol\BotAgentLoginDialogViewModel.cs" />
     <Compile Include="Views.Protocol\BotAgentViewModel.cs" />
     <Compile Include="Views.Setup\AlgoSetupContextStub.cs" />
-    <Compile Include="Views.Setup\AlgoSetupFactory.cs" />
     <Compile Include="Views.Setup\Extensions.cs" />
-    <Compile Include="Views.Setup\IndicatorSetupViewModel.cs" />
     <Compile Include="Views.Setup\Inputs\BarToBarInputSetupViewModel.cs" />
     <Compile Include="Views.Setup\Inputs\BarToDoubleInputSetupViewModel.cs" />
     <Compile Include="Views.Setup\Inputs\InputSetupViewModel.cs" />
@@ -498,9 +496,8 @@
     <Compile Include="Views.Setup\Parameters\GenericParameterSetupViewModel.cs" />
     <Compile Include="Views.Setup\Parameters\ParameterSetupViewModel.cs" />
     <Compile Include="Views.Setup\LocalPluginSetupViewModel.cs" />
-    <Compile Include="Views.Setup\PluginSetupViewModel.cs" />
+    <Compile Include="Views.Setup\PluginConfigViewModel.cs" />
     <Compile Include="Views.Setup\PropertySetupViewModel.cs" />
-    <Compile Include="Views.Setup\TradeBotSetupViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>
@@ -1025,7 +1022,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Setup\PluginSetupView.xaml">
+    <Page Include="Views.Setup\PluginConfigView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

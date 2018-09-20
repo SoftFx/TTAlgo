@@ -32,7 +32,6 @@ namespace TickTrader.Algo.Core.Metadata
 
         public IEnumerable<OutputMetadata> Outputs => _outputs;
 
-
         public PluginMetadata(Type reflectionInfo)
         {
             _reflectionInfo = reflectionInfo;

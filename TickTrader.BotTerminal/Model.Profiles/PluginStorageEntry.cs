@@ -11,7 +11,6 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public PluginConfig Config { get; set; }
 
-
         public virtual T Clone()
         {
             return new T

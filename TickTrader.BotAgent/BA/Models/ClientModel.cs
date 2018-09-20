@@ -392,7 +392,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Bot Management
 
-        public TradeBotModel AddBot(TradeBotConfig config)
+        public TradeBotModel AddBot(PluginConfig config)
         {
             CheckInitialized();
 

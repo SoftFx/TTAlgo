@@ -11,7 +11,6 @@ namespace TickTrader.BotTerminal
     {
         private ErrorMsgModel _error;
 
-
         public string Id { get; private set; }
 
         public string DisplayName { get; private set; }
@@ -33,16 +32,13 @@ namespace TickTrader.BotTerminal
 
         public bool HasError => _error != null;
 
-
         public event Action<PropertySetupViewModel> ErrorChanged = delegate { };
-
 
         public abstract void Load(Property srcProperty);
 
         public abstract Property Save();
 
         public abstract void Reset();
-
 
         internal void SetMetadata(PropertyDescriptor descriptor)
         {

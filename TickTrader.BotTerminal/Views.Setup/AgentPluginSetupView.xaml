@@ -7,10 +7,6 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="PluginSetupView.xaml" />
-    </ResourceDictionary.MergedDictionaries>
-
     <ControlTemplate x:Key="LaunchTargetSelection" TargetType="Control">
         <Grid Margin="3">
             <Grid.RowDefinitions>
@@ -67,7 +63,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       IsTabStop="False" Grid.Row="0"
                       Style="{DynamicResource DialogScrollViewer_Style}">
-                <Control Template="{StaticResource PluginSetupView.Old}" DataContext="{Binding Setup}" />
+                <ContentControl cal:View.Model="{Binding Setup}" />
             </ScrollViewer>
 
             <Grid Name="ButtonsPanel" Grid.Row="1">
@@ -114,7 +110,7 @@
                         <Control Template="{StaticResource PluginSelection}" />
                     </GroupBox>
 
-                    <Control Template="{StaticResource PluginSetupView.Classic}" DataContext="{Binding Setup}" />
+                    <ContentControl cal:View.Model="{Binding Setup}" />
 
                     <GroupBox Name="AutoRunGroup" Margin="4" Visibility="Collapsed">
                         <Grid Margin="3">

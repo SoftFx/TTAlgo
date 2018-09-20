@@ -622,33 +622,12 @@ namespace TickTrader.Algo.Protocol.Grpc
                 InstanceId = Convert(config.InstanceId),
                 Permissions = config.Permissions.Convert(),
             };
+            
             res.Properties.AddRange(config.Properties.Select(Convert));
-            switch (config)
-            {
-                case IndicatorConfig indicatorConfig:
-                    res.Indicator = indicatorConfig.Convert();
-                    break;
-                case TradeBotConfig tradeBotConfig:
-                    res.TradeBot = tradeBotConfig.Convert();
-                    break;
-                default:
-                    throw new ArgumentException();
-            }
             return res;
         }
 
-        public static Lib.IndicatorConfig Convert(this IndicatorConfig config)
-        {
-            return new Lib.IndicatorConfig();
-        }
-
-        public static Lib.TradeBotConfig Convert(this TradeBotConfig config)
-        {
-            return new Lib.TradeBotConfig();
-        }
-
         #endregion config.proto
-
 
         #region keys.proto
 
@@ -719,7 +698,6 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #endregion keys.proto
-
 
         #region metadata.proto
 
@@ -961,7 +939,6 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #endregion metadata.proto
-
 
         public static Lib.UpdateInfo.Types.UpdateType Convert(this UpdateType type)
         {

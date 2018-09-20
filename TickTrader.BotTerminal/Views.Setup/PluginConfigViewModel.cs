@@ -18,8 +18,7 @@ namespace TickTrader.BotTerminal
         Edit,
     }
 
-
-    public abstract class PluginSetupViewModel : PropertyChangedBase
+    public sealed class PluginConfigViewModel : PropertyChangedBase
     {
         private List<PropertySetupViewModel> _allProperties;
         private List<ParameterSetupViewModel> _parameters;
@@ -30,13 +29,16 @@ namespace TickTrader.BotTerminal
         private SymbolInfo _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
-        private PluginPermissions _permissions;
         private IPluginIdProvider _idProvider;
-
+        private bool _allowTrade;
+        private bool _isolate;
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
 
-        public abstract bool AllowChangeTimeFrame { get; }
+        public bool IsFixedFeed { get; set; }
+        public bool IsEmulation { get; set; }
+
+        public bool EnableFeedSetup => !IsFixedFeed && Descriptor.SetupMainSymbol;
 
         public TimeFrames SelectedTimeFrame
         {
@@ -59,8 +61,6 @@ namespace TickTrader.BotTerminal
 
         public IReadOnlyList<SymbolInfo> AvailableSymbols { get; private set; }
 
-        public abstract bool AllowChangeMainSymbol { get; }
-
         public SymbolInfo MainSymbol
         {
             get { return _mainSymbol; }
@@ -76,8 +76,6 @@ namespace TickTrader.BotTerminal
 
         public IReadOnlyList<MappingInfo> AvailableMappings { get; private set; }
 
-        public abstract bool AllowChangeMapping { get; }
-
         public MappingInfo SelectedMapping
         {
             get { return _selectedMapping; }
@@ -90,7 +88,6 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(SelectedMapping));
             }
         }
-
 
         public IEnumerable<ParameterSetupViewModel> Parameters => _parameters;
 
@@ -141,72 +138,56 @@ namespace TickTrader.BotTerminal
 
         public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Descriptor, InstanceId);
 
-        public PluginPermissions Permissions
-        {
-            get { return _permissions; }
-            set
-            {
-                if (_permissions == value)
-                    return;
-
-                _permissions = value;
-                NotifyOfPropertyChange(nameof(Permissions));
-                NotifyOfPropertyChange(nameof(AllowTrade));
-                NotifyOfPropertyChange(nameof(Isolated));
-            }
-        }
-
         public bool AllowTrade
         {
-            get { return Permissions.TradeAllowed; }
+            get { return _allowTrade; }
             set
             {
-                if (Permissions.TradeAllowed == value)
+                if (_allowTrade == value)
                     return;
 
-                Permissions.TradeAllowed = value;
+                _allowTrade = value;
                 NotifyOfPropertyChange(nameof(AllowTrade));
             }
         }
 
         public bool Isolated
         {
-            get { return Permissions.Isolated; }
+            get { return _isolate; }
             set
             {
-                if (Permissions.Isolated == value)
+                if (_isolate == value)
                     return;
 
-                Permissions.Isolated = value;
+                _isolate = value;
                 NotifyOfPropertyChange(nameof(Isolated));
             }
         }
 
-
         private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
-
 
         public event System.Action ValidityChanged = delegate { };
 
-
-        public PluginSetupViewModel(PluginInfo plugin, SetupMetadata setupMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
+        public PluginConfigViewModel(PluginInfo plugin, SetupMetadata setupMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
         {
             Plugin = plugin;
             Descriptor = plugin.Descriptor;
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
+
+            Init();
         }
 
-
-        public virtual void Load(PluginConfig cfg)
+        public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
                 ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
-            Permissions = cfg.Permissions.Clone();
+            AllowTrade = cfg.Permissions.TradeAllowed;
+            Isolated = cfg.Permissions.Isolated;
             foreach (var scrProperty in cfg.Properties)
             {
                 var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
@@ -215,25 +196,30 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public virtual PluginConfig Save()
+        public PluginConfig Save()
         {
-            var cfg = SaveToConfig();
+            var cfg = new PluginConfig();
             cfg.TimeFrame = SelectedTimeFrame;
             cfg.MainSymbol = MainSymbol.ToConfig();
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
-            cfg.Permissions = Permissions.Clone();
+            cfg.Permissions = new PluginPermissions();
+            cfg.Permissions.TradeAllowed = _allowTrade;
+            cfg.Permissions.Isolated = _isolate;
             foreach (var property in _allProperties)
                 cfg.Properties.Add(property.Save());
             return cfg;
         }
 
-        public virtual void Reset()
+        public void Reset()
         {
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
+
+            AllowTrade = true;
+            Isolated = true;
 
             foreach (var p in _allProperties)
                 p.Reset();
@@ -245,17 +231,12 @@ namespace TickTrader.BotTerminal
             ValidityChanged();
         }
 
-
-        protected abstract PluginConfig SaveToConfig();
-
-
-        protected virtual bool CheckValidity()
+        private bool CheckValidity()
         {
             return Descriptor.Error == AlgoMetadataErrors.None && _allProperties.All(p => !p.HasError) && IsInstanceIdValid;
         }
 
-
-        protected void Init()
+        private void Init()
         {
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
             AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol);
@@ -274,7 +255,6 @@ namespace TickTrader.BotTerminal
             Reset();
             Validate();
         }
-
 
         private ParameterSetupViewModel CreateParameter(ParameterDescriptor descriptor)
         {

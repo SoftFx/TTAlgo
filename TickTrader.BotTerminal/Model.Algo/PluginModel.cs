@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
                 PackageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
                 PackageRef.IncrementRef();
                 PluginRef = Agent.Library.GetPluginRef(Config.Key);
-                Setup = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(PluginRef, Agent, SetupContext);
+                Setup = new PluginSetupModel(PluginRef, Agent, SetupContext);
                 Setup.Load(Config);
 
                 _executor = CreateExecutor();

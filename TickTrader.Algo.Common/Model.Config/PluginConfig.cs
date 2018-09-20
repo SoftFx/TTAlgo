@@ -7,8 +7,6 @@ using TickTrader.Algo.Core;
 namespace TickTrader.Algo.Common.Model.Config
 {
     [DataContract(Namespace = "TTAlgo.Setup.ver2")]
-    [KnownType(typeof(IndicatorConfig))]
-    [KnownType(typeof(TradeBotConfig))]
     public class PluginConfig
     {
         [DataMember(Name = "Key")]
@@ -32,22 +30,9 @@ namespace TickTrader.Algo.Common.Model.Config
         [DataMember(Name = "Properties")]
         public List<Property> Properties { get; internal set; }
 
-
         public PluginConfig()
         {
             Properties = new List<Property>();
         }
-    }
-
-
-    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
-    public class IndicatorConfig : PluginConfig
-    {
-    }
-
-
-    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
-    public class TradeBotConfig : PluginConfig
-    {
     }
 }

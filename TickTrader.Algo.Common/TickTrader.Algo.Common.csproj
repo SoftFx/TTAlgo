@@ -143,9 +143,7 @@
     <Compile Include="Model.Library\ReductionCollection.cs" />
     <Compile Include="Model.Library\IAlgoLibrary.cs" />
     <Compile Include="Model.Library\LocalAlgoLibrary.cs" />
-    <Compile Include="Model.Setup\AlgoSetupFactory.cs" />
     <Compile Include="Model.Setup\Extensions.cs" />
-    <Compile Include="Model.Setup\IndicatorSetupModel.cs" />
     <Compile Include="Model.Setup\Inputs\MappedInputSetupModel.cs" />
     <Compile Include="Model.Setup\Inputs\QuoteToDoubleInputSetupModel.cs" />
     <Compile Include="Model.Library\Mappings\AskBarMappings.cs" />
@@ -164,7 +162,6 @@
     <Compile Include="Model.Setup\Parameters\GenericParameterSetupModel.cs" />
     <Compile Include="Model.Setup\SetupMetadata.cs" />
     <Compile Include="Model.Setup\SpecialSymbols.cs" />
-    <Compile Include="Model.Setup\TradeBotSetupModel.cs" />
     <Compile Include="Model\AccountCalculatorModel.cs" />
     <Compile Include="Model\AccountModel.cs" />
     <Compile Include="Model\AssetModel.cs" />

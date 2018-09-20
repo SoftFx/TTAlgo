@@ -48,13 +48,11 @@ namespace TickTrader.Algo.Core.Metadata
 
         public bool SetupMainSymbol { get; set; }
 
-
         public List<ParameterDescriptor> Parameters { get; set; }
 
         public List<InputDescriptor> Inputs { get; set; }
 
         public List<OutputDescriptor> Outputs { get; set; }
-
 
         public PluginDescriptor()
         {

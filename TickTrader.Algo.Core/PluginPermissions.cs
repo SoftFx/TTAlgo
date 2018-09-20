@@ -18,6 +18,11 @@ namespace TickTrader.Algo.Core
 
         public PluginPermissions()
         {
+            Reset();
+        }
+
+        public void Reset()
+        {
             TradeAllowed = true;
             Isolated = true;
         }

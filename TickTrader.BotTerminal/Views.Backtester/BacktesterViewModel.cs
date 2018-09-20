@@ -220,7 +220,7 @@ namespace TickTrader.BotTerminal
 
             var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
             var pluginRef = _env.LocalAgent.Library.GetPluginRef(SelectedPlugin.Value.Info.Key);
-            var pluginSetupModel = Algo.Common.Model.Setup.AlgoSetupFactory.CreateSetup(pluginRef, this, this);
+            var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
             if (PluginConfig != null)
                 pluginSetupModel.Load(PluginConfig);
@@ -431,7 +431,6 @@ namespace TickTrader.BotTerminal
         IPluginIdProvider IAlgoSetupMetadata.IdProvider => this;
 
         #endregion
-
 
         #region IPluginIdProvider
 

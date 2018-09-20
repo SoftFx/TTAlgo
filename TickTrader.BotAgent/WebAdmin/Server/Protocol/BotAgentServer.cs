@@ -102,7 +102,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public void AddBot(AccountKey account, PluginConfig config)
         {
-            _botAgent.AddBot(account, (TradeBotConfig)config);
+            _botAgent.AddBot(account, config);
         }
 
         public void RemoveBot(string botId, bool cleanLog, bool cleanAlgoData)
@@ -112,7 +112,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public void ChangeBotConfig(string botId, PluginConfig newConfig)
         {
-            _botAgent.ChangeBotConfig(botId, (TradeBotConfig)newConfig);
+            _botAgent.ChangeBotConfig(botId, newConfig);
         }
 
         public void AddAccount(AccountKey account, string password, bool useNewProtocol)

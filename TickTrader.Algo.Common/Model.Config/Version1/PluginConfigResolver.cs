@@ -13,18 +13,10 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         public static PluginConfig ResolvePluginConfigVersion1(Ver1.PluginConfig c, AlgoTypes t, MappingCollection mc)
         {
-            PluginConfig res = null;
-            switch (t)
-            {
-                case AlgoTypes.Indicator:
-                    res = new IndicatorConfig();
-                    break;
-                case AlgoTypes.Robot:
-                    res = new TradeBotConfig();
-                    break;
-                case AlgoTypes.Unknown:
-                    throw new ArgumentException("Unknown plugin type");
-            }
+            var res = new PluginConfig();
+
+            if(t == AlgoTypes.Unknown)
+                throw new ArgumentException("Unknown plugin type");
 
             res.MainSymbol = new SymbolConfig { Name = c.MainSymbol, Origin = Info.SymbolOrigin.Online };
             switch (c)
@@ -40,7 +32,6 @@ namespace TickTrader.Algo.Common.Model.Config
 
             return res;
         }
-
 
         private static Property ResolvePluginPropertyVersion1(Ver1.Property p, MappingCollection mc)
         {

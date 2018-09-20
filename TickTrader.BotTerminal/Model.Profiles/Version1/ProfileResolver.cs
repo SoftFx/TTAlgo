@@ -53,17 +53,17 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        private static IndicatorConfig ResolveIndicatorConfigVersion1(Ver1.IndicatorStorageEntry i, Ver1.ChartStorageEntry c)
+        private static PluginConfig ResolveIndicatorConfigVersion1(Ver1.IndicatorStorageEntry i, Ver1.ChartStorageEntry c)
         {
-            var res = ResolvePluginConfigVersion1(i, AlgoTypes.Indicator, c) as IndicatorConfig;
+            var res = ResolvePluginConfigVersion1(i, AlgoTypes.Indicator, c);
             if (res == null)
                 throw new ArgumentException("Can't convert provided config to IndicatorConfig");
             return res;
         }
 
-        private static TradeBotConfig ResolveTradeBotConfigVersion1(Ver1.TradeBotStorageEntry b, Ver1.ChartStorageEntry c)
+        private static PluginConfig ResolveTradeBotConfigVersion1(Ver1.TradeBotStorageEntry b, Ver1.ChartStorageEntry c)
         {
-            var res = ResolvePluginConfigVersion1(b, AlgoTypes.Robot, c) as TradeBotConfig;
+            var res = ResolvePluginConfigVersion1(b, AlgoTypes.Robot, c);
             if (res == null)
                 throw new ArgumentException("Can't convert provided config to TradeBotConfig");
             return res;

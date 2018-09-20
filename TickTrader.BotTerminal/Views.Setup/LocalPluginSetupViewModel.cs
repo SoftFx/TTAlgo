@@ -17,7 +17,6 @@ namespace TickTrader.BotTerminal
         private bool _runBot;
         private PluginCatalogItem _selectedPlugin;
 
-
         public IAlgoAgent Agent { get; }
 
         public SetupContextInfo SetupContext { get; }
@@ -38,7 +37,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public PluginSetupViewModel Setup { get; private set; }
+        public PluginConfigViewModel Setup { get; private set; }
 
         public BotModelInfo Bot { get; private set; }
 
@@ -69,9 +68,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsEditMode => Mode == PluginSetupMode.Edit;
 
-
         public event Action<LocalPluginSetupViewModel, bool> Closed = delegate { };
-
 
         private LocalPluginSetupViewModel(LocalAlgoAgent agent, PluginKey key, AlgoTypes type, PluginSetupMode mode)
         {
@@ -223,7 +220,7 @@ namespace TickTrader.BotTerminal
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
-                Setup = AlgoSetupFactory.CreateSetup(SelectedPlugin.Info, metadata, Agent.IdProvider, Mode);
+                Setup = new PluginConfigViewModel(SelectedPlugin.Info, metadata, Agent.IdProvider, Mode);
                 Init();
                 if (Bot != null)
                     Setup.Load(Bot.Config);

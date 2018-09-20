@@ -88,7 +88,7 @@ namespace TickTrader.BotAgent.BA.Models
             return false;
         }
 
-        public void ChangeBotConfig(TradeBotConfig config)
+        public void ChangeBotConfig(PluginConfig config)
         {
             CheckShutdownFlag();
 
@@ -220,10 +220,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 executor = _ref.CreateExecutor();
 
-                if (!(Config is TradeBotConfig))
-                    throw new Exception("Unsupported configuration!");
-
-                var setupModel = new TradeBotSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());
+                var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());
                 setupModel.Load(Config);
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor);

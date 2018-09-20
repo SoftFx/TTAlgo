@@ -110,8 +110,8 @@ namespace TickTrader.BotAgent.BA.Models
             #region Bot Management
 
             public string GenerateBotId(string botDisplayName) => CallActor(a => a.AutogenerateBotId(botDisplayName));
-            public BotModelInfo AddBot(AccountKey accountId, TradeBotConfig config) => CallActor(a => a.AddBot(accountId, config));
-            public void ChangeBotConfig(string botId, TradeBotConfig config) => CallActor(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
+            public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActor(a => a.AddBot(accountId, config));
+            public void ChangeBotConfig(string botId, PluginConfig config) => CallActor(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
             public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActor(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
             public void StartBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Start());
             public Task StopBotAsync(string botId) => CallActor(a => a.GetBotOrThrow(botId).StopAsync());
@@ -339,7 +339,7 @@ namespace TickTrader.BotAgent.BA.Models
         private event Action<BotModelInfo, ChangeAction> BotChanged;
         private event Action<BotModelInfo> BotStateChanged;
 
-        private BotModelInfo AddBot(AccountKey account, TradeBotConfig config)
+        private BotModelInfo AddBot(AccountKey account, PluginConfig config)
         {
             var bot = GetAccountOrThrow(account).AddBot(config);
             return bot.GetInfoCopy();

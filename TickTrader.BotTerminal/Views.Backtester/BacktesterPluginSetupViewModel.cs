@@ -17,7 +17,6 @@ namespace TickTrader.BotTerminal
 
         private bool _dlgResult;
 
-
         public IAlgoAgent Agent { get; }
 
         public PluginInfo Info { get; private set; }
@@ -30,15 +29,13 @@ namespace TickTrader.BotTerminal
 
         public PluginConfig Config { get; }
 
-        public PluginSetupViewModel Setup { get; private set; }
+        public PluginConfigViewModel Setup { get; private set; }
 
         public bool PluginIsStopped => true; // Bot == null ? true : Bot.State == BotStates.Offline;
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped;
 
-
         public event Action<BacktesterPluginSetupViewModel, bool> Closed = delegate { };
-
 
         private BacktesterPluginSetupViewModel(LocalAlgoAgent agent, PluginInfo info, IAlgoSetupMetadata setupMetadata, SetupContextInfo setupContext, PluginSetupMode mode)
         {
@@ -68,7 +65,6 @@ namespace TickTrader.BotTerminal
 
             UpdateSetup();
         }
-
 
         public void Reset()
         {
@@ -100,7 +96,6 @@ namespace TickTrader.BotTerminal
             res.Key = Info.Key;
             return res;
         }
-
 
         private void Init()
         {
@@ -161,7 +156,7 @@ namespace TickTrader.BotTerminal
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
-                Setup = AlgoSetupFactory.CreateSetup(Info, metadata, Agent.IdProvider, Mode);
+                Setup = new PluginConfigViewModel(Info, metadata, Agent.IdProvider, Mode);
                 Init();
                 if (Config != null)
                     Setup.Load(Config);
