@@ -83,8 +83,11 @@
     <Compile Include="Fdk.Serializers\TextSerializer.cs" />
     <Compile Include="Fdk.Serializers\ZipSerializer.cs" />
     <Compile Include="Info\AccountModelInfo.cs" />
+    <Compile Include="Info\BotFileInfo.cs" />
+    <Compile Include="Info\BotFolderInfo.cs" />
     <Compile Include="Info\BotModelInfo.cs" />
     <Compile Include="Info\ConnectionErrorInfo.cs" />
+    <Compile Include="Info\LogRecordInfo.cs" />
     <Compile Include="Info\UpdateInfo.cs" />
     <Compile Include="Info\InfoExtensions.cs" />
     <Compile Include="Info\Keys\PackageKey.cs" />

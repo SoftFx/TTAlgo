@@ -58,14 +58,6 @@ message ApiDescriptor
 		MEDIUM = 2;
 		SMALL = 3;
 	}
-
-	enum SymbolOrigin
-	{
-		UNKNOWN_SYMBOL_ORIGIN = 0;
-		ONLINE = 1;
-		CUSTOM = 2;
-		SPECIAL = 3;
-	}
 }
 
 message PropertyDescriptor

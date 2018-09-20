@@ -44,70 +44,84 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25L",
             "ZXkSSgoKZGVzY3JpcHRvchgCIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90",
             "b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25EZXNjcmlwdG9yIhwKDEN1cnJlbmN5",
-            "SW5mbxIMCgRuYW1lGAEgASgJIhoKClN5bWJvbEluZm8SDAoEbmFtZRgBIAEo",
-            "CSKRAQoTQWNjb3VudE1ldGFkYXRhSW5mbxI6CgNrZXkYASABKAsyLS5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRI+Cgdz",
-            "eW1ib2xzGAIgAygLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
-            "TGliLlN5bWJvbEluZm8iXwoLTWFwcGluZ0luZm8SOgoDa2V5GAEgASgLMi0u",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdLZXkS",
-            "FAoMZGlzcGxheV9uYW1lGAIgASgJIp8GChVNYXBwaW5nQ29sbGVjdGlvbklu",
-            "Zm8SSwoTYmFyX3RvX2Jhcl9tYXBwaW5ncxgBIAMoCzIuLlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nSW5mbxJOChZiYXJfdG9f",
-            "ZG91YmxlX21hcHBpbmdzGAIgAygLMi4uVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLk1hcHBpbmdJbmZvEk0KFXF1b3RlX3RvX2Jhcl9tYXBw",
-            "aW5ncxgDIAMoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
-            "Yi5NYXBwaW5nSW5mbxJQChhxdW90ZV90b19kb3VibGVfbWFwcGluZ3MYBCAD",
-            "KAsyLi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGlu",
-            "Z0luZm8SWgohZGVmYXVsdF9mdWxsX2Jhcl90b19iYXJfcmVkdWN0aW9uGAUg",
-            "ASgLMi8uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlZHVj",
-            "dGlvbktleRJdCiRkZWZhdWx0X2Z1bGxfYmFyX3RvX2RvdWJsZV9yZWR1Y3Rp",
-            "b24YBiABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "UmVkdWN0aW9uS2V5ElgKH2RlZmF1bHRfYmFyX3RvX2RvdWJsZV9yZWR1Y3Rp",
-            "b24YByABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "UmVkdWN0aW9uS2V5ElcKHmRlZmF1bHRfcXVvdGVfdG9fYmFyX3JlZHVjdGlv",
-            "bhgIIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5S",
-            "ZWR1Y3Rpb25LZXkSWgohZGVmYXVsdF9xdW90ZV90b19kb3VibGVfcmVkdWN0",
-            "aW9uGAkgASgLMi8uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LlJlZHVjdGlvbktleSKbAgoPQXBpTWV0YWRhdGFJbmZvEk8KC3RpbWVfZnJh",
-            "bWVzGAEgAygOMjouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LkFwaURlc2NyaXB0b3IuVGltZUZyYW1lEk8KC2xpbmVfc3R5bGVzGAIgAygO",
-            "MjouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2Ny",
-            "aXB0b3IuTGluZVN0eWxlEhMKC3RoaWNrbmVzc2VzGAMgAygFElEKDG1hcmtl",
-            "cl9zaXplcxgEIAMoDjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5BcGlEZXNjcmlwdG9yLk1hcmtlclNpemUi+QEKEFNldHVwQ29udGV4",
-            "dEluZm8SVgoSZGVmYXVsdF90aW1lX2ZyYW1lGAEgASgOMjouVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuVGltZUZy",
-            "YW1lEkUKDmRlZmF1bHRfc3ltYm9sGAIgASgLMi0uVGlja1RyYWRlci5BbGdv",
-            "LlByb3RvY29sLkdycGMuTGliLlN5bWJvbEluZm8SRgoPZGVmYXVsdF9tYXBw",
-            "aW5nGAMgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "Lk1hcHBpbmdLZXkinQMKE0Nvbm5lY3Rpb25FcnJvckluZm8SWAoEY29kZRgB",
-            "IAEoDjJKLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Db25u",
-            "ZWN0aW9uRXJyb3JJbmZvLkNvbm5lY3Rpb25FcnJvckNvZGUSFAoMdGV4dF9t",
-            "ZXNzYWdlGAIgASgJIpUCChNDb25uZWN0aW9uRXJyb3JDb2RlEggKBE5PTkUQ",
-            "ABIdChlVTktOT1dOX0NPTk5ORUNUSU9OX0VSUk9SEAESEQoNTkVUV09SS19F",
-            "UlJPUhACEgsKB1RJTUVPVVQQAxITCg9CTE9DS0VEX0FDQ09VTlQQBBIUChBD",
-            "TElFTlRfSU5JVElBVEVEEAUSFwoTSU5WQUxJRF9DUkVERU5USUFMUxAGEhMK",
-            "D1NMT1dfQ09OTkVDVElPThAHEhAKDFNFUlZFUl9FUlJPUhAIEhEKDUxPR0lO",
-            "X0RFTEVURUQQCRIRCg1TRVJWRVJfTE9HT1VUEAoSDAoIQ0FOQ0VMRUQQCxIW",
-            "ChJSRUpFQ1RFRF9CWV9TRVJWRVIQDCLiAgoQQWNjb3VudE1vZGVsSW5mbxI6",
-            "CgNrZXkYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuQWNjb3VudEtleRIYChB1c2VfbmV3X3Byb3RvY29sGAIgASgIEl0KEGNv",
-            "bm5lY3Rpb25fc3RhdGUYAyABKA4yQy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuQWNjb3VudE1vZGVsSW5mby5Db25uZWN0aW9uU3RhdGUS",
-            "SgoKbGFzdF9lcnJvchgEIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5Db25uZWN0aW9uRXJyb3JJbmZvIk0KD0Nvbm5lY3Rpb25T",
-            "dGF0ZRILCgdPRkZMSU5FEAASDgoKQ09OTkVDVElORxABEgoKBk9OTElORRAC",
-            "EhEKDURJU0NPTk5FQ1RJTkcQAyK5AwoMQm90TW9kZWxJbmZvEhMKC2luc3Rh",
-            "bmNlX2lkGAEgASgJEj4KB2FjY291bnQYAiABKAsyLS5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRJHCgVzdGF0ZRgDIAEo",
-            "DjI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RNb2Rl",
-            "bEluZm8uQm90U3RhdGUSFQoNZmF1bHRfbWVzc2FnZRgEIAEoCRI/CgZjb25m",
-            "aWcYBSABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "UGx1Z2luQ29uZmlnEkcKCmRlc2NyaXB0b3IYBiABKAsyMy5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luRGVzY3JpcHRvciJqCghC",
-            "b3RTdGF0ZRILCgdPRkZMSU5FEAASDAoIU1RBUlRJTkcQARILCgdGQVVMVEVE",
-            "EAISCgoGT05MSU5FEAMSDAoIU1RPUFBJTkcQBBIKCgZCUk9LRU4QBRIQCgxS",
-            "RUNPTk5FQ1RJTkcQBmIGcHJvdG8z"));
+            "SW5mbxIMCgRuYW1lGAEgASgJImgKClN5bWJvbEluZm8SDAoEbmFtZRgBIAEo",
+            "CRJMCgZvcmlnaW4YAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuU3ltYm9sQ29uZmlnLlN5bWJvbE9yaWdpbiKRAQoTQWNjb3Vu",
+            "dE1ldGFkYXRhSW5mbxI6CgNrZXkYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRI+CgdzeW1ib2xzGAIgAygL",
+            "Mi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN5bWJvbElu",
+            "Zm8iXwoLTWFwcGluZ0luZm8SOgoDa2V5GAEgASgLMi0uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdLZXkSFAoMZGlzcGxheV9u",
+            "YW1lGAIgASgJIp8GChVNYXBwaW5nQ29sbGVjdGlvbkluZm8SSwoTYmFyX3Rv",
+            "X2Jhcl9tYXBwaW5ncxgBIAMoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5NYXBwaW5nSW5mbxJOChZiYXJfdG9fZG91YmxlX21hcHBp",
+            "bmdzGAIgAygLMi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
+            "Lk1hcHBpbmdJbmZvEk0KFXF1b3RlX3RvX2Jhcl9tYXBwaW5ncxgDIAMoCzIu",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nSW5m",
+            "bxJQChhxdW90ZV90b19kb3VibGVfbWFwcGluZ3MYBCADKAsyLi5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ0luZm8SWgohZGVm",
+            "YXVsdF9mdWxsX2Jhcl90b19iYXJfcmVkdWN0aW9uGAUgASgLMi8uVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlZHVjdGlvbktleRJdCiRk",
+            "ZWZhdWx0X2Z1bGxfYmFyX3RvX2RvdWJsZV9yZWR1Y3Rpb24YBiABKAsyLy5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uS2V5",
+            "ElgKH2RlZmF1bHRfYmFyX3RvX2RvdWJsZV9yZWR1Y3Rpb24YByABKAsyLy5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uS2V5",
+            "ElcKHmRlZmF1bHRfcXVvdGVfdG9fYmFyX3JlZHVjdGlvbhgIIAEoCzIvLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25LZXkS",
+            "WgohZGVmYXVsdF9xdW90ZV90b19kb3VibGVfcmVkdWN0aW9uGAkgASgLMi8u",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlZHVjdGlvbktl",
+            "eSKbAgoPQXBpTWV0YWRhdGFJbmZvEk8KC3RpbWVfZnJhbWVzGAEgAygOMjou",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0",
+            "b3IuVGltZUZyYW1lEk8KC2xpbmVfc3R5bGVzGAIgAygOMjouVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuTGluZVN0",
+            "eWxlEhMKC3RoaWNrbmVzc2VzGAMgAygFElEKDG1hcmtlcl9zaXplcxgEIAMo",
+            "DjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNj",
+            "cmlwdG9yLk1hcmtlclNpemUi+QEKEFNldHVwQ29udGV4dEluZm8SVgoSZGVm",
+            "YXVsdF90aW1lX2ZyYW1lGAEgASgOMjouVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuVGltZUZyYW1lEkUKDmRlZmF1",
+            "bHRfc3ltYm9sGAIgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLlN5bWJvbEluZm8SRgoPZGVmYXVsdF9tYXBwaW5nGAMgASgLMi0u",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdLZXki",
+            "nQMKE0Nvbm5lY3Rpb25FcnJvckluZm8SWAoEY29kZRgBIAEoDjJKLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Db25uZWN0aW9uRXJyb3JJ",
+            "bmZvLkNvbm5lY3Rpb25FcnJvckNvZGUSFAoMdGV4dF9tZXNzYWdlGAIgASgJ",
+            "IpUCChNDb25uZWN0aW9uRXJyb3JDb2RlEggKBE5PTkUQABIdChlVTktOT1dO",
+            "X0NPTk5ORUNUSU9OX0VSUk9SEAESEQoNTkVUV09SS19FUlJPUhACEgsKB1RJ",
+            "TUVPVVQQAxITCg9CTE9DS0VEX0FDQ09VTlQQBBIUChBDTElFTlRfSU5JVElB",
+            "VEVEEAUSFwoTSU5WQUxJRF9DUkVERU5USUFMUxAGEhMKD1NMT1dfQ09OTkVD",
+            "VElPThAHEhAKDFNFUlZFUl9FUlJPUhAIEhEKDUxPR0lOX0RFTEVURUQQCRIR",
+            "Cg1TRVJWRVJfTE9HT1VUEAoSDAoIQ0FOQ0VMRUQQCxIWChJSRUpFQ1RFRF9C",
+            "WV9TRVJWRVIQDCLiAgoQQWNjb3VudE1vZGVsSW5mbxI6CgNrZXkYASABKAsy",
+            "LS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtl",
+            "eRIYChB1c2VfbmV3X3Byb3RvY29sGAIgASgIEl0KEGNvbm5lY3Rpb25fc3Rh",
+            "dGUYAyABKA4yQy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "QWNjb3VudE1vZGVsSW5mby5Db25uZWN0aW9uU3RhdGUSSgoKbGFzdF9lcnJv",
+            "chgEIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5D",
+            "b25uZWN0aW9uRXJyb3JJbmZvIk0KD0Nvbm5lY3Rpb25TdGF0ZRILCgdPRkZM",
+            "SU5FEAASDgoKQ09OTkVDVElORxABEgoKBk9OTElORRACEhEKDURJU0NPTk5F",
+            "Q1RJTkcQAyK5AwoMQm90TW9kZWxJbmZvEhMKC2luc3RhbmNlX2lkGAEgASgJ",
+            "Ej4KB2FjY291bnQYAiABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuQWNjb3VudEtleRJHCgVzdGF0ZRgDIAEoDjI4LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RNb2RlbEluZm8uQm90U3Rh",
+            "dGUSFQoNZmF1bHRfbWVzc2FnZRgEIAEoCRI/CgZjb25maWcYBSABKAsyLy5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luQ29uZmln",
+            "EkcKCmRlc2NyaXB0b3IYBiABKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
+            "b2wuR3JwYy5MaWIuUGx1Z2luRGVzY3JpcHRvciJqCghCb3RTdGF0ZRILCgdP",
+            "RkZMSU5FEAASDAoIU1RBUlRJTkcQARILCgdGQVVMVEVEEAISCgoGT05MSU5F",
+            "EAMSDAoIU1RPUFBJTkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQ",
+            "BiL8AQoNTG9nUmVjb3JkSW5mbxIsCgh0aW1lX3V0YxgBIAEoCzIaLmdvb2ds",
+            "ZS5wcm90b2J1Zi5UaW1lc3RhbXASTgoIc2V2ZXJpdHkYAiABKA4yPC5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mby5M",
+            "b2dTZXZlcml0eRIPCgdtZXNzYWdlGAMgASgJIlwKC0xvZ1NldmVyaXR5EggK",
+            "BElORk8QABIJCgVFUlJPUhABEgkKBVRSQURFEAISEQoNVFJBREVfU1VDQ0VT",
+            "UxADEg4KClRSQURFX0ZBSUwQBBIKCgZDVVNUT00QBSIzCglGaWxlQ2h1bmsS",
+            "EAoIaXNfZmluYWwYASABKAgSFAoMY2h1bmtfYmluYXJ5GAIgASgMIikKC0Jv",
+            "dEZpbGVJbmZvEgwKBG5hbWUYASABKAkSDAoEc2l6ZRgCIAEoAyLYAQoNQm90",
+            "Rm9sZGVySW5mbxIMCgRwYXRoGAEgASgJEkwKBHR5cGUYAiABKA4yPi5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVySW5mby5C",
+            "b3RGb2xkZXJUeXBlEj0KBWZpbGVzGAMgAygLMi4uVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkJvdEZpbGVJbmZvIiwKDUJvdEZvbGRlclR5",
+            "cGUSDQoJQUxHT19EQVRBEAASDAoIQk9UX0xPR1MQAWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -116,7 +130,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PackageInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.PackageInfo.Parser, new[]{ "Key", "Identity", "IsValid", "Plugins", "IsLocked", "IsObsolete" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionInfo.Parser, new[]{ "Key", "Descriptor_" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.CurrencyInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.CurrencyInfo.Parser, new[]{ "Name" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo.Parser, new[]{ "Name" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo.Parser, new[]{ "Name", "Origin" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo.Parser, new[]{ "Key", "Symbols" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingInfo.Parser, new[]{ "Key", "DisplayName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo.Parser, new[]{ "BarToBarMappings", "BarToDoubleMappings", "QuoteToBarMappings", "QuoteToDoubleMappings", "DefaultFullBarToBarReduction", "DefaultFullBarToDoubleReduction", "DefaultBarToDoubleReduction", "DefaultQuoteToBarReduction", "DefaultQuoteToDoubleReduction" }, null, null, null),
@@ -124,7 +138,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo.Parser, new[]{ "DefaultTimeFrame", "DefaultSymbol", "DefaultMapping" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Parser, new[]{ "Code", "TextMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Parser, new[]{ "Key", "UseNewProtocol", "ConnectionState", "LastError" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Types.ConnectionState) }, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) }, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Parser, new[]{ "TimeUtc", "Severity", "Message" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk), global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk.Parser, new[]{ "IsFinal", "ChunkBinary" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo.Parser, new[]{ "Name", "Size" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Parser, new[]{ "Path", "Type", "Files" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderType) }, null)
           }));
     }
     #endregion
@@ -1178,6 +1196,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public SymbolInfo(SymbolInfo other) : this() {
       name_ = other.name_;
+      origin_ = other.origin_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1197,6 +1216,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
     }
 
+    /// <summary>Field number for the "origin" field.</summary>
+    public const int OriginFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolConfig.Types.SymbolOrigin origin_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolConfig.Types.SymbolOrigin Origin {
+      get { return origin_; }
+      set {
+        origin_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SymbolInfo);
@@ -1211,6 +1241,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         return true;
       }
       if (Name != other.Name) return false;
+      if (Origin != other.Origin) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1218,6 +1249,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public override int GetHashCode() {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Origin != 0) hash ^= Origin.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1235,6 +1267,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
+      if (Origin != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Origin);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1245,6 +1281,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       int size = 0;
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Origin != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Origin);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1260,6 +1299,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (other.Name.Length != 0) {
         Name = other.Name;
       }
+      if (other.Origin != 0) {
+        Origin = other.Origin;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -1273,6 +1315,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           case 10: {
             Name = input.ReadString();
+            break;
+          }
+          case 16: {
+            origin_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolConfig.Types.SymbolOrigin) input.ReadEnum();
             break;
           }
         }
@@ -3048,6 +3094,716 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         [pbr::OriginalName("STOPPING")] Stopping = 4,
         [pbr::OriginalName("BROKEN")] Broken = 5,
         [pbr::OriginalName("RECONNECTING")] Reconnecting = 6,
+      }
+
+    }
+    #endregion
+
+  }
+
+  public sealed partial class LogRecordInfo : pb::IMessage<LogRecordInfo> {
+    private static readonly pb::MessageParser<LogRecordInfo> _parser = new pb::MessageParser<LogRecordInfo>(() => new LogRecordInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<LogRecordInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[14]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public LogRecordInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public LogRecordInfo(LogRecordInfo other) : this() {
+      TimeUtc = other.timeUtc_ != null ? other.TimeUtc.Clone() : null;
+      severity_ = other.severity_;
+      message_ = other.message_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public LogRecordInfo Clone() {
+      return new LogRecordInfo(this);
+    }
+
+    /// <summary>Field number for the "time_utc" field.</summary>
+    public const int TimeUtcFieldNumber = 1;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp timeUtc_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.Timestamp TimeUtc {
+      get { return timeUtc_; }
+      set {
+        timeUtc_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "severity" field.</summary>
+    public const int SeverityFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity severity_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity Severity {
+      get { return severity_; }
+      set {
+        severity_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "message" field.</summary>
+    public const int MessageFieldNumber = 3;
+    private string message_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Message {
+      get { return message_; }
+      set {
+        message_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as LogRecordInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(LogRecordInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(TimeUtc, other.TimeUtc)) return false;
+      if (Severity != other.Severity) return false;
+      if (Message != other.Message) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (timeUtc_ != null) hash ^= TimeUtc.GetHashCode();
+      if (Severity != 0) hash ^= Severity.GetHashCode();
+      if (Message.Length != 0) hash ^= Message.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (timeUtc_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(TimeUtc);
+      }
+      if (Severity != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Severity);
+      }
+      if (Message.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Message);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (timeUtc_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(TimeUtc);
+      }
+      if (Severity != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Severity);
+      }
+      if (Message.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Message);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(LogRecordInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.timeUtc_ != null) {
+        if (timeUtc_ == null) {
+          timeUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        }
+        TimeUtc.MergeFrom(other.TimeUtc);
+      }
+      if (other.Severity != 0) {
+        Severity = other.Severity;
+      }
+      if (other.Message.Length != 0) {
+        Message = other.Message;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (timeUtc_ == null) {
+              timeUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(timeUtc_);
+            break;
+          }
+          case 16: {
+            severity_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            Message = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the LogRecordInfo message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public enum LogSeverity {
+        [pbr::OriginalName("INFO")] Info = 0,
+        [pbr::OriginalName("ERROR")] Error = 1,
+        [pbr::OriginalName("TRADE")] Trade = 2,
+        [pbr::OriginalName("TRADE_SUCCESS")] TradeSuccess = 3,
+        [pbr::OriginalName("TRADE_FAIL")] TradeFail = 4,
+        [pbr::OriginalName("CUSTOM")] Custom = 5,
+      }
+
+    }
+    #endregion
+
+  }
+
+  public sealed partial class FileChunk : pb::IMessage<FileChunk> {
+    private static readonly pb::MessageParser<FileChunk> _parser = new pb::MessageParser<FileChunk>(() => new FileChunk());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<FileChunk> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[15]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FileChunk() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FileChunk(FileChunk other) : this() {
+      isFinal_ = other.isFinal_;
+      chunkBinary_ = other.chunkBinary_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FileChunk Clone() {
+      return new FileChunk(this);
+    }
+
+    /// <summary>Field number for the "is_final" field.</summary>
+    public const int IsFinalFieldNumber = 1;
+    private bool isFinal_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsFinal {
+      get { return isFinal_; }
+      set {
+        isFinal_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "chunk_binary" field.</summary>
+    public const int ChunkBinaryFieldNumber = 2;
+    private pb::ByteString chunkBinary_ = pb::ByteString.Empty;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pb::ByteString ChunkBinary {
+      get { return chunkBinary_; }
+      set {
+        chunkBinary_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as FileChunk);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(FileChunk other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (IsFinal != other.IsFinal) return false;
+      if (ChunkBinary != other.ChunkBinary) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (IsFinal != false) hash ^= IsFinal.GetHashCode();
+      if (ChunkBinary.Length != 0) hash ^= ChunkBinary.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (IsFinal != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(IsFinal);
+      }
+      if (ChunkBinary.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteBytes(ChunkBinary);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (IsFinal != false) {
+        size += 1 + 1;
+      }
+      if (ChunkBinary.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(ChunkBinary);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(FileChunk other) {
+      if (other == null) {
+        return;
+      }
+      if (other.IsFinal != false) {
+        IsFinal = other.IsFinal;
+      }
+      if (other.ChunkBinary.Length != 0) {
+        ChunkBinary = other.ChunkBinary;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            IsFinal = input.ReadBool();
+            break;
+          }
+          case 18: {
+            ChunkBinary = input.ReadBytes();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotFileInfo : pb::IMessage<BotFileInfo> {
+    private static readonly pb::MessageParser<BotFileInfo> _parser = new pb::MessageParser<BotFileInfo>(() => new BotFileInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotFileInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[16]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFileInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFileInfo(BotFileInfo other) : this() {
+      name_ = other.name_;
+      size_ = other.size_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFileInfo Clone() {
+      return new BotFileInfo(this);
+    }
+
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "size" field.</summary>
+    public const int SizeFieldNumber = 2;
+    private long size_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public long Size {
+      get { return size_; }
+      set {
+        size_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotFileInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotFileInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Name != other.Name) return false;
+      if (Size != other.Size) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Size != 0L) hash ^= Size.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Size != 0L) {
+        output.WriteRawTag(16);
+        output.WriteInt64(Size);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Size != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Size);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotFileInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Size != 0L) {
+        Size = other.Size;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 16: {
+            Size = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotFolderInfo : pb::IMessage<BotFolderInfo> {
+    private static readonly pb::MessageParser<BotFolderInfo> _parser = new pb::MessageParser<BotFolderInfo>(() => new BotFolderInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotFolderInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[17]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfo(BotFolderInfo other) : this() {
+      path_ = other.path_;
+      type_ = other.type_;
+      files_ = other.files_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfo Clone() {
+      return new BotFolderInfo(this);
+    }
+
+    /// <summary>Field number for the "path" field.</summary>
+    public const int PathFieldNumber = 1;
+    private string path_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Path {
+      get { return path_; }
+      set {
+        path_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "files" field.</summary>
+    public const int FilesFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo> _repeated_files_codec
+        = pb::FieldCodec.ForMessage(26, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo.Parser);
+    private readonly pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo> files_ = new pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo> Files {
+      get { return files_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotFolderInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotFolderInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Path != other.Path) return false;
+      if (Type != other.Type) return false;
+      if(!files_.Equals(other.files_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Path.Length != 0) hash ^= Path.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
+      hash ^= files_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Path.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Path);
+      }
+      if (Type != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Type);
+      }
+      files_.WriteTo(output, _repeated_files_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Path.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Path);
+      }
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      size += files_.CalculateSize(_repeated_files_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotFolderInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Path.Length != 0) {
+        Path = other.Path;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      files_.Add(other.files_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Path = input.ReadString();
+            break;
+          }
+          case 16: {
+            type_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderType) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            files_.AddEntriesFrom(input, _repeated_files_codec);
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the BotFolderInfo message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public enum BotFolderType {
+        [pbr::OriginalName("ALGO_DATA")] AlgoData = 0,
+        [pbr::OriginalName("BOT_LOGS")] BotLogs = 1,
       }
 
     }
