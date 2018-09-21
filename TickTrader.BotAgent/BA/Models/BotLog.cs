@@ -53,11 +53,13 @@ namespace TickTrader.BotAgent.BA.Models
 
             public IEnumerable<ILogEntry> Messages => CallActor(a => a._logMessages.ToArray());
             public string Status => CallActor(a => a._status);
+            public string Folder => CallActor(a => a._logDirectory);
             public IFile[] Files => CallActor(a => a.GetFiles());
 
             public void Clear() => CallActor(a => a.Clear());
             public void DeleteFile(string file) => CallActor(a => a.DeleteFile(file));
             public IFile GetFile(string file) => CallActor(a => a.GetFile(file));
+            public void SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
         }
 
         //public string Status { get; private set; }

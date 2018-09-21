@@ -175,17 +175,4 @@ message PluginConfig
 	string instance_id = 5;
 	PluginPermissions permissions = 6;
 	repeated Property properties = 7;
-	oneof config
-	{
-		IndicatorConfig indicator = 10;
-		TradeBotConfig trade_bot = 11;
-	}
-}
-
-message IndicatorConfig
-{
-}
-
-message TradeBotConfig
-{
 }

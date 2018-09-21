@@ -622,7 +622,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                 InstanceId = Convert(config.InstanceId),
                 Permissions = config.Permissions.Convert(),
             };
-            
             res.Properties.AddRange(config.Properties.Select(Convert));
             return res;
         }
@@ -979,14 +978,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.BotFolderInfo.Types.BotFolderType Convert(this BotFolderType type)
+        public static Lib.BotFolderInfo.Types.BotFolderId Convert(this BotFolderId type)
         {
             switch (type)
             {
-                case BotFolderType.AlgoData:
-                    return Lib.BotFolderInfo.Types.BotFolderType.AlgoData;
-                case BotFolderType.BotLogs:
-                    return Lib.BotFolderInfo.Types.BotFolderType.BotLogs;
+                case BotFolderId.AlgoData:
+                    return Lib.BotFolderInfo.Types.BotFolderId.AlgoData;
+                case BotFolderId.BotLogs:
+                    return Lib.BotFolderInfo.Types.BotFolderId.BotLogs;
                 default:
                     throw new ArgumentException();
             }
@@ -996,8 +995,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new Lib.BotFolderInfo
             {
+                BotId = Convert(botFolder.BotId),
+                FolderId = botFolder.FolderId.Convert(),
                 Path = Convert(botFolder.Path),
-                Type = botFolder.Type.Convert(),
             };
             res.Files.AddRange(botFolder.Files.Select(Convert));
             return res;

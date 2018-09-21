@@ -2,7 +2,7 @@
 
 namespace TickTrader.Algo.Common.Info
 {
-    public enum BotFolderType
+    public enum BotFolderId
     {
         AlgoData = 0,
         BotLogs = 1,
@@ -11,9 +11,11 @@ namespace TickTrader.Algo.Common.Info
 
     public class BotFolderInfo
     {
-        public string Path { get; set; }
+        public string BotId { get; set; }
 
-        public BotFolderType Type { get; set; }
+        public BotFolderId FolderId { get; set; }
+
+        public string Path { get; set; }
 
         public List<BotFileInfo> Files { get; set; }
 

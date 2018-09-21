@@ -55,7 +55,7 @@ namespace TickTrader.BotAgent.BA.Models
         public Ref<BotLog> LogRef => _botLog.Ref;
         public AlgoPluginRef AlgoRef => _ref;
 
-        public IAlgoData AlgoData => _algoData;
+        public IBotFolder AlgoData => _algoData;
 
         public event Action<TradeBotModel> StateChanged;
         public event Action<TradeBotModel> IsRunningChanged;

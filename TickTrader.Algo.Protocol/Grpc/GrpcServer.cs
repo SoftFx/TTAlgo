@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Google.Protobuf;
@@ -247,6 +248,41 @@ namespace TickTrader.Algo.Protocol.Grpc
         public override Task<Lib.DownloadPackageResponse> DownloadPackage(Lib.DownloadPackageRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(DownloadPackageInternal, request, context);
+        }
+
+        public override Task<Lib.BotStatusResponse> GetBotStatus(Lib.BotStatusRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetBotStatusInternal, request, context);
+        }
+
+        public override Task<Lib.BotLogsResponse> GetBotLogs(Lib.BotLogsRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetBotLogsInternal, request, context);
+        }
+
+        public override Task<Lib.BotFolderInfoResponse> GetBotFolderInfo(Lib.BotFolderInfoRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request, context);
+        }
+
+        public override Task<Lib.ClearBotFolderResponse> ClearBotFolder(Lib.ClearBotFolderRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, request, context);
+        }
+
+        public override Task<Lib.DeleteBotFileResponse> DeleteBotFile(Lib.DeleteBotFileRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request, context);
+        }
+
+        public override Task DownloadBotFile(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.FileChunk> responseStream, ServerCallContext context)
+        {
+            return ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request, responseStream, context);
+        }
+
+        public override Task<Lib.UploadBotFileResponse> UploadBotFile(Lib.UploadBotFileRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(UploadBotFileInternal, request, context);
         }
 
         #endregion Grpc request handlers overrides
@@ -852,6 +888,147 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to download package");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.BotStatusResponse { ExecResult = execResult, BotId = request.BotId };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                res.Status = ToGrpc.Convert(_botAgent.GetBotStatus(request.BotId));
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get bot status");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.BotLogsResponse> GetBotLogsInternal(Lib.BotLogsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.BotLogsResponse { ExecResult = execResult, BotId = request.BotId };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                res.Logs.AddRange(_botAgent.GetBotLogs(request.BotId, request.LastLogTimeUtc.ToDateTime(), request.MaxCount).Select(ToGrpc.Convert));
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get bot logs");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.BotFolderInfoResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                res.FolderInfo = _botAgent.GetBotFolderInfo(request.BotId, request.FolderId.Convert()).Convert();
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get bot folder info");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.ClearBotFolderResponse> ClearBotFolderInternal(Lib.ClearBotFolderRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.ClearBotFolderResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                _botAgent.ClearBotFolder(request.BotId, request.FolderId.Convert());
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to clear bot folder");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.DeleteBotFileResponse> DeleteBotFileInternal(Lib.DeleteBotFileRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.DeleteBotFileResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                _botAgent.DeleteBotFile(request.BotId, request.FolderId.Convert(), request.FileName);
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to delete bot file");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return Task.FromResult(res);
+        }
+
+        private async Task DownloadBotFileInternal(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.FileChunk> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var chunk = new Lib.FileChunk { ExecResult = execResult };
+            if (session == null)
+            {
+                chunk.IsFinal = true;
+                await responseStream.WriteAsync(chunk);
+                return;
+            }
+            try
+            {
+                const int bufferSize = 512 * 1024;
+                using (var stream = _botAgent.GetBotFile(request.BotId, request.FolderId.Convert(), request.FileName))
+                using (var binaryReader = new BinaryReader(stream))
+                {
+                    chunk.ChunkBinary = binaryReader.ReadBytes(bufferSize).Convert();
+                    await responseStream.WriteAsync(chunk);
+                }
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to clear bot folder");
+                chunk.ExecResult = CreateErrorResult(ex);
+                chunk.ChunkBinary = ByteString.Empty;
+                chunk.IsFinal = true;
+                await responseStream.WriteAsync(chunk);
+                return;
+            }
+            chunk.ChunkBinary = ByteString.Empty;
+            chunk.IsFinal = true;
+            await responseStream.WriteAsync(chunk);
+        }
+
+        private Task<Lib.UploadBotFileResponse> UploadBotFileInternal(Lib.UploadBotFileRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.UploadBotFileResponse { ExecResult = execResult };
+            if (session == null)
+                return Task.FromResult(res);
+
+            try
+            {
+                _botAgent.UploadBotFile(request.BotId, request.FolderId.Convert(), request.FileName, request.FileBinary.Convert());
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to upload bot file");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return Task.FromResult(res);

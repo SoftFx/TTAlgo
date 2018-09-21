@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "dBJQCgttYXJrZXJfc2l6ZRgCIAEoDjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90",
             "b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLk1hcmtlclNpemUiPAoRUGx1",
             "Z2luUGVybWlzc2lvbnMSFQoNdHJhZGVfYWxsb3dlZBgBIAEoCBIQCghpc29s",
-            "YXRlZBgCIAEoCCLkBAoMUGx1Z2luQ29uZmlnEjkKA2tleRgBIAEoCzIsLlRp",
+            "YXRlZBgCIAEoCCLJAwoMUGx1Z2luQ29uZmlnEjkKA2tleRgBIAEoCzIsLlRp",
             "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5LZXkSTgoK",
             "dGltZV9mcmFtZRgCIAEoDjI6LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
             "cnBjLkxpYi5BcGlEZXNjcmlwdG9yLlRpbWVGcmFtZRJECgttYWluX3N5bWJv",
@@ -96,11 +96,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "c3RhbmNlX2lkGAUgASgJEkkKC3Blcm1pc3Npb25zGAYgASgLMjQuVGlja1Ry",
             "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpblBlcm1pc3Npb25z",
             "Ej8KCnByb3BlcnRpZXMYByADKAsyKy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuUHJvcGVydHkSRwoJaW5kaWNhdG9yGAogASgLMjIuVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkluZGljYXRvckNvbmZp",
-            "Z0gAEkYKCXRyYWRlX2JvdBgLIAEoCzIxLlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5UcmFkZUJvdENvbmZpZ0gAQggKBmNvbmZpZyIRCg9J",
-            "bmRpY2F0b3JDb25maWciEAoOVHJhZGVCb3RDb25maWdiBnByb3RvMw=="));
+            "b2wuR3JwYy5MaWIuUHJvcGVydHliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -127,9 +123,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ColoredLineOutput), global::TickTrader.Algo.Protocol.Grpc.Lib.ColoredLineOutput.Parser, new[]{ "LineStyle" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MarkerSeriesOutput), global::TickTrader.Algo.Protocol.Grpc.Lib.MarkerSeriesOutput.Parser, new[]{ "MarkerSize" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginPermissions), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginPermissions.Parser, new[]{ "TradeAllowed", "Isolated" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig.Parser, new[]{ "Key", "TimeFrame", "MainSymbol", "SelectedMapping", "InstanceId", "Permissions", "Properties", "Indicator", "TradeBot" }, new[]{ "Config" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig), global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig.Parser, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig), global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig.Parser, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginConfig.Parser, new[]{ "Key", "TimeFrame", "MainSymbol", "SelectedMapping", "InstanceId", "Permissions", "Properties" }, null, null, null)
           }));
     }
     #endregion
@@ -4100,15 +4094,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       instanceId_ = other.instanceId_;
       Permissions = other.permissions_ != null ? other.Permissions.Clone() : null;
       properties_ = other.properties_.Clone();
-      switch (other.ConfigCase) {
-        case ConfigOneofCase.Indicator:
-          Indicator = other.Indicator.Clone();
-          break;
-        case ConfigOneofCase.TradeBot:
-          TradeBot = other.TradeBot.Clone();
-          break;
-      }
-
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -4193,47 +4178,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       get { return properties_; }
     }
 
-    /// <summary>Field number for the "indicator" field.</summary>
-    public const int IndicatorFieldNumber = 10;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig Indicator {
-      get { return configCase_ == ConfigOneofCase.Indicator ? (global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig) config_ : null; }
-      set {
-        config_ = value;
-        configCase_ = value == null ? ConfigOneofCase.None : ConfigOneofCase.Indicator;
-      }
-    }
-
-    /// <summary>Field number for the "trade_bot" field.</summary>
-    public const int TradeBotFieldNumber = 11;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig TradeBot {
-      get { return configCase_ == ConfigOneofCase.TradeBot ? (global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig) config_ : null; }
-      set {
-        config_ = value;
-        configCase_ = value == null ? ConfigOneofCase.None : ConfigOneofCase.TradeBot;
-      }
-    }
-
-    private object config_;
-    /// <summary>Enum of possible cases for the "config" oneof.</summary>
-    public enum ConfigOneofCase {
-      None = 0,
-      Indicator = 10,
-      TradeBot = 11,
-    }
-    private ConfigOneofCase configCase_ = ConfigOneofCase.None;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ConfigOneofCase ConfigCase {
-      get { return configCase_; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearConfig() {
-      configCase_ = ConfigOneofCase.None;
-      config_ = null;
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as PluginConfig);
@@ -4254,9 +4198,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (InstanceId != other.InstanceId) return false;
       if (!object.Equals(Permissions, other.Permissions)) return false;
       if(!properties_.Equals(other.properties_)) return false;
-      if (!object.Equals(Indicator, other.Indicator)) return false;
-      if (!object.Equals(TradeBot, other.TradeBot)) return false;
-      if (ConfigCase != other.ConfigCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -4270,9 +4211,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (InstanceId.Length != 0) hash ^= InstanceId.GetHashCode();
       if (permissions_ != null) hash ^= Permissions.GetHashCode();
       hash ^= properties_.GetHashCode();
-      if (configCase_ == ConfigOneofCase.Indicator) hash ^= Indicator.GetHashCode();
-      if (configCase_ == ConfigOneofCase.TradeBot) hash ^= TradeBot.GetHashCode();
-      hash ^= (int) configCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4311,14 +4249,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteMessage(Permissions);
       }
       properties_.WriteTo(output, _repeated_properties_codec);
-      if (configCase_ == ConfigOneofCase.Indicator) {
-        output.WriteRawTag(82);
-        output.WriteMessage(Indicator);
-      }
-      if (configCase_ == ConfigOneofCase.TradeBot) {
-        output.WriteRawTag(90);
-        output.WriteMessage(TradeBot);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -4346,12 +4276,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Permissions);
       }
       size += properties_.CalculateSize(_repeated_properties_codec);
-      if (configCase_ == ConfigOneofCase.Indicator) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Indicator);
-      }
-      if (configCase_ == ConfigOneofCase.TradeBot) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(TradeBot);
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -4394,21 +4318,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         Permissions.MergeFrom(other.Permissions);
       }
       properties_.Add(other.properties_);
-      switch (other.ConfigCase) {
-        case ConfigOneofCase.Indicator:
-          if (Indicator == null) {
-            Indicator = new global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig();
-          }
-          Indicator.MergeFrom(other.Indicator);
-          break;
-        case ConfigOneofCase.TradeBot:
-          if (TradeBot == null) {
-            TradeBot = new global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig();
-          }
-          TradeBot.MergeFrom(other.TradeBot);
-          break;
-      }
-
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -4460,226 +4369,6 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             properties_.AddEntriesFrom(input, _repeated_properties_codec);
             break;
           }
-          case 82: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.IndicatorConfig();
-            if (configCase_ == ConfigOneofCase.Indicator) {
-              subBuilder.MergeFrom(Indicator);
-            }
-            input.ReadMessage(subBuilder);
-            Indicator = subBuilder;
-            break;
-          }
-          case 90: {
-            global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig subBuilder = new global::TickTrader.Algo.Protocol.Grpc.Lib.TradeBotConfig();
-            if (configCase_ == ConfigOneofCase.TradeBot) {
-              subBuilder.MergeFrom(TradeBot);
-            }
-            input.ReadMessage(subBuilder);
-            TradeBot = subBuilder;
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class IndicatorConfig : pb::IMessage<IndicatorConfig> {
-    private static readonly pb::MessageParser<IndicatorConfig> _parser = new pb::MessageParser<IndicatorConfig>(() => new IndicatorConfig());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<IndicatorConfig> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor.MessageTypes[24]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public IndicatorConfig() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public IndicatorConfig(IndicatorConfig other) : this() {
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public IndicatorConfig Clone() {
-      return new IndicatorConfig(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as IndicatorConfig);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(IndicatorConfig other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(IndicatorConfig other) {
-      if (other == null) {
-        return;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class TradeBotConfig : pb::IMessage<TradeBotConfig> {
-    private static readonly pb::MessageParser<TradeBotConfig> _parser = new pb::MessageParser<TradeBotConfig>(() => new TradeBotConfig());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<TradeBotConfig> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor.MessageTypes[25]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TradeBotConfig() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TradeBotConfig(TradeBotConfig other) : this() {
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public TradeBotConfig Clone() {
-      return new TradeBotConfig(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as TradeBotConfig);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(TradeBotConfig other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(TradeBotConfig other) {
-      if (other == null) {
-        return;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
         }
       }
     }

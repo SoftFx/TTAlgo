@@ -64,8 +64,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotStatusResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderInfoRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderInfoResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ClearBotFolderRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ClearBotFolderResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DeleteBotFileRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileRequest.Parser.ParseFrom);
@@ -257,12 +257,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsRequest,
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsResponse);
 
-    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse> __Method_GetBotFolder = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse>(
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> __Method_GetBotFolderInfo = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
-        "GetBotFolder",
-        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderRequest,
-        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderResponse);
+        "GetBotFolderInfo",
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderInfoRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderInfoResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse> __Method_ClearBotFolder = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse>(
         grpc::MethodType.Unary,
@@ -431,7 +431,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse> GetBotFolder(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> GetBotFolderInfo(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -889,21 +889,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetBotLogs, null, options, request);
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse GetBotFolder(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse GetBotFolderInfo(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetBotFolder(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return GetBotFolderInfo(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse GetBotFolder(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest request, grpc::CallOptions options)
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse GetBotFolderInfo(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_GetBotFolder, null, options, request);
+        return CallInvoker.BlockingUnaryCall(__Method_GetBotFolderInfo, null, options, request);
       }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse> GetBotFolderAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> GetBotFolderInfoAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetBotFolderAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return GetBotFolderInfoAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderResponse> GetBotFolderAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> GetBotFolderInfoAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.AsyncUnaryCall(__Method_GetBotFolder, null, options, request);
+        return CallInvoker.AsyncUnaryCall(__Method_GetBotFolderInfo, null, options, request);
       }
       public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse ClearBotFolder(global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -999,7 +999,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           .AddMethod(__Method_DownloadPackage, serviceImpl.DownloadPackage)
           .AddMethod(__Method_GetBotStatus, serviceImpl.GetBotStatus)
           .AddMethod(__Method_GetBotLogs, serviceImpl.GetBotLogs)
-          .AddMethod(__Method_GetBotFolder, serviceImpl.GetBotFolder)
+          .AddMethod(__Method_GetBotFolderInfo, serviceImpl.GetBotFolderInfo)
           .AddMethod(__Method_ClearBotFolder, serviceImpl.ClearBotFolder)
           .AddMethod(__Method_DeleteBotFile, serviceImpl.DeleteBotFile)
           .AddMethod(__Method_DownloadBotFile, serviceImpl.DownloadBotFile)

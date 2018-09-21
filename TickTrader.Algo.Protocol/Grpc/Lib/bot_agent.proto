@@ -4,6 +4,7 @@ package TickTrader.Algo.Protocol.Grpc.Lib;
 
 // current version 1.0, syncronize with VersionSpec.cs
 
+import "google_protos/timestamp.proto";
 import "keys.proto";
 import "metadata.proto";
 import "config.proto";
@@ -43,7 +44,7 @@ service BotAgent
 	rpc GetBotStatus(BotStatusRequest) returns (BotStatusResponse);
 	rpc GetBotLogs(BotLogsRequest) returns (BotLogsResponse);
 
-	rpc GetBotFolder(BotFolderRequest) returns (BotFolderResponse);
+	rpc GetBotFolderInfo(BotFolderInfoRequest) returns (BotFolderInfoResponse);
 	rpc ClearBotFolder(ClearBotFolderRequest) returns (ClearBotFolderResponse);
 	rpc DeleteBotFile(DeleteBotFileRequest) returns (DeleteBotFileResponse);
 	rpc DownloadBotFile(DownloadBotFileRequest) returns (stream FileChunk);
@@ -412,7 +413,8 @@ message BotStatusResponse
 message BotLogsRequest
 {
 	string bot_id = 1;
-	int32 max_count = 2;
+	google.protobuf.Timestamp last_log_time_utc = 2;
+	int32 max_count = 3;
 }
 
 message BotLogsResponse
@@ -422,13 +424,13 @@ message BotLogsResponse
 	repeated LogRecordInfo logs = 3;
 }
 
-message BotFolderRequest
+message BotFolderInfoRequest
 {
 	string bot_id = 1;
-	BotFolderInfo.BotFolderType type = 2;
+	BotFolderInfo.BotFolderId folder_id = 2;
 }
 
-message BotFolderResponse
+message BotFolderInfoResponse
 {
 	RequestResult exec_result = 1;
 	BotFolderInfo folder_info = 3;
@@ -437,7 +439,7 @@ message BotFolderResponse
 message ClearBotFolderRequest
 {
 	string bot_id = 1;
-	BotFolderInfo.BotFolderType type = 2;
+	BotFolderInfo.BotFolderId folder_id = 2;
 }
 
 message ClearBotFolderResponse
@@ -448,7 +450,7 @@ message ClearBotFolderResponse
 message DeleteBotFileRequest
 {
 	string bot_id = 1;
-	BotFolderInfo.BotFolderType type = 2;
+	BotFolderInfo.BotFolderId folder_id = 2;
 	string file_name = 3;
 }
 
@@ -460,14 +462,21 @@ message DeleteBotFileResponse
 message DownloadBotFileRequest
 {
 	string bot_id = 1;
-	BotFolderInfo.BotFolderType type = 2;
+	BotFolderInfo.BotFolderId folder_id = 2;
 	string file_name = 3;
+}
+
+message FileChunk
+{
+	RequestResult exec_result = 1;
+	bytes chunk_binary = 2;
+	bool is_final = 3;
 }
 
 message UploadBotFileRequest
 {
 	string bot_id = 1;
-	BotFolderInfo.BotFolderType type = 2;
+	BotFolderInfo.BotFolderId folder_id = 2;
 	string file_name = 3;
 	bytes file_binary = 4;
 }

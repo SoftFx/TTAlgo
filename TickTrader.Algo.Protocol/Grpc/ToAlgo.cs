@@ -607,13 +607,15 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public static PluginConfig Convert(this Lib.PluginConfig config)
         {
-            var res = new PluginConfig();
-            res.Key = config.Key.Convert();
-            res.TimeFrame = config.TimeFrame.Convert();
-            res.MainSymbol = config.MainSymbol.Convert();
-            res.SelectedMapping = config.SelectedMapping.Convert();
-            res.InstanceId = config.InstanceId;
-            res.Permissions = config.Permissions.Convert();
+            var res = new PluginConfig
+            {
+                Key = config.Key.Convert(),
+                TimeFrame = config.TimeFrame.Convert(),
+                MainSymbol = config.MainSymbol.Convert(),
+                SelectedMapping = config.SelectedMapping.Convert(),
+                InstanceId = config.InstanceId,
+                Permissions = config.Permissions.Convert()
+            };
             res.Properties.AddRange(config.Properties.Select(Convert));
             return res;
         }
@@ -966,14 +968,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static BotFolderType Convert(this Lib.BotFolderInfo.Types.BotFolderType type)
+        public static BotFolderId Convert(this Lib.BotFolderInfo.Types.BotFolderId type)
         {
             switch (type)
             {
-                case Lib.BotFolderInfo.Types.BotFolderType.AlgoData:
-                    return BotFolderType.AlgoData;
-                case Lib.BotFolderInfo.Types.BotFolderType.BotLogs:
-                    return BotFolderType.BotLogs;
+                case Lib.BotFolderInfo.Types.BotFolderId.AlgoData:
+                    return BotFolderId.AlgoData;
+                case Lib.BotFolderInfo.Types.BotFolderId.BotLogs:
+                    return BotFolderId.BotLogs;
                 default:
                     throw new ArgumentException();
             }
@@ -983,8 +985,9 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             var res = new BotFolderInfo
             {
+                BotId = botFolder.BotId,
+                FolderId = botFolder.FolderId.Convert(),
                 Path = botFolder.Path,
-                Type = botFolder.Type.Convert(),
             };
             res.Files.AddRange(botFolder.Files.Select(Convert));
             return res;

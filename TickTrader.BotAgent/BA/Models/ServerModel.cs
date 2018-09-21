@@ -118,7 +118,7 @@ namespace TickTrader.BotAgent.BA.Models
             public void AbortBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Abort());
             public BotModelInfo GetBotInfo(string botId) => CallActor(a => a.GetBotOrThrow(botId).GetInfoCopy());
             public List<BotModelInfo> GetTradeBots() => CallActor(a => a._allBots.Values.GetInfoCopy());
-            public IAlgoData GetAlgoData(string botId) => CallActor(a => a.GetBotOrThrow(botId).AlgoData);
+            public IBotFolder GetAlgoData(string botId) => CallActor(a => a.GetBotOrThrow(botId).AlgoData);
 
             public IBotLog GetBotLog(string botId)
             {

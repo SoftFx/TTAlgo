@@ -168,12 +168,6 @@ message LogRecordInfo
 	string message = 3;
 }
 
-message FileChunk
-{
-	bool is_final = 1;
-	bytes chunk_binary = 2;
-}
-
 message BotFileInfo
 {
 	string name = 1;
@@ -182,13 +176,14 @@ message BotFileInfo
 
 message BotFolderInfo
 {
-	enum BotFolderType
+	enum BotFolderId
 	{
 		ALGO_DATA = 0;
 		BOT_LOGS = 1;
 	}
 
-	string path = 1;
-	BotFolderType type = 2;
-	repeated BotFileInfo files = 3;
+	string bot_id = 1;
+	BotFolderId folder_id = 2;
+	string path = 3;
+	repeated BotFileInfo files = 4;
 }

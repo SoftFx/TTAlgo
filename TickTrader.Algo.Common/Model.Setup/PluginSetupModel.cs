@@ -69,6 +69,8 @@ namespace TickTrader.Algo.Common.Model.Setup
             Metadata = pRef.Metadata;
             SetupMetadata = metadata;
             SetupContext = context;
+
+            Init();
         }
 
         public void Apply(IPluginSetupTarget target)
@@ -131,6 +133,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
             InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata.Descriptor);
             MainSymbolPlaceholder.Id = null;
+            Permissions = new PluginPermissions();
 
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)

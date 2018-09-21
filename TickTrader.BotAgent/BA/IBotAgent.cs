@@ -43,7 +43,7 @@ namespace TickTrader.BotAgent.BA
 
         List<BotModelInfo> GetTradeBots();
         BotModelInfo GetBotInfo(string botId);
-        IAlgoData GetAlgoData(string botId);
+        IBotFolder GetAlgoData(string botId);
         string GenerateBotId(string botDisplayName);
         BotModelInfo AddBot(AccountKey accountId, PluginConfig config);
         void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false);
@@ -63,7 +63,7 @@ namespace TickTrader.BotAgent.BA
         Task ShutdownAsync();
     }
 
-    public interface IAlgoData
+    public interface IBotFolder
     {
         string Folder { get; }
         IFile[] Files { get; }
@@ -71,6 +71,7 @@ namespace TickTrader.BotAgent.BA
         void Clear();
         IFile GetFile(string decodedFile);
         void DeleteFile(string name);
+        void SaveFile(string name, byte[] bytes);
     }
 
     public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
@@ -82,13 +83,9 @@ namespace TickTrader.BotAgent.BA
         string Message { get; }
     }
 
-    public interface IBotLog
+    public interface IBotLog : IBotFolder
     {
         IEnumerable<ILogEntry> Messages { get; }
-        IFile GetFile(string file);
         string Status { get; }
-        IFile[] Files { get; }
-        void Clear();
-        void DeleteFile(string file);
     }
 }

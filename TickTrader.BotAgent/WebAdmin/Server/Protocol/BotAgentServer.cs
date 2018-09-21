@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
@@ -155,6 +157,63 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.DownloadPackage(package);
         }
 
+        public string GetBotStatus(string botId)
+        {
+            return _botAgent.GetBotLog(botId).Status;
+        }
+
+        public LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
+        {
+            return _botAgent.GetBotLog(botId).Messages.Where(e => e.TimeUtc > lastLogTimeUtc)
+                .Select(e => new LogRecordInfo
+                {
+                    TimeUtc = e.TimeUtc,
+                    Severity = Convert(e.Type),
+                    Message = e.Message,
+                }).ToArray();
+        }
+
+        public BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId)
+        {
+            var botFolder = GetBotFolder(botId, folderId);
+
+            return new BotFolderInfo
+            {
+                BotId = botId,
+                FolderId = folderId,
+                Path = botFolder.Folder,
+                Files = botFolder.Files.Select(f => new BotFileInfo { Name = f.Name, Size = f.Size }).ToList(),
+            };
+        }
+
+        public void ClearBotFolder(string botId, BotFolderId folderId)
+        {
+            var botFolder = GetBotFolder(botId, folderId);
+
+            botFolder.Clear();
+        }
+
+        public void DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        {
+            var botFolder = GetBotFolder(botId, folderId);
+
+            botFolder.DeleteFile(fileName);
+        }
+
+        public Stream GetBotFile(string botId, BotFolderId folderId, string fileName)
+        {
+            var botFolder = GetBotFolder(botId, folderId);
+
+            return botFolder.GetFile(fileName).OpenRead();
+        }
+
+        public void UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary)
+        {
+            var botFolder = GetBotFolder(botId, folderId);
+
+            botFolder.SaveFile(fileName, fileBinary);
+        }
+
 
         private UpdateType Convert(ChangeAction action)
         {
@@ -170,6 +229,42 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     throw new ArgumentException();
             }
         }
+
+        private LogSeverity Convert(LogEntryType entryType)
+        {
+            switch (entryType)
+            {
+                case LogEntryType.Info:
+                    return LogSeverity.Info;
+                case LogEntryType.Error:
+                    return LogSeverity.Error;
+                case LogEntryType.Trading:
+                    return LogSeverity.Trade;
+                case LogEntryType.TradingSuccess:
+                    return LogSeverity.TradeSuccess;
+                case LogEntryType.TradingFail:
+                    return LogSeverity.TradeFail;
+                case LogEntryType.Custom:
+                    return LogSeverity.Custom;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        private IBotFolder GetBotFolder(string botId, BotFolderId folderId)
+        {
+            switch (folderId)
+            {
+                case BotFolderId.AlgoData:
+                    return _botAgent.GetAlgoData(botId);
+                case BotFolderId.BotLogs:
+                    return _botAgent.GetBotLog(botId);
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        #region Event handlers
 
         private void OnAccountChanged(AccountModelInfo account, ChangeAction action)
         {
@@ -254,5 +349,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 _logger.Error($"Failed to send update: {ex.Message}", ex);
             }
         }
+
+        #endregion Event handlers
     }
 }
