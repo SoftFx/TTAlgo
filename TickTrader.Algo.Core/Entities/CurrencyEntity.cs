@@ -9,12 +9,13 @@ namespace TickTrader.Algo.Core
         public CurrencyEntity(string code)
         {
             Name = code;
+            Digits = 2;
         }
 
         public string Name { get; private set; }
         public int Digits { get; set; }
         public int SortOrder { get; set; }
-        public bool IsNull => false;
+        public bool IsNull { get; set; }
 
         int BO.ICurrencyInfo.Precision => Digits;
         int BO.ICurrencyInfo.SortOrder => SortOrder;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -42,6 +43,16 @@ namespace TickTrader.Algo.Core
         public static bool IsTicks(this TimeFrames timeFrame)
         {
             return timeFrame == TimeFrames.Ticks || timeFrame == TimeFrames.TicksLevel2;
+        }
+
+        internal static Currency GetOrStub(this Dictionary<string, Currency> currencies, string key)
+        {
+            return currencies.GetOrDefault(key) ?? new CurrencyEntity(key) { IsNull = true };
+        }
+
+        internal static Currency GetOrStub(this Dictionary<string, CurrencyEntity> currencies, string key)
+        {
+            return currencies.GetOrDefault(key) ?? new CurrencyEntity(key) { IsNull = true };
         }
     }
 }

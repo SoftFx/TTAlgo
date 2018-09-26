@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using BO = TickTrader.BusinessObjects;
 using BL = TickTrader.BusinessLogic;
 using TickTrader.Algo.Api;
+using System.Globalization;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -42,11 +44,13 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; set; }
         public decimal Balance { get; internal set; }
-        public string BalanceCurrency { get; set; }
-        public int Leverage { get; set; }
-        public AccountTypes Type { get; set; }
+        public string BalanceCurrency { get; private set; }
+        public Currency BalanceCurrencyInfo { get; private set; }
+        public int Leverage { get; internal set; }
+        public AccountTypes Type { get; internal set; }
         public bool Isolated { get; set; }
-        public string InstanceId { get; set; }
+        public string InstanceId { get; internal set; }
+        public NumberFormatInfo BalanceCurrencyFormat { get; private set; }
 
         public bool IsMarginType => Type == AccountTypes.Net || Type == AccountTypes.Gross;
         public bool IsCashType => Type == AccountTypes.Cash;
@@ -56,11 +60,25 @@ namespace TickTrader.Algo.Core
             Id = info.Id;
             Type = info.Type;
             Leverage = info.Leverage;
-            BalanceCurrency = info.BalanceCurrency;
             Balance = (decimal)info.Balance;
+            UpdateCurrency(currencies.GetOrStub(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
                 builder.Account.Assets.Update(asset, currencies);
+        }
+
+        internal void UpdateCurrency(Currency currency)
+        {
+            BalanceCurrency = currency.Name;
+            BalanceCurrencyInfo = currency;
+            BalanceCurrencyFormat = FormatExtentions.CreateTradeFormatInfo(BalanceCurrencyInfo.Digits);
+        }
+
+        internal void ResetCurrency()
+        {
+            BalanceCurrency = "";
+            BalanceCurrencyInfo = null;
+            BalanceCurrencyFormat = null;
         }
 
         internal void FireBalanceUpdateEvent()

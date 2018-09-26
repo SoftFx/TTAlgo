@@ -106,7 +106,7 @@
     <ControlTemplate x:Key="JournalPage.Classic">
         <DataGrid Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding JournalRecords.Value}" IsReadOnly="True"
                   AutoGenerateColumns="False" SelectionMode="Single" CanUserReorderColumns="False" CanUserSortColumns="False"
-                  BorderThickness="0">
+                  BorderThickness="0" VirtualizingPanel.ScrollUnit="Pixel">
             <DataGrid.Columns>
                 
                 <DataGridTextColumn SortMemberPath="Time" 

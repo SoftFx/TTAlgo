@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -15,14 +17,21 @@ namespace TickTrader.BotTerminal
         private TaskCompletionSource<bool> _completedSrc = new TaskCompletionSource<bool>();
         private VarContext _proprs = new VarContext();
 
-        public BacktesterTradeSetupViewModel()
+        public BacktesterTradeSetupViewModel(IVarSet<string, CurrencyEntity> currencies)
         {
             DisplayName = "Trade emulation setup";
 
             SelectedAccType = _proprs.AddProperty<Algo.Api.AccountTypes>();
-            BalanceCurrency = _proprs.AddProperty<string>();
+            BalanceCurrency = _proprs.AddValidable<string>();
 
             AvailableAccountTypes = new AccountTypes[] { AccountTypes.Gross, AccountTypes.Net };
+
+            AvailableCurrencies = currencies.OrderBy((k, c) => c.Name)
+                .Chain().Select(c => c.Name)
+                .Chain().AsObservable();
+
+            BalanceCurrency.Value = currencies.Snapshot.ContainsKey("USD") ? "USD" : currencies.Snapshot.FirstOrDefault().Key;
+            BalanceCurrency.AddValidationRule(s => !string.IsNullOrWhiteSpace(s), "Balance currency must not be empty!");
 
             Leverage = _proprs.AddIntValidable();
             LeverageStr = _proprs.AddConverter(Leverage, new StringToInt());
@@ -54,10 +63,10 @@ namespace TickTrader.BotTerminal
         }
 
         public IEnumerable<AccountTypes> AvailableAccountTypes { get; }
-        public IEnumerable<string> AvailableCurrencies => new string[] { "USD" };
+        public IObservableList<string> AvailableCurrencies { get; }
         public IEnumerable<string> AvailableEmulators => new string[] { "Default" };
         public Property<AccountTypes> SelectedAccType { get; }
-        public Property<string> BalanceCurrency { get; }
+        public Validable<string> BalanceCurrency { get; }
         public Property<string> SelectedEmulator { get; }
         public IntValidable Leverage { get; }
         public DoubleValidable InitialBalance { get; }
@@ -74,12 +83,19 @@ namespace TickTrader.BotTerminal
         public void Ok()
         {
             _completedSrc.SetResult(true);
-            TryClose();
+            Close();
         }
 
         public void Cancel()
         {
             _completedSrc.SetResult(false);
+            Close();
+        }
+
+        private void Close()
+        {
+            AvailableCurrencies.Dispose();
+            _proprs.Dispose();
             TryClose();
         }
 

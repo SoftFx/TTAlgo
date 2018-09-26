@@ -136,7 +136,7 @@ namespace TickTrader.BotTerminal
 
         public async void OpenTradeSetup()
         {
-            var setup = new BacktesterTradeSetupViewModel();
+            var setup = new BacktesterTradeSetupViewModel(_client.Currencies);
             setup.SelectedAccType.Value = _accType;
             setup.InitialBalance.Value = _initialBalance;
             setup.Leverage.Value = _leverage;
@@ -151,11 +151,11 @@ namespace TickTrader.BotTerminal
                 _accType = setup.SelectedAccType.Value;
                 _serverPingMs = setup.EmulatedServerPing.Value;
 
-                if (_accType == AccountTypes.Cash || _accType == AccountTypes.Gross)
+                if (_accType == AccountTypes.Net || _accType == AccountTypes.Gross)
                 {
                     _initialBalance = setup.InitialBalance.Value;
                     _leverage = setup.Leverage.Value;
-                    _balanceCurrency = setup.BalanceCurrency.Value;
+                    _balanceCurrency = setup.BalanceCurrency.Value.Trim();
                 }
                 else if (_accType == AccountTypes.Cash)
                 {

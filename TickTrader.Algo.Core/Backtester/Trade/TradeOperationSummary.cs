@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -56,6 +58,7 @@ namespace TickTrader.Algo.Core
         public decimal FillPrice { get; set; }
         public NetPositionCloseInfo NetCloseInfo { get; set; }
         public OrderAccessor NewPos { get; set; }
+        public NumberFormatInfo AccountCurrencyFormat { get; set; }
 
         public void Clear()
         {
@@ -87,7 +90,7 @@ namespace TickTrader.Algo.Core
             _builder.Clear();
             _builder.Append($"Opened order ");
             PrintOrderDescription(NewOrder);
-            PrintAmountAndPrice(NewOrder.Entity);
+            PrintAmountAndPrice(NewOrder);
 
             //if (order.Commission != 0)
             //    _builder.Append(" commission =").Append(order.Commission);
@@ -100,9 +103,16 @@ namespace TickTrader.Algo.Core
             return _builder.ToString();
         }
 
-        public static string PrintOpenFail(OrderType type, string symbol, OrderSide side, OrderCmdResultCodes error)
+        public static string PrintOpenFail(OrderType type, string symbol, OrderSide side, double amountLots, OrderCmdResultCodes error, AccountAccessor acc)
         {
-            return $"Rejected order {type} {symbol} {side} reason={error}";
+            var currFormat = acc.BalanceCurrencyFormat;
+
+            var result = $"Rejected order {type} {symbol} {side} {amountLots} reason={error}";
+
+            if (acc.IsMarginType)
+                result += " freeMargin=" + (acc.Equity - acc.Margin);
+
+            return result;
         }
 
         public string PrintModificationInfo()
@@ -110,7 +120,7 @@ namespace TickTrader.Algo.Core
             _builder.Clear();
             _builder.Append($"Order is modified ");
             PrintOrderDescription(NewOrder);
-            PrintAmountAndPrice(NewOrder.Entity);
+            PrintAmountAndPrice(NewOrder);
 
             return _builder.ToString();
         }
@@ -121,10 +131,12 @@ namespace TickTrader.Algo.Core
 
             if (CheckAction(TradeActions.Fill))
             {
+                var priceFormat = SrcOrder.SymbolInfo.PriceFormat;
+
                 _builder.Append("Filled order");
                 PrintOrderDescription(SrcOrder);
-                _builder.Append(" by ").Append(FillAmount);
-                _builder.Append(" at price ").Append(FillPrice);
+                _builder.Append(" by ").AppendNumber(FillAmount, priceFormat);
+                _builder.Append(" at price ").AppendNumber(FillPrice, priceFormat);
                 PrintComment(SrcOrder);
                 PrintNetClose();
 
@@ -151,10 +163,12 @@ namespace TickTrader.Algo.Core
         {
             if (CheckAction(TradeActions.NetClose))
             {
+                var priceFormat = NetCloseInfo.SymbolInfo.PriceFormat;
+
                 _builder.AppendLine();
-                _builder.Append("Closed net position for ").Append(NetCloseInfo.CloseAmount);
-                _builder.Append(" at price ").Append(NetCloseInfo.ClosePrice);
-                _builder.Append(", profit=").Append(NetCloseInfo.BalanceMovement);
+                _builder.Append("Closed net position for ").AppendNumber(NetCloseInfo.CloseAmount);
+                _builder.Append(" at price ").AppendNumber(NetCloseInfo.ClosePrice, priceFormat);
+                _builder.Append(", profit=").AppendNumber(NetCloseInfo.BalanceMovement, priceFormat);
             }
         }
 
@@ -164,13 +178,15 @@ namespace TickTrader.Algo.Core
                 _builder.Append("  \"").Append(order.Comment).Append('"');
         }
 
-        private void PrintAmountAndPrice(OrderEntity order)
+        private void PrintAmountAndPrice(OrderAccessor order)
         {
+            var priceFormat = order.SymbolInfo.PriceFormat;
+
             _builder.Append($", amount=").Append(order.RemainingVolume);
-            if (order.Price != null)
-                _builder.Append(" price=").Append(order.Price);
-            if (order.StopPrice != null)
-                _builder.Append(" stopPrice=").Append(order.StopPrice);
+            if (order.Entity.Price != null)
+                _builder.Append(" price=").AppendNumber(order.Price, priceFormat);
+            if (order.Entity.StopPrice != null)
+                _builder.Append(" stopPrice=").AppendNumber(order.StopPrice, priceFormat);
         }
     }
 }

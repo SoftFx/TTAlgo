@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
@@ -18,13 +20,15 @@ namespace TickTrader.Algo.Core
             this.entity = entity;
             this.feed = feed;
 
-            this.Point = System.Math.Pow(10, -entity.Digits);
+            Point = System.Math.Pow(10, -entity.Digits);
 
-            this.Ask = double.NaN;
-            this.Bid = double.NaN;
+            Ask = double.NaN;
+            Bid = double.NaN;
             LastQuote = Null.Quote;
-            BaseCurrencyInfo = currencies.ContainsKey(BaseCurrency) ? currencies[BaseCurrency] : Null.Currency; 
-            CounterCurrencyInfo = currencies.ContainsKey(CounterCurrency) ? currencies[CounterCurrency] : Null.Currency; 
+            BaseCurrencyInfo = currencies.GetOrDefault(BaseCurrency) ?? Null.Currency;
+            CounterCurrencyInfo = currencies.GetOrDefault(CounterCurrency) ?? Null.Currency;
+
+            PriceFormat = FormatExtentions.CreateTradeFormatInfo(entity.Digits);
         }
 
         public string Name { get { return entity.Name; } }
@@ -49,6 +53,7 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get { return entity.CommissionChargeType; } }
         public CommissionType CommissionType { get { return entity.CommissionType; } }
         public double HedgingFactor => entity.MarginHedged;
+        public NumberFormatInfo PriceFormat { get; }
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
         public double MarginFactorFractional => entity.MarginFactorFractional;
@@ -105,7 +110,7 @@ namespace TickTrader.Algo.Core
         }
 
         public string Name { get; private set; }
-        public int Digits { get { return -1; } }
+        public int Digits { get { return 3; } }
         public double ContractSize { get { return double.NaN; } }
         public double MaxTradeVolume { get { return double.NaN; } }
         public double MinTradeVolume { get { return double.NaN; } }

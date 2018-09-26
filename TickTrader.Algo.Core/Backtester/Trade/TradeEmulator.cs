@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Core
         private long _orderIdSeed;
         private double _stopOutLevel = 30;
         private TradeOperationSummary _opSummary = new TradeOperationSummary();
+        private RateUpdate _lastRate;
 
         public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector)
         {
@@ -39,6 +40,7 @@ namespace TickTrader.Algo.Core
             VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += r =>
             {
+                _lastRate = r;
                 CheckActivation(r);
                 RecalculateAccount();
             };
@@ -60,7 +62,7 @@ namespace TickTrader.Algo.Core
             _acc.Assets.Clear();
 
             _acc.Balance = 0;
-            _acc.BalanceCurrency = "";
+            _acc.ResetCurrency();
             _acc.Leverage = 0;
             _acc.Profit = 0;
             _acc.MarginLevel = 0;
@@ -70,9 +72,10 @@ namespace TickTrader.Algo.Core
 
             if (_acc.IsMarginType)
             {
-                _acc.BalanceCurrency = _settings.BalanceCurrency;
                 _acc.Balance = (decimal)_settings.InitialBalance;
                 _acc.Leverage = _settings.Leverage;
+                _acc.UpdateCurrency(_settings.Currencies.GetOrStub(_settings.BalanceCurrency));
+                _opSummary.AccountCurrencyFormat = _acc.BalanceCurrencyFormat;
             }
             else if (_acc.IsCashType)
             {
@@ -155,7 +158,7 @@ namespace TickTrader.Algo.Core
                     _scheduler.SetFatalError(ex);
                 }
 
-                _collector.LogTradeFail(TradeOperationSummary.PrintOpenFail(orderType, symbol, side, error));
+                _collector.LogTradeFail(TradeOperationSummary.PrintOpenFail(orderType, symbol, side, volumeLots, error, _acc));
                 _collector.OnOrderRejected();
 
                 return new OrderResultEntity(error);
@@ -1219,6 +1222,13 @@ namespace TickTrader.Algo.Core
 
         private void OnStopOut()
         {
+            var msgBuilder = new StringBuilder();
+            msgBuilder.Append("Stop out! margin level: ").AppendNumber(_acc.MarginLevel, _acc.BalanceCurrencyFormat);
+            msgBuilder.Append(" equity: ").AppendNumber(_acc.Equity, _acc.BalanceCurrencyFormat);
+            msgBuilder.Append(" margin: ").AppendNumber(_acc.Margin, _acc.BalanceCurrencyFormat);
+            msgBuilder.Append(" last quote: ").Append(_lastRate);
+            _collector.AddEvent(LogSeverities.Error, msgBuilder.ToString());
+
             _scheduler.SetFatalError(new StopOutException("Stop out!"));
         }
 
@@ -1314,9 +1324,9 @@ namespace TickTrader.Algo.Core
             {
                 _opSummary.AddAction(TradeActions.NetClose);
                 _opSummary.NetCloseInfo = settlementInfo;
-
-                _collector.OnPositionClosed(_scheduler.VirtualTimePoint, settlementInfo.BalanceMovement);
             }
+
+            _collector.OnCommisionCharged(_opSummary.Charges.Commission);
 
             return settlementInfo;
         }
@@ -1363,6 +1373,7 @@ namespace TickTrader.Algo.Core
                 //                            + " profit=" + profit + " swap=" + closeSwap,
                 //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
+                _collector.OnPositionClosed(_scheduler.VirtualTimePoint, profit, 0, closeSwap);
                 _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
             }
 
@@ -1370,6 +1381,7 @@ namespace TickTrader.Algo.Core
             info.CloseAmount = oneSideClosingAmount;
             info.ClosePrice = position.Long.Price;
             info.BalanceMovement = balanceMovement;
+            info.SymbolInfo = (SymbolAccessor)position.Calculator.SymbolInfo;
 
             return info;
         }
@@ -1669,6 +1681,8 @@ namespace TickTrader.Algo.Core
 
             // increase reported action number
             position.ActionNo++;
+
+            _collector.OnPositionClosed(_scheduler.VirtualTimePoint, profit, charges.Commission, charges.Swap);
 
             //return profitInfo;
         }

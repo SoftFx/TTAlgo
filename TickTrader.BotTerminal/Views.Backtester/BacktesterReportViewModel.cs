@@ -49,11 +49,14 @@ namespace TickTrader.BotTerminal
             newPropertis.Add("Bars", newStats.BarsCount.ToString());
             newPropertis.Add("Ticks", newStats.TicksCount.ToString());
             newPropertis.Add("Initial deposit", newStats.InitialBalance.ToString("N2"));
-            newPropertis.Add("Total Net profit", (newStats.FinalBalance - newStats.InitialBalance).ToString("N2"));
+            newPropertis.Add("Final equity", newStats.FinalBalance.ToString("N2"));
+            newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).ToString("N2"));
             newPropertis.Add("Gross profit", newStats.GrossProfit.ToString("N2"));
             newPropertis.Add("Gross loss", newStats.GrossLoss.ToString("N2"));
+            newPropertis.Add("Commision", newStats.TotalComission.ToString("N2"));
+            newPropertis.Add("Swap", newStats.TotalSwap.ToString("N2"));
 
-            newPropertis.Add("Testing time", newStats.Elapsed.ToString("c"));
+            newPropertis.Add("Testing time", Format(newStats.Elapsed));
 
             var tickPerSecond = "N/A";
             if (newStats.Elapsed.Seconds > 0)
@@ -78,6 +81,41 @@ namespace TickTrader.BotTerminal
 
             _charts.Value = newCharts;
             _statProperties.Value = newPropertis;
+        }
+
+        private static string Format(TimeSpan timeSpan)
+        {
+            var builder = new StringBuilder();
+
+            int depth = 0;
+
+            int hours = (int)timeSpan.TotalHours;
+
+            if (hours > 0)
+            {
+                builder.Append(hours).Append("h");
+                depth++;
+            }
+
+            if (depth < 2 && (timeSpan.Minutes > 0 || depth > 0))
+            {
+                if (builder.Length > 0)
+                    builder.Append(' ');
+
+                builder.Append(timeSpan.Minutes).Append("m");
+                depth++;
+            }
+
+            if (depth < 2 && (timeSpan.Seconds > 0 || depth > 0))
+            {
+                if (builder.Length > 0)
+                    builder.Append(' ');
+
+                builder.Append(timeSpan.Seconds).Append("s");
+                depth++;
+            }
+
+            return builder.ToString();
         }
     }
 }

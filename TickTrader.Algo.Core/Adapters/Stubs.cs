@@ -242,7 +242,7 @@ namespace TickTrader.Algo.Core
         }
 
         public string Name { get; }
-        public int Digits => -1;
+        public int Digits => 2;
         public bool IsNull => true;
         public override string ToString() { return "{null}"; }
     }

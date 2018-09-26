@@ -69,6 +69,19 @@ namespace TickTrader.Algo.Common.Model.Setup
             Metadata = pRef.Metadata;
             SetupMetadata = metadata;
             SetupContext = context;
+
+            _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
+            _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
+            _tickBasedInputs = Metadata.Inputs.Select(CreateTickBasedInput).ToList();
+            _outputs = Metadata.Outputs.Select(CreateOutput).ToList();
+            MainSymbolPlaceholder = SpecialSymbols.MainSymbolPlaceholder;
+            Permissions = new PluginPermissions();
+
+            _allProperties = _parameters.Concat<PropertySetupModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
+            _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
+
+            Reset();
+            Validate();
         }
 
         public void Apply(IPluginSetupTarget target)
@@ -148,21 +161,6 @@ namespace TickTrader.Algo.Common.Model.Setup
         private bool CheckValidity()
         {
             return Metadata.Descriptor.IsValid && _allProperties.All(p => !p.HasError);
-        }
-
-        private void Init()
-        {
-            _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
-            _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
-            _tickBasedInputs = Metadata.Inputs.Select(CreateTickBasedInput).ToList();
-            _outputs = Metadata.Outputs.Select(CreateOutput).ToList();
-            MainSymbolPlaceholder = SpecialSymbols.MainSymbolPlaceholder;
-
-            _allProperties = _parameters.Concat<PropertySetupModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();
-            _allProperties.ForEach(p => p.ErrorChanged += s => Validate());
-
-            Reset();
-            Validate();
         }
 
         private ParameterSetupModel CreateParameter(ParameterMetadata descriptor)

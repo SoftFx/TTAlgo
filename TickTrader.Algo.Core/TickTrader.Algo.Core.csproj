@@ -159,9 +159,11 @@
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
     <Compile Include="Lib\AsyncBuffer.cs" />
     <Compile Include="Lib\AsyncEnumerator.cs" />
+    <Compile Include="Lib\CollectionExtentions.cs" />
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainEnumerator.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />
+    <Compile Include="Lib\FormatExtentions.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />

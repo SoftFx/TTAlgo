@@ -167,7 +167,7 @@ namespace TickTrader.Algo.Core
 
         #region Stats collection
 
-        public void OnPositionClosed(DateTime timepoint, decimal profit)
+        public void OnPositionClosed(DateTime timepoint, decimal profit, decimal comission, decimal swap)
         {
             if (profit < 0)
             {
@@ -181,6 +181,14 @@ namespace TickTrader.Algo.Core
                 Stats.ProfitByHours[timepoint.Hour] += profit;
                 Stats.ProfitByWeekDays[(int)timepoint.DayOfWeek] += profit;
             }
+
+            Stats.TotalComission += comission;
+            Stats.TotalSwap += swap;
+        }
+
+        public void OnCommisionCharged(decimal commission)
+        {
+            Stats.TotalComission += commission;
         }
 
         public void OnOrderOpened()
