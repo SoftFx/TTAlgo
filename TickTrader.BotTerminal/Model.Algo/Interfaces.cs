@@ -75,10 +75,10 @@ namespace TickTrader.BotTerminal
 
         ITradeExecutor GetTradeApi();
         ITradeHistoryProvider GetTradeHistoryApi();
-        BotJournal Journal { get; }
 
         event Action ParamsChanged;
         event Action Connected;
+        event Action Disconnected;
         event Action StartEvent;
         event AsyncEventHandler StopEvent;
 

@@ -59,8 +59,6 @@ namespace TickTrader.BotTerminal
 
         public IShell Shell { get; }
 
-        public BotJournal BotJournal { get; }
-
 
         public event Action<PackageInfo> PackageStateChanged;
 
@@ -77,7 +75,6 @@ namespace TickTrader.BotTerminal
             _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             IdProvider = new PluginIdProvider();
             Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
-            BotJournal = new BotJournal(1000);
             BotManager = new BotManager(this);
             _botsWarden = new BotsWarden(BotManager);
             _syncContext = new DispatcherSync();
@@ -91,6 +88,7 @@ namespace TickTrader.BotTerminal
             Library.PackageStateChanged += OnPackageStateChanged;
             Library.Reset += LibraryOnReset;
             ClientModel.Connected += ClientModelOnConnected;
+            ClientModel.Disconnected += ClientModelOnDisconnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
             BotManager.StateChanged += OnBotStateChanged;
 
@@ -232,12 +230,12 @@ namespace TickTrader.BotTerminal
             AccountStateChanged?.Invoke(account);
         }
 
-        private void OnBotStateChanged(TradeBotModel bot)
+        private void OnBotStateChanged(ITradeBot bot)
         {
             if (Bots.Snapshot.TryGetValue(bot.InstanceId, out var botModel))
             {
-                botModel.State = bot.State.ToInfo();
-                botModel.Descriptor = bot.PluginRef?.Metadata.Descriptor;
+                botModel.State = bot.State;
+                botModel.Descriptor = bot.Descriptor;
                 BotStateChanged?.Invoke(botModel);
             }
         }
@@ -346,8 +344,6 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeHistory.AlgoAdapter;
         }
 
-        BotJournal IAlgoPluginHost.Journal => BotJournal;
-
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
@@ -376,11 +372,17 @@ namespace TickTrader.BotTerminal
         public event Action StartEvent = delegate { };
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
         public event Action Connected;
+        public event Action Disconnected;
 
 
         private void ClientModelOnConnected()
         {
             Connected?.Invoke();
+        }
+
+        private void ClientModelOnDisconnected()
+        {
+            Disconnected?.Invoke();
         }
 
         #endregion

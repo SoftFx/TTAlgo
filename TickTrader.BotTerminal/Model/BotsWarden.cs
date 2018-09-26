@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -23,18 +24,19 @@ namespace TickTrader.BotTerminal
             _botManager.StateChanged += BotStateChanged;
         }
 
-        private void BotStateChanged(TradeBotModel bot)
+        private void BotStateChanged(ITradeBot bot)
         {
-            if (bot.State == BotModelStates.Stopping)
+            var botModel = (TradeBotModel)bot;
+            if (botModel.State == PluginStates.Stopping)
             {
                 var tokenSource = new CancellationTokenSource();
-                _abortTasks.Add(bot, tokenSource);
+                _abortTasks.Add(botModel, tokenSource);
 
-                AbortBotAfter(bot, _delayPunishment, tokenSource.Token).Forget();
+                AbortBotAfter(botModel, _delayPunishment, tokenSource.Token).Forget();
             }
-            else if (bot.State == BotModelStates.Stopped)
+            else if (botModel.State == PluginStates.Stopped)
             {
-                СancelAbortTask(bot);
+                СancelAbortTask(botModel);
             }
         }
 
@@ -51,7 +53,7 @@ namespace TickTrader.BotTerminal
         {
             await Task.Delay(delay, token);
 
-            if (!token.IsCancellationRequested && bot.State == BotModelStates.Stopping)
+            if (!token.IsCancellationRequested && bot.State == PluginStates.Stopping)
             {
                 bot.Abort();
             }

@@ -40,6 +40,7 @@
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
                 <ResourceDictionary Source="Views/JournalView.xaml" />
+                <ResourceDictionary Source="Views/BotJournalView.xaml" />
 
                 <ResourceDictionary Source="Views.Algo/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views.Algo/BotListView.xaml" />

@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
 
         public AccountKey Account => Info.Account;
 
-        public BotStates State => Info.State;
+        public PluginStates State => Info.State;
 
 
         public AlgoBotViewModel(BotModelInfo info, AlgoAgentViewModel agent)

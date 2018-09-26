@@ -62,7 +62,7 @@ namespace TickTrader.BotTerminal
             {
                 profileStorage.Bots = BotManagerModel.Bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
                 {
-                    Started = b.State == BotModelStates.Running,
+                    Started = b.State == PluginStates.Running || b.State == PluginStates.Reconnecting,
                     Config = b.Config,
                 }).ToList();
             }

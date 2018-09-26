@@ -528,9 +528,6 @@
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
-    <Compile Include="Views\BotJournalView.xaml.cs">
-      <DependentUpon>BotJournalView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.TradeInfo\GrossPositionListView.xaml.cs">
       <DependentUpon>GrossPositionListView.xaml</DependentUpon>
     </Compile>
@@ -1050,6 +1047,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\BotJournalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1065,10 +1066,6 @@
     <Page Include="Views.Auth\LoginDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\BotJournalView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views.TradeInfo\GrossPositionListView.xaml">
       <Generator>MSBuild:Compile</Generator>

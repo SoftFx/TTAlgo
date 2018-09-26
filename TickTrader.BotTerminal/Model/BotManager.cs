@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
         public bool HasRunningBots => _bots.Snapshot.Values.Any(b => b.IsRunning);
 
 
-        public event Action<TradeBotModel> StateChanged = delegate { };
+        public event Action<ITradeBot> StateChanged = delegate { };
 
 
         public BotManager(LocalAlgoAgent agent)
@@ -64,7 +64,6 @@ namespace TickTrader.BotTerminal
         {
             if (_bots.TryGetValue(instanceId, out var botModel))
             {
-                botModel.Remove();
                 _bots.Remove(instanceId);
                 Agent.IdProvider.UnregisterPlugin(instanceId);
                 botModel.StateChanged -= StateChanged;
@@ -91,7 +90,7 @@ namespace TickTrader.BotTerminal
 
         private async void StopBot(TradeBotModel bot)
         {
-            if (bot.State == BotModelStates.Running)
+            if (bot.State == PluginStates.Running)
             {
                 await bot.Stop();
             }

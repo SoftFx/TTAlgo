@@ -10,68 +10,89 @@ using System.Linq;
 using System.Collections.Generic;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeBotModel : PluginModel, IBotWriter
+    internal interface ITradeBot
+    {
+        string InstanceId { get; }
+
+        PluginConfig Config { get; }
+
+        PluginStates State { get; }
+
+        string FaultMessage { get; }
+
+        PluginDescriptor Descriptor { get; }
+
+        string Status { get; }
+
+        BotJournal Journal { get; }
+
+
+        event Action<ITradeBot> ConfigurationChanged;
+        event Action<ITradeBot> StateChanged;
+        event Action<ITradeBot> StatusChanged;
+    }
+
+
+    internal class TradeBotModel : PluginModel, IBotWriter, ITradeBot
     {
         private BotListenerProxy _botListener;
 
 
-        public BotModelStates State { get; private set; }
-        public string CustomStatus { get; private set; }
+        public string Status { get; private set; }
+        public BotJournal Journal { get; }
         public bool StateViewOpened { get; set; }
         public SettingsStorage<WindowStorageModel> StateViewSettings { get; private set; }
-        public bool IsRunning => State == BotModelStates.Running || State == BotModelStates.Stopping;
 
 
-        public event System.Action<TradeBotModel> CustomStatusChanged = delegate { };
-        public event System.Action<TradeBotModel> StateChanged = delegate { };
-        public event System.Action<TradeBotModel> Removed = delegate { };
-        public event System.Action<TradeBotModel> ConfigurationChanged = delegate { };
+        public event Action<ITradeBot> StatusChanged = delegate { };
+        public event Action<ITradeBot> StateChanged = delegate { };
+        public event Action<ITradeBot> ConfigurationChanged = delegate { };
 
 
         public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, WindowStorageModel stateSettings)
             : base(config, agent, host, setupContext)
         {
-            host.Journal.RegisterBotLog(InstanceId);
+            Journal = new BotJournal(InstanceId);
             host.Connected += Host_Connected;
+            host.Disconnected += Host_Disconnected;
             StateViewSettings = new SettingsStorage<WindowStorageModel>(stateSettings);
         }
 
         internal void Abort()
         {
-            if (State == BotModelStates.Stopping)
+            if (State == PluginStates.Stopping)
                 AbortExecutor();
         }
 
         public void Start()
         {
-            if (State != BotModelStates.Stopped)
+            if (State != PluginStates.Stopped)
                 return;
             Host.Lock();
             if (StartExcecutor())
             {
                 _botListener?.Start();
-                ChangeState(BotModelStates.Running);
+                ChangeState(PluginStates.Running);
             }
         }
 
         public async Task Stop()
         {
-            if (State != BotModelStates.Running)
+            if (State != PluginStates.Running)
                 return;
-            ChangeState(BotModelStates.Stopping);
             await StopExecutor();
             _botListener?.Stop();
-            ChangeState(BotModelStates.Stopped);
+            ChangeState(PluginStates.Stopped);
             Host.Unlock();
-        }
-
-        public void Remove()
-        {
-            Host.Journal.UnregisterBotLog(InstanceId);
-            Removed(this);
+            if (PackageRef?.IsObsolete ?? false)
+            {
+                UpdateRefs();
+            }
         }
 
 
@@ -84,13 +105,13 @@ namespace TickTrader.BotTerminal
             executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
             EnvService.Instance.EnsureFolder(executor.WorkingFolder);
 
-            _botListener = new BotListenerProxy(executor, StopInternal, this);
+            _botListener = new BotListenerProxy(executor, OnBotExited, this);
             return executor;
         }
 
         internal override void Configurate(PluginConfig config)
         {
-            if (State != BotModelStates.Stopped)
+            if (State != PluginStates.Stopped)
                 return;
 
             base.Configurate(config);
@@ -98,42 +119,37 @@ namespace TickTrader.BotTerminal
             ConfigurationChanged(this);
         }
 
-        private void ChangeState(BotModelStates newState)
+        protected override void ChangeState(PluginStates state, string faultMessage = null)
         {
-            State = newState;
+            base.ChangeState(state, faultMessage);
             StateChanged(this);
         }
 
-        private void TradeBotModel2_NewRecords(BotLogRecord[] records)
+        protected override void LockResources()
         {
-            List<BotMessage> messages = new List<BotMessage>(records.Length);
-            string status = null;
+            base.LockResources();
+            Host.Lock();
+        }
 
-            foreach (var rec in records)
-            {
-                if (rec.Severity != LogSeverities.CustomStatus)
-                    messages.Add(Convert(rec));
-                else
-                    status = rec.Message;
-            }
-
-            if (messages.Count > 0)
-                Host.Journal.Add(messages);
-
-            if (status != null)
-            {
-                Execute.OnUIThread(() =>
-                {
-                    CustomStatus = status;
-                    CustomStatusChanged?.Invoke(this);
-                });
-            }
+        protected override void UnlockResources()
+        {
+            base.UnlockResources();
+            Host.Unlock();
         }
 
         private void Host_Connected()
         {
-            if (this.State == BotModelStates.Running)
+            if (State == PluginStates.Reconnecting)
+            {
                 HandleReconnect();
+                ChangeState(PluginStates.Running);
+            }
+        }
+
+        private void Host_Disconnected()
+        {
+            if (State == PluginStates.Running)
+                ChangeState(PluginStates.Reconnecting);
         }
 
         private BotMessage Convert(BotLogRecord record)
@@ -155,14 +171,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void StopInternal()
+        private void OnBotExited()
         {
             Execute.OnUIThread(() =>
             {
-                if (State == BotModelStates.Running)
+                if (State == PluginStates.Running)
                 {
-                    ChangeState(BotModelStates.Stopped);
-                    Host.Unlock();
+                    ChangeState(PluginStates.Stopped);
+                    UnlockResources();
                 }
             });
         }
@@ -172,7 +188,7 @@ namespace TickTrader.BotTerminal
 
         void IBotWriter.LogMesssages(IEnumerable<BotLogRecord> records)
         {
-            List<BotMessage> messages = new List<BotMessage>();
+            var messages = new List<BotMessage>();
 
             foreach (var rec in records)
             {
@@ -181,21 +197,21 @@ namespace TickTrader.BotTerminal
             }
 
             if (messages.Count > 0)
-                Host.Journal.Add(messages);
+                Journal.Add(messages);
         }
 
         void IBotWriter.UpdateStatus(string status)
         {
             Execute.OnUIThread(() =>
             {
-                CustomStatus = status;
-                CustomStatusChanged?.Invoke(this);
+                Status = status;
+                StatusChanged?.Invoke(this);
             });
         }
 
         void IBotWriter.Trace(string status)
         {
-            Host.Journal.LogStatus(InstanceId, status);
+            Journal.LogStatus(status);
         }
 
         #endregion IBotWriter implementation

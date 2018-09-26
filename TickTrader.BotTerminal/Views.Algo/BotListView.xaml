@@ -83,25 +83,25 @@
 
     <Style x:Key="BotStateEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
         <Style.Triggers>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Offline}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Stopped}">
                 <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Starting}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Starting}">
                 <Setter Property="Fill" Value="Yellow"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Online}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Running}">
                 <Setter Property="Fill" Value="Green"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Stopping}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Stopping}">
                 <Setter Property="Fill" Value="Orange"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Reconnecting}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Reconnecting}">
                 <Setter Property="Fill" Value="Yellow"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Broken}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Broken}">
                 <Setter Property="Fill" Value="Red"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:BotStates.Faulted}">
+            <DataTrigger Binding="{Binding State}" Value="{x:Static ci:PluginStates.Faulted}">
                 <Setter Property="Fill" Value="Red"/>
             </DataTrigger>
         </Style.Triggers>

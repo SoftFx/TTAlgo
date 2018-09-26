@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -22,17 +23,17 @@ namespace TickTrader.BotTerminal
 
         public bool IsStarted => Model.IsRunning;
 
-        public bool CanBeClosed => Model.State == BotModelStates.Stopped;
+        public bool CanBeClosed => Model.State == PluginStates.Stopped;
 
-        public bool CanStartStop => Model.State == BotModelStates.Running || Model.State == BotModelStates.Stopped;
+        public bool CanStartStop => Model.State == PluginStates.Running || Model.State == PluginStates.Stopped;
 
-        public bool CanStart => Model.State == BotModelStates.Stopped;
+        public bool CanStart => Model.State == PluginStates.Stopped;
 
-        public bool CanStop => Model.State == BotModelStates.Running;
+        public bool CanStop => Model.State == PluginStates.Running;
 
-        public BotModelStates State => Model.State;
+        public PluginStates State => Model.State;
 
-        public bool CanOpenSettings => Model.State == BotModelStates.Stopped;
+        public bool CanOpenSettings => Model.State == PluginStates.Stopped;
 
         public bool CanOpenChart => Model.PluginRef?.Metadata.Descriptor.SetupMainSymbol ?? false;
 
@@ -58,9 +59,9 @@ namespace TickTrader.BotTerminal
 
         public async void StartStop()
         {
-            if (Model.State == BotModelStates.Running)
+            if (Model.State == PluginStates.Running)
                 await Model.Stop();
-            else if (Model.State == BotModelStates.Stopped)
+            else if (Model.State == PluginStates.Stopped)
                 Model.Start();
         }
 
@@ -104,7 +105,7 @@ namespace TickTrader.BotTerminal
             _algoEnv.Shell.ShowChart(Model.Config.MainSymbol.Name, Model.Config.TimeFrame.Convert());
         }
 
-        private void BotStateChanged(TradeBotModel model)
+        private void BotStateChanged(ITradeBot model)
         {
             NotifyOfPropertyChange(nameof(CanOpenSettings));
             NotifyOfPropertyChange(nameof(CanBeClosed));

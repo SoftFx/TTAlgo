@@ -14,43 +14,20 @@ namespace TickTrader.BotTerminal
 {
     class BotJournalViewModel : PropertyChangedBase
     {
-        private BotJournal _botJournal;
+        private ITradeBot _bot;
         private BotMessageFilter _botJournalFilter = new BotMessageFilter();
-        private ObservableCollection<BotNameFilterEntry> _botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public BotJournalViewModel(BotJournal journal)
+        public BotJournalViewModel(ITradeBot bot)
         {
-            _botJournal = journal;
+            _bot = bot;
 
-            Journal = CollectionViewSource.GetDefaultView(_botJournal.Records);
+            Journal = CollectionViewSource.GetDefaultView(_bot.Journal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
-
-            _botNameFilterEntries.Add(new BotNameFilterEntry("Nothing", BotNameFilterType.Nothing));
-            _botNameFilterEntries.Add(new BotNameFilterEntry("All", BotNameFilterType.All));
-
-            _botJournal.Statistics.Items.Updated += args =>
-            {
-                if (args.Action == DLinqAction.Insert)
-                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.Key, BotNameFilterType.SpecifiedName));
-                else if (args.Action == DLinqAction.Remove)
-                {
-                    var entry = _botNameFilterEntries.FirstOrDefault((e) => e.Type == BotNameFilterType.SpecifiedName && e.Name == args.Key);
-
-                    if (selectedBotNameFilter == entry)
-                        SelectedBotNameFilter = _botNameFilterEntries.First();
-
-                    if (entry != null)
-                        _botNameFilterEntries.Remove(entry);
-                }
-            };
-
-            SelectedBotNameFilter = _botNameFilterEntries.First();
         }
 
         public ICollectionView Journal { get; private set; }
-        public ObservableCollection<BotNameFilterEntry> BotNameFilterEntries { get { return _botNameFilterEntries; } }
         public MessageTypeFilter TypeFilter
         {
             get { return _botJournalFilter.MessageTypeCondition; }
@@ -77,36 +54,30 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-
-        private BotNameFilterEntry selectedBotNameFilter;
-        public BotNameFilterEntry SelectedBotNameFilter
+        public bool IsBotJournalEnabled
         {
-            get { return selectedBotNameFilter; }
+            get { return _botJournalFilter.IsEnabled; }
             set
             {
-                _botJournalFilter.BotCondition = value;
-
-                selectedBotNameFilter = value;
-                NotifyOfPropertyChange(nameof(SelectedBotNameFilter));
-                ApplyFilter();
+                if (_botJournalFilter.IsEnabled != value)
+                {
+                    _botJournalFilter.IsEnabled = value;
+                    NotifyOfPropertyChange(nameof(IsBotJournalEnabled));
+                    ApplyFilter();
+                }
             }
         }
 
         public void Clear()
         {
-            //_botJournal.Clear();
+            _bot.Journal.Clear();
         }
 
         public void Browse()
         {
             try
             {
-                string logDir;
-
-                if (_botJournalFilter.BotCondition == null || _botJournalFilter.BotCondition.Type != BotNameFilterType.SpecifiedName)
-                    logDir = EnvService.Instance.BotLogFolder;
-                else
-                    logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_botJournalFilter.BotCondition.Name));
+                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_bot.InstanceId));
 
                 Directory.CreateDirectory(logDir);
                 Process.Start(logDir);
@@ -119,7 +90,7 @@ namespace TickTrader.BotTerminal
 
         private void ApplyFilter()
         {
-            if (this.Journal != null)
+            if (Journal != null)
                 Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
         }
     }
@@ -140,18 +111,18 @@ namespace TickTrader.BotTerminal
         public BotMessageFilter()
         {
             MessageTypeCondition = MessageTypeFilter.All;
+            IsEnabled = true;
         }
 
         public string TextFilter { get; set; }
         public MessageTypeFilter MessageTypeCondition { get; set; }
-        public BotNameFilterEntry BotCondition { get; set; }
+        public bool IsEnabled { get; set; }
 
         public bool Filter(BotMessage bMessage)
         {
-            if (bMessage != null)
+            if (IsEnabled && bMessage != null)
             {
-                return (BotCondition == null || BotCondition.Matches(bMessage.Bot))
-                     && MatchesTypeFilter(bMessage.Type)
+                return MatchesTypeFilter(bMessage.Type)
                      && (string.IsNullOrEmpty(TextFilter)
                      || (bMessage.Time.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0

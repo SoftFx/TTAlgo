@@ -3,12 +3,12 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Common.Info
 {
-    public enum BotStates
+    public enum PluginStates
     {
-        Offline,
+        Stopped,
         Starting,
         Faulted,
-        Online,
+        Running,
         Stopping,
         Broken,
         Reconnecting,
@@ -21,7 +21,7 @@ namespace TickTrader.Algo.Common.Info
 
         public AccountKey Account { get; set; }
 
-        public BotStates State { get; set; }
+        public PluginStates State { get; set; }
 
         public string FaultMessage { get; set; }
 

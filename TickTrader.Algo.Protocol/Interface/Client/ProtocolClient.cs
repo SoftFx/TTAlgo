@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Protocol
 
     public abstract class ProtocolClient
     {
-        public const int DefaultRequestTimeout = 10;
+        public const int DefaultRequestTimeout = 3;
 
 
         protected ILogger Logger { get; set; }
@@ -286,6 +286,20 @@ namespace TickTrader.Algo.Protocol
         public abstract Task RemovePackage(PackageKey package);
 
         public abstract Task<byte[]> DownloadPackage(PackageKey package);
+
+        public abstract Task<string> GetBotStatus(string botId);
+
+        public abstract Task<LogRecordInfo[]> GetBotLogs(string botId);
+
+        public abstract Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
+
+        public abstract Task ClearBotFolder(string botId, BotFolderId folderId);
+
+        public abstract Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+
+        public abstract Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath);
+
+        public abstract Task UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary);
 
         #endregion Requests
     }

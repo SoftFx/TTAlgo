@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using TickTrader.Algo.Common.Info;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
 
@@ -20,47 +21,26 @@ namespace TickTrader.BotTerminal
     {
         private AlgoEnvironment _algoEnv;
         private BotMessageFilter _botLogsFilter = new BotMessageFilter();
-        private ObservableCollection<BotNameFilterEntry> _botNameFilterEntries = new ObservableCollection<BotNameFilterEntry>();
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         public BotStateViewModel(TradeBotModel bot, AlgoEnvironment algoEnv)
         {
             _algoEnv = algoEnv;
-            this.Bot = bot;
-            Bot.Removed += Bot_Removed;
+            Bot = bot;
             Bot.StateChanged += Bot_StateChanged;
             Bot.ConfigurationChanged += BotConfigurationChanged;
-            Bot.CustomStatusChanged += Bot_CustomStatusChanged;
+            Bot.StatusChanged += Bot_CustomStatusChanged;
             Bot.StateViewOpened = true;
             DisplayName = "Status: " + bot.InstanceId;
             BotName = Bot.InstanceId;
             Bot_StateChanged(Bot);
             Bot_CustomStatusChanged(Bot);
 
-            _botNameFilterEntries.Add(new BotNameFilterEntry("All", BotNameFilterType.All));
-            if (!Bot.Host.Journal.Records.ContainsKey(Bot.InstanceId))
-                Bot.Host.Journal.Records.Add(Bot.InstanceId, new Journal<BotMessage>(1000));
-            BotLogs = CollectionViewSource.GetDefaultView(Bot.Host.Journal.Records[Bot.InstanceId].Records);
-            Bot.Host.Journal.Records[Bot.InstanceId].Records.CollectionChanged += (sender, e) => NotifyOfPropertyChange(nameof(ErrorsCount));
-            Bot.Host.Journal.Statistics.Items.Updated += args =>
-            {
-                if (args.Action == DLinqAction.Insert)
-                    _botNameFilterEntries.Add(new BotNameFilterEntry(args.Key, BotNameFilterType.SpecifiedName));
-                else if (args.Action == DLinqAction.Remove)
-                {
-                    var entry = _botNameFilterEntries.FirstOrDefault((e) => e.Type == BotNameFilterType.SpecifiedName && e.Name == args.Key);
-
-                    if (selectedBotNameFilter == entry)
-                        SelectedBotNameFilter = _botNameFilterEntries.First();
-
-                    if (entry != null)
-                        _botNameFilterEntries.Remove(entry);
-                }
-            };
-            SelectedBotNameFilter = _botNameFilterEntries.First();
+            Bot.Journal.Records.CollectionChanged += (sender, e) => NotifyOfPropertyChange(nameof(ErrorsCount));
+            BotJournal = new BotJournalViewModel(Bot);
         }
 
-        private void BotConfigurationChanged(TradeBotModel obj)
+        private void BotConfigurationChanged(ITradeBot obj)
         {
             NotifyOfPropertyChange(nameof(BotInfo));
         }
@@ -69,72 +49,32 @@ namespace TickTrader.BotTerminal
         public string BotName { get; private set; }
         public string ExecStatus { get; private set; }
         public string CustomStatus { get; private set; }
-        public bool IsStarted { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopping; } }
-        public bool CanStartStop { get { return Bot.State == BotModelStates.Running || Bot.State == BotModelStates.Stopped; } }
-        public bool CanOpenSettings { get { return Bot.State == BotModelStates.Stopped; } }
+        public bool IsStarted { get { return Bot.State == PluginStates.Running || Bot.State == PluginStates.Stopping; } }
+        public bool CanStartStop { get { return Bot.State == PluginStates.Running || Bot.State == PluginStates.Stopped; } }
+        public bool CanOpenSettings { get { return Bot.State == PluginStates.Stopped; } }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public bool HasParams => Bot.Setup.Parameters.Any();
-        public ICollectionView BotLogs { get; private set; }
-        public int ErrorsCount => Bot.Host.Journal.Records[Bot.InstanceId].Records.Where(v => v.Type == JournalMessageType.Error).Count();
-
-        public MessageTypeFilter TypeFilter
-        {
-            get { return _botLogsFilter.MessageTypeCondition; }
-            set
-            {
-                if (_botLogsFilter.MessageTypeCondition != value)
-                {
-                    _botLogsFilter.MessageTypeCondition = value;
-                    NotifyOfPropertyChange(nameof(TypeFilter));
-                    ApplyFilter();
-                }
-            }
-        }
-        public string TextFilter
-        {
-            get { return _botLogsFilter.TextFilter; }
-            set
-            {
-                if (_botLogsFilter.TextFilter != value)
-                {
-                    _botLogsFilter.TextFilter = value;
-                    NotifyOfPropertyChange(nameof(TextFilter));
-                    ApplyFilter();
-                }
-            }
-        }
-        private BotNameFilterEntry selectedBotNameFilter;
-        public BotNameFilterEntry SelectedBotNameFilter
-        {
-            get { return selectedBotNameFilter; }
-            set
-            {
-                _botLogsFilter.BotCondition = value;
-
-                selectedBotNameFilter = value;
-                NotifyOfPropertyChange(nameof(SelectedBotNameFilter));
-                ApplyFilter();
-            }
-        }
+        public int ErrorsCount => Bot.Journal.MessageCount[JournalMessageType.Error];
+        public BotJournalViewModel BotJournal { get; }
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
             base.TryClose(dialogResult);
 
             Bot.ConfigurationChanged -= BotConfigurationChanged;
-            Bot.Removed -= Bot_Removed;
+            //Bot.Removed -= Bot_Removed;
             Bot.StateChanged -= Bot_StateChanged;
-            Bot.CustomStatusChanged -= Bot_CustomStatusChanged;
+            Bot.StatusChanged -= Bot_CustomStatusChanged;
             Bot.StateViewOpened = false;
         }
 
         public async void StartStop()
         {
-            if (Bot.State == BotModelStates.Running)
+            if (Bot.State == PluginStates.Running)
                 await Bot.Stop();
-            else if (Bot.State == BotModelStates.Stopped)
+            else if (Bot.State == PluginStates.Stopped)
                 Bot.Start();
-            else if (Bot.State == BotModelStates.Stopping)
+            else if (Bot.State == PluginStates.Stopping)
                 throw new Exception("StartStop() cannot be called when Bot is stopping!");
         }
 
@@ -148,19 +88,23 @@ namespace TickTrader.BotTerminal
             TryClose();
         }
 
-        private void Bot_CustomStatusChanged(TradeBotModel bot)
+        private void Bot_CustomStatusChanged(ITradeBot bot)
         {
-            CustomStatus = bot.CustomStatus;
+            CustomStatus = bot.Status;
             NotifyOfPropertyChange(nameof(CustomStatus));
         }
 
-        private void Bot_StateChanged(TradeBotModel bot)
+        private void Bot_StateChanged(ITradeBot bot)
         {
             switch (bot.State)
             {
-                case BotModelStates.Stopping: ExecStatus = "Stopping..."; break;
-                case BotModelStates.Running: ExecStatus = "Running"; break;
-                case BotModelStates.Stopped: ExecStatus = "Idle"; break;
+                case PluginStates.Stopping: ExecStatus = "Stopping..."; break;
+                case PluginStates.Stopped: ExecStatus = "Stopped"; break;
+                case PluginStates.Running: ExecStatus = "Running"; break;
+                case PluginStates.Starting: ExecStatus = "Starting..."; break;
+                case PluginStates.Faulted: ExecStatus = "Faulted"; break;
+                case PluginStates.Broken: ExecStatus = "Broken"; break;
+                case PluginStates.Reconnecting: ExecStatus = "Reconnecting..."; break;
             }
 
             NotifyOfPropertyChange(nameof(ExecStatus));
@@ -194,29 +138,14 @@ namespace TickTrader.BotTerminal
             return res;
         }
 
-        private void ApplyFilter()
-        {
-            if (BotLogs != null)
-                BotLogs.Filter = msg => _botLogsFilter.Filter((BotMessage)msg);
-        }
-
         public void Clear()
         {
-            Bot.Host.Journal.Records[Bot.InstanceId].Clear();
+            BotJournal.Clear();
         }
 
         public void Browse()
         {
-            try
-            {
-                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, Bot.InstanceId);
-                Directory.CreateDirectory(logDir);
-                Process.Start(logDir);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn(ex, "Failed to browse bot journal folder");
-            }
+            BotJournal.Browse();
         }
     }
 }

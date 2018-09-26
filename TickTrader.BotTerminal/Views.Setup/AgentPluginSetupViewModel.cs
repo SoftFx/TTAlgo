@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
 
         public BotModelInfo Bot { get; private set; }
 
-        public bool PluginIsStopped => Bot == null ? true : Bot.State == BotStates.Offline;
+        public bool PluginIsStopped => Bot == null ? true : Bot.State == PluginStates.Stopped;
 
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest;
 

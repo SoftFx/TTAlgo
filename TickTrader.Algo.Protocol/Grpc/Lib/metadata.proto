@@ -132,12 +132,12 @@ message AccountModelInfo
 
 message BotModelInfo
 {
-	enum BotState
+	enum PluginState
 	{
-		OFFLINE = 0;
+		STOPPED = 0;
 		STARTING = 1;
 		FAULTED = 2;
-		ONLINE = 3;
+		RUNNING = 3;
 		STOPPING = 4;
 		BROKEN = 5;
 		RECONNECTING = 6;
@@ -145,7 +145,7 @@ message BotModelInfo
 
 	string instance_id = 1;
 	AccountKey account = 2;
-	BotState state = 3;
+	PluginState state = 3;
 	string fault_message = 4;
 	PluginConfig config = 5;
 	PluginDescriptor descriptor = 6;

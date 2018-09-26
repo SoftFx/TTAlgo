@@ -8,6 +8,7 @@ using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,7 +21,7 @@ namespace TickTrader.BotTerminal
 
         public PluginConfig Config { get; private set; }
 
-        public string InstanceId => Config.InstanceId;
+        public string InstanceId { get; }
 
         public AlgoPackageRef PackageRef { get; private set; }
 
@@ -28,7 +29,20 @@ namespace TickTrader.BotTerminal
 
         public PluginSetupModel Setup { get; private set; }
 
+        public string FaultMessage { get; private set; }
+
+        public PluginDescriptor Descriptor { get; private set; }
+
         public IAlgoPluginHost Host { get; }
+
+        public PluginStates State { get; protected set; }
+
+        public bool IsStarted => State == PluginStates.Starting || State == PluginStates.Running || State == PluginStates.Reconnecting || State == PluginStates.Stopping;
+
+        public bool IsRunning => State == PluginStates.Running || State == PluginStates.Reconnecting;
+
+        public bool IsStopped => State == PluginStates.Stopped || State == PluginStates.Broken || State == PluginStates.Faulted;
+
 
         protected LocalAlgoAgent Agent { get; }
 
@@ -38,18 +52,26 @@ namespace TickTrader.BotTerminal
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
         {
             Config = config;
+            InstanceId = config.InstanceId;
             Agent = agent;
             Host = host;
             SetupContext = setupContext;
+
+            UpdateRefs();
+
+            Agent.Library.PluginUpdated += Library_PluginUpdated;
         }
 
         protected bool StartExcecutor()
         {
+            if (State == PluginStates.Broken)
+                return false;
+
             try
             {
-                PackageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
-                PackageRef.IncrementRef();
-                PluginRef = Agent.Library.GetPluginRef(Config.Key);
+                ChangeState(PluginStates.Starting);
+
+                LockResources();
                 Setup = new PluginSetupModel(PluginRef, Agent, SetupContext);
                 Setup.Load(Config);
 
@@ -64,7 +86,8 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "StartExcecutor() failed!");
-                PackageRef?.DecrementRef();
+                ChangeState(PluginStates.Faulted, ex.Message);
+                UnlockResources();
 
                 return false;
             }
@@ -79,11 +102,17 @@ namespace TickTrader.BotTerminal
         {
             return Task.Factory.StartNew(() =>
             {
-                _executor.Stop();
-
-                PackageRef?.DecrementRef();
-                PackageRef = null;
-                PluginRef = null;
+                ChangeState(PluginStates.Stopping);
+                try
+                {
+                    _executor.Stop();
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error(ex, "StopExcecutor() failed!");
+                    ChangeState(PluginStates.Stopped, ex.Message);
+                    UnlockResources();
+                }
             });
         }
 
@@ -115,11 +144,57 @@ namespace TickTrader.BotTerminal
             _executor.HandleReconnect();
         }
 
+        protected virtual void ChangeState(PluginStates state, string faultMessage = null)
+        {
+            State = state;
+            FaultMessage = faultMessage;
+        }
+
+        protected virtual void OnPluginUpdated()
+        {
+        }
+
+        protected virtual void LockResources()
+        {
+            PackageRef.IncrementRef();
+        }
+
+        protected virtual void UnlockResources()
+        {
+            PackageRef?.DecrementRef();
+        }
+
+        protected void UpdateRefs()
+        {
+            var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
+            if (packageRef == null)
+            {
+                ChangeState(PluginStates.Broken, $"Package {Config.Key.PackageName} at {Config.Key.PackageLocation} is not found!");
+                return;
+            }
+            var pluginRef = Agent.Library.GetPluginRef(Config.Key);
+            if (pluginRef == null)
+            {
+                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {Config.Key.PackageName} at {Config.Key.PackageLocation}!");
+                return;
+            }
+
+            PackageRef = packageRef;
+            PluginRef = pluginRef;
+            Descriptor = pluginRef.Metadata.Descriptor;
+        }
+
         private void Executor_OnRuntimeError(Exception ex)
         {
             _logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
         }
-    }
 
-    internal enum BotModelStates { Stopped, Running, Stopping }
+        private void Library_PluginUpdated(UpdateInfo<PluginInfo> update)
+        {
+            if (update.Type != UpdateType.Removed && update.Value.Key == Config.Key)
+            {
+                OnPluginUpdated();
+            }
+        }
+    }
 }

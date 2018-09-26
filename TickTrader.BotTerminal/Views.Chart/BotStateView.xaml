@@ -107,60 +107,7 @@
                             </Setter>
                         </Style>
                     </TabItem.Style>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-
-                        <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
-                            <ComboBox DockPanel.Dock="Left" Width="100" SelectedItem="{Binding TypeFilter, Delay=200}" ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False" SelectedIndex="0"/>
-                            <l:FlatButton DockPanel.Dock="Left" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
-                                          Style="{DynamicResource PanelActionButtonStyle}"
-                                          cal:Message.Attach="Browse"/>
-                            <l:FlatButton DockPanel.Dock="Left" Content="Clear" Margin="5 0 0 0" Padding="5 0"
-                                          Style="{DynamicResource PanelActionButtonStyle}"
-                                          cal:Message.Attach="Clear"/>
-                        </DockPanel>
-                        <TextBox Grid.Row="1" Text="{Binding TextFilter, Delay=500, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Width="155" Margin="5 0 0 0" Style="{DynamicResource SearchTextBox_Style}"/>
-                        <DataGrid Name="Orders" Grid.Row="2" Style="{DynamicResource DataGrid_Style}" 
-                              ItemsSource="{Binding BotLogs.SourceCollection}"
-                              EnableRowVirtualization="True"
-                              AutoGenerateColumns="False" 
-                              CanUserAddRows="False" 
-                              CanUserDeleteRows="False" 
-                              SelectionMode="Single">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn SortMemberPath="Time" 
-                                    Binding="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"
-                                    SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
-                                <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="20"/>
-                                                    <ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10" Background="{Binding Type, Converter={StaticResource MsgTypeToBrush}}" BorderBrush="Black" BorderThickness="1">
-                                                    <Border CornerRadius="5">
-                                                        <Border.Background>
-                                                            <LinearGradientBrush StartPoint="0.5,0.5" EndPoint="0,0">
-                                                                <GradientStop Color="#00FFFFFF" Offset="0.0" />
-                                                                <GradientStop Color="#AAFFFFFF" Offset="0.5" />
-                                                            </LinearGradientBrush>
-                                                        </Border.Background>
-                                                    </Border>
-                                                </Border>
-                                                <TextBlock Grid.Column="1" Text="{Binding Message}"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
+                    <ContentControl cal:View.Model="{Binding BotJournal}"/>
                 </TabItem>
             </l:TabControl>
         </Grid>
