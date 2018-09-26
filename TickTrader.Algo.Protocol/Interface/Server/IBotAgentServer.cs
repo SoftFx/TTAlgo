@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 
@@ -72,6 +73,20 @@ namespace TickTrader.Algo.Protocol
         void RemovePackage(PackageKey package);
 
         byte[] DownloadPackage(PackageKey package);
+
+        string GetBotStatus(string botId);
+
+        LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount);
+
+        BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId);
+
+        void ClearBotFolder(string botId, BotFolderId folderId);
+
+        void DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+
+        Stream GetBotFile(string botId, BotFolderId folderId, string fileName);
+
+        void UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary);
 
         #endregion Requests
     }

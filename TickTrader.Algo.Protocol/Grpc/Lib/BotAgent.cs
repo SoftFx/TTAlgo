@@ -25,227 +25,286 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg9ib3RfYWdlbnQucHJvdG8SIVRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYhoKa2V5cy5wcm90bxoObWV0YWRhdGEucHJvdG8aDGNvbmZpZy5w",
-            "cm90byLHAQoNUmVxdWVzdFJlc3VsdBJOCgZzdGF0dXMYASABKA4yPi5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdC5S",
-            "ZXF1ZXN0U3RhdHVzEg8KB21lc3NhZ2UYAiABKAkiVQoNUmVxdWVzdFN0YXR1",
-            "cxILCgdTVUNDRVNTEAASGQoVSU5URVJOQUxfU0VSVkVSX0VSUk9SEAESEAoM",
-            "VU5BVVRIT1JJWkVEEAISCgoGUkVKRUNUEAMiXQoMTG9naW5SZXF1ZXN0Eg0K",
-            "BWxvZ2luGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEhUKDW1ham9yX3ZlcnNp",
-            "b24YAyABKAUSFQoNbWlub3JfdmVyc2lvbhgEIAEoBSLBAgoNTG9naW5SZXNw",
-            "b25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkoKBWVycm9yGAIgASgO",
-            "MjsuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ2luUmVz",
-            "cG9uc2UuTG9naW5FcnJvchIVCg1tYWpvcl92ZXJzaW9uGAMgASgFEhUKDW1p",
-            "bm9yX3ZlcnNpb24YBCABKAUSEgoKc2Vzc2lvbl9pZBgFIAEoCRIUCgxhY2Nl",
-            "c3NfdG9rZW4YBiABKAkiRQoKTG9naW5FcnJvchIICgROT05FEAASFwoTSU5W",
-            "QUxJRF9DUkVERU5USUFMUxABEhQKEFZFUlNJT05fTUlTTUFUQ0gQAiIPCg1M",
-            "b2dvdXRSZXF1ZXN0IuwBCg5Mb2dvdXRSZXNwb25zZRJFCgtleGVjX3Jlc3Vs",
-            "dBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5S",
-            "ZXF1ZXN0UmVzdWx0Ek4KBnJlYXNvbhgCIAEoDjI+LlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dvdXRSZXNwb25zZS5Mb2dvdXRSZWFz",
-            "b24SDAoEdGV4dBgDIAEoCSI1CgxMb2dvdXRSZWFzb24SEgoOQ0xJRU5UX1JF",
-            "UVVFU1QQABIRCg1TRVJWRVJfTE9HT1VUEAEiEQoPU25hcHNob3RSZXF1ZXN0",
-            "IqkEChBTbmFwc2hvdFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAu",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1",
-            "bHQSTAoMYXBpX21ldGFkYXRhGAIgASgLMjYuVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLkFwaU1ldGFkYXRhUmVzcG9uc2USTgoNbWFwcGlu",
-            "Z3NfaW5mbxgDIAEoCzI3LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5NYXBwaW5nc0luZm9SZXNwb25zZRJOCg1zZXR1cF9jb250ZXh0GAQg",
-            "ASgLMjcuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlNldHVw",
-            "Q29udGV4dFJlc3BvbnNlEkwKDHBhY2thZ2VfbGlzdBgFIAEoCzI2LlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlTGlzdFJlc3Bv",
-            "bnNlEkwKDGFjY291bnRfbGlzdBgGIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TGlzdFJlc3BvbnNlEkQKCGJvdF9s",
-            "aXN0GAcgASgLMjIuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LkJvdExpc3RSZXNwb25zZSIbChlTdWJzY3JpYmVUb1VwZGF0ZXNSZXF1ZXN0",
-            "It4ECgpVcGRhdGVJbmZvEkYKBHR5cGUYASABKA4yOC5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuVXBkYXRlSW5mby5VcGRhdGVUeXBlEkcK",
-            "B3BhY2thZ2UYBSABKAsyNC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
-            "Yy5MaWIuUGFja2FnZVVwZGF0ZUluZm9IABJSCg1wYWNrYWdlX3N0YXRlGAYg",
-            "ASgLMjkuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2th",
-            "Z2VTdGF0ZVVwZGF0ZUluZm9IABJHCgdhY2NvdW50GAcgASgLMjQuVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRVcGRhdGVJbmZv",
-            "SAASUgoNYWNjb3VudF9zdGF0ZRgIIAEoCzI5LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5BY2NvdW50U3RhdGVVcGRhdGVJbmZvSAASPwoD",
-            "Ym90GAkgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LkJvdFVwZGF0ZUluZm9IABJKCglib3Rfc3RhdGUYCiABKAsyNS5UaWNrVHJh",
-            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90U3RhdGVVcGRhdGVJbmZv",
-            "SAAiMgoKVXBkYXRlVHlwZRIJCgVBRERFRBAAEgwKCFJFUExBQ0VEEAESCwoH",
-            "UkVNT1ZFRBACQg0KC3VwZGF0ZV9pbmZvIlQKEVBhY2thZ2VVcGRhdGVJbmZv",
-            "Ej8KB3BhY2thZ2UYASABKAsyLi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuUGFja2FnZUluZm8iWQoWUGFja2FnZVN0YXRlVXBkYXRlSW5m",
-            "bxI/CgdwYWNrYWdlGAEgASgLMi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
-            "LkdycGMuTGliLlBhY2thZ2VJbmZvIlkKEUFjY291bnRVcGRhdGVJbmZvEkQK",
-            "B2FjY291bnQYASABKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
-            "Yy5MaWIuQWNjb3VudE1vZGVsSW5mbyJeChZBY2NvdW50U3RhdGVVcGRhdGVJ",
-            "bmZvEkQKB2FjY291bnQYASABKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuQWNjb3VudE1vZGVsSW5mbyJNCg1Cb3RVcGRhdGVJbmZv",
-            "EjwKA2JvdBgBIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5Cb3RNb2RlbEluZm8iUgoSQm90U3RhdGVVcGRhdGVJbmZvEjwKA2Jv",
-            "dBgBIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5C",
-            "b3RNb2RlbEluZm8iFAoSQXBpTWV0YWRhdGFSZXF1ZXN0IqYBChNBcGlNZXRh",
-            "ZGF0YVJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQSSAoMYXBp",
-            "X21ldGFkYXRhGAIgASgLMjIuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLkFwaU1ldGFkYXRhSW5mbyIVChNNYXBwaW5nc0luZm9SZXF1ZXN0",
-            "IqkBChRNYXBwaW5nc0luZm9SZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEo",
-            "CzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0",
-            "UmVzdWx0EkoKCG1hcHBpbmdzGAIgASgLMjguVGlja1RyYWRlci5BbGdvLlBy",
-            "b3RvY29sLkdycGMuTGliLk1hcHBpbmdDb2xsZWN0aW9uSW5mbyIVChNTZXR1",
-            "cENvbnRleHRSZXF1ZXN0IqkBChRTZXR1cENvbnRleHRSZXNwb25zZRJFCgtl",
-            "eGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
-            "cnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkoKDXNldHVwX2NvbnRleHQYAiABKAsy",
-            "My5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU2V0dXBDb250",
-            "ZXh0SW5mbyJYChZBY2NvdW50TWV0YWRhdGFSZXF1ZXN0Ej4KB2FjY291bnQY",
-            "ASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNj",
-            "b3VudEtleSL+AQoXQWNjb3VudE1ldGFkYXRhUmVzcG9uc2USRQoLZXhlY19y",
+            "cnBjLkxpYhodZ29vZ2xlX3Byb3Rvcy90aW1lc3RhbXAucHJvdG8aCmtleXMu",
+            "cHJvdG8aDm1ldGFkYXRhLnByb3RvGgxjb25maWcucHJvdG8ixwEKDVJlcXVl",
+            "c3RSZXN1bHQSTgoGc3RhdHVzGAEgASgOMj4uVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQuUmVxdWVzdFN0YXR1cxIP",
+            "CgdtZXNzYWdlGAIgASgJIlUKDVJlcXVlc3RTdGF0dXMSCwoHU1VDQ0VTUxAA",
+            "EhkKFUlOVEVSTkFMX1NFUlZFUl9FUlJPUhABEhAKDFVOQVVUSE9SSVpFRBAC",
+            "EgoKBlJFSkVDVBADIl0KDExvZ2luUmVxdWVzdBINCgVsb2dpbhgBIAEoCRIQ",
+            "CghwYXNzd29yZBgCIAEoCRIVCg1tYWpvcl92ZXJzaW9uGAMgASgFEhUKDW1p",
+            "bm9yX3ZlcnNpb24YBCABKAUiwQIKDUxvZ2luUmVzcG9uc2USRQoLZXhlY19y",
             "ZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuUmVxdWVzdFJlc3VsdBJKCgplcnJvcl9pbmZvGAIgASgLMjYuVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNvbm5lY3Rpb25FcnJvcklu",
-            "Zm8SUAoQYWNjb3VudF9tZXRhZGF0YRgDIAEoCzI2LlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TWV0YWRhdGFJbmZvIhAKDkJv",
-            "dExpc3RSZXF1ZXN0IpcBCg9Cb3RMaXN0UmVzcG9uc2USRQoLZXhlY19yZXN1",
-            "bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "UmVxdWVzdFJlc3VsdBI9CgRib3RzGAIgAygLMi8uVGlja1RyYWRlci5BbGdv",
-            "LlByb3RvY29sLkdycGMuTGliLkJvdE1vZGVsSW5mbyKQAQoNQWRkQm90UmVx",
-            "dWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLkFjY291bnRLZXkSPwoGY29uZmlnGAIgASgLMi8uVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpbkNvbmZpZyJX",
-            "Cg5BZGRCb3RSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0Ik4K",
-            "EFJlbW92ZUJvdFJlcXVlc3QSDgoGYm90X2lkGAEgASgJEhEKCWNsZWFuX2xv",
-            "ZxgCIAEoCBIXCg9jbGVhbl9hbGdvX2RhdGEYAyABKAgiWgoRUmVtb3ZlQm90",
-            "UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCIhCg9TdGFydEJv",
-            "dFJlcXVlc3QSDgoGYm90X2lkGAEgASgJIlkKEFN0YXJ0Qm90UmVzcG9uc2US",
-            "RQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCIgCg5TdG9wQm90UmVxdWVzdBIO",
-            "CgZib3RfaWQYASABKAkiWAoPU3RvcEJvdFJlc3BvbnNlEkUKC2V4ZWNfcmVz",
-            "dWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "LlJlcXVlc3RSZXN1bHQibQoWQ2hhbmdlQm90Q29uZmlnUmVxdWVzdBIOCgZi",
-            "b3RfaWQYASABKAkSQwoKbmV3X2NvbmZpZxgCIAEoCzIvLlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5Db25maWciYAoXQ2hhbmdl",
-            "Qm90Q29uZmlnUmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCIU",
-            "ChJBY2NvdW50TGlzdFJlcXVlc3QiowEKE0FjY291bnRMaXN0UmVzcG9uc2US",
-            "RQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJFCghhY2NvdW50cxgCIAMoCzIz",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TW9k",
-            "ZWxJbmZvIn8KEUFkZEFjY291bnRSZXF1ZXN0Ej4KB2FjY291bnQYASABKAsy",
-            "LS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtl",
-            "eRIQCghwYXNzd29yZBgCIAEoCRIYChB1c2VfbmV3X3Byb3RvY29sGAMgASgI",
-            "IlsKEkFkZEFjY291bnRSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIw",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVz",
-            "dWx0IlYKFFJlbW92ZUFjY291bnRSZXF1ZXN0Ej4KB2FjY291bnQYASABKAsy",
-            "LS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtl",
-            "eSJeChVSZW1vdmVBY2NvdW50UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASAB",
+            "aWIuUmVxdWVzdFJlc3VsdBJKCgVlcnJvchgCIAEoDjI7LlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dpblJlc3BvbnNlLkxvZ2luRXJy",
+            "b3ISFQoNbWFqb3JfdmVyc2lvbhgDIAEoBRIVCg1taW5vcl92ZXJzaW9uGAQg",
+            "ASgFEhIKCnNlc3Npb25faWQYBSABKAkSFAoMYWNjZXNzX3Rva2VuGAYgASgJ",
+            "IkUKCkxvZ2luRXJyb3ISCAoETk9ORRAAEhcKE0lOVkFMSURfQ1JFREVOVElB",
+            "TFMQARIUChBWRVJTSU9OX01JU01BVENIEAIiDwoNTG9nb3V0UmVxdWVzdCLs",
+            "AQoOTG9nb3V0UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJO",
+            "CgZyZWFzb24YAiABKA4yPi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuTG9nb3V0UmVzcG9uc2UuTG9nb3V0UmVhc29uEgwKBHRleHQYAyAB",
+            "KAkiNQoMTG9nb3V0UmVhc29uEhIKDkNMSUVOVF9SRVFVRVNUEAASEQoNU0VS",
+            "VkVSX0xPR09VVBABIhEKD1NuYXBzaG90UmVxdWVzdCKpBAoQU25hcHNob3RS",
+            "ZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkwKDGFwaV9tZXRh",
+            "ZGF0YRgCIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
+            "Yi5BcGlNZXRhZGF0YVJlc3BvbnNlEk4KDW1hcHBpbmdzX2luZm8YAyABKAsy",
+            "Ny5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ3NJ",
+            "bmZvUmVzcG9uc2USTgoNc2V0dXBfY29udGV4dBgEIAEoCzI3LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TZXR1cENvbnRleHRSZXNwb25z",
+            "ZRJMCgxwYWNrYWdlX2xpc3QYBSABKAsyNi5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuUGFja2FnZUxpc3RSZXNwb25zZRJMCgxhY2NvdW50",
+            "X2xpc3QYBiABKAsyNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuQWNjb3VudExpc3RSZXNwb25zZRJECghib3RfbGlzdBgHIAEoCzIyLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RMaXN0UmVzcG9u",
+            "c2UiGwoZU3Vic2NyaWJlVG9VcGRhdGVzUmVxdWVzdCLeBAoKVXBkYXRlSW5m",
+            "bxJGCgR0eXBlGAEgASgOMjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLlVwZGF0ZUluZm8uVXBkYXRlVHlwZRJHCgdwYWNrYWdlGAUgASgL",
+            "MjQuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VV",
+            "cGRhdGVJbmZvSAASUgoNcGFja2FnZV9zdGF0ZRgGIAEoCzI5LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlU3RhdGVVcGRhdGVJ",
+            "bmZvSAASRwoHYWNjb3VudBgHIAEoCzI0LlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5BY2NvdW50VXBkYXRlSW5mb0gAElIKDWFjY291bnRf",
+            "c3RhdGUYCCABKAsyOS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuQWNjb3VudFN0YXRlVXBkYXRlSW5mb0gAEj8KA2JvdBgJIAEoCzIwLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RVcGRhdGVJbmZv",
+            "SAASSgoJYm90X3N0YXRlGAogASgLMjUuVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLkJvdFN0YXRlVXBkYXRlSW5mb0gAIjIKClVwZGF0ZVR5",
+            "cGUSCQoFQURERUQQABIMCghSRVBMQUNFRBABEgsKB1JFTU9WRUQQAkINCgt1",
+            "cGRhdGVfaW5mbyJUChFQYWNrYWdlVXBkYXRlSW5mbxI/CgdwYWNrYWdlGAEg",
+            "ASgLMi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2th",
+            "Z2VJbmZvIlkKFlBhY2thZ2VTdGF0ZVVwZGF0ZUluZm8SPwoHcGFja2FnZRgB",
+            "IAEoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNr",
+            "YWdlSW5mbyJZChFBY2NvdW50VXBkYXRlSW5mbxJECgdhY2NvdW50GAEgASgL",
+            "MjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRN",
+            "b2RlbEluZm8iXgoWQWNjb3VudFN0YXRlVXBkYXRlSW5mbxJECgdhY2NvdW50",
+            "GAEgASgLMjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFj",
+            "Y291bnRNb2RlbEluZm8iTQoNQm90VXBkYXRlSW5mbxI8CgNib3QYASABKAsy",
+            "Ly5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TW9kZWxJ",
+            "bmZvIlIKEkJvdFN0YXRlVXBkYXRlSW5mbxI8CgNib3QYASABKAsyLy5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90TW9kZWxJbmZvIhQK",
+            "EkFwaU1ldGFkYXRhUmVxdWVzdCKmAQoTQXBpTWV0YWRhdGFSZXNwb25zZRJF",
+            "CgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkgKDGFwaV9tZXRhZGF0YRgCIAEo",
+            "CzIyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlNZXRh",
+            "ZGF0YUluZm8iFQoTTWFwcGluZ3NJbmZvUmVxdWVzdCKpAQoUTWFwcGluZ3NJ",
+            "bmZvUmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVy",
+            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJKCghtYXBw",
+            "aW5ncxgCIAEoCzI4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
+            "Yi5NYXBwaW5nQ29sbGVjdGlvbkluZm8iFQoTU2V0dXBDb250ZXh0UmVxdWVz",
+            "dCKpAQoUU2V0dXBDb250ZXh0UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASAB",
             "KAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVz",
-            "dFJlc3VsdCKCAQoUQ2hhbmdlQWNjb3VudFJlcXVlc3QSPgoHYWNjb3VudBgB",
-            "IAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2Nv",
-            "dW50S2V5EhAKCHBhc3N3b3JkGAIgASgJEhgKEHVzZV9uZXdfcHJvdG9jb2wY",
-            "AyABKAgiXgoVQ2hhbmdlQWNjb3VudFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0",
+            "dFJlc3VsdBJKCg1zZXR1cF9jb250ZXh0GAIgASgLMjMuVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLlNldHVwQ29udGV4dEluZm8iWAoWQWNj",
+            "b3VudE1ldGFkYXRhUmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXki/gEKF0Fj",
+            "Y291bnRNZXRhZGF0YVJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAu",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1",
+            "bHQSSgoKZXJyb3JfaW5mbxgCIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5Db25uZWN0aW9uRXJyb3JJbmZvElAKEGFjY291bnRf",
+            "bWV0YWRhdGEYAyABKAsyNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuQWNjb3VudE1ldGFkYXRhSW5mbyIQCg5Cb3RMaXN0UmVxdWVzdCKX",
+            "AQoPQm90TGlzdFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlj",
+            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQS",
+            "PQoEYm90cxgCIAMoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
+            "LkxpYi5Cb3RNb2RlbEluZm8ikAEKDUFkZEJvdFJlcXVlc3QSPgoHYWNjb3Vu",
+            "dBgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5B",
+            "Y2NvdW50S2V5Ej8KBmNvbmZpZxgCIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5QbHVnaW5Db25maWciVwoOQWRkQm90UmVzcG9u",
+            "c2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCJOChBSZW1vdmVCb3RSZXF1",
+            "ZXN0Eg4KBmJvdF9pZBgBIAEoCRIRCgljbGVhbl9sb2cYAiABKAgSFwoPY2xl",
+            "YW5fYWxnb19kYXRhGAMgASgIIloKEVJlbW92ZUJvdFJlc3BvbnNlEkUKC2V4",
+            "ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLlJlcXVlc3RSZXN1bHQiIQoPU3RhcnRCb3RSZXF1ZXN0Eg4KBmJv",
+            "dF9pZBgBIAEoCSJZChBTdGFydEJvdFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0",
             "GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJl",
-            "cXVlc3RSZXN1bHQiVAoSVGVzdEFjY291bnRSZXF1ZXN0Ej4KB2FjY291bnQY",
-            "ASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNj",
-            "b3VudEtleSKoAQoTVGVzdEFjY291bnRSZXNwb25zZRJFCgtleGVjX3Jlc3Vs",
+            "cXVlc3RSZXN1bHQiIAoOU3RvcEJvdFJlcXVlc3QSDgoGYm90X2lkGAEgASgJ",
+            "IlgKD1N0b3BCb3RSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRp",
+            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0",
+            "Im0KFkNoYW5nZUJvdENvbmZpZ1JlcXVlc3QSDgoGYm90X2lkGAEgASgJEkMK",
+            "Cm5ld19jb25maWcYAiABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuUGx1Z2luQ29uZmlnImAKF0NoYW5nZUJvdENvbmZpZ1Jlc3Bv",
+            "bnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQiFAoSQWNjb3VudExpc3RS",
+            "ZXF1ZXN0IqMBChNBY2NvdW50TGlzdFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0",
+            "GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJl",
+            "cXVlc3RSZXN1bHQSRQoIYWNjb3VudHMYAiADKAsyMy5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudE1vZGVsSW5mbyJ/ChFBZGRB",
+            "Y2NvdW50UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkSEAoIcGFzc3dvcmQY",
+            "AiABKAkSGAoQdXNlX25ld19wcm90b2NvbBgDIAEoCCJbChJBZGRBY2NvdW50",
+            "UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdCJWChRSZW1vdmVB",
+            "Y2NvdW50UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1RyYWRlci5B",
+            "bGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiXgoVUmVtb3ZlQWNj",
+            "b3VudFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQiggEKFENo",
+            "YW5nZUFjY291bnRSZXF1ZXN0Ej4KB2FjY291bnQYASABKAsyLS5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRIQCghwYXNz",
+            "d29yZBgCIAEoCRIYChB1c2VfbmV3X3Byb3RvY29sGAMgASgIIl4KFUNoYW5n",
+            "ZUFjY291bnRSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0IlQK",
+            "ElRlc3RBY2NvdW50UmVxdWVzdBI+CgdhY2NvdW50GAEgASgLMi0uVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFjY291bnRLZXkiqAEKE1Rl",
+            "c3RBY2NvdW50UmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJK",
+            "CgplcnJvcl9pbmZvGAIgASgLMjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8ihQEKF1Rlc3RBY2NvdW50",
+            "Q3JlZHNSZXF1ZXN0Ej4KB2FjY291bnQYASABKAsyLS5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRIQCghwYXNzd29yZBgC",
+            "IAEoCRIYChB1c2VfbmV3X3Byb3RvY29sGAMgASgIIq0BChhUZXN0QWNjb3Vu",
+            "dENyZWRzUmVzcG9uc2USRQoLZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJKCgpl",
+            "cnJvcl9pbmZvGAIgASgLMjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8iFAoSUGFja2FnZUxpc3RSZXF1",
+            "ZXN0Ip4BChNQYWNrYWdlTGlzdFJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEg",
+            "ASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVl",
+            "c3RSZXN1bHQSQAoIcGFja2FnZXMYAiADKAsyLi5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuUGFja2FnZUluZm8iQQoUVXBsb2FkUGFja2Fn",
+            "ZVJlcXVlc3QSEQoJZmlsZV9uYW1lGAEgASgJEhYKDnBhY2thZ2VfYmluYXJ5",
+            "GAIgASgMIl4KFVVwbG9hZFBhY2thZ2VSZXNwb25zZRJFCgtleGVjX3Jlc3Vs",
             "dBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5S",
-            "ZXF1ZXN0UmVzdWx0EkoKCmVycm9yX2luZm8YAiABKAsyNi5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQ29ubmVjdGlvbkVycm9ySW5mbyKF",
-            "AQoXVGVzdEFjY291bnRDcmVkc1JlcXVlc3QSPgoHYWNjb3VudBgBIAEoCzIt",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5",
-            "EhAKCHBhc3N3b3JkGAIgASgJEhgKEHVzZV9uZXdfcHJvdG9jb2wYAyABKAgi",
-            "rQEKGFRlc3RBY2NvdW50Q3JlZHNSZXNwb25zZRJFCgtleGVjX3Jlc3VsdBgB",
-            "IAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZXF1",
-            "ZXN0UmVzdWx0EkoKCmVycm9yX2luZm8YAiABKAsyNi5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQ29ubmVjdGlvbkVycm9ySW5mbyIUChJQ",
-            "YWNrYWdlTGlzdFJlcXVlc3QingEKE1BhY2thZ2VMaXN0UmVzcG9uc2USRQoL",
-            "ZXhlY19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuUmVxdWVzdFJlc3VsdBJACghwYWNrYWdlcxgCIAMoCzIuLlRp",
-            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlSW5mbyJB",
-            "ChRVcGxvYWRQYWNrYWdlUmVxdWVzdBIRCglmaWxlX25hbWUYASABKAkSFgoO",
-            "cGFja2FnZV9iaW5hcnkYAiABKAwiXgoVVXBsb2FkUGFja2FnZVJlc3BvbnNl",
-            "EkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQiVgoUUmVtb3ZlUGFja2FnZVJl",
-            "cXVlc3QSPgoHcGFja2FnZRgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5QYWNrYWdlS2V5Il4KFVJlbW92ZVBhY2thZ2VSZXNw",
+            "ZXF1ZXN0UmVzdWx0IlYKFFJlbW92ZVBhY2thZ2VSZXF1ZXN0Ej4KB3BhY2th",
+            "Z2UYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "UGFja2FnZUtleSJeChVSZW1vdmVQYWNrYWdlUmVzcG9uc2USRQoLZXhlY19y",
+            "ZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuUmVxdWVzdFJlc3VsdCJYChZEb3dubG9hZFBhY2thZ2VSZXF1ZXN0Ej4K",
+            "B3BhY2thZ2UYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuUGFja2FnZUtleSJ4ChdEb3dubG9hZFBhY2thZ2VSZXNwb25zZRJF",
+            "CgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EhYKDnBhY2thZ2VfYmluYXJ5GAIg",
+            "ASgMIiIKEEJvdFN0YXR1c1JlcXVlc3QSDgoGYm90X2lkGAEgASgJInoKEUJv",
+            "dFN0YXR1c1Jlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQSDgoG",
+            "Ym90X2lkGAIgASgJEg4KBnN0YXR1cxgDIAEoCSJqCg5Cb3RMb2dzUmVxdWVz",
+            "dBIOCgZib3RfaWQYASABKAkSNQoRbGFzdF9sb2dfdGltZV91dGMYAiABKAsy",
+            "Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCW1heF9jb3VudBgDIAEo",
+            "BSKoAQoPQm90TG9nc1Jlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAu",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1",
+            "bHQSDgoGYm90X2lkGAIgASgJEj4KBGxvZ3MYAyADKAsyMC5UaWNrVHJhZGVy",
+            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mbyJ3ChRCb3RG",
+            "b2xkZXJJbmZvUmVxdWVzdBIOCgZib3RfaWQYASABKAkSTwoJZm9sZGVyX2lk",
+            "GAIgASgOMjwuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJv",
+            "dEZvbGRlckluZm8uQm90Rm9sZGVySWQipQEKFUJvdEZvbGRlckluZm9SZXNw",
             "b25zZRJFCgtleGVjX3Jlc3VsdBgBIAEoCzIwLlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0IlgKFkRvd25sb2FkUGFj",
-            "a2FnZVJlcXVlc3QSPgoHcGFja2FnZRgBIAEoCzItLlRpY2tUcmFkZXIuQWxn",
-            "by5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlS2V5IngKF0Rvd25sb2FkUGFj",
-            "a2FnZVJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAuVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1bHQSFgoOcGFj",
-            "a2FnZV9iaW5hcnkYAiABKAwy8hcKCEJvdEFnZW50EmoKBUxvZ2luEi8uVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ2luUmVxdWVzdBow",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dpblJlc3Bv",
-            "bnNlEm0KBkxvZ291dBIwLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5Mb2dvdXRSZXF1ZXN0GjEuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
-            "LkdycGMuTGliLkxvZ291dFJlc3BvbnNlEnYKC0dldFNuYXBzaG90EjIuVGlj",
-            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlNuYXBzaG90UmVxdWVz",
-            "dBozLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TbmFwc2hv",
-            "dFJlc3BvbnNlEoMBChJTdWJzY3JpYmVUb1VwZGF0ZXMSPC5UaWNrVHJhZGVy",
-            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3Vic2NyaWJlVG9VcGRhdGVzUmVx",
-            "dWVzdBotLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5VcGRh",
-            "dGVJbmZvMAESfwoOR2V0QXBpTWV0YWRhdGESNS5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuQXBpTWV0YWRhdGFSZXF1ZXN0GjYuVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaU1ldGFkYXRhUmVzcG9u",
-            "c2USggEKD0dldE1hcHBpbmdzSW5mbxI2LlRpY2tUcmFkZXIuQWxnby5Qcm90",
-            "b2NvbC5HcnBjLkxpYi5NYXBwaW5nc0luZm9SZXF1ZXN0GjcuVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdzSW5mb1Jlc3BvbnNl",
-            "EoIBCg9HZXRTZXR1cENvbnRleHQSNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuU2V0dXBDb250ZXh0UmVxdWVzdBo3LlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TZXR1cENvbnRleHRSZXNwb25zZRKL",
-            "AQoSR2V0QWNjb3VudE1ldGFkYXRhEjkuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLkFjY291bnRNZXRhZGF0YVJlcXVlc3QaOi5UaWNrVHJh",
-            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudE1ldGFkYXRhUmVz",
-            "cG9uc2UScwoKR2V0Qm90TGlzdBIxLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5Cb3RMaXN0UmVxdWVzdBoyLlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5Cb3RMaXN0UmVzcG9uc2USbQoGQWRkQm90EjAu",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFkZEJvdFJlcXVl",
-            "c3QaMS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWRkQm90",
-            "UmVzcG9uc2USdgoJUmVtb3ZlQm90EjMuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLlJlbW92ZUJvdFJlcXVlc3QaNC5UaWNrVHJhZGVyLkFs",
-            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuUmVtb3ZlQm90UmVzcG9uc2UScwoIU3Rh",
-            "cnRCb3QSMi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3Rh",
-            "cnRCb3RSZXF1ZXN0GjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
-            "TGliLlN0YXJ0Qm90UmVzcG9uc2UScAoHU3RvcEJvdBIxLlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TdG9wQm90UmVxdWVzdBoyLlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TdG9wQm90UmVzcG9uc2US",
-            "iAEKD0NoYW5nZUJvdENvbmZpZxI5LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5DaGFuZ2VCb3RDb25maWdSZXF1ZXN0GjouVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNoYW5nZUJvdENvbmZpZ1Jlc3Bv",
-            "bnNlEn8KDkdldEFjY291bnRMaXN0EjUuVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLkFjY291bnRMaXN0UmVxdWVzdBo2LlRpY2tUcmFkZXIu",
-            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TGlzdFJlc3BvbnNlEnkK",
-            "CkFkZEFjY291bnQSNC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
-            "aWIuQWRkQWNjb3VudFJlcXVlc3QaNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuQWRkQWNjb3VudFJlc3BvbnNlEoIBCg1SZW1vdmVBY2Nv",
-            "dW50EjcuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlbW92",
-            "ZUFjY291bnRSZXF1ZXN0GjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLlJlbW92ZUFjY291bnRSZXNwb25zZRKCAQoNQ2hhbmdlQWNjb3Vu",
-            "dBI3LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5DaGFuZ2VB",
-            "Y2NvdW50UmVxdWVzdBo4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBj",
-            "LkxpYi5DaGFuZ2VBY2NvdW50UmVzcG9uc2USfAoLVGVzdEFjY291bnQSNS5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuVGVzdEFjY291bnRS",
-            "ZXF1ZXN0GjYuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlRl",
-            "c3RBY2NvdW50UmVzcG9uc2USiwEKEFRlc3RBY2NvdW50Q3JlZHMSOi5UaWNr",
+            "cm90b2NvbC5HcnBjLkxpYi5SZXF1ZXN0UmVzdWx0EkUKC2ZvbGRlcl9pbmZv",
+            "GAMgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJv",
+            "dEZvbGRlckluZm8ieAoVQ2xlYXJCb3RGb2xkZXJSZXF1ZXN0Eg4KBmJvdF9p",
+            "ZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVySW5mby5Cb3RGb2xkZXJJZCJf",
+            "ChZDbGVhckJvdEZvbGRlclJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgL",
+            "MjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RS",
+            "ZXN1bHQiigEKFERlbGV0ZUJvdEZpbGVSZXF1ZXN0Eg4KBmJvdF9pZBgBIAEo",
+            "CRJPCglmb2xkZXJfaWQYAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
+            "b2wuR3JwYy5MaWIuQm90Rm9sZGVySW5mby5Cb3RGb2xkZXJJZBIRCglmaWxl",
+            "X25hbWUYAyABKAkiXgoVRGVsZXRlQm90RmlsZVJlc3BvbnNlEkUKC2V4ZWNf",
+            "cmVzdWx0GAEgASgLMjAuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMu",
+            "TGliLlJlcXVlc3RSZXN1bHQijAEKFkRvd25sb2FkQm90RmlsZVJlcXVlc3QS",
+            "DgoGYm90X2lkGAEgASgJEk8KCWZvbGRlcl9pZBgCIAEoDjI8LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RGb2xkZXJJbmZvLkJvdEZv",
+            "bGRlcklkEhEKCWZpbGVfbmFtZRgDIAEoCSJ6CglGaWxlQ2h1bmsSRQoLZXhl",
+            "Y19yZXN1bHQYASABKAsyMC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuUmVxdWVzdFJlc3VsdBIUCgxjaHVua19iaW5hcnkYAiABKAwSEAoI",
+            "aXNfZmluYWwYAyABKAginwEKFFVwbG9hZEJvdEZpbGVSZXF1ZXN0Eg4KBmJv",
+            "dF9pZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4yPC5UaWNrVHJhZGVyLkFs",
+            "Z28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVySW5mby5Cb3RGb2xkZXJJ",
+            "ZBIRCglmaWxlX25hbWUYAyABKAkSEwoLZmlsZV9iaW5hcnkYBCABKAwiXgoV",
+            "VXBsb2FkQm90RmlsZVJlc3BvbnNlEkUKC2V4ZWNfcmVzdWx0GAEgASgLMjAu",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlcXVlc3RSZXN1",
+            "bHQy+h4KCEJvdEFnZW50EmoKBUxvZ2luEi8uVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLkxvZ2luUmVxdWVzdBowLlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dpblJlc3BvbnNlEm0KBkxvZ291dBIw",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Mb2dvdXRSZXF1",
+            "ZXN0GjEuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ291",
+            "dFJlc3BvbnNlEnYKC0dldFNuYXBzaG90EjIuVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLlNuYXBzaG90UmVxdWVzdBozLlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5TbmFwc2hvdFJlc3BvbnNlEoMBChJT",
+            "dWJzY3JpYmVUb1VwZGF0ZXMSPC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuU3Vic2NyaWJlVG9VcGRhdGVzUmVxdWVzdBotLlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5VcGRhdGVJbmZvMAESfwoOR2V0",
+            "QXBpTWV0YWRhdGESNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuQXBpTWV0YWRhdGFSZXF1ZXN0GjYuVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLkFwaU1ldGFkYXRhUmVzcG9uc2USggEKD0dldE1hcHBp",
+            "bmdzSW5mbxI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5N",
+            "YXBwaW5nc0luZm9SZXF1ZXN0GjcuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLk1hcHBpbmdzSW5mb1Jlc3BvbnNlEoIBCg9HZXRTZXR1cENv",
+            "bnRleHQSNi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU2V0",
+            "dXBDb250ZXh0UmVxdWVzdBo3LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5TZXR1cENvbnRleHRSZXNwb25zZRKLAQoSR2V0QWNjb3VudE1l",
+            "dGFkYXRhEjkuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFj",
+            "Y291bnRNZXRhZGF0YVJlcXVlc3QaOi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
+            "b2wuR3JwYy5MaWIuQWNjb3VudE1ldGFkYXRhUmVzcG9uc2UScwoKR2V0Qm90",
+            "TGlzdBIxLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RM",
+            "aXN0UmVxdWVzdBoyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxp",
+            "Yi5Cb3RMaXN0UmVzcG9uc2USbQoGQWRkQm90EjAuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFkZEJvdFJlcXVlc3QaMS5UaWNrVHJhZGVy",
+            "LkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWRkQm90UmVzcG9uc2USdgoJUmVt",
+            "b3ZlQm90EjMuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJl",
+            "bW92ZUJvdFJlcXVlc3QaNC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuUmVtb3ZlQm90UmVzcG9uc2UScwoIU3RhcnRCb3QSMi5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3RhcnRCb3RSZXF1ZXN0GjMu",
+            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN0YXJ0Qm90UmVz",
+            "cG9uc2UScAoHU3RvcEJvdBIxLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5TdG9wQm90UmVxdWVzdBoyLlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5TdG9wQm90UmVzcG9uc2USiAEKD0NoYW5nZUJvdENv",
+            "bmZpZxI5LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5DaGFu",
+            "Z2VCb3RDb25maWdSZXF1ZXN0GjouVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkNoYW5nZUJvdENvbmZpZ1Jlc3BvbnNlEn8KDkdldEFjY291",
+            "bnRMaXN0EjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFj",
+            "Y291bnRMaXN0UmVxdWVzdBo2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5BY2NvdW50TGlzdFJlc3BvbnNlEnkKCkFkZEFjY291bnQSNC5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWRkQWNjb3VudFJl",
+            "cXVlc3QaNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWRk",
+            "QWNjb3VudFJlc3BvbnNlEoIBCg1SZW1vdmVBY2NvdW50EjcuVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlbW92ZUFjY291bnRSZXF1ZXN0",
+            "GjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlbW92ZUFj",
+            "Y291bnRSZXNwb25zZRKCAQoNQ2hhbmdlQWNjb3VudBI3LlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5DaGFuZ2VBY2NvdW50UmVxdWVzdBo4",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5DaGFuZ2VBY2Nv",
+            "dW50UmVzcG9uc2USfAoLVGVzdEFjY291bnQSNS5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuVGVzdEFjY291bnRSZXF1ZXN0GjYuVGlja1Ry",
+            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlRlc3RBY2NvdW50UmVzcG9u",
+            "c2USiwEKEFRlc3RBY2NvdW50Q3JlZHMSOi5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuVGVzdEFjY291bnRDcmVkc1JlcXVlc3QaOy5UaWNr",
             "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuVGVzdEFjY291bnRDcmVk",
-            "c1JlcXVlc3QaOy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "VGVzdEFjY291bnRDcmVkc1Jlc3BvbnNlEn8KDkdldFBhY2thZ2VMaXN0EjUu",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VMaXN0",
-            "UmVxdWVzdBo2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Q",
-            "YWNrYWdlTGlzdFJlc3BvbnNlEoIBCg1VcGxvYWRQYWNrYWdlEjcuVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVwbG9hZFBhY2thZ2VSZXF1",
-            "ZXN0GjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVwbG9h",
-            "ZFBhY2thZ2VSZXNwb25zZRKCAQoNUmVtb3ZlUGFja2FnZRI3LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZW1vdmVQYWNrYWdlUmVxdWVz",
-            "dBo4LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZW1vdmVQ",
-            "YWNrYWdlUmVzcG9uc2USiAEKD0Rvd25sb2FkUGFja2FnZRI5LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Eb3dubG9hZFBhY2thZ2VSZXF1",
-            "ZXN0GjouVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkRvd25s",
-            "b2FkUGFja2FnZVJlc3BvbnNlYgZwcm90bzM="));
+            "c1Jlc3BvbnNlEn8KDkdldFBhY2thZ2VMaXN0EjUuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlBhY2thZ2VMaXN0UmVxdWVzdBo2LlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QYWNrYWdlTGlzdFJlc3Bv",
+            "bnNlEoIBCg1VcGxvYWRQYWNrYWdlEjcuVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLlVwbG9hZFBhY2thZ2VSZXF1ZXN0GjguVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVwbG9hZFBhY2thZ2VSZXNwb25z",
+            "ZRKCAQoNUmVtb3ZlUGFja2FnZRI3LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5SZW1vdmVQYWNrYWdlUmVxdWVzdBo4LlRpY2tUcmFkZXIu",
+            "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZW1vdmVQYWNrYWdlUmVzcG9uc2US",
+            "iAEKD0Rvd25sb2FkUGFja2FnZRI5LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5Eb3dubG9hZFBhY2thZ2VSZXF1ZXN0GjouVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkRvd25sb2FkUGFja2FnZVJlc3Bv",
+            "bnNlEnkKDEdldEJvdFN0YXR1cxIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5Cb3RTdGF0dXNSZXF1ZXN0GjQuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkJvdFN0YXR1c1Jlc3BvbnNlEnMKCkdldEJv",
+            "dExvZ3MSMS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90",
+            "TG9nc1JlcXVlc3QaMi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuQm90TG9nc1Jlc3BvbnNlEoUBChBHZXRCb3RGb2xkZXJJbmZvEjcuVGlj",
+            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdEZvbGRlckluZm9S",
+            "ZXF1ZXN0GjguVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJv",
+            "dEZvbGRlckluZm9SZXNwb25zZRKFAQoOQ2xlYXJCb3RGb2xkZXISOC5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQ2xlYXJCb3RGb2xkZXJS",
+            "ZXF1ZXN0GjkuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNs",
+            "ZWFyQm90Rm9sZGVyUmVzcG9uc2USggEKDURlbGV0ZUJvdEZpbGUSNy5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuRGVsZXRlQm90RmlsZVJl",
+            "cXVlc3QaOC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuRGVs",
+            "ZXRlQm90RmlsZVJlc3BvbnNlEnwKD0Rvd25sb2FkQm90RmlsZRI5LlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Eb3dubG9hZEJvdEZpbGVS",
+            "ZXF1ZXN0GiwuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkZp",
+            "bGVDaHVuazABEoIBCg1VcGxvYWRCb3RGaWxlEjcuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLlVwbG9hZEJvdEZpbGVSZXF1ZXN0GjguVGlj",
+            "a1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlVwbG9hZEJvdEZpbGVS",
+            "ZXNwb25zZWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult), global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Parser, new[]{ "Status", "Message" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult.Types.RequestStatus) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginRequest.Parser, new[]{ "Login", "Password", "MajorVersion", "MinorVersion" }, null, null, null),
@@ -301,7 +360,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest.Parser, new[]{ "Package" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse.Parser, new[]{ "ExecResult" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest.Parser, new[]{ "Package" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse.Parser, new[]{ "ExecResult", "PackageBinary" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse.Parser, new[]{ "ExecResult", "PackageBinary" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusRequest.Parser, new[]{ "BotId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse.Parser, new[]{ "ExecResult", "BotId", "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest.Parser, new[]{ "BotId", "LastLogTimeUtc", "MaxCount" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse.Parser, new[]{ "ExecResult", "BotId", "Logs" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest.Parser, new[]{ "BotId", "FolderId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse.Parser, new[]{ "ExecResult", "FolderInfo" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest.Parser, new[]{ "BotId", "FolderId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderResponse.Parser, new[]{ "ExecResult" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileRequest.Parser, new[]{ "BotId", "FolderId", "FileName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileResponse.Parser, new[]{ "ExecResult" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest.Parser, new[]{ "BotId", "FolderId", "FileName" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk), global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk.Parser, new[]{ "ExecResult", "ChunkBinary", "IsFinal" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest.Parser, new[]{ "BotId", "FolderId", "FileName", "FileBinary" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse.Parser, new[]{ "ExecResult" }, null, null, null)
           }));
     }
     #endregion
@@ -8852,6 +8925,2362 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           }
           case 18: {
             PackageBinary = input.ReadBytes();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotStatusRequest : pb::IMessage<BotStatusRequest> {
+    private static readonly pb::MessageParser<BotStatusRequest> _parser = new pb::MessageParser<BotStatusRequest>(() => new BotStatusRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotStatusRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[55]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotStatusRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotStatusRequest(BotStatusRequest other) : this() {
+      botId_ = other.botId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotStatusRequest Clone() {
+      return new BotStatusRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotStatusRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotStatusRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotStatusRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotStatusResponse : pb::IMessage<BotStatusResponse> {
+    private static readonly pb::MessageParser<BotStatusResponse> _parser = new pb::MessageParser<BotStatusResponse>(() => new BotStatusResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotStatusResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[56]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotStatusResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotStatusResponse(BotStatusResponse other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      botId_ = other.botId_;
+      status_ = other.status_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotStatusResponse Clone() {
+      return new BotStatusResponse(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 2;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 3;
+    private string status_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Status {
+      get { return status_; }
+      set {
+        status_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotStatusResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotStatusResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      if (BotId != other.BotId) return false;
+      if (Status != other.Status) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (Status.Length != 0) hash ^= Status.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (BotId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(BotId);
+      }
+      if (Status.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Status);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (Status.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Status);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotStatusResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.Status.Length != 0) {
+        Status = other.Status;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
+            break;
+          }
+          case 18: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 26: {
+            Status = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotLogsRequest : pb::IMessage<BotLogsRequest> {
+    private static readonly pb::MessageParser<BotLogsRequest> _parser = new pb::MessageParser<BotLogsRequest>(() => new BotLogsRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotLogsRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[57]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotLogsRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotLogsRequest(BotLogsRequest other) : this() {
+      botId_ = other.botId_;
+      LastLogTimeUtc = other.lastLogTimeUtc_ != null ? other.LastLogTimeUtc.Clone() : null;
+      maxCount_ = other.maxCount_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotLogsRequest Clone() {
+      return new BotLogsRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "last_log_time_utc" field.</summary>
+    public const int LastLogTimeUtcFieldNumber = 2;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp lastLogTimeUtc_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.Timestamp LastLogTimeUtc {
+      get { return lastLogTimeUtc_; }
+      set {
+        lastLogTimeUtc_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "max_count" field.</summary>
+    public const int MaxCountFieldNumber = 3;
+    private int maxCount_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int MaxCount {
+      get { return maxCount_; }
+      set {
+        maxCount_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotLogsRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotLogsRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      if (!object.Equals(LastLogTimeUtc, other.LastLogTimeUtc)) return false;
+      if (MaxCount != other.MaxCount) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (lastLogTimeUtc_ != null) hash ^= LastLogTimeUtc.GetHashCode();
+      if (MaxCount != 0) hash ^= MaxCount.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (lastLogTimeUtc_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(LastLogTimeUtc);
+      }
+      if (MaxCount != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(MaxCount);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (lastLogTimeUtc_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LastLogTimeUtc);
+      }
+      if (MaxCount != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MaxCount);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotLogsRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.lastLogTimeUtc_ != null) {
+        if (lastLogTimeUtc_ == null) {
+          lastLogTimeUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        }
+        LastLogTimeUtc.MergeFrom(other.LastLogTimeUtc);
+      }
+      if (other.MaxCount != 0) {
+        MaxCount = other.MaxCount;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (lastLogTimeUtc_ == null) {
+              lastLogTimeUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(lastLogTimeUtc_);
+            break;
+          }
+          case 24: {
+            MaxCount = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotLogsResponse : pb::IMessage<BotLogsResponse> {
+    private static readonly pb::MessageParser<BotLogsResponse> _parser = new pb::MessageParser<BotLogsResponse>(() => new BotLogsResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotLogsResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[58]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotLogsResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotLogsResponse(BotLogsResponse other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      botId_ = other.botId_;
+      logs_ = other.logs_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotLogsResponse Clone() {
+      return new BotLogsResponse(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 2;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "logs" field.</summary>
+    public const int LogsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo> _repeated_logs_codec
+        = pb::FieldCodec.ForMessage(26, global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Parser);
+    private readonly pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo> logs_ = new pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo> Logs {
+      get { return logs_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotLogsResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotLogsResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      if (BotId != other.BotId) return false;
+      if(!logs_.Equals(other.logs_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      hash ^= logs_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (BotId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(BotId);
+      }
+      logs_.WriteTo(output, _repeated_logs_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      size += logs_.CalculateSize(_repeated_logs_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotLogsResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      logs_.Add(other.logs_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
+            break;
+          }
+          case 18: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 26: {
+            logs_.AddEntriesFrom(input, _repeated_logs_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotFolderInfoRequest : pb::IMessage<BotFolderInfoRequest> {
+    private static readonly pb::MessageParser<BotFolderInfoRequest> _parser = new pb::MessageParser<BotFolderInfoRequest>(() => new BotFolderInfoRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotFolderInfoRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[59]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfoRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfoRequest(BotFolderInfoRequest other) : this() {
+      botId_ = other.botId_;
+      folderId_ = other.folderId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfoRequest Clone() {
+      return new BotFolderInfoRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "folder_id" field.</summary>
+    public const int FolderIdFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId folderId_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId FolderId {
+      get { return folderId_; }
+      set {
+        folderId_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotFolderInfoRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotFolderInfoRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      if (FolderId != other.FolderId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (FolderId != 0) hash ^= FolderId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (FolderId != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) FolderId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (FolderId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FolderId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotFolderInfoRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.FolderId != 0) {
+        FolderId = other.FolderId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 16: {
+            folderId_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class BotFolderInfoResponse : pb::IMessage<BotFolderInfoResponse> {
+    private static readonly pb::MessageParser<BotFolderInfoResponse> _parser = new pb::MessageParser<BotFolderInfoResponse>(() => new BotFolderInfoResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<BotFolderInfoResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[60]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfoResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfoResponse(BotFolderInfoResponse other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      FolderInfo = other.folderInfo_ != null ? other.FolderInfo.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public BotFolderInfoResponse Clone() {
+      return new BotFolderInfoResponse(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "folder_info" field.</summary>
+    public const int FolderInfoFieldNumber = 3;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo folderInfo_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo FolderInfo {
+      get { return folderInfo_; }
+      set {
+        folderInfo_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as BotFolderInfoResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(BotFolderInfoResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      if (!object.Equals(FolderInfo, other.FolderInfo)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (folderInfo_ != null) hash ^= FolderInfo.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (folderInfo_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FolderInfo);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (folderInfo_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(FolderInfo);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(BotFolderInfoResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      if (other.folderInfo_ != null) {
+        if (folderInfo_ == null) {
+          folderInfo_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo();
+        }
+        FolderInfo.MergeFrom(other.FolderInfo);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
+            break;
+          }
+          case 26: {
+            if (folderInfo_ == null) {
+              folderInfo_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo();
+            }
+            input.ReadMessage(folderInfo_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class ClearBotFolderRequest : pb::IMessage<ClearBotFolderRequest> {
+    private static readonly pb::MessageParser<ClearBotFolderRequest> _parser = new pb::MessageParser<ClearBotFolderRequest>(() => new ClearBotFolderRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<ClearBotFolderRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[61]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ClearBotFolderRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ClearBotFolderRequest(ClearBotFolderRequest other) : this() {
+      botId_ = other.botId_;
+      folderId_ = other.folderId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ClearBotFolderRequest Clone() {
+      return new ClearBotFolderRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "folder_id" field.</summary>
+    public const int FolderIdFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId folderId_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId FolderId {
+      get { return folderId_; }
+      set {
+        folderId_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as ClearBotFolderRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(ClearBotFolderRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      if (FolderId != other.FolderId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (FolderId != 0) hash ^= FolderId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (FolderId != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) FolderId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (FolderId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FolderId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ClearBotFolderRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.FolderId != 0) {
+        FolderId = other.FolderId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 16: {
+            folderId_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class ClearBotFolderResponse : pb::IMessage<ClearBotFolderResponse> {
+    private static readonly pb::MessageParser<ClearBotFolderResponse> _parser = new pb::MessageParser<ClearBotFolderResponse>(() => new ClearBotFolderResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<ClearBotFolderResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[62]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ClearBotFolderResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ClearBotFolderResponse(ClearBotFolderResponse other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ClearBotFolderResponse Clone() {
+      return new ClearBotFolderResponse(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as ClearBotFolderResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(ClearBotFolderResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(ClearBotFolderResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class DeleteBotFileRequest : pb::IMessage<DeleteBotFileRequest> {
+    private static readonly pb::MessageParser<DeleteBotFileRequest> _parser = new pb::MessageParser<DeleteBotFileRequest>(() => new DeleteBotFileRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<DeleteBotFileRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[63]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DeleteBotFileRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DeleteBotFileRequest(DeleteBotFileRequest other) : this() {
+      botId_ = other.botId_;
+      folderId_ = other.folderId_;
+      fileName_ = other.fileName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DeleteBotFileRequest Clone() {
+      return new DeleteBotFileRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "folder_id" field.</summary>
+    public const int FolderIdFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId folderId_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId FolderId {
+      get { return folderId_; }
+      set {
+        folderId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "file_name" field.</summary>
+    public const int FileNameFieldNumber = 3;
+    private string fileName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FileName {
+      get { return fileName_; }
+      set {
+        fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as DeleteBotFileRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(DeleteBotFileRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      if (FolderId != other.FolderId) return false;
+      if (FileName != other.FileName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (FolderId != 0) hash ^= FolderId.GetHashCode();
+      if (FileName.Length != 0) hash ^= FileName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (FolderId != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) FolderId);
+      }
+      if (FileName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(FileName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (FolderId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FolderId);
+      }
+      if (FileName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FileName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(DeleteBotFileRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.FolderId != 0) {
+        FolderId = other.FolderId;
+      }
+      if (other.FileName.Length != 0) {
+        FileName = other.FileName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 16: {
+            folderId_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            FileName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class DeleteBotFileResponse : pb::IMessage<DeleteBotFileResponse> {
+    private static readonly pb::MessageParser<DeleteBotFileResponse> _parser = new pb::MessageParser<DeleteBotFileResponse>(() => new DeleteBotFileResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<DeleteBotFileResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[64]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DeleteBotFileResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DeleteBotFileResponse(DeleteBotFileResponse other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DeleteBotFileResponse Clone() {
+      return new DeleteBotFileResponse(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as DeleteBotFileResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(DeleteBotFileResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(DeleteBotFileResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class DownloadBotFileRequest : pb::IMessage<DownloadBotFileRequest> {
+    private static readonly pb::MessageParser<DownloadBotFileRequest> _parser = new pb::MessageParser<DownloadBotFileRequest>(() => new DownloadBotFileRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<DownloadBotFileRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[65]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DownloadBotFileRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DownloadBotFileRequest(DownloadBotFileRequest other) : this() {
+      botId_ = other.botId_;
+      folderId_ = other.folderId_;
+      fileName_ = other.fileName_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public DownloadBotFileRequest Clone() {
+      return new DownloadBotFileRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "folder_id" field.</summary>
+    public const int FolderIdFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId folderId_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId FolderId {
+      get { return folderId_; }
+      set {
+        folderId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "file_name" field.</summary>
+    public const int FileNameFieldNumber = 3;
+    private string fileName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FileName {
+      get { return fileName_; }
+      set {
+        fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as DownloadBotFileRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(DownloadBotFileRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      if (FolderId != other.FolderId) return false;
+      if (FileName != other.FileName) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (FolderId != 0) hash ^= FolderId.GetHashCode();
+      if (FileName.Length != 0) hash ^= FileName.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (FolderId != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) FolderId);
+      }
+      if (FileName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(FileName);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (FolderId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FolderId);
+      }
+      if (FileName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FileName);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(DownloadBotFileRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.FolderId != 0) {
+        FolderId = other.FolderId;
+      }
+      if (other.FileName.Length != 0) {
+        FileName = other.FileName;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 16: {
+            folderId_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            FileName = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class FileChunk : pb::IMessage<FileChunk> {
+    private static readonly pb::MessageParser<FileChunk> _parser = new pb::MessageParser<FileChunk>(() => new FileChunk());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<FileChunk> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[66]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FileChunk() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FileChunk(FileChunk other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      chunkBinary_ = other.chunkBinary_;
+      isFinal_ = other.isFinal_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FileChunk Clone() {
+      return new FileChunk(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "chunk_binary" field.</summary>
+    public const int ChunkBinaryFieldNumber = 2;
+    private pb::ByteString chunkBinary_ = pb::ByteString.Empty;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pb::ByteString ChunkBinary {
+      get { return chunkBinary_; }
+      set {
+        chunkBinary_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "is_final" field.</summary>
+    public const int IsFinalFieldNumber = 3;
+    private bool isFinal_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsFinal {
+      get { return isFinal_; }
+      set {
+        isFinal_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as FileChunk);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(FileChunk other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      if (ChunkBinary != other.ChunkBinary) return false;
+      if (IsFinal != other.IsFinal) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (ChunkBinary.Length != 0) hash ^= ChunkBinary.GetHashCode();
+      if (IsFinal != false) hash ^= IsFinal.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (ChunkBinary.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteBytes(ChunkBinary);
+      }
+      if (IsFinal != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(IsFinal);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (ChunkBinary.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(ChunkBinary);
+      }
+      if (IsFinal != false) {
+        size += 1 + 1;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(FileChunk other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      if (other.ChunkBinary.Length != 0) {
+        ChunkBinary = other.ChunkBinary;
+      }
+      if (other.IsFinal != false) {
+        IsFinal = other.IsFinal;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
+            break;
+          }
+          case 18: {
+            ChunkBinary = input.ReadBytes();
+            break;
+          }
+          case 24: {
+            IsFinal = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class UploadBotFileRequest : pb::IMessage<UploadBotFileRequest> {
+    private static readonly pb::MessageParser<UploadBotFileRequest> _parser = new pb::MessageParser<UploadBotFileRequest>(() => new UploadBotFileRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<UploadBotFileRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[67]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UploadBotFileRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UploadBotFileRequest(UploadBotFileRequest other) : this() {
+      botId_ = other.botId_;
+      folderId_ = other.folderId_;
+      fileName_ = other.fileName_;
+      fileBinary_ = other.fileBinary_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UploadBotFileRequest Clone() {
+      return new UploadBotFileRequest(this);
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 1;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "folder_id" field.</summary>
+    public const int FolderIdFieldNumber = 2;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId folderId_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId FolderId {
+      get { return folderId_; }
+      set {
+        folderId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "file_name" field.</summary>
+    public const int FileNameFieldNumber = 3;
+    private string fileName_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string FileName {
+      get { return fileName_; }
+      set {
+        fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "file_binary" field.</summary>
+    public const int FileBinaryFieldNumber = 4;
+    private pb::ByteString fileBinary_ = pb::ByteString.Empty;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pb::ByteString FileBinary {
+      get { return fileBinary_; }
+      set {
+        fileBinary_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as UploadBotFileRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(UploadBotFileRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (BotId != other.BotId) return false;
+      if (FolderId != other.FolderId) return false;
+      if (FileName != other.FileName) return false;
+      if (FileBinary != other.FileBinary) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (FolderId != 0) hash ^= FolderId.GetHashCode();
+      if (FileName.Length != 0) hash ^= FileName.GetHashCode();
+      if (FileBinary.Length != 0) hash ^= FileBinary.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (BotId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(BotId);
+      }
+      if (FolderId != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) FolderId);
+      }
+      if (FileName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(FileName);
+      }
+      if (FileBinary.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteBytes(FileBinary);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (FolderId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FolderId);
+      }
+      if (FileName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FileName);
+      }
+      if (FileBinary.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(FileBinary);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(UploadBotFileRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      if (other.FolderId != 0) {
+        FolderId = other.FolderId;
+      }
+      if (other.FileName.Length != 0) {
+        FileName = other.FileName;
+      }
+      if (other.FileBinary.Length != 0) {
+        FileBinary = other.FileBinary;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            BotId = input.ReadString();
+            break;
+          }
+          case 16: {
+            folderId_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            FileName = input.ReadString();
+            break;
+          }
+          case 34: {
+            FileBinary = input.ReadBytes();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class UploadBotFileResponse : pb::IMessage<UploadBotFileResponse> {
+    private static readonly pb::MessageParser<UploadBotFileResponse> _parser = new pb::MessageParser<UploadBotFileResponse>(() => new UploadBotFileResponse());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<UploadBotFileResponse> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.BotAgentReflection.Descriptor.MessageTypes[68]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UploadBotFileResponse() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UploadBotFileResponse(UploadBotFileResponse other) : this() {
+      ExecResult = other.execResult_ != null ? other.ExecResult.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public UploadBotFileResponse Clone() {
+      return new UploadBotFileResponse(this);
+    }
+
+    /// <summary>Field number for the "exec_result" field.</summary>
+    public const int ExecResultFieldNumber = 1;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult execResult_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult ExecResult {
+      get { return execResult_; }
+      set {
+        execResult_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as UploadBotFileResponse);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(UploadBotFileResponse other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(ExecResult, other.ExecResult)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (execResult_ != null) hash ^= ExecResult.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (execResult_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ExecResult);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (execResult_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExecResult);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(UploadBotFileResponse other) {
+      if (other == null) {
+        return;
+      }
+      if (other.execResult_ != null) {
+        if (execResult_ == null) {
+          execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+        }
+        ExecResult.MergeFrom(other.ExecResult);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (execResult_ == null) {
+              execResult_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.RequestResult();
+            }
+            input.ReadMessage(execResult_);
             break;
           }
         }

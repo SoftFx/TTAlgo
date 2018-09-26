@@ -126,21 +126,6 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static SymbolOrigin Convert(this Lib.ApiDescriptor.Types.SymbolOrigin markerSize)
-        {
-            switch (markerSize)
-            {
-                case Lib.ApiDescriptor.Types.SymbolOrigin.Online:
-                    return SymbolOrigin.Online;
-                case Lib.ApiDescriptor.Types.SymbolOrigin.Custom:
-                    return SymbolOrigin.Custom;
-                case Lib.ApiDescriptor.Types.SymbolOrigin.Special:
-                    return SymbolOrigin.Special;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
         public static AlgoPropertyTypes Convert(this Lib.PropertyDescriptor.Types.AlgoPropertyType type)
         {
             switch (type)
@@ -470,6 +455,21 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
+        public static SymbolOrigin Convert(this Lib.SymbolConfig.Types.SymbolOrigin markerSize)
+        {
+            switch (markerSize)
+            {
+                case Lib.SymbolConfig.Types.SymbolOrigin.Online:
+                    return SymbolOrigin.Online;
+                case Lib.SymbolConfig.Types.SymbolOrigin.Custom:
+                    return SymbolOrigin.Custom;
+                case Lib.SymbolConfig.Types.SymbolOrigin.Special:
+                    return SymbolOrigin.Special;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
         public static SymbolConfig Convert(this Lib.SymbolConfig config)
         {
             return new SymbolConfig
@@ -607,13 +607,15 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public static PluginConfig Convert(this Lib.PluginConfig config)
         {
-            var res = new PluginConfig();
-            res.Key = config.Key.Convert();
-            res.TimeFrame = config.TimeFrame.Convert();
-            res.MainSymbol = config.MainSymbol.Convert();
-            res.SelectedMapping = config.SelectedMapping.Convert();
-            res.InstanceId = config.InstanceId;
-            res.Permissions = config.Permissions.Convert();
+            var res = new PluginConfig
+            {
+                Key = config.Key.Convert(),
+                TimeFrame = config.TimeFrame.Convert(),
+                MainSymbol = config.MainSymbol.Convert(),
+                SelectedMapping = config.SelectedMapping.Convert(),
+                InstanceId = config.InstanceId,
+                Permissions = config.Permissions.Convert()
+            };
             res.Properties.AddRange(config.Properties.Select(Convert));
             return res;
         }
@@ -756,6 +758,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new SymbolInfo
             {
                 Name = symbol.Name,
+                Origin = symbol.Origin.Convert(),
             };
         }
 
@@ -922,6 +925,71 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = bot.ConvertLight();
             res.Config = bot.Config.Convert();
             res.Descriptor = bot.Descriptor_?.ConvertLight();
+            return res;
+        }
+
+        public static LogSeverity Convert(this Lib.LogRecordInfo.Types.LogSeverity type)
+        {
+            switch (type)
+            {
+                case Lib.LogRecordInfo.Types.LogSeverity.Info:
+                    return LogSeverity.Info;
+                case Lib.LogRecordInfo.Types.LogSeverity.Error:
+                    return LogSeverity.Error;
+                case Lib.LogRecordInfo.Types.LogSeverity.Trade:
+                    return LogSeverity.Trade;
+                case Lib.LogRecordInfo.Types.LogSeverity.TradeSuccess:
+                    return LogSeverity.TradeSuccess;
+                case Lib.LogRecordInfo.Types.LogSeverity.TradeFail:
+                    return LogSeverity.TradeFail;
+                case Lib.LogRecordInfo.Types.LogSeverity.Custom:
+                    return LogSeverity.Custom;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static LogRecordInfo Convert(this Lib.LogRecordInfo logRecord)
+        {
+            return new LogRecordInfo
+            {
+                TimeUtc = logRecord.TimeUtc.ToDateTime(),
+                Severity = logRecord.Severity.Convert(),
+                Message = logRecord.Message,
+            };
+        }
+
+        public static BotFileInfo Convert(this Lib.BotFileInfo botFile)
+        {
+            return new BotFileInfo
+            {
+                Name = botFile.Name,
+                Size = botFile.Size,
+            };
+        }
+
+        public static BotFolderId Convert(this Lib.BotFolderInfo.Types.BotFolderId type)
+        {
+            switch (type)
+            {
+                case Lib.BotFolderInfo.Types.BotFolderId.AlgoData:
+                    return BotFolderId.AlgoData;
+                case Lib.BotFolderInfo.Types.BotFolderId.BotLogs:
+                    return BotFolderId.BotLogs;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static BotFolderInfo Convert(this Lib.BotFolderInfo botFolder)
+        {
+            var res = new BotFolderInfo
+            {
+                BotId = botFolder.BotId,
+                FolderId = botFolder.FolderId.Convert(),
+                Path = botFolder.Path,
+            };
+            res.Files.AddRange(botFolder.Files.Select(Convert));
             return res;
         }
 

@@ -144,6 +144,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
             InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata.Descriptor);
             MainSymbolPlaceholder.Id = null;
+            Permissions = new PluginPermissions();
 
             _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)

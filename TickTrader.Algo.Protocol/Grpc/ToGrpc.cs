@@ -132,21 +132,6 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static Lib.ApiDescriptor.Types.SymbolOrigin Convert(this SymbolOrigin markerSize)
-        {
-            switch (markerSize)
-            {
-                case SymbolOrigin.Online:
-                    return Lib.ApiDescriptor.Types.SymbolOrigin.Online;
-                case SymbolOrigin.Custom:
-                    return Lib.ApiDescriptor.Types.SymbolOrigin.Custom;
-                case SymbolOrigin.Special:
-                    return Lib.ApiDescriptor.Types.SymbolOrigin.Special;
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
         public static Lib.PropertyDescriptor.Types.AlgoPropertyType Convert(this AlgoPropertyTypes type)
         {
             switch (type)
@@ -466,8 +451,23 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.FileParameter
             {
-                FileName = Convert(param.FileName),
+                FileName = Convert(System.IO.Path.GetFileName(param.FileName)),
             };
+        }
+
+        public static Lib.SymbolConfig.Types.SymbolOrigin Convert(this SymbolOrigin markerSize)
+        {
+            switch (markerSize)
+            {
+                case SymbolOrigin.Online:
+                    return Lib.SymbolConfig.Types.SymbolOrigin.Online;
+                case SymbolOrigin.Custom:
+                    return Lib.SymbolConfig.Types.SymbolOrigin.Custom;
+                case SymbolOrigin.Special:
+                    return Lib.SymbolConfig.Types.SymbolOrigin.Special;
+                default:
+                    throw new ArgumentException();
+            }
         }
 
         public static Lib.SymbolConfig Convert(this SymbolConfig config)
@@ -622,7 +622,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                 InstanceId = Convert(config.InstanceId),
                 Permissions = config.Permissions.Convert(),
             };
-            
             res.Properties.AddRange(config.Properties.Select(Convert));
             return res;
         }
@@ -765,6 +764,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.SymbolInfo
             {
                 Name = Convert(symbol.Name),
+                Origin = symbol.Origin.Convert(),
             };
         }
 
@@ -935,6 +935,71 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = bot.ConvertLight();
             res.Config = bot.Config.Convert();
             res.Descriptor_ = bot.Descriptor?.ConvertLight();
+            return res;
+        }
+
+        public static Lib.LogRecordInfo.Types.LogSeverity Convert(this LogSeverity type)
+        {
+            switch (type)
+            {
+                case LogSeverity.Info:
+                    return Lib.LogRecordInfo.Types.LogSeverity.Info;
+                case LogSeverity.Error:
+                    return Lib.LogRecordInfo.Types.LogSeverity.Error;
+                case LogSeverity.Trade:
+                    return Lib.LogRecordInfo.Types.LogSeverity.Trade;
+                case LogSeverity.TradeSuccess:
+                    return Lib.LogRecordInfo.Types.LogSeverity.TradeSuccess;
+                case LogSeverity.TradeFail:
+                    return Lib.LogRecordInfo.Types.LogSeverity.TradeFail;
+                case LogSeverity.Custom:
+                    return Lib.LogRecordInfo.Types.LogSeverity.Custom;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Lib.LogRecordInfo Convert(this LogRecordInfo logRecord)
+        {
+            return new Lib.LogRecordInfo
+            {
+                TimeUtc = Timestamp.FromDateTime(logRecord.TimeUtc),
+                Severity = logRecord.Severity.Convert(),
+                Message = Convert(logRecord.Message),
+            };
+        }
+
+        public static Lib.BotFileInfo Convert(this BotFileInfo botFile)
+        {
+            return new Lib.BotFileInfo
+            {
+                Name = Convert(botFile.Name),
+                Size = botFile.Size,
+            };
+        }
+
+        public static Lib.BotFolderInfo.Types.BotFolderId Convert(this BotFolderId type)
+        {
+            switch (type)
+            {
+                case BotFolderId.AlgoData:
+                    return Lib.BotFolderInfo.Types.BotFolderId.AlgoData;
+                case BotFolderId.BotLogs:
+                    return Lib.BotFolderInfo.Types.BotFolderId.BotLogs;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static Lib.BotFolderInfo Convert(this BotFolderInfo botFolder)
+        {
+            var res = new Lib.BotFolderInfo
+            {
+                BotId = Convert(botFolder.BotId),
+                FolderId = botFolder.FolderId.Convert(),
+                Path = Convert(botFolder.Path),
+            };
+            res.Files.AddRange(botFolder.Files.Select(Convert));
             return res;
         }
 

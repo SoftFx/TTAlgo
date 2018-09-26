@@ -4,6 +4,7 @@ package TickTrader.Algo.Protocol.Grpc.Lib;
 
 // current version 1.0, syncronize with VersionSpec.cs
 
+import "google_protos/timestamp.proto";
 import "keys.proto";
 import "metadata.proto";
 import "config.proto";
@@ -39,6 +40,15 @@ service BotAgent
 	rpc UploadPackage(UploadPackageRequest) returns (UploadPackageResponse);
 	rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
 	rpc DownloadPackage(DownloadPackageRequest) returns (DownloadPackageResponse);
+
+	rpc GetBotStatus(BotStatusRequest) returns (BotStatusResponse);
+	rpc GetBotLogs(BotLogsRequest) returns (BotLogsResponse);
+
+	rpc GetBotFolderInfo(BotFolderInfoRequest) returns (BotFolderInfoResponse);
+	rpc ClearBotFolder(ClearBotFolderRequest) returns (ClearBotFolderResponse);
+	rpc DeleteBotFile(DeleteBotFileRequest) returns (DeleteBotFileResponse);
+	rpc DownloadBotFile(DownloadBotFileRequest) returns (stream FileChunk);
+	rpc UploadBotFile(UploadBotFileRequest) returns (UploadBotFileResponse);
 }
 
 message RequestResult
@@ -386,4 +396,92 @@ message DownloadPackageResponse
 {
 	RequestResult exec_result = 1;
 	bytes package_binary = 2;
+}
+
+message BotStatusRequest
+{
+	string bot_id = 1;
+}
+
+message BotStatusResponse
+{
+	RequestResult exec_result = 1;
+	string bot_id = 2;
+	string status = 3;
+}
+
+message BotLogsRequest
+{
+	string bot_id = 1;
+	google.protobuf.Timestamp last_log_time_utc = 2;
+	int32 max_count = 3;
+}
+
+message BotLogsResponse
+{
+	RequestResult exec_result = 1;
+	string bot_id = 2;
+	repeated LogRecordInfo logs = 3;
+}
+
+message BotFolderInfoRequest
+{
+	string bot_id = 1;
+	BotFolderInfo.BotFolderId folder_id = 2;
+}
+
+message BotFolderInfoResponse
+{
+	RequestResult exec_result = 1;
+	BotFolderInfo folder_info = 3;
+}
+
+message ClearBotFolderRequest
+{
+	string bot_id = 1;
+	BotFolderInfo.BotFolderId folder_id = 2;
+}
+
+message ClearBotFolderResponse
+{
+	RequestResult exec_result = 1;
+}
+
+message DeleteBotFileRequest
+{
+	string bot_id = 1;
+	BotFolderInfo.BotFolderId folder_id = 2;
+	string file_name = 3;
+}
+
+message DeleteBotFileResponse
+{
+	RequestResult exec_result = 1;
+}
+
+message DownloadBotFileRequest
+{
+	string bot_id = 1;
+	BotFolderInfo.BotFolderId folder_id = 2;
+	string file_name = 3;
+}
+
+message FileChunk
+{
+	RequestResult exec_result = 1;
+	bytes chunk_binary = 2;
+	bool is_final = 3;
+}
+
+message UploadBotFileRequest
+{
+	string bot_id = 1;
+	BotFolderInfo.BotFolderId folder_id = 2;
+	string file_name = 3;
+	bytes file_binary = 4;
+}
+
+message UploadBotFileResponse
+{
+	RequestResult exec_result = 1;
 }
