@@ -45,7 +45,10 @@ namespace TickTrader.Algo.Core
             {
                 var rate = smb.LastQuote as QuoteEntity;
                 if (rate != null)
+                {
                     _state.Update(rate);
+                    _lastRates[smb.Name] = rate;
+                }
             }
 
             try

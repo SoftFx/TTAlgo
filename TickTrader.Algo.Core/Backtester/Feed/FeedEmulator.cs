@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
         {
-            return new List<QuoteEntity>();
+            return _feedSources.Values.Select(s => s.Current).ToList();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
