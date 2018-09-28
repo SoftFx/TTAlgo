@@ -79,7 +79,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenState()
         {
-            Agent.OpenBotState(this);
+            Agent.OpenBotState(InstanceId);
         }
 
 

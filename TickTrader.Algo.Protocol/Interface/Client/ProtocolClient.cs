@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Protocol
 
     public abstract class ProtocolClient
     {
-        public const int DefaultRequestTimeout = 3;
+        public const int DefaultRequestTimeout = 10;
 
 
         protected ILogger Logger { get; set; }

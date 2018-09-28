@@ -198,6 +198,7 @@ namespace TickTrader.BotTerminal
                 if (Type == AlgoTypes.Robot && Mode == PluginSetupMode.New)
                 {
                     await SelectedAgent.Model.AddBot(SelectedAccount.Key, config);
+                    SelectedAgent.OpenBotState(config.InstanceId);
                     if (RunBot)
                         await SelectedAgent.Model.StartBot(config.InstanceId);
                 }

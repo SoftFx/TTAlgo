@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
             AccountPane = new AccountPaneViewModel(cManager, this, this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
-            DockManagerService = new DockManagerService();
+            DockManagerService = new DockManagerService(algoEnv);
 
             CanConnect = true;
             UpdateCommandStates();
@@ -313,8 +313,8 @@ namespace TickTrader.BotTerminal
 
         public void OnLoaded()
         {
-            Connect(null); // show connect window
             _botAgentManager.RestoreConnections();
+            Connect(null); // show connect window
         }
 
         private async void PrintSystemInfo()

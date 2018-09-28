@@ -8,24 +8,15 @@ using System.Linq;
 using System.Collections.Generic;
 using Xceed.Wpf.AvalonDock.Layout;
 using System.ComponentModel;
+using Caliburn.Micro;
 
 namespace TickTrader.BotTerminal
 {
-    public class CustomDockManager : DockingManager
+    internal class CustomDockManager : DockingManager
     {
-        private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private Dictionary<string, LayoutAnchorable> _anchorableViews;
-
-        private static CustomDockManager customDockManager;
-
-        public static CustomDockManager GetInstance()
-        {
-            if (customDockManager is null)
-                return new CustomDockManager();
-            else
-                return customDockManager;
-        }
 
 
         public static readonly DependencyProperty DockManagerServiceProperty =
@@ -50,6 +41,8 @@ namespace TickTrader.BotTerminal
                     oldService.SaveLayoutEvent -= dockManager.SaveLayout;
                     oldService.LoadLayoutEvent -= dockManager.LoadLayout;
                     oldService.ToggleViewEvent -= dockManager.ToggleView;
+                    oldService.ShowViewEvent -= dockManager.ShowView;
+                    oldService.RemoveViewEvent -= dockManager.RemoveView;
                 }
 
                 if (newService != null)
@@ -57,6 +50,8 @@ namespace TickTrader.BotTerminal
                     newService.SaveLayoutEvent += dockManager.SaveLayout;
                     newService.LoadLayoutEvent += dockManager.LoadLayout;
                     newService.ToggleViewEvent += dockManager.ToggleView;
+                    newService.ShowViewEvent += dockManager.ShowView;
+                    newService.RemoveViewEvent += dockManager.RemoveView;
                 }
 
                 dockManager.UpdateViewsVisibility();
@@ -66,62 +61,10 @@ namespace TickTrader.BotTerminal
 
         public CustomDockManager()
         {
-            if (customDockManager != null)
-                throw new Exception("DockManager instance already exist!");
-
             _anchorableViews = new Dictionary<string, LayoutAnchorable>();
 
             Loaded += (sender, args) => FindAnchorableViews();
-
-            customDockManager = this;
         }
-
-        #region view methods
-
-        public void AddView(string viewId, LayoutAnchorable view)
-        {
-            if (!HasView(viewId))
-            {
-                _anchorableViews.Add(viewId, view);
-                view.AddToLayout(this, AnchorableShowStrategy.Left);
-                FloatView(viewId);
-            }
-        }
-
-        public void FloatView(string viewId)
-        {
-            if (HasView(viewId))
-                _anchorableViews[viewId].Float();
-        }
-
-        public void ShowView(string viewId)
-        {
-            if (HasView(viewId))
-                _anchorableViews[viewId].Show();
-        }
-
-        public void HideView(string viewId)
-        {
-            if (HasView(viewId))
-                _anchorableViews[viewId].Hide();
-        }
-
-        public bool HasView(string viewId)
-        {
-            return _anchorableViews.ContainsKey(viewId);
-        }
-
-        public void RemoveView(string viewId)
-        {
-            if (HasView(viewId))
-            {
-                var view = _anchorableViews[viewId];
-                view.Parent.RemoveChild(view);
-                _anchorableViews.Remove(viewId);
-            }
-        }
-
-        #endregion
 
 
         private void FindAnchorableViews()
@@ -136,6 +79,8 @@ namespace TickTrader.BotTerminal
 
             foreach (var view in _anchorableViews.Values)
             {
+                if (view.IsVisible)
+                    InitView(view);
                 view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
             }
 
@@ -163,7 +108,19 @@ namespace TickTrader.BotTerminal
             if (sender is LayoutAnchorable && args.PropertyName == "IsHidden")
             {
                 var view = (LayoutAnchorable)sender;
-                DockManagerService?.SetViewVisibility(view.ContentId, !view.IsHidden);
+                DockManagerService?.ViewVisibilityChanged(view.ContentId, !view.IsHidden);
+                var screen = view.Content as IScreen;
+                if (screen != null)
+                {
+                    if (view.IsHidden)
+                    {
+                        screen.Deactivate(false);
+                    }
+                    else
+                    {
+                        screen.Activate();
+                    }
+                }
             }
         }
 
@@ -210,11 +167,53 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void ShowView(string contentId)
+        {
+            if (!_anchorableViews.ContainsKey(contentId))
+            {
+                var view = new LayoutAnchorable { ContentId = contentId, FloatingHeight = 400, FloatingWidth = 600, FloatingTop = 100, FloatingLeft = 100 };
+                InitView(view);
+                _anchorableViews.Add(contentId, view);
+                view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
+                view.AddToLayout(this, AnchorableShowStrategy.Right);
+                view.Float();
+            }
+            else
+            {
+                var view = _anchorableViews[contentId];
+                if (view.Content == null)
+                    InitView(view);
+                view.Show();
+            }
+        }
+
+        private void RemoveView(string contentId)
+        {
+            if (_anchorableViews.ContainsKey(contentId))
+            {
+                var view = _anchorableViews[contentId];
+                view.Parent.RemoveChild(view);
+                view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
+                (view.Content as IScreen)?.Deactivate(true);
+                _anchorableViews.Remove(contentId);
+            }
+        }
+
         private void UpdateViewsVisibility()
         {
             foreach (var view in _anchorableViews.Values)
             {
-                DockManagerService.SetViewVisibility(view.ContentId, !view.IsHidden);
+                DockManagerService.ViewVisibilityChanged(view.ContentId, !view.IsHidden);
+            }
+        }
+
+        private void InitView(LayoutAnchorable view)
+        {
+            var screen = DockManagerService.GetScreen(view.ContentId);
+            if (screen != null)
+            {
+                view.Title = screen.DisplayName;
+                view.Content = screen;
             }
         }
     }

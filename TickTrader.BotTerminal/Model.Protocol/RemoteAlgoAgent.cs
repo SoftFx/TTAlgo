@@ -92,12 +92,16 @@ namespace TickTrader.BotTerminal
 
         internal Task<string> GetBotStatus(string botId)
         {
-            return _protocolClient.GetBotStatus(botId);
+            if (_protocolClient.State == ClientStates.Online)
+                return _protocolClient.GetBotStatus(botId);
+            return Task.FromResult("Disconnected!");
         }
 
         internal Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount = 1000)
         {
-            return _protocolClient.GetBotLogs(botId, lastLogTimeUtc, maxCount);
+            if (_protocolClient.State == ClientStates.Online)
+                return _protocolClient.GetBotLogs(botId, lastLogTimeUtc, maxCount);
+            return Task.FromResult(new LogRecordInfo[0]);
         }
 
 

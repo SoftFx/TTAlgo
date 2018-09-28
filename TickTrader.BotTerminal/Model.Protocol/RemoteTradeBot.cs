@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Linq;
 using System.Threading;
 using TickTrader.Algo.Common.Info;
@@ -7,8 +8,10 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class RemoteTradeBot : ITradeBot
+    internal class RemoteTradeBot : ITradeBot, IDisposable
     {
+        private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+
         private const int StatusUpdateTimeout = 1000;
         private const int LogsUpdateTimeout = 1000;
 
@@ -78,7 +81,7 @@ namespace TickTrader.BotTerminal
             ManageStatusTimer();
         }
 
-        public void UnsubscribeToStatus()
+        public void UnsubscribeFromStatus()
         {
             _statusSubscriptionCnt--;
             ManageStatusTimer();
@@ -90,10 +93,16 @@ namespace TickTrader.BotTerminal
             ManageLogsTimer();
         }
 
-        public void UnsubscribeToLogs()
+        public void UnsubscribeFromLogs()
         {
             _logsSubscriptionCnt--;
             ManageLogsTimer();
+        }
+
+        public void Dispose()
+        {
+            _statusTimer.Dispose();
+            _logsTimer.Dispose();
         }
 
 
@@ -138,17 +147,31 @@ namespace TickTrader.BotTerminal
 
         private void UpdateStatus(object state)
         {
-            Status = _agent.GetBotStatus(InstanceId).Result;
-            StatusChanged?.Invoke(this);
+            try
+            {
+                Status = _agent.GetBotStatus(InstanceId).Result;
+                StatusChanged?.Invoke(this);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
+            }
         }
 
         private void UpdateLogs(object state)
         {
-            var logs = _agent.GetBotLogs(InstanceId, _lastLogTimeUtc).Result;
-            if (logs.Length > 0)
+            try
             {
-                _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
-                Journal.Add(logs.Select(Convert).ToList());
+                var logs = _agent.GetBotLogs(InstanceId, _lastLogTimeUtc).Result;
+                if (logs.Length > 0)
+                {
+                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
+                    Journal.Add(logs.Select(Convert).ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
             }
         }
 

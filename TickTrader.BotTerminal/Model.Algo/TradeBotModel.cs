@@ -43,11 +43,11 @@ namespace TickTrader.BotTerminal
 
         void SubscribeToStatus();
 
-        void UnsubscribeToStatus();
+        void UnsubscribeFromStatus();
 
         void SubscribeToLogs();
 
-        void UnsubscribeToLogs();
+        void UnsubscribeFromLogs();
     }
 
 
@@ -201,11 +201,11 @@ namespace TickTrader.BotTerminal
 
         public void SubscribeToStatus() { }
 
-        public void UnsubscribeToStatus() { }
+        public void UnsubscribeFromStatus() { }
 
         public void SubscribeToLogs() { }
 
-        public void UnsubscribeToLogs() { }
+        public void UnsubscribeFromLogs() { }
 
         #endregion
 

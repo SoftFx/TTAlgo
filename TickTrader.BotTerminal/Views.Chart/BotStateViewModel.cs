@@ -19,30 +19,16 @@ namespace TickTrader.BotTerminal
 {
     internal class BotStateViewModel : Screen
     {
-        private AlgoEnvironment _algoEnv;
-        private BotMessageFilter _botLogsFilter = new BotMessageFilter();
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public BotStateViewModel(AlgoBotViewModel bot, AlgoEnvironment algoEnv)
+        public BotStateViewModel(AlgoBotViewModel bot)
         {
-            _algoEnv = algoEnv;
             Bot = bot;
-            Bot.Model.StateChanged += Bot_StateChanged;
-            Bot.Model.ConfigurationChanged += BotConfigurationChanged;
-            DisplayName = "Status: " + bot.InstanceId;
+            DisplayName = $"Status: {bot.InstanceId} ({bot.Agent.Name})";
             BotName = Bot.InstanceId;
-            Bot_StateChanged(Bot.Model);
 
             Bot.Model.Journal.Records.CollectionChanged += (sender, e) => NotifyOfPropertyChange(nameof(ErrorsCount));
             BotJournal = new BotJournalViewModel(Bot.Model);
-
-            Bot.Model.SubscribeToStatus();
-            Bot.Model.SubscribeToLogs();
-        }
-
-        private void BotConfigurationChanged(ITradeBot obj)
-        {
-            NotifyOfPropertyChange(nameof(BotInfo));
         }
 
         public AlgoBotViewModel Bot { get; private set; }
@@ -59,8 +45,7 @@ namespace TickTrader.BotTerminal
         {
             base.TryClose(dialogResult);
 
-            Bot.Model.ConfigurationChanged -= BotConfigurationChanged;
-            //Bot.Removed -= Bot_Removed;
+            Bot.Model.ConfigurationChanged -= Bot_ConfigurationChanged;
             Bot.Model.StateChanged -= Bot_StateChanged;
         }
 
@@ -84,6 +69,31 @@ namespace TickTrader.BotTerminal
             BotJournal.Browse();
         }
 
+        protected override void OnActivate()
+        {
+            base.OnActivate();
+
+            Bot.Model.StateChanged += Bot_StateChanged;
+            Bot.Model.ConfigurationChanged += Bot_ConfigurationChanged;
+
+            Bot.Model.SubscribeToStatus();
+            Bot.Model.SubscribeToLogs();
+
+            Bot_StateChanged(Bot.Model);
+            Bot_ConfigurationChanged(Bot.Model);
+        }
+
+        protected override void OnDeactivate(bool close)
+        {
+            base.OnDeactivate(close);
+
+            Bot.Model.ConfigurationChanged -= Bot_ConfigurationChanged;
+            Bot.Model.StateChanged -= Bot_StateChanged;
+
+            Bot.Model.UnsubscribeFromStatus();
+            Bot.Model.UnsubscribeFromLogs();
+        }
+
         private void Bot_Removed(TradeBotModel bot)
         {
             TryClose();
@@ -105,6 +115,11 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(ExecStatus));
             NotifyOfPropertyChange(nameof(IsRunning));
             NotifyOfPropertyChange(nameof(CanStartStop));
+        }
+
+        private void Bot_ConfigurationChanged(ITradeBot obj)
+        {
+            NotifyOfPropertyChange(nameof(BotInfo));
         }
 
         private IEnumerable<string> GetBotInfo()
