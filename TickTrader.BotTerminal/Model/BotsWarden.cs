@@ -12,16 +12,15 @@ namespace TickTrader.BotTerminal
 {
     internal class BotsWarden
     {
-        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly TimeSpan _delayPunishment = TimeSpan.FromSeconds(5);
         private Dictionary<TradeBotModel, CancellationTokenSource> _abortTasks;
-        private BotManager _botManager;
+        private LocalAlgoAgent _algoAgent;
 
-        public BotsWarden(BotManager botManager)
+        public BotsWarden(LocalAlgoAgent algoAgent)
         {
             _abortTasks = new Dictionary<TradeBotModel, CancellationTokenSource>();
-            _botManager = botManager;
-            _botManager.StateChanged += BotStateChanged;
+            _algoAgent = algoAgent;
+            _algoAgent.BotStateChanged += BotStateChanged;
         }
 
         private void BotStateChanged(ITradeBot bot)
@@ -42,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         private void СancelAbortTask(TradeBotModel tradeBot)
         {
-            if (_abortTasks.TryGetValue(tradeBot, out CancellationTokenSource cancellationTokenSource))
+            if (_abortTasks.TryGetValue(tradeBot, out var cancellationTokenSource))
             {
                 cancellationTokenSource.Cancel();
                 _abortTasks.Remove(tradeBot);

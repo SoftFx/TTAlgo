@@ -42,13 +42,13 @@
                 <ResourceDictionary Source="Views/JournalView.xaml" />
                 <ResourceDictionary Source="Views/BotJournalView.xaml" />
 
+                <ResourceDictionary Source="Views.Algo/AlgoBotView.xaml" />
                 <ResourceDictionary Source="Views.Algo/AlgoListView.xaml" />
                 <ResourceDictionary Source="Views.Algo/BotListView.xaml" />
                 <ResourceDictionary Source="Views.Algo/UploadPackageView.xaml" />
                 <ResourceDictionary Source="Views.Algo/DownloadPackageView.xaml" />
 
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
-                <ResourceDictionary Source="Views.Chart/BotControlView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
 
                 <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />

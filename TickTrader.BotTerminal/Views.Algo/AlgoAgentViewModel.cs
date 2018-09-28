@@ -3,10 +3,12 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
@@ -85,6 +87,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 await _agentModel.RemoveBot(botId, cleanLog, cleanAlgoData);
+                CustomDockManager.GetInstance().RemoveView(botId);
             }
             catch (Exception ex)
             {
@@ -142,7 +145,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenBotSetup(BotModelInfo bot)
+        public void OpenBotSetup(ITradeBot bot)
         {
             try
             {
@@ -230,6 +233,54 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to open download package dialog");
+            }
+        }
+
+        public void ShowChart(ITradeBot bot)
+        {
+            if (bot.IsRemote)
+                return;
+
+            try
+            {
+                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.TimeFrame.Convert());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to show chart");
+            }
+        }
+
+        public void CreateBotState(AlgoBotViewModel bot)
+        {
+            try
+            {
+                var manager = CustomDockManager.GetInstance();
+                if (!manager.HasView(bot.InstanceId))
+                {
+                    var content = new BotStateViewModel(bot, _algoEnv);
+                    var view = new LayoutAnchorable { Title = bot.InstanceId, FloatingHeight = 600, FloatingWidth = 400, Content = content, ContentId = bot.InstanceId };
+                    manager.AddView(bot.InstanceId, view);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to create bot state");
+            }
+        }
+
+        public void OpenBotState(AlgoBotViewModel bot)
+        {
+            try
+            {
+                var manager = CustomDockManager.GetInstance();
+                if (!manager.HasView(bot.InstanceId))
+                    CreateBotState(bot);
+                manager.ShowView(bot.InstanceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open bot state");
             }
         }
     }

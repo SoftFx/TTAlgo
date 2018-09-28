@@ -164,7 +164,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
         {
-            return _botAgent.GetBotLog(botId).Messages.Where(e => e.TimeUtc > lastLogTimeUtc)
+            return _botAgent.GetBotLog(botId).Messages.Where(e => e.TimeUtc > lastLogTimeUtc).Take(maxCount)
                 .Select(e => new LogRecordInfo
                 {
                     TimeUtc = e.TimeUtc,

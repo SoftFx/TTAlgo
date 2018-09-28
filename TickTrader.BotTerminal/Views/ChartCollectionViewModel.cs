@@ -17,7 +17,6 @@ namespace TickTrader.BotTerminal
         private TraderClientModel _clientModel;
         private IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
-        private BotManagerViewModel _botManager;
         private Dictionary<string, ChartViewModel> _charts;
 
 
@@ -33,13 +32,12 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
+        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _clientModel = clientModel;
             _algoEnv = algoEnv;
             _shell = shell;
-            _botManager = botManager;
             _charts = new Dictionary<string, ChartViewModel>();
 
             clientModel.Symbols.Updated += Symbols_Updated;
@@ -55,7 +53,7 @@ namespace TickTrader.BotTerminal
 
         public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
         {
-            ActivateItem(new ChartViewModel(GenerateChartId(), symbol, period, _algoEnv, _botManager));
+            ActivateItem(new ChartViewModel(GenerateChartId(), symbol, period, _algoEnv));
         }
 
         public void OpenOrActivate(string symbol, ChartPeriods period)
@@ -129,7 +127,7 @@ namespace TickTrader.BotTerminal
                     }
 
                     var id = chart.Id ?? GenerateChartId(); // generate missing chartIds
-                    var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _algoEnv, _botManager);
+                    var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _algoEnv);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }

@@ -289,7 +289,7 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<string> GetBotStatus(string botId);
 
-        public abstract Task<LogRecordInfo[]> GetBotLogs(string botId);
+        public abstract Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount);
 
         public abstract Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
 

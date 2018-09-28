@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Ext
     }
 
 
-    [Reduction("Median")]
+    [Reduction("Average")]
     public class MedianBarReduction : FullBarToBarReduction
     {
         public void Reduce(Bar bidBar, Bar askBar, IBarWriter result)

@@ -92,7 +92,7 @@ namespace TickTrader.BotTerminal
 
         public PluginConfigViewModel Setup { get; private set; }
 
-        public BotModelInfo Bot { get; private set; }
+        public ITradeBot Bot { get; private set; }
 
         public bool PluginIsStopped => Bot == null ? true : Bot.State == PluginStates.Stopped;
 
@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Setting New {PluginType}";
         }
 
-        public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, BotModelInfo bot)
+        public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
             : this(algoEnv, agentName, bot.Account, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
         {
             Bot = bot;
@@ -230,11 +230,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private void BotStateChanged(BotModelInfo modelInfo)
+        private void BotStateChanged(ITradeBot bot)
         {
-            if (Bot != null && Bot.InstanceId == modelInfo.InstanceId)
+            if (Bot != null && Bot.InstanceId == bot.InstanceId)
             {
-                Bot = modelInfo;
+                Bot = bot;
                 NotifyOfPropertyChange(nameof(PluginIsStopped));
                 NotifyOfPropertyChange(nameof(CanOk));
             }

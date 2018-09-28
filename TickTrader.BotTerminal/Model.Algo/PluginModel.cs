@@ -37,12 +37,6 @@ namespace TickTrader.BotTerminal
 
         public PluginStates State { get; protected set; }
 
-        public bool IsStarted => State == PluginStates.Starting || State == PluginStates.Running || State == PluginStates.Reconnecting || State == PluginStates.Stopping;
-
-        public bool IsRunning => State == PluginStates.Running || State == PluginStates.Reconnecting;
-
-        public bool IsStopped => State == PluginStates.Stopped || State == PluginStates.Broken || State == PluginStates.Faulted;
-
 
         protected LocalAlgoAgent Agent { get; }
 

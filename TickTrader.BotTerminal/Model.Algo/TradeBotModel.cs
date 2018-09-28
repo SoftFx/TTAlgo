@@ -17,6 +17,8 @@ namespace TickTrader.BotTerminal
 {
     internal interface ITradeBot
     {
+        bool IsRemote { get; }
+
         string InstanceId { get; }
 
         PluginConfig Config { get; }
@@ -31,10 +33,21 @@ namespace TickTrader.BotTerminal
 
         BotJournal Journal { get; }
 
+        AccountKey Account { get; }
+
 
         event Action<ITradeBot> ConfigurationChanged;
         event Action<ITradeBot> StateChanged;
         event Action<ITradeBot> StatusChanged;
+
+
+        void SubscribeToStatus();
+
+        void UnsubscribeToStatus();
+
+        void SubscribeToLogs();
+
+        void UnsubscribeToLogs();
     }
 
 
@@ -43,10 +56,10 @@ namespace TickTrader.BotTerminal
         private BotListenerProxy _botListener;
 
 
+        public bool IsRemote => false;
         public string Status { get; private set; }
         public BotJournal Journal { get; }
-        public bool StateViewOpened { get; set; }
-        public SettingsStorage<WindowStorageModel> StateViewSettings { get; private set; }
+        public AccountKey Account { get; }
 
 
         public event Action<ITradeBot> StatusChanged = delegate { };
@@ -54,13 +67,13 @@ namespace TickTrader.BotTerminal
         public event Action<ITradeBot> ConfigurationChanged = delegate { };
 
 
-        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, WindowStorageModel stateSettings)
+        public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, AccountKey account)
             : base(config, agent, host, setupContext)
         {
+            Account = account;
             Journal = new BotJournal(InstanceId);
             host.Connected += Host_Connected;
             host.Disconnected += Host_Disconnected;
-            StateViewSettings = new SettingsStorage<WindowStorageModel>(stateSettings);
         }
 
         internal void Abort()
@@ -182,6 +195,19 @@ namespace TickTrader.BotTerminal
                 }
             });
         }
+
+
+        #region ITradeBot stubs
+
+        public void SubscribeToStatus() { }
+
+        public void UnsubscribeToStatus() { }
+
+        public void SubscribeToLogs() { }
+
+        public void UnsubscribeToLogs() { }
+
+        #endregion
 
 
         #region IBotWriter implementation

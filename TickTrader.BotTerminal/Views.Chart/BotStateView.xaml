@@ -5,38 +5,8 @@
     xmlns:cal="http://www.caliburnproject.org"
     xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:l="clr-namespace:TickTrader.BotTerminal"
-    xmlns:dk="http://schemas.xceed.com/wpf/xaml/avalondock">
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <Style x:Key="BotNameLabelStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
-    </Style>
-
-    <!--<dk:LayoutAnchorableFloatingWindow x:Key="BotStateView">
-        <dk:LayoutAnchorablePaneGroup>
-            <dk:LayoutAnchorablePane>
-                <dk:LayoutAnchorable>
-                    <ContentControl>
-                        <TextBlock>
-                            One
-                        </TextBlock>
-                    </ContentControl>
-                </dk:LayoutAnchorable>                
-            </dk:LayoutAnchorablePane>
-
-            <dk:LayoutAnchorablePane>
-                <dk:LayoutAnchorable>
-                    <ContentControl>
-                        <TextBlock>
-                            Twooooo
-                        </TextBlock>
-                    </ContentControl>
-                </dk:LayoutAnchorable>
-            </dk:LayoutAnchorablePane>
-            
-        </dk:LayoutAnchorablePaneGroup>
-    </dk:LayoutAnchorableFloatingWindow>-->
-    
     <ControlTemplate x:Key="BotStateView">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
@@ -50,8 +20,8 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" HorizontalAlignment="Left" Grid.Column="0" IsEnabled="{Binding CanStartStop}"/>
-                <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" HorizontalAlignment="Right" Grid.Column="2"/>
+                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" HorizontalAlignment="Left" Grid.Column="0"/>
+                <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" HorizontalAlignment="Right" Grid.Column="2" />
                 <TextBlock Style="{DynamicResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" />
             </Grid>
 
@@ -59,13 +29,11 @@
                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <TabItem Header="Status">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                        <TextBlock Text="{Binding CustomStatus}" TextWrapping="NoWrap" VerticalAlignment="Stretch"
-                                   Margin="4"/>
+                        <TextBlock Text="{Binding Bot.Status}" TextWrapping="NoWrap" VerticalAlignment="Stretch" Margin="4"/>
                     </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Bot Info">
-                    <TextBlock Text="{Binding Path=BotInfo, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch"
-                               Margin="4"/>
+                    <TextBlock Text="{Binding Path=BotInfo, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch" Margin="4"/>
                 </TabItem>
                 <TabItem>
                     <TabItem.Header>
@@ -116,7 +84,6 @@
 
     <Style x:Key="BotStateViewStyle.Common" TargetType="UserControl">
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
-        <Setter Property="l:Settings.Provider" Value="{Binding Bot.StateViewSettings}" />
     </Style>
 
     <Style x:Key="BotStateViewStyle" TargetType="UserControl" BasedOn="{StaticResource BotStateViewStyle.Common}">
@@ -126,6 +93,12 @@
                 <Setter Property="FontStyle" Value="Italic" />
                 <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Faulted">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Broken">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
                         <Setter Property="Foreground" Value="Yellow"/>
                     </DataTrigger>
@@ -134,6 +107,9 @@
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
                         <Setter Property="Foreground" Value="LightGreen"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Reconnecting...">
+                        <Setter Property="Foreground" Value="Navy"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -147,6 +123,12 @@
                 <Setter Property="FontStyle" Value="Italic" />
                 <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Faulted">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Broken">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
                         <Setter Property="Foreground" Value="Orange"/>
                     </DataTrigger>
@@ -155,6 +137,9 @@
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
                         <Setter Property="Foreground" Value="DarkGreen"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Reconnecting...">
+                        <Setter Property="Foreground" Value="Blue"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

@@ -66,8 +66,8 @@ namespace TickTrader.BotTerminal
 
         public CustomDockManager()
         {
-            if (!(customDockManager is null))
-                throw new Exception("Instance of class has been exist!");
+            if (customDockManager != null)
+                throw new Exception("DockManager instance already exist!");
 
             _anchorableViews = new Dictionary<string, LayoutAnchorable>();
 

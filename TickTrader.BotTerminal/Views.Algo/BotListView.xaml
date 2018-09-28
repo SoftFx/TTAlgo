@@ -17,27 +17,6 @@
         </Style.Setters>
     </Style>
 
-    <Style x:Key="LocalBotStateEllipseStyle" TargetType="Ellipse">
-        <Style.Setters>
-            <Setter Property="Fill" Value="Black"/>
-            <Setter Property="Height" Value="9"/>
-            <Setter Property="Width" Value="9"/>
-            <Setter Property="Margin" Value="3,0"/>
-            <Setter Property="StrokeThickness" Value="0"/>
-        </Style.Setters>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding State}" Value="Stopped">
-                <Setter Property="Fill" Value="LightGray"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Running">
-                <Setter Property="Fill" Value="Green"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Stopping">
-                <Setter Property="Fill" Value="Orange"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
     <Style x:Key="BotAgentStatusEllipseStyle" TargetType="Ellipse" BasedOn="{StaticResource StatusEllipseStyle}">
         <Style.Setters>
             <Setter Property="Fill" Value="Red"/>
@@ -119,7 +98,7 @@
                 <Style TargetType="MenuItem">
                     <Setter Property="Header" Value="Start"></Setter>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsStarted}" Value="True">
+                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
                             <Setter Property="Header" Value="Stop"/>
                         </DataTrigger>
                     </Style.Triggers>
@@ -202,6 +181,9 @@
         <MenuItem Header="Remove"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="Remove"/>
+        <MenuItem Header="Status"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenState" />
     </ContextMenu>
 
     <l:Behaviors x:Key="AgentBehaviors" x:Shared="false">
@@ -228,9 +210,9 @@
                         </Style>
                     </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
-                        <DataTemplate DataType="{x:Type l:BotControlViewModel}">
+                        <DataTemplate DataType="{x:Type l:AlgoBotViewModel}">
                             <StackPanel Orientation="Horizontal">
-                                <Ellipse Style="{StaticResource LocalBotStateEllipseStyle}" />
+                                <Ellipse Style="{StaticResource BotStateEllipseStyle}" />
                                 <TextBlock Text="{Binding Model.InstanceId}" ToolTip="{Binding State}" />
                             </StackPanel>
                         </DataTemplate>

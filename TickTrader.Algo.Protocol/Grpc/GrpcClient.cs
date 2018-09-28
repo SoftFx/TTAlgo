@@ -651,9 +651,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Status;
         }
 
-        public override async Task<LogRecordInfo[]> GetBotLogs(string botId)
+        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId) });
+            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();
         }

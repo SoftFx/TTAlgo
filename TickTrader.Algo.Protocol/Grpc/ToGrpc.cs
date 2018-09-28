@@ -24,6 +24,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ByteString.CopyFrom(bytes);
         }
 
+        public static Timestamp Convert(this DateTime date)
+        {
+            return Timestamp.FromDateTime(date);
+        }
+
 
         #region descriptors.proto
 
@@ -715,8 +720,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 FileName = Convert(identity.FileName),
                 FilePath = Convert(identity.FilePath),
-                CreatedUtc = Timestamp.FromDateTime(identity.CreatedUtc),
-                LastModifiedUtc = Timestamp.FromDateTime(identity.LastModifiedUtc),
+                CreatedUtc = identity.CreatedUtc.Convert(),
+                LastModifiedUtc = identity.LastModifiedUtc.Convert(),
                 Size = identity.Size,
                 Hash = Convert(identity.Hash),
             };

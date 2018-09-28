@@ -67,6 +67,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+        public bool CanBrowse => !_bot.IsRemote;
 
         public void Clear()
         {

@@ -51,6 +51,12 @@ namespace TickTrader.BotTerminal
             MessageCount.Removed(item);
         }
 
+        public override void Clear()
+        {
+            MessageCount.Reset();
+            base.Clear();
+        }
+
         private void WriteToLogger(BotMessage message)
         {
             if (message.Type != JournalMessageType.Error)
@@ -110,6 +116,14 @@ namespace TickTrader.BotTerminal
         public void Removed(BotMessage msg)
         {
             _messagesCnt[msg.Type]--;
+        }
+
+        public void Reset()
+        {
+            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            {
+                _messagesCnt[type] = 0;
+            }
         }
     }
 }
