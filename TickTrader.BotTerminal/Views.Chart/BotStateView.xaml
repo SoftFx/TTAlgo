@@ -103,13 +103,13 @@
                         <Setter Property="Foreground" Value="Yellow"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
-                        <Setter Property="Foreground" Value="Yellow"/>
+                        <Setter Property="Foreground" Value="Orange"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
                         <Setter Property="Foreground" Value="LightGreen"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Reconnecting...">
-                        <Setter Property="Foreground" Value="Navy"/>
+                        <Setter Property="Foreground" Value="SkyBlue"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -130,7 +130,7 @@
                         <Setter Property="Foreground" Value="Red"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
-                        <Setter Property="Foreground" Value="Orange"/>
+                        <Setter Property="Foreground" Value="Yellow"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
                         <Setter Property="Foreground" Value="Orange"/>
@@ -139,7 +139,7 @@
                         <Setter Property="Foreground" Value="DarkGreen"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Reconnecting...">
-                        <Setter Property="Foreground" Value="Blue"/>
+                        <Setter Property="Foreground" Value="SkyBlue"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

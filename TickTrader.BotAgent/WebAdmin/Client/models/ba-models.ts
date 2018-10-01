@@ -197,7 +197,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 
     public get IsOnline(): boolean {
-        return this.State === TradeBotStates.Online;
+        return this.State === TradeBotStates.Running;
     }
 
     public get IsProcessing(): boolean {
@@ -207,7 +207,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 
     public get IsOffline(): boolean {
-        return this.State === TradeBotStates.Offline;
+        return this.State === TradeBotStates.Stopped;
     }
 
     public get Faulted(): boolean {
@@ -215,23 +215,23 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 
     public get CanStop(): boolean {
-        return this.State === TradeBotStates.Online
+        return this.State === TradeBotStates.Running
             || this.State === TradeBotStates.Starting
             || this.State === TradeBotStates.Reconnecting;
     }
 
     public get CanStart(): boolean {
-        return this.State === TradeBotStates.Offline
+        return this.State === TradeBotStates.Stopped
             || this.State === TradeBotStates.Faulted;
     }
 
     public get CanDelete(): boolean {
-        return this.State === TradeBotStates.Offline
+        return this.State === TradeBotStates.Stopped
             || this.State === TradeBotStates.Faulted;
     }
 
     public get CanConfigurate(): boolean {
-        return this.State === TradeBotStates.Offline
+        return this.State === TradeBotStates.Stopped
             || this.State === TradeBotStates.Faulted;
     }
 }
@@ -257,7 +257,7 @@ export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
     }
 }
 
-export enum TradeBotStates { Offline, Starting, Faulted, Online, Stopping, Reconnecting, Broken }
+export enum TradeBotStates { Stopped, Starting, Faulted, Running, Stopping, Broken, Reconnecting }
 
 export class TradeBotConfig implements Serializable<TradeBotConfig>{
     public Symbol: string;

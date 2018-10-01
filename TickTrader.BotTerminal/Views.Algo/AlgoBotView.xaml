@@ -29,37 +29,6 @@
                   cal:Message.Attach="OpenSettings" />
     </ContextMenu>
 
-    <Style x:Key="StatusEllipseStyle" TargetType="Ellipse">
-        <Style.Setters>
-            <Setter Property="Fill" Value="Black"/>
-            <Setter Property="Height" Value="10"/>
-            <Setter Property="Width" Value="10"/>
-            <Setter Property="Margin" Value="5,0"/>
-            <Setter Property="StrokeThickness" Value="0"/>
-        </Style.Setters>
-    </Style>
-
-    <Style x:Key="BotStateEllipseStyle" TargetType="Ellipse">
-        <Style.Setters>
-            <Setter Property="Fill" Value="Black"/>
-            <Setter Property="Height" Value="9"/>
-            <Setter Property="Width" Value="9"/>
-            <Setter Property="Margin" Value="3,0"/>
-            <Setter Property="StrokeThickness" Value="0"/>
-        </Style.Setters>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding State}" Value="Stopped">
-                <Setter Property="Fill" Value="LightGray"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Running">
-                <Setter Property="Fill" Value="Green"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding State}" Value="Stopping">
-                <Setter Property="Fill" Value="Orange"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
     <ControlTemplate x:Key="AlgoBotView.Old">
         <!-- Ugly hack to make it work -->
         <Control cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]">
@@ -92,7 +61,7 @@
                             <SolidColorBrush Color="White" Opacity="0.7" />
                         </Border.Background>
                         <StackPanel Orientation="Horizontal">
-                            <Ellipse Style="{StaticResource BotStateEllipseStyle}" />
+                            <Ellipse Style="{DynamicResource BotStateEllipseStyle}" />
                             <TextBlock Text="{Binding Model.InstanceId}" Width="150" Margin="2,0,5,0"/>
                             <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
                             <l:FlatButton cal:Message.Attach="Remove" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanRemove}"/>
