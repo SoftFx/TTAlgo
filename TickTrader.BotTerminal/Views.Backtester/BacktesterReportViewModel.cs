@@ -59,8 +59,8 @@ namespace TickTrader.BotTerminal
             newPropertis.Add("Testing time", Format(newStats.Elapsed));
 
             var tickPerSecond = "N/A";
-            if (newStats.Elapsed.Seconds > 0)
-                tickPerSecond = (newStats.TicksCount / newStats.Elapsed.Seconds).ToString("N0");
+            if (newStats.Elapsed.TotalSeconds > 0)
+                tickPerSecond = (newStats.TicksCount / newStats.Elapsed.TotalSeconds).ToString("N0");
 
             newPropertis.Add("Testing speed (tps)", tickPerSecond);
 
@@ -112,6 +112,15 @@ namespace TickTrader.BotTerminal
                     builder.Append(' ');
 
                 builder.Append(timeSpan.Seconds).Append("s");
+                depth++;
+            }
+
+            if (depth < 2)
+            {
+                if (builder.Length > 0)
+                    builder.Append(' ');
+
+                builder.Append(timeSpan.Milliseconds).Append("ms");
                 depth++;
             }
 
