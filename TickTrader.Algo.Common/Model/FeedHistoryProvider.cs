@@ -63,23 +63,23 @@ namespace TickTrader.Algo.Common.Model
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
             public Task<List<BarEntity>> GetBarList(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime from, DateTime to)
             {
-                return Actor.Call(a => a.GetBarList(symbol, priceType, timeFrame, from, to));
+                return Actor.Call(a => a.GetBarList(symbol, priceType, timeFrame, Prepare(from), Prepare(to)));
             }
 
             /// Warning: This method downloads all bars into a collection of unlimmited size! Use wisely!
             public Task<List<QuoteEntity>> GetQuoteList(string symbol, DateTime from, DateTime to, bool includeLevel2)
             {
-                return Actor.Call(a => a.GetQuoteList(symbol, from, to, includeLevel2));
+                return Actor.Call(a => a.GetQuoteList(symbol, Prepare(from), Prepare(to), includeLevel2));
             }
 
             public Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
             {
-                return Actor.Call(a => a.GetBarPage(symbol, priceType, timeFrame, startTime, count));
+                return Actor.Call(a => a.GetBarPage(symbol, priceType, timeFrame, Prepare(startTime), count));
             }
 
             public Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
             {
-                return Actor.Call(a => a.GetQuotePage(symbol, startTime, count, includeLevel2));
+                return Actor.Call(a => a.GetQuotePage(symbol, Prepare(startTime), count, includeLevel2));
             }
 
             public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
@@ -90,15 +90,20 @@ namespace TickTrader.Algo.Common.Model
             public async Task<Channel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
             {
                 var channel = Channel.NewOutput<SliceInfo>();
-                await Actor.OpenChannel(channel,  (a,c) => a.DownloadBarSeriesToStorage(c, symbol, timeFrame, priceType, from, to));
+                await Actor.OpenChannel(channel,  (a,c) => a.DownloadBarSeriesToStorage(c, symbol, timeFrame, priceType, Prepare(from), Prepare(to)));
                 return channel;
             }
 
             public async Task<Channel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
             {
                 var channel = Channel.NewOutput<SliceInfo>();
-                await Actor.OpenChannel(channel, (a, c) => a.DownloadTickSeriesToStorage(c, symbol, timeFrame, from, to));
+                await Actor.OpenChannel(channel, (a, c) => a.DownloadTickSeriesToStorage(c, symbol, timeFrame, Prepare(from), Prepare(to)));
                 return channel;
+            }
+
+            private static DateTime Prepare(DateTime dateTime)
+            {
+                return dateTime.ToUniversalTime();
             }
         }
 
@@ -295,6 +300,9 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteEntity>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
+            if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
+                throw new Exception();
+
             var level2 = key.Frame == TimeFrames.TicksLevel2;
             var inputStream = Channel.NewInput<QuoteEntity>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
@@ -313,6 +321,7 @@ namespace TickTrader.Algo.Common.Model
                         var slice = quoteSlicer.CompleteSlice(false);
 
                         logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
+
                         //var slice = new BarStreamSlice(i, sliceTo, bars);
                         await Cache.Put(key, slice.From, slice.To, slice.Items);
                         if (!await outputAction(slice))

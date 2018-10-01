@@ -20,6 +20,22 @@ namespace TickTrader.Algo.Core
 
         public int Count { get { return queue.Count; } }
 
+        public void Enqueue(RateUpdate rate)
+        {
+            if (rate is QuoteEntity)
+                Enqueue((QuoteEntity)rate);
+            else if (rate is BarRateUpdate)
+                Enqueue((BarRateUpdate)rate);
+            else
+                throw new Exception("Unsupported implementation of RateUpdate!");
+        }
+
+        public void Enqueue(BarRateUpdate bars)
+        {
+            queue.Enqueue(bars);
+            lasts[bars.Symbol] = bars;
+        }
+
         public void Enqueue(QuoteEntity quote)
         {
             RateUpdate last;

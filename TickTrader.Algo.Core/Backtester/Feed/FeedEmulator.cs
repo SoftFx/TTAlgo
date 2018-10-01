@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
 
         ISynchronizationContext IPluginFeedProvider.Sync => this;
 
-        internal IEnumerable<QuoteEntity> GetFeedStream()
+        internal IEnumerable<RateUpdate> GetFeedStream()
         {
             return GetJoinedStream();
         }
@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
             base.Dispose();
         }
 
-        private IEnumerable<QuoteEntity> GetJoinedStream()
+        private IEnumerable<RateUpdate> GetJoinedStream()
         {
             var streams = _feedSources.Values.ToList();
 
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
         {
-            return _feedSources.Values.Select(s => s.Current).ToList();
+            return _feedSources.Values.Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)

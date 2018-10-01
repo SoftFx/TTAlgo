@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
         private long _feedCount;
         private DateTime _timePoint;
         private long _safeTimePoint;
-        private IEnumerator<QuoteEntity> _eFeed;
+        private IEnumerator<RateUpdate> _eFeed;
         private volatile bool _canceled;
         private BacktesterCollector _collector;
         private bool _stopFlag;
@@ -75,7 +75,7 @@ namespace TickTrader.Algo.Core
 
         public override void ProcessNextTrade()
         {
-            var item = DequeueNext();
+            var item = DequeueNextTrade();
 
             if (item == null)
                 throw new Exception("Detected empty queue while ProcessNextTrade()!");
@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Core
             if (action != null)
                 action(Builder);
             else
-                EmulateQuote((QuoteEntity)item);
+                EmulateRateUpdate((RateUpdate)item);
         }
 
         public void Cancel()
@@ -144,9 +144,9 @@ namespace TickTrader.Algo.Core
             _canceled = true;
         }
 
-        public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction)
+        public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
         {
-            EmulateDelayed(delay, invokeAction, true);
+            EmulateDelayed(delay, invokeAction, isTradeAction);
         }
 
         public void EmulateDelayedTrade(TimeSpan delay, Action<PluginBuilder> invokeAction)
@@ -154,10 +154,10 @@ namespace TickTrader.Algo.Core
             EmulateDelayed(delay, invokeAction, true);
         }
 
-        public Task EmulateAsyncDelay(TimeSpan delay)
+        public Task EmulateAsyncDelay(TimeSpan delay, bool isTradeDelay)
         {
             var handler = new TaskCompletionSource<object>();
-            EmulateDelayed(delay, b => handler.SetResult(null), true);
+            EmulateDelayed(delay, b => handler.SetResult(null), isTradeDelay);
             return handler.Task;
         }
 
@@ -229,12 +229,11 @@ namespace TickTrader.Algo.Core
         //    }
         //}
 
-        private void EmulateQuote(QuoteEntity quote)
+        private void EmulateRateUpdate(RateUpdate rate)
         {
-            var update = FStartegy.InvokeAggregate(null, quote);
-            var bufferUpdate = OnFeedUpdate(update);
-            RateUpdated?.Invoke(quote);
-            _collector.OnTick(quote);
+            var bufferUpdate = OnFeedUpdate(rate);
+            RateUpdated?.Invoke(rate);
+            _collector.OnRateUpdate(rate);
 
             if (bufferUpdate.ExtendedBy > 0)
                 _collector.OnBufferExtended(bufferUpdate.ExtendedBy);
@@ -258,6 +257,27 @@ namespace TickTrader.Algo.Core
             return stopEvent.Task;
         }
 
+        private object DequeueNextTrade()
+        {
+            lock (_sync)
+            {
+                while (true)
+                {
+                    bool isTrade;
+                    var next = DequeueUpcoming(out isTrade);
+                    if (isTrade)
+                        return next;
+
+                    // if next item is not trade update just queue it
+
+                    if (next is Action<PluginBuilder>)
+                        _eventQueue.Enqueue((Action<PluginBuilder>)next);
+                    else
+                        _feedQueue.Enqueue((BarRateUpdate)next);
+                }
+            }
+        }
+
         private object DequeueNext()
         {
             lock (_sync)
@@ -266,26 +286,34 @@ namespace TickTrader.Algo.Core
                     return _eventQueue.Dequeue();
                 else if (_tradeQueue.Count > 0)
                     return _tradeQueue.Dequeue();
+                else if (_feedQueue.Count > 0)
+                    return _feedQueue.Dequeue();
                 else
+                    return DequeueUpcoming(out _);
+            }
+        }
+
+        private object DequeueUpcoming(out bool isTrade)
+        {
+            if (_delayedQueue.Count > 0)
+            {
+                if (_eFeed == null || _eFeed.Current.Time >= _delayedQueue.FindMin().Time)
                 {
-                    if (_delayedQueue.Count > 0)
-                    {
-                        if (_eFeed == null || _eFeed.Current.Time >= _delayedQueue.FindMin().Time)
-                        {
-                            var delayed = _delayedQueue.DeleteMin();
-                            UpdateVirtualTimepoint(delayed.Time);
-                            return delayed.Action;
-                        }
-                    }
-
-                    if (_eFeed == null || !_eFeed.MoveNext())
-                        return null;
-
-                    var q = _eFeed.Current;
-                    UpdateVirtualTimepoint(q.Time);
-                    return q;
+                    var delayed = _delayedQueue.DeleteMin();
+                    UpdateVirtualTimepoint(delayed.Time);
+                    isTrade = delayed.IsTrade;
+                    return delayed.Action;
                 }
             }
+
+            isTrade = false;
+
+            if (_eFeed == null || !_eFeed.MoveNext())
+                return null;
+
+            var q = _eFeed.Current;
+            UpdateVirtualTimepoint(q.Time);
+            return q;
         }
     }
 

@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
         protected readonly Dictionary<TimeFrames, BarVector> _bidBars = new Dictionary<TimeFrames, BarVector>();
         protected readonly Dictionary<TimeFrames, BarVector> _askBars = new Dictionary<TimeFrames, BarVector>();
 
-        public QuoteEntity Current { get; protected set; }
+        public RateUpdate Current { get; protected set; }
 
         public abstract void Start();
         public abstract void Stop();

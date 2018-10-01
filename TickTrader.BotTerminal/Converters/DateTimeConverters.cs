@@ -13,9 +13,19 @@ namespace TickTrader.BotTerminal
     {
         public const string Format = "yyyy.MM.dd HH:mm:ss.fff";
 
+        public FullDateTimeConverter()
+        {
+            ConvertToLocal = true;
+        }
+
+        public bool ConvertToLocal { get; set; }
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return ((DateTime?)value)?.ToLocalTime().ToString(Format);
+            if (ConvertToLocal)
+                return ((DateTime?)value)?.ToLocalTime().ToString(Format);
+            else
+                return ((DateTime?)value)?.ToString(Format);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

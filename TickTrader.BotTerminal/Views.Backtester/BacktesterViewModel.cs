@@ -43,6 +43,8 @@ namespace TickTrader.BotTerminal
         private int _leverage = 100;
         private AccountTypes _accType;
         private int _emulatedPing = 200;
+        private DateTime _emulteFrom;
+        private DateTime _emulateTo;
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
@@ -189,6 +191,9 @@ namespace TickTrader.BotTerminal
                 ResultsPage.Clear();
                 _journalContent.Value = null;
 
+                _emulteFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
+                _emulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc) + TimeSpan.FromDays(1);
+
                 await PrecacheData(observer, cToken);
 
                 cToken.ThrowIfCancellationRequested();
@@ -204,7 +209,7 @@ namespace TickTrader.BotTerminal
         private async Task PrecacheData(IActionObserver observer, CancellationToken cToken)
         {
             foreach (var symbolSetup in FeedSources)
-                await symbolSetup.PrecacheData(observer, cToken, DateRange.From, DateRange.To);
+                await symbolSetup.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
         }
 
         private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
@@ -215,7 +220,7 @@ namespace TickTrader.BotTerminal
 
             _mainSymbolToken.Id = chartSymbol.Key;
 
-            observer.StartProgress(DateRange.From.GetAbsoluteDay(), DateRange.To.GetAbsoluteDay());
+            observer.StartProgress(_emulteFrom.GetAbsoluteDay(), _emulateTo.GetAbsoluteDay());
             observer.SetMessage("Emulating...");
 
             var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
@@ -230,7 +235,7 @@ namespace TickTrader.BotTerminal
             //packageRef.IncrementRef();
             //packageRef.DecrementRef();
 
-            using (var tester = new Backtester(pluginRef, DateRange.From, DateRange.To))
+            using (var tester = new Backtester(pluginRef, _emulteFrom, _emulateTo))
             {
                 pluginSetupModel.Apply(tester);
 
@@ -257,7 +262,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     foreach (var symbolSetup in FeedSources)
-                        symbolSetup.Apply(tester, DateRange.From, DateRange.To);
+                        symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
 
                     tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 

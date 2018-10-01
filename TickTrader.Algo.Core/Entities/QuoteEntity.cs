@@ -69,9 +69,12 @@ namespace TickTrader.Algo.Core
 
         double RateUpdate.AskHigh => Ask;
         double RateUpdate.AskLow => Ask;
+        double RateUpdate.AskOpen => Ask;
         double RateUpdate.BidHigh => Bid;
         double RateUpdate.BidLow => Bid;
-        double RateUpdate.NumberOfQuotes => 1;
+        double RateUpdate.BidOpen => Bid;
+        int RateUpdate.NumberOfQuotes => 1;
+        
         Quote RateUpdate.LastQuote => this;
 
         #endregion

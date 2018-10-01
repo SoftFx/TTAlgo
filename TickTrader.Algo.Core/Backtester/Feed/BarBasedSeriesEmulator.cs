@@ -17,8 +17,8 @@ namespace TickTrader.Algo.Core
         private IEnumerator<BarEntity> _askE;
 
         private DateTime _lastBarTime;
-        private double? _lastBidRate;
-        private double? _lastAskRate;
+        private BarEntity _lastBid;
+        private BarEntity _lastAsk;
 
         //private IBarStorage _bidStorage;
         //private IBarStorage _askStorage;
@@ -90,34 +90,36 @@ namespace TickTrader.Algo.Core
         private bool TakeAskBar()
         {
             _lastBarTime = _askE.Current.OpenTime;
-            _lastAskRate = _askE.Current.Open;
+            _lastAsk = _askE.Current;
+            _lastBid = CreateFiller(_lastAsk.OpenTime, _lastAsk.CloseTime, _lastBid?.Close ?? double.NaN);
 
             UpdateBars(_askBars.Values, _askE.Current);
 
             MoveAsk();
 
-            Current = GetQuote();
+            Current = GetCurrentRate();
             return true;
         }
 
         private bool TakeBidBar()
         {
             _lastBarTime = _bidE.Current.OpenTime;
-            _lastBidRate = _bidE.Current.Open;
+            _lastBid = _bidE.Current;
+            _lastAsk = CreateFiller(_lastBid.OpenTime, _lastBid.CloseTime, _lastAsk?.Close ?? double.NaN);
 
             UpdateBars(_bidBars.Values, _bidE.Current);
 
             MoveBid();
 
-            Current = GetQuote();
+            Current = GetCurrentRate();
             return true;
         }
 
         private bool TakeBoth()
         {
             _lastBarTime = _bidE.Current.OpenTime;
-            _lastBidRate = _bidE.Current.Open;
-            _lastAskRate = _askE.Current.Open;
+            _lastBid = _bidE.Current;
+            _lastAsk = _askE.Current;
 
             UpdateBars(_bidBars.Values, _bidE.Current);
             UpdateBars(_askBars.Values, _askE.Current);
@@ -125,7 +127,7 @@ namespace TickTrader.Algo.Core
             MoveBid();
             MoveAsk();
 
-            Current = GetQuote();
+            Current = GetCurrentRate();
             return true;
         }
 
@@ -151,9 +153,14 @@ namespace TickTrader.Algo.Core
                 return false;
         }
 
-        protected QuoteEntity GetQuote()
+        protected virtual RateUpdate GetCurrentRate()
         {
-            return new QuoteEntity(_symbol, _lastBarTime, _lastBidRate, _lastAskRate);
+            return new BarRateUpdate(_lastBid, _lastAsk, _symbol);
+        }
+
+        private BarEntity CreateFiller(DateTime barOpenTime, DateTime barCloseTime, double price)
+        {
+            return new BarEntity(barOpenTime, barCloseTime, price, 0);
         }
     }
 }

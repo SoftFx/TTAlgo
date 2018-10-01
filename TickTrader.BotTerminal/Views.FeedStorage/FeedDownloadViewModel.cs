@@ -119,9 +119,12 @@ namespace TickTrader.BotTerminal
 
         private async Task<long> DownloadBars(IActionObserver observer, CancellationToken cancelToken, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
+            var fromUtc = from.ToUniversalTime();
+            var toUtc = to.ToUniversalTime();
 
-            var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
+            observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
+
+            var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, fromUtc, toUtc);
 
             try
             {
@@ -162,12 +165,15 @@ namespace TickTrader.BotTerminal
 
         private async Task<long> DownloadTicks(IActionObserver observer, CancellationToken cancelToken, string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
         {
+            var fromUtc = from.ToUniversalTime();
+            var toUtc = to.ToUniversalTime();
+
             var watch = Stopwatch.StartNew();
             long downloadedCount = 0;
 
-            observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
+            observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
 
-            var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
+            var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, fromUtc, toUtc);
 
             try
             {
@@ -207,8 +213,8 @@ namespace TickTrader.BotTerminal
             var symbol = SelectedSymbol.Value.Name;
             var timeFrame = SelectedTimeFrame.Value;
             var priceType = SelectedPriceType.Value;
-            var from = DateRange.From;
-            var to = DateRange.To + TimeSpan.FromDays(1);
+            var from = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
+            var to = DateTime.SpecifyKind(DateRange.To + TimeSpan.FromDays(1), DateTimeKind.Utc);
 
             observer?.SetMessage("Downloading... \n");
 
@@ -219,7 +225,7 @@ namespace TickTrader.BotTerminal
                 else
                     await DownloadBars(observer, cancelToken, symbol, timeFrame, priceType, from, to);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

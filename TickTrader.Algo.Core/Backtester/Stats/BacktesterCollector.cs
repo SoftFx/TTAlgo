@@ -216,11 +216,11 @@ namespace TickTrader.Algo.Core
             Stats.BarsCount += by;
         }
 
-        public void OnTick(QuoteEntity tick)
+        public void OnRateUpdate(RateUpdate update)
         {
-            Stats.TicksCount++;
+            Stats.TicksCount += update.NumberOfQuotes;
 
-            _mainBarVector.AppendQuote(tick.Time, tick.Bid, 0);
+            _mainBarVector.AppendBarPart(update.Time, update.BidOpen, update.BidHigh, update.BidLow, update.Bid, 0);
         }
 
         public void RegisterEquity(DateTime timepoint, double equity, double margin)

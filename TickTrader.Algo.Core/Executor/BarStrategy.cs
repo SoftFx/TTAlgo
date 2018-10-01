@@ -59,14 +59,14 @@ namespace TickTrader.Algo.Core
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
             var overallResult = new BufferUpdateResult();
-            var aggregation = (BarAggragation)update;
+            //var aggregation = update as BarRateUpdate;
 
             var askFixture = GetFixutre(update.Symbol, BarPriceType.Ask);
             var bidFixture = GetFixutre(update.Symbol, BarPriceType.Bid);
 
             if (askFixture != null)
             {
-                var askResult = askFixture.Update(aggregation.AskBar);
+                var askResult =  askFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Ask)
                     askResult.ExtendedBy = 0;
                 overallResult += askResult;
@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Core
 
             if (bidFixture != null)
             {
-                var bidResult = bidFixture.Update(aggregation.BidBar);
+                var bidResult = bidFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
                     bidResult.ExtendedBy = 0;
                 overallResult = bidResult;
@@ -92,11 +92,11 @@ namespace TickTrader.Algo.Core
 
             if (last != null && last.Time == bounds.Open)
             {
-                ((BarAggragation)last).Append(quote);
+                ((BarRateUpdate)last).Append(quote);
                 return null;
             }
             else
-                return new BarAggragation(bounds.Open, bounds.Close, quote);
+                return new BarRateUpdate(bounds.Open, bounds.Close, quote);
         }
 
         protected override BarSeries GetBarSeries(string symbol)
@@ -160,42 +160,6 @@ namespace TickTrader.Algo.Core
 
             //foreach (var fixture in fixtures.Values)
             //    fixture.Dispose();
-        }
-
-        private class BarAggragation : RateUpdate
-        {
-            private BarEntity _bidBar;
-            private BarEntity _askBar;
-            private QuoteEntity _lastQuote;
-
-            public BarAggragation(DateTime barStartTime, DateTime barEndTime, QuoteEntity quote)
-            {
-                _bidBar = new BarEntity(barStartTime, barEndTime, quote.Bid, 1);
-                _askBar = new BarEntity(barStartTime, barEndTime, quote.Ask, 1);
-                _lastQuote = quote;
-                Symbol = quote.Symbol;
-            }
-
-            public void Append(QuoteEntity quote)
-            {
-                _bidBar.Append(quote.Bid, 1);
-                _askBar.Append(quote.Ask, 1);
-                _lastQuote = quote;
-            }
-
-            public string Symbol { get; private set; }
-            public BarEntity BidBar => _bidBar;
-            public BarEntity AskBar => _askBar;
-
-            DateTime RateUpdate.Time => _askBar.OpenTime;
-            double RateUpdate.Ask => _askBar.Close;
-            double RateUpdate.AskHigh => _askBar.High;
-            double RateUpdate.AskLow => _askBar.Low;
-            double RateUpdate.Bid => _bidBar.Close;
-            double RateUpdate.BidHigh => _bidBar.High;
-            double RateUpdate.BidLow => _bidBar.Low;
-            double RateUpdate.NumberOfQuotes => _askBar.Volume;
-            Quote RateUpdate.LastQuote => _lastQuote;
-        }
+        } 
     }
 }

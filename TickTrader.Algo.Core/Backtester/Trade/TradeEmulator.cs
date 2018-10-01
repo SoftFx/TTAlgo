@@ -133,7 +133,7 @@ namespace TickTrader.Algo.Core
                     tp = RoundPrice(tp, smbMetadata, side);
                    
                     // emulate server ping
-                    await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+                    await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
                     ValidateOrderTypeForAccount(orderType, calc.SymbolInfo);
                     ValidateTypeAndPrice(orderType, price, stopPrice, sl, tp, maxVisibleVolume, options, calc.SymbolInfo);
@@ -174,7 +174,7 @@ namespace TickTrader.Algo.Core
                 try
                 {
                     // emulate server ping
-                    await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+                    await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
                     //Logger.Info(() => LogPrefix + "Processing cancel order request " + Request);
 
@@ -262,7 +262,7 @@ namespace TickTrader.Algo.Core
 
 
                     // emulate server ping
-                    await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+                    await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
                     var order = ReplaceOrder(request);
 
@@ -332,7 +332,7 @@ namespace TickTrader.Algo.Core
                         if (request.ByOrderId == null)
                         {
                             // emulate server ping
-                            await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+                            await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
                             EnsureOrderIsPosition(order);
 
@@ -353,7 +353,7 @@ namespace TickTrader.Algo.Core
                             var byOrder = _acc.GetOrderOrThrow(request.OrderId);
 
                             // emulate server ping
-                            await _scheduler.EmulateAsyncDelay(VirtualServerPing);
+                            await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
                             EnsureOrderIsPosition(order);
                             EnsureOrderIsPosition(byOrder);
