@@ -29,8 +29,6 @@
                       IsCheckable="True" IsChecked="{Binding IsHistoryOpened}"/>
             <MenuItem Header="{l:Resx Tab_Journal}" 
                       IsCheckable="True" IsChecked="{Binding IsJournalOpened}"/>
-            <!--<MenuItem Header="{l:Resx Tab_BotJournal}" 
-                      IsCheckable="True" IsChecked="{Binding IsBotJournalOpened}"/>-->
         </MenuItem>
 
         <MenuItem Header="{l:Resx Menu_Preferences}" l:Settings.Provider="{Binding Preferences}">

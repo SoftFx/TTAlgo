@@ -16,20 +16,18 @@ namespace TickTrader.BotTerminal
         private ChartCollectionViewModel _charts;
         private ProfileManager _profileManager;
         private CancellationToken _token;
-        private LocalAlgoLibrary _library;
-        private BotManagerViewModel _botManager;
+        private LocalAlgoAgent _agent;
         private DockManagerService _dockManagerService;
 
 
         public ProfileLoadingDialogViewModel(ChartCollectionViewModel charts, ProfileManager profileManager, CancellationToken token,
-            LocalAlgoLibrary library, BotManagerViewModel botManager, DockManagerService dockManagerService)
+            LocalAlgoAgent agent, DockManagerService dockManagerService)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _charts = charts;
             _profileManager = profileManager;
             _token = token;
-            _library = library;
-            _botManager = botManager;
+            _agent = agent;
             _dockManagerService = dockManagerService;
         }
 
@@ -47,15 +45,15 @@ namespace TickTrader.BotTerminal
                 await Task.Delay(Delay, _token); //give UI some time to display this window
 
                 _charts.CloseAllItems(_token);
-                _botManager.CloseAllBots(_token);
+                _agent.RemoveAllBots(_token);
 
                 _token.ThrowIfCancellationRequested();
 
-                await _library.WaitInit();
+                await _agent.Library.WaitInit();
 
                 _token.ThrowIfCancellationRequested();
 
-                _botManager.LoadBotsSnapshot(_profileManager.CurrentProfile, _token);
+                _agent.LoadBotsSnapshot(_profileManager.CurrentProfile, _token);
 
                 if (_profileManager.CurrentProfile.Charts == null)
                 {

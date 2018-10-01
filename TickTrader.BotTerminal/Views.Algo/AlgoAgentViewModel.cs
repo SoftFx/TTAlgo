@@ -3,10 +3,12 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal
 {
@@ -80,11 +82,25 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public async Task AddBot(AccountKey account, PluginConfig config)
+        {
+            try
+            {
+                await _agentModel.AddBot(account, config);
+                OpenBotState(config.InstanceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to add bot on {_agentModel.Name}");
+            }
+        }
+
         public async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
         {
             try
             {
                 await _agentModel.RemoveBot(botId, cleanLog, cleanAlgoData);
+                _algoEnv.Shell.DockManagerService.RemoveView(ContentIdProvider.Generate(Name, botId));
             }
             catch (Exception ex)
             {
@@ -142,7 +158,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenBotSetup(BotModelInfo bot)
+        public void OpenBotSetup(ITradeBot bot)
         {
             try
             {
@@ -230,6 +246,33 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to open download package dialog");
+            }
+        }
+
+        public void ShowChart(ITradeBot bot)
+        {
+            if (bot.IsRemote)
+                return;
+
+            try
+            {
+                _algoEnv.Shell.ShowChart(bot.Config.MainSymbol.Name, bot.Config.TimeFrame.Convert());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to show chart");
+            }
+        }
+
+        public void OpenBotState(string botId)
+        {
+            try
+            {
+                _algoEnv.Shell.DockManagerService.ShowView(ContentIdProvider.Generate(Name, botId));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open bot state");
             }
         }
     }

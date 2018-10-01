@@ -6,41 +6,42 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
     internal class BotsWarden
     {
-        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly TimeSpan _delayPunishment = TimeSpan.FromSeconds(5);
         private Dictionary<TradeBotModel, CancellationTokenSource> _abortTasks;
-        private BotManager _botManager;
+        private LocalAlgoAgent _algoAgent;
 
-        public BotsWarden(BotManager botManager)
+        public BotsWarden(LocalAlgoAgent algoAgent)
         {
             _abortTasks = new Dictionary<TradeBotModel, CancellationTokenSource>();
-            _botManager = botManager;
-            _botManager.StateChanged += BotStateChanged;
+            _algoAgent = algoAgent;
+            _algoAgent.BotStateChanged += BotStateChanged;
         }
 
-        private void BotStateChanged(TradeBotModel bot)
+        private void BotStateChanged(ITradeBot bot)
         {
-            if (bot.State == BotModelStates.Stopping)
+            var botModel = (TradeBotModel)bot;
+            if (botModel.State == PluginStates.Stopping)
             {
                 var tokenSource = new CancellationTokenSource();
-                _abortTasks.Add(bot, tokenSource);
+                _abortTasks.Add(botModel, tokenSource);
 
-                AbortBotAfter(bot, _delayPunishment, tokenSource.Token).Forget();
+                AbortBotAfter(botModel, _delayPunishment, tokenSource.Token).Forget();
             }
-            else if (bot.State == BotModelStates.Stopped)
+            else if (botModel.State == PluginStates.Stopped)
             {
-                СancelAbortTask(bot);
+                СancelAbortTask(botModel);
             }
         }
 
         private void СancelAbortTask(TradeBotModel tradeBot)
         {
-            if (_abortTasks.TryGetValue(tradeBot, out CancellationTokenSource cancellationTokenSource))
+            if (_abortTasks.TryGetValue(tradeBot, out var cancellationTokenSource))
             {
                 cancellationTokenSource.Cancel();
                 _abortTasks.Remove(tradeBot);
@@ -51,7 +52,7 @@ namespace TickTrader.BotTerminal
         {
             await Task.Delay(delay, token);
 
-            if (!token.IsCancellationRequested && bot.State == BotModelStates.Stopping)
+            if (!token.IsCancellationRequested && bot.State == PluginStates.Stopping)
             {
                 bot.Abort();
             }

@@ -44,16 +44,14 @@ namespace TickTrader.BotTerminal
         private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
-        private BotManagerViewModel _botManager;
-        private IVarList<BotControlViewModel> _botsBySymbol;
+        private IVarList<AlgoBotViewModel> _botsBySymbol;
 
 
-        public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv, BotManagerViewModel botManager)
+        public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv)
         {
             Symbol = symbol;
             DisplayName = symbol;
             _algoEnv = algoEnv;
-            _botManager = botManager;
 
             ChartWindowId = chartId;
 
@@ -80,7 +78,7 @@ namespace TickTrader.BotTerminal
 
             Indicators = indicatorViewModels.AsObservable();
             Panes = panes.AsObservable();
-            _botsBySymbol = _botManager.Bots.Where(bc => bc.Model.Config.MainSymbol.Name == Symbol); // && bc.Model.PluginRef.Metadata.Descriptor.SetupMainSymbol);
+            _botsBySymbol = _algoEnv.LocalAgentVM.Bots.Where(b => b.Model.Config.MainSymbol.Name == Symbol); // && b.Model.PluginRef.Metadata.Descriptor.SetupMainSymbol);
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -137,7 +135,7 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; private set; }
         public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
         public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
-        public IReadOnlyList<BotControlViewModel> Bots { get; private set; }
+        public IReadOnlyList<AlgoBotViewModel> Bots { get; private set; }
         public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
@@ -222,7 +220,7 @@ namespace TickTrader.BotTerminal
             {
                 if (item.Descriptor.Type == AlgoTypes.Robot)
                 {
-                    _botManager.OpenBotSetup(item.Info, Chart);
+                    _algoEnv.LocalAgentVM.OpenBotSetup(item.Info);
                     return;
                 }
 

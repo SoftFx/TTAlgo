@@ -47,7 +47,7 @@ namespace TickTrader.BotAgent.BA.Models
         public PluginPermissions Permissions => Config.Permissions;
         public PluginKey PluginKey => Config.Key;
         public PackageKey PackageKey { get; private set; }
-        public BotStates State { get; private set; }
+        public PluginStates State { get; private set; }
         public AlgoPackageRef Package { get; private set; }
         public Exception Fault { get; private set; }
         public string FaultMessage { get; private set; }
@@ -76,7 +76,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 _algoData = new AlgoData(workingFolder);
 
-                if (IsRunning && State != BotStates.Broken)
+                if (IsRunning && State != PluginStates.Broken)
                     Start();
 
                 return true;
@@ -92,7 +92,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             CheckShutdownFlag();
 
-            if (State == BotStates.Broken)
+            if (State == PluginStates.Broken)
                 return;
 
             if (IsStopped())
@@ -111,15 +111,15 @@ namespace TickTrader.BotAgent.BA.Models
         {
             if (client.ConnectionState == ConnectionStates.Online)
             {
-                if (State == BotStates.Starting)
+                if (State == PluginStates.Starting)
                     StartExecutor();
-                else if (State == BotStates.Reconnecting)
-                    ChangeState(BotStates.Online);
+                else if (State == PluginStates.Reconnecting)
+                    ChangeState(PluginStates.Running);
             }
             else
             {
-                if (State == BotStates.Online)
-                    ChangeState(BotStates.Reconnecting, client.ErrorText);
+                if (State == PluginStates.Running)
+                    ChangeState(PluginStates.Reconnecting, client.ErrorText);
             }
         }
 
@@ -142,14 +142,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             UpdatePackage();
 
-            if (State == BotStates.Broken)
+            if (State == PluginStates.Broken)
                 throw new InvalidStateException("Trade bot is broken!");
 
             Package.IncrementRef();
 
             SetRunning(true);
 
-            ChangeState(BotStates.Starting);
+            ChangeState(PluginStates.Starting);
 
             if (_client.ConnectionState == ConnectionStates.Online)
                 StartExecutor();
@@ -182,12 +182,12 @@ namespace TickTrader.BotAgent.BA.Models
         {
             SetRunning(false);
 
-            if (State == BotStates.Offline || State == BotStates.Faulted)
+            if (State == PluginStates.Stopped || State == PluginStates.Faulted)
                 return Task.CompletedTask;
 
-            if (State == BotStates.Online || State == BotStates.Reconnecting || State == BotStates.Starting)
+            if (State == PluginStates.Running || State == PluginStates.Reconnecting || State == PluginStates.Starting)
             {
-                ChangeState(BotStates.Stopping);
+                ChangeState(PluginStates.Stopping);
                 _stopTask = StopExecutor();
             }
 
@@ -201,7 +201,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private bool IsStopped()
         {
-            return State == BotStates.Offline || State == BotStates.Faulted || State == BotStates.Broken;
+            return State == PluginStates.Stopped || State == PluginStates.Faulted || State == PluginStates.Broken;
         }
 
         private bool TaskIsNullOrStopped(Task task)
@@ -245,12 +245,12 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.Start();
                 _botListener.Start();
 
-                ChangeState(BotStates.Online);
+                ChangeState(PluginStates.Running);
             }
             catch (Exception ex)
             {
                 Fault = ex;
-                if (State != BotStates.Stopping)
+                if (State != PluginStates.Stopping)
                     await StopExecutor(ex.Message);
             }
 
@@ -269,7 +269,7 @@ namespace TickTrader.BotAgent.BA.Models
             _botListener?.Stop();
             DisposeExecutor();
 
-            ChangeState(hasError ? BotStates.Faulted : BotStates.Offline, error);
+            ChangeState(hasError ? PluginStates.Faulted : PluginStates.Stopped, error);
             OnStop();
         }
 
@@ -282,10 +282,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void OnExecutorStopped(string err = null)
         {
-            if (State == BotStates.Online)
+            if (State == PluginStates.Running)
             {
                 SetRunning(false);
-                ChangeState(BotStates.Offline, err);
+                ChangeState(PluginStates.Stopped, err);
                 DisposeExecutor();
             }
         }
@@ -302,7 +302,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        private void ChangeState(BotStates newState, string errorMessage = null)
+        private void ChangeState(PluginStates newState, string errorMessage = null)
         {
             if (string.IsNullOrWhiteSpace(errorMessage))
                 _log.Info("TradeBot '{0}' State: {1}", Id, newState);
@@ -329,26 +329,26 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (Package == null)
             {
-                ChangeState(BotStates.Broken, $"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
+                ChangeState(PluginStates.Broken, $"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
                 return;
             }
 
             _ref = _packageRepo.Library.GetPluginRef(PluginKey);
             if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
-                ChangeState(BotStates.Broken, $"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
+                ChangeState(PluginStates.Broken, $"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
                 return;
             }
 
-            if (State == BotStates.Broken)
-                ChangeState(BotStates.Offline, null);
+            if (State == PluginStates.Broken)
+                ChangeState(PluginStates.Stopped, null);
         }
 
         public void Abort()
         {
             CheckShutdownFlag();
 
-            if (State == BotStates.Stopping)
+            if (State == PluginStates.Stopping)
                 executor?.Abort();
         }
 

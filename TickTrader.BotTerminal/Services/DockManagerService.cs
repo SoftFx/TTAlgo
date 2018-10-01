@@ -3,11 +3,12 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace TickTrader.BotTerminal
 {
-    public interface IDockManagerServiceProvider
+    internal interface IDockManagerServiceProvider
     {
         event Action<Stream> SaveLayoutEvent;
 
@@ -15,8 +16,14 @@ namespace TickTrader.BotTerminal
 
         event Action<string> ToggleViewEvent;
 
+        event Action<string> ShowViewEvent;
 
-        void SetViewVisibility(string contentId, bool opened);
+        event Action<string> RemoveViewEvent;
+
+
+        void ViewVisibilityChanged(string contentId, bool opened);
+
+        IScreen GetScreen(string contentId);
     }
 
 
@@ -31,13 +38,15 @@ namespace TickTrader.BotTerminal
         public const string Tab_Trade = "Tab_Trade";
         public const string Tab_History = "Tab_History";
         public const string Tab_Journal = "Tab_Journal";
-        public const string Tab_BotJournal = "Tab_BotJournal";
 
 
+        private AlgoEnvironment _algoEnv;
         private Dictionary<string, bool> _viewOpened;
         private event Action<Stream> _saveLayoutEvent;
         private event Action<Stream> _loadLayoutEvent;
         private event Action<string> _toggleViewEvent;
+        private event Action<string> _showViewEvent;
+        private event Action<string> _removeViewEvent;
 
 
         #region Bindable properties
@@ -114,23 +123,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsBotJournalOpened
-        {
-            get { return _viewOpened[Tab_BotJournal]; }
-            set
-            {
-                if (_viewOpened[Tab_BotJournal] == value)
-                    return;
-
-                ToggleView(Tab_BotJournal);
-            }
-        }
-
         #endregion Bindable properties
 
 
-        public DockManagerService()
+        public DockManagerService(AlgoEnvironment algoEnv)
         {
+            _algoEnv = algoEnv;
+
             _viewOpened = new Dictionary<string, bool>
             {
                 {Tab_Symbols, false },
@@ -139,7 +138,6 @@ namespace TickTrader.BotTerminal
                 {Tab_Trade, false },
                 {Tab_History, false },
                 {Tab_Journal, false },
-                {Tab_BotJournal, false },
             };
         }
 
@@ -187,6 +185,16 @@ namespace TickTrader.BotTerminal
             _toggleViewEvent?.Invoke(contentId);
         }
 
+        public void ShowView(string contentId)
+        {
+            _showViewEvent?.Invoke(contentId);
+        }
+
+        public void RemoveView(string contentId)
+        {
+            _removeViewEvent?.Invoke(contentId);
+        }
+
 
         #region IDockManagerServiceProvider
 
@@ -208,8 +216,20 @@ namespace TickTrader.BotTerminal
             remove { _toggleViewEvent -= value; }
         }
 
+        event Action<string> IDockManagerServiceProvider.ShowViewEvent
+        {
+            add { _showViewEvent += value; }
+            remove { _showViewEvent -= value; }
+        }
 
-        void IDockManagerServiceProvider.SetViewVisibility(string contentId, bool opened)
+        event Action<string> IDockManagerServiceProvider.RemoveViewEvent
+        {
+            add { _removeViewEvent += value; }
+            remove { _removeViewEvent -= value; }
+        }
+
+
+        void IDockManagerServiceProvider.ViewVisibilityChanged(string contentId, bool opened)
         {
             if (!_viewOpened.ContainsKey(contentId))
                 return;
@@ -225,10 +245,49 @@ namespace TickTrader.BotTerminal
                 case Tab_Trade: NotifyOfPropertyChange(nameof(IsTradeOpened)); break;
                 case Tab_History: NotifyOfPropertyChange(nameof(IsHistoryOpened)); break;
                 case Tab_Journal: NotifyOfPropertyChange(nameof(IsJournalOpened)); break;
-                case Tab_BotJournal: NotifyOfPropertyChange(nameof(IsBotJournalOpened)); break;
             }
         }
 
+        IScreen IDockManagerServiceProvider.GetScreen(string contentId)
+        {
+            if (ContentIdProvider.TryParse(contentId, out var agent, out var bot))
+            {
+                var botVM = _algoEnv.Agents.Snapshot.FirstOrDefault(a => a.Name == agent)
+                    ?.Bots.Snapshot.FirstOrDefault(b => b.InstanceId == bot);
+                if (botVM != null)
+                    return new BotStateViewModel(botVM);
+            }
+            return null;
+        }
+
         #endregion IDockManagerServiceProvider
+    }
+
+
+    internal static class ContentIdProvider
+    {
+        public static string Generate(string agentName, string botId)
+        {
+            return $"bot/{agentName}/{botId}";
+        }
+
+        public static bool TryParse(string contentId, out string agentName, out string botId)
+        {
+            agentName = null;
+            botId = null;
+
+            if (contentId.StartsWith("bot/"))
+            {
+                var parts = contentId.Split('/');
+                if (parts.Length == 3)
+                {
+                    agentName = parts[1];
+                    botId = parts[2];
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

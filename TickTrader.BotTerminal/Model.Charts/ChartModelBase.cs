@@ -62,7 +62,6 @@ namespace TickTrader.BotTerminal
             logger = NLog.LogManager.GetCurrentClassLogger();
             AlgoEnv = algoEnv;
             this.Model = symbol;
-            this.Journal = AlgoEnv.LocalAgent.BotJournal;
 
             AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Indicator).AsObservable();
             AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).AsObservable();
@@ -72,7 +71,7 @@ namespace TickTrader.BotTerminal
 
             this.isConnected = ClientModel.IsConnected.Value;
             ClientModel.Connected += Connection_Connected;
-            //client.Disconnected += Connection_Disconnected;
+            ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
 
             subscription = ClientModel.Distributor.Subscribe(symbol.Name);
@@ -113,7 +112,6 @@ namespace TickTrader.BotTerminal
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
-        public BotJournal Journal { get; private set; }
         public double? CurrentAsk { get; private set; }
         public double? CurrentBid { get; private set; }
 
@@ -287,10 +285,10 @@ namespace TickTrader.BotTerminal
             Navigator.Extend(count, endDate);
         }
 
-        //private void Connection_Disconnected()
-        //{
-        //    stateController.ModifyConditions(() => isConnected = false);
-        //}
+        private void Connection_Disconnected()
+        {
+            Disconnected?.Invoke();
+        }
 
         private void Connection_Connected()
         {
@@ -409,6 +407,7 @@ namespace TickTrader.BotTerminal
         public event System.Action StartEvent = delegate { };
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
         public event System.Action Connected;
+        public event System.Action Disconnected;
 
         #endregion
 

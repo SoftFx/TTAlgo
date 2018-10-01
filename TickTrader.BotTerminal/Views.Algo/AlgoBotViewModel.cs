@@ -5,54 +5,102 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoBotViewModel : PropertyChangedBase
     {
-        public BotModelInfo Info { get; }
+        public ITradeBot Model { get; }
 
         public AlgoAgentViewModel Agent { get; }
 
 
-        public string InstanceId => Info.InstanceId;
+        public string InstanceId => Model.InstanceId;
 
-        public AccountKey Account => Info.Account;
+        public AccountKey Account => Model.Account;
 
-        public BotStates State => Info.State;
+        public PluginStates State => Model.State;
+
+        public bool IsRunning => PluginStateHelper.IsRunning(Model.State);
+
+        public bool IsStopped => PluginStateHelper.IsStopped(Model.State);
+
+        public bool CanStart => PluginStateHelper.IsStopped(Model.State);
+
+        public bool CanStop => PluginStateHelper.IsRunning(Model.State);
+
+        public bool CanStartStop => CanStart || CanStop;
+
+        public bool CanRemove => PluginStateHelper.IsStopped(Model.State);
+
+        public bool CanOpenChart => !Model.IsRemote && (Model.Descriptor?.SetupMainSymbol ?? false);
+
+        public string Status => Model.Status;
 
 
-        public AlgoBotViewModel(BotModelInfo info, AlgoAgentViewModel agent)
+        public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)
         {
-            Info = info;
+            Model = bot;
             Agent = agent;
 
-            Agent.Model.BotStateChanged += OnBotStateChanged;
+            Model.StateChanged += OnStateChanged;
+            Model.ConfigurationChanged += OnConfigurationChanged;
+            Model.StatusChanged += OnStatusChanged;
         }
 
 
         public void Start()
         {
-            Agent.StartBot(Info.InstanceId).Forget();
+            Agent.StartBot(InstanceId).Forget();
         }
 
         public void Stop()
         {
-            Agent.StopBot(Info.InstanceId).Forget();
+            Agent.StopBot(InstanceId).Forget();
+        }
+
+        public void StartStop()
+        {
+            if (IsRunning)
+                Stop();
+            else if (IsStopped)
+                Start();
         }
 
         public void Remove()
         {
-            Agent.RemoveBot(Info.InstanceId).Forget();
+            Agent.RemoveBot(InstanceId).Forget();
         }
 
         public void OpenSettings()
         {
-            Agent.OpenBotSetup(Info);
+            Agent.OpenBotSetup(Model);
+        }
+
+        public void OpenChart()
+        {
+            Agent.ShowChart(Model);
+        }
+
+        public void OpenState()
+        {
+            Agent.OpenBotState(InstanceId);
         }
 
 
-        private void OnBotStateChanged(BotModelInfo bot)
+        private void OnStateChanged(ITradeBot bot)
         {
-            if (bot.InstanceId == Info.InstanceId)
-            {
-                NotifyOfPropertyChange(nameof(State));
-            }
+            NotifyOfPropertyChange(nameof(State));
+            NotifyOfPropertyChange(nameof(IsRunning));
+            NotifyOfPropertyChange(nameof(IsStopped));
+            NotifyOfPropertyChange(nameof(CanStart));
+            NotifyOfPropertyChange(nameof(CanStop));
+            NotifyOfPropertyChange(nameof(CanStartStop));
+            NotifyOfPropertyChange(nameof(CanRemove));
+        }
+
+        private void OnConfigurationChanged(ITradeBot bot)
+        {
+        }
+
+        private void OnStatusChanged(ITradeBot bot)
+        {
+            NotifyOfPropertyChange(nameof(Status));
         }
     }
 }

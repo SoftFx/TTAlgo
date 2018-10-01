@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
+using NLog;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
@@ -13,12 +16,15 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.BotTerminal.Lib;
+using File = System.IO.File;
 
 namespace TickTrader.BotTerminal
 {
-    internal class LocalAlgoAgent : IAlgoAgent, IAlgoSetupMetadata, IAlgoPluginHost
+    internal class LocalAlgoAgent : IAlgoAgent, IAlgoSetupMetadata, IAlgoPluginHost, IAlgoSetupContext
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
+        private static readonly ISymbolInfo _defaultSymbol = new SymbolToken("EURUSD", SymbolOrigin.Online);
 
         private readonly ReductionCollection _reductions;
         private readonly MappingCollectionInfo _mappingsInfo;
@@ -27,6 +33,8 @@ namespace TickTrader.BotTerminal
         private VarDictionary<PluginKey, PluginInfo> _plugins;
         private VarDictionary<AccountKey, AccountModelInfo> _accounts;
         private BotsWarden _botsWarden;
+        private VarDictionary<string, TradeBotModel> _bots;
+        private PreferencesStorageModel _preferences;
 
 
         public string Name => "Local";
@@ -37,7 +45,7 @@ namespace TickTrader.BotTerminal
 
         public IVarSet<AccountKey, AccountModelInfo> Accounts => _accounts;
 
-        public IVarSet<string, BotModelInfo> Bots { get; }
+        public IVarSet<string, ITradeBot> Bots { get; }
 
         public PluginCatalog Catalog { get; }
 
@@ -55,44 +63,44 @@ namespace TickTrader.BotTerminal
 
         public TraderClientModel ClientModel { get; }
 
-        public BotManager BotManager { get; }
-
         public IShell Shell { get; }
 
-        public BotJournal BotJournal { get; }
+        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => PluginStateHelper.IsRunning(b.State));
+
+        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => PluginStateHelper.IsRunning(b.State));
 
 
         public event Action<PackageInfo> PackageStateChanged;
 
         public event Action<AccountModelInfo> AccountStateChanged;
 
-        public event Action<BotModelInfo> BotStateChanged;
+        public event Action<ITradeBot> BotStateChanged;
 
 
-        public LocalAlgoAgent(IShell shell, TraderClientModel clientModel)
+        public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
         {
             Shell = shell;
             ClientModel = clientModel;
+            _preferences = storage.PreferencesStorage.StorageModel;
 
             _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             IdProvider = new PluginIdProvider();
             Library = new LocalAlgoLibrary(new AlgoLogAdapter("AlgoRepository"));
-            BotJournal = new BotJournal(1000);
-            BotManager = new BotManager(this);
-            _botsWarden = new BotsWarden(BotManager);
+            _botsWarden = new BotsWarden(this);
             _syncContext = new DispatcherSync();
             _packages = new VarDictionary<PackageKey, PackageInfo>();
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
-            Bots = BotManager.Bots.Select((k, v) => v.ToInfo());
+            _bots = new VarDictionary<string, TradeBotModel>();
+            Bots = _bots.Select((k, v) => (ITradeBot)v);
 
             Library.PackageUpdated += LibraryOnPackageUpdated;
             Library.PluginUpdated += LibraryOnPluginUpdated;
             Library.PackageStateChanged += OnPackageStateChanged;
             Library.Reset += LibraryOnReset;
             ClientModel.Connected += ClientModelOnConnected;
+            ClientModel.Disconnected += ClientModelOnDisconnected;
             ClientModel.Connection.StateChanged += ClientConnectionOnStateChanged;
-            BotManager.StateChanged += OnBotStateChanged;
 
             Library.AddAssemblyAsPackage(Assembly.Load("TickTrader.Algo.Indicators"));
             Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, EnvService.Instance.AlgoRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
@@ -112,38 +120,55 @@ namespace TickTrader.BotTerminal
         {
             var accountMetadata = new AccountMetadataInfo(new AccountKey(ClientModel.Connection.CurrentServer,
                 ClientModel.Connection.CurrentLogin), ClientModel.ObservableSymbolList.Select(s => new SymbolInfo(s.Name, SymbolOrigin.Online)).ToList());
-            var res = new SetupMetadata(_apiMetadata, _mappingsInfo, accountMetadata, setupContext ?? BotManager.GetSetupContextInfo());
+            var res = new SetupMetadata(_apiMetadata, _mappingsInfo, accountMetadata, setupContext ?? this.GetSetupContextInfo());
             return Task.FromResult(res);
         }
 
         public Task StartBot(string instanceId)
         {
-            BotManager.StartBot(instanceId);
+            if (_bots.TryGetValue(instanceId, out var bot))
+            {
+                bot.Start();
+            }
             return Task.FromResult(this);
         }
 
         public Task StopBot(string instanceId)
         {
-            BotManager.StopBot(instanceId);
+            if (_bots.TryGetValue(instanceId, out var bot))
+            {
+                return bot.Stop();
+            }
             return Task.FromResult(this);
         }
 
         public Task AddBot(AccountKey account, PluginConfig config)
         {
-            var bot = new TradeBotModel(config, this, this, BotManager, new WindowStorageModel { Width = 300, Height = 300 });
-            BotManager.AddBot(bot);
+            var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
+            _bots.Add(bot.InstanceId, bot);
+            IdProvider.RegisterBot(bot);
+            bot.StateChanged += OnBotStateChanged;
             return Task.FromResult(this);
         }
 
         public Task RemoveBot(string instanceId, bool cleanLog = false, bool cleanAlgoData = false)
         {
-            BotManager.RemoveBot(instanceId);
+            if (_bots.TryGetValue(instanceId, out var bot))
+            {
+                _bots.Remove(instanceId);
+                IdProvider.UnregisterPlugin(instanceId);
+                bot.StateChanged -= OnBotStateChanged;
+            }
             return Task.FromResult(this);
         }
 
         public Task ChangeBotConfig(string instanceId, PluginConfig newConfig)
         {
-            BotManager.ChangeBotConfig(instanceId, newConfig);
+            if (_bots.TryGetValue(instanceId, out var bot))
+            {
+                bot.Configurate(newConfig);
+                _bots[instanceId] = bot;
+            }
             return Task.FromResult(this);
         }
 
@@ -232,12 +257,10 @@ namespace TickTrader.BotTerminal
             AccountStateChanged?.Invoke(account);
         }
 
-        private void OnBotStateChanged(TradeBotModel bot)
+        private void OnBotStateChanged(ITradeBot bot)
         {
             if (Bots.Snapshot.TryGetValue(bot.InstanceId, out var botModel))
             {
-                botModel.State = bot.State.ToInfo();
-                botModel.Descriptor = bot.PluginRef?.Metadata.Descriptor;
                 BotStateChanged?.Invoke(botModel);
             }
         }
@@ -263,6 +286,8 @@ namespace TickTrader.BotTerminal
                 };
                 _accounts.Add(accountKey, account);
             }
+
+            StopRunningBotsOnBlockedAccount();
         }
 
         private void LibraryOnPackageUpdated(UpdateInfo<PackageInfo> update)
@@ -315,13 +340,119 @@ namespace TickTrader.BotTerminal
         }
 
 
-        #region IAlgoSetupMetadata implementation
+        #region Local bots management
+
+        public void StopBots()
+        {
+            _bots.Values.Foreach(StopBot);
+        }
+
+        public void RemoveAllBots(CancellationToken token)
+        {
+            foreach (var instanceId in _bots.Snapshot.Keys.ToList())
+            {
+                if (token.IsCancellationRequested)
+                    return;
+
+                RemoveBot(instanceId);
+            }
+        }
+
+        public void SaveBotsSnapshot(ProfileStorageModel profileStorage)
+        {
+            try
+            {
+                profileStorage.Bots = _bots.Snapshot.Values.Select(b => new TradeBotStorageEntry
+                {
+                    Started = PluginStateHelper.IsRunning(b.State),
+                    Config = b.Config,
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to save bots snapshot");
+            }
+        }
+
+        public void LoadBotsSnapshot(ProfileStorageModel profileStorage, CancellationToken token)
+        {
+            try
+            {
+                if ((profileStorage.Bots?.Count ?? 0) == 0)
+                {
+                    _logger.Info($"Bots snapshot is empty");
+                    return;
+                }
+
+                _logger.Info($"Loading bots snapshot({profileStorage.Bots.Count} bots)");
+
+                foreach (var bot in profileStorage.Bots)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    RestoreTradeBot(bot);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to load bots snapshot");
+            }
+        }
+
+
+        private async void StopBot(TradeBotModel bot)
+        {
+            if (bot.State == PluginStates.Running)
+            {
+                await bot.Stop();
+            }
+        }
+
+        private void RestoreTradeBot(TradeBotStorageEntry entry)
+        {
+            if (entry.Config == null)
+            {
+                _logger.Error("Trade bot not configured!");
+            }
+            if (entry.Config.Key == null)
+            {
+                _logger.Error("Trade bot key missing!");
+            }
+
+            AddBot(null, entry.Config);
+            if (entry.Started && _preferences.RestartBotsOnStartup)
+                StartBot(entry.Config.InstanceId);
+        }
+
+        private void StopRunningBotsOnBlockedAccount()
+        {
+            if (ClientModel.Connection.LastError?.Code == ConnectionErrorCodes.BlockedAccount)
+                _bots.Snapshot.Values.Where(b => PluginStateHelper.IsRunning(b.State)).Foreach(b => b.Stop().Forget());
+        }
+
+        #endregion
+
+
+        #region IAlgoSetupMetadata
 
         public IReadOnlyList<ISymbolInfo> Symbols => ClientModel.ObservableSymbolList;
 
         IPluginIdProvider IAlgoSetupMetadata.IdProvider => IdProvider;
 
         #endregion IAlgoSetupMetadata implementation
+
+
+        #region IAlgoSetupContext
+
+        TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrames.M1;
+
+        ISymbolInfo IAlgoSetupContext.DefaultSymbol => _defaultSymbol;
+
+        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
+
+        #endregion
 
 
         #region IAlgoPluginHost
@@ -345,8 +476,6 @@ namespace TickTrader.BotTerminal
         {
             return ClientModel.TradeHistory.AlgoAdapter;
         }
-
-        BotJournal IAlgoPluginHost.Journal => BotJournal;
 
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
@@ -376,11 +505,17 @@ namespace TickTrader.BotTerminal
         public event Action StartEvent = delegate { };
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
         public event Action Connected;
+        public event Action Disconnected;
 
 
         private void ClientModelOnConnected()
         {
             Connected?.Invoke();
+        }
+
+        private void ClientModelOnDisconnected()
+        {
+            Disconnected?.Invoke();
         }
 
         #endregion

@@ -7,6 +7,7 @@ using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using System.Linq;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -17,10 +18,6 @@ namespace TickTrader.BotTerminal
 
         public bool HasOverlayOutputs => Setup.Outputs.Any(o => o.Metadata.Descriptor.Target == OutputTargets.Overlay);
         public bool HasPaneOutputs => Setup.Outputs.Any(o => o.Metadata.Descriptor.Target != OutputTargets.Overlay);
-
-
-        private bool IsRunning { get; set; }
-        private bool IsStopping { get; set; }
 
 
         public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -45,7 +42,7 @@ namespace TickTrader.BotTerminal
 
             Host.StartEvent -= Host_StartEvent;
             Host.StopEvent -= Host_StopEvent;
-            if (IsRunning)
+            if (State == PluginStates.Running)
                 StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
 
@@ -73,24 +70,33 @@ namespace TickTrader.BotTerminal
             return executor;
         }
 
+        protected override async void OnPluginUpdated()
+        {
+            if (State == PluginStates.Running)
+            {
+                await StopIndicator();
+                UpdateRefs();
+                StartIndicator();
+            }
+        }
+
 
         private void StartIndicator()
         {
-            if (!IsRunning)
+            if (State == PluginStates.Stopped)
             {
-                IsRunning = StartExcecutor();
+                if (StartExcecutor())
+                    ChangeState(PluginStates.Running);
             }
         }
 
         private async Task StopIndicator()
         {
-            if (IsRunning && !IsStopping)
+            if (State == PluginStates.Running)
             {
-                IsStopping = true;
                 await StopExecutor();
-                IsRunning = false;
-                IsStopping = false;
-                foreach (var dataLine in this._series.Values)
+                ChangeState(PluginStates.Stopped);
+                foreach (var dataLine in _series.Values)
                     dataLine.Clear();
             }
         }

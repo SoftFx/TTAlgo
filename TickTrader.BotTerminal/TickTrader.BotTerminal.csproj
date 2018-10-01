@@ -315,6 +315,7 @@
     <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
+    <Compile Include="Model.Algo\PluginStateHelper.cs" />
     <Compile Include="Model.Profiles\ProfileResolver.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
@@ -322,7 +323,6 @@
     <Compile Include="Model.Profiles\Version1\ProfileResolver.cs" />
     <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
-    <Compile Include="Model.Protocol\BotAgentModel.cs" />
     <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageModel.cs" />
@@ -339,7 +339,7 @@
     <Compile Include="Model.Lib\FilteredListModel.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
-    <Compile Include="Model\BotManager.cs" />
+    <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
@@ -441,7 +441,6 @@
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedImportViewModel.cs" />
     <Compile Include="Views.FeedStorage\SymbolCfgEditorViewModel.cs" />
-    <Compile Include="Views.Chart\BotControlViewModel.cs" />
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
     <Compile Include="Views.Chart\CloseChartDialogViewModel.cs" />
     <Compile Include="Views.Chart\CloseChartDialogView.xaml.cs">
@@ -517,7 +516,6 @@
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
     <Compile Include="Views.Algo\BotListViewModel.cs" />
-    <Compile Include="Views.Algo\BotManagerViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -528,9 +526,6 @@
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
-    <Compile Include="Views\BotJournalView.xaml.cs">
-      <DependentUpon>BotJournalView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.TradeInfo\GrossPositionListView.xaml.cs">
       <DependentUpon>GrossPositionListView.xaml</DependentUpon>
     </Compile>
@@ -717,6 +712,10 @@
     <Page Include="Resx\Styles.Classic\DragDropStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resx\Styles.Classic\Ellipse.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Styles.Classic\Icons.xaml">
       <SubType>Designer</SubType>
@@ -974,7 +973,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\BotControlView.xaml">
+    <Page Include="Views.Algo\AlgoBotView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1050,6 +1049,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\BotJournalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1065,10 +1068,6 @@
     <Page Include="Views.Auth\LoginDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\BotJournalView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views.TradeInfo\GrossPositionListView.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -36,8 +36,6 @@ namespace TickTrader.BotTerminal
 
         public BotAgentStorageEntry Creds { get; private set; }
 
-        public BotAgentModel BotAgent { get; }
-
         public RemoteAlgoAgent RemoteAgent { get; }
 
 
@@ -48,9 +46,9 @@ namespace TickTrader.BotTerminal
         {
             Creds = botAgentCreds;
 
-            BotAgent = new BotAgentModel();
-            _protocolClient = new Algo.Protocol.Grpc.GrpcClient(BotAgent);
-            RemoteAgent = new RemoteAlgoAgent(_protocolClient, this);
+            RemoteAgent = new RemoteAlgoAgent(Creds.ServerAddress);
+            _protocolClient = new Algo.Protocol.Grpc.GrpcClient(RemoteAgent);
+            RemoteAgent.SetProtocolClient(_protocolClient);
 
             _protocolClient.Connected += ClientOnConnected;
             _protocolClient.Disconnected += ClientOnDisconnected;
@@ -74,7 +72,7 @@ namespace TickTrader.BotTerminal
 
             _stateControl.OnEnter(States.Connecting, StartConnecting);
             _stateControl.OnEnter(States.Disconnecting, StartDisconnecting);
-            _stateControl.OnEnter(States.Offline, () => BotAgent.ClearCache());
+            _stateControl.OnEnter(States.Offline, () => RemoteAgent.ClearCache());
 
             _stateControl.StateChanged += OnStateChanged;
         }

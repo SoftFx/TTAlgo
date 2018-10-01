@@ -886,24 +886,24 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static BotStates Convert(this Lib.BotModelInfo.Types.BotState state)
+        public static PluginStates Convert(this Lib.BotModelInfo.Types.PluginState state)
         {
             switch (state)
             {
-                case Lib.BotModelInfo.Types.BotState.Offline:
-                    return BotStates.Offline;
-                case Lib.BotModelInfo.Types.BotState.Starting:
-                    return BotStates.Starting;
-                case Lib.BotModelInfo.Types.BotState.Faulted:
-                    return BotStates.Faulted;
-                case Lib.BotModelInfo.Types.BotState.Online:
-                    return BotStates.Online;
-                case Lib.BotModelInfo.Types.BotState.Stopping:
-                    return BotStates.Stopping;
-                case Lib.BotModelInfo.Types.BotState.Broken:
-                    return BotStates.Broken;
-                case Lib.BotModelInfo.Types.BotState.Reconnecting:
-                    return BotStates.Reconnecting;
+                case Lib.BotModelInfo.Types.PluginState.Stopped:
+                    return PluginStates.Stopped;
+                case Lib.BotModelInfo.Types.PluginState.Starting:
+                    return PluginStates.Starting;
+                case Lib.BotModelInfo.Types.PluginState.Faulted:
+                    return PluginStates.Faulted;
+                case Lib.BotModelInfo.Types.PluginState.Running:
+                    return PluginStates.Running;
+                case Lib.BotModelInfo.Types.PluginState.Stopping:
+                    return PluginStates.Stopping;
+                case Lib.BotModelInfo.Types.PluginState.Broken:
+                    return PluginStates.Broken;
+                case Lib.BotModelInfo.Types.PluginState.Reconnecting:
+                    return PluginStates.Reconnecting;
                 default:
                     throw new ArgumentException();
             }

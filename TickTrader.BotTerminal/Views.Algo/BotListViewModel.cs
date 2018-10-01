@@ -12,20 +12,18 @@ namespace TickTrader.BotTerminal
         private static readonly ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private AlgoEnvironment _algoEnv;
-        private BotManagerViewModel _botManager;
 
 
-        public IObservableList<BotControlViewModel> LocalBots { get; }
+        public IObservableList<AlgoBotViewModel> LocalBots { get; }
 
         public IObservableList<BotAgentViewModel> BotAgents { get; }
 
 
-        public BotListViewModel(AlgoEnvironment algoEnv, BotManagerViewModel botManager)
+        public BotListViewModel(AlgoEnvironment algoEnv)
         {
             _algoEnv = algoEnv;
-            _botManager = botManager;
 
-            LocalBots = _botManager.Bots.AsObservable();
+            LocalBots = _algoEnv.LocalAgentVM.Bots.AsObservable();
 
             BotAgents = _algoEnv.BotAgents.AsObservable();
         }

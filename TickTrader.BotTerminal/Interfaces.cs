@@ -30,5 +30,6 @@ namespace TickTrader.BotTerminal
         WindowManager ToolWndManager { get; }
         IProfileLoader ProfileLoader { get; }
         LocalAlgoAgent Agent { get; }
+        DockManagerService DockManagerService { get; }
     }
 }

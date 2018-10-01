@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
 
         IVarSet<AccountKey, AccountModelInfo> Accounts { get; }
 
-        IVarSet<string, BotModelInfo> Bots { get; }
+        IVarSet<string, ITradeBot> Bots { get; }
 
         PluginCatalog Catalog { get; }
 
@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
 
         event Action<PackageInfo> PackageStateChanged;
         event Action<AccountModelInfo> AccountStateChanged;
-        event Action<BotModelInfo> BotStateChanged;
+        event Action<ITradeBot> BotStateChanged;
 
 
         Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);
@@ -75,10 +75,10 @@ namespace TickTrader.BotTerminal
 
         ITradeExecutor GetTradeApi();
         ITradeHistoryProvider GetTradeHistoryApi();
-        BotJournal Journal { get; }
 
         event Action ParamsChanged;
         event Action Connected;
+        event Action Disconnected;
         event Action StartEvent;
         event AsyncEventHandler StopEvent;
 

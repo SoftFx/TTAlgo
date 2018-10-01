@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Ext
     }
 
 
-    [Reduction("Median")]
+    [Reduction("Average")]
     public class QuoteMedianBarReduction : QuoteToBarReduction
     {
         public void Reduce(Quote quote, IBarWriter result)

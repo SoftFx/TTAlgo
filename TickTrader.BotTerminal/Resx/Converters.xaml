@@ -19,5 +19,6 @@
     <l:DoubleCmpConverter x:Key="CmpG" Mode="Greater"/>
     <l:DoubleCmpConverter x:Key="CmpGe" Mode="LessOrEqual"/>
     <l:LogSeverityToBrushConverter x:Key="LogSeverityConverter" />
+    <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
 
 </ResourceDictionary>

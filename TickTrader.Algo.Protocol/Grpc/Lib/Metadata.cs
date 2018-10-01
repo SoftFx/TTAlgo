@@ -99,29 +99,29 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "chgEIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5D",
             "b25uZWN0aW9uRXJyb3JJbmZvIk0KD0Nvbm5lY3Rpb25TdGF0ZRILCgdPRkZM",
             "SU5FEAASDgoKQ09OTkVDVElORxABEgoKBk9OTElORRACEhEKDURJU0NPTk5F",
-            "Q1RJTkcQAyK5AwoMQm90TW9kZWxJbmZvEhMKC2luc3RhbmNlX2lkGAEgASgJ",
+            "Q1RJTkcQAyLAAwoMQm90TW9kZWxJbmZvEhMKC2luc3RhbmNlX2lkGAEgASgJ",
             "Ej4KB2FjY291bnQYAiABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuQWNjb3VudEtleRJHCgVzdGF0ZRgDIAEoDjI4LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RNb2RlbEluZm8uQm90U3Rh",
-            "dGUSFQoNZmF1bHRfbWVzc2FnZRgEIAEoCRI/CgZjb25maWcYBSABKAsyLy5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luQ29uZmln",
-            "EkcKCmRlc2NyaXB0b3IYBiABKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9j",
-            "b2wuR3JwYy5MaWIuUGx1Z2luRGVzY3JpcHRvciJqCghCb3RTdGF0ZRILCgdP",
-            "RkZMSU5FEAASDAoIU1RBUlRJTkcQARILCgdGQVVMVEVEEAISCgoGT05MSU5F",
-            "EAMSDAoIU1RPUFBJTkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQ",
-            "BiL8AQoNTG9nUmVjb3JkSW5mbxIsCgh0aW1lX3V0YxgBIAEoCzIaLmdvb2ds",
-            "ZS5wcm90b2J1Zi5UaW1lc3RhbXASTgoIc2V2ZXJpdHkYAiABKA4yPC5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mby5M",
-            "b2dTZXZlcml0eRIPCgdtZXNzYWdlGAMgASgJIlwKC0xvZ1NldmVyaXR5EggK",
-            "BElORk8QABIJCgVFUlJPUhABEgkKBVRSQURFEAISEQoNVFJBREVfU1VDQ0VT",
-            "UxADEg4KClRSQURFX0ZBSUwQBBIKCgZDVVNUT00QBSIpCgtCb3RGaWxlSW5m",
-            "bxIMCgRuYW1lGAEgASgJEgwKBHNpemUYAiABKAMi6QEKDUJvdEZvbGRlcklu",
-            "Zm8SDgoGYm90X2lkGAEgASgJEk8KCWZvbGRlcl9pZBgCIAEoDjI8LlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RGb2xkZXJJbmZvLkJv",
-            "dEZvbGRlcklkEgwKBHBhdGgYAyABKAkSPQoFZmlsZXMYBCADKAsyLi5UaWNr",
-            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90RmlsZUluZm8iKgoL",
-            "Qm90Rm9sZGVySWQSDQoJQUxHT19EQVRBEAASDAoIQk9UX0xPR1MQAWIGcHJv",
-            "dG8z"));
+            "R3JwYy5MaWIuQWNjb3VudEtleRJKCgVzdGF0ZRgDIAEoDjI7LlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RNb2RlbEluZm8uUGx1Z2lu",
+            "U3RhdGUSFQoNZmF1bHRfbWVzc2FnZRgEIAEoCRI/CgZjb25maWcYBSABKAsy",
+            "Ly5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luQ29u",
+            "ZmlnEkcKCmRlc2NyaXB0b3IYBiABKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuUGx1Z2luRGVzY3JpcHRvciJuCgtQbHVnaW5TdGF0",
+            "ZRILCgdTVE9QUEVEEAASDAoIU1RBUlRJTkcQARILCgdGQVVMVEVEEAISCwoH",
+            "UlVOTklORxADEgwKCFNUT1BQSU5HEAQSCgoGQlJPS0VOEAUSEAoMUkVDT05O",
+            "RUNUSU5HEAYi/AEKDUxvZ1JlY29yZEluZm8SLAoIdGltZV91dGMYASABKAsy",
+            "Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEk4KCHNldmVyaXR5GAIgASgO",
+            "MjwuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ1JlY29y",
+            "ZEluZm8uTG9nU2V2ZXJpdHkSDwoHbWVzc2FnZRgDIAEoCSJcCgtMb2dTZXZl",
+            "cml0eRIICgRJTkZPEAASCQoFRVJST1IQARIJCgVUUkFERRACEhEKDVRSQURF",
+            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUiKQoLQm90",
+            "RmlsZUluZm8SDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDIukBCg1Cb3RG",
+            "b2xkZXJJbmZvEg4KBmJvdF9pZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4y",
+            "PC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVy",
+            "SW5mby5Cb3RGb2xkZXJJZBIMCgRwYXRoGAMgASgJEj0KBWZpbGVzGAQgAygL",
+            "Mi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdEZpbGVJ",
+            "bmZvIioKC0JvdEZvbGRlcklkEg0KCUFMR09fREFUQRAAEgwKCEJPVF9MT0dT",
+            "EAFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SetupContextInfo.Parser, new[]{ "DefaultTimeFrame", "DefaultSymbol", "DefaultMapping" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Parser, new[]{ "Code", "TextMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Parser, new[]{ "Key", "UseNewProtocol", "ConnectionState", "LastError" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Types.ConnectionState) }, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.PluginState) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Parser, new[]{ "TimeUtc", "Severity", "Message" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo.Parser, new[]{ "Name", "Size" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Parser, new[]{ "BotId", "FolderId", "Path", "Files" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) }, null)
@@ -2859,9 +2859,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     /// <summary>Field number for the "state" field.</summary>
     public const int StateFieldNumber = 3;
-    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState state_ = 0;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.PluginState state_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState State {
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.PluginState State {
       get { return state_; }
       set {
         state_ = value;
@@ -3056,7 +3056,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             break;
           }
           case 24: {
-            state_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.BotState) input.ReadEnum();
+            state_ = (global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.PluginState) input.ReadEnum();
             break;
           }
           case 34: {
@@ -3085,11 +3085,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     /// <summary>Container for nested types declared in the BotModelInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public enum BotState {
-        [pbr::OriginalName("OFFLINE")] Offline = 0,
+      public enum PluginState {
+        [pbr::OriginalName("STOPPED")] Stopped = 0,
         [pbr::OriginalName("STARTING")] Starting = 1,
         [pbr::OriginalName("FAULTED")] Faulted = 2,
-        [pbr::OriginalName("ONLINE")] Online = 3,
+        [pbr::OriginalName("RUNNING")] Running = 3,
         [pbr::OriginalName("STOPPING")] Stopping = 4,
         [pbr::OriginalName("BROKEN")] Broken = 5,
         [pbr::OriginalName("RECONNECTING")] Reconnecting = 6,

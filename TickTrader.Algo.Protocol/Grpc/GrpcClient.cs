@@ -371,8 +371,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private Task<IAsyncStreamReader<Lib.UpdateInfo>> SubscribeToUpdatesInternal(Lib.SubscribeToUpdatesRequest request, CallOptions options)
         {
-            var call = _client.SubscribeToUpdates(request, options);
-            return Task.FromResult(call.ResponseStream);
+            return Task.FromResult(_client.SubscribeToUpdates(request, options).ResponseStream);
         }
 
         private Task<Lib.ApiMetadataResponse> GetApiMetadataInternal(Lib.ApiMetadataRequest request, CallOptions options)
@@ -473,6 +472,41 @@ namespace TickTrader.Algo.Protocol.Grpc
         private Task<Lib.DownloadPackageResponse> DownloadPackageInternal(Lib.DownloadPackageRequest request, CallOptions options)
         {
             return _client.DownloadPackageAsync(request, options).ResponseAsync;
+        }
+
+        private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, CallOptions options)
+        {
+            return _client.GetBotStatusAsync(request, options).ResponseAsync;
+        }
+
+        private Task<Lib.BotLogsResponse> GetBotLogsInternal(Lib.BotLogsRequest request, CallOptions options)
+        {
+            return _client.GetBotLogsAsync(request, options).ResponseAsync;
+        }
+
+        private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, CallOptions options)
+        {
+            return _client.GetBotFolderInfoAsync(request, options).ResponseAsync;
+        }
+
+        private Task<Lib.ClearBotFolderResponse> ClearBotFolderInternal(Lib.ClearBotFolderRequest request, CallOptions options)
+        {
+            return _client.ClearBotFolderAsync(request, options).ResponseAsync;
+        }
+
+        private Task<Lib.DeleteBotFileResponse> DeleteBotFileInternal(Lib.DeleteBotFileRequest request, CallOptions options)
+        {
+            return _client.DeleteBotFileAsync(request, options).ResponseAsync;
+        }
+
+        private Task<IAsyncStreamReader<Lib.FileChunk>> DownloadBotFileInternal(Lib.DownloadBotFileRequest request, CallOptions options)
+        {
+            return Task.FromResult(_client.DownloadBotFile(request, options).ResponseStream);
+        }
+
+        private Task<Lib.UploadBotFileResponse> UploadBotFileInternal(Lib.UploadBotFileRequest request, CallOptions options)
+        {
+            return _client.UploadBotFileAsync(request, options).ResponseAsync;
         }
 
         #endregion Grpc request calls
@@ -608,6 +642,65 @@ namespace TickTrader.Algo.Protocol.Grpc
             var response = await ExecuteUnaryRequestAuthorized(DownloadPackageInternal, new Lib.DownloadPackageRequest { Package = package.Convert() });
             FailForNonSuccess(response.ExecResult);
             return response.PackageBinary.Convert();
+        }
+
+        public override async Task<string> GetBotStatus(string botId)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(GetBotStatusInternal, new Lib.BotStatusRequest { BotId = ToGrpc.Convert(botId) });
+            FailForNonSuccess(response.ExecResult);
+            return response.Status;
+        }
+
+        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
+            FailForNonSuccess(response.ExecResult);
+            return response.Logs.Select(ToAlgo.Convert).ToArray();
+        }
+
+        public override async Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, new Lib.BotFolderInfoRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert() });
+            FailForNonSuccess(response.ExecResult);
+            return response.FolderInfo.Convert();
+        }
+
+        public override async Task ClearBotFolder(string botId, BotFolderId folderId)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(ClearBotFolderInternal, new Lib.ClearBotFolderRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert() });
+            FailForNonSuccess(response.ExecResult);
+        }
+
+        public override async Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, new Lib.DeleteBotFileRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert(), FileName = ToGrpc.Convert(fileName) });
+            FailForNonSuccess(response.ExecResult);
+        }
+
+        public override async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath)
+        {
+            var fileReader = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, new Lib.DownloadBotFileRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert(), FileName = ToGrpc.Convert(fileName) });
+            using (var stream = System.IO.File.OpenWrite(dstPath))
+            using (var binaryWriter = new System.IO.BinaryWriter(stream))
+            {
+                while (await fileReader.MoveNext())
+                {
+                    var chunk = fileReader.Current;
+                    FailForNonSuccess(chunk.ExecResult);
+                    if (!chunk.ChunkBinary.IsEmpty)
+                    {
+                        binaryWriter.Write(chunk.ChunkBinary.Convert());
+                    }
+                    if (chunk.IsFinal)
+                        break;
+                }
+            }
+        }
+
+        public override async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(UploadBotFileInternal, new Lib.UploadBotFileRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert(), FileName = ToGrpc.Convert(fileName), FileBinary = fileBinary.Convert() });
+            FailForNonSuccess(response.ExecResult);
         }
 
         #endregion Requests

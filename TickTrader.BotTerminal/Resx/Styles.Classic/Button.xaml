@@ -58,7 +58,7 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsStarted}" Value="True">
+            <DataTrigger Binding="{Binding IsRunning}" Value="True">
                 <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StopBackground}"/>
                 <Setter Property="Content">
                     <Setter.Value>
@@ -119,7 +119,7 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsStarted}" Value="True">
+            <DataTrigger Binding="{Binding IsRunning}" Value="True">
                 <Setter Property="Background" Value="{DynamicResource Chart_BotControl_StopBackground}"/>
                 <Setter Property="Content">
                     <Setter.Value>

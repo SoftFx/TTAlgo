@@ -24,6 +24,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ByteString.CopyFrom(bytes);
         }
 
+        public static Timestamp Convert(this DateTime date)
+        {
+            return Timestamp.FromDateTime(date);
+        }
+
 
         #region descriptors.proto
 
@@ -715,8 +720,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 FileName = Convert(identity.FileName),
                 FilePath = Convert(identity.FilePath),
-                CreatedUtc = Timestamp.FromDateTime(identity.CreatedUtc),
-                LastModifiedUtc = Timestamp.FromDateTime(identity.LastModifiedUtc),
+                CreatedUtc = identity.CreatedUtc.Convert(),
+                LastModifiedUtc = identity.LastModifiedUtc.Convert(),
                 Size = identity.Size,
                 Hash = Convert(identity.Hash),
             };
@@ -896,24 +901,24 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.BotModelInfo.Types.BotState Convert(this BotStates state)
+        public static Lib.BotModelInfo.Types.PluginState Convert(this PluginStates state)
         {
             switch (state)
             {
-                case BotStates.Offline:
-                    return Lib.BotModelInfo.Types.BotState.Offline;
-                case BotStates.Starting:
-                    return Lib.BotModelInfo.Types.BotState.Starting;
-                case BotStates.Faulted:
-                    return Lib.BotModelInfo.Types.BotState.Faulted;
-                case BotStates.Online:
-                    return Lib.BotModelInfo.Types.BotState.Online;
-                case BotStates.Stopping:
-                    return Lib.BotModelInfo.Types.BotState.Stopping;
-                case BotStates.Broken:
-                    return Lib.BotModelInfo.Types.BotState.Broken;
-                case BotStates.Reconnecting:
-                    return Lib.BotModelInfo.Types.BotState.Reconnecting;
+                case PluginStates.Stopped:
+                    return Lib.BotModelInfo.Types.PluginState.Stopped;
+                case PluginStates.Starting:
+                    return Lib.BotModelInfo.Types.PluginState.Starting;
+                case PluginStates.Faulted:
+                    return Lib.BotModelInfo.Types.PluginState.Faulted;
+                case PluginStates.Running:
+                    return Lib.BotModelInfo.Types.PluginState.Running;
+                case PluginStates.Stopping:
+                    return Lib.BotModelInfo.Types.PluginState.Stopping;
+                case PluginStates.Broken:
+                    return Lib.BotModelInfo.Types.PluginState.Broken;
+                case PluginStates.Reconnecting:
+                    return Lib.BotModelInfo.Types.PluginState.Reconnecting;
                 default:
                     throw new ArgumentException();
             }
