@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Core
                 if (!_eFeed.MoveNext())
                     return false;
 
-                //ExecItem(_eFeed.Current, true);
+                UpdateVirtualTimepoint(_eFeed.Current.Time);
             }
 
             return true;
