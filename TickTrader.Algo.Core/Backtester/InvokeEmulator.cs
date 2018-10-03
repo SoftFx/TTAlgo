@@ -115,19 +115,104 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public bool Warmup(int quoteCount)
+        public bool WarmupByBars(int barCount)
         {
             StartFeedRead();
+
+            if (_eFeed == null)
+            {
+                LogWarmupFail();
+                return false;
+            }
+
+            var warmupStart = _eFeed.Current.Time;
+            var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
+            
+            while (true)
+            {
+                if (!_eFeed.MoveNext())
+                {
+                    LogWarmupFail();
+                    return false;
+                }
+
+                UpdateVirtualTimepoint(_eFeed.Current.Time);
+
+                if (buider.Count > barCount)
+                    break;
+            }
+
+            var warmupEnd = _timePoint;
+
+            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup: {0} - {1}, {2} bars", warmupStart, warmupEnd, buider.Count));
+            return true;
+        }
+
+        public bool WarmupByTimePeriod(TimeSpan period)
+        {
+            StartFeedRead();
+
+            if (_eFeed == null)
+            {
+                LogWarmupFail();
+                return false;
+            }
+
+            var warmupStart = _eFeed.Current.Time;
+            var warmupEnd = warmupStart + period;
+
+            while (true)
+            {
+                if (!_eFeed.MoveNext())
+                {
+                    LogWarmupFail();
+                    return false;
+                }
+
+                UpdateVirtualTimepoint(_eFeed.Current.Time);
+
+                if (_timePoint > warmupEnd)
+                    break;
+            }
+
+            var warmupRealEnd = _timePoint;
+
+            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup: {0} - {1}", warmupStart, warmupRealEnd));
+            return true;
+        }
+
+        public bool WarmupByQuotes(int quoteCount)
+        {
+            StartFeedRead();
+
+            if (_eFeed == null)
+            {
+                LogWarmupFail();
+                return false;
+            }
+
+            var warmupStart = _eFeed.Current.Time;
 
             for (int i = 0; i < quoteCount; i++)
             {
                 if (!_eFeed.MoveNext())
+                {
+                    LogWarmupFail();
                     return false;
+                }
 
                 UpdateVirtualTimepoint(_eFeed.Current.Time);
             }
 
+            var warmupEnd = _timePoint;
+
+            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup: {0} - {1}, {2} ticks", warmupStart, warmupEnd, quoteCount));
             return true;
+        }
+
+        private void LogWarmupFail()
+        {
+            _collector.AddEvent(LogSeverities.Error, string.Format("Not enough feed for warmup!"));
         }
 
         private void ExecItem(object item)

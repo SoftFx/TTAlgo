@@ -17,6 +17,7 @@ namespace TickTrader.SeriesStorage.Lmdb
             var trFlags = readOnly ? TransactionBeginFlags.ReadOnly : TransactionBeginFlags.None;
 
             _tr = env.BeginTransaction(trFlags);
+            //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + _tr.Handle());
             var db = _tr.OpenDatabase(dbName, cfg);
             _cursor = _tr.CreateCursor(db);
         }
@@ -42,6 +43,8 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public void Dispose()
         {
+            //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + _tr.Handle());
+
             _tr.Dispose();
             _cursor.Dispose();
         }

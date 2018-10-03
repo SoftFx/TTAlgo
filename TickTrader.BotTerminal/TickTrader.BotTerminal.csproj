@@ -340,6 +340,7 @@
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
+    <Compile Include="Model\BacktesterSettings.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />

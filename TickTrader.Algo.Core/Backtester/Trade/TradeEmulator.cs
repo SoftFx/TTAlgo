@@ -44,12 +44,9 @@ namespace TickTrader.Algo.Core
                 CheckActivation(r);
                 RecalculateAccount();
             };
-
-            LogModifications = false;
         }
 
         public TimeSpan VirtualServerPing { get; set; }
-        public bool LogModifications { get; set; }
 
         public void Start()
         {
@@ -88,6 +85,7 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
+            CloseAllPositions(TradeTransReasons.Rollover);
         }
 
         public void Restart()
@@ -266,9 +264,7 @@ namespace TickTrader.Algo.Core
 
                     var order = ReplaceOrder(request);
 
-                    if (LogModifications)
-                        _collector.LogTrade(_opSummary.PrintModificationInfo());
-
+                    _collector.LogOrderModification(_opSummary.PrintModificationInfo());
                     _collector.OnOrderModified();
 
                     // set result
@@ -284,10 +280,9 @@ namespace TickTrader.Algo.Core
                     _scheduler.SetFatalError(ex);
                 }
 
-                if (LogModifications)
-                    _collector.LogTradeFail($"Rejected modify #{orderId} reason={error}");
-
+                _collector.LogOrderModificationFail($"Rejected modify #{orderId} reason={error}");
                 _collector.OnOrderModificatinRejected();
+
                 return new OrderResultEntity(error);
             });
         }
@@ -1719,6 +1714,23 @@ namespace TickTrader.Algo.Core
                 ClosePosition(position1, trReason, closeAmount, (decimal)position2.Price, smb, pos1options, position2.Id);
                 ClosePosition(position2, trReason, closeAmount, (decimal)position2.Price, smb, pos2options, position1.Id);
             //}
+        }
+
+        private void CloseAllPositions(TradeTransReasons reason)
+        {
+            var toClose = _acc.Orders.Where(o => o.Type == OrderType.Position).ToList();
+
+            foreach (var order in _acc.Orders)
+            {
+                if (order.Type == OrderType.Position)
+                    ClosePosition(order, reason, null, null, order.SymbolInfo, ClosePositionOptions.None);
+            }
+
+            foreach (var pos in _acc.NetPositions)
+            {
+                OpenOrder(pos.Calculator, OrderType.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
+                    OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing);
+            }
         }
 
         #endregion

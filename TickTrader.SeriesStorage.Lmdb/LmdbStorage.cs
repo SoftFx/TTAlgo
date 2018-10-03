@@ -66,8 +66,14 @@ namespace TickTrader.SeriesStorage.Lmdb
         {
             using (var tr = _env.BeginTransaction())
             {
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
+
                 var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                return tr.TryGet(db, key, out value);
+                var result = tr.TryGet(db, key, out value);
+
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
+
+                return result;
             }
         }
 
@@ -75,9 +81,13 @@ namespace TickTrader.SeriesStorage.Lmdb
         {
             using (var tr = _env.BeginTransaction())
             {
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
+
                 var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
                 tr.Put(db, key, value);
                 tr.Commit();
+
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
             }
         }
 
@@ -85,9 +95,13 @@ namespace TickTrader.SeriesStorage.Lmdb
         {
             using (var tr = _env.BeginTransaction())
             {
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
+
                 var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
                 tr.Delete(db, key);
                 tr.Commit();
+
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
             }
         }
 
@@ -95,6 +109,8 @@ namespace TickTrader.SeriesStorage.Lmdb
         {
             using (var tr = _env.BeginTransaction())
             {
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
+
                 var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
                 var cursor = tr.CreateCursor(db);
 
@@ -112,6 +128,8 @@ namespace TickTrader.SeriesStorage.Lmdb
                 }
 
                 tr.Commit();
+
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
             }
         }
 
@@ -119,9 +137,13 @@ namespace TickTrader.SeriesStorage.Lmdb
         {
             using (var tr = _env.BeginTransaction())
             {
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
+
                 var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
                 db.Truncate(tr);
                 tr.Commit();
+
+                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
             }
         }
 

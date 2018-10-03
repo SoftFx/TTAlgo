@@ -31,5 +31,19 @@ namespace TickTrader.Algo.Core
         TimeFrames MainTimeframe { get; }
         DateTime? EmulationPeriodStart { get; }
         DateTime? EmulationPeriodEnd { get; }
+        JournalOptions JournalFlags { get; }
+    }
+
+    public enum WarmupUnitTypes { Bars, Ticks, Days, Hours }
+
+    [Flags]
+    public enum JournalOptions
+    {
+        Disabled = 0,
+        Enabled = 1,
+        WriteInfo = 2,
+        WriteCustom = 4,
+        WriteTrade = 8,
+        WriteOrderModifications = 128
     }
 }

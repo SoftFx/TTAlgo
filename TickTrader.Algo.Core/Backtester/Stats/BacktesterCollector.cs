@@ -54,6 +54,8 @@ namespace TickTrader.Algo.Core
             _startTime = DateTime.UtcNow;
             _mainTimeframe = settings.MainTimeframe;
 
+            InitJournal(settings);
+
             _lastStatus = null;
 
             _mainBarVector = BarSequenceBuilder.Create(_mainTimeframe);
@@ -98,9 +100,42 @@ namespace TickTrader.Algo.Core
 
         #region Journal
 
+        public bool WriteJournal { get; protected set; }
+        public bool WriteCustom { get; private set; }
+        public bool WriteInfo { get; private set; }
+        public bool WriteTrade { get; private set; }
+        public bool WriteOrderModifications { get; private set; }
+
+        private void InitJournal(IBacktesterSettings settings)
+        {
+            var flags = settings.JournalFlags;
+
+            WriteJournal = flags.HasFlag(JournalOptions.Enabled);
+            WriteCustom = WriteJournal && flags.HasFlag(JournalOptions.WriteCustom);
+            WriteInfo = WriteJournal && flags.HasFlag(JournalOptions.WriteInfo);
+            WriteTrade = WriteJournal && flags.HasFlag(JournalOptions.WriteTrade);
+            WriteOrderModifications = WriteJournal && WriteTrade && flags.HasFlag(JournalOptions.WriteOrderModifications);
+        }
+
+        private bool CheckFilter(LogSeverities severity)
+        {
+            switch (severity)
+            {
+                case LogSeverities.Info: return WriteInfo;
+                case LogSeverities.Custom: return WriteCustom;
+                case LogSeverities.CustomStatus: return false;
+                case LogSeverities.Error: return WriteJournal;
+                case LogSeverities.Trade: return WriteTrade;
+                case LogSeverities.TradeFail: return WriteTrade;
+                case LogSeverities.TradeSuccess: return WriteTrade;
+            }
+            return false;
+        }
+
         public void AddEvent(LogSeverities severity, string message, string description = null)
         {
-            _events.Add(new BotLogRecord(VirtualTimepoint, severity, message, description));
+            if (CheckFilter(severity))
+                _events.Add(new BotLogRecord(VirtualTimepoint, severity, message, description));
         }
 
         public void LogTrade(string message)
@@ -108,9 +143,21 @@ namespace TickTrader.Algo.Core
             AddEvent(LogSeverities.TradeSuccess, message);
         }
 
+        public void LogOrderModification(string message)
+        {
+            if (WriteOrderModifications)
+                AddEvent(LogSeverities.TradeSuccess, message);
+        }
+
         public void LogTradeFail(string message)
         {
             AddEvent(LogSeverities.TradeFail, message);
+        }
+
+        public void LogOrderModificationFail(string message)
+        {
+            if (WriteOrderModifications)
+                AddEvent(LogSeverities.TradeFail, message);
         }
 
         public IPagedEnumerator<BotLogRecord> GetEvents()

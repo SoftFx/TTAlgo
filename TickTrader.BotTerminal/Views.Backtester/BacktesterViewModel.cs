@@ -37,14 +37,9 @@ namespace TickTrader.BotTerminal
         private VarContext _var = new VarContext();
         private TraderClientModel _client;
         private WindowManager _localWnd;
-        private double _initialBalance = 10000;
-        private string _balanceCurrency = "USD";
-        private int _serverPingMs = 200;
-        private int _leverage = 100;
-        private AccountTypes _accType;
-        private int _emulatedPing = 200;
         private DateTime _emulteFrom;
         private DateTime _emulateTo;
+        private BacktesterSettings _settings = new BacktesterSettings();
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
@@ -138,31 +133,12 @@ namespace TickTrader.BotTerminal
 
         public async void OpenTradeSetup()
         {
-            var setup = new BacktesterTradeSetupViewModel(_client.Currencies);
-            setup.SelectedAccType.Value = _accType;
-            setup.InitialBalance.Value = _initialBalance;
-            setup.Leverage.Value = _leverage;
-            setup.BalanceCurrency.Value = _balanceCurrency;
-            setup.EmulatedServerPing.Value = _emulatedPing;
+            var setup = new BacktesterTradeSetupViewModel(_settings, _client.Currencies);
 
             _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
 
             if (await setup.Result)
-            {
-                _emulatedPing = setup.EmulatedServerPing.Value;
-                _accType = setup.SelectedAccType.Value;
-                _serverPingMs = setup.EmulatedServerPing.Value;
-
-                if (_accType == AccountTypes.Net || _accType == AccountTypes.Gross)
-                {
-                    _initialBalance = setup.InitialBalance.Value;
-                    _leverage = setup.Leverage.Value;
-                    _balanceCurrency = setup.BalanceCurrency.Value.Trim();
-                }
-                else if (_accType == AccountTypes.Cash)
-                {
-                }
-            }
+                _settings = setup.GetSettings();
         }
 
         public void Start()
@@ -272,11 +248,7 @@ namespace TickTrader.BotTerminal
                     //foreach (var rec in _client.Symbols.Snapshot)
                     //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
 
-                    tester.AccountType = _accType;
-                    tester.BalanceCurrency = _balanceCurrency;
-                    tester.Leverage = _leverage;
-                    tester.InitialBalance = _initialBalance;
-                    tester.ServerPing = TimeSpan.FromMilliseconds(_serverPingMs);
+                    _settings.Apply(tester);
 
                     await Task.Run(() => tester.Run(cToken));
 

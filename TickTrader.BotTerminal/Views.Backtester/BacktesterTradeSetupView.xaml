@@ -64,6 +64,58 @@
         </Grid>
     </ControlTemplate>
 
+    <ControlTemplate x:Key="Backtester.TradeSetup.JournalSetupPageTemplate" >
+        <ControlTemplate.Resources>
+            <Style TargetType="CheckBox">
+                <Setter Property="Margin" Value="0,2,0,2"/>
+            </Style>
+        </ControlTemplate.Resources>
+        
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <CheckBox Content="Write journal" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0"
+                      IsChecked="{Binding WriteJournal.Value}"/>
+            <CheckBox Content="Write info" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="1"
+                      IsChecked="{Binding WriteInfo.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
+            <CheckBox Content="Write custom" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="2"
+                      IsChecked="{Binding WriteCustom.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
+            <CheckBox Content="Write trade" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3"
+                      IsChecked="{Binding WriteTrade.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
+            <CheckBox Content="Write modifications" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="4"
+                      IsChecked="{Binding WriteModifications.Value}" IsEnabled="{Binding IsJournaTradeEnabled.Value}"/>
+
+        </Grid>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Backtester.TradeSetup.AdvancedSetupPageTemplate" >
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="70" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Content="Warm-up:" Grid.Column="0" Grid.Row="0"/>
+            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding WarmupStr.Value, UpdateSourceTrigger=PropertyChanged}"/>
+            <ComboBox Grid.Column="2" Grid.Row="0" Margin="5,0,0,0" ItemsSource="{Binding AvailableWarmupUnits}" SelectedItem="{Binding SelectedWarmupUnits.Value}"/>
+        </Grid>
+    </ControlTemplate>
+
     <ControlTemplate x:Key="BacktesterTradeSetupTemplate.Classic" x:Shared="False">
         <Grid Background="{TemplateBinding Background}">
             
@@ -78,6 +130,12 @@
                 </TabItem>
                 <TabItem Header="Server Emulator">
                     <UserControl Template="{StaticResource Backtester.TradeSetup.EmulatorSetupPageTemplate}"/>
+                </TabItem>
+                <TabItem Header="Journal">
+                    <UserControl Template="{StaticResource Backtester.TradeSetup.JournalSetupPageTemplate}"/>
+                </TabItem>
+                <TabItem Header="Advanced">
+                    <UserControl Template="{StaticResource Backtester.TradeSetup.AdvancedSetupPageTemplate}"/>
                 </TabItem>
             </TabControl>
             

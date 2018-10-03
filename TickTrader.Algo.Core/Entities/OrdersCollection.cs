@@ -9,7 +9,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrdersCollection
+    public class OrdersCollection : IEnumerable<OrderAccessor>
     {
         private PluginBuilder builder;
         private OrdersFixture fixture;
@@ -112,6 +112,16 @@ namespace TickTrader.Algo.Core
         public void FireOrderActivated(OrderActivatedEventArgs args)
         {
             builder.InvokePluginMethod(() => fixture.FireOrderActivated(args));
+        }
+
+        public IEnumerator<OrderAccessor> GetEnumerator()
+        {
+            return ((IEnumerable<OrderAccessor>)OrderListImpl).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         public event Action<OrderAccessor> Added;

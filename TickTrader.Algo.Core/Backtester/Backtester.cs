@@ -56,7 +56,10 @@ namespace TickTrader.Algo.Core
         public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
         public TimeSpan ServerPing { get; set; }
+        public int WarmupSize { get; set; } = 10;
+        public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
+        public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
 
         public void Run(CancellationToken cToken)
         {
@@ -71,7 +74,7 @@ namespace TickTrader.Algo.Core
 
             _control.OnStart();
 
-            if (!_control.WarmUp(10))
+            if (!_control.WarmUp(WarmupSize, WarmupUnits))
                 return;
 
             _executor.Start();

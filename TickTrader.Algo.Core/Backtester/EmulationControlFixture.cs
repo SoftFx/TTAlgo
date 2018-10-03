@@ -31,9 +31,18 @@ namespace TickTrader.Algo.Core
             Collector.OnStart(Settings);
         }
 
-        public bool WarmUp(int quoteCount)
+        public bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
         {
-            return InvokeEmulator.Warmup(quoteCount);
+            if (warmupUnits == WarmupUnitTypes.Days)
+                return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
+            else if (warmupUnits == WarmupUnitTypes.Hours)
+                return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
+            else if (warmupUnits == WarmupUnitTypes.Bars)
+                return InvokeEmulator.WarmupByBars(warmupValue);
+            else if (warmupUnits == WarmupUnitTypes.Ticks)
+                return InvokeEmulator.WarmupByQuotes(warmupValue);
+            else
+                return false;
         }
 
         public void EmulateExecution()

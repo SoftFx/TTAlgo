@@ -57,10 +57,10 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal ITimeSequenceRef GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
+        internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
         {
             var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
-            return stream.InitSeries(timeframe, price).Ref;
+            return stream.InitSeries(timeframe, price);
         }
 
         public void AddBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)

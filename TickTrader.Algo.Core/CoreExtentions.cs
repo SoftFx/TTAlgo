@@ -54,5 +54,10 @@ namespace TickTrader.Algo.Core
         {
             return currencies.GetOrDefault(key) ?? new CurrencyEntity(key) { IsNull = true };
         }
+
+        public static OrderSide Revert(this OrderSide side)
+        {
+            return side == OrderSide.Sell ? OrderSide.Buy : OrderSide.Sell;
+        }
     }
 }
