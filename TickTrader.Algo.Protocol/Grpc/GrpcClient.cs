@@ -299,7 +299,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
+                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -319,12 +319,12 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (UnauthorizedException uex)
             {
-                Logger.Error(uex, $"Bad access token for request: {_messageFormatter.ToJson(request)}");
+                Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
+                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -341,12 +341,12 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (UnauthorizedException uex)
             {
-                Logger.Error(uex, $"Bad access token for request: {_messageFormatter.ToJson(request)}");
+                Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
+                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -686,6 +686,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 while (await fileReader.MoveNext())
                 {
                     var chunk = fileReader.Current;
+                    _messageFormatter.LogServerResponse(Logger, chunk);
                     FailForNonSuccess(chunk.ExecResult);
                     if (!chunk.ChunkBinary.IsEmpty)
                     {

@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public string ToJson(IMessage message)
         {
-            return _formatter.Format(message);
+            return $"{message.GetType().Name}: {Format(message)}";
         }
 
         public void LogClientRequest(ILogger logger, IMessage request)

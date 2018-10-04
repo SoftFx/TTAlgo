@@ -61,6 +61,7 @@ namespace TickTrader.BotTerminal
                 _selectedBot = value;
                 NotifyOfPropertyChange(nameof(SelectedBot));
                 NotifyOfPropertyChange(nameof(CanUploadFile));
+                NotifyOfPropertyChange(nameof(CanStartLoading));
                 NotifyOfPropertyChange(nameof(CanRefreshFolderInfo));
                 NotifyOfPropertyChange(nameof(CanClear));
                 RefreshBotFiles();
@@ -80,6 +81,7 @@ namespace TickTrader.BotTerminal
                 _selectedFolderId = value;
                 NotifyOfPropertyChange(nameof(SelectedFolderId));
                 NotifyOfPropertyChange(nameof(CanUploadFile));
+                NotifyOfPropertyChange(nameof(CanStartLoading));
                 RefreshBotFiles();
             }
         }
@@ -123,7 +125,9 @@ namespace TickTrader.BotTerminal
                 _selectedBotFile = value;
                 NotifyOfPropertyChange(nameof(SelectedBotFile));
                 NotifyOfPropertyChange(nameof(CanDownloadFile));
+                NotifyOfPropertyChange(nameof(CanStartLoading));
                 NotifyOfPropertyChange(nameof(CanDeleteFile));
+                UpdateLoadingPaths();
             }
         }
 
@@ -150,6 +154,7 @@ namespace TickTrader.BotTerminal
                 Error = null;
                 NotifyOfPropertyChange(nameof(IsDownloading));
                 NotifyOfPropertyChange(nameof(IsUploading));
+                NotifyOfPropertyChange(nameof(CanStartLoading));
             }
         }
 
@@ -166,6 +171,7 @@ namespace TickTrader.BotTerminal
                 Error = null;
                 NotifyOfPropertyChange(nameof(IsUploading));
                 NotifyOfPropertyChange(nameof(IsDownloading));
+                NotifyOfPropertyChange(nameof(CanStartLoading));
             }
         }
 
@@ -242,6 +248,8 @@ namespace TickTrader.BotTerminal
 
         public bool HasError => !string.IsNullOrWhiteSpace(Error);
 
+        public bool CanStartLoading => (IsUploading && CanUploadFile) || (IsDownloading && CanDownloadFile);
+
 
         private BotFolderViewModel(AlgoEnvironment algoEnv)
         {
@@ -276,7 +284,7 @@ namespace TickTrader.BotTerminal
         {
             FromPath = null;
             ToPath = $"{SelectedAgent.Name}/{SelectedFolderId}/{SelectedBot.InstanceId}/";
-            ToFileName = null;
+            ToFileName = SelectedBotFile?.Name;
             IsUploading = true;
         }
 
@@ -289,14 +297,14 @@ namespace TickTrader.BotTerminal
 
         public async void DeleteFile()
         {
-            if (SelectedAgent == null || SelectedBot == null)
+            if (SelectedAgent == null || SelectedBot == null || SelectedBotFile == null)
                 return;
 
             IsEnabled = false;
 
             try
             {
-                await SelectedAgent.Model.ClearBotFolder(SelectedBot.InstanceId, SelectedFolderId);
+                await SelectedAgent.Model.DeleteBotFile(SelectedBot.InstanceId, SelectedFolderId, SelectedBotFile.Name);
             }
             catch (Exception ex)
             {
@@ -414,6 +422,8 @@ namespace TickTrader.BotTerminal
 
         private async void RefreshBotFilesInternal()
         {
+            var currentFile = SelectedBotFile?.Name;
+
             Path = null;
             _botFiles.Clear();
 
@@ -433,6 +443,8 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, "Failed to refresh bot files");
             }
+
+            SelectedBotFile = _botFiles.Values.FirstOrDefault(f => f.Name == currentFile);
         }
 
         private void Validate()
@@ -440,6 +452,23 @@ namespace TickTrader.BotTerminal
             if (_botFiles.Values.Any(f => f.Name == ToFileName))
                 Error = "File will be overwritten";
             else Error = null;
+        }
+
+        private void UpdateLoadingPaths()
+        {
+            if (SelectedAgent == null || SelectedBot == null)
+                return;
+
+            if (IsUploading)
+            {
+                ToPath = $"{SelectedAgent.Name}/{SelectedFolderId}/{SelectedBot.InstanceId}/";
+                ToFileName = SelectedBotFile?.Name;
+            }
+            else if (IsDownloading && SelectedBotFile != null)
+            {
+                FromPath = $"{SelectedAgent.Name}/{SelectedFolderId}/{SelectedBot.InstanceId}/{SelectedBotFile.Name}";
+                ToPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(ToPath), SelectedBotFile.Name);
+            }
         }
     }
 
