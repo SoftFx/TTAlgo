@@ -145,24 +145,27 @@ namespace TickTrader.BotTerminal
             Journal.Clear();
         }
 
-        private void UpdateStatus(object state)
+        private async void UpdateStatus(object state)
         {
+            _statusTimer?.Change(-1, -1);
             try
             {
-                Status = _agent.GetBotStatus(InstanceId).Result;
+                Status = await _agent.GetBotStatus(InstanceId);
                 StatusChanged?.Invoke(this);
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
             }
+            _statusTimer?.Change(0, StatusUpdateTimeout);
         }
 
-        private void UpdateLogs(object state)
+        private async void UpdateLogs(object state)
         {
+            _logsTimer?.Change(-1, -1);
             try
             {
-                var logs = _agent.GetBotLogs(InstanceId, _lastLogTimeUtc).Result;
+                var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
                 if (logs.Length > 0)
                 {
                     _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
@@ -173,6 +176,7 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
             }
+            _logsTimer?.Change(0, LogsUpdateTimeout);
         }
 
         private BotMessage Convert(LogRecordInfo record)

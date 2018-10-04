@@ -249,6 +249,33 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void OpenManageBotFilesDialog()
+        {
+            try
+            {
+                var model = new BotFolderViewModel(_algoEnv, Name);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoManageBotFilesWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open manage bot files dialog");
+            }
+        }
+
+        public void OpenManageBotFilesDialog(string botId, BotFolderId folderId)
+        {
+            try
+            {
+                var model = new BotFolderViewModel(_algoEnv, Name, botId, folderId);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoManageBotFilesWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open manage bot files dialog");
+            }
+        }
+
+
         public void ShowChart(ITradeBot bot)
         {
             if (bot.IsRemote)
