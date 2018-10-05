@@ -72,6 +72,7 @@ namespace TickTrader.BotTerminal
             foreach (var view in _anchorableViews.Values)
             {
                 view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
+                (view.Content as IScreen)?.Deactivate(true);
             }
 
             _anchorableViews.Clear();
@@ -80,7 +81,10 @@ namespace TickTrader.BotTerminal
             foreach (var view in _anchorableViews.Values)
             {
                 if (view.IsVisible)
+                {
                     InitView(view);
+                    (view.Content as IScreen)?.Activate();
+                }
                 view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
             }
 

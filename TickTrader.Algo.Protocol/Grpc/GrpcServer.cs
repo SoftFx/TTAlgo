@@ -303,7 +303,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -325,7 +325,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -345,7 +345,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Failed to execute request: {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
                 throw;
             }
         }
@@ -469,7 +469,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 res.ExecResult = CreateErrorResult("Failed to process login request");
-                _logger.Error(ex, $"Failed to process login request: {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to process login {_messageFormatter.ToJson(request)}");
             }
 
             return Task.FromResult(res);
@@ -493,7 +493,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 res.ExecResult = CreateErrorResult("Failed to process logout request");
-                _logger.Error(ex, $"Failed to process logout request: {_messageFormatter.ToJson(request)}");
+                _logger.Error(ex, $"Failed to process logout {_messageFormatter.ToJson(request)}");
             }
 
             return Task.FromResult(res);
@@ -989,30 +989,39 @@ namespace TickTrader.Algo.Protocol.Grpc
             if (session == null)
             {
                 chunk.IsFinal = true;
-                await responseStream.WriteAsync(chunk);
+                await SendFileChunk(responseStream, session, chunk);
                 return;
             }
             try
             {
                 const int bufferSize = 512 * 1024;
+                var buffer = new byte[bufferSize];
                 using (var stream = _botAgent.GetBotFile(request.BotId, request.FolderId.Convert(), request.FileName))
-                using (var binaryReader = new BinaryReader(stream))
                 {
-                    chunk.ChunkBinary = binaryReader.ReadBytes(bufferSize).Convert();
-                    await responseStream.WriteAsync(chunk);
+                    for (var cnt = stream.Read(buffer, 0, bufferSize); cnt > 0; cnt = stream.Read(buffer, 0, bufferSize))
+                    {
+                        chunk.ChunkBinary = buffer.Convert(0, cnt);
+                        await SendFileChunk(responseStream, session, chunk);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                session.Logger.Error(ex, "Failed to clear bot folder");
+                session.Logger.Error(ex, "Failed to download bot file");
                 chunk.ExecResult = CreateErrorResult(ex);
                 chunk.ChunkBinary = ByteString.Empty;
                 chunk.IsFinal = true;
-                await responseStream.WriteAsync(chunk);
+                await SendFileChunk(responseStream, session, chunk);
                 return;
             }
             chunk.ChunkBinary = ByteString.Empty;
             chunk.IsFinal = true;
+            await SendFileChunk(responseStream, session, chunk);
+        }
+
+        private async Task SendFileChunk(IServerStreamWriter<Lib.FileChunk> responseStream, ServerSession.Handler session, Lib.FileChunk chunk)
+        {
+            _messageFormatter.LogClientResponse(session?.Logger, chunk);
             await responseStream.WriteAsync(chunk);
         }
 
@@ -1091,7 +1100,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, $"Failed to multicast update: {_messageFormatter.ToJson(update)}");
+                    _logger.Error(ex, $"Failed to multicast {_messageFormatter.ToJson(update)}");
                 }
             }
         }

@@ -103,6 +103,11 @@ namespace TickTrader.BotTerminal
             Agent.OpenDownloadPackageDialog();
         }
 
+        public void ManageFiles()
+        {
+            Agent.OpenManageBotFilesDialog();
+        }
+
 
         private void ConnectionOnStateChanged()
         {

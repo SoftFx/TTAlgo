@@ -414,6 +414,7 @@
     <Compile Include="Views.Algo\AlgoBotViewModel.cs" />
     <Compile Include="Views.Algo\AlgoPackageViewModel.cs" />
     <Compile Include="Views.Algo\AlgoPluginViewModel.cs" />
+    <Compile Include="Views.Algo\BotFolderViewModel.cs" />
     <Compile Include="Views.Algo\DownloadPackageViewModel.cs" />
     <Compile Include="Views.Algo\UploadPackageViewModel.cs" />
     <Compile Include="Views.Auth\AccountView.xaml.cs">
@@ -895,6 +896,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resx\Themes\Light.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Algo\BotFolderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

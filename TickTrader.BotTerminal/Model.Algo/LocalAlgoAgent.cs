@@ -246,6 +246,31 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(new byte[0]);
         }
 
+        public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task ClearBotFolder(string botId, BotFolderId folderId)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath)
+        {
+            throw new NotSupportedException();
+        }
+
 
         private void OnPackageStateChanged(PackageInfo package)
         {

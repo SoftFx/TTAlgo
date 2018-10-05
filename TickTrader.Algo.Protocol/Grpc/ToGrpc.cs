@@ -24,6 +24,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ByteString.CopyFrom(bytes);
         }
 
+        public static ByteString Convert(this byte[] bytes, int offset, int count)
+        {
+            return ByteString.CopyFrom(bytes, offset, count);
+        }
+
         public static Timestamp Convert(this DateTime date)
         {
             return Timestamp.FromDateTime(date);

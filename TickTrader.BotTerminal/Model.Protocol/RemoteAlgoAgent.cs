@@ -180,6 +180,31 @@ namespace TickTrader.BotTerminal
             File.WriteAllBytes(dstFilePath, bytes);
         }
 
+        public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
+        {
+            return _protocolClient.GetBotFolderInfo(botId, folderId);
+        }
+
+        public Task ClearBotFolder(string botId, BotFolderId folderId)
+        {
+            return _protocolClient.ClearBotFolder(botId, folderId);
+        }
+
+        public Task DeleteBotFile(string botId, BotFolderId folderId, string fileName)
+        {
+            return _protocolClient.DeleteBotFile(botId, folderId, fileName);
+        }
+
+        public Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath)
+        {
+            return _protocolClient.DownloadBotFile(botId, folderId, fileName, dstPath);
+        }
+
+        public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath)
+        {
+            return _protocolClient.UploadBotFile(botId, folderId, fileName, File.ReadAllBytes(srcPath));
+        }
+
         #endregion
 
 

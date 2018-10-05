@@ -61,6 +61,16 @@ namespace TickTrader.BotTerminal
         Task RemovePackage(PackageKey package);
 
         Task DownloadPackage(PackageKey package, string dstFilePath);
+
+        Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
+
+        Task ClearBotFolder(string botId, BotFolderId folderId);
+
+        Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
+
+        Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath);
+
+        Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath);
     }
 
 
