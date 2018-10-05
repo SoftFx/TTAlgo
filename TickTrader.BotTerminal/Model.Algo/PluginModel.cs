@@ -100,6 +100,7 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _executor.Stop();
+                    UnlockResources();
                 }
                 catch(Exception ex)
                 {

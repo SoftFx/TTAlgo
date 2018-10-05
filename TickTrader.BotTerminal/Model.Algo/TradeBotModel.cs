@@ -86,7 +86,6 @@ namespace TickTrader.BotTerminal
         {
             if (State != PluginStates.Stopped)
                 return;
-            Host.Lock();
             if (StartExcecutor())
             {
                 _botListener?.Start();
@@ -101,7 +100,6 @@ namespace TickTrader.BotTerminal
             await StopExecutor();
             _botListener?.Stop();
             ChangeState(PluginStates.Stopped);
-            Host.Unlock();
             if (PackageRef?.IsObsolete ?? false)
             {
                 UpdateRefs();
