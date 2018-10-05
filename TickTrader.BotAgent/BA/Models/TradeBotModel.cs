@@ -114,12 +114,18 @@ namespace TickTrader.BotAgent.BA.Models
                 if (State == PluginStates.Starting)
                     StartExecutor();
                 else if (State == PluginStates.Reconnecting)
+                {
+                    executor.HandleReconnect();
                     ChangeState(PluginStates.Running);
+                }
             }
             else
             {
                 if (State == PluginStates.Running)
+                {
+                    executor.HandleDisconnect();
                     ChangeState(PluginStates.Reconnecting, client.ErrorText);
+                }
             }
         }
 
