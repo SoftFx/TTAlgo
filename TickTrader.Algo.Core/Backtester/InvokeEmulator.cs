@@ -410,7 +410,7 @@ namespace TickTrader.Algo.Core
 
         public int CompareTo(EmulatedAction other)
         {
-            return other.Time.CompareTo(Time);
+            return Time.CompareTo(other.Time);
         }
     }
 }
