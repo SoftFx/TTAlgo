@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Core
         void OnStop();
         void OnExit();
         void OnAbort();
+        void OnConnected();
+        void OnDisconnected();
     }
 
     public static class Null
@@ -182,6 +184,14 @@ namespace TickTrader.Algo.Core
         }
 
         public void UpdateStatus(string status)
+        {
+        }
+
+        public void OnConnected()
+        {
+        }
+
+        public void OnDisconnected()
         {
         }
     }

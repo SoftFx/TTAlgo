@@ -162,7 +162,10 @@ namespace TickTrader.BotTerminal
         private void Host_Disconnected()
         {
             if (State == PluginStates.Running)
+            {
+                HandleDisconnect();
                 ChangeState(PluginStates.Reconnecting);
+            }
         }
 
         private BotMessage Convert(BotLogRecord record)

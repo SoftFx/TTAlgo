@@ -138,6 +138,11 @@ namespace TickTrader.BotTerminal
             _executor.HandleReconnect();
         }
 
+        protected virtual void HandleDisconnect()
+        {
+            _executor.HandleDisconnect();
+        }
+
         protected virtual void ChangeState(PluginStates state, string faultMessage = null)
         {
             State = state;

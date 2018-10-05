@@ -409,6 +409,18 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        internal void FireConnectedEvent()
+        {
+            InvokePluginMethod(()=> PluginProxy.InvokeConnectedEvent());
+            Logger.OnConnected();
+        }
+
+        internal void FireDisconnectedEvent()
+        {
+            InvokePluginMethod(() => PluginProxy.InvokeDisconnectedEvent());
+            Logger.OnDisconnected();
+        }
+
         #endregion
 
         internal void StartBatch()

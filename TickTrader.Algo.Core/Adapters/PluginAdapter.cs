@@ -95,6 +95,26 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void InvokeConnectedEvent()
+        {
+            var args = new ConnectedEventArgs();
+
+            for (int i = nestedIndacators.Count - 1; i >= 0; i--)
+                nestedIndacators[i].plugin.InvokeConnected(args);
+
+            plugin.InvokeConnected(args);
+        }
+
+        public void InvokeDisconnectedEvent()
+        {
+            var args = new DisconnectedEventArgs();
+
+            for (int i = nestedIndacators.Count - 1; i >= 0; i--)
+                nestedIndacators[i].plugin.InvokeDisconnected(args);
+
+            plugin.InvokeDisconnected(args);
+        }
+
         IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
         {
             if (plugin == null) // Activate() is called from constructor

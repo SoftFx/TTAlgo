@@ -156,6 +156,16 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
         }
 
+        public void OnConnected()
+        {
+            AddLogRecord(LogSeverities.Info, "Connection restored.");
+        }
+
+        public void OnDisconnected()
+        {
+            AddLogRecord(LogSeverities.Error, "Connection lost!");
+        }
+
         public void UpdateStatus(string status)
         {
             AddLogRecord(LogSeverities.CustomStatus, status);

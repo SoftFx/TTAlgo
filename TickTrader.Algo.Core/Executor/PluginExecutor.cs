@@ -329,18 +329,28 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void HandleDisconnect()
+        {
+            lock (_sync)
+            {
+                if (state == States.Running)
+                    iStrategy.EnqueueCustomInvoke(b => builder.FireDisconnectedEvent());
+            }
+        }
+
         public void HandleReconnect()
         {
             lock (_sync)
             {
                 if (state == States.Running)
                 {
-                    iStrategy.EnqueueCustomInvoke(b =>
+                    iStrategy.EnqueueTradeUpdate(b =>
                     {
                         calcFixture.Stop();
                         accFixture.Restart();
                         calcFixture.Start();
                         builder.Account.FireResetEvent();
+                        builder.FireConnectedEvent();
                     });
                 }
             }

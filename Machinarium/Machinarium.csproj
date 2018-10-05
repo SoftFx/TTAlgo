@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -94,6 +95,7 @@
     <Compile Include="State\StateMachineSync.cs" />
     <Compile Include="State\StateTransition.cs" />
     <Compile Include="State\TimeEvent.cs" />
+    <Compile Include="Var.Collections\VarSet.cs" />
     <Compile Include="Var.Entity\BoolEvent.cs" />
     <Compile Include="Var.Entity\ChangeEvent.cs" />
     <Compile Include="Var.Entity\DisposableEntity.cs" />

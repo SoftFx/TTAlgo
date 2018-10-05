@@ -359,6 +359,14 @@ namespace TickTrader.Algo.Core
             _lastStatus = status;
         }
 
+        void IPluginLogger.OnConnected()
+        {
+        }
+
+        void IPluginLogger.OnDisconnected()
+        {
+        }
+
         #endregion
     }
 }

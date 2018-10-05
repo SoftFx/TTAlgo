@@ -12,15 +12,15 @@ namespace TickTrader.Algo.Core
     public class OrdersCollection : IEnumerable<OrderAccessor>
     {
         private PluginBuilder builder;
-        private OrdersFixture fixture;
+        private OrdersAdapter fixture;
 
-        internal OrderList OrderListImpl { get { return fixture; } }
+        internal OrdersAdapter OrderListImpl => fixture;
         internal bool IsEnabled { get { return true; } }
 
         internal OrdersCollection(PluginBuilder builder)
         {
             this.builder = builder;
-            fixture = new OrdersFixture(builder.Symbols);
+            fixture = new OrdersAdapter(builder.Symbols);
         }
 
         internal void Add(OrderAccessor order)
@@ -128,12 +128,12 @@ namespace TickTrader.Algo.Core
         public event Action<OrderAccessor> Removed;
         public event Action<OrderAccessor> Replaced;
 
-        internal class OrdersFixture : OrderList, IEnumerable<OrderAccessor>
+        internal class OrdersAdapter : OrderList, IEnumerable<OrderAccessor>
         {
             private ConcurrentDictionary<string, OrderAccessor> orders = new ConcurrentDictionary<string, OrderAccessor>();
             private SymbolsCollection _symbols;
 
-            internal OrdersFixture(SymbolsCollection symbols)
+            internal OrdersAdapter(SymbolsCollection symbols)
             {
                 _symbols = symbols;
             }
@@ -206,6 +206,7 @@ namespace TickTrader.Algo.Core
             public void Clear()
             {
                 orders.Clear();
+                Cleared?.Invoke();
             }
 
             public void FireOrderOpened(OrderOpenedEventArgs args)
@@ -253,6 +254,7 @@ namespace TickTrader.Algo.Core
             public event Action<Order> Added;
             public event Action<Order> Removed;
             public event Action<Order> Replaced;
+            public event Action Cleared;
 
             public IEnumerator<OrderAccessor> GetTypedEnumerator()
             {
