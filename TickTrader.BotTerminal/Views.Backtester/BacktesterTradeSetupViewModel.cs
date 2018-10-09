@@ -123,7 +123,7 @@ namespace TickTrader.BotTerminal
                 .Chain().Select(c => c.Name)
                 .Chain().AsObservable();
 
-            BalanceCurrency.Value = currencies.Snapshot.ContainsKey("USD") ? "USD" : currencies.Snapshot.FirstOrDefault().Key;
+            BalanceCurrency.Value = settings.BalanceCurrency ?? GetDefaultCurrency(currencies);
             BalanceCurrency.AddValidationRule(s => !string.IsNullOrWhiteSpace(s), "Balance currency must not be empty!");
 
             Leverage = _proprs.AddIntValidable(settings.Leverage);
@@ -139,6 +139,11 @@ namespace TickTrader.BotTerminal
             var isMarginSetupValid = InitialBalance.IsValid() & InitialBalanceStr.IsValid() & Leverage.IsValid() & LeverageStr.IsValid();
 
             _isTradeSettingsValid = ((isMargin & isMarginSetupValid) | (isCash));
+        }
+
+        private string GetDefaultCurrency(IVarSet<string, CurrencyEntity> currencies)
+        {
+            return currencies.Snapshot.ContainsKey("USD") ? "USD" : currencies.Snapshot.FirstOrDefault().Key;
         }
         
         #endregion
