@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
@@ -21,6 +22,8 @@ namespace TickTrader.BotAgent.BA
         List<PluginInfo> GetAllPlugins();
         List<PluginInfo> GetPluginsByType(AlgoTypes type);
         MappingCollectionInfo GetMappingsInfo();
+        Stream GetPackageReadStream(PackageKey package);
+        Stream GetPackageWriteStream(PackageKey package);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
         
@@ -72,6 +75,8 @@ namespace TickTrader.BotAgent.BA
         IFile GetFile(string decodedFile);
         void DeleteFile(string name);
         void SaveFile(string name, byte[] bytes);
+        Stream GetFileReadStream(string name);
+        Stream GetFileWriteStream(string name);
     }
 
     public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }

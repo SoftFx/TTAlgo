@@ -70,6 +70,8 @@ namespace TickTrader.BotAgent.BA.Models
             public List<PluginInfo> GetAllPlugins() => CallActor(a => a.GetAllPlugins());
             public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActor(a => a.GetPluginsByType(type));
             public MappingCollectionInfo GetMappingsInfo() => CallActor(a => a.GetMappingsInfo());
+            public Stream GetPackageReadStream(PackageKey package) => CallActor(a => a.GetPackageReadStream(package));
+            public Stream GetPackageWriteStream(PackageKey package) => CallActor(a => a.GetPackageWriteStream(package));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -477,6 +479,16 @@ namespace TickTrader.BotAgent.BA.Models
         private MappingCollectionInfo GetMappingsInfo()
         {
             return _packageStorage.Mappings.ToInfo();
+        }
+
+        private Stream GetPackageReadStream(PackageKey package)
+        {
+            return _packageStorage.GetPackageReadStream(package);
+        }
+
+        private Stream GetPackageWriteStream(PackageKey package)
+        {
+            return _packageStorage.GetPackageWriteStream(package);
         }
 
         #endregion

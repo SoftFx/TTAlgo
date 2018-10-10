@@ -7,6 +7,7 @@ using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
@@ -56,11 +57,11 @@ namespace TickTrader.BotTerminal
 
         Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
 
-        Task UploadPackage(string fileName, string srcFilePath);
+        Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener);
 
         Task RemovePackage(PackageKey package);
 
-        Task DownloadPackage(PackageKey package, string dstFilePath);
+        Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener);
 
         Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
 
@@ -68,9 +69,9 @@ namespace TickTrader.BotTerminal
 
         Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
 
-        Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath);
+        Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener);
 
-        Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath);
+        Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener);
     }
 
 

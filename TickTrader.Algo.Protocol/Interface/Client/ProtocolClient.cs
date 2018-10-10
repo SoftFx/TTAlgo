@@ -281,11 +281,11 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<List<PackageInfo>> GetPackageList();
 
-        public abstract Task UploadPackage(string fileName, byte[] packageBinary);
+        public abstract Task UploadPackage(PackageKey package, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
         public abstract Task RemovePackage(PackageKey package);
 
-        public abstract Task<byte[]> DownloadPackage(PackageKey package);
+        public abstract Task DownloadPackage(PackageKey package, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
         public abstract Task<string> GetBotStatus(string botId);
 
@@ -297,9 +297,9 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task DeleteBotFile(string botId, BotFolderId folderId, string fileName);
 
-        public abstract Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath);
+        public abstract Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
-        public abstract Task UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary);
+        public abstract Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener);
 
         #endregion Requests
     }

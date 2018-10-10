@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DeleteBotFileRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DeleteBotFileResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DeleteBotFileResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadBotFileRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_FileChunk = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadBotFileResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadBotFileRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadBotFileResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse.Parser.ParseFrom);
 
@@ -223,7 +223,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_PackageListResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> __Method_UploadPackage = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse>(
-        grpc::MethodType.Unary,
+        grpc::MethodType.ClientStreaming,
         __ServiceName,
         "UploadPackage",
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadPackageRequest,
@@ -237,7 +237,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_RemovePackageResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> __Method_DownloadPackage = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse>(
-        grpc::MethodType.Unary,
+        grpc::MethodType.ServerStreaming,
         __ServiceName,
         "DownloadPackage",
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadPackageRequest,
@@ -278,15 +278,15 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DeleteBotFileRequest,
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DeleteBotFileResponse);
 
-    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk> __Method_DownloadBotFile = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk>(
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse> __Method_DownloadBotFile = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse>(
         grpc::MethodType.ServerStreaming,
         __ServiceName,
         "DownloadBotFile",
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadBotFileRequest,
-        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_FileChunk);
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_DownloadBotFileResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> __Method_UploadBotFile = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse>(
-        grpc::MethodType.Unary,
+        grpc::MethodType.ClientStreaming,
         __ServiceName,
         "UploadBotFile",
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_UploadBotFileRequest,
@@ -406,7 +406,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> UploadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> UploadPackage(grpc::IAsyncStreamReader<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest> requestStream, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -416,7 +416,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> DownloadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task DownloadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::IServerStreamWriter<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> responseStream, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -446,12 +446,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task DownloadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest request, grpc::IServerStreamWriter<global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk> responseStream, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task DownloadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest request, grpc::IServerStreamWriter<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse> responseStream, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> UploadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> UploadBotFile(grpc::IAsyncStreamReader<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest> requestStream, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -809,21 +809,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetPackageList, null, options, request);
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse UploadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncClientStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> UploadPackage(grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return UploadPackage(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return UploadPackage(new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse UploadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncClientStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> UploadPackage(grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_UploadPackage, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> UploadPackageAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return UploadPackageAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageResponse> UploadPackageAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadPackageRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_UploadPackage, null, options, request);
+        return CallInvoker.AsyncClientStreamingCall(__Method_UploadPackage, null, options);
       }
       public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageResponse RemovePackage(global::TickTrader.Algo.Protocol.Grpc.Lib.RemovePackageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -841,21 +833,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       {
         return CallInvoker.AsyncUnaryCall(__Method_RemovePackage, null, options, request);
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse DownloadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> DownloadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return DownloadPackage(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse DownloadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> DownloadPackage(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_DownloadPackage, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> DownloadPackageAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return DownloadPackageAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageResponse> DownloadPackageAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadPackageRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_DownloadPackage, null, options, request);
+        return CallInvoker.AsyncServerStreamingCall(__Method_DownloadPackage, null, options, request);
       }
       public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse GetBotStatus(global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -937,29 +921,21 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       {
         return CallInvoker.AsyncUnaryCall(__Method_DeleteBotFile, null, options, request);
       }
-      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk> DownloadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse> DownloadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return DownloadBotFile(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.FileChunk> DownloadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncServerStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileResponse> DownloadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.DownloadBotFileRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncServerStreamingCall(__Method_DownloadBotFile, null, options, request);
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse UploadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncClientStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> UploadBotFile(grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return UploadBotFile(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return UploadBotFile(new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse UploadBotFile(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncClientStreamingCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> UploadBotFile(grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_UploadBotFile, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> UploadBotFileAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return UploadBotFileAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileResponse> UploadBotFileAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.UploadBotFileRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_UploadBotFile, null, options, request);
+        return CallInvoker.AsyncClientStreamingCall(__Method_UploadBotFile, null, options);
       }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       protected override BotAgentClient NewInstance(ClientBaseConfiguration configuration)

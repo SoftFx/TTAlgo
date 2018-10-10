@@ -235,9 +235,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(GetPackageListInternal, request, context);
         }
 
-        public override Task<Lib.UploadPackageResponse> UploadPackage(Lib.UploadPackageRequest request, ServerCallContext context)
+        public override Task<Lib.UploadPackageResponse> UploadPackage(IAsyncStreamReader<Lib.UploadPackageRequest> requestStream, ServerCallContext context)
         {
-            return ExecuteUnaryRequestAuthorized(UploadPackageInternal, request, context);
+            return ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, requestStream, context);
         }
 
         public override Task<Lib.RemovePackageResponse> RemovePackage(Lib.RemovePackageRequest request, ServerCallContext context)
@@ -245,9 +245,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(RemovePackageInternal, request, context);
         }
 
-        public override Task<Lib.DownloadPackageResponse> DownloadPackage(Lib.DownloadPackageRequest request, ServerCallContext context)
+        public override Task DownloadPackage(Lib.DownloadPackageRequest request, IServerStreamWriter<Lib.DownloadPackageResponse> responseStream, ServerCallContext context)
         {
-            return ExecuteUnaryRequestAuthorized(DownloadPackageInternal, request, context);
+            return ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal, request, responseStream, context);
         }
 
         public override Task<Lib.BotStatusResponse> GetBotStatus(Lib.BotStatusRequest request, ServerCallContext context)
@@ -275,14 +275,14 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(DeleteBotFileInternal, request, context);
         }
 
-        public override Task DownloadBotFile(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.FileChunk> responseStream, ServerCallContext context)
+        public override Task DownloadBotFile(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.DownloadBotFileResponse> responseStream, ServerCallContext context)
         {
             return ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, request, responseStream, context);
         }
 
-        public override Task<Lib.UploadBotFileResponse> UploadBotFile(Lib.UploadBotFileRequest request, ServerCallContext context)
+        public override Task<Lib.UploadBotFileResponse> UploadBotFile(IAsyncStreamReader<Lib.UploadBotFileRequest> requestStream, ServerCallContext context)
         {
-            return ExecuteUnaryRequestAuthorized(UploadBotFileInternal, request, context);
+            return ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, requestStream, context);
         }
 
         #endregion Grpc request handlers overrides
@@ -315,7 +315,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
-                var session = GetSession(context, request, out var execResult);
+                var session = GetSession(context, typeof(TRequest), out var execResult);
 
                 _messageFormatter.LogClientRequest(session?.Logger, request);
                 var response = await requestAction(request, context, session, execResult);
@@ -338,7 +338,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             try
             {
-                var session = GetSession(context, request, out var execResult);
+                var session = GetSession(context, typeof(TRequest), out var execResult);
 
                 _messageFormatter.LogClientRequest(session?.Logger, request);
                 return requestAction(request, responseStream, context, session, execResult);
@@ -350,7 +350,29 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        private ServerSession.Handler GetSession<TRequest>(ServerCallContext context, TRequest request, out Lib.RequestResult execResult)
+        private async Task<TResponse> ExecuteClientStreamingRequestAuthorized<TRequest, TResponse>(
+            Func<IAsyncStreamReader<TRequest>, ServerCallContext, ServerSession.Handler, Lib.RequestResult, Task<TResponse>> requestAction,
+            IAsyncStreamReader<TRequest> requestStream, ServerCallContext context)
+            where TRequest : IMessage
+            where TResponse : IMessage
+        {
+            try
+            {
+                var session = GetSession(context, typeof(TRequest), out var execResult);
+
+                var response = await requestAction(requestStream, context, session, execResult);
+                _messageFormatter.LogClientResponse(session?.Logger, response);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to execute request of type {typeof(TRequest).Name}");
+                throw;
+            }
+        }
+
+        private ServerSession.Handler GetSession(ServerCallContext context, Type requestType, out Lib.RequestResult execResult)
         {
             execResult = CreateSuccessResult();
 
@@ -359,13 +381,13 @@ namespace TickTrader.Algo.Protocol.Grpc
                 var entry = context.RequestHeaders.LastOrDefault(e => e.Key == "authorization");
                 if (entry == null)
                 {
-                    _logger.Error($"Missing authorization header for request of type {request.GetType().Name}");
+                    _logger.Error($"Missing authorization header for request of type {requestType.Name}");
                     execResult = CreateUnauthorizedResult("Missing authorization header");
                     return null;
                 }
                 else if (string.IsNullOrWhiteSpace(entry.Value) || !entry.Value.StartsWith("Bearer "))
                 {
-                    _logger.Error($"Authorization header value({entry.Value}) doesn't match Bearer authentication scheme for request of type {request.GetType().Name}");
+                    _logger.Error($"Authorization header value({entry.Value}) doesn't match Bearer authentication scheme for request of type {requestType.Name}");
                     execResult = CreateUnauthorizedResult("Authorization header doesn't match Bearer authentication scheme");
                     return null;
                 }
@@ -378,7 +400,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 }
                 catch (UnauthorizedException uex)
                 {
-                    _logger.Error($"{uex.Message}. Request of type {request.GetType().Name}");
+                    _logger.Error($"{uex.Message}. Request of type {requestType.Name}");
                     execResult = CreateUnauthorizedResult(uex);
                 }
                 catch (Exception ex)
@@ -409,6 +431,19 @@ namespace TickTrader.Algo.Protocol.Grpc
             return null;
         }
 
+        private async Task SendServerStreamResponse<TResponse>(IServerStreamWriter<TResponse> responseStream, ServerSession.Handler session, TResponse response)
+            where TResponse : IMessage
+        {
+            _messageFormatter.LogClientResponse(session?.Logger, response);
+            await responseStream.WriteAsync(response);
+        }
+
+        private TRequest GetClientStreamRequest<TRequest>(IAsyncStreamReader<TRequest> requestStream, ServerSession.Handler session)
+            where TRequest : IMessage
+        {
+            _messageFormatter.LogClientResponse(session?.Logger, requestStream.Current);
+            return requestStream.Current;
+        }
 
         #region Request handlers
 
@@ -839,22 +874,48 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.UploadPackageResponse> UploadPackageInternal(Lib.UploadPackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.UploadPackageResponse> UploadPackageInternal(IAsyncStreamReader<Lib.UploadPackageRequest> requestStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.UploadPackageResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
+
+            await requestStream.MoveNext();
+            var request = GetClientStreamRequest(requestStream, session);
+            if (request == null || request.ValueCase != Lib.UploadPackageRequest.ValueOneofCase.Package)
+            {
+                res.ExecResult = new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Reject, Message = "First message should specify package details" };
+                return res;
+            }
 
             try
             {
-                _botAgent.UploadPackage(request.FileName, request.PackageBinary.Convert());
+                var chunkSize = request.Package.ChunkSettings.Size;
+                var buffer = new byte[chunkSize];
+                using (var stream = _botAgent.GetPackageWriteStream(request.Package.Key.Convert()))
+                {
+                    stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
+                    while (await requestStream.MoveNext())
+                    {
+                        request = GetClientStreamRequest(requestStream, session);
+                        if (request.ValueCase != Lib.UploadPackageRequest.ValueOneofCase.Chunk)
+                            continue;
+                        if (!request.Chunk.Binary.IsEmpty)
+                        {
+                            request.Chunk.Binary.CopyTo(buffer, 0);
+                            stream.Write(buffer, 0, request.Chunk.Binary.Length);
+                        }
+                        if (request.Chunk.IsFinal)
+                            break;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to upload package");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private Task<Lib.RemovePackageResponse> RemovePackageInternal(Lib.RemovePackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -875,22 +936,40 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private Task<Lib.DownloadPackageResponse> DownloadPackageInternal(Lib.DownloadPackageRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task DownloadPackageInternal(Lib.DownloadPackageRequest request, IServerStreamWriter<Lib.DownloadPackageResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
-            var res = new Lib.DownloadPackageResponse { ExecResult = execResult };
+            var response = new Lib.DownloadPackageResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
             if (session == null)
-                return Task.FromResult(res);
+            {
+                response.Chunk.IsFinal = true;
+                response.Chunk.Id = -1;
+                await SendServerStreamResponse(responseStream, session, response);
+                return;
+            }
 
             try
             {
-                res.PackageBinary = _botAgent.DownloadPackage(request.Package.Convert()).Convert();
+                var chunkSize = request.Package.ChunkSettings.Size;
+                var buffer = new byte[chunkSize];
+                using (var stream = _botAgent.GetPackageReadStream(request.Package.Key.Convert()))
+                {
+                    stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
+                    for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                    {
+                        response.Chunk.Binary = buffer.Convert(0, cnt);
+                        await SendServerStreamResponse(responseStream, session, response);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to download package");
-                res.ExecResult = CreateErrorResult(ex);
+                response.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            response.Chunk.Binary = ByteString.Empty;
+            response.Chunk.Id = -1;
+            response.Chunk.IsFinal = true;
+            await SendServerStreamResponse(responseStream, session, response);
         }
 
         private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -983,64 +1062,83 @@ namespace TickTrader.Algo.Protocol.Grpc
             return Task.FromResult(res);
         }
 
-        private async Task DownloadBotFileInternal(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.FileChunk> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task DownloadBotFileInternal(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.DownloadBotFileResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
-            var chunk = new Lib.FileChunk { ExecResult = execResult };
+            var response = new Lib.DownloadBotFileResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
             if (session == null)
             {
-                chunk.IsFinal = true;
-                await SendFileChunk(responseStream, session, chunk);
+                response.Chunk.IsFinal = true;
+                response.Chunk.Id = -1;
+                await SendServerStreamResponse(responseStream, session, response);
                 return;
             }
             try
             {
-                const int bufferSize = 512 * 1024;
-                var buffer = new byte[bufferSize];
-                using (var stream = _botAgent.GetBotFile(request.BotId, request.FolderId.Convert(), request.FileName))
+                var chunkSize = request.File.ChunkSettings.Size;
+                var buffer = new byte[chunkSize];
+                using (var stream = _botAgent.GetBotFileReadStream(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName))
                 {
-                    for (var cnt = stream.Read(buffer, 0, bufferSize); cnt > 0; cnt = stream.Read(buffer, 0, bufferSize))
+                    stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
+                    for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
-                        chunk.ChunkBinary = buffer.Convert(0, cnt);
-                        await SendFileChunk(responseStream, session, chunk);
+                        response.Chunk.Binary = buffer.Convert(0, cnt);
+                        await SendServerStreamResponse(responseStream, session, response);
                     }
                 }
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to download bot file");
-                chunk.ExecResult = CreateErrorResult(ex);
-                chunk.ChunkBinary = ByteString.Empty;
-                chunk.IsFinal = true;
-                await SendFileChunk(responseStream, session, chunk);
-                return;
+                response.ExecResult = CreateErrorResult(ex);
             }
-            chunk.ChunkBinary = ByteString.Empty;
-            chunk.IsFinal = true;
-            await SendFileChunk(responseStream, session, chunk);
+            response.Chunk.Binary = ByteString.Empty;
+            response.Chunk.Id = -1;
+            response.Chunk.IsFinal = true;
+            await SendServerStreamResponse(responseStream, session, response);
         }
 
-        private async Task SendFileChunk(IServerStreamWriter<Lib.FileChunk> responseStream, ServerSession.Handler session, Lib.FileChunk chunk)
-        {
-            _messageFormatter.LogClientResponse(session?.Logger, chunk);
-            await responseStream.WriteAsync(chunk);
-        }
-
-        private Task<Lib.UploadBotFileResponse> UploadBotFileInternal(Lib.UploadBotFileRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.UploadBotFileResponse> UploadBotFileInternal(IAsyncStreamReader<Lib.UploadBotFileRequest> requestStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.UploadBotFileResponse { ExecResult = execResult };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
+
+            await requestStream.MoveNext();
+            var request = GetClientStreamRequest(requestStream, session);
+            if (request == null || request.ValueCase != Lib.UploadBotFileRequest.ValueOneofCase.File)
+            {
+                res.ExecResult = new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Reject, Message = "First message should specify bot file details" };
+                return res;
+            }
 
             try
             {
-                _botAgent.UploadBotFile(request.BotId, request.FolderId.Convert(), request.FileName, request.FileBinary.Convert());
+                var chunkSize = request.File.ChunkSettings.Size;
+                var buffer = new byte[chunkSize];
+                using (var stream = _botAgent.GetBotFileWriteStream(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName))
+                {
+                    stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
+                    while (await requestStream.MoveNext())
+                    {
+                        request = GetClientStreamRequest(requestStream, session);
+                        if (request.ValueCase != Lib.UploadBotFileRequest.ValueOneofCase.Chunk)
+                            continue;
+                        if (!request.Chunk.Binary.IsEmpty)
+                        {
+                            request.Chunk.Binary.CopyTo(buffer, 0);
+                            stream.Write(buffer, 0, request.Chunk.Binary.Length);
+                        }
+                        if (request.Chunk.IsFinal)
+                            break;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to upload bot file");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         #endregion Request handlers

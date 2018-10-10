@@ -60,6 +60,8 @@ namespace TickTrader.BotAgent.BA.Models
             public void DeleteFile(string file) => CallActor(a => a.DeleteFile(file));
             public IFile GetFile(string file) => CallActor(a => a.GetFile(file));
             public void SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
+            public Stream GetFileReadStream(string file) => CallActor(a => a.GetFileReadStream(file));
+            public Stream GetFileWriteStream(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
         }
 
         //public string Status { get; private set; }
@@ -159,6 +161,18 @@ namespace TickTrader.BotAgent.BA.Models
                 var fullPath = Path.Combine(_logDirectory, file);
 
                 return new ReadOnlyFileModel(fullPath);
+            }
+
+            throw new ArgumentException($"Incorrect file name {file}");
+        }
+
+        private Stream GetFileReadStream(string file)
+        {
+            if (file.IsFileNameValid())
+            {
+                var fullPath = Path.Combine(_logDirectory, file);
+
+                return File.OpenRead(file);
             }
 
             throw new ArgumentException($"Incorrect file name {file}");

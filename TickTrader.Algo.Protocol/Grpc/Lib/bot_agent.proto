@@ -37,9 +37,9 @@ service BotAgent
 	rpc TestAccountCreds(TestAccountCredsRequest) returns (TestAccountCredsResponse);
 
 	rpc GetPackageList(PackageListRequest) returns (PackageListResponse);
-	rpc UploadPackage(UploadPackageRequest) returns (UploadPackageResponse);
+	rpc UploadPackage(stream UploadPackageRequest) returns (UploadPackageResponse);
 	rpc RemovePackage(RemovePackageRequest) returns (RemovePackageResponse);
-	rpc DownloadPackage(DownloadPackageRequest) returns (DownloadPackageResponse);
+	rpc DownloadPackage(DownloadPackageRequest) returns (stream DownloadPackageResponse);
 
 	rpc GetBotStatus(BotStatusRequest) returns (BotStatusResponse);
 	rpc GetBotLogs(BotLogsRequest) returns (BotLogsResponse);
@@ -47,8 +47,8 @@ service BotAgent
 	rpc GetBotFolderInfo(BotFolderInfoRequest) returns (BotFolderInfoResponse);
 	rpc ClearBotFolder(ClearBotFolderRequest) returns (ClearBotFolderResponse);
 	rpc DeleteBotFile(DeleteBotFileRequest) returns (DeleteBotFileResponse);
-	rpc DownloadBotFile(DownloadBotFileRequest) returns (stream FileChunk);
-	rpc UploadBotFile(UploadBotFileRequest) returns (UploadBotFileResponse);
+	rpc DownloadBotFile(DownloadBotFileRequest) returns (stream DownloadBotFileResponse);
+	rpc UploadBotFile(stream UploadBotFileRequest) returns (UploadBotFileResponse);
 }
 
 message RequestResult
@@ -366,10 +366,32 @@ message PackageListResponse
 	repeated PackageInfo packages = 2;
 }
 
+message FileChunkSettings
+{
+	int32 size = 1;
+	int32 offset = 2;
+}
+
+message FileChunk
+{
+	int32 id = 1;
+	bytes binary = 2;
+	bool is_final = 3;
+}
+
+message PackageDetails
+{
+	PackageKey key = 1;
+	FileChunkSettings chunk_settings = 2;
+}
+
 message UploadPackageRequest
 {
-	string file_name = 1;
-	bytes package_binary = 2;
+	oneof value
+	{
+		PackageDetails package = 10;
+		FileChunk chunk = 11;
+	}
 }
 
 message UploadPackageResponse
@@ -389,13 +411,13 @@ message RemovePackageResponse
 
 message DownloadPackageRequest
 {
-	PackageKey package = 1;
+	PackageDetails package = 1;
 }
 
 message DownloadPackageResponse
 {
 	RequestResult exec_result = 1;
-	bytes package_binary = 2;
+	FileChunk chunk = 2;
 }
 
 message BotStatusRequest
@@ -459,26 +481,32 @@ message DeleteBotFileResponse
 	RequestResult exec_result = 1;
 }
 
-message DownloadBotFileRequest
+message BotFileDetails
 {
 	string bot_id = 1;
 	BotFolderInfo.BotFolderId folder_id = 2;
 	string file_name = 3;
+	FileChunkSettings chunk_settings = 4;
 }
 
-message FileChunk
+message DownloadBotFileRequest
+{
+	BotFileDetails file = 1;
+}
+
+message DownloadBotFileResponse
 {
 	RequestResult exec_result = 1;
-	bytes chunk_binary = 2;
-	bool is_final = 3;
+	FileChunk chunk = 2;
 }
 
 message UploadBotFileRequest
 {
-	string bot_id = 1;
-	BotFolderInfo.BotFolderId folder_id = 2;
-	string file_name = 3;
-	bytes file_binary = 4;
+	oneof value
+	{
+		BotFileDetails file = 10;
+		FileChunk chunk = 11;
+	}
 }
 
 message UploadBotFileResponse

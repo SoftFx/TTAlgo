@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Protocol;
 using TickTrader.BotTerminal.Lib;
 using File = System.IO.File;
 
@@ -197,10 +198,12 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task UploadPackage(string fileName, string srcFilePath)
+        public Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
         {
             var dstFilePath = Path.Combine(EnvService.Instance.AlgoRepositoryFolder, fileName);
+            progressListener.Init(0);
             File.Copy(srcFilePath, dstFilePath, true);
+            progressListener.IncrementProgress(new FileInfo(srcFilePath).Length);
             return Task.FromResult(this);
         }
 
@@ -225,7 +228,7 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task DownloadPackage(PackageKey package, string dstFilePath)
+        public Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener)
         {
             string srcFilePath = null;
             switch (package.Location)
@@ -242,7 +245,9 @@ namespace TickTrader.BotTerminal
                 default:
                     throw new ArgumentException("Can't resolve path to package location");
             }
+            progressListener.Init(0);
             File.Copy(srcFilePath, dstFilePath, true);
+            progressListener.IncrementProgress(new FileInfo(dstFilePath).Length);
             return Task.FromResult(new byte[0]);
         }
 
@@ -261,12 +266,12 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath)
+        public Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
         {
             throw new NotSupportedException();
         }
 
-        public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath)
+        public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
         {
             throw new NotSupportedException();
         }

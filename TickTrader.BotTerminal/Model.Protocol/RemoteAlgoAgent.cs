@@ -15,6 +15,8 @@ namespace TickTrader.BotTerminal
 {
     internal class RemoteAlgoAgent : IAlgoAgent, IBotAgentClient
     {
+        private const int DefaultChunkSize = 512 * 1024;
+
         private ISyncContext _syncContext;
         private VarDictionary<PackageKey, PackageInfo> _packages;
         private VarDictionary<PluginKey, PluginInfo> _plugins;
@@ -163,10 +165,9 @@ namespace TickTrader.BotTerminal
             return _protocolClient.TestAccountCreds(account, password, useNewProtocol);
         }
 
-        public Task UploadPackage(string fileName, string srcFilePath)
+        public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)
         {
-            var bytes = File.ReadAllBytes(srcFilePath);
-            return _protocolClient.UploadPackage(fileName, bytes);
+            await Task.Run(() => _protocolClient.UploadPackage(new PackageKey(fileName, Algo.Core.Repository.RepositoryLocation.LocalRepository), srcFilePath, DefaultChunkSize, 0, progressListener));
         }
 
         public Task RemovePackage(PackageKey package)
@@ -174,10 +175,9 @@ namespace TickTrader.BotTerminal
             return _protocolClient.RemovePackage(package);
         }
 
-        public async Task DownloadPackage(PackageKey package, string dstFilePath)
+        public async Task DownloadPackage(PackageKey package, string dstFilePath, IFileProgressListener progressListener)
         {
-            var bytes = await _protocolClient.DownloadPackage(package);
-            File.WriteAllBytes(dstFilePath, bytes);
+            await Task.Run(() => _protocolClient.DownloadPackage(package, dstFilePath, DefaultChunkSize, 0, progressListener));
         }
 
         public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
@@ -195,14 +195,14 @@ namespace TickTrader.BotTerminal
             return _protocolClient.DeleteBotFile(botId, folderId, fileName);
         }
 
-        public Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath)
+        public async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, IFileProgressListener progressListener)
         {
-            return _protocolClient.DownloadBotFile(botId, folderId, fileName, dstPath);
+            await Task.Run(() => _protocolClient.DownloadBotFile(botId, folderId, fileName, dstPath, DefaultChunkSize, 0, progressListener));
         }
 
-        public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath)
+        public async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
         {
-            return _protocolClient.UploadBotFile(botId, folderId, fileName, File.ReadAllBytes(srcPath));
+            await Task.Run(() => _protocolClient.UploadBotFile(botId, folderId, fileName, srcPath, DefaultChunkSize, 0, progressListener));
         }
 
         #endregion

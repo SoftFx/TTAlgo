@@ -68,11 +68,11 @@ namespace TickTrader.Algo.Protocol
 
         ConnectionErrorInfo TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
 
-        void UploadPackage(string fileName, byte[] packageBinary);
-
         void RemovePackage(PackageKey package);
 
-        byte[] DownloadPackage(PackageKey package);
+        Stream GetPackageReadStream(PackageKey package);
+
+        Stream GetPackageWriteStream(PackageKey package);
 
         string GetBotStatus(string botId);
 
@@ -84,9 +84,9 @@ namespace TickTrader.Algo.Protocol
 
         void DeleteBotFile(string botId, BotFolderId folderId, string fileName);
 
-        Stream GetBotFile(string botId, BotFolderId folderId, string fileName);
+        Stream GetBotFileReadStream(string botId, BotFolderId folderId, string fileName);
 
-        void UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary);
+        Stream GetBotFileWriteStream(string botId, BotFolderId folderId, string fileName);
 
         #endregion Requests
     }

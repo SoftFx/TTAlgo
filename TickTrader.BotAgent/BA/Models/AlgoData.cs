@@ -71,6 +71,22 @@ namespace TickTrader.BotAgent.BA.Models
             File.WriteAllBytes(Path.Combine(Folder, file), bytes);
         }
 
+        public Stream GetFileReadStream(string file)
+        {
+            if (!file.IsFileNameValid())
+                throw new ArgumentException($"Incorrect file name {file}");
+
+            return File.OpenRead(Path.Combine(Folder, file));
+        }
+
+        public Stream GetFileWriteStream(string file)
+        {
+            if (!file.IsFileNameValid())
+                throw new ArgumentException($"Incorrect file name {file}");
+
+            return File.OpenWrite(Path.Combine(Folder, file));
+        }
+
         private void EnsureDirectoryCreated()
         {
             if (!Directory.Exists(Folder))

@@ -351,6 +351,28 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
+        private Task<AsyncClientStreamingCall<TRequest, TResponse>> ExecuteClientStreamingRequestAuthorized<TRequest, TResponse>(
+            Func<TRequest, CallOptions, Task<AsyncClientStreamingCall<TRequest, TResponse>>> requestAction, TRequest request)
+            where TRequest : IMessage
+            where TResponse : IMessage
+        {
+            try
+            {
+                _messageFormatter.LogServerRequest(Logger, request);
+                return requestAction(request, GetCallOptions(_accessToken, false));
+            }
+            catch (UnauthorizedException uex)
+            {
+                Logger.Error(uex, $"Bad access token for {_messageFormatter.ToJson(request)}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Failed to execute {_messageFormatter.ToJson(request)}");
+                throw;
+            }
+        }
+
 
         #region Grpc request calls
 
@@ -459,9 +481,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.GetPackageListAsync(request, options).ResponseAsync;
         }
 
-        private Task<Lib.UploadPackageResponse> UploadPackageInternal(Lib.UploadPackageRequest request, CallOptions options)
+        private async Task<AsyncClientStreamingCall<Lib.UploadPackageRequest, Lib.UploadPackageResponse>> UploadPackageInternal(Lib.UploadPackageRequest request, CallOptions options)
         {
-            return _client.UploadPackageAsync(request, options).ResponseAsync;
+            var call = _client.UploadPackage(options);
+            await call.RequestStream.WriteAsync(request);
+            return call;
         }
 
         private Task<Lib.RemovePackageResponse> RemovePackageInternal(Lib.RemovePackageRequest request, CallOptions options)
@@ -469,9 +493,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.RemovePackageAsync(request, options).ResponseAsync;
         }
 
-        private Task<Lib.DownloadPackageResponse> DownloadPackageInternal(Lib.DownloadPackageRequest request, CallOptions options)
+        private Task<IAsyncStreamReader<Lib.DownloadPackageResponse>> DownloadPackageInternal(Lib.DownloadPackageRequest request, CallOptions options)
         {
-            return _client.DownloadPackageAsync(request, options).ResponseAsync;
+            return Task.FromResult(_client.DownloadPackage(request, options).ResponseStream);
         }
 
         private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, CallOptions options)
@@ -499,14 +523,16 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.DeleteBotFileAsync(request, options).ResponseAsync;
         }
 
-        private Task<IAsyncStreamReader<Lib.FileChunk>> DownloadBotFileInternal(Lib.DownloadBotFileRequest request, CallOptions options)
+        private Task<IAsyncStreamReader<Lib.DownloadBotFileResponse>> DownloadBotFileInternal(Lib.DownloadBotFileRequest request, CallOptions options)
         {
             return Task.FromResult(_client.DownloadBotFile(request, options).ResponseStream);
         }
 
-        private Task<Lib.UploadBotFileResponse> UploadBotFileInternal(Lib.UploadBotFileRequest request, CallOptions options)
+        private async Task<AsyncClientStreamingCall<Lib.UploadBotFileRequest, Lib.UploadBotFileResponse>> UploadBotFileInternal(Lib.UploadBotFileRequest request, CallOptions options)
         {
-            return _client.UploadBotFileAsync(request, options).ResponseAsync;
+            var call = _client.UploadBotFile(options);
+            await call.RequestStream.WriteAsync(request);
+            return call;
         }
 
         #endregion Grpc request calls
@@ -625,9 +651,48 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Packages.Select(ToAlgo.Convert).ToList();
         }
 
-        public override async Task UploadPackage(string fileName, byte[] packageBinary)
+        public override async Task UploadPackage(PackageKey package, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
-            var response = await ExecuteUnaryRequestAuthorized(UploadPackageInternal, new Lib.UploadPackageRequest { FileName = ToGrpc.Convert(fileName), PackageBinary = packageBinary.Convert() });
+            progressListener.Init((long)offset * chunkSize);
+
+            var request = new Lib.UploadPackageRequest
+            {
+                Package = new Lib.PackageDetails
+                {
+                    Key = package.Convert(),
+                    ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
+                }
+            };
+
+            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, request);
+
+            request.Chunk = new Lib.FileChunk { Id = 0, IsFinal = false };
+            var buffer = new byte[chunkSize];
+            try
+            {
+                using (var stream = System.IO.File.OpenRead(srcPath))
+                {
+                    stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                    for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                    {
+                        request.Chunk.Binary = buffer.Convert(0, cnt);
+                        _messageFormatter.LogClientRequest(Logger, request);
+                        await clientStream.RequestStream.WriteAsync(request);
+                        progressListener.IncrementProgress(cnt);
+                        request.Chunk.Id++;
+                    }
+                }
+            }
+            finally
+            {
+                request.Chunk.Binary = ByteString.Empty;
+                request.Chunk.IsFinal = true;
+                request.Chunk.Id = -1;
+                _messageFormatter.LogClientRequest(Logger, request);
+                await clientStream.RequestStream.WriteAsync(request);
+            }
+
+            var response = await clientStream.ResponseAsync;
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -637,11 +702,39 @@ namespace TickTrader.Algo.Protocol.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task<byte[]> DownloadPackage(PackageKey package)
+        public override async Task DownloadPackage(PackageKey package, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
-            var response = await ExecuteUnaryRequestAuthorized(DownloadPackageInternal, new Lib.DownloadPackageRequest { Package = package.Convert() });
-            FailForNonSuccess(response.ExecResult);
-            return response.PackageBinary.Convert();
+            progressListener.Init((long)offset * chunkSize);
+
+            var fileReader = await ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal,
+                new Lib.DownloadPackageRequest
+                {
+                    Package = new Lib.PackageDetails
+                    {
+                        Key = package.Convert(),
+                        ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
+                    }
+                });
+
+            var buffer = new byte[chunkSize];
+            using (var stream = System.IO.File.OpenWrite(dstPath))
+            {
+                stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                while (await fileReader.MoveNext())
+                {
+                    var response = fileReader.Current;
+                    _messageFormatter.LogServerResponse(Logger, response);
+                    FailForNonSuccess(response.ExecResult);
+                    if (!response.Chunk.Binary.IsEmpty)
+                    {
+                        response.Chunk.Binary.CopyTo(buffer, 0);
+                        progressListener.IncrementProgress(response.Chunk.Binary.Length);
+                        stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                    }
+                    if (response.Chunk.IsFinal)
+                        break;
+                }
+            }
         }
 
         public override async Task<string> GetBotStatus(string botId)
@@ -677,30 +770,87 @@ namespace TickTrader.Algo.Protocol.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath)
+        public override async Task DownloadBotFile(string botId, BotFolderId folderId, string fileName, string dstPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
-            var fileReader = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal, new Lib.DownloadBotFileRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert(), FileName = ToGrpc.Convert(fileName) });
+            progressListener.Init((long)offset * chunkSize);
+
+            var fileReader = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal,
+                new Lib.DownloadBotFileRequest
+                {
+                    File = new Lib.BotFileDetails
+                    {
+                        BotId = ToGrpc.Convert(botId),
+                        FolderId = folderId.Convert(),
+                        FileName = ToGrpc.Convert(fileName),
+                        ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
+                    }
+                });
+
+            var buffer = new byte[chunkSize];
             using (var stream = System.IO.File.OpenWrite(dstPath))
-            using (var binaryWriter = new System.IO.BinaryWriter(stream))
             {
+                stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
                 while (await fileReader.MoveNext())
                 {
-                    var chunk = fileReader.Current;
-                    _messageFormatter.LogServerResponse(Logger, chunk);
-                    FailForNonSuccess(chunk.ExecResult);
-                    if (!chunk.ChunkBinary.IsEmpty)
+                    var response = fileReader.Current;
+                    _messageFormatter.LogServerResponse(Logger, response);
+                    FailForNonSuccess(response.ExecResult);
+                    if (!response.Chunk.Binary.IsEmpty)
                     {
-                        binaryWriter.Write(chunk.ChunkBinary.Convert());
+                        response.Chunk.Binary.CopyTo(buffer, 0);
+                        progressListener.IncrementProgress(response.Chunk.Binary.Length);
+                        stream.Write(buffer, 0, response.Chunk.Binary.Length);
                     }
-                    if (chunk.IsFinal)
+                    if (response.Chunk.IsFinal)
                         break;
                 }
             }
         }
 
-        public override async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary)
+        public override async Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
-            var response = await ExecuteUnaryRequestAuthorized(UploadBotFileInternal, new Lib.UploadBotFileRequest { BotId = ToGrpc.Convert(botId), FolderId = folderId.Convert(), FileName = ToGrpc.Convert(fileName), FileBinary = fileBinary.Convert() });
+            progressListener.Init((long)offset * chunkSize);
+
+            var request = new Lib.UploadBotFileRequest
+            {
+                File = new Lib.BotFileDetails
+                {
+                    BotId = ToGrpc.Convert(botId),
+                    FolderId = folderId.Convert(),
+                    FileName = ToGrpc.Convert(fileName),
+                    ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
+                }
+            };
+
+            var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, request);
+
+            request.Chunk = new Lib.FileChunk { Id = 0, IsFinal = false };
+            var buffer = new byte[chunkSize];
+            try
+            {
+                using (var stream = System.IO.File.OpenRead(srcPath))
+                {
+                    stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                    for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
+                    {
+                        request.Chunk.Binary = buffer.Convert(0, cnt);
+                        _messageFormatter.LogClientRequest(Logger, request);
+                        await clientStream.RequestStream.WriteAsync(request);
+                        progressListener.IncrementProgress(cnt);
+                        request.Chunk.Id++;
+                    }
+                }
+            }
+            finally
+            {
+                request.Chunk.Binary = ByteString.Empty;
+                request.Chunk.IsFinal = true;
+                request.Chunk.Id = -1;
+                _messageFormatter.LogClientRequest(Logger, request);
+                await clientStream.RequestStream.WriteAsync(request);
+            }
+
+            var response = await clientStream.ResponseAsync;
             FailForNonSuccess(response.ExecResult);
         }
 
