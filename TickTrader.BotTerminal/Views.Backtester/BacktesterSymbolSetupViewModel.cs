@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
 
             AvailableSymbols = symbols;
 
-            if (type == SymbolSetupType.MainSymbol)
+            if (type == SymbolSetupType.Main)
                 AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>().Where(t => !t.IsTicks());
             else
                 AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>();
@@ -51,13 +51,9 @@ namespace TickTrader.BotTerminal
 
             CanChangePrice = !isTicks;
 
-            if (type != SymbolSetupType.MainSymbol)
-            {
-                TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange());
-                //TriggerOnChange(SelectedTimeframe.Var, a => UpdateAvailableRange());
-                //TriggerOnChange(SelectedPriceType.Var, a => UpdateAvailableRange());
-            }
+            IsSymbolSelected = SelectedSymbol.Var.IsNotNull();
 
+            TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange());
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
         }
         
@@ -72,6 +68,7 @@ namespace TickTrader.BotTerminal
         public Property<Tuple<DateTime, DateTime>> AvailableRange { get; }
         public BoolVar IsUpdating { get; }
         public BoolVar CanChangePrice { get; }
+        public BoolVar IsSymbolSelected { get; }
 
         public void Add() => OnAdd?.Invoke();
         public void Remove() => Removed?.Invoke(this);
@@ -100,76 +97,79 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit)
+        public Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit)
         {
-            if (SetupType == SymbolSetupType.MainSymbol)
-                return;
+            return PrecacheData(observer, cToken, fromLimit, toLimit, SelectedTimeframe.Value);
+        }
+
+        public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit, TimeFrames timeFrameChoice)
+        {
+            //if (SetupType == SymbolSetupType.Main)
+            //    return;
 
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
-            if (SetupType != SymbolSetupType.MainSymbol)
+            var smb = SelectedSymbol.Value;
+            var priceChoice = SelectedPriceType.Value;
+
+            if (!smb.IsCustom)
             {
-                var smb = SelectedSymbol.Value;
-                var priceChoice = SelectedPriceType.Value;
-                var timeFrameChoice = SelectedTimeframe.Value;
-
-                if (!smb.IsCustom)
+                if (timeFrameChoice == TimeFrames.Ticks || timeFrameChoice == TimeFrames.TicksLevel2)
                 {
-                    if (timeFrameChoice == TimeFrames.Ticks || timeFrameChoice == TimeFrames.TicksLevel2)
-                    {
-                        // ticks
+                    // ticks
+                    await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, BarPriceType.Bid, precacheFrom, precacheTo);
+                }
+                else // bars
+                {
+                    if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
                         await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, BarPriceType.Bid, precacheFrom, precacheTo);
-                    }
-                    else // bars
-                    {
-                        if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                            await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, BarPriceType.Bid, precacheFrom, precacheTo);
 
-                        if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                            await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, BarPriceType.Ask, precacheFrom, precacheTo);
-                    }
+                    if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
+                        await smb.DownloadToStorage(observer, false, cToken, timeFrameChoice, BarPriceType.Ask, precacheFrom, precacheTo);
                 }
             }
         }
 
         public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit)
         {
+            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value);
+        }
+
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
+        {
             var smbData = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
-            var timeframe = SelectedTimeframe.Value;
 
-            if (SetupType == SymbolSetupType.MainSymbol)
+            if (SetupType == SymbolSetupType.Main)
             {
                 tester.MainSymbol = smbData.Name;
-                tester.MainTimeframe = timeframe;
+                tester.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
+            }
+
+            var precacheFrom = GetLocalFrom(fromLimit);
+            var precacheTo = GetLocalTo(toLimit);
+
+            tester.Symbols.Add(smbData.Name, smbData.InfoEntity);
+
+            if (baseTimeFrame == TimeFrames.Ticks || baseTimeFrame == TimeFrames.TicksLevel2)
+            {
+                ITickStorage feed = smbData.GetCrossDomainTickReader(baseTimeFrame, precacheFrom, precacheTo);
+
+                tester.Feed.AddSource(smbData.Name, feed);
             }
             else
             {
-                var precacheFrom = GetLocalFrom(fromLimit);
-                var precacheTo = GetLocalTo(toLimit);
+                IBarStorage bidFeed = null;
+                IBarStorage askFeed = null;
 
-                tester.Symbols.Add(smbData.Name, smbData.InfoEntity);
+                if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
+                    bidFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, BarPriceType.Bid, precacheFrom, precacheTo);
 
-                if (timeframe == TimeFrames.Ticks || timeframe == TimeFrames.TicksLevel2)
-                {
-                    ITickStorage feed = smbData.GetCrossDomainTickReader(timeframe, precacheFrom, precacheTo);
+                if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
+                    askFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, BarPriceType.Ask, precacheFrom, precacheTo);
 
-                    tester.Feed.AddSource(smbData.Name, feed);
-                }
-                else
-                {
-                    IBarStorage bidFeed = null;
-                    IBarStorage askFeed = null;
-
-                    if (priceChoice == DownloadPriceChoices.Bid | priceChoice == DownloadPriceChoices.Both)
-                        bidFeed = smbData.GetCrossDomainBarReader(timeframe, BarPriceType.Bid, precacheFrom, precacheTo);
-
-                    if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
-                        askFeed = smbData.GetCrossDomainBarReader(timeframe, BarPriceType.Ask, precacheFrom, precacheTo);
-
-                    tester.Feed.AddSource(smbData.Name, timeframe, bidFeed, askFeed);
-                }
+                tester.Feed.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
             }
         }
 
@@ -210,5 +210,5 @@ namespace TickTrader.BotTerminal
     }
 
     internal enum DownloadPriceChoices { Bid, Ask, Both }
-    internal enum SymbolSetupType { MainSymbol, MainFeed, AdditionalFeed }
+    internal enum SymbolSetupType { Main, Additional }
 }

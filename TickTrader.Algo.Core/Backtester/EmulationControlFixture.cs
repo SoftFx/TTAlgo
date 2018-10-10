@@ -33,16 +33,23 @@ namespace TickTrader.Algo.Core
 
         public bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
         {
-            if (warmupUnits == WarmupUnitTypes.Days)
-                return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
-            else if (warmupUnits == WarmupUnitTypes.Hours)
-                return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
-            else if (warmupUnits == WarmupUnitTypes.Bars)
-                return InvokeEmulator.WarmupByBars(warmupValue);
-            else if (warmupUnits == WarmupUnitTypes.Ticks)
-                return InvokeEmulator.WarmupByQuotes(warmupValue);
-            else
-                return false;
+            try
+            {
+                if (warmupUnits == WarmupUnitTypes.Days)
+                    return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
+                else if (warmupUnits == WarmupUnitTypes.Hours)
+                    return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
+                else if (warmupUnits == WarmupUnitTypes.Bars)
+                    return InvokeEmulator.WarmupByBars(warmupValue);
+                else if (warmupUnits == WarmupUnitTypes.Ticks)
+                    return InvokeEmulator.WarmupByQuotes(warmupValue);
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                throw WrapException(ex);
+            }
         }
 
         public void EmulateExecution()
@@ -55,6 +62,10 @@ namespace TickTrader.Algo.Core
             {
                 Collector.AddEvent(LogSeverities.Error, "Testing canceled!");
                 throw;
+            }
+            catch (Exception ex)
+            {
+                throw WrapException(ex);
             }
         }
 
@@ -76,6 +87,11 @@ namespace TickTrader.Algo.Core
             Collector.Dispose();
 
             base.Dispose();
+        }
+
+        private Exception WrapException(Exception ex)
+        {
+            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }
 }

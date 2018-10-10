@@ -109,13 +109,13 @@ namespace TickTrader.BotTerminal
         {
             var symbol = _symbolInfo.Name;
 
-            observer?.SetMessage("Downloading " + symbol);
-
             var watch = Stopwatch.StartNew();
             int downloadedCount = 0;
 
             if (!timeFrame.IsTicks())
             {
+                observer?.SetMessage("Downloading " + symbol + " " + priceType);
+
                 observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
                 var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
@@ -152,6 +152,8 @@ namespace TickTrader.BotTerminal
                 //var endDay = to.GetAbsoluteDay();
                 //var totalDays = endDay - from.GetAbsoluteDay();
 
+                observer?.SetMessage("Downloading " + symbol);
+
                 observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
 
                 var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
@@ -159,7 +161,7 @@ namespace TickTrader.BotTerminal
                 while (await tickEnumerator.ReadNext())
                 {
                     var info = tickEnumerator.Current;
-                    if (info.Count > 0)
+                    if (showStats && info.Count > 0)
                     {
                         downloadedCount += info.Count;
                         var msg = "Downloading... " + downloadedCount + " ticks are downloaded.";

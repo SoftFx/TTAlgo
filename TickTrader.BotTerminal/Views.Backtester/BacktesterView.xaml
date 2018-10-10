@@ -8,6 +8,10 @@
     <DataTemplate x:Key="CaliburnViewTemplate">
         <ContentControl cal:View.Model="{Binding}" />
     </DataTemplate>
+
+    <DataTemplate x:Key="ModelTemplate">
+        <TextBlock Text="{l:ResxBinding Prefix=FeedEmulationModel_}"/>
+    </DataTemplate>
     
     <ControlTemplate x:Key="SetupPage.Classic">
 
@@ -70,6 +74,10 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Label Grid.Column="0" Grid.Row="0" Content="Bot/Indicator:"/>
@@ -79,20 +87,23 @@
                             <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
                         </ComboBox.GroupStyle>
                     </ComboBox>
+                    
                     <Button Content="Settings..." Grid.Column="2" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
                             IsEnabled="{Binding IsPluginSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
 
                     <Button Content="Trade setup..." Grid.Column="2" Grid.Row="1" cal:Message.Attach="OpenTradeSetup"
                             IsEnabled="{Binding IsTradeBotSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
 
-                    <!--<Label Grid.Column="0" Grid.Row="1" Content="Main symbol:"/>
-                    <ComboBox Grid.Column="1" Grid.Row="1" Width="120" HorizontalAlignment="Left"
-                              ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding MainTimeFrame.Value}"/>-->
+                    <Label Grid.Column="0" Grid.Row="3" Content="Model:"/>
+                    <ComboBox Grid.Column="1" Grid.Row="3" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
+                              ItemTemplate="{StaticResource ModelTemplate}"/>
 
-                    <ItemsControl ItemsSource="{Binding FeedSources}" Grid.ColumnSpan="4" Grid.Row="2" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
+                    <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="2" Grid.ColumnSpan="2"/>
+                    
+                    <ItemsControl ItemsSource="{Binding AdditionalSymbols}" Grid.ColumnSpan="2" Grid.Row="4" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
 
-                    <Label Grid.Column="0" Grid.Row="3" Content="Time range:"/>
-                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="1" Grid.Row="3" Margin="0,4,0,0"/>
+                    <Label Grid.Column="0" Grid.Row="5" Content="Time range:"/>
+                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="1" Grid.Row="6" Margin="0,4,0,0"/>
                 </Grid>
             </Grid>
         </ScrollViewer>

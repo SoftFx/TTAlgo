@@ -40,6 +40,7 @@ namespace TickTrader.BotTerminal
         private DateTime _emulteFrom;
         private DateTime _emulateTo;
         private BacktesterSettings _settings = new BacktesterSettings();
+        private BoolProperty _allSymbolsValid;
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
@@ -50,10 +51,12 @@ namespace TickTrader.BotTerminal
             _shell = shell ?? throw new ArgumentNullException("shell");
             _client = client;
 
+            _allSymbolsValid = _var.AddBoolProperty();
+
             _localWnd = new WindowManager(this);
 
             ProgressMonitor = new ActionViewModel();
-            FeedSources = new ObservableCollection<BacktesterSymbolSetupViewModel>();
+            AdditionalSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
 
             DateRange = new DateRangeSelectionViewModel();
             IsUpdatingRange = new BoolProperty();
@@ -63,15 +66,18 @@ namespace TickTrader.BotTerminal
 
             //_availableSymbols = env.Symbols;
 
-            AddSymbol(SymbolSetupType.MainSymbol);
-            AddSymbol(SymbolSetupType.MainFeed, FeedSources[0].SelectedSymbol.Var);
+            MainSymbolSetup = CreateSymbolSetupModel(SymbolSetupType.Main);
+            UpdateSymbolsState();
+
+            AvailableModels = _var.AddProperty<List<TimeFrames>>();
+            SelectedModel = _var.AddProperty<TimeFrames>(TimeFrames.M1);
 
             SelectedPlugin = new Property<AlgoPluginViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
             IsRunning = ProgressMonitor.IsRunning;
             IsStopping = ProgressMonitor.IsCancelling;
-            CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected;
+            CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var;
             CanSetup = !IsRunning & client.IsConnected;
             CanStop = ProgressMonitor.CanCancel;
 
@@ -92,19 +98,30 @@ namespace TickTrader.BotTerminal
             ChartPage = new BacktesterChartPageViewModel();
             ResultsPage = new BacktesterReportViewModel();
 
-            _var.TriggerOnChange(SelectedPlugin.Var, a =>
+            _var.TriggerOnChange(SelectedPlugin, a =>
             {
                 if (a.New != null)
                 {
                     PluginConfig = null;
                 }
             });
+
+            _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
+            {
+                AvailableModels.Value = EnumHelper.AllValues<TimeFrames>().Where(t => t >= a.New).ToList();
+
+                if (SelectedModel.Value < a.New)
+                    SelectedModel.Value = a.New;
+            }); 
         }
 
         public ActionViewModel ProgressMonitor { get; private set; }
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
+        public Property<List<TimeFrames>> AvailableModels { get; private set; }
+        public Property<TimeFrames> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
+        public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
         public BoolVar IsRunning { get; }
@@ -114,7 +131,7 @@ namespace TickTrader.BotTerminal
         public BoolVar CanStop { get; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
-        public ObservableCollection<BacktesterSymbolSetupViewModel> FeedSources { get; private set; }
+        public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
         //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
         public BacktesterReportViewModel ResultsPage { get; }
@@ -184,14 +201,16 @@ namespace TickTrader.BotTerminal
 
         private async Task PrecacheData(IActionObserver observer, CancellationToken cToken)
         {
-            foreach (var symbolSetup in FeedSources)
+            await MainSymbolSetup.PrecacheData(observer, cToken, _emulteFrom, _emulateTo, SelectedModel.Value);
+
+            foreach (var symbolSetup in AdditionalSymbols)
                 await symbolSetup.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
         }
 
         private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
         {
-            var chartSymbol = FeedSources[0].SelectedSymbol.Value;
-            var chartTimeframe = FeedSources[0].SelectedTimeframe.Value;
+            var chartSymbol = MainSymbolSetup.SelectedSymbol.Value;
+            var chartTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
             var chartPriceLayer = BarPriceType.Bid;
 
             _mainSymbolToken.Id = chartSymbol.Key;
@@ -237,7 +256,9 @@ namespace TickTrader.BotTerminal
 
                 try
                 {
-                    foreach (var symbolSetup in FeedSources)
+                    MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
+
+                    foreach (var symbolSetup in AdditionalSymbols)
                         symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
 
                     tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
@@ -360,43 +381,68 @@ namespace TickTrader.BotTerminal
 
         private void AddSymbol()
         {
-            AddSymbol(SymbolSetupType.AdditionalFeed);
+            AdditionalSymbols.Add(CreateSymbolSetupModel(SymbolSetupType.Additional));
+            UpdateSymbolsState();
         }
 
-        private void AddSymbol(SymbolSetupType type, Var<SymbolData> symbolSrc = null)
+        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<SymbolData> symbolSrc = null)
         {
             var smb = new BacktesterSymbolSetupViewModel(type, _catalog.ObservableSymbols, symbolSrc);
             smb.Removed += Smb_Removed;
             smb.OnAdd += AddSymbol;
 
             smb.IsUpdating.PropertyChanged += IsUpdating_PropertyChanged;
+            smb.IsSymbolSelected.PropertyChanged += IsSymbolSelected_PropertyChanged;
 
-            FeedSources.Add(smb);
+            return smb;
         }
 
         private void Smb_Removed(BacktesterSymbolSetupViewModel smb)
         {
-            FeedSources.Remove(smb);
+            AdditionalSymbols.Remove(smb);
             smb.IsUpdating.PropertyChanged -= IsUpdating_PropertyChanged;
+            smb.IsSymbolSelected.PropertyChanged -= IsSymbolSelected_PropertyChanged;
             smb.Removed -= Smb_Removed;
 
             UpdateRangeState();
+            UpdateSymbolsState();
         }
 
         private void UpdateRangeState()
         {
-            IsUpdatingRange.Value = FeedSources.Any(s => s.IsUpdating.Value);
+            var allSymbols = GetAllSymbols();
+
+            IsUpdatingRange.Value = allSymbols.Any(s => s.IsUpdating.Value);
             if (!IsUpdatingRange.Value)
             {
-                var max = FeedSources.Max(s => s.AvailableRange.Value?.Item2);
-                var min = FeedSources.Min(s => s.AvailableRange.Value?.Item1);
+                var max = allSymbols.Max(s => s.AvailableRange.Value?.Item2);
+                var min = allSymbols.Min(s => s.AvailableRange.Value?.Item1);
+
                 DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
             }
+        }
+
+        private void UpdateSymbolsState()
+        {
+            _allSymbolsValid.Value = GetAllSymbols().All(s => s.IsSymbolSelected.Value);
+        }
+
+        private IEnumerable<BacktesterSymbolSetupViewModel> GetAllSymbols()
+        {
+            yield return MainSymbolSetup;
+
+            foreach (var smb in AdditionalSymbols)
+                yield return smb;
         }
 
         private void IsUpdating_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             UpdateRangeState();
+        }
+
+        private void IsSymbolSelected_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            UpdateSymbolsState();
         }
 
         #region IAlgoSetupMetadata

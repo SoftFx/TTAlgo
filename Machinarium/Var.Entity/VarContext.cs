@@ -69,5 +69,10 @@ namespace Machinarium.Var
         {
             base.TriggerOnChange(var, changeHandler);
         }
+
+        public new void TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
+        {
+            base.TriggerOnChange(property.Var, changeHandler);
+        }
     }
 }

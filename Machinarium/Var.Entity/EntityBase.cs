@@ -129,6 +129,12 @@ namespace Machinarium.Var
             var trigger = new ChangeEvent<T>(var, changeHandler);
             AddDisposableChild(trigger);
         }
+
+        protected void TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
+        {
+            var trigger = new ChangeEvent<T>(property.Var, changeHandler);
+            AddDisposableChild(trigger);
+        }
     }
 }
 

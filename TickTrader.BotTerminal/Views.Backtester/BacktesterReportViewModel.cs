@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
             newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).ToString("N2"));
             newPropertis.Add("Gross profit", newStats.GrossProfit.ToString("N2"));
             newPropertis.Add("Gross loss", newStats.GrossLoss.ToString("N2"));
-            newPropertis.Add("Commision", newStats.TotalComission.ToString("N2"));
+            newPropertis.Add("Commission", newStats.TotalComission.ToString("N2"));
             newPropertis.Add("Swap", newStats.TotalSwap.ToString("N2"));
 
             newPropertis.Add("Testing time", Format(newStats.Elapsed));

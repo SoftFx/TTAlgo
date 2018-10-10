@@ -133,9 +133,9 @@
     </Style>
 
     <Style x:Key="TinyButton" TargetType="Button">
-        <Setter Property="Width" Value="18"/>
-        <Setter Property="Height" Value="18"/>
-        <Setter Property="Margin" Value="5,3,5,3"/>
+        <Setter Property="Width" Value="22"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Margin" Value="2"/>
     </Style>
 
 </ResourceDictionary>
