@@ -172,7 +172,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 var fullPath = Path.Combine(_logDirectory, file);
 
-                return File.OpenRead(file);
+                return File.OpenRead(fullPath);
             }
 
             throw new ArgumentException($"Incorrect file name {file}");
