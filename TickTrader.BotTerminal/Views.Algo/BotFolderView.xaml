@@ -48,7 +48,7 @@
                     <l:FlatButton DockPanel.Dock="Left" Content="Refresh" Padding="5 0" Margin="5 0 0 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
                           cal:Message.Attach="RefreshFolderInfo"/>
-                    <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0" Margin="5 0 0 0"
+                    <l:FlatButton DockPanel.Dock="Right" Content="Delete All"  Padding="5 0" Margin="5 0 0 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
                           cal:Message.Attach="Clear"/>
                 </DockPanel>

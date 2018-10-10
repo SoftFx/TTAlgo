@@ -7,6 +7,8 @@
         public string SessionId { get; set; }
 
         public int MinorVersion { get; set; }
+
+        public AccessLevels AccessLevel { get; set; }
     }
 
 

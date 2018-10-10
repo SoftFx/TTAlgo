@@ -72,6 +72,7 @@
     <Compile Include="Grpc\ServerSession.cs" />
     <Compile Include="Grpc\ToAlgo.cs" />
     <Compile Include="Grpc\ToGrpc.cs" />
+    <Compile Include="Infrastructure\AccessManager.cs" />
     <Compile Include="Infrastructure\BAExceptions.cs" />
     <Compile Include="Infrastructure\CertificateProvider.cs" />
     <Compile Include="Infrastructure\ExceptionExtensions.cs" />

@@ -40,7 +40,6 @@ namespace TickTrader.BotAgent.BA.Models
                 try
                 {
                     new DirectoryInfo(Folder).Clean();
-                    Directory.Delete(Folder);
                 }
                 catch (Exception ex)
                 {

@@ -34,6 +34,8 @@ namespace TickTrader.Algo.Protocol
 
         public VersionSpec VersionSpec { get; private set; }
 
+        public AccessManager AccessManager { get; private set; }
+
 
         public event Action Connecting = delegate { };
         public event Action Connected = delegate { };
@@ -46,6 +48,7 @@ namespace TickTrader.Algo.Protocol
             AgentClient = agentClient;
 
             VersionSpec = new VersionSpec();
+            AccessManager = new AccessManager(AccessLevels.Viewer);
 
             StateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
 
@@ -144,9 +147,10 @@ namespace TickTrader.Algo.Protocol
             StateMachine.PushEvent(ClientEvents.ConnectionError);
         }
 
-        protected void OnLogin(int serverMajorVersion, int serverMinorVersion)
+        protected void OnLogin(int serverMajorVersion, int serverMinorVersion, AccessLevels accessLevel)
         {
             VersionSpec = new VersionSpec(serverMinorVersion);
+            AccessManager = new AccessManager(accessLevel);
             Logger.Info($"Client version - {VersionSpec.LatestVersion}; Server version - {serverMajorVersion}.{serverMinorVersion}");
             Logger.Info($"Current version set to {VersionSpec.CurrentVersionStr}");
             StateMachine.PushEvent(ClientEvents.LoggedIn);

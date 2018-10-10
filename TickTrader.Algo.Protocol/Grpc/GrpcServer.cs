@@ -472,7 +472,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 }
                 else
                 {
-                    var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter);
+                    var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter, AccessLevels.Viewer);
                     try
                     {
                         var payload = new JwtPayload
@@ -480,9 +480,11 @@ namespace TickTrader.Algo.Protocol.Grpc
                             Username = session.Username,
                             SessionId = session.SessionId,
                             MinorVersion = session.VersionSpec.CurrentVersion,
+                            AccessLevel = session.AccessManager.Level,
                         };
                         res.SessionId = session.SessionId;
                         res.AccessToken = _jwtProvider.CreateToken(payload);
+                        res.AccessLevel = session.AccessManager.Level.Convert();
                     }
                     catch (Exception ex)
                     {
@@ -884,7 +886,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var request = GetClientStreamRequest(requestStream, session);
             if (request == null || request.ValueCase != Lib.UploadPackageRequest.ValueOneofCase.Package)
             {
-                res.ExecResult = new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Reject, Message = "First message should specify package details" };
+                res.ExecResult = CreateRejectResult("First message should specify package details");
                 return res;
             }
 
@@ -1107,7 +1109,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var request = GetClientStreamRequest(requestStream, session);
             if (request == null || request.ValueCase != Lib.UploadBotFileRequest.ValueOneofCase.File)
             {
-                res.ExecResult = new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.Reject, Message = "First message should specify bot file details" };
+                res.ExecResult = CreateRejectResult("First message should specify bot file details");
                 return res;
             }
 

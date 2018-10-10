@@ -59,6 +59,7 @@ message RequestResult
 		INTERNAL_SERVER_ERROR = 1;
 		UNAUTHORIZED = 2;
 		REJECT = 3;
+		NOT_ALLOWED = 4;
 	}
 
 	RequestStatus status = 1;
@@ -82,12 +83,20 @@ message LoginResponse
 		VERSION_MISMATCH = 2;
 	}
 
+	enum AccessLevel
+	{
+		VIEWER = 0;
+		DEALER = 1;
+		ADMIN = 2;
+	}
+
 	RequestResult exec_result = 1;
 	LoginError error = 2;
 	int32 major_version = 3; // server version
 	int32 minor_version = 4; // server version
 	string session_id = 5;
 	string access_token = 6;
+	AccessLevel access_level = 7;
 }
 
 message LogoutRequest

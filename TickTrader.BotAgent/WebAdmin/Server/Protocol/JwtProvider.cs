@@ -11,6 +11,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
     public class JwtProvider : IJwtProvider
     {
         public const string MinorVersionClaim = "minor";
+        public const string AccessLevelClaim = "access";
 
 
         private SigningCredentials _signingCreds;
@@ -50,6 +51,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 var username = jwtToken.Claims.Last(c => c.Type == JwtRegisteredClaimNames.Sub);
                 var sessionId = jwtToken.Claims.Last(c => c.Type == JwtRegisteredClaimNames.Jti);
                 var minorVersion = jwtToken.Claims.Last(c => c.Type == MinorVersionClaim);
+                var accessLevel = jwtToken.Claims.Last(c => c.Type == AccessLevelClaim);
 
                 if (username == null)
                     throw new ArgumentException($"Missing claim '{nameof(username)}'");
@@ -57,12 +59,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     throw new ArgumentException($"Missing claim '{nameof(sessionId)}'");
                 if (minorVersion == null)
                     throw new ArgumentException($"Missing claim '{nameof(minorVersion)}'");
+                if (accessLevel == null)
+                    throw new ArgumentException($"Missing claim '{nameof(accessLevel)}'");
 
                 return new Algo.Protocol.JwtPayload
                 {
                     Username = username.Value,
                     SessionId = sessionId.Value,
                     MinorVersion = int.Parse(minorVersion.Value),
+                    AccessLevel = (AccessLevels)Enum.Parse(typeof(AccessLevels), accessLevel.Value),
                 };
 
             }
@@ -85,6 +90,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 new Claim(JwtRegisteredClaimNames.Jti, payload.SessionId),
                 new Claim(JwtRegisteredClaimNames.Iat, GetUnixEpochDate().ToString(), ClaimValueTypes.Integer64),
                 new Claim(MinorVersionClaim, payload.MinorVersion.ToString(), ClaimValueTypes.Integer32),
+                new Claim(AccessLevelClaim, payload.AccessLevel.ToString(), ClaimValueTypes.String),
             };
 
             return new JwtSecurityToken(

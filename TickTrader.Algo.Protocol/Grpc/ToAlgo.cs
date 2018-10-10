@@ -995,6 +995,22 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         #endregion metadata.proto
 
+
+        public static AccessLevels Convert(this Lib.LoginResponse.Types.AccessLevel level)
+        {
+            switch (level)
+            {
+                case Lib.LoginResponse.Types.AccessLevel.Viewer:
+                    return AccessLevels.Viewer;
+                case Lib.LoginResponse.Types.AccessLevel.Dealer:
+                    return AccessLevels.Dealer;
+                case Lib.LoginResponse.Types.AccessLevel.Admin:
+                    return AccessLevels.Admin;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
         public static UpdateType Convert(this Lib.UpdateInfo.Types.UpdateType type)
         {
             switch (type)
