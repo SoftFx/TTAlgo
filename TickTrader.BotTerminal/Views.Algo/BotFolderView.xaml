@@ -87,7 +87,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ProgressBar Grid.Row="0" Grid.Column="0" Height="4" Margin="0 5 5 5" IsIndeterminate="{Binding Loading}"/>
+                            <ProgressBar Grid.Row="0" Grid.Column="0" Height="4" Margin="0 5 5 5" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"/>
                             <l:FlatButton Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" cal:Message.Attach="StartLoading" Content="Download"
                                       Style="{DynamicResource PanelActionButtonStyle}" Width="70" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"
@@ -124,7 +124,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ProgressBar Grid.Row="0" Grid.Column="0" Height="4" Margin="0 5 5 5" IsIndeterminate="{Binding Loading}"/>
+                            <ProgressBar Grid.Row="0" Grid.Column="0" Height="4" Margin="0 5 5 5" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"/>
                             <l:FlatButton Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" cal:Message.Attach="StartLoading" Content="Upload"
                                       Style="{DynamicResource PanelActionButtonStyle}" Width="70" VerticalAlignment="Center"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"

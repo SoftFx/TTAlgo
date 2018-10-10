@@ -3,13 +3,15 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows.Data;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BotFolderViewModel : Screen, IWindowModel
+    internal class BotFolderViewModel : Screen, IWindowModel, IFileProgressListener
     {
         private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -26,8 +28,10 @@ namespace TickTrader.BotTerminal
         private string _toFileName;
         private string _fromPath;
         private string _toPath;
-        private bool _loading;
         private string _error;
+        private double _progressValue;
+        private long _currentProgress;
+        private long _fullProgress;
 
 
         public IObservableList<AlgoAgentViewModel> Agents { get; }
@@ -186,6 +190,7 @@ namespace TickTrader.BotTerminal
                 _toFileName = value;
                 NotifyOfPropertyChange(nameof(ToFileName));
                 Validate();
+                DropProgress();
             }
         }
 
@@ -203,6 +208,7 @@ namespace TickTrader.BotTerminal
                 {
                     ToFileName = System.IO.Path.GetFileName(FromPath);
                 }
+                DropProgress();
             }
         }
 
@@ -216,19 +222,7 @@ namespace TickTrader.BotTerminal
 
                 _toPath = value;
                 NotifyOfPropertyChange(nameof(ToPath));
-            }
-        }
-
-        public bool Loading
-        {
-            get { return _loading; }
-            set
-            {
-                if (_loading == value)
-                    return;
-
-                _loading = value;
-                NotifyOfPropertyChange(nameof(Loading));
+                DropProgress();
             }
         }
 
@@ -249,6 +243,19 @@ namespace TickTrader.BotTerminal
         public bool HasError => !string.IsNullOrWhiteSpace(Error);
 
         public bool CanStartLoading => (IsUploading && CanUploadFile) || (IsDownloading && CanDownloadFile);
+
+        public double ProgressValue
+        {
+            get { return _progressValue; }
+            set
+            {
+                if (_progressValue == value)
+                    return;
+
+                _progressValue = value;
+                NotifyOfPropertyChange(nameof(ProgressValue));
+            }
+        }
 
 
         private BotFolderViewModel(AlgoEnvironment algoEnv)
@@ -347,14 +354,15 @@ namespace TickTrader.BotTerminal
 
             IsEnabled = false;
 
-            Loading = true;
             if (IsDownloading && SelectedBotFile != null)
             {
                 try
                 {
-                    await SelectedAgent.Model.DownloadBotFile(SelectedBot.InstanceId, SelectedFolderId, SelectedBotFile.Name, ToPath);
+                    _fullProgress = SelectedBotFile.Size;
+                    await SelectedAgent.Model.DownloadBotFile(SelectedBot.InstanceId, SelectedFolderId, SelectedBotFile.Name, ToPath, this);
+                    RefreshBotFilesInternal();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex, "Failed to download bot file");
                     Error = ex.Message;
@@ -364,7 +372,9 @@ namespace TickTrader.BotTerminal
             {
                 try
                 {
-                    await SelectedAgent.Model.UploadBotFile(SelectedBot.InstanceId, SelectedFolderId, ToFileName, FromPath);
+                    _fullProgress = new FileInfo(FromPath).Length;
+                    await SelectedAgent.Model.UploadBotFile(SelectedBot.InstanceId, SelectedFolderId, ToFileName, FromPath, this);
+                    RefreshBotFilesInternal();
                 }
                 catch (Exception ex)
                 {
@@ -372,9 +382,6 @@ namespace TickTrader.BotTerminal
                     Error = ex.Message;
                 }
             }
-            Loading = false;
-
-            RefreshBotFilesInternal();
 
             IsEnabled = true;
         }
@@ -470,6 +477,29 @@ namespace TickTrader.BotTerminal
                 ToPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(ToPath), SelectedBotFile.Name);
             }
         }
+
+        private void DropProgress()
+        {
+            if (SelectedBotFile != null)
+                ProgressValue = 0;
+        }
+
+
+        #region IFileProgressListener implementation
+
+        void IFileProgressListener.Init(long initialProgress)
+        {
+            _currentProgress = initialProgress;
+            ProgressValue = 100.0 * _currentProgress / _fullProgress;
+        }
+
+        void IFileProgressListener.IncrementProgress(long progressValue)
+        {
+            _currentProgress += progressValue;
+            ProgressValue = 100.0 * _currentProgress / _fullProgress;
+        }
+
+        #endregion IFileProgressListener implementation
     }
 
 
@@ -484,13 +514,31 @@ namespace TickTrader.BotTerminal
 
         public long Size => Info.Size;
 
-        public string SizeText => $"{Info.Size / 1024} KB";
+        public string SizeText => MakeSizeText(Info.Size);
 
 
         public BotFileViewModel(BotFileInfo info, BotFolderViewModel botFolder)
         {
             Info = info;
             _botFolder = botFolder;
+        }
+
+
+        private string MakeSizeText(long size)
+        {
+            if (size < 1024)
+            {
+                return $"{size} bytes";
+            }
+            if (size < 1024 * 1024)
+            {
+                return $"{size / 1024.0:F1} KB";
+            }
+            if (size < 1024 * 1024 * 1024)
+            {
+                return $"{size / 1024.0 / 1024.0:F1} MB";
+            }
+            return $"{size / 1024.0 / 1024.0 / 1024.0:F1} GB";
         }
     }
 }

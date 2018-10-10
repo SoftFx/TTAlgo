@@ -104,6 +104,34 @@ namespace TickTrader.BotAgent.BA.Repository
             }
         }
 
+        public Stream GetPackageReadStream(PackageKey package)
+        {
+            var packageRef = Library.GetPackageRef(package);
+            if (packageRef == null)
+                throw new ArgumentException("Package not found");
+
+            return File.OpenRead(packageRef.Identity.FilePath);
+        }
+
+        public Stream GetPackageWriteStream(PackageKey package)
+        {
+            if (package.Location != RepositoryLocation.LocalRepository)
+                throw new ArgumentException($"Package location '{package.Location}' is not defined");
+
+            EnsureStorageDirectoryCreated();
+
+            var packageRef = Library.GetPackageRef(GetPackageKey(package.Name));
+            if (packageRef != null)
+            {
+                if (packageRef.IsLocked)
+                    throw new PackageLockedException($"Cannot update package '{package.Name}': one or more trade bots from this package is being executed! Please stop all bots and try again!");
+
+                RemovePackage(packageRef);
+            }
+
+            return File.OpenWrite(GetFullPathToPackage(package.Name));
+        }
+
 
         #region Private Methods
 

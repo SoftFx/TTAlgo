@@ -4,10 +4,11 @@ using System;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
-    internal class UploadPackageViewModel : Screen, IWindowModel
+    internal class UploadPackageViewModel : Screen, IWindowModel, IFileProgressListener
     {
         private AlgoEnvironment _algoEnv;
         private AlgoPackageViewModel _selectedPackage;
@@ -171,7 +172,7 @@ namespace TickTrader.BotTerminal
             HasPendingRequest = true;
             try
             {
-                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath);
+                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath, this);
                 TryClose();
             }
             catch (Exception ex)
@@ -266,5 +267,18 @@ namespace TickTrader.BotTerminal
             if (package.Key.Name == FileName.ToLowerInvariant())
                 Validate();
         }
+
+
+        #region IFileProgressListener implementation
+
+        void IFileProgressListener.Init(long initialProgress)
+        {
+        }
+
+        void IFileProgressListener.IncrementProgress(long progressValue)
+        {
+        }
+
+        #endregion IFileProgressListener implementation
     }
 }

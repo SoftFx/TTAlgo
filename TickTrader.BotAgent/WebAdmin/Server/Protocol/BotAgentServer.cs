@@ -142,19 +142,19 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.TestCreds(account, password, useNewProtocol);
         }
 
-        public void UploadPackage(string fileName, byte[] packageBinary)
-        {
-            _botAgent.UpdatePackage(packageBinary, fileName);
-        }
-
         public void RemovePackage(PackageKey package)
         {
             _botAgent.RemovePackage(package);
         }
 
-        public byte[] DownloadPackage(PackageKey package)
+        public Stream GetPackageReadStream(PackageKey package)
         {
-            return _botAgent.DownloadPackage(package);
+            return _botAgent.GetPackageReadStream(package);
+        }
+
+        public Stream GetPackageWriteStream(PackageKey package)
+        {
+            return _botAgent.GetPackageWriteStream(package);
         }
 
         public string GetBotStatus(string botId)
@@ -200,18 +200,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             botFolder.DeleteFile(fileName);
         }
 
-        public Stream GetBotFile(string botId, BotFolderId folderId, string fileName)
+        public Stream GetBotFileReadStream(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = GetBotFolder(botId, folderId);
 
-            return botFolder.GetFile(fileName).OpenRead();
+            return botFolder.GetFileReadStream(fileName);
         }
 
-        public void UploadBotFile(string botId, BotFolderId folderId, string fileName, byte[] fileBinary)
+        public Stream GetBotFileWriteStream(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = GetBotFolder(botId, folderId);
 
-            botFolder.SaveFile(fileName, fileBinary);
+            return botFolder.GetFileWriteStream(fileName);
         }
 
 

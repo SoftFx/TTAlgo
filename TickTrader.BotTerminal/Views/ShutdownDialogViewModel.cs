@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
         {
             _algoAgent = algoAgent;
 
-            DisplayName = $"Shuting down - {EnvService.Instance.ApplicationName}";
+            DisplayName = $"Shutting down - {EnvService.Instance.ApplicationName}";
             TotalBots = _algoAgent.RunningBotsCnt;
             StoppedBots = 0;
 

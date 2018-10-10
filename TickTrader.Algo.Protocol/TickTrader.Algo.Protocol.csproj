@@ -80,6 +80,7 @@
     <Compile Include="Infrastructure\VersionSpec.cs" />
     <Compile Include="Interface\Client\IBotAgentClient.cs" />
     <Compile Include="Interface\Client\IClientSettings.cs" />
+    <Compile Include="Infrastructure\IFileProgressListener.cs" />
     <Compile Include="Interface\Client\ProtocolClient.cs" />
     <Compile Include="Interface\IProtocolSettings.cs" />
     <Compile Include="Interface\Server\IBotAgentServer.cs" />
