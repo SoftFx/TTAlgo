@@ -350,6 +350,10 @@ namespace TickTrader.Algo.Core
                 {
                     bool isTrade;
                     var next = DequeueUpcoming(out isTrade);
+
+                    if(next == null)
+                        return null;
+
                     if (isTrade)
                         return next;
 
@@ -380,6 +384,25 @@ namespace TickTrader.Algo.Core
 
         private object DequeueUpcoming(out bool isTrade)
         {
+            var delayed = DequeueDelayed(out isTrade);
+            if (delayed != null)
+                return delayed;
+
+            isTrade = false;
+
+            if (_eFeed == null || !_eFeed.MoveNext())
+            {
+                _eFeed = null;
+                return DequeueDelayed(out isTrade);
+            }
+
+            var q = _eFeed.Current;
+            UpdateVirtualTimepoint(q.Time);
+            return q;
+        }
+
+        private object DequeueDelayed(out bool isTrade)
+        {
             if (_delayedQueue.Count > 0)
             {
                 if (_eFeed == null || _eFeed.Current.Time >= _delayedQueue.FindMin().Time)
@@ -390,15 +413,8 @@ namespace TickTrader.Algo.Core
                     return delayed.Action;
                 }
             }
-
             isTrade = false;
-
-            if (_eFeed == null || !_eFeed.MoveNext())
-                return null;
-
-            var q = _eFeed.Current;
-            UpdateVirtualTimepoint(q.Time);
-            return q;
+            return null;
         }
     }
 

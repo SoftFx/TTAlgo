@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Core
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
 
-            if (_lastStatus != null)
+            if (!string.IsNullOrWhiteSpace(_lastStatus))
                 AddEvent(LogSeverities.Custom, _lastStatus);
         }
 
