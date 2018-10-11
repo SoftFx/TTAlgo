@@ -39,6 +39,8 @@ namespace TickTrader.Algo.Protocol
 
         public bool CanGetMappingsInfo() => HasViewerAccess;
 
+        public bool CanGetSetupContext() => HasViewerAccess;
+
         public bool CanGetAccountMetadata() => HasViewerAccess;
 
         public bool CanGetBotList() => HasViewerAccess;

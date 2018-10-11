@@ -17,7 +17,12 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel Agent { get; }
 
-        public string Server { get; }
+        public string Server => Connection.Server;
+
+        public string DisplayName =>
+            Connection.State == BotAgentConnectionManager.States.Online
+            ? $"{Connection.Server}:{Connection.Port} ({Connection.AccessLevel})"
+            : $"{Connection.Server}:{Connection.Port}";
 
 
         public BotAgentViewModel(BotAgentConnectionManager connection, AlgoEnvironment algoEnv)
@@ -26,7 +31,6 @@ namespace TickTrader.BotTerminal
             _algoEnv = algoEnv;
 
             Agent = new AlgoAgentViewModel(Connection.RemoteAgent, _algoEnv);
-            Server = Connection.Creds.ServerAddress;
 
             Connection.StateChanged += ConnectionOnStateChanged;
         }
@@ -112,6 +116,8 @@ namespace TickTrader.BotTerminal
         private void ConnectionOnStateChanged()
         {
             NotifyOfPropertyChange(nameof(Status));
+            if (Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.Offline)
+                NotifyOfPropertyChange(nameof(DisplayName));
         }
     }
 }

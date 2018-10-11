@@ -26,7 +26,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
         public static string DefaultServerUrl => @"https://localhost:5000/";
         public static string RandomSecretKey => new KeyGenerator().GetUniqueKey(128);
-        public static ServerCredentials DefaultCredentials => new ServerCredentials("Administrator", "Administrator");
+        public static ServerCredentials DefaultCredentials => new ServerCredentials("Administrator", "Administrator", "Dealer", "Dealer", "Viewer", "Viewer");
         public static SslSettings DefaultSslSettings => new SslSettings { File = "certificate.pfx", Password = "" };
         public static ProtocolSettings DefaultProtocolSettings => new ProtocolSettings
         {

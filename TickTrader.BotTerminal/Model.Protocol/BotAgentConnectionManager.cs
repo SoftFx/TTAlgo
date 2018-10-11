@@ -24,7 +24,11 @@ namespace TickTrader.BotTerminal
         private bool _needReconnect;
 
 
-        public string Server => _protocolClient.SessionSettings.ServerAddress;
+        public string Server => Creds.ServerAddress;
+
+        public int Port => Creds.Port;
+
+        public AccessLevels AccessLevel => _protocolClient.AccessManager.Level;
 
         public States State => _stateControl.Current;
 

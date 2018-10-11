@@ -49,9 +49,16 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         }
 
 
-        public bool ValidateCreds(string login, string password)
+        public AccessLevels? ValidateCreds(string login, string password)
         {
-            return _serverCreds.Login == login && _serverCreds.Password == password;
+            if (_serverCreds.ViewerLogin == login && _serverCreds.ViewerPassword == password)
+                return AccessLevels.Viewer;
+            if (_serverCreds.DealerLogin == login && _serverCreds.DealerPassword == password)
+                return AccessLevels.Dealer;
+            if (_serverCreds.AdminLogin == login && _serverCreds.AdminPassword == password)
+                return AccessLevels.Admin;
+
+            return null;
         }
 
         public List<AccountModelInfo> GetAccountList()

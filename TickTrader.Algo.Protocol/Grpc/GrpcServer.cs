@@ -113,6 +113,21 @@ namespace TickTrader.Algo.Protocol.Grpc
             return CreateRejectResult(ex.Flatten().Message);
         }
 
+        public static Lib.RequestResult CreateNotAllowedResult(string message = "")
+        {
+            return new Lib.RequestResult { Status = Lib.RequestResult.Types.RequestStatus.NotAllowed, Message = message ?? "" };
+        }
+
+        public static Lib.RequestResult CreateNotAllowedResult(Exception ex)
+        {
+            return CreateNotAllowedResult(ex.Flatten().Message);
+        }
+
+        public static Lib.RequestResult CreateNotAllowedResult(ServerSession.Handler session, string requestName)
+        {
+            return CreateNotAllowedResult($"{session.AccessManager.Level} is not allowed to execute {requestName}");
+        }
+
 
         public void DisconnectAllClients()
         {
@@ -465,41 +480,45 @@ namespace TickTrader.Algo.Protocol.Grpc
                     res.ExecResult = CreateRejectResult(error);
                     res.Error = Lib.LoginResponse.Types.LoginError.VersionMismatch;
                 }
-                else if (!_botAgent.ValidateCreds(request.Login, request.Password))
-                {
-                    res.ExecResult = CreateRejectResult();
-                    res.Error = Lib.LoginResponse.Types.LoginError.InvalidCredentials;
-                }
                 else
                 {
-                    var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter, AccessLevels.Viewer);
-                    try
+                    var accessLevel = _botAgent.ValidateCreds(request.Login, request.Password);
+                    if (accessLevel == null)
                     {
-                        var payload = new JwtPayload
-                        {
-                            Username = session.Username,
-                            SessionId = session.SessionId,
-                            MinorVersion = session.VersionSpec.CurrentVersion,
-                            AccessLevel = session.AccessManager.Level,
-                        };
-                        res.SessionId = session.SessionId;
-                        res.AccessToken = _jwtProvider.CreateToken(payload);
-                        res.AccessLevel = session.AccessManager.Level.Convert();
+                        res.ExecResult = CreateRejectResult();
+                        res.Error = Lib.LoginResponse.Types.LoginError.InvalidCredentials;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        res.ExecResult = CreateErrorResult("Failed to create access token");
-                        _logger.Error(ex, $"Failed to create access token: {ex.Message}");
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(res.AccessToken))
-                    {
-                        lock (_sessions)
+                        var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter, accessLevel.Value);
+                        try
                         {
-                            _sessions.Add(session.SessionId, session);
+                            var payload = new JwtPayload
+                            {
+                                Username = session.Username,
+                                SessionId = session.SessionId,
+                                MinorVersion = session.VersionSpec.CurrentVersion,
+                                AccessLevel = session.AccessManager.Level,
+                            };
+                            res.SessionId = session.SessionId;
+                            res.AccessToken = _jwtProvider.CreateToken(payload);
+                            res.AccessLevel = session.AccessManager.Level.Convert();
                         }
-                        session.Logger.Info($"Server version - {VersionSpec.LatestVersion}; Client version - {request.MajorVersion}.{request.MinorVersion}");
-                        session.Logger.Info($"Current version set to {session.VersionSpec.CurrentVersionStr}");
+                        catch (Exception ex)
+                        {
+                            res.ExecResult = CreateErrorResult("Failed to create access token");
+                            _logger.Error(ex, $"Failed to create access token: {ex.Message}");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(res.AccessToken))
+                        {
+                            lock (_sessions)
+                            {
+                                _sessions.Add(session.SessionId, session);
+                            }
+                            session.Logger.Info($"Server version - {VersionSpec.LatestVersion}; Client version - {request.MajorVersion}.{request.MinorVersion}");
+                            session.Logger.Info($"Current version set to {session.VersionSpec.CurrentVersionStr}");
+                        }
                     }
                 }
             }
@@ -541,6 +560,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.SnapshotResponse { ExecResult = execResult };
             if (session == null)
                 return res;
+            if (!session.AccessManager.CanGetSnapshot())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
 
             try
             {
@@ -563,6 +587,8 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             if (session == null)
                 return Task.FromResult(this);
+            if (!session.AccessManager.CanSubscribeToUpdates())
+                return Task.FromResult(this);
 
             return session.SetupUpdateStream(responseStream);
         }
@@ -572,6 +598,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.ApiMetadataResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetApiMetadata())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -590,6 +621,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.MappingsInfoResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetMappingsInfo())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -608,6 +644,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.SetupContextResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetSetupContext())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -626,6 +667,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.AccountMetadataResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetAccountMetadata())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -644,6 +690,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.BotListResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetBotList())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -662,6 +713,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.AddBotResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanAddBot())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -681,6 +737,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.RemoveBotResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanRemoveBot())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -700,6 +761,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.StartBotResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanStartBot())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -718,6 +784,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.StopBotResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanStopBot())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -736,6 +807,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.ChangeBotConfigResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanChangeBotConfig())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -755,6 +831,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.AccountListResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetAccountList())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -773,6 +854,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.AddAccountResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanAddAccount())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -791,6 +877,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.RemoveAccountResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanRemoveAccount())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -809,6 +900,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.ChangeAccountResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanChangeAccount())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -827,6 +923,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.TestAccountResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanTestAccount())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -845,6 +946,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.TestAccountCredsResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanTestAccountCreds())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -863,6 +969,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.PackageListResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetPackageList())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -881,6 +992,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.UploadPackageResponse { ExecResult = execResult };
             if (session == null)
                 return res;
+            if (!session.AccessManager.CanUploadPackage())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, typeof(Lib.UploadPackageRequest).Name);
+                return res;
+            }
 
             await requestStream.MoveNext();
             var request = GetClientStreamRequest(requestStream, session);
@@ -925,6 +1041,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.RemovePackageResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanRemovePackage())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -940,12 +1061,20 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private async Task DownloadPackageInternal(Lib.DownloadPackageRequest request, IServerStreamWriter<Lib.DownloadPackageResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
-            var response = new Lib.DownloadPackageResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
+            var res = new Lib.DownloadPackageResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
             if (session == null)
             {
-                response.Chunk.IsFinal = true;
-                response.Chunk.Id = -1;
-                await SendServerStreamResponse(responseStream, session, response);
+                res.Chunk.IsFinal = true;
+                res.Chunk.Id = -1;
+                await SendServerStreamResponse(responseStream, session, res);
+                return;
+            }
+            if (!session.AccessManager.CanDownloadPackage())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                res.Chunk.IsFinal = true;
+                res.Chunk.Id = -1;
+                await SendServerStreamResponse(responseStream, session, res);
                 return;
             }
 
@@ -958,20 +1087,20 @@ namespace TickTrader.Algo.Protocol.Grpc
                     stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
-                        response.Chunk.Binary = buffer.Convert(0, cnt);
-                        await SendServerStreamResponse(responseStream, session, response);
+                        res.Chunk.Binary = buffer.Convert(0, cnt);
+                        await SendServerStreamResponse(responseStream, session, res);
                     }
                 }
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to download package");
-                response.ExecResult = CreateErrorResult(ex);
+                res.ExecResult = CreateErrorResult(ex);
             }
-            response.Chunk.Binary = ByteString.Empty;
-            response.Chunk.Id = -1;
-            response.Chunk.IsFinal = true;
-            await SendServerStreamResponse(responseStream, session, response);
+            res.Chunk.Binary = ByteString.Empty;
+            res.Chunk.Id = -1;
+            res.Chunk.IsFinal = true;
+            await SendServerStreamResponse(responseStream, session, res);
         }
 
         private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -979,6 +1108,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.BotStatusResponse { ExecResult = execResult, BotId = request.BotId };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetBotStatus())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -997,6 +1131,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.BotLogsResponse { ExecResult = execResult, BotId = request.BotId };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetBotLogs())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -1015,6 +1154,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.BotFolderInfoResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanGetBotFolderInfo(request.FolderId.Convert()))
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -1033,6 +1177,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.ClearBotFolderResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanClearBotFolder())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -1051,6 +1200,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.DeleteBotFileResponse { ExecResult = execResult };
             if (session == null)
                 return Task.FromResult(res);
+            if (!session.AccessManager.CanDeleteBotFile())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return Task.FromResult(res);
+            }
 
             try
             {
@@ -1066,14 +1220,23 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private async Task DownloadBotFileInternal(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.DownloadBotFileResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
-            var response = new Lib.DownloadBotFileResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
+            var res = new Lib.DownloadBotFileResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
             if (session == null)
             {
-                response.Chunk.IsFinal = true;
-                response.Chunk.Id = -1;
-                await SendServerStreamResponse(responseStream, session, response);
+                res.Chunk.IsFinal = true;
+                res.Chunk.Id = -1;
+                await SendServerStreamResponse(responseStream, session, res);
                 return;
             }
+            if (!session.AccessManager.CanDownloadBotFile(request.File.FolderId.Convert()))
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                res.Chunk.IsFinal = true;
+                res.Chunk.Id = -1;
+                await SendServerStreamResponse(responseStream, session, res);
+                return;
+            }
+
             try
             {
                 var chunkSize = request.File.ChunkSettings.Size;
@@ -1083,20 +1246,20 @@ namespace TickTrader.Algo.Protocol.Grpc
                     stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
-                        response.Chunk.Binary = buffer.Convert(0, cnt);
-                        await SendServerStreamResponse(responseStream, session, response);
+                        res.Chunk.Binary = buffer.Convert(0, cnt);
+                        await SendServerStreamResponse(responseStream, session, res);
                     }
                 }
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to download bot file");
-                response.ExecResult = CreateErrorResult(ex);
+                res.ExecResult = CreateErrorResult(ex);
             }
-            response.Chunk.Binary = ByteString.Empty;
-            response.Chunk.Id = -1;
-            response.Chunk.IsFinal = true;
-            await SendServerStreamResponse(responseStream, session, response);
+            res.Chunk.Binary = ByteString.Empty;
+            res.Chunk.Id = -1;
+            res.Chunk.IsFinal = true;
+            await SendServerStreamResponse(responseStream, session, res);
         }
 
         private async Task<Lib.UploadBotFileResponse> UploadBotFileInternal(IAsyncStreamReader<Lib.UploadBotFileRequest> requestStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
@@ -1104,6 +1267,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new Lib.UploadBotFileResponse { ExecResult = execResult };
             if (session == null)
                 return res;
+            if (!session.AccessManager.CanUploadBotFile())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, typeof(Lib.UploadBotFileRequest).Name);
+                return res;
+            }
 
             await requestStream.MoveNext();
             var request = GetClientStreamRequest(requestStream, session);
