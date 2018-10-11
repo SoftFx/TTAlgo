@@ -121,6 +121,14 @@ namespace TickTrader.BotAgent
                 currentSettings.Protocol = AppSettings.Default.Protocol;
                 anyChanges = true;
             }
+            if (currentSettings.Credentials.Login != null)
+            {
+                var oldCreds = currentSettings.Credentials;
+                currentSettings.Credentials = AppSettings.Default.Credentials;
+                currentSettings.Credentials.AdminLogin = oldCreds.Login;
+                currentSettings.Credentials.AdminPassword = oldCreds.Password;
+                anyChanges = true;
+            }
 
             if (anyChanges)
             {

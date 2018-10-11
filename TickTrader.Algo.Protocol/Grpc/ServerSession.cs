@@ -13,18 +13,20 @@ namespace TickTrader.Algo.Protocol.Grpc
         private ILogger _logger;
         private VersionSpec _versionSpec;
         private MessageFormatter _messageFormatter;
+        private AccessManager _accessManager;
         private TaskCompletionSource<object> _updateStreamTaskSrc;
         private IServerStreamWriter<Lib.UpdateInfo> _updateStream;
         private bool _isFaulted;
 
 
-        private void Init(string sessionId, string username, ILogger logger, VersionSpec versionSpec, MessageFormatter messageFormatter)
+        private void Init(string sessionId, string username, ILogger logger, VersionSpec versionSpec, MessageFormatter messageFormatter, AccessManager accessManager)
         {
             _sessionId = sessionId;
             _username = username;
             _logger = logger;
             _versionSpec = versionSpec;
             _messageFormatter = messageFormatter;
+            _accessManager = accessManager;
 
             _isFaulted = false;
         }
@@ -40,18 +42,21 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             public VersionSpec VersionSpec { get; }
 
+            public AccessManager AccessManager { get; }
+
             public bool IsFaulted { get; private set; }
 
 
-            public Handler(string sessionId, string username, int clientMinorVersion, LogFactory logFactory, MessageFormatter messageFormatter)
+            public Handler(string sessionId, string username, int clientMinorVersion, LogFactory logFactory, MessageFormatter messageFormatter, AccessLevels accessLevel)
                 : base(SpawnLocal<ServerSession>(null, $"ServerSession: {sessionId}"))
             {
                 SessionId = sessionId;
                 Username = username;
 
                 VersionSpec = new VersionSpec(Math.Min(clientMinorVersion, VersionSpec.MinorVersion));
+                AccessManager = new AccessManager(accessLevel);
                 Logger = logFactory.GetLogger($"{LoggerHelper.SessionLoggerPrefix}{SessionId}");
-                CallActor(a => a.Init(SessionId, Username, Logger, VersionSpec, messageFormatter));
+                CallActor(a => a.Init(SessionId, Username, Logger, VersionSpec, messageFormatter, AccessManager));
                 IsFaulted = false;
             }
 

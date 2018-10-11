@@ -139,7 +139,7 @@
                         <HierarchicalDataTemplate DataType="{x:Type l:BotAgentViewModel}" ItemsSource="{Binding Agent.AccountList}">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Style="{DynamicResource BotAgentStatusEllipseStyle}" />
-                                <TextBlock Text="{Binding Agent.Name}" ToolTip="{Binding Status}"/>
+                                <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding Status}"/>
                             </StackPanel>
                             <HierarchicalDataTemplate.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem" BasedOn="{StaticResource ExpandedTreeViewItem}">

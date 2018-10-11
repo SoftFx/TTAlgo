@@ -46,7 +46,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
         public ClaimsIdentity Login(string login, string password)
         {
-            return login == Credentials.Login && password == Credentials.Password ?
+            return login == Credentials.AdminLogin && password == Credentials.AdminPassword ?
                 new ClaimsIdentity(new GenericIdentity(login, "Token")) :
                 default(ClaimsIdentity);
         }

@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                         {
                             _accessToken = t.Result.AccessToken;
                             Logger.Info($"Server session id: {t.Result.SessionId}");
-                            OnLogin(t.Result.MajorVersion, t.Result.MinorVersion);
+                            OnLogin(t.Result.MajorVersion, t.Result.MinorVersion, t.Result.AccessLevel.Convert());
                         }
                         else
                         {
