@@ -26,6 +26,7 @@ namespace TickTrader.BotAgent.BA
         Stream GetPackageWriteStream(PackageKey package);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
+        event Action<PackageInfo> PackageStateChanged;
         
         // -------- Account Management --------
 

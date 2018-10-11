@@ -18,5 +18,15 @@ namespace TickTrader.BotTerminal
         {
             return state == PluginStates.Stopped || state == PluginStates.Broken || state == PluginStates.Faulted;
         }
+
+        public static bool CanStop(PluginStates state)
+        {
+            return state == PluginStates.Running || state == PluginStates.Reconnecting;
+        }
+
+        public static bool CanStart(PluginStates state)
+        {
+            return state == PluginStates.Stopped || state == PluginStates.Faulted;
+        }
     }
 }

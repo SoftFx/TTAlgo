@@ -84,8 +84,9 @@ namespace TickTrader.BotTerminal
 
         public void Start()
         {
-            if (State != PluginStates.Stopped)
+            if (!PluginStateHelper.CanStart(State))
                 return;
+
             if (StartExcecutor())
             {
                 _botListener?.Start();
@@ -95,14 +96,13 @@ namespace TickTrader.BotTerminal
 
         public async Task Stop()
         {
-            if (State != PluginStates.Running)
+            if (!PluginStateHelper.CanStop(State))
                 return;
-            await StopExecutor();
-            _botListener?.Stop();
-            ChangeState(PluginStates.Stopped);
-            if (PackageRef?.IsObsolete ?? false)
+
+            if (await StopExecutor())
             {
-                UpdateRefs();
+                _botListener?.Stop();
+                ChangeState(PluginStates.Stopped);
             }
         }
 
@@ -134,6 +134,14 @@ namespace TickTrader.BotTerminal
         {
             base.ChangeState(state, faultMessage);
             StateChanged(this);
+        }
+
+        protected override void OnPluginUpdated()
+        {
+            if (PluginStateHelper.IsStopped(State))
+            {
+                UpdateRefs();
+            }
         }
 
         protected override void LockResources()

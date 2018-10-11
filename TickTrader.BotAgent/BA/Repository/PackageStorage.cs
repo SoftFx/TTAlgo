@@ -31,6 +31,7 @@ namespace TickTrader.BotAgent.BA.Repository
 
 
         public event Action<PackageInfo, ChangeAction> PackageChanged;
+        public event Action<PackageInfo> PackageStateChanged;
 
 
         public PackageStorage()
@@ -42,6 +43,7 @@ namespace TickTrader.BotAgent.BA.Repository
             Library = new LocalAlgoLibrary(CoreLoggerFactory.GetLogger("AlgoRepository"));
             Library.RegisterRepositoryLocation(RepositoryLocation.LocalRepository, _storageDir, true);
             Library.PackageUpdated += LibraryOnPackageUpdated;
+            Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
             _reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
             _reductions.AddAssembly("TickTrader.Algo.Ext");
@@ -191,6 +193,11 @@ namespace TickTrader.BotAgent.BA.Repository
         private void LibraryOnPackageUpdated(UpdateInfo<PackageInfo> update)
         {
             PackageChanged?.Invoke(update.Value, update.Type.Convert());
+        }
+
+        private void LibraryOnPackageStateChanged(PackageInfo package)
+        {
+            PackageStateChanged?.Invoke(package);
         }
 
         #endregion

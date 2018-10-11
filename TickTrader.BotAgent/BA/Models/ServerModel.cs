@@ -47,6 +47,7 @@ namespace TickTrader.BotAgent.BA.Models
             await _packageStorage.Library.WaitInit();
 
             _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
+            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(p);
             foreach (var acc in _accounts)
                 await InitAccount(acc);
         }
@@ -78,6 +79,13 @@ namespace TickTrader.BotAgent.BA.Models
                 // Warning! This violates actor model rules! Deadlocks are possible!
                 add => CallActor(a => a.PackageChanged += value);
                 remove => CallActor(a => a.PackageChanged -= value);
+            }
+
+            public event Action<PackageInfo> PackageStateChanged
+            {
+                // Warning! This violates actor model rules! Deadlocks are possible!
+                add => CallActor(a => a.PackageStateChanged += value);
+                remove => CallActor(a => a.PackageStateChanged -= value);
             }
 
             #endregion
@@ -423,6 +431,7 @@ namespace TickTrader.BotAgent.BA.Models
         private PackageStorage _packageStorage;
 
         private event Action<PackageInfo, ChangeAction> PackageChanged;
+        private event Action<PackageInfo> PackageStateChanged;
 
         private List<PackageInfo> GetPackages()
         {

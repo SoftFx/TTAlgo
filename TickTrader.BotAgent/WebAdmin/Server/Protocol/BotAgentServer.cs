@@ -46,6 +46,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.PackageChanged += OnPackageChanged;
             _botAgent.BotStateChanged += OnBotStateChanged;
             _botAgent.AccountStateChanged += OnAccountStateChanged;
+            _botAgent.PackageStateChanged += OnPackageStateChanged;
         }
 
 
