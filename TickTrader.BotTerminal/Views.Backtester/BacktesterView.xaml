@@ -3,7 +3,7 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <l:FullDateTimeConverter x:Key="FullDateTimeFormat" ConvertToLocal="False" />
+    <l:FullDateTimeConverter x:Key="UtcDateTimeFormat" ConvertToLocal="False" />
 
     <DataTemplate x:Key="CaliburnViewTemplate">
         <ContentControl cal:View.Model="{Binding}" />
@@ -123,7 +123,7 @@
             <DataGrid.Columns>
                 
                 <DataGridTextColumn SortMemberPath="Time" 
-                                    Binding="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"
+                                    Binding="{Binding Time, Converter={StaticResource UtcDateTimeFormat}}"
                                     SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
                 
                 <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">
