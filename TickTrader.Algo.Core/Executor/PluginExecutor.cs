@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
         private InvokeStartegy iStrategy;
         private readonly CalculatorFixture calcFixture;
         private IExecutorFixture accFixture;
-        private readonly TimerFixture _timerFixture;
+        private IExecutorFixture _timerFixture;
         private StatusFixture statusFixture;
         private IAccountInfoProvider _externalAccData;
         private ITradeExecutor _externalTradeApi;
@@ -245,7 +245,6 @@ namespace TickTrader.Algo.Core
                     InitMetadata();
                     InitWorkingFolder();
                     //builder.TradeApi = accFixture;
-                    builder.TimerApi = _timerFixture;
                     builder.Calculator = calcFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
                     builder.InstanceId = _botInstanceId;
@@ -495,6 +494,7 @@ namespace TickTrader.Algo.Core
             InvokeStrategy = fixture.InvokeEmulator;
             _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector);
             _pluginLogger = fixture.Collector;
+            _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             return fixture;
         }
 

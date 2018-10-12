@@ -35,7 +35,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     PrintError("Actual message per second: " + 1000 * PrintsPerSecond / watch.ElapsedMilliseconds);
                 }
 
-                await Task.Delay((int)toWait);
+                await Delay((int)toWait);
             }
         }
     }

@@ -69,6 +69,7 @@
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
+    <Compile Include="Backtester\TimerApiEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationIndex.cs" />
     <Compile Include="Backtester\Trade\ActivationRecord.cs" />
