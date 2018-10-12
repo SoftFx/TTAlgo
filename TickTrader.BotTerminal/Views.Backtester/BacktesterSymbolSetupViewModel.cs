@@ -34,7 +34,7 @@ namespace TickTrader.BotTerminal
 
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
-            SelectedSymbol = AddProperty<SymbolData>();
+            SelectedSymbol = AddValidable<SymbolData>();
             AvailableBases = AddProperty<List<TimeFrames>>();
 
             if ((object)smbSource != null)
@@ -55,14 +55,16 @@ namespace TickTrader.BotTerminal
 
             TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange());
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
+
+            SelectDefaultSymbol();
         }
-        
+
         public SymbolSetupType SetupType { get; private set; }
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; }
         public IEnumerable<DownloadPriceChoices> AvailablePriceTypes => EnumHelper.AllValues<DownloadPriceChoices>();
         public Property<List<TimeFrames>> AvailableBases { get; }
         public IObservableList<SymbolData> AvailableSymbols { get; }
-        public Property<SymbolData> SelectedSymbol { get; }
+        public Validable<SymbolData> SelectedSymbol { get; }
         public Property<TimeFrames> SelectedTimeframe { get; }
         public Property<DownloadPriceChoices> SelectedPriceType { get; }
         public Property<Tuple<DateTime, DateTime>> AvailableRange { get; }
@@ -107,6 +109,9 @@ namespace TickTrader.BotTerminal
             //if (SetupType == SymbolSetupType.Main)
             //    return;
 
+            if (SelectedSymbol.Value == null)
+                return;
+
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
@@ -141,6 +146,9 @@ namespace TickTrader.BotTerminal
             var smbData = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
 
+            if (smbData == null)
+                return;
+
             if (SetupType == SymbolSetupType.Main)
             {
                 tester.MainSymbol = smbData.Name;
@@ -173,6 +181,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void Reset()
+        {
+            if (SelectedSymbol.Value == null || !AvailableSymbols.Contains(SelectedSymbol.Value))
+                SelectDefaultSymbol();
+        }
+
         //public void InitSeriesBuilder(Backtester tester)
         //{
         //    tester.Feed.AddBarBuilder(SelectedSymbol.Value.Name, SelectedTimeframe.Value, BarPriceType.Bid);
@@ -196,6 +210,16 @@ namespace TickTrader.BotTerminal
                 return toLimit;
 
             return availableTo;
+        }
+
+        private void SelectDefaultSymbol()
+        {
+            SelectedSymbol.Value = AvailableSymbols.FirstOrDefault();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
         }
 
         //private IEnumerable<BarEntity> ReadSlices(BlockingChannel<Slice<DateTime, BarEntity>> channel)

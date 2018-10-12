@@ -112,7 +112,12 @@ namespace TickTrader.BotTerminal
 
                 if (SelectedModel.Value < a.New)
                     SelectedModel.Value = a.New;
-            }); 
+            });
+
+            client.Connected += () =>
+            {
+                GetAllSymbols().Foreach(s => s.Reset());
+            };
         }
 
         public ActionViewModel ProgressMonitor { get; private set; }
@@ -183,6 +188,8 @@ namespace TickTrader.BotTerminal
                 ChartPage.Clear();
                 ResultsPage.Clear();
                 _journalContent.Value = null;
+
+                CheckDuplicateSymbols();
 
                 _emulteFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
                 _emulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc) + TimeSpan.FromDays(1);
@@ -443,6 +450,22 @@ namespace TickTrader.BotTerminal
         private void IsSymbolSelected_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             UpdateSymbolsState();
+        }
+
+        private void CheckDuplicateSymbols()
+        {
+            var unique = new HashSet<string>();
+            unique.Add(MainSymbolSetup.SelectedSymbol.Value.Name);
+
+            foreach (var smb in AdditionalSymbols)
+            {
+                var name = smb.SelectedSymbol.Value.Name;
+
+                if (unique.Contains(name))
+                    throw new Exception("Duplicate symbol: " + name);
+
+                unique.Add(name);
+            }
         }
 
         #region IAlgoSetupMetadata
