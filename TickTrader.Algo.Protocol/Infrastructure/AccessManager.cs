@@ -63,9 +63,9 @@ namespace TickTrader.Algo.Protocol
 
         public bool CanChangeAccount() => HasAdminAccess;
 
-        public bool CanTestAccount() => HasViewerAccess;
+        public bool CanTestAccount() => HasDealerAccess;
 
-        public bool CanTestAccountCreds() => HasViewerAccess;
+        public bool CanTestAccountCreds() => HasDealerAccess;
 
         public bool CanGetPackageList() => HasViewerAccess;
 

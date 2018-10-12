@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
 
         private void StartIndicator()
         {
-            if (State == PluginStates.Stopped)
+            if (PluginStateHelper.CanStart(State))
             {
                 if (StartExcecutor())
                     ChangeState(PluginStates.Running);
@@ -94,8 +94,8 @@ namespace TickTrader.BotTerminal
         {
             if (State == PluginStates.Running)
             {
-                await StopExecutor();
-                ChangeState(PluginStates.Stopped);
+                if (await StopExecutor())
+                    ChangeState(PluginStates.Stopped);
                 foreach (var dataLine in _series.Values)
                     dataLine.Clear();
             }

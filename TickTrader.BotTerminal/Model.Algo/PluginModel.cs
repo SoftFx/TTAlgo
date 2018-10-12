@@ -58,6 +58,8 @@ namespace TickTrader.BotTerminal
 
         protected bool StartExcecutor()
         {
+            if (PackageRef?.IsObsolete ?? true)
+                UpdateRefs();
             if (State == PluginStates.Broken)
                 return false;
 
@@ -92,7 +94,7 @@ namespace TickTrader.BotTerminal
             Config = config;
         }
 
-        protected Task StopExecutor()
+        protected Task<bool> StopExecutor()
         {
             return Task.Factory.StartNew(() =>
             {
@@ -101,12 +103,14 @@ namespace TickTrader.BotTerminal
                 {
                     _executor.Stop();
                     UnlockResources();
+                    return true;
                 }
                 catch(Exception ex)
                 {
                     _logger.Error(ex, "StopExcecutor() failed!");
-                    ChangeState(PluginStates.Stopped, ex.Message);
+                    ChangeState(PluginStates.Faulted, ex.Message);
                     UnlockResources();
+                    return false;
                 }
             });
         }
@@ -182,6 +186,7 @@ namespace TickTrader.BotTerminal
             PackageRef = packageRef;
             PluginRef = pluginRef;
             Descriptor = pluginRef.Metadata.Descriptor;
+            ChangeState(PluginStates.Stopped);
         }
 
         private void Executor_OnRuntimeError(Exception ex)
@@ -191,7 +196,7 @@ namespace TickTrader.BotTerminal
 
         private void Library_PluginUpdated(UpdateInfo<PluginInfo> update)
         {
-            if (update.Type != UpdateType.Removed && update.Value.Key == Config.Key)
+            if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
                 OnPluginUpdated();
             }
