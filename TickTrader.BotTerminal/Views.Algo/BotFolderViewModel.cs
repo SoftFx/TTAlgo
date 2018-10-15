@@ -270,6 +270,7 @@ namespace TickTrader.BotTerminal
             BotFiles.SortDescriptions.Add(new SortDescription { PropertyName = "Name", Direction = ListSortDirection.Ascending });
 
             AvailableFolderIds = Enum.GetValues(typeof(BotFolderId)).Cast<BotFolderId>().ToArray();
+            SelectedFolderId = BotFolderId.BotLogs;
             IsEnabled = true;
         }
 

@@ -66,9 +66,19 @@
                                 <Setter.Value>
                                     <ContextMenu>
                                         <MenuItem Header="Clear" cal:Message.Attach="Clear"/>
-                                        <MenuItem Header="Show in folder" 
-                                                  cal:Message.Attach="Browse"
-                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+                                        <MenuItem cal:Message.Attach="Browse"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem.Style>
+                                                <Style TargetType="MenuItem">
+                                                    <Setter Property="Header" Value="Show in folder"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRemote}" Value="True">
+                                                            <Setter Property="Header" Value="Manage Bot Files"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </MenuItem.Style>
+                                        </MenuItem>
 
                                     </ContextMenu>
                                 </Setter.Value>

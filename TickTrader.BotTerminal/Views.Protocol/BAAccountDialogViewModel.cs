@@ -93,9 +93,10 @@ namespace TickTrader.BotTerminal
 
         public bool CanChangeAccountKey => IsNewMode && IsEditable;
 
-        public bool CanOk => _isValid && IsEditable;
+        public bool CanOk => _isValid && IsEditable 
+            && IsNewMode ? _remoteAgent.AccessManager.CanAddAccount() : _remoteAgent.AccessManager.CanChangeAccount();
 
-        public bool CanTest => _isValid && IsEditable && !string.IsNullOrEmpty(_password);
+        public bool CanTest => _isValid && IsEditable && !string.IsNullOrEmpty(_password) && _remoteAgent.AccessManager.CanTestAccountCreds();
 
         public string Error
         {

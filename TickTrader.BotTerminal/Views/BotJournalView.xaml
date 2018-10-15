@@ -37,9 +37,10 @@
                           ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False" SelectedIndex="0"/>
                 <CheckBox DockPanel.Dock="Left" Content="Enable" IsChecked="{Binding IsBotJournalEnabled}" Margin="5 0 0 0" VerticalAlignment="Center" />
 
-                <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
-                          Style="{DynamicResource PanelActionButtonStyle}"
-                          cal:Message.Attach="Browse"/>
+                <l:FlatButton DockPanel.Dock="Right" Margin="5 0 0 0" Padding="5 0" 
+                          Style="{DynamicResource ShowBotLogsButtonStyle}"
+                          cal:Message.Attach="Browse">
+                </l:FlatButton>
                 <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
                           cal:Message.Attach="Clear"/>

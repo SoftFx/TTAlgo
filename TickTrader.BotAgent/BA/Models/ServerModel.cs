@@ -232,12 +232,11 @@ namespace TickTrader.BotAgent.BA.Models
             if (acc.HasRunningBots)
                 throw new AccountLockedException("Account cannot be removed! Stop all bots and try again.");
 
+            acc.RemoveAllBots();
             _accounts.Remove(acc);
             DisposeAccount(acc);
 
             Save();
-
-            acc.RemoveAllBots();
 
             AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
 

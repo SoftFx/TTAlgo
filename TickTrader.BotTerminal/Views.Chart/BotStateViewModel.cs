@@ -28,18 +28,19 @@ namespace TickTrader.BotTerminal
             BotName = Bot.InstanceId;
 
             Bot.Model.Journal.Records.CollectionChanged += (sender, e) => NotifyOfPropertyChange(nameof(ErrorsCount));
-            BotJournal = new BotJournalViewModel(Bot.Model);
+            BotJournal = new BotJournalViewModel(Bot);
         }
 
         public AlgoBotViewModel Bot { get; private set; }
         public bool IsRunning => Bot.IsRunning;
         public bool CanStartStop => Bot.CanStartStop;
-        public bool CanBrowse => !Bot.Model.IsRemote;
+        public bool CanBrowse => !Bot.Model.IsRemote || Bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
         public string BotName { get; private set; }
         public string ExecStatus { get; private set; }
         public string BotInfo => string.Join(Environment.NewLine, GetBotInfo());
         public int ErrorsCount => Bot.Model.Journal.MessageCount[JournalMessageType.Error];
         public BotJournalViewModel BotJournal { get; }
+        public bool IsRemote => Bot.Model.IsRemote;
 
         public override void TryClose(bool? dialogResult = default(bool?))
         {
