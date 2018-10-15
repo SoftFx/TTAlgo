@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Protocol
     {
         #region Initialization
 
-        AccessLevels? ValidateCreds(string login, string password);
+        AccessLevels ValidateCreds(string login, string password);
 
         List<PackageInfo> GetPackageList();
 

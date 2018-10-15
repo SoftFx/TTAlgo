@@ -45,6 +45,8 @@ namespace TickTrader.BotTerminal
 
         public bool SupportsAccountManagement => true;
 
+        public AccessManager AccessManager => _protocolClient.AccessManager;
+
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 

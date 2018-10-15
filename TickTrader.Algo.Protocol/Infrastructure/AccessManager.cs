@@ -4,9 +4,10 @@ namespace TickTrader.Algo.Protocol
 {
     public enum AccessLevels
     {
-        Viewer = 0,
-        Dealer = 1,
-        Admin = 2,
+        Anonymous = 0,
+        Viewer = 1,
+        Dealer = 2,
+        Admin = 3,
     }
 
 

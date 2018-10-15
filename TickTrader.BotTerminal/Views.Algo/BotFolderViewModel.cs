@@ -135,15 +135,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanUploadFile => SelectedBot != null && SelectedFolderId == BotFolderId.AlgoData;
+        public bool CanUploadFile => SelectedBot != null && SelectedFolderId == BotFolderId.AlgoData && SelectedAgent.Model.AccessManager.CanUploadBotFile();
 
-        public bool CanDownloadFile => SelectedBotFile != null;
+        public bool CanDownloadFile => SelectedBotFile != null && SelectedAgent.Model.AccessManager.CanDownloadBotFile(SelectedFolderId);
 
-        public bool CanDeleteFile => SelectedBotFile != null;
+        public bool CanDeleteFile => SelectedBotFile != null && SelectedAgent.Model.AccessManager.CanDeleteBotFile();
 
-        public bool CanRefreshFolderInfo => SelectedBot != null;
+        public bool CanRefreshFolderInfo => SelectedBot != null && SelectedAgent.Model.AccessManager.CanGetBotFolderInfo(SelectedFolderId);
 
-        public bool CanClear => SelectedBot != null;
+        public bool CanClear => SelectedBot != null && SelectedAgent.Model.AccessManager.CanClearBotFolder();
 
         public bool IsDownloading
         {

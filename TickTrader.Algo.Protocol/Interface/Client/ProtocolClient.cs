@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Protocol
             AgentClient = agentClient;
 
             VersionSpec = new VersionSpec();
-            AccessManager = new AccessManager(AccessLevels.Viewer);
+            AccessManager = new AccessManager(AccessLevels.Anonymous);
 
             StateMachine = new StateMachine<ClientStates>(ClientStates.Offline);
 
@@ -165,6 +165,7 @@ namespace TickTrader.Algo.Protocol
         protected void OnLogout(string reason)
         {
             //LastError = reason;
+            AccessManager = new AccessManager(AccessLevels.Anonymous);
             StateMachine.PushEvent(ClientEvents.LoggedOut);
         }
 

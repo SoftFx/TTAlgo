@@ -35,6 +35,12 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoBotViewModel> Bots { get; }
 
+        public bool CanChangeAccount => Agent.Model.AccessManager.CanChangeAccount();
+
+        public bool CanRemoveAccount => Agent.Model.AccessManager.CanRemoveAccount();
+
+        public bool CanTestAccount => Agent.Model.AccessManager.CanTestAccount();
+
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
         {

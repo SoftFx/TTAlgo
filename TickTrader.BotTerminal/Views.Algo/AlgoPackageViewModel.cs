@@ -28,6 +28,8 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoPluginViewModel> Plugins { get; }
 
+        public bool CanRemovePackage => Agent.Model.AccessManager.CanRemovePackage();
+
 
         public AlgoPackageViewModel(PackageInfo info, AlgoAgentViewModel agent)
         {
@@ -39,10 +41,6 @@ namespace TickTrader.BotTerminal
             Agent.Model.PackageStateChanged += OnPackageStateChanged;
         }
 
-
-        public void UpdatePackage()
-        {
-        }
 
         public void RemovePackage()
         {
