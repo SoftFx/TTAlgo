@@ -103,14 +103,16 @@
                     <ItemsControl ItemsSource="{Binding AdditionalSymbols}" Grid.ColumnSpan="2" Grid.Row="4" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
 
                     <Label Grid.Column="0" Grid.Row="5" Content="Time range:"/>
-                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="1" Grid.Row="6" Margin="0,4,0,0"/>
+                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="1" Grid.Row="5" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
+                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="1" Grid.Row="5" Margin="0,4,0,0"/>
                 </Grid>
             </Grid>
         </ScrollViewer>
 
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsUpdatingRange.Value}" Value="True">
-                <Setter TargetName="DateRangeSelector" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="DateRangeSelector" Property="Visibility" Value="Hidden"/>
+                <Setter TargetName="RangeUpdateIndicator" Property="Visibility" Value="Visible"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
 

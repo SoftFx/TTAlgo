@@ -182,7 +182,7 @@ namespace TickTrader.Algo.Core
         {
             var priceFormat = order.SymbolInfo.PriceFormat;
 
-            _builder.Append($", amount=").Append(order.RemainingVolume);
+            _builder.Append($", amount=").Append(order.Amount);
             if (order.Entity.Price != null)
                 _builder.Append(" price=").AppendNumber(order.Price, priceFormat);
             if (order.Entity.StopPrice != null)

@@ -504,9 +504,6 @@ namespace TickTrader.Algo.Core
 
             //var orderCopy = order.Clone();
 
-            // fire API event
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
-
             if (order.Type == OrderType.Market)
             {
                 // fill order
@@ -540,6 +537,9 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError("Unknown order type", OrderCmdResultCodes.InternalError);
 
             RecalculateAccount();
+
+            // fire API event
+            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
 
             _opSummary.AddAction(TradeActions.NewOrder);
             _opSummary.NewOrder = order;

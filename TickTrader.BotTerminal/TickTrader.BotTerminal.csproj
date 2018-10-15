@@ -262,6 +262,8 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Controls\WaitIndicator.cs" />
+    <Compile Include="Controls\WaitLiveIcon.cs" />
     <Compile Include="Converters\BoolConverters.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
@@ -744,6 +746,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles.Classic\ToastStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\WaitIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -420,13 +420,11 @@ namespace TickTrader.BotTerminal
             var allSymbols = GetAllSymbols();
 
             IsUpdatingRange.Value = allSymbols.Any(s => s.IsUpdating.Value);
-            if (!IsUpdatingRange.Value)
-            {
-                var max = allSymbols.Max(s => s.AvailableRange.Value?.Item2);
-                var min = allSymbols.Min(s => s.AvailableRange.Value?.Item1);
 
-                DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
-            }
+            var max = allSymbols.Max(s => s.AvailableRange.Value?.Item2);
+            var min = allSymbols.Min(s => s.AvailableRange.Value?.Item1);
+
+            DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
         }
 
         private void UpdateSymbolsState()
