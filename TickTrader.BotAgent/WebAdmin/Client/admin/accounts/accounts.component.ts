@@ -1,6 +1,6 @@
 ﻿import { OnInit, Component } from '@angular/core';
 import { ApiService, ToastrService } from '../../services/index';
-import { AccountModel, ResponseStatus, ResponseCode, ConnectionErrorCodes, ConnectionTestResult } from '../../models/index';
+import { AccountModel, ResponseStatus, ResponseCode, ConnectionErrorCodes, ConnectionTestResult, ConnectionStatus } from '../../models/index';
 
 @Component({
     selector: 'accounts-cmp',
@@ -19,14 +19,9 @@ export class AccountsComponent implements OnInit {
 
         this._api.Feed.AddAccount.subscribe(acc => this.addAccount(acc));
         this._api.Feed.DeleteAccount.subscribe(acc => this.deleteAccount(acc));
+        this._api.Feed.ConnectionState.subscribe(state => { if (state == ConnectionStatus.Connected) this.loadAccounts(); });
 
-        this._api.GetAccounts()
-            .subscribe(result => {
-                if (!this.Accounts)
-                    this.Accounts = result;
-                else
-                    result.forEach(acc => this.addAccount(acc))
-            });
+        this.loadAccounts();
     }
 
     public Delete(account: AccountModel) {
@@ -35,6 +30,11 @@ export class AccountsComponent implements OnInit {
 
     public Add(account: AccountModel) {
         this.addAccount(account);
+    }
+
+    private loadAccounts() {
+        this._api.GetAccounts()
+            .subscribe(res => this.Accounts = res);
     }
 
     private addAccount(account: AccountModel) {

@@ -7,6 +7,7 @@ import { Subject } from "rxjs/Subject";
 import '../../../node_modules/signalr/jquery.signalR.js';
 
 import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from '../models/index';
+import { setTimeout } from 'timers';
 
 
 @Injectable()
@@ -32,6 +33,7 @@ export class FeedService {
     private addBotSubject = new Subject<TradeBotModel>();
     private deleteBotSubject = new Subject<string>();
     private updateBotSubject = new Subject<TradeBotModel>();
+    private reconnectFlag: boolean;
 
     constructor(private _zone: NgZone) {
         this.ConnectionState = this.connectionStateSubject.asObservable();
@@ -66,11 +68,18 @@ export class FeedService {
             feedHub.client.deleteBot = x => this.onBotDeleted(x);
             feedHub.client.updateBot = x => this.onBotUpdated(new TradeBotModel().Deserialize(x));
 
-            $.connection.hub.disconnected(() => this.setConnectionState(ConnectionStatus.Disconnected));
+            $.connection.hub.disconnected(() => {
+                this.setConnectionState(ConnectionStatus.Disconnected);
+                if (this.reconnectFlag)
+                    this.reconnectAnyway();
+            });
             $.connection.hub.reconnecting(() => this.setConnectionState(ConnectionStatus.Reconnecting));
+            $.connection.hub.reconnected(() => this.setConnectionState(ConnectionStatus.Connected));
             $.connection.hub.start()
                 .done(response => this.setConnectionState(ConnectionStatus.Connected))
                 .fail(error => this._zone.run(() => this.connectionStateSubject.error(error)));
+
+            this.reconnectFlag = true;
         }
 
         return this.ConnectionState;
@@ -79,11 +88,22 @@ export class FeedService {
     public stop(): Observable<ConnectionStatus> {
         if (this.CurrentState !== ConnectionStatus.Disconnected) {
 
+            this.reconnectFlag = false;
             $.connection.hub.stop(true, true);
             $.connection.hub.qs = {};
             this.setConnectionState(ConnectionStatus.Disconnected);
         }
         return this.ConnectionState;
+    }
+
+    private reconnectAnyway() {
+        setTimeout(() => {
+            if (this.reconnectFlag && this.CurrentState === ConnectionStatus.Disconnected) {
+                $.connection.hub.start()
+                    .done(response => this.setConnectionState(ConnectionStatus.Connected))
+                    .fail(error => this.reconnectAnyway());
+            }
+        }, 10000);
     }
 
     private setConnectionState(connectionState: ConnectionStatus) {
