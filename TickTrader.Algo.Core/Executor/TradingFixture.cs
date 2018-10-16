@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Core
 
             _dataProvider.OrderUpdated += DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
-            _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
+            //_dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
             var accType = _dataProvider.AccountInfo.Type;
 
@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Core
             foreach (var order in _dataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
             foreach (var position in _dataProvider.GetPositions())
-                builder.Account.NetPositions.UpdatePosition(position);
+                builder.Account.NetPositions.UpdatePosition(position.PositionInfo);
         }
 
         public void Stop()
@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Core
         {
             _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
-            _dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
+            //_dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
         }
 
         private void CallListener(OrderExecReport eReport)
@@ -142,21 +142,37 @@ namespace TickTrader.Algo.Core
             });
         }
 
-        private void DataProvider_PositionUpdated(PositionExecReport report)
+        //private void DataProvider_PositionUpdated(PositionExecReport report)
+        //{
+        //    context.EnqueueTradeUpdate(b =>
+        //    {
+        //        var accProxy = context.Builder.Account;
+        //        var positions = accProxy.NetPositions;
+
+        //        var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
+        //        var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
+        //        var pos = positions.UpdatePosition(report);
+        //        var isClosed = report.ExecAction == OrderExecAction.Closed;
+
+        //        context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
+        //    });
+
+        //}
+
+        private void UpdatePosition(OrderExecReport report)
         {
-            context.EnqueueTradeUpdate(b =>
+            if (report.NetPosition != null)
             {
                 var accProxy = context.Builder.Account;
                 var positions = accProxy.NetPositions;
 
-                var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
-                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
-                var pos = positions.UpdatePosition(report);
+                var oldPos = positions.GetPositionOrNull(report.NetPosition.Symbol);
+                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.NetPosition.Symbol);
+                var pos = positions.UpdatePosition(report.NetPosition);
                 var isClosed = report.ExecAction == OrderExecAction.Closed;
 
                 context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
-            });
-
+            }
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -171,6 +187,8 @@ namespace TickTrader.Algo.Core
         private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
         {
             System.Diagnostics.Debug.WriteLine($"ER: {eReport.Action} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
+
+            UpdatePosition(eReport);
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecAction.Activated)
