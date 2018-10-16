@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Core
         List<OrderEntity> GetOrders();
         IEnumerable<PositionExecReport> GetPositions();
         event Action<OrderExecReport> OrderUpdated;
-        event Action<PositionExecReport> PositionUpdated;
+        //event Action<PositionExecReport> PositionUpdated;
         event Action<BalanceOperationReport> BalanceUpdated;
     }
 

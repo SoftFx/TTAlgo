@@ -21,16 +21,16 @@ namespace TickTrader.Algo.Core
             _builder = builder;
         }
 
-        public PositionAccessor UpdatePosition(PositionExecReport eReport)
+        public PositionAccessor UpdatePosition(PositionEntity eReport)
         {
             PositionAccessor pos;
 
-            if (eReport.ExecAction == OrderExecAction.Closed)
+            if (eReport.Volume <= 0)
                 pos = _fixture.RemovePosition(eReport.Symbol);
             else
             {
                 pos = GetOrCreatePosition(eReport.Symbol);
-                pos.Update(eReport.PositionInfo);
+                pos.Update(eReport);
             }
 
             return pos;
