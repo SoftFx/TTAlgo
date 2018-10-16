@@ -29,6 +29,8 @@ namespace TickTrader.BotTerminal
 
         bool SupportsAccountManagement { get; }
 
+        AccessManager AccessManager { get; }
+
 
         event Action<PackageInfo> PackageStateChanged;
         event Action<AccountModelInfo> AccountStateChanged;

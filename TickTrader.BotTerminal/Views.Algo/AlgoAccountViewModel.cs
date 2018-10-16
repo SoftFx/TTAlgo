@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using System.Linq;
 using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
@@ -35,6 +36,14 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoBotViewModel> Bots { get; }
 
+        public bool CanChangeAccount => Agent.Model.AccessManager.CanChangeAccount();
+
+        public bool CanRemoveAccount => !HasRunningBots && Agent.Model.AccessManager.CanRemoveAccount();
+
+        public bool CanTestAccount => Agent.Model.AccessManager.CanTestAccount();
+
+        public bool HasRunningBots => Bots.Any(b => b.IsRunning);
+
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
         {
@@ -45,6 +54,7 @@ namespace TickTrader.BotTerminal
             Bots = Agent.Bots.Where(b => BotIsAttachedToAccount(b)).AsObservable();
 
             Agent.Model.AccountStateChanged += OnAccountStateChanged;
+            Agent.Model.BotStateChanged += OnBotStateChanged;
         }
 
 
@@ -75,6 +85,15 @@ namespace TickTrader.BotTerminal
         private bool BotIsAttachedToAccount(AlgoBotViewModel bot)
         {
             return Info.Key.Equals(bot.Account);
+        }
+
+        private void OnBotStateChanged(ITradeBot bot)
+        {
+            if (Info.Key.Equals(bot.Account))
+            {
+                NotifyOfPropertyChange(nameof(HasRunningBots));
+                NotifyOfPropertyChange(nameof(CanRemoveAccount));
+            }
         }
     }
 }

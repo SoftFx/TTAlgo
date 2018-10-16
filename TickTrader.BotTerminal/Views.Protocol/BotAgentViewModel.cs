@@ -24,6 +24,14 @@ namespace TickTrader.BotTerminal
             ? $"{Connection.Server}:{Connection.Port} ({Connection.AccessLevel})"
             : $"{Connection.Server}:{Connection.Port}";
 
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+
+        public bool CanAddAccount => Agent.Model.AccessManager.CanAddAccount();
+
+        public bool CanUploadPackage => Agent.Model.AccessManager.CanUploadPackage();
+
+        public bool CanDownloadPackage => Agent.Model.AccessManager.CanDownloadPackage();
+
 
         public BotAgentViewModel(BotAgentConnectionManager connection, AlgoEnvironment algoEnv)
         {

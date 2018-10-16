@@ -483,14 +483,14 @@ namespace TickTrader.Algo.Protocol.Grpc
                 else
                 {
                     var accessLevel = _botAgent.ValidateCreds(request.Login, request.Password);
-                    if (accessLevel == null)
+                    if (accessLevel == AccessLevels.Anonymous)
                     {
                         res.ExecResult = CreateRejectResult();
                         res.Error = Lib.LoginResponse.Types.LoginError.InvalidCredentials;
                     }
                     else
                     {
-                        var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter, accessLevel.Value);
+                        var session = new ServerSession.Handler(Guid.NewGuid().ToString(), request.Login, request.MinorVersion, _logger.Factory, _messageFormatter, accessLevel);
                         try
                         {
                             var payload = new JwtPayload

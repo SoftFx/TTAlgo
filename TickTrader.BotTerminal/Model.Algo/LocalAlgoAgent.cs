@@ -54,6 +54,8 @@ namespace TickTrader.BotTerminal
 
         public bool SupportsAccountManagement => false;
 
+        public AccessManager AccessManager { get; }
+
 
 
         public PluginIdProvider IdProvider { get; }
@@ -114,6 +116,7 @@ namespace TickTrader.BotTerminal
             Mappings = new MappingCollection(_reductions);
             _mappingsInfo = Mappings.ToInfo();
             Catalog = new PluginCatalog(this);
+            AccessManager = new AccessManager(AccessLevels.Admin);
         }
 
 

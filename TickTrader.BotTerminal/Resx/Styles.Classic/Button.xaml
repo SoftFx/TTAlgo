@@ -138,4 +138,13 @@
         <Setter Property="Margin" Value="2"/>
     </Style>
 
+    <Style x:Key="ShowBotLogsButtonStyle" BasedOn="{StaticResource PanelActionButtonStyle}" TargetType="l:FlatButton">
+        <Setter Property="Content" Value="Show in folder"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsRemote}" Value="True">
+                <Setter Property="Content" Value="Manage bot files"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

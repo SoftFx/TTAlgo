@@ -8,21 +8,22 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Data;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
     class BotJournalViewModel : PropertyChangedBase
     {
-        private ITradeBot _bot;
+        private AlgoBotViewModel _bot;
         private BotMessageFilter _botJournalFilter = new BotMessageFilter();
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public BotJournalViewModel(ITradeBot bot)
+        public BotJournalViewModel(AlgoBotViewModel bot)
         {
             _bot = bot;
 
-            Journal = CollectionViewSource.GetDefaultView(_bot.Journal.Records);
+            Journal = CollectionViewSource.GetDefaultView(_bot.Model.Journal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
         }
@@ -67,21 +68,30 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
-        public bool CanBrowse => !_bot.IsRemote;
+        public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+        public bool IsRemote => _bot.Model.IsRemote;
 
         public void Clear()
         {
-            _bot.Journal.Clear();
+            _bot.Model.Journal.Clear();
         }
 
         public void Browse()
         {
             try
             {
-                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_bot.InstanceId));
+                if (_bot.Model.IsRemote)
+                {
+                    _bot.Agent.OpenManageBotFilesDialog(_bot.InstanceId, BotFolderId.BotLogs);
+                }
+                else
+                {
+                    var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_bot.InstanceId));
 
-                Directory.CreateDirectory(logDir);
-                Process.Start(logDir);
+                    if (!Directory.Exists(logDir))
+                        Directory.CreateDirectory(logDir);
+                    Process.Start(logDir);
+                }
             }
             catch (Exception ex)
             {

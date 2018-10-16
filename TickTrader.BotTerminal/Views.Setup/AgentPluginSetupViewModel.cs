@@ -96,7 +96,8 @@ namespace TickTrader.BotTerminal
 
         public bool PluginIsStopped => Bot == null ? true : Bot.State == PluginStates.Stopped;
 
-        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest;
+        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest
+            && IsNewMode ? SelectedAgent.Model.AccessManager.CanAddBot() : SelectedAgent.Model.AccessManager.CanChangeBotConfig();
 
         public bool RunBot
         {
