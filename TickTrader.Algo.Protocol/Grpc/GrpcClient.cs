@@ -13,10 +13,14 @@ namespace TickTrader.Algo.Protocol.Grpc
 {
     public class GrpcClient : ProtocolClient
     {
+        private const int HeartbeatTimeout = 10000;
+
         private MessageFormatter _messageFormatter;
         private Channel _channel;
         private Lib.BotAgent.BotAgentClient _client;
         private string _accessToken;
+        private CancellationTokenSource _updateStreamCancelTokenSrc;
+        private Timer _heartbeatTimer;
 
 
         static GrpcClient()
@@ -86,6 +90,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                             _accessToken = t.Result.AccessToken;
                             Logger.Info($"Server session id: {t.Result.SessionId}");
                             OnLogin(t.Result.MajorVersion, t.Result.MinorVersion, t.Result.AccessLevel.Convert());
+                            _heartbeatTimer = new Timer(HeartbeatTimerCallback, null, HeartbeatTimeout, -1);
                         }
                         else
                         {
@@ -134,6 +139,10 @@ namespace TickTrader.Algo.Protocol.Grpc
                     switch (t.Status)
                     {
                         case TaskStatus.RanToCompletion:
+                            _updateStreamCancelTokenSrc?.Cancel();
+                            _updateStreamCancelTokenSrc = null;
+                            _heartbeatTimer?.Dispose();
+                            _heartbeatTimer = null;
                             OnLogout(t.Result.Reason.ToString());
                             break;
                         case TaskStatus.Canceled:
@@ -233,10 +242,10 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private async void ListenToUpdates(IAsyncStreamReader<Lib.UpdateInfo> updateStream)
         {
-            var cancelTokenSrc = new CancellationTokenSource();
+            _updateStreamCancelTokenSrc = new CancellationTokenSource();
             try
             {
-                while (await updateStream.MoveNext(cancelTokenSrc.Token))
+                while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
                 {
                     var update = updateStream.Current;
                     _messageFormatter.LogServerResponse(Logger, update);
@@ -265,11 +274,34 @@ namespace TickTrader.Algo.Protocol.Grpc
                     }
                 }
             }
-            catch (Exception ex)
+            catch (TaskCanceledException)
             {
-                Logger.Error(ex, "Update stream failed");
-                OnConnectionError("Update stream failed");
+                Logger.Info("Update stream stopped");
             }
+            catch (Exception)
+            {
+                //Logger.Error(ex, "Update stream failed");
+                //OnConnectionError("Update stream failed");
+                Logger.Info("Update stream stopped by server");
+                OnConnectionError("Update stream stopped by server");
+            }
+        }
+
+        private async void HeartbeatTimerCallback(object state)
+        {
+            if (_heartbeatTimer == null)
+                return;
+
+            _heartbeatTimer.Change(-1, -1);
+            try
+            {
+                await ExecuteUnaryRequest(HeartbeatInternal, new Lib.HeartbeatRequest());
+            }
+            catch(Exception ex)
+            {
+                Logger.Error(ex, "Failed to send heartbeat");
+            }
+            _heartbeatTimer.Change(HeartbeatTimeout, -1);
         }
 
         private CallOptions GetCallOptions(bool setDeadline = true)
@@ -375,6 +407,11 @@ namespace TickTrader.Algo.Protocol.Grpc
 
 
         #region Grpc request calls
+
+        private Task<Lib.HeartbeatResponse> HeartbeatInternal(Lib.HeartbeatRequest request, CallOptions options)
+        {
+            return _client.HeartbeatAsync(request, options).ResponseAsync;
+        }
 
         private Task<Lib.LoginResponse> LoginInternal(Lib.LoginRequest request, CallOptions options)
         {

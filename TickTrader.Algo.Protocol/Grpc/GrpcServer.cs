@@ -144,6 +144,11 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         #region Grpc request handlers overrides
 
+        public override Task<Lib.HeartbeatResponse> Heartbeat(Lib.HeartbeatRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequest(HeartbeatInternal, request, context);
+        }
+
         public override Task<Lib.LoginResponse> Login(Lib.LoginRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequest(LoginInternal, request, context);
@@ -461,6 +466,11 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #region Request handlers
+
+        private Task<Lib.HeartbeatResponse> HeartbeatInternal(Lib.HeartbeatRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new Lib.HeartbeatResponse());
+        }
 
         private Task<Lib.LoginResponse> LoginInternal(Lib.LoginRequest request, ServerCallContext context)
         {

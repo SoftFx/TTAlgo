@@ -11,6 +11,8 @@ import "config.proto";
 
 service BotAgent
 {
+	rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Logout(LogoutRequest) returns (LogoutResponse);
 
@@ -64,6 +66,14 @@ message RequestResult
 
 	RequestStatus status = 1;
 	string message = 2;
+}
+
+message HeartbeatRequest
+{
+}
+
+message HeartbeatResponse
+{
 }
 
 message LoginRequest

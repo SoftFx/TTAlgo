@@ -113,7 +113,7 @@ namespace TickTrader.BotTerminal
 
             if (_statusSubscriptionCnt > 0 && _statusTimer == null)
             {
-                _statusTimer = new Timer(UpdateStatus, null, 0, StatusUpdateTimeout);
+                _statusTimer = new Timer(UpdateStatus, null, StatusUpdateTimeout, -1);
             }
             else if (_statusSubscriptionCnt == 0 && _statusTimer != null)
             {
@@ -129,7 +129,7 @@ namespace TickTrader.BotTerminal
 
             if (_logsSubscriptionCnt > 0 && _logsTimer == null)
             {
-                _logsTimer = new Timer(UpdateLogs, null, 0, LogsUpdateTimeout);
+                _logsTimer = new Timer(UpdateLogs, null, LogsUpdateTimeout, -1);
             }
             else if (_logsSubscriptionCnt == 0 && _logsTimer != null)
             {
@@ -157,7 +157,7 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, $"Failed to get bot status {InstanceId} at {_agent.Name}");
             }
-            _statusTimer?.Change(0, StatusUpdateTimeout);
+            _statusTimer?.Change(StatusUpdateTimeout, -1);
         }
 
         private async void UpdateLogs(object state)
@@ -176,7 +176,7 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
             }
-            _logsTimer?.Change(0, LogsUpdateTimeout);
+            _logsTimer?.Change(LogsUpdateTimeout, -1);
         }
 
         private BotMessage Convert(LogRecordInfo record)
