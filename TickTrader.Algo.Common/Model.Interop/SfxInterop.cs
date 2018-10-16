@@ -53,14 +53,16 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
+            var logsDir = System.IO.Path.Combine(options.LogsFolder, "FDK2");
+
             _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, port: 5030, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
             _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, port: 5050, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
             _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, port: 5040, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
             _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, port: 5060, validateClientCertificate: ValidateCertificate,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
 
             _feedProxy.InitTaskAdapter();
             _tradeProxy.InitTaskAdapter();
