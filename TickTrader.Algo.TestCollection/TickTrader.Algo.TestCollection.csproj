@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TickTrader.Algo.TestCollection</RootNamespace>
     <AssemblyName>TickTrader.Algo.TestCollection</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -84,6 +85,7 @@
     <Compile Include="Bots\SymbolInfoBot.cs" />
     <Compile Include="Bots\TradeCommandsTest.cs" />
     <Compile Include="Bots\TradeHistoryBot.cs" />
+    <Compile Include="Bots\Trade\ExecuteLimits.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
     <Compile Include="Indicators\MultipleInputIndicator.cs" />
