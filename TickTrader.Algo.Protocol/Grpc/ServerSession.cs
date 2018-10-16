@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         private VersionSpec _versionSpec;
         private MessageFormatter _messageFormatter;
         private AccessManager _accessManager;
-        private TaskCompletionSource<object> _updateStreamTaskSrc;
+        private TaskCompletionSource<bool> _updateStreamTaskSrc;
         private IServerStreamWriter<Lib.UpdateInfo> _updateStream;
         private bool _isFaulted;
 
@@ -91,7 +91,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 throw new BAException($"Session {_sessionId} already has opened update stream");
 
             _updateStream = updateStream;
-            _updateStreamTaskSrc = new TaskCompletionSource<object>();
+            _updateStreamTaskSrc = new TaskCompletionSource<bool>();
             _logger.Info("Opened update stream");
             return _updateStreamTaskSrc.Task;
         }
@@ -118,7 +118,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             if (_updateStreamTaskSrc == null)
                 return;
 
-            _updateStreamTaskSrc.SetResult(null);
+            _updateStreamTaskSrc.SetResult(true);
             _updateStreamTaskSrc = null;
             _updateStream = null;
 
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             if (_updateStreamTaskSrc == null)
                 return;
 
-            _updateStreamTaskSrc.SetCanceled();
+            _updateStreamTaskSrc.SetResult(false);
             _updateStreamTaskSrc = null;
             _updateStream = null;
 
