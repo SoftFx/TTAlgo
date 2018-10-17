@@ -14,6 +14,8 @@ service BotAgent
 	rpc Login(LoginRequest) returns (LoginResponse);
 	rpc Logout(LogoutRequest) returns (LogoutResponse);
 
+	rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
 	rpc GetSnapshot(SnapshotRequest) returns (SnapshotResponse);
 	rpc SubscribeToUpdates(SubscribeToUpdatesRequest) returns (stream UpdateInfo);
 
@@ -116,6 +118,14 @@ message LogoutResponse
 	string text = 3;
 }
 
+message HeartbeatRequest
+{
+}
+
+message HeartbeatResponse
+{
+	RequestResult exec_result = 1;
+}
 
 message SnapshotRequest
 {

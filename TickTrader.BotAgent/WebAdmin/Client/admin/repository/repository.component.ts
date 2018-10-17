@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { ApiService, FeedService, ToastrService } from '../../services/index';
-import { PackageModel, PluginModel, ResponseStatus, ResponseCode } from '../../models/index';
+import { PackageModel, PluginModel, ResponseStatus, ResponseCode, ConnectionStatus } from '../../models/index';
 
 @Component({
     selector: 'repository-cmp',
@@ -17,6 +17,7 @@ export class RepositoryComponent implements OnInit {
     ngOnInit() {
         this._api.Feed.AddOrUpdatePackage.subscribe(algoPackage => this.addOrUpdatePackage(algoPackage));
         this._api.Feed.DeletePackage.subscribe(pname => this.deletePackage(pname));
+        this._api.Feed.ConnectionState.subscribe(state => { if (state == ConnectionStatus.Connected) this.loadPackages(); });
 
         this.loadPackages();
     }
@@ -27,12 +28,7 @@ export class RepositoryComponent implements OnInit {
 
     private loadPackages() {
         this._api.GetPackages()
-            .subscribe(res => {
-                if (!this.Packages)
-                    this.Packages = res
-                else
-                    res.forEach(p => this.addOrUpdatePackage(p));
-            });
+            .subscribe(res => this.Packages = res);
     }
 
     private addOrUpdatePackage(packageModel: PackageModel) {

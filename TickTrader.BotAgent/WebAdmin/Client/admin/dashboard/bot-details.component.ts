@@ -2,7 +2,8 @@
 import { Observable } from "rxjs/Rx";
 import { ApiService, ToastrService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, FileInfo, WebUtility } from '../../models/index';
+import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBotStateModel, ResponseStatus, LogEntryTypes, TradeBotStatus, FileInfo, WebUtility, ConnectionStatus } from '../../models/index';
+import { setTimeout } from 'timers';
 
 @Component({
     selector: 'bot-details-cmp',
@@ -10,10 +11,11 @@ import { TradeBotModel, TradeBotLog, ObservableRequest, TradeBotStates, TradeBot
     styles: [require('../../app.component.css')]
 })
 
-export class BotDetailsComponent implements OnInit {
+export class BotDetailsComponent implements OnInit, OnDestroy {
     public ConfirmDeletionEnabled: boolean;
     public TradeBotState = TradeBotStates;
     public LogEntryType = LogEntryTypes;
+    public BotId: string;
     public Bot: TradeBotModel;
     public Log: TradeBotLog;
     public AlgoData: FileInfo[];
@@ -23,6 +25,8 @@ export class BotDetailsComponent implements OnInit {
     public LogRequest: ObservableRequest<TradeBotLog>;
     public AlgoDataRequest: ObservableRequest<FileInfo[]>;
     public StatusRequest: ObservableRequest<TradeBotStatus>;
+
+    private isAliveFlag: boolean;
 
     constructor(
         private _route: ActivatedRoute,
@@ -34,36 +38,37 @@ export class BotDetailsComponent implements OnInit {
     ngOnInit() {
         this._route.params
             .subscribe((params: Params) => {
-                this.BotRequest = new ObservableRequest(params['id'] ?
-                    this._api.GetTradeBot(params['id']) :
-                    Observable.of(<TradeBotModel>null)
-                ).Subscribe(result => {
-                    this.Bot = result;
+                this.BotId = params['id'];
+                if (!this.BotId) {
+                    this.BotRequest = new ObservableRequest(Observable.of(<TradeBotModel>null));
+                    this.LogRequest = new ObservableRequest(Observable.of(<TradeBotLog>null));
+                    this.AlgoDataRequest = new ObservableRequest(Observable.of(<FileInfo[]>null));
+                    this.StatusRequest = new ObservableRequest(Observable.of(<TradeBotStatus>null));
+                }
+                else {
+                    this.BotRequest = new ObservableRequest(this._api.GetTradeBot(this.BotId))
+                    this.LogRequest = new ObservableRequest(this._api.GetTradeBotLog(this.BotId))
+                    this.AlgoDataRequest = new ObservableRequest(this._api.GetTradeBotAlgoData(this.BotId))
+                    this.StatusRequest = new ObservableRequest(this._api.GetTradeBotStatus(this.BotId))
                     this._api.Feed.ChangeBotState
                         .filter(state => this.Bot && this.Bot.Id == state.Id)
                         .subscribe(botState => this.updateBotState(botState));
-                });
+                    this._api.Feed.ConnectionState.subscribe(state => { if (state == ConnectionStatus.Connected) this.getBotInfo(); });
 
-                this.LogRequest = new ObservableRequest(params['id'] ?
-                    this._api.GetTradeBotLog(params['id']) :
-                    Observable.of(<TradeBotLog>null)
-                ).Subscribe(result => this.Log = result);
+                    this.isAliveFlag = true;
+                    this.getBotLog();
+                    this.getBotStatus();
+                }
 
-                this.AlgoDataRequest = new ObservableRequest(params['id'] ?
-                    this._api.GetTradeBotAlgoData(params['id']) :
-                    Observable.of(<FileInfo[]>[])
-                ).Subscribe(result => {
-                    this.AlgoData = result;
-                });
-
-                this.StatusRequest = new ObservableRequest(params['id'] ?
-                    this._api.GetTradeBotStatus(params['id']) :
-                    Observable.of(<TradeBotStatus>null)
-                ).Subscribe(result => {
-                    if (result) { this.Status = result.Status; }
-                    else { this.Status = ""; }
-                });
+                this.BotRequest.Subscribe(res => this.Bot = res);
+                this.LogRequest.Subscribe(res => this.Log = res);
+                this.AlgoDataRequest.Subscribe(res => this.AlgoData = res);
+                this.StatusRequest.Subscribe(res => this.Status = res ? res.Status : "");
             });
+    }
+
+    ngOnDestroy() {
+        this.isAliveFlag = false;
     }
 
     public InitDeletion() {
@@ -160,6 +165,31 @@ export class BotDetailsComponent implements OnInit {
     public Configurate(botId: string) {
         if (botId)
             this._router.navigate(['/configurate', WebUtility.EncodeURIComponent(botId)]);
+    }
+
+    private getBotInfo() {
+        this._api.GetTradeBot(this.BotId).subscribe(res => this.Bot = res);
+        this._api.GetTradeBotAlgoData(this.BotId).subscribe(res => this.AlgoData = res)
+    }
+
+    private getBotLog() {
+        if (!this.isAliveFlag)
+            return;
+
+        if (this._api.Feed.CurrentState === ConnectionStatus.Connected && this.Bot && !this.IsOffline) {
+            this._api.GetTradeBotLog(this.BotId).subscribe(res => this.Log = res);
+        }
+        setTimeout(() => this.getBotLog(), 5000);
+    }
+
+    private getBotStatus() {
+        if (!this.isAliveFlag)
+            return;
+
+        if (this._api.Feed.CurrentState === ConnectionStatus.Connected && this.Bot && !this.IsOffline) {
+            this._api.GetTradeBotStatus(this.BotId).subscribe(res => this.Status = res ? res.Status : "");
+        }
+        setTimeout(() => this.getBotStatus(), 2000);
     }
 
     private updateBotState(botState: TradeBotStateModel) {

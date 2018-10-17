@@ -162,7 +162,7 @@ namespace TickTrader.Algo.Common.Model
 
         static string LogPath
         {
-            get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs"); }
+            get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs", "FDK"); }
         }
 
         public async Task Disconnect()

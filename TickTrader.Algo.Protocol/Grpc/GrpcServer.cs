@@ -154,6 +154,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(LogoutInternal, request, context);
         }
 
+        public override Task<Lib.HeartbeatResponse> Heartbeat(Lib.HeartbeatRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(HeartbeatInternal, request, context);
+        }
+
         public override Task<Lib.SnapshotResponse> GetSnapshot(Lib.SnapshotRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(GetSnapshotInternal, request, context);
@@ -462,6 +467,11 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         #region Request handlers
 
+        private Task<Lib.HeartbeatResponse> HeartbeatInternal(Lib.HeartbeatRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new Lib.HeartbeatResponse());
+        }
+
         private Task<Lib.LoginResponse> LoginInternal(Lib.LoginRequest request, ServerCallContext context)
         {
             var res = new Lib.LoginResponse
@@ -551,6 +561,15 @@ namespace TickTrader.Algo.Protocol.Grpc
                 res.ExecResult = CreateErrorResult("Failed to process logout request");
                 _logger.Error(ex, $"Failed to process logout {_messageFormatter.ToJson(request)}");
             }
+
+            return Task.FromResult(res);
+        }
+
+        private Task<Lib.HeartbeatResponse> HeartbeatInternal(Lib.HeartbeatRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.HeartbeatResponse { ExecResult = execResult };
+            //if (session == null)
+            //    return Task.FromResult(res);
 
             return Task.FromResult(res);
         }

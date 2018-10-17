@@ -179,7 +179,7 @@ namespace TickTrader.Algo.Protocol
 
         private void StartConnecting()
         {
-            Logger = LoggerHelper.GetLogger(GetType().Name, SessionSettings.ProtocolSettings.LogDirectoryName, SessionSettings.ServerAddress);
+            Logger = LoggerHelper.GetLogger(GetType().Name, System.IO.Path.Combine(SessionSettings.ProtocolSettings.LogDirectoryName, GetType().Name), SessionSettings.ServerAddress);
 
             LastError = null;
 

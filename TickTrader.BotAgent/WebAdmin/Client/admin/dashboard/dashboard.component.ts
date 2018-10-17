@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from "rxjs/Rx";
-import { TradeBotModel, TradeBotStates } from '../../models/index';
+import { TradeBotModel, TradeBotStates, ConnectionStatus } from '../../models/index';
 import { ApiService } from '../../services/index';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
@@ -20,7 +20,9 @@ export class DashboardComponent implements OnInit {
     ngOnInit() {
         this._api.Feed.AddBot.subscribe(bot => this.addBot(bot));
         this._api.Feed.DeleteBot.subscribe(id => this.deleteBot(id));
-        this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
+        this._api.Feed.ConnectionState.subscribe(state => { if (state == ConnectionStatus.Connected) this.loadBots(); });
+
+        this.loadBots();
     }
 
     OnTradeBotAdded(bot: TradeBotModel) {
@@ -33,6 +35,10 @@ export class DashboardComponent implements OnInit {
 
     public Configurate() {
         this._router.navigate(['/configurate']);
+    }
+
+    private loadBots() {
+        this._api.GetTradeBots().subscribe(res => this.TradeBots = res);
     }
 
     private addBot(bot: TradeBotModel) {

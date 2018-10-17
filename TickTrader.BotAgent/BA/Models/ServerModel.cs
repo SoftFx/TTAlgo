@@ -62,83 +62,83 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public List<PackageInfo> GetPackages() => CallActor(a => a.GetPackages());
-            public PackageInfo GetPackage(string package) => CallActor(a => a.GetPackage(package));
-            public void UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
-            public byte[] DownloadPackage(PackageKey package) => CallActor(a => a.DownloadPackage(package));
-            public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
-            public void RemovePackage(PackageKey package) => CallActor(a => a.RemovePackage(package));
-            public List<PluginInfo> GetAllPlugins() => CallActor(a => a.GetAllPlugins());
-            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActor(a => a.GetPluginsByType(type));
-            public MappingCollectionInfo GetMappingsInfo() => CallActor(a => a.GetMappingsInfo());
-            public Stream GetPackageReadStream(PackageKey package) => CallActor(a => a.GetPackageReadStream(package));
-            public Stream GetPackageWriteStream(PackageKey package) => CallActor(a => a.GetPackageWriteStream(package));
+            public List<PackageInfo> GetPackages() => CallActorFlatten(a => a.GetPackages());
+            public PackageInfo GetPackage(string package) => CallActorFlatten(a => a.GetPackage(package));
+            public void UpdatePackage(byte[] fileContent, string fileName) => CallActorFlatten(a => a.UpdatePackage(fileContent, fileName));
+            public byte[] DownloadPackage(PackageKey package) => CallActorFlatten(a => a.DownloadPackage(package));
+            public void RemovePackage(string package) => CallActorFlatten(a => a.RemovePackage(package));
+            public void RemovePackage(PackageKey package) => CallActorFlatten(a => a.RemovePackage(package));
+            public List<PluginInfo> GetAllPlugins() => CallActorFlatten(a => a.GetAllPlugins());
+            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActorFlatten(a => a.GetPluginsByType(type));
+            public MappingCollectionInfo GetMappingsInfo() => CallActorFlatten(a => a.GetMappingsInfo());
+            public Stream GetPackageReadStream(PackageKey package) => CallActorFlatten(a => a.GetPackageReadStream(package));
+            public Stream GetPackageWriteStream(PackageKey package) => CallActorFlatten(a => a.GetPackageWriteStream(package));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.PackageChanged += value);
-                remove => CallActor(a => a.PackageChanged -= value);
+                add => CallActorFlatten(a => a.PackageChanged += value);
+                remove => CallActorFlatten(a => a.PackageChanged -= value);
             }
 
             public event Action<PackageInfo> PackageStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.PackageStateChanged += value);
-                remove => CallActor(a => a.PackageStateChanged -= value);
+                add => CallActorFlatten(a => a.PackageStateChanged += value);
+                remove => CallActorFlatten(a => a.PackageStateChanged -= value);
             }
 
             #endregion
 
             #region Account Management
 
-            public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActor(a => a.AddAccount(key, password, useNewProtocol));
-            public void ChangeAccount(AccountKey key, string password, bool useNewProtocol) => CallActor(a => a.ChangeAccount(key, password, useNewProtocol));
-            public void ChangeAccountPassword(AccountKey key, string password) => CallActor(a => a.ChangeAccountPassword(key, password));
-            public void ChangeAccountProtocol(AccountKey key) => CallActor(a => a.ChangeAccountProtocol(key));
-            public List<AccountModelInfo> GetAccounts() => CallActor(a => a._accounts.GetInfoCopy());
-            public void RemoveAccount(AccountKey key) => CallActor(a => a.RemoveAccount(key));
-            public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActor(a => a.GetAccountOrThrow(accountId).TestConnection());
-            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol) => CallActor(a => a.TestCreds(accountId, password, useNewProtocol));
+            public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActorFlatten(a => a.AddAccount(key, password, useNewProtocol));
+            public void ChangeAccount(AccountKey key, string password, bool useNewProtocol) => CallActorFlatten(a => a.ChangeAccount(key, password, useNewProtocol));
+            public void ChangeAccountPassword(AccountKey key, string password) => CallActorFlatten(a => a.ChangeAccountPassword(key, password));
+            public void ChangeAccountProtocol(AccountKey key) => CallActorFlatten(a => a.ChangeAccountProtocol(key));
+            public List<AccountModelInfo> GetAccounts() => CallActorFlatten(a => a._accounts.GetInfoCopy());
+            public void RemoveAccount(AccountKey key) => CallActorFlatten(a => a.RemoveAccount(key));
+            public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActorFlatten(a => a.GetAccountOrThrow(accountId).TestConnection());
+            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol) => CallActorFlatten(a => a.TestCreds(accountId, password, useNewProtocol));
 
             public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.AccountChanged += value);
-                remove => CallActor(a => a.AccountChanged -= value);
+                add => CallActorFlatten(a => a.AccountChanged += value);
+                remove => CallActorFlatten(a => a.AccountChanged -= value);
             }
 
             public event Action<AccountModelInfo> AccountStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.AccountStateChanged += value);
-                remove => CallActor(a => a.AccountStateChanged -= value);
+                add => CallActorFlatten(a => a.AccountStateChanged += value);
+                remove => CallActorFlatten(a => a.AccountStateChanged -= value);
             }
 
             #endregion
 
             #region Bot Management
 
-            public string GenerateBotId(string botDisplayName) => CallActor(a => a.AutogenerateBotId(botDisplayName));
-            public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActor(a => a.AddBot(accountId, config));
-            public void ChangeBotConfig(string botId, PluginConfig config) => CallActor(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
-            public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActor(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
-            public void StartBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Start());
-            public Task StopBotAsync(string botId) => CallActor(a => a.GetBotOrThrow(botId).StopAsync());
-            public void AbortBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Abort());
-            public BotModelInfo GetBotInfo(string botId) => CallActor(a => a.GetBotOrThrow(botId).GetInfoCopy());
-            public List<BotModelInfo> GetTradeBots() => CallActor(a => a._allBots.Values.GetInfoCopy());
-            public IBotFolder GetAlgoData(string botId) => CallActor(a => a.GetBotOrThrow(botId).AlgoData);
+            public string GenerateBotId(string botDisplayName) => CallActorFlatten(a => a.AutogenerateBotId(botDisplayName));
+            public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActorFlatten(a => a.AddBot(accountId, config));
+            public void ChangeBotConfig(string botId, PluginConfig config) => CallActorFlatten(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
+            public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorFlatten(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
+            public void StartBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Start());
+            public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
+            public void AbortBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Abort());
+            public BotModelInfo GetBotInfo(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).GetInfoCopy());
+            public List<BotModelInfo> GetTradeBots() => CallActorFlatten(a => a._allBots.Values.GetInfoCopy());
+            public IBotFolder GetAlgoData(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).AlgoData);
 
             public IBotLog GetBotLog(string botId)
             {
-                var logRef = CallActor(a => a.GetBotOrThrow(botId).LogRef);
+                var logRef = CallActorFlatten(a => a.GetBotOrThrow(botId).LogRef);
                 return new BotLog.Handler(logRef);
             }
 
             public ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
             {
-                var result = CallActor(a => a.GetAccountMetadata(key));
+                var result = CallActorFlatten(a => a.GetAccountMetadata(key));
                 info = result.Item2;
                 return result.Item1;
             }
@@ -146,20 +146,20 @@ namespace TickTrader.BotAgent.BA.Models
             public event Action<BotModelInfo, ChangeAction> BotChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.BotChanged += value);
-                remove => CallActor(a => a.BotChanged -= value);
+                add => CallActorFlatten(a => a.BotChanged += value);
+                remove => CallActorFlatten(a => a.BotChanged -= value);
             }
 
             public event Action<BotModelInfo> BotStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.BotStateChanged += value);
-                remove => CallActor(a => a.BotStateChanged -= value);
+                add => CallActorFlatten(a => a.BotStateChanged += value);
+                remove => CallActorFlatten(a => a.BotStateChanged -= value);
             }
 
             #endregion
 
-            public Task ShutdownAsync() => CallActor(a => a.ShutdownAsync());
+            public Task ShutdownAsync() => CallActorFlattenAsync(a => a.ShutdownAsync());
         }
 
         #region Account management

@@ -16,6 +16,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LoginResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LoginResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_HeartbeatRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_HeartbeatResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SnapshotRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SnapshotResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_SubscribeToUpdatesRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.SubscribeToUpdatesRequest.Parser.ParseFrom);
@@ -88,6 +90,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         "Logout",
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutRequest,
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_LogoutResponse);
+
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse> __Method_Heartbeat = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "Heartbeat",
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_HeartbeatRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_HeartbeatResponse);
 
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotResponse> __Method_GetSnapshot = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotResponse>(
         grpc::MethodType.Unary,
@@ -311,6 +320,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse> Heartbeat(global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotResponse> GetSnapshot(global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -512,6 +526,22 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutResponse> LogoutAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.LogoutRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_Logout, null, options, request);
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse Heartbeat(global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return Heartbeat(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse Heartbeat(global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_Heartbeat, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse> HeartbeatAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return HeartbeatAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatResponse> HeartbeatAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.HeartbeatRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_Heartbeat, null, options, request);
       }
       public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotResponse GetSnapshot(global::TickTrader.Algo.Protocol.Grpc.Lib.SnapshotRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -951,6 +981,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_Login, serviceImpl.Login)
           .AddMethod(__Method_Logout, serviceImpl.Logout)
+          .AddMethod(__Method_Heartbeat, serviceImpl.Heartbeat)
           .AddMethod(__Method_GetSnapshot, serviceImpl.GetSnapshot)
           .AddMethod(__Method_SubscribeToUpdates, serviceImpl.SubscribeToUpdates)
           .AddMethod(__Method_GetApiMetadata, serviceImpl.GetApiMetadata)
