@@ -114,6 +114,16 @@ namespace TickTrader.BotTerminal
                     SelectedModel.Value = a.New;
             });
 
+            _var.TriggerOnChange(SelectedModel, a =>
+            {
+                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+            });
+
+            _var.TriggerOnChange(MainSymbolSetup.SelectedSymbol, a =>
+            {
+                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+            });
+
             client.Connected += () =>
             {
                 GetAllSymbols().Foreach(s => s.Reset());
@@ -192,7 +202,10 @@ namespace TickTrader.BotTerminal
                 CheckDuplicateSymbols();
 
                 _emulteFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
-                _emulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc) + TimeSpan.FromDays(1);
+                _emulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc);
+
+                if (_emulteFrom == _emulateTo)
+                    throw new Exception("Zero range!");
 
                 await PrecacheData(observer, cToken);
 

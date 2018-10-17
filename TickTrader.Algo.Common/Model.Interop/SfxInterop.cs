@@ -366,9 +366,28 @@ namespace TickTrader.Algo.Common.Model
         {
             return Task.Factory.StartNew(() =>
             {
-                var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime(), DownloadTimeoutMs);
-                e.Close();
-                return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+                if (timeFrame.IsTicks())
+                {
+                    var depth = timeFrame == TimeFrames.TicksLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
+
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, depth, DateTime.MinValue, DateTime.MaxValue, DownloadTimeoutMs);
+                    var q = e.Next(DownloadTimeoutMs);
+                    e.Close();
+                    if (q != null)
+                        return new Tuple<DateTime, DateTime>(q.CreatingTime, e.AvailTo);
+                    else
+                        return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+                }
+                else // bars
+                {
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime(), DownloadTimeoutMs);
+                    var b = e.Next(DownloadTimeoutMs);
+                    e.Close();
+                    if (b != null)
+                        return new Tuple<DateTime, DateTime>(b.From, e.AvailTo);
+                    else
+                        return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+                }
             });
         }
 

@@ -374,9 +374,21 @@ namespace TickTrader.Algo.Common.Model
         {
             return requestProcessor.EnqueueTask(() =>
             {
-                var fakeTimePoint = new DateTime(2017, 1, 1);
-                var result = _feedProxy.Server.GetHistoryBars(symbol, fakeTimePoint, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
-                return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
+                if (timeFrame.IsTicks())
+                {
+                    var fakeTimePoint = new DateTime(2017, 1, 1);
+                    var result = _feedProxy.Server.GetHistoryBars(symbol, fakeTimePoint, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
+                    return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
+                }
+                else //bars
+                {
+                    var fakeTimePoint = new DateTime(1990, 1, 1);
+                    var result = _feedProxy.Server.GetHistoryBars(symbol, fakeTimePoint, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
+                    if (result.Bars != null && result.Bars.Length > 0)
+                        return new Tuple<DateTime, DateTime>(result.Bars[0].From, result.ToAll);
+                    else
+                        return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
+                }
             });
         }
 

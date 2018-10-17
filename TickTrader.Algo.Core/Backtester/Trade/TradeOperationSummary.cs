@@ -149,6 +149,21 @@ namespace TickTrader.Algo.Core
             return _builder.ToString();
         }
 
+        public string PrintCloseInfo()
+        {
+            var priceFormat = SrcOrder.SymbolInfo.PriceFormat;
+
+            _builder.Clear();
+            _builder.Append($"Closed position ");
+            PrintOrderDescription(SrcOrder);
+            PrintComment(SrcOrder);
+
+            _builder.Append(" at price ").AppendNumber(NetCloseInfo.ClosePrice, priceFormat);
+            _builder.Append(", profit=").AppendNumber(NetCloseInfo.BalanceMovement, priceFormat);
+
+            return _builder.ToString();
+        }
+
         private void PrintOrderDescription(OrderAccessor order)
         {
             _builder.Append(" #").Append(order.Id)

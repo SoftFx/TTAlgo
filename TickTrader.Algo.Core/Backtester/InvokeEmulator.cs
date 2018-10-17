@@ -117,102 +117,72 @@ namespace TickTrader.Algo.Core
 
         public bool WarmupByBars(int barCount)
         {
-            StartFeedRead();
-
-            if (_eFeed == null)
-            {
-                LogWarmupFail();
-                return false;
-            }
-
-            var warmupStart = _eFeed.Current.Time;
-            var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
-            
-            while (true)
-            {
-                if (!_eFeed.MoveNext())
-                {
-                    LogWarmupFail();
-                    return false;
-                }
-
-                UpdateVirtualTimepoint(_eFeed.Current.Time);
-
-                if (buider.Count > barCount)
-                    break;
-            }
-
-            var warmupEnd = _timePoint;
-
-            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup: {0} - {1}, {2} bars", warmupStart, warmupEnd, buider.Count));
-            return true;
+            return Warmup((q, b, f, t) => b <= barCount);
         }
 
         public bool WarmupByTimePeriod(TimeSpan period)
         {
+            return Warmup((q, b, f, t) => t <= f + period);
+        }
+
+        public bool WarmupByQuotes(int quoteCount)
+        {
+            return Warmup((q, b, f, t) => q <= quoteCount);
+        }
+
+        private bool Warmup(Func<int, int, DateTime, DateTime, bool> condition)
+        {
             StartFeedRead();
 
             if (_eFeed == null)
             {
-                LogWarmupFail();
+                LogWarmupFail(0, 0);
                 return false;
             }
 
             var warmupStart = _eFeed.Current.Time;
-            var warmupEnd = warmupStart + period;
+
+            UpdateVirtualTimepoint(warmupStart);
+            LogWarmupStart();
+
+            var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
+            var tickCount = 0;
 
             while (true)
             {
                 if (!_eFeed.MoveNext())
                 {
-                    LogWarmupFail();
+                    LogWarmupFail(tickCount, buider.Count);
                     return false;
                 }
 
                 UpdateVirtualTimepoint(_eFeed.Current.Time);
 
-                if (_timePoint > warmupEnd)
+                if (!condition(tickCount, buider.Count, warmupStart, _timePoint))
                     break;
-            }
 
-            var warmupRealEnd = _timePoint;
-
-            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup: {0} - {1}", warmupStart, warmupRealEnd));
-            return true;
-        }
-
-        public bool WarmupByQuotes(int quoteCount)
-        {
-            StartFeedRead();
-
-            if (_eFeed == null)
-            {
-                LogWarmupFail();
-                return false;
-            }
-
-            var warmupStart = _eFeed.Current.Time;
-
-            for (int i = 0; i < quoteCount; i++)
-            {
-                if (!_eFeed.MoveNext())
-                {
-                    LogWarmupFail();
-                    return false;
-                }
-
-                UpdateVirtualTimepoint(_eFeed.Current.Time);
+                tickCount++;
             }
 
             var warmupEnd = _timePoint;
 
-            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup: {0} - {1}, {2} ticks", warmupStart, warmupEnd, quoteCount));
+            LogWarmupEnd(tickCount, buider.Count);
             return true;
         }
 
-        private void LogWarmupFail()
+        private void LogWarmupStart()
         {
-            _collector.AddEvent(LogSeverities.Error, string.Format("Not enough feed for warmup!"));
+            _collector.AddEvent(LogSeverities.Info, "Start warmup");
+        }
+
+        private void LogWarmupFail(int ticksCount, int barCount)
+        {
+            _collector.AddEvent(LogSeverities.Error, string.Format("Not enough data for warmup! Loaded {0} bars ({1} quotes) during warmup attempt.", barCount, ticksCount));
+        }
+
+        private void LogWarmupEnd(int tickCount, int barCount)
+        {
+            _collector.AddEvent(LogSeverities.Info, string.Format("Warmup completed. Loaded {0} bars ({1} quotes) during warmup.", barCount, tickCount));
         }
 
         private void ExecItem(object item)

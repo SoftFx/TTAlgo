@@ -33,6 +33,9 @@ namespace TickTrader.Algo.Core
 
         public bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
         {
+            if (warmupValue <= 0)
+                return true;
+
             try
             {
                 if (warmupUnits == WarmupUnitTypes.Days)

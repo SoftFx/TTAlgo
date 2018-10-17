@@ -53,7 +53,12 @@ namespace TickTrader.BotTerminal
 
             IsSymbolSelected = SelectedSymbol.Var.IsNotNull();
 
-            TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange());
+            if (type == SymbolSetupType.Additional)
+            {
+                TriggerOnChange(SelectedSymbol.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
+                TriggerOnChange(SelectedTimeframe.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
+            }
+
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
 
             SelectDefaultSymbol();
@@ -78,7 +83,7 @@ namespace TickTrader.BotTerminal
         public event System.Action<BacktesterSymbolSetupViewModel> Removed;
         public event System.Action OnAdd;
 
-        private async void UpdateAvailableRange()
+        public async void UpdateAvailableRange(TimeFrames timeFrame)
         {
             var smb = SelectedSymbol.Value;
 
@@ -88,7 +93,9 @@ namespace TickTrader.BotTerminal
 
                 try
                 {
-                    AvailableRange.Value = await smb.GetAvailableRange(TimeFrames.M1, BarPriceType.Bid);
+                    //AvailableRange.Value = await smb.GetAvailableRange(SelectedTimeframe.Value, BarPriceType.Bid);
+                    var range = await smb.GetAvailableRange(timeFrame, BarPriceType.Bid);
+                    AvailableRange.Value = new Tuple<DateTime, DateTime>(range.Item1.Date, range.Item2.Date + TimeSpan.FromDays(1));
                 }
                 catch (Exception ex)
                 {
