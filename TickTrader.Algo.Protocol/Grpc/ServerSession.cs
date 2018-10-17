@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 IsFaulted = false;
             }
 
-            public Task SetupUpdateStream(IServerStreamWriter<Lib.UpdateInfo> updateStream) => CallActor(a => a.SetupUpdateStream(updateStream));
+            public Task SetupUpdateStream(IServerStreamWriter<Lib.UpdateInfo> updateStream) => CallActorAsync(a => a.SetupUpdateStream(updateStream));
 
             public void SendUpdate(Lib.UpdateInfo update)
             {
@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
 
-        private Task SetupUpdateStream(IServerStreamWriter<Lib.UpdateInfo> updateStream)
+        private async Task SetupUpdateStream(IServerStreamWriter<Lib.UpdateInfo> updateStream)
         {
             if (_updateStreamTaskSrc != null)
                 throw new BAException($"Session {_sessionId} already has opened update stream");
@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             _updateStream = updateStream;
             _updateStreamTaskSrc = new TaskCompletionSource<bool>();
             _logger.Info("Opened update stream");
-            return _updateStreamTaskSrc.Task;
+            await _updateStreamTaskSrc.Task;
         }
 
         private void SendUpdate(Lib.UpdateInfo update)
