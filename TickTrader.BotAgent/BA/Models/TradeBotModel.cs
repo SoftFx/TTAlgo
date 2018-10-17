@@ -256,26 +256,34 @@ namespace TickTrader.BotAgent.BA.Models
             catch (Exception ex)
             {
                 Fault = ex;
+                _log.Error(ex, "StartExecutor() failed!");
+                _startedEvent.SetResult(null);
                 if (State != PluginStates.Stopping)
-                    await StopExecutor(ex.Message);
+                    await StopExecutor(true);
+                return;
             }
 
             _startedEvent.SetResult(null);
         }
 
-        private async Task StopExecutor(string error = null)
+        private async Task StopExecutor(bool hasError = false)
         {
             if (_startedEvent != null)
-                await (_startedEvent.Task);
+                await _startedEvent.Task;
 
-            bool hasError = error != null;
-
-            await Task.Factory.StartNew(() => executor?.Stop());
+            try
+            {
+                await Task.Factory.StartNew(() => executor?.Stop());
+            }
+            catch (Exception ex)
+            {
+                Fault = ex;
+                _log.Error(ex, "StopExecutor() failed!");
+            }
 
             _botListener?.Stop();
             DisposeExecutor();
-
-            ChangeState(hasError ? PluginStates.Faulted : PluginStates.Stopped, error);
+            ChangeState(hasError ? PluginStates.Faulted : PluginStates.Stopped);
             OnStop();
         }
 
@@ -313,7 +321,7 @@ namespace TickTrader.BotAgent.BA.Models
             if (string.IsNullOrWhiteSpace(errorMessage))
                 _log.Info("TradeBot '{0}' State: {1}", Id, newState);
             else
-                _log.Warn("TradeBot '{0}' State: {1} Error: {2}", Id, newState, errorMessage);
+                _log.Error("TradeBot '{0}' State: {1} Error: {2}", Id, newState, errorMessage);
             State = newState;
             FaultMessage = errorMessage;
             StateChanged?.Invoke(this);
