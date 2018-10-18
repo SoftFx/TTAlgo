@@ -59,22 +59,34 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                InvokeEmulator.EmulateEventsFlow();
+                InvokeEmulator.EmulateEventsWithFeed();
+                EmulateStop();
             }
             catch (OperationCanceledException)
             {
                 Collector.AddEvent(LogSeverities.Error, "Testing canceled!");
+                EmulateStop();
                 throw;
             }
             catch (Exception ex)
             {
+                EmulateStop();
                 throw WrapException(ex);
             }
+        }
+
+        private void EmulateStop()
+        {
+            Executor.EmulateStop();
+            InvokeEmulator.EmulateEvents();
         }
 
         public void OnStop()
         {
             var builder = Executor.GetBuilder();
+            //var tradeEmulator = (TradeEmulator)Executor.GetTradeFixute();
+
+            //tradeEmulator.Stop();
 
             Collector.OnStop(Settings, builder.Account);
         }

@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Core
             if (acc.IsMarginType)
             {
                 Stats.InitialBalance = (decimal)settings.InitialBalance;
-                Stats.FinalBalance = (decimal)acc.Equity;
+                Stats.FinalBalance = (decimal)acc.Balance;
             }
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
@@ -143,21 +143,9 @@ namespace TickTrader.Algo.Core
             AddEvent(LogSeverities.TradeSuccess, message);
         }
 
-        public void LogOrderModification(string message)
-        {
-            if (WriteOrderModifications)
-                AddEvent(LogSeverities.TradeSuccess, message);
-        }
-
         public void LogTradeFail(string message)
         {
             AddEvent(LogSeverities.TradeFail, message);
-        }
-
-        public void LogOrderModificationFail(string message)
-        {
-            if (WriteOrderModifications)
-                AddEvent(LogSeverities.TradeFail, message);
         }
 
         public IPagedEnumerator<BotLogRecord> GetEvents()
@@ -218,7 +206,7 @@ namespace TickTrader.Algo.Core
         {
             if (profit < 0)
             {
-                Stats.GrossLoss -= profit;
+                Stats.GrossLoss += profit;
                 Stats.LossByHours[timepoint.Hour] -= profit;
                 Stats.LossByWeekDays[(int)timepoint.DayOfWeek] -= profit;
             }

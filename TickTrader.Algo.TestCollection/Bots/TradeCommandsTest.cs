@@ -31,8 +31,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             sides.Add(OrderSide.Buy);
             sides.Add(OrderSide.Sell);
 
-            if (Account.Type == AccountTypes.Gross)
-                types.Add(OrderType.Market);
+            //if (Account.Type == AccountTypes.Gross)
+            types.Add(OrderType.Market);
             types.Add(OrderType.Stop);
             types.Add(OrderType.Limit);
             types.Add(OrderType.StopLimit);

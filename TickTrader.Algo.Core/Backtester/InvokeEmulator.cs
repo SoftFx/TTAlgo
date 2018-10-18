@@ -87,31 +87,38 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        public void EmulateEventsFlow()
+        public void EmulateEventsWithFeed()
         {
             try
             {
                 StartFeedRead();
 
-                while (!_stopFlag)
-                {
-                    if (_canceled)
-                        throw new OperationCanceledException("Canceled.");
-
-                    if (_fatalError != null)
-                        throw _fatalError;
-
-                    var nextItem = DequeueNext();
-
-                    if (nextItem == null)
-                        return;
-
-                    ExecItem(nextItem);
-                }
+                EmulateEvents();
             }
             finally
             {
                 StopFeedRead();
+            }
+        }
+
+        public void EmulateEvents()
+        {
+            _canceled = false;
+
+            while (!_stopFlag)
+            {
+                if (_canceled)
+                    throw new OperationCanceledException("Canceled.");
+
+                if (_fatalError != null)
+                    throw _fatalError;
+
+                var nextItem = DequeueNext();
+
+                if (nextItem == null)
+                    return;
+
+                ExecItem(nextItem);
             }
         }
 

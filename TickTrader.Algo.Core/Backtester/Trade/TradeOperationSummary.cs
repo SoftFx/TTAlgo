@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public class TradeChargesInfo
+    internal class TradeChargesInfo
     {
         public decimal Swap { get; set; }
         public decimal Commission { get; set; }
@@ -23,21 +23,18 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public struct AssetMoveInfo
+    internal struct AssetMoveInfo
     {
     }
 
-    [Flags]
-    internal enum TradeActions
+    internal struct FillInfo
     {
-        None = 0,
-        Fill = 1,
-        GrossClose = 2,
-        NetClose = 4,
-        NewPos = 8,
-        NewOrder = 16,
-        CashMove = 32,
-        Replace = 64
+        public decimal FillAmount { get; set; }
+        public decimal FillPrice { get; set; }
+        public OrderAccessor Position { get; set; }
+        public NetPositionCloseInfo NetClose { get; set; }
+
+        public bool WasNetPositionClosed => NetClose != null && NetClose.CloseAmount > 0;
     }
 
     internal class TradeOperationSummary
@@ -46,51 +43,30 @@ namespace TickTrader.Algo.Core
 
         public TradeOperationSummary()
         {
-            Charges = new TradeChargesInfo();
         }
 
-        public TradeActions Actions { get; private set; }
-        public TradeChargesInfo Charges { get; }
-        public OrderAccessor SrcOrder { get; set; }
-        public OrderAccessor NewOrder { get; set; }
-        public decimal Profit { get; set; }
-        public decimal FillAmount { get; set; }
-        public decimal FillPrice { get; set; }
-        public NetPositionCloseInfo NetCloseInfo { get; set; }
-        public OrderAccessor NewPos { get; set; }
         public NumberFormatInfo AccountCurrencyFormat { get; set; }
+        public bool HasErrors { get; set; }
+        public bool IsEmpty => _builder.Length == 0;
 
         public void Clear()
         {
-            Profit = 0;
-            FillAmount = 0;
-            FillPrice = 0;
-            Charges.Clear();
-            NewOrder = null;
-            NetCloseInfo = new NetPositionCloseInfo();
-            NewPos = null;
-
-            Actions = TradeActions.None;
-        }
-
-        public bool CheckAction(TradeActions action)
-        {
-            return (Actions & action) == action;
-        }
-
-        public void AddAction(TradeActions action)
-        {
-            Actions |= action;
-        }
-
-        public string PrintOpenInfo()
-        {
-            var order = NewOrder;
-
             _builder.Clear();
+            HasErrors = false;
+        }
+
+        public string GetJournalRecord()
+        {
+            return _builder.ToString();
+        }
+
+        public void AddOpenAction(OrderAccessor order)
+        {
+            StartNewAction();
+
             _builder.Append($"Opened order ");
-            PrintOrderDescription(NewOrder);
-            PrintAmountAndPrice(NewOrder);
+            PrintOrderDescription(order);
+            PrintAmountAndPrice(order);
 
             //if (order.Commission != 0)
             //    _builder.Append(" commission =").Append(order.Commission);
@@ -98,71 +74,87 @@ namespace TickTrader.Algo.Core
             //    _builder.Append(" commission =").Append(Charges.Commission);
 
             PrintComment(order);
-            PrintNetClose();
-
-            return _builder.ToString();
         }
 
-        public static string PrintOpenFail(OrderType type, string symbol, OrderSide side, double amountLots, OrderCmdResultCodes error, AccountAccessor acc)
+        public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, double amountLots, OrderCmdResultCodes error, AccountAccessor acc)
         {
             var currFormat = acc.BalanceCurrencyFormat;
 
-            var result = $"Rejected order {type} {symbol} {side} {amountLots} reason={error}";
+            HasErrors = true;
+
+            StartNewAction();
+
+            _builder.Append($"Rejected order {type} {symbol} {side} {amountLots} reason={error}");
 
             if (acc.IsMarginType)
-                result += " freeMargin=" + (acc.Equity - acc.Margin);
-
-            return result;
+                _builder.Append(" freeMargin=").Append(acc.Equity - acc.Margin);
         }
 
-        public string PrintModificationInfo()
+        public void AddModificationAction(OrderAccessor oldOrder, OrderAccessor newOrder)
         {
-            _builder.Clear();
+            StartNewAction();
             _builder.Append($"Order is modified ");
-            PrintOrderDescription(NewOrder);
-            PrintAmountAndPrice(NewOrder);
-
-            return _builder.ToString();
+            PrintOrderDescription(newOrder);
+            PrintAmountAndPrice(newOrder);
         }
 
-        public string PrintActivationInfo()
+        public void AddFillAction(OrderAccessor order, FillInfo info)
         {
-            _builder.Clear();
+            var smbInfo = order.SymbolInfo;
+            var priceFormat = smbInfo.PriceFormat;
+            var fillAmountLots = info.FillAmount / (decimal)smbInfo.ContractSize;
 
-            if (CheckAction(TradeActions.Fill))
-            {
-                var priceFormat = SrcOrder.SymbolInfo.PriceFormat;
+            StartNewAction();
 
-                _builder.Append("Filled order");
-                PrintOrderDescription(SrcOrder);
-                _builder.Append(" by ").AppendNumber(FillAmount, priceFormat);
-                _builder.Append(" at price ").AppendNumber(FillPrice, priceFormat);
-                PrintComment(SrcOrder);
-                PrintNetClose();
+            _builder.Append("Filled order ");
+            PrintOrderDescription(order);
+            _builder.Append(" by ").AppendNumber(fillAmountLots);
+            _builder.Append(" at price ").AppendNumber(info.FillPrice, priceFormat);
+            PrintComment(order);
 
-                if (Charges.Commission != 0)
-                    _builder.Append(" commission =").Append(Charges.Commission);
-            }
-            else if (CheckAction(TradeActions.NewOrder))
-                _builder.Append("StopLimit Activated");
+            var charges = info.NetClose?.Charges;
 
-            return _builder.ToString();
+            if (charges != null)
+                _builder.Append(" commission =").Append(charges.Commission);
         }
 
-        public string PrintCloseInfo()
+        public void AddStopLimitActivationAction(OrderAccessor order, decimal price)
         {
-            var priceFormat = SrcOrder.SymbolInfo.PriceFormat;
+            StartNewAction();
 
-            _builder.Clear();
+            _builder.Append("Activated order ");
+            PrintOrderDescription(order);
+            PrintComment(order);
+
+            //return _builder.ToString();
+        }
+
+        public void AddCloseAction(OrderAccessor pos, decimal profit, decimal price, TradeChargesInfo charges)
+        {
+            var priceFormat = pos.SymbolInfo.PriceFormat;
+
+            StartNewAction();
             _builder.Append($"Closed position ");
-            PrintOrderDescription(SrcOrder);
-            PrintComment(SrcOrder);
+            PrintOrderDescription(pos);
 
-            _builder.Append(" at price ").AppendNumber(NetCloseInfo.ClosePrice, priceFormat);
-            _builder.Append(", profit=").AppendNumber(NetCloseInfo.BalanceMovement, priceFormat);
-
-            return _builder.ToString();
+            _builder.Append(" at price ").AppendNumber(price, priceFormat);
+            _builder.Append(", profit=").AppendNumber(profit, priceFormat);
         }
+
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, Symbol symbol)
+        {
+            var priceFormat = closeInfo.SymbolInfo.PriceFormat;
+            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
+
+            _builder.AppendLine();
+            _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
+            _builder.Append(" at price ").AppendNumber(closeInfo.ClosePrice, priceFormat);
+            _builder.Append(", profit=").AppendNumber(closeInfo.BalanceMovement, priceFormat);
+
+            PrintCharges(closeInfo.Charges);
+        }
+
+        #region print methods
 
         private void PrintOrderDescription(OrderAccessor order)
         {
@@ -172,19 +164,6 @@ namespace TickTrader.Algo.Core
                 .Append(' ').Append(order.Side);
 
             //_builder.Append(order.RemainingVolume);
-        }
-
-        private void PrintNetClose()
-        {
-            if (CheckAction(TradeActions.NetClose))
-            {
-                var priceFormat = NetCloseInfo.SymbolInfo.PriceFormat;
-
-                _builder.AppendLine();
-                _builder.Append("Closed net position for ").AppendNumber(NetCloseInfo.CloseAmount);
-                _builder.Append(" at price ").AppendNumber(NetCloseInfo.ClosePrice, priceFormat);
-                _builder.Append(", profit=").AppendNumber(NetCloseInfo.BalanceMovement, priceFormat);
-            }
         }
 
         private void PrintComment(OrderAccessor order)
@@ -197,11 +176,29 @@ namespace TickTrader.Algo.Core
         {
             var priceFormat = order.SymbolInfo.PriceFormat;
 
-            _builder.Append($", amount=").Append(order.Amount);
+            _builder.Append($", amount=");
+            if (order.RequestedVolume == order.RemainingVolume || order.RemainingVolume == 0)
+                _builder.Append(order.RequestedVolume);
+            else
+                _builder.Append(order.RemainingVolume).Append('/').Append(order.RequestedVolume);
             if (order.Entity.Price != null)
                 _builder.Append(" price=").AppendNumber(order.Price, priceFormat);
             if (order.Entity.StopPrice != null)
                 _builder.Append(" stopPrice=").AppendNumber(order.StopPrice, priceFormat);
         }
+
+        private void StartNewAction()
+        {
+            if (_builder.Length > 0)
+                _builder.AppendLine();
+        }
+
+        private void PrintCharges(TradeChargesInfo charges)
+        {
+            if (charges != null)
+                _builder.Append(" commission =").Append(charges.Commission);
+        }
+
+        #endregion
     }
 }

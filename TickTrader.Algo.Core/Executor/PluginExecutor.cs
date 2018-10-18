@@ -368,8 +368,8 @@ namespace TickTrader.Algo.Core
                 System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
 
                 fStrategy.Stop();
-                calcFixture.Stop();
                 accFixture.Stop();
+                calcFixture.Stop();
                 statusFixture.Stop();
                 _timerFixture.Stop();
 
@@ -499,6 +499,13 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginBuilder GetBuilder() => builder;
+        internal IExecutorFixture GetTradeFixute() => accFixture;
+
+        internal void EmulateStop()
+        {
+            ChangeState(States.Stopping);
+            stopTask = DoStop(false);
+        }
 
         #endregion
 
