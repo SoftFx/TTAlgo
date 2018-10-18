@@ -292,13 +292,13 @@ namespace TickTrader.Algo.Protocol.Grpc
             if (_heartbeatTimer == null)
                 return;
 
-            _heartbeatTimer.Change(-1, -1);
+            _heartbeatTimer?.Change(-1, -1);
             try
             {
                 await ExecuteUnaryRequestAuthorized(HeartbeatInternal, new Lib.HeartbeatRequest());
             }
             catch (Exception) { }
-            _heartbeatTimer.Change(HeartbeatTimeout, -1);
+            _heartbeatTimer?.Change(HeartbeatTimeout, -1);
         }
 
         private CallOptions GetCallOptions(bool setDeadline = true)
