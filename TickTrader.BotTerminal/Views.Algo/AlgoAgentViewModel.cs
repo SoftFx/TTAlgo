@@ -171,11 +171,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenBotSetup(PluginInfo plugin)
+        public void OpenBotSetup(PluginInfo plugin, SetupContextInfo setupContext)
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor.Type, null);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, null, plugin.Key, plugin.Descriptor.Type, setupContext);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)

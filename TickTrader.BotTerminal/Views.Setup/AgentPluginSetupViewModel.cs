@@ -71,6 +71,7 @@ namespace TickTrader.BotTerminal
                 _selectedAccount = value;
                 NotifyOfPropertyChange(nameof(SelectedAccount));
                 UpdateSetupMetadata();
+                UpdateSetup();
             }
         }
 
@@ -150,11 +151,12 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, PluginSetupMode mode)
+        private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             _algoEnv = algoEnv;
             Mode = mode;
             Type = type;
+            SetupContext = setupContext;
 
             Agents = algoEnv.Agents.AsObservable();
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? (Agents.Any() ? Agents.First() : null);
@@ -167,15 +169,13 @@ namespace TickTrader.BotTerminal
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext)
-            : this(algoEnv, agentName, accountKey, pluginKey, type, PluginSetupMode.New)
+            : this(algoEnv, agentName, accountKey, pluginKey, type, setupContext, PluginSetupMode.New)
         {
-            SetupContext = setupContext;
-
             DisplayName = $"Setting New {PluginType}";
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
-            : this(algoEnv, agentName, bot.Account, bot.Config.Key, AlgoTypes.Robot, PluginSetupMode.Edit)
+            : this(algoEnv, agentName, bot.Account, bot.Config.Key, AlgoTypes.Robot, null, PluginSetupMode.Edit)
         {
             Bot = bot;
             UpdateSetup();

@@ -220,7 +220,7 @@ namespace TickTrader.BotTerminal
             {
                 if (item.Descriptor.Type == AlgoTypes.Robot)
                 {
-                    _algoEnv.LocalAgentVM.OpenBotSetup(item.Info);
+                    _algoEnv.LocalAgentVM.OpenBotSetup(item.Info, Chart.GetSetupContextInfo());
                     return;
                 }
 

@@ -29,6 +29,11 @@
             return $"{Name} ({Origin})";
         }
 
+        public override int GetHashCode()
+        {
+            return $"{Name}{Origin}".GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             var symbol = obj as SymbolInfo;

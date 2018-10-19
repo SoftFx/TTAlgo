@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
                     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
@@ -379,6 +380,36 @@
 
     <ControlTemplate x:Key="MainSymbolSettings" TargetType="Control">
         <Grid Margin="3">
+
+            <Grid.Resources>
+                <CollectionViewSource x:Key="SymbolsCollection" Source="{Binding AvailableSymbols}">
+                    <CollectionViewSource.GroupDescriptions>
+                        <PropertyGroupDescription PropertyName="Origin"/>
+                    </CollectionViewSource.GroupDescriptions>
+                    <CollectionViewSource.SortDescriptions>
+                        <scm:SortDescription PropertyName="Origin"/>
+                        <scm:SortDescription PropertyName="Name"/>
+                    </CollectionViewSource.SortDescriptions>
+                </CollectionViewSource>
+
+                <DataTemplate x:Key="SymbolComboGroupTemplate">
+                    <Grid IsEnabled="False">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Separator Grid.Column="0"/>
+                        <TextBlock Text="{Binding Name}" Grid.Column="1" Margin="4" FontStyle="Italic"/>
+                        <Separator Grid.Column="2"/>
+                    </Grid>
+                </DataTemplate>
+
+                <DataTemplate x:Key="SymbolComboItemTemplate">
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </Grid.Resources>
+            
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
@@ -396,8 +427,13 @@
             <Label Grid.Row="2" Grid.Column="0" Content="Main Symbol" />
             <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding MainSymbol}"
-                      ItemsSource="{Binding AvailableSymbols}"
-                      DisplayMemberPath="Name"/>
+                      ItemTemplate="{StaticResource SymbolComboItemTemplate}"
+                      ItemsSource="{Binding Source={StaticResource SymbolsCollection}}"
+                      DisplayMemberPath="Name">
+                <ComboBox.GroupStyle>
+                    <GroupStyle HeaderTemplate="{StaticResource SymbolComboGroupTemplate}" />
+                </ComboBox.GroupStyle>
+            </ComboBox>
             <ComboBox Grid.Row="2" Grid.Column="2" IsEditable="False" Margin="2,0,0,0"
                       ItemsSource="{Binding AvailableMappings}"
                       SelectedValue="{Binding SelectedMapping}"

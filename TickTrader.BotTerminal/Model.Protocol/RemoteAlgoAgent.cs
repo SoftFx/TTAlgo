@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
         public async Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
         {
             var accountMetadata = await _protocolClient.GetAccountMetadata(account);
-            return new SetupMetadata(_apiMetadata, _mappings, accountMetadata, _setupContext);
+            return new SetupMetadata(_apiMetadata, _mappings, accountMetadata, setupContext ?? _setupContext);
         }
 
         public Task StartBot(string instanceId)
