@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Library;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
@@ -76,6 +78,16 @@ namespace TickTrader.Algo.Common.Info
                 DefaultQuoteToBarReduction = MappingCollection.DefaultQuoteToBarReduction,
                 DefaultQuoteToDoubleReduction = MappingCollection.DefaultQuoteToDoubleReduction,
             };
+        }
+
+        public static SymbolInfo ToInfo(this SymbolEntity symbol)
+        {
+            return new SymbolInfo(symbol.Name, SymbolOrigin.Online);
+        }
+
+        public static SymbolInfo ToInfo(this SymbolModel symbol)
+        {
+            return new SymbolInfo(symbol.Name, SymbolOrigin.Online);
         }
     }
 }

@@ -8,16 +8,19 @@ namespace TickTrader.Algo.Common.Info
 
         public List<SymbolInfo> Symbols { get; set; }
 
+        public SymbolInfo DefaultSymbol { get; set; }
+
 
         public AccountMetadataInfo()
         {
             Symbols = new List<SymbolInfo>();
         }
 
-        public AccountMetadataInfo(AccountKey key, List<SymbolInfo> symbols)
+        public AccountMetadataInfo(AccountKey key, List<SymbolInfo> symbols, SymbolInfo defaultSymbol)
         {
             Key = key;
             Symbols = symbols;
+            DefaultSymbol = defaultSymbol;
         }
     }
 }

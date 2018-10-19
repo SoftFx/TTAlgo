@@ -46,82 +46,83 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25EZXNjcmlwdG9yIhwKDEN1cnJlbmN5",
             "SW5mbxIMCgRuYW1lGAEgASgJImgKClN5bWJvbEluZm8SDAoEbmFtZRgBIAEo",
             "CRJMCgZvcmlnaW4YAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuU3ltYm9sQ29uZmlnLlN5bWJvbE9yaWdpbiKRAQoTQWNjb3Vu",
+            "R3JwYy5MaWIuU3ltYm9sQ29uZmlnLlN5bWJvbE9yaWdpbiLYAQoTQWNjb3Vu",
             "dE1ldGFkYXRhSW5mbxI6CgNrZXkYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28u",
             "UHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtleRI+CgdzeW1ib2xzGAIgAygL",
             "Mi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlN5bWJvbElu",
-            "Zm8iXwoLTWFwcGluZ0luZm8SOgoDa2V5GAEgASgLMi0uVGlja1RyYWRlci5B",
-            "bGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdLZXkSFAoMZGlzcGxheV9u",
-            "YW1lGAIgASgJIp8GChVNYXBwaW5nQ29sbGVjdGlvbkluZm8SSwoTYmFyX3Rv",
-            "X2Jhcl9tYXBwaW5ncxgBIAMoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
-            "bC5HcnBjLkxpYi5NYXBwaW5nSW5mbxJOChZiYXJfdG9fZG91YmxlX21hcHBp",
-            "bmdzGAIgAygLMi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGli",
-            "Lk1hcHBpbmdJbmZvEk0KFXF1b3RlX3RvX2Jhcl9tYXBwaW5ncxgDIAMoCzIu",
-            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5NYXBwaW5nSW5m",
-            "bxJQChhxdW90ZV90b19kb3VibGVfbWFwcGluZ3MYBCADKAsyLi5UaWNrVHJh",
-            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ0luZm8SWgohZGVm",
-            "YXVsdF9mdWxsX2Jhcl90b19iYXJfcmVkdWN0aW9uGAUgASgLMi8uVGlja1Ry",
-            "YWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlZHVjdGlvbktleRJdCiRk",
-            "ZWZhdWx0X2Z1bGxfYmFyX3RvX2RvdWJsZV9yZWR1Y3Rpb24YBiABKAsyLy5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uS2V5",
-            "ElgKH2RlZmF1bHRfYmFyX3RvX2RvdWJsZV9yZWR1Y3Rpb24YByABKAsyLy5U",
-            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uS2V5",
-            "ElcKHmRlZmF1bHRfcXVvdGVfdG9fYmFyX3JlZHVjdGlvbhgIIAEoCzIvLlRp",
-            "Y2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25LZXkS",
-            "WgohZGVmYXVsdF9xdW90ZV90b19kb3VibGVfcmVkdWN0aW9uGAkgASgLMi8u",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLlJlZHVjdGlvbktl",
-            "eSKbAgoPQXBpTWV0YWRhdGFJbmZvEk8KC3RpbWVfZnJhbWVzGAEgAygOMjou",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0",
-            "b3IuVGltZUZyYW1lEk8KC2xpbmVfc3R5bGVzGAIgAygOMjouVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuTGluZVN0",
-            "eWxlEhMKC3RoaWNrbmVzc2VzGAMgAygFElEKDG1hcmtlcl9zaXplcxgEIAMo",
-            "DjI7LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNj",
-            "cmlwdG9yLk1hcmtlclNpemUi+QEKEFNldHVwQ29udGV4dEluZm8SVgoSZGVm",
-            "YXVsdF90aW1lX2ZyYW1lGAEgASgOMjouVGlja1RyYWRlci5BbGdvLlByb3Rv",
-            "Y29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuVGltZUZyYW1lEkUKDmRlZmF1",
-            "bHRfc3ltYm9sGAIgASgLMi0uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
-            "cGMuTGliLlN5bWJvbEluZm8SRgoPZGVmYXVsdF9tYXBwaW5nGAMgASgLMi0u",
-            "VGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdLZXki",
-            "nQMKE0Nvbm5lY3Rpb25FcnJvckluZm8SWAoEY29kZRgBIAEoDjJKLlRpY2tU",
-            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Db25uZWN0aW9uRXJyb3JJ",
-            "bmZvLkNvbm5lY3Rpb25FcnJvckNvZGUSFAoMdGV4dF9tZXNzYWdlGAIgASgJ",
-            "IpUCChNDb25uZWN0aW9uRXJyb3JDb2RlEggKBE5PTkUQABIdChlVTktOT1dO",
-            "X0NPTk5ORUNUSU9OX0VSUk9SEAESEQoNTkVUV09SS19FUlJPUhACEgsKB1RJ",
-            "TUVPVVQQAxITCg9CTE9DS0VEX0FDQ09VTlQQBBIUChBDTElFTlRfSU5JVElB",
-            "VEVEEAUSFwoTSU5WQUxJRF9DUkVERU5USUFMUxAGEhMKD1NMT1dfQ09OTkVD",
-            "VElPThAHEhAKDFNFUlZFUl9FUlJPUhAIEhEKDUxPR0lOX0RFTEVURUQQCRIR",
-            "Cg1TRVJWRVJfTE9HT1VUEAoSDAoIQ0FOQ0VMRUQQCxIWChJSRUpFQ1RFRF9C",
-            "WV9TRVJWRVIQDCLiAgoQQWNjb3VudE1vZGVsSW5mbxI6CgNrZXkYASABKAsy",
-            "LS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQWNjb3VudEtl",
-            "eRIYChB1c2VfbmV3X3Byb3RvY29sGAIgASgIEl0KEGNvbm5lY3Rpb25fc3Rh",
-            "dGUYAyABKA4yQy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
-            "QWNjb3VudE1vZGVsSW5mby5Db25uZWN0aW9uU3RhdGUSSgoKbGFzdF9lcnJv",
-            "chgEIAEoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5D",
-            "b25uZWN0aW9uRXJyb3JJbmZvIk0KD0Nvbm5lY3Rpb25TdGF0ZRILCgdPRkZM",
-            "SU5FEAASDgoKQ09OTkVDVElORxABEgoKBk9OTElORRACEhEKDURJU0NPTk5F",
-            "Q1RJTkcQAyLAAwoMQm90TW9kZWxJbmZvEhMKC2luc3RhbmNlX2lkGAEgASgJ",
-            "Ej4KB2FjY291bnQYAiABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
-            "R3JwYy5MaWIuQWNjb3VudEtleRJKCgVzdGF0ZRgDIAEoDjI7LlRpY2tUcmFk",
-            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RNb2RlbEluZm8uUGx1Z2lu",
-            "U3RhdGUSFQoNZmF1bHRfbWVzc2FnZRgEIAEoCRI/CgZjb25maWcYBSABKAsy",
-            "Ly5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGx1Z2luQ29u",
-            "ZmlnEkcKCmRlc2NyaXB0b3IYBiABKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJv",
-            "dG9jb2wuR3JwYy5MaWIuUGx1Z2luRGVzY3JpcHRvciJuCgtQbHVnaW5TdGF0",
-            "ZRILCgdTVE9QUEVEEAASDAoIU1RBUlRJTkcQARILCgdGQVVMVEVEEAISCwoH",
-            "UlVOTklORxADEgwKCFNUT1BQSU5HEAQSCgoGQlJPS0VOEAUSEAoMUkVDT05O",
-            "RUNUSU5HEAYi/AEKDUxvZ1JlY29yZEluZm8SLAoIdGltZV91dGMYASABKAsy",
-            "Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEk4KCHNldmVyaXR5GAIgASgO",
-            "MjwuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkxvZ1JlY29y",
-            "ZEluZm8uTG9nU2V2ZXJpdHkSDwoHbWVzc2FnZRgDIAEoCSJcCgtMb2dTZXZl",
-            "cml0eRIICgRJTkZPEAASCQoFRVJST1IQARIJCgVUUkFERRACEhEKDVRSQURF",
-            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUiKQoLQm90",
-            "RmlsZUluZm8SDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDIukBCg1Cb3RG",
-            "b2xkZXJJbmZvEg4KBmJvdF9pZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4y",
-            "PC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVy",
-            "SW5mby5Cb3RGb2xkZXJJZBIMCgRwYXRoGAMgASgJEj0KBWZpbGVzGAQgAygL",
-            "Mi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdEZpbGVJ",
-            "bmZvIioKC0JvdEZvbGRlcklkEg0KCUFMR09fREFUQRAAEgwKCEJPVF9MT0dT",
-            "EAFiBnByb3RvMw=="));
+            "Zm8SRQoOZGVmYXVsdF9zeW1ib2wYAyABKAsyLS5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuU3ltYm9sSW5mbyJfCgtNYXBwaW5nSW5mbxI6",
+            "CgNrZXkYASABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
+            "aWIuTWFwcGluZ0tleRIUCgxkaXNwbGF5X25hbWUYAiABKAkinwYKFU1hcHBp",
+            "bmdDb2xsZWN0aW9uSW5mbxJLChNiYXJfdG9fYmFyX21hcHBpbmdzGAEgAygL",
+            "Mi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLk1hcHBpbmdJ",
+            "bmZvEk4KFmJhcl90b19kb3VibGVfbWFwcGluZ3MYAiADKAsyLi5UaWNrVHJh",
+            "ZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuTWFwcGluZ0luZm8STQoVcXVv",
+            "dGVfdG9fYmFyX21hcHBpbmdzGAMgAygLMi4uVGlja1RyYWRlci5BbGdvLlBy",
+            "b3RvY29sLkdycGMuTGliLk1hcHBpbmdJbmZvElAKGHF1b3RlX3RvX2RvdWJs",
+            "ZV9tYXBwaW5ncxgEIAMoCzIuLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5H",
+            "cnBjLkxpYi5NYXBwaW5nSW5mbxJaCiFkZWZhdWx0X2Z1bGxfYmFyX3RvX2Jh",
+            "cl9yZWR1Y3Rpb24YBSABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wu",
+            "R3JwYy5MaWIuUmVkdWN0aW9uS2V5El0KJGRlZmF1bHRfZnVsbF9iYXJfdG9f",
+            "ZG91YmxlX3JlZHVjdGlvbhgGIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25LZXkSWAofZGVmYXVsdF9iYXJfdG9f",
+            "ZG91YmxlX3JlZHVjdGlvbhgHIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Qcm90",
+            "b2NvbC5HcnBjLkxpYi5SZWR1Y3Rpb25LZXkSVwoeZGVmYXVsdF9xdW90ZV90",
+            "b19iYXJfcmVkdWN0aW9uGAggASgLMi8uVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLlJlZHVjdGlvbktleRJaCiFkZWZhdWx0X3F1b3RlX3Rv",
+            "X2RvdWJsZV9yZWR1Y3Rpb24YCSABKAsyLy5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uS2V5IpsCCg9BcGlNZXRhZGF0YUlu",
+            "Zm8STwoLdGltZV9mcmFtZXMYASADKA4yOi5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuQXBpRGVzY3JpcHRvci5UaW1lRnJhbWUSTwoLbGlu",
+            "ZV9zdHlsZXMYAiADKA4yOi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3Jw",
+            "Yy5MaWIuQXBpRGVzY3JpcHRvci5MaW5lU3R5bGUSEwoLdGhpY2tuZXNzZXMY",
+            "AyADKAUSUQoMbWFya2VyX3NpemVzGAQgAygOMjsuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkFwaURlc2NyaXB0b3IuTWFya2VyU2l6ZSL5",
+            "AQoQU2V0dXBDb250ZXh0SW5mbxJWChJkZWZhdWx0X3RpbWVfZnJhbWUYASAB",
+            "KA4yOi5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQXBpRGVz",
+            "Y3JpcHRvci5UaW1lRnJhbWUSRQoOZGVmYXVsdF9zeW1ib2wYAiABKAsyLS5U",
+            "aWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuU3ltYm9sSW5mbxJG",
+            "Cg9kZWZhdWx0X21hcHBpbmcYAyABKAsyLS5UaWNrVHJhZGVyLkFsZ28uUHJv",
+            "dG9jb2wuR3JwYy5MaWIuTWFwcGluZ0tleSKdAwoTQ29ubmVjdGlvbkVycm9y",
+            "SW5mbxJYCgRjb2RlGAEgASgOMkouVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
+            "LkdycGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8uQ29ubmVjdGlvbkVycm9y",
+            "Q29kZRIUCgx0ZXh0X21lc3NhZ2UYAiABKAkilQIKE0Nvbm5lY3Rpb25FcnJv",
+            "ckNvZGUSCAoETk9ORRAAEh0KGVVOS05PV05fQ09OTk5FQ1RJT05fRVJST1IQ",
+            "ARIRCg1ORVRXT1JLX0VSUk9SEAISCwoHVElNRU9VVBADEhMKD0JMT0NLRURf",
+            "QUNDT1VOVBAEEhQKEENMSUVOVF9JTklUSUFURUQQBRIXChNJTlZBTElEX0NS",
+            "RURFTlRJQUxTEAYSEwoPU0xPV19DT05ORUNUSU9OEAcSEAoMU0VSVkVSX0VS",
+            "Uk9SEAgSEQoNTE9HSU5fREVMRVRFRBAJEhEKDVNFUlZFUl9MT0dPVVQQChIM",
+            "CghDQU5DRUxFRBALEhYKElJFSkVDVEVEX0JZX1NFUlZFUhAMIuICChBBY2Nv",
+            "dW50TW9kZWxJbmZvEjoKA2tleRgBIAEoCzItLlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5EhgKEHVzZV9uZXdfcHJvdG9j",
+            "b2wYAiABKAgSXQoQY29ubmVjdGlvbl9zdGF0ZRgDIAEoDjJDLlRpY2tUcmFk",
+            "ZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50TW9kZWxJbmZvLkNv",
+            "bm5lY3Rpb25TdGF0ZRJKCgpsYXN0X2Vycm9yGAQgASgLMjYuVGlja1RyYWRl",
+            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLkNvbm5lY3Rpb25FcnJvckluZm8i",
+            "TQoPQ29ubmVjdGlvblN0YXRlEgsKB09GRkxJTkUQABIOCgpDT05ORUNUSU5H",
+            "EAESCgoGT05MSU5FEAISEQoNRElTQ09OTkVDVElORxADIsADCgxCb3RNb2Rl",
+            "bEluZm8SEwoLaW5zdGFuY2VfaWQYASABKAkSPgoHYWNjb3VudBgCIAEoCzIt",
+            "LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BY2NvdW50S2V5",
+            "EkoKBXN0YXRlGAMgASgOMjsuVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdy",
+            "cGMuTGliLkJvdE1vZGVsSW5mby5QbHVnaW5TdGF0ZRIVCg1mYXVsdF9tZXNz",
+            "YWdlGAQgASgJEj8KBmNvbmZpZxgFIAEoCzIvLlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5QbHVnaW5Db25maWcSRwoKZGVzY3JpcHRvchgG",
+            "IAEoCzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVn",
+            "aW5EZXNjcmlwdG9yIm4KC1BsdWdpblN0YXRlEgsKB1NUT1BQRUQQABIMCghT",
+            "VEFSVElORxABEgsKB0ZBVUxURUQQAhILCgdSVU5OSU5HEAMSDAoIU1RPUFBJ",
+            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiL8AQoNTG9nUmVj",
+            "b3JkSW5mbxIsCgh0aW1lX3V0YxgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
+            "aW1lc3RhbXASTgoIc2V2ZXJpdHkYAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mby5Mb2dTZXZlcml0eRIP",
+            "CgdtZXNzYWdlGAMgASgJIlwKC0xvZ1NldmVyaXR5EggKBElORk8QABIJCgVF",
+            "UlJPUhABEgkKBVRSQURFEAISEQoNVFJBREVfU1VDQ0VTUxADEg4KClRSQURF",
+            "X0ZBSUwQBBIKCgZDVVNUT00QBSIpCgtCb3RGaWxlSW5mbxIMCgRuYW1lGAEg",
+            "ASgJEgwKBHNpemUYAiABKAMi6QEKDUJvdEZvbGRlckluZm8SDgoGYm90X2lk",
+            "GAEgASgJEk8KCWZvbGRlcl9pZBgCIAEoDjI8LlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5Cb3RGb2xkZXJJbmZvLkJvdEZvbGRlcklkEgwK",
+            "BHBhdGgYAyABKAkSPQoFZmlsZXMYBCADKAsyLi5UaWNrVHJhZGVyLkFsZ28u",
+            "UHJvdG9jb2wuR3JwYy5MaWIuQm90RmlsZUluZm8iKgoLQm90Rm9sZGVySWQS",
+            "DQoJQUxHT19EQVRBEAASDAoIQk9UX0xPR1MQAWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -131,7 +132,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionInfo.Parser, new[]{ "Key", "Descriptor_" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.CurrencyInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.CurrencyInfo.Parser, new[]{ "Name" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo.Parser, new[]{ "Name", "Origin" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo.Parser, new[]{ "Key", "Symbols" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountMetadataInfo.Parser, new[]{ "Key", "Symbols", "DefaultSymbol" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingInfo.Parser, new[]{ "Key", "DisplayName" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.MappingCollectionInfo.Parser, new[]{ "BarToBarMappings", "BarToDoubleMappings", "QuoteToBarMappings", "QuoteToDoubleMappings", "DefaultFullBarToBarReduction", "DefaultFullBarToDoubleReduction", "DefaultBarToDoubleReduction", "DefaultQuoteToBarReduction", "DefaultQuoteToDoubleReduction" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ApiMetadataInfo.Parser, new[]{ "TimeFrames", "LineStyles", "Thicknesses", "MarkerSizes" }, null, null, null),
@@ -1353,6 +1354,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     public AccountMetadataInfo(AccountMetadataInfo other) : this() {
       Key = other.key_ != null ? other.Key.Clone() : null;
       symbols_ = other.symbols_.Clone();
+      DefaultSymbol = other.defaultSymbol_ != null ? other.DefaultSymbol.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1382,6 +1384,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       get { return symbols_; }
     }
 
+    /// <summary>Field number for the "default_symbol" field.</summary>
+    public const int DefaultSymbolFieldNumber = 3;
+    private global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo defaultSymbol_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo DefaultSymbol {
+      get { return defaultSymbol_; }
+      set {
+        defaultSymbol_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as AccountMetadataInfo);
@@ -1397,6 +1410,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (!object.Equals(Key, other.Key)) return false;
       if(!symbols_.Equals(other.symbols_)) return false;
+      if (!object.Equals(DefaultSymbol, other.DefaultSymbol)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1405,6 +1419,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       int hash = 1;
       if (key_ != null) hash ^= Key.GetHashCode();
       hash ^= symbols_.GetHashCode();
+      if (defaultSymbol_ != null) hash ^= DefaultSymbol.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1423,6 +1438,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteMessage(Key);
       }
       symbols_.WriteTo(output, _repeated_symbols_codec);
+      if (defaultSymbol_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(DefaultSymbol);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1435,6 +1454,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Key);
       }
       size += symbols_.CalculateSize(_repeated_symbols_codec);
+      if (defaultSymbol_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(DefaultSymbol);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -1453,6 +1475,12 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         Key.MergeFrom(other.Key);
       }
       symbols_.Add(other.symbols_);
+      if (other.defaultSymbol_ != null) {
+        if (defaultSymbol_ == null) {
+          defaultSymbol_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo();
+        }
+        DefaultSymbol.MergeFrom(other.DefaultSymbol);
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -1473,6 +1501,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           }
           case 18: {
             symbols_.AddEntriesFrom(input, _repeated_symbols_codec);
+            break;
+          }
+          case 26: {
+            if (defaultSymbol_ == null) {
+              defaultSymbol_ = new global::TickTrader.Algo.Protocol.Grpc.Lib.SymbolInfo();
+            }
+            input.ReadMessage(defaultSymbol_);
             break;
           }
         }

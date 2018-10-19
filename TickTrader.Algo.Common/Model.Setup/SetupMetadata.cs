@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Common.Info;
+﻿using System.Linq;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -12,6 +13,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public SetupContextInfo Context { get; }
 
+        public SymbolInfo DefaultSymbol { get; }
+
 
         public SetupMetadata(ApiMetadataInfo api, MappingCollectionInfo mappings, AccountMetadataInfo account, SetupContextInfo context)
         {
@@ -19,22 +22,19 @@ namespace TickTrader.Algo.Common.Model.Setup
             Mappings = mappings;
             Account = account;
             Context = context;
+
+            DefaultSymbol = account.Symbols == null ? context.DefaultSymbol
+                : (account.Symbols.Any(s => s.Equals(context.DefaultSymbol)) ? context.DefaultSymbol : account.DefaultSymbol);
         }
 
         public SetupMetadata(SetupMetadata metadata, AccountMetadataInfo account, SetupContextInfo context)
+            : this(metadata.Api, metadata.Mappings, account, context)
         {
-            Api = metadata.Api;
-            Mappings = metadata.Mappings;
-            Account = account;
-            Context = context;
         }
 
         public SetupMetadata(SetupMetadata metadata, SetupContextInfo context)
+            : this(metadata.Api, metadata.Mappings, metadata.Account, context)
         {
-            Api = metadata.Api;
-            Mappings = metadata.Mappings;
-            Account = metadata.Account;
-            Context = context;
         }
     }
 }

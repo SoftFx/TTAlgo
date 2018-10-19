@@ -767,6 +767,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var res = new AccountMetadataInfo
             {
                 Key = accountMetadata.Key.Convert(),
+                DefaultSymbol = accountMetadata.DefaultSymbol.Convert(),
             };
             res.Symbols.AddRange(accountMetadata.Symbols.Select(Convert));
             return res;

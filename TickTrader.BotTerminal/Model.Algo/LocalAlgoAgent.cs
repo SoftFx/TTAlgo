@@ -122,8 +122,8 @@ namespace TickTrader.BotTerminal
 
         public Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext)
         {
-            var accountMetadata = new AccountMetadataInfo(new AccountKey(ClientModel.Connection.CurrentServer,
-                ClientModel.Connection.CurrentLogin), ClientModel.ObservableSymbolList.Select(s => new SymbolInfo(s.Name, SymbolOrigin.Online)).ToList());
+            var accountMetadata = new AccountMetadataInfo(new AccountKey(ClientModel.Connection.CurrentServer, ClientModel.Connection.CurrentLogin),
+                ClientModel.ObservableSymbolList.Select(s => s.ToInfo()).ToList(), ClientModel.Cache.GetDefaultSymbol().ToInfo());
             var res = new SetupMetadata(_apiMetadata, _mappingsInfo, accountMetadata, setupContext ?? this.GetSetupContextInfo());
             return Task.FromResult(res);
         }

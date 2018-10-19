@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public static SymbolInfo ToInfo(this ISymbolInfo symbol)
         {
-            return new SymbolInfo(symbol.Name, SymbolOrigin.Online);
+            return new SymbolInfo(symbol.Name, symbol.Origin);
         }
     }
 

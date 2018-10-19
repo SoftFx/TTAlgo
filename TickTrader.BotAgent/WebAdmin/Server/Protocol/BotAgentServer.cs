@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
@@ -89,7 +90,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public SetupContextInfo GetSetupContext()
         {
-            return new SetupContextInfo(_agentContext.DefaultTimeFrame, new SymbolInfo(_agentContext.DefaultSymbol.Name, _agentContext.DefaultSymbol.Origin), _agentContext.DefaultMapping);
+            return new SetupContextInfo(_agentContext.DefaultTimeFrame, _agentContext.DefaultSymbol.ToInfo(), _agentContext.DefaultMapping);
         }
 
         public AccountMetadataInfo GetAccountMetadata(AccountKey account)

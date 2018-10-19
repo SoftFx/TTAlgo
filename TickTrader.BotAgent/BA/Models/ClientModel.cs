@@ -146,7 +146,9 @@ namespace TickTrader.BotAgent.BA.Models
                 if (_lastError.Code != ConnectionErrorCodes.None)
                     throw new CommunicationException("Connection error! Code: " + _lastError.Code, _lastError.Code);
 
-                return new AccountMetadataInfo(GetKey(), (await _core.GetSymbols()).Select(s => new SymbolInfo(s.Name, SymbolOrigin.Online)).ToList());
+                var symbols = await _core.GetSymbols();
+                var defaultSymbol = await _core.GetDefaultSymbol();
+                return new AccountMetadataInfo(GetKey(), symbols.Select(s => s.ToInfo()).ToList(), defaultSymbol.ToInfo());
             }
 
             //if (ConnectionState == ConnectionStates.Online)

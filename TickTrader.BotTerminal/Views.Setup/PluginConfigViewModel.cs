@@ -32,6 +32,7 @@ namespace TickTrader.BotTerminal
         private IPluginIdProvider _idProvider;
         private bool _allowTrade;
         private bool _isolate;
+        private SymbolInfo _defaultSymbol;
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
 
@@ -183,7 +184,7 @@ namespace TickTrader.BotTerminal
         {
             SelectedTimeFrame = cfg.TimeFrame;
             MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
-                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbol);
+                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             AllowTrade = cfg.Permissions.TradeAllowed;
@@ -214,7 +215,7 @@ namespace TickTrader.BotTerminal
         public void Reset()
         {
             SelectedTimeFrame = SetupMetadata.Context.DefaultTimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.Context.DefaultSymbol);
+            MainSymbol = AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupMetadata.Context.DefaultMapping);
             InstanceId = _idProvider.GeneratePluginId(Descriptor);
 
@@ -241,6 +242,7 @@ namespace TickTrader.BotTerminal
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
             AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol);
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
+
 
             _parameters = Descriptor.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Descriptor.Inputs.Select(CreateBarBasedInput).ToList();

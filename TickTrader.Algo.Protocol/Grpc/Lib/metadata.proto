@@ -54,6 +54,7 @@ message AccountMetadataInfo
 {
 	AccountKey key = 1;
 	repeated SymbolInfo symbols = 2;
+	SymbolInfo default_symbol = 3;
 }
 
 message MappingInfo

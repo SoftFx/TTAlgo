@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
         }
 
         public InputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
-            : this(descriptor, setupMetadata.Context.DefaultSymbol)
+            : this(descriptor, setupMetadata.DefaultSymbol)
         {
             SetupMetadata = setupMetadata;
 

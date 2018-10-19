@@ -28,5 +28,13 @@
         {
             return $"{Name} ({Origin})";
         }
+
+        public override bool Equals(object obj)
+        {
+            var symbol = obj as SymbolInfo;
+            return symbol != null
+                && symbol.Origin == Origin
+                && symbol.Name == Name;
+        }
     }
 }
