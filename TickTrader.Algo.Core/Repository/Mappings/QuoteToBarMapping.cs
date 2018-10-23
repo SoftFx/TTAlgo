@@ -1,32 +1,29 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Common.Model.Library
+namespace TickTrader.Algo.Core.Repository
 {
+    [Serializable]
     public class QuoteToBarMapping : Mapping
     {
-        private ReductionMetadata _barReduction;
-
-
         internal QuoteToBarMapping()
         {
             Key = new MappingKey(MappingCollection.DefaultQuoteToBarReduction);
             DisplayName = "Bid";
         }
 
-        internal QuoteToBarMapping(ReductionKey barReductionKey, ReductionMetadata barReduction)
-            : base(barReductionKey, barReduction)
+        internal QuoteToBarMapping(ReductionKey barReductionKey, string barReductionDisplayName)
+            : base(barReductionKey, barReductionDisplayName)
         {
-            _barReduction = barReduction;
         }
 
 
-        internal override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
+        public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
         {
-            var barReductionInstance = _barReduction?.CreateInstance<QuoteToBarReduction>() ?? new QuoteToBidBarReduction();
+            var barReduction = AlgoAssemblyInspector.GetReduction(Key.PrimaryReduction.DescriptorId);
+            var barReductionInstance = barReduction?.CreateInstance<QuoteToBarReduction>() ?? new QuoteToBidBarReduction();
             target.GetFeedStrategy<QuoteStrategy>().MapInput<Bar>(inputName, symbol, q => MapValue(barReductionInstance, q));
         }
 

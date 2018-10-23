@@ -8,17 +8,27 @@ namespace TickTrader.Algo.Core.Metadata
 {
     public static class AlgoAssemblyInspector
     {
-        private static Dictionary<Type, PluginMetadata> CacheByType = new Dictionary<Type, PluginMetadata>();
-        private static Dictionary<string, PluginMetadata> CacheByName = new Dictionary<string, PluginMetadata>();
+        private static Dictionary<string, PluginMetadata> PluginCacheByName = new Dictionary<string, PluginMetadata>();
+        private static Dictionary<string, ReductionMetadata> ReductionCacheByName = new Dictionary<string, ReductionMetadata>();
 
 
         public static PluginMetadata GetPlugin(Type algoCustomType)
         {
-            if (!CacheByType.TryGetValue(algoCustomType, out var metadata))
+            if (!PluginCacheByName.TryGetValue(algoCustomType.FullName, out var metadata))
             {
                 metadata = new PluginMetadata(algoCustomType);
-                CacheByType.Add(algoCustomType, metadata);
-                CacheByName.Add(algoCustomType.FullName, metadata);
+                PluginCacheByName.Add(algoCustomType.FullName, metadata);
+            }
+
+            return metadata;
+        }
+
+        public static ReductionMetadata GetReduction(Type algoCustomType, ReductionAttribute reductionAttr)
+        {
+            if (!ReductionCacheByName.TryGetValue(algoCustomType.FullName, out var metadata))
+            {
+                metadata = new ReductionMetadata(algoCustomType, reductionAttr);
+                ReductionCacheByName.Add(algoCustomType.FullName, metadata);
             }
 
             return metadata;
@@ -26,7 +36,13 @@ namespace TickTrader.Algo.Core.Metadata
 
         public static PluginMetadata GetPlugin(string pluginId)
         {
-            CacheByName.TryGetValue(pluginId, out var result);
+            PluginCacheByName.TryGetValue(pluginId, out var result);
+            return result;
+        }
+
+        public static ReductionMetadata GetReduction(string reductionId)
+        {
+            ReductionCacheByName.TryGetValue(reductionId, out var result);
             return result;
         }
 
@@ -67,7 +83,10 @@ namespace TickTrader.Algo.Core.Metadata
             {
                 var reductionAttr = t.GetCustomAttribute<ReductionAttribute>();
                 if (reductionAttr != null)
+                {
+                    var metadata = GetReduction(t, reductionAttr);
                     reductions.Add(new ReductionMetadata(t, reductionAttr));
+                }
             }
 
             return reductions;

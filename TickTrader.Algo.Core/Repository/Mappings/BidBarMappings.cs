@@ -1,11 +1,11 @@
-﻿using TickTrader.Algo.Api;
+﻿using System;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 
-namespace TickTrader.Algo.Common.Model.Library
+namespace TickTrader.Algo.Core.Repository
 {
+    [Serializable]
     public class BidBarMapping : Mapping
     {
         internal BidBarMapping()
@@ -15,36 +15,33 @@ namespace TickTrader.Algo.Common.Model.Library
         }
 
 
-        internal override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
+        public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
         {
             target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, BarPriceType.Bid);
         }
     }
 
 
+    [Serializable]
     public class BidBarToDoubleMapping : Mapping
     {
-        private ReductionMetadata _doubleReduction;
-
-
         internal BidBarToDoubleMapping()
         {
             Key = new MappingKey(MappingCollection.BidBarReduction, MappingCollection.DefaultBarToDoubleReduction);
             DisplayName = "Bid.Close";
         }
 
-        internal BidBarToDoubleMapping(ReductionKey doubleReductionKey, ReductionMetadata doubleReduction)
+        internal BidBarToDoubleMapping(ReductionKey doubleReductionKey, string doubleReductionDisplayName)
         {
-            _doubleReduction = doubleReduction;
-
             Key = new MappingKey(MappingCollection.BidBarReduction, doubleReductionKey);
-            DisplayName = $"Bid.{_doubleReduction.Descriptor.DisplayName}";
+            DisplayName = $"Bid.{doubleReductionDisplayName}";
         }
 
 
-        internal override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
+        public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
         {
-            var doubleReductionInstance = _doubleReduction?.CreateInstance<BarToDoubleReduction>() ?? new BarToCloseReduction();
+            var doubleReduction = AlgoAssemblyInspector.GetReduction(Key.SecondaryReduction.DescriptorId);
+            var doubleReductionInstance = doubleReduction?.CreateInstance<BarToDoubleReduction>() ?? new BarToCloseReduction();
             target.GetFeedStrategy<BarStrategy>().MapInput(inputName, symbol, BarPriceType.Bid, bar => doubleReductionInstance.Reduce(bar));
         }
     }

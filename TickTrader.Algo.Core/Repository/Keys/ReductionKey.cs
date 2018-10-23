@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.Info
+namespace TickTrader.Algo.Core.Repository
 {
+    [Serializable]
     [DataContract]
     public class ReductionKey : IComparable<ReductionKey>
     {

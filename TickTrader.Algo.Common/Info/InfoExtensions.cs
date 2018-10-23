@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
 

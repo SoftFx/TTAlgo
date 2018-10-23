@@ -15,6 +15,7 @@ using ActorSharp;
 using NLog;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.BA.Models
 {

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace TickTrader.Algo.Common.Info
+namespace TickTrader.Algo.Core.Repository
 {
+    [Serializable]
     [DataContract]
     public class MappingKey : IComparable<MappingKey>
     {

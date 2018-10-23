@@ -25,7 +25,6 @@ using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal

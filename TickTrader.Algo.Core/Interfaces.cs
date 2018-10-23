@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -22,6 +23,7 @@ namespace TickTrader.Algo.Core
     {
         void SetParameter(string id, object value);
         T GetFeedStrategy<T>() where T : FeedStrategy;
+        void MapInput(string inputName, string symbolCode, Mapping mapping);
     }
 
     public interface ITradeApi

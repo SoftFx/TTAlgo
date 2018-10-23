@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;

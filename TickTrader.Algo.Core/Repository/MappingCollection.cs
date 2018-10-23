@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.Model.Library
+namespace TickTrader.Algo.Core.Repository
 {
     public class MappingCollection
     {
@@ -97,7 +95,7 @@ namespace TickTrader.Algo.Common.Model.Library
             {
                 foreach (var reduction in _extCollection.FullBarToBarReductions)
                 {
-                    _barToBarMappings.Add(new FullBarToBarMapping(reduction.Key, reduction.Value));
+                    _barToBarMappings.Add(new FullBarToBarMapping(reduction.Key, reduction.Value.DisplayName));
                 }
             }
 
@@ -105,7 +103,7 @@ namespace TickTrader.Algo.Common.Model.Library
             {
                 foreach (var reduction in _extCollection.FullBarToDoubleReductions)
                 {
-                    _barToDoubleMappings.Add(new FullBarToDoubleMapping(reduction.Key, reduction.Value));
+                    _barToDoubleMappings.Add(new FullBarToDoubleMapping(reduction.Key, reduction.Value.DisplayName));
                 }
             }
 
@@ -113,7 +111,7 @@ namespace TickTrader.Algo.Common.Model.Library
             {
                 foreach (var reduction in _extCollection.QuoteToBarReductions)
                 {
-                    _quoteToBarMappings.Add(new QuoteToBarMapping(reduction.Key, reduction.Value));
+                    _quoteToBarMappings.Add(new QuoteToBarMapping(reduction.Key, reduction.Value.DisplayName));
                 }
             }
 
@@ -121,7 +119,7 @@ namespace TickTrader.Algo.Common.Model.Library
             {
                 foreach (var reduction in _extCollection.QuoteToDoubleReductions)
                 {
-                    _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reduction.Key, reduction.Value));
+                    _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reduction.Key, reduction.Value.DisplayName));
                 }
             }
 
@@ -132,15 +130,15 @@ namespace TickTrader.Algo.Common.Model.Library
             {
                 foreach (var reductionDouble in _extCollection.BarToDoubleReductions)
                 {
-                    _barToDoubleMappings.Add(new BidBarToDoubleMapping(reductionDouble.Key, reductionDouble.Value));
-                    _barToDoubleMappings.Add(new AskBarToDoubleMapping(reductionDouble.Key, reductionDouble.Value));
+                    _barToDoubleMappings.Add(new BidBarToDoubleMapping(reductionDouble.Key, reductionDouble.Value.DisplayName));
+                    _barToDoubleMappings.Add(new AskBarToDoubleMapping(reductionDouble.Key, reductionDouble.Value.DisplayName));
 
                     if (_extCollection?.FullBarToBarReductions != null)
                     {
                         foreach (var reductionBar in _extCollection.FullBarToBarReductions)
                         {
                             _barToDoubleMappings.Add(new FullBarToDoubleMapping(reductionBar.Key,
-                                reductionBar.Value, reductionDouble.Key, reductionDouble.Value));
+                                reductionBar.Value.DisplayName, reductionDouble.Key, reductionDouble.Value.DisplayName));
                         }
                     }
 
@@ -149,7 +147,7 @@ namespace TickTrader.Algo.Common.Model.Library
                         foreach (var reductionBar in _extCollection.QuoteToBarReductions)
                         {
                             _quoteToDoubleMappings.Add(new QuoteToDoubleMapping(reductionBar.Key,
-                                reductionBar.Value, reductionDouble.Key, reductionDouble.Value));
+                                reductionBar.Value.DisplayName, reductionDouble.Key, reductionDouble.Value.DisplayName));
                         }
                     }
                 }

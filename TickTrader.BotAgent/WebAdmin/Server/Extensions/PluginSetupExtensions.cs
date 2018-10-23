@@ -5,6 +5,7 @@ using System.IO;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Repository;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
@@ -40,7 +41,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 TimeFrame = TimeFrames.M1,
                 MainSymbol = new SymbolConfig { Name = setup.Symbol, Origin = Algo.Common.Info.SymbolOrigin.Online },
-                SelectedMapping = new Algo.Common.Info.MappingKey(Algo.Common.Model.Library.MappingCollection.DefaultFullBarToBarReduction),
+                SelectedMapping = new MappingKey(MappingCollection.DefaultFullBarToBarReduction),
                 InstanceId = setup.InstanceId,
                 Permissions = setup.Permissions.Parse(),
             };

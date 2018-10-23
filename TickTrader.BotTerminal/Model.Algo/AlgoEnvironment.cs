@@ -8,7 +8,6 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Common.Model.Library;
 using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal

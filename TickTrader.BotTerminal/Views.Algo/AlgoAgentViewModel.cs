@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 using Xceed.Wpf.AvalonDock.Layout;
 
 namespace TickTrader.BotTerminal

@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using Grpc.Core;
-using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Protocol.Grpc
 {

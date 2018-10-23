@@ -208,14 +208,26 @@
     <Compile Include="Metadata\OutputMetadata.cs" />
     <Compile Include="Metadata\ParameterMetadata.cs" />
     <Compile Include="PluginPermissions.cs" />
-    <Compile Include="Repository\ExtCollection.cs" />
+    <Compile Include="Repository\Keys\MappingKey.cs" />
+    <Compile Include="Repository\Keys\PackageKey.cs" />
+    <Compile Include="Repository\Keys\PluginKey.cs" />
+    <Compile Include="Repository\Keys\ReductionKey.cs" />
+    <Compile Include="Repository\Mappings\AskBarMappings.cs" />
+    <Compile Include="Repository\Mappings\BidBarMappings.cs" />
+    <Compile Include="Repository\Mappings\DefaultReductions.cs" />
+    <Compile Include="Repository\Mappings\FullBarToBarMapping.cs" />
+    <Compile Include="Repository\Mappings\FullBarToDoubleMapping.cs" />
+    <Compile Include="Repository\Mappings\Mapping.cs" />
+    <Compile Include="Repository\MappingCollection.cs" />
+    <Compile Include="Repository\Mappings\QuoteToBarMapping.cs" />
+    <Compile Include="Repository\Mappings\QuoteToDoubleMapping.cs" />
     <Compile Include="Repository\PackageIdentity.cs" />
     <Compile Include="Repository\PackageWatcher.cs" />
     <Compile Include="Repository\PackageRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Buffers\DataSeriesImpl.cs" />
     <Compile Include="Buffers\TypedProxies.cs" />
-    <Compile Include="Repository\RepositoryKey.cs" />
+    <Compile Include="Repository\ReductionCollection.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
   </ItemGroup>
@@ -227,6 +239,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj">
+      <Project>{4ec2f84d-ef40-498e-a277-4eb91becea4b}</Project>
+      <Name>TickTrader.Algo.Ext</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

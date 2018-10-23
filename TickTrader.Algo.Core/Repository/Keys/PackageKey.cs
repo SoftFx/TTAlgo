@@ -1,8 +1,8 @@
 ﻿using System;
-using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.Info
+namespace TickTrader.Algo.Core.Repository
 {
+    [Serializable]
     public class PackageKey : IComparable<PackageKey>
     {
         public string Name { get; set; }

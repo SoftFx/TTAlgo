@@ -11,7 +11,6 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Repository;
@@ -110,7 +109,6 @@ namespace TickTrader.BotTerminal
             if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
                 Library.RegisterRepositoryLocation(RepositoryLocation.CommonRepository, EnvService.Instance.AlgoCommonRepositoryFolder, Properties.Settings.Default.EnablePluginIsolation);
 
-            _reductions.AddAssembly("TickTrader.Algo.Ext");
             _reductions.LoadReductions(EnvService.Instance.AlgoExtFolder, RepositoryLocation.LocalExtensions);
 
             Mappings = new MappingCollection(_reductions);

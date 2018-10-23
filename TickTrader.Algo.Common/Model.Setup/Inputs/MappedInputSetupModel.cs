@@ -1,8 +1,7 @@
-﻿using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Common.Model.Config;
-using TickTrader.Algo.Common.Model.Library;
+﻿using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -19,7 +18,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override void Apply(IPluginSetupTarget target)
         {
-            SelectedMapping?.MapInput(target, Metadata.Id, SelectedSymbol.Id);
+            target.MapInput(Metadata.Id, SelectedSymbol.Id, SelectedMapping);
         }
 
         public override void Reset()

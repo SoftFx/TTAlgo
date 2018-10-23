@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
-using TickTrader.Algo.Common.Model.Library;
+using TickTrader.Algo.Core.Repository;
 using Ver1 = TickTrader.BotTerminal.Model.Profiles.Version1;
 
 namespace TickTrader.BotTerminal

@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {

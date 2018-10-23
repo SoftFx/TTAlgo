@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Info
 {

@@ -2,6 +2,7 @@
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
