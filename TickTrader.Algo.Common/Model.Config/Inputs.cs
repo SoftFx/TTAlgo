@@ -4,7 +4,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Name = "SymbolConfig", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "SymbolConfig", Namespace = "TTAlgo.Config.v2")]
     public class SymbolConfig
     {
         [DataMember(Name = "Name")]
@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "Input", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "Input", Namespace = "TTAlgo.Config.v2")]
     public abstract class Input : Property
     {
         [DataMember(Name = "Symbol")]
@@ -28,14 +28,14 @@ namespace TickTrader.Algo.Common.Model.Config
         }
     }
 
-    [DataContract(Name = "QuoteInput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "QuoteInput", Namespace = "TTAlgo.Config.v2")]
     public class QuoteInput : Input
     {
         [DataMember(Name = "Level2")]
         public bool UseL2 { get; set; }
     }
 
-    [DataContract(Name = "MappedInput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "MappedInput", Namespace = "TTAlgo.Config.v2")]
     public abstract class MappedInput : Input
     {
         [DataMember(Name = "Mapping")]
@@ -43,24 +43,24 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "BarToBarInput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "BarToBarInput", Namespace = "TTAlgo.Config.v2")]
     public class BarToBarInput : MappedInput
     {
     }
 
 
-    [DataContract(Name = "BarToDoubleInput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "BarToDoubleInput", Namespace = "TTAlgo.Config.v2")]
     public class BarToDoubleInput : MappedInput
     {
     }
 
 
-    [DataContract(Name = "QuoteToBarInput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "QuoteToBarInput", Namespace = "TTAlgo.Config.v2")]
     public class QuoteToBarInput : MappedInput
     {
     }
 
-    [DataContract(Name = "QuoteToDoubleInput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "QuoteToDoubleInput", Namespace = "TTAlgo.Config.v2")]
     public class QuoteToDoubleInput : MappedInput
     {
     }

@@ -5,7 +5,7 @@ using System.Text;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    [DataContract(Namespace = "")]
+    [DataContract(Name = "PluginPermissions", Namespace = "TTAlgo.Config.v2")]
     public class PluginPermissions : IPluginPermissions
     {
         [DataMember(Name = "tradeAllowed")]

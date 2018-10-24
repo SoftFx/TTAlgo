@@ -6,7 +6,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Namespace = "TTAlgo.Config.v2")]
     public class PluginConfig
     {
         [DataMember(Name = "Key")]

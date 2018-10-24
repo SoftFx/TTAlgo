@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace TickTrader.Algo.Core.Repository
 {
     [Serializable]
-    [DataContract]
+    [DataContract(Name = "ReductionKey", Namespace = "TTAlgo.Config.v2")]
     public class ReductionKey : IComparable<ReductionKey>
     {
         [DataMember]

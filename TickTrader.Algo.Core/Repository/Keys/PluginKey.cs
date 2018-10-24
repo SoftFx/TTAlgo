@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace TickTrader.Algo.Core.Repository
 {
     [Serializable]
-    [DataContract]
+    [DataContract(Name = "PluginKey", Namespace = "TTAlgo.Config.v2")]
     public class PluginKey : IComparable<PluginKey>
     {
         [DataMember]

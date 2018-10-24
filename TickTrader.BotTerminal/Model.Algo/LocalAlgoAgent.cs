@@ -67,9 +67,9 @@ namespace TickTrader.BotTerminal
 
         public IShell Shell { get; }
 
-        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => PluginStateHelper.IsRunning(b.State));
+        public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !PluginStateHelper.IsStopped(b.State));
 
-        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => PluginStateHelper.IsRunning(b.State));
+        public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !PluginStateHelper.IsStopped(b.State));
 
 
         public event Action<PackageInfo> PackageStateChanged;

@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Profile")]
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "Profile")]
     internal class ProfileStorageModel : StorageModelBase<ProfileStorageModel>
     {
         [DataMember]
