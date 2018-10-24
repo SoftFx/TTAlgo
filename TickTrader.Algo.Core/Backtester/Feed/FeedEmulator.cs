@@ -40,6 +40,8 @@ namespace TickTrader.Algo.Core
                     streams.Remove(e);
                     e.Stop();
                 }
+
+                yield return e.Current;
             }
 
             while (streams.Count > 0)

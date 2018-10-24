@@ -124,7 +124,7 @@ namespace TickTrader.Algo.Core
 
         public bool WarmupByBars(int barCount)
         {
-            return Warmup((q, b, f, t) => b <= barCount);
+            return Warmup((q, b, f, t) => b < barCount);
         }
 
         public bool WarmupByTimePeriod(TimeSpan period)
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Core
 
         public bool WarmupByQuotes(int quoteCount)
         {
-            return Warmup((q, b, f, t) => q <= quoteCount);
+            return Warmup((q, b, f, t) => q < quoteCount);
         }
 
         private bool Warmup(Func<int, int, DateTime, DateTime, bool> condition)
@@ -153,7 +153,7 @@ namespace TickTrader.Algo.Core
             LogWarmupStart();
 
             var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
-            var tickCount = 0;
+            var tickCount = 1;
 
             while (true)
             {
@@ -165,10 +165,10 @@ namespace TickTrader.Algo.Core
 
                 UpdateVirtualTimepoint(_eFeed.Current.Time);
 
+                tickCount++;
+
                 if (!condition(tickCount, buider.Count, warmupStart, _timePoint))
                     break;
-
-                tickCount++;
             }
 
             var warmupEnd = _timePoint;
