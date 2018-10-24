@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Chart")]
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "Chart")]
     internal class ChartStorageEntry
     {
         [DataMember]

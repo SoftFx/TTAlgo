@@ -150,6 +150,11 @@ namespace TickTrader.Algo.Core
             return _executor.GetFeedStrategy<T>();
         }
 
+        void IPluginSetupTarget.MapInput(string inputName, string symbolCode, Mapping mapping)
+        {
+            _executor.MapInput(inputName, symbolCode, mapping);
+        }
+
         #endregion
 
         #region IPluginMetadata

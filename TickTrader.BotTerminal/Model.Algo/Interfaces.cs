@@ -8,6 +8,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Protocol;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {

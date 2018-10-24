@@ -5,6 +5,7 @@ using System;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {

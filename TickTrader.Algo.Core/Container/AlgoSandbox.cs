@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core.Container
 {
@@ -28,6 +29,10 @@ namespace TickTrader.Algo.Core.Container
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                 src.Init();
                 LoadAndInspect(src.MainAssemblyName);
+                if (isolated)
+                {
+                    AlgoAssemblyInspector.FindReductions(Assembly.Load(ReductionCollection.EmbeddedReductionsAssemblyName)); // loading default reductions in plugin domain
+                }
             }
             catch
             {

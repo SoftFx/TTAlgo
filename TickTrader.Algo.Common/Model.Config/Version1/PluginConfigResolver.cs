@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 using Ver1 = TickTrader.Algo.Common.Model.Config.Version1;
 
 

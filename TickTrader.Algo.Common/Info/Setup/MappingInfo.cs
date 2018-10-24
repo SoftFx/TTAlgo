@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Common.Info
+﻿using TickTrader.Algo.Core.Repository;
+
+namespace TickTrader.Algo.Common.Info
 {
     public class MappingInfo
     {

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Namespace = "TTAlgo.Config.v2")]
     public class PluginConfig
     {
         [DataMember(Name = "Key")]

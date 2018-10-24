@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.Info
+namespace TickTrader.Algo.Core.Repository
 {
-    [DataContract]
-    public class PluginKey : IComparable<PluginKey>
+    [Serializable]
+    [DataContract(Name = "ReductionKey", Namespace = "TTAlgo.Config.v2")]
+    public class ReductionKey : IComparable<ReductionKey>
     {
         [DataMember]
         public string PackageName { get; set; }
@@ -17,16 +17,16 @@ namespace TickTrader.Algo.Common.Info
         public string DescriptorId { get; set; }
 
 
-        public PluginKey()
+        public ReductionKey()
         {
         }
 
-        public PluginKey(PackageKey packageKey, string descriptorId)
+        public ReductionKey(PackageKey packageKey, string descriptorId)
             : this(packageKey.Name, packageKey.Location, descriptorId)
         {
         }
 
-        public PluginKey(string packageName, RepositoryLocation packageLocation, string descriptorId)
+        public ReductionKey(string packageName, RepositoryLocation packageLocation, string descriptorId)
         {
             PackageName = packageName;
             PackageLocation = packageLocation;
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Common.Info
 
         public override string ToString()
         {
-            return $"Plugin {DescriptorId} in {PackageName} from {PackageLocation}";
+            return $"Reduction {DescriptorId} in {PackageName} from {PackageLocation}";
         }
 
         public override int GetHashCode()
@@ -46,24 +46,14 @@ namespace TickTrader.Algo.Common.Info
 
         public override bool Equals(object obj)
         {
-            var key = obj as PluginKey;
+            var key = obj as ReductionKey;
             return key != null
                 && key.DescriptorId == DescriptorId
                 && key.PackageName == PackageName
                 && key.PackageLocation == PackageLocation;
         }
 
-        public bool IsFromPackage(PackageKey key)
-        {
-            return key.Name == PackageName && key.Location == PackageLocation;
-        }
-
-        public PackageKey GetPackageKey()
-        {
-            return new PackageKey(PackageName, PackageLocation);
-        }
-
-        public int CompareTo(PluginKey other)
+        public int CompareTo(ReductionKey other)
         {
             var res1 = PackageName.CompareTo(other.PackageName);
             if (res1 == 0)

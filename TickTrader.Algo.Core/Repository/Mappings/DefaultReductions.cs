@@ -1,7 +1,7 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Ext;
 
-namespace TickTrader.Algo.Common.Model.Library
+namespace TickTrader.Algo.Core.Repository
 {
     internal class FullBarToBidCloseReduction : FullBarToDoubleReduction
     {

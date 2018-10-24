@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using TickTrader.Algo.Common.Info;
-using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Core.Repository;
 
-namespace TickTrader.Algo.Common.Model
+namespace TickTrader.Algo.Core.Repository
 {
     public class ReductionCollection
     {
+        public const string EmbeddedReductionsAssemblyName = "TickTrader.Algo.Ext";
+
+
         private IAlgoCoreLogger _logger;
         private Dictionary<ReductionKey, ReductionMetadata> _barToDouble;
         private Dictionary<ReductionKey, ReductionMetadata> _fullbarToDouble;
@@ -35,6 +35,8 @@ namespace TickTrader.Algo.Common.Model
             _fullbarToBar = new Dictionary<ReductionKey, ReductionMetadata>();
             _quoteToDouble = new Dictionary<ReductionKey, ReductionMetadata>();
             _quoteToBar = new Dictionary<ReductionKey, ReductionMetadata>();
+
+            AddAssembly(EmbeddedReductionsAssemblyName);
         }
 
 
@@ -52,6 +54,8 @@ namespace TickTrader.Algo.Common.Model
 
         public void LoadReductions(string path, RepositoryLocation location)
         {
+            return; // We should support loading custom reductions in separate app domains before allowing this
+
             var plugins = Directory.GetFiles(path, "*.ttalgo");
 
             foreach (var file in plugins)

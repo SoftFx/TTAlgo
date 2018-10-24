@@ -5,7 +5,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Plugin")]
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "Plugin")]
     internal abstract class PluginStorageEntry<T> where T : PluginStorageEntry<T>, new()
     {
         [DataMember]
@@ -21,13 +21,13 @@ namespace TickTrader.BotTerminal
     }
 
 
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "Indicator")]
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "Indicator")]
     internal class IndicatorStorageEntry : PluginStorageEntry<IndicatorStorageEntry>
     {
     }
 
 
-    [DataContract(Namespace = "BotTerminal.Profile.ver2", Name = "TradeBot")]
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "TradeBot")]
     internal class TradeBotStorageEntry : PluginStorageEntry<TradeBotStorageEntry>
     {
         [DataMember]

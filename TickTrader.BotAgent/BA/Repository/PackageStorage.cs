@@ -7,11 +7,8 @@ using System;
 using TickTrader.BotAgent.BA.Exceptions;
 using NLog;
 using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Library;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace TickTrader.BotAgent.BA.Repository
 {
@@ -46,7 +43,6 @@ namespace TickTrader.BotAgent.BA.Repository
             Library.PackageStateChanged += LibraryOnPackageStateChanged;
 
             _reductions = new ReductionCollection(CoreLoggerFactory.GetLogger("Extensions"));
-            _reductions.AddAssembly("TickTrader.Algo.Ext");
             Mappings = new MappingCollection(_reductions);
         }
 

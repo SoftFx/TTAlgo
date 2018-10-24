@@ -9,7 +9,7 @@ namespace TickTrader.BotTerminal
 {
     class ShutdownDialogViewModel : Screen
     {
-        public const int Delay = 1000;
+        public const int Delay = 500;
 
 
         public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(60);
@@ -48,6 +48,12 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Shutting down - {EnvService.Instance.ApplicationName}";
             TotalBots = _algoAgent.RunningBotsCnt;
             StoppedBots = 0;
+        }
+
+
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
 
             StopBots();
         }

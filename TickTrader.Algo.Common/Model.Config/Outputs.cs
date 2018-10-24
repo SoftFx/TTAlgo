@@ -5,7 +5,7 @@ using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Name = "Output", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "Output", Namespace = "TTAlgo.Config.v2")]
     public abstract class Output : Property
     {
         [DataMember(Name = "Enabled")]
@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "OutputColor", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "OutputColor", Namespace = "TTAlgo.Config.v2")]
     public class OutputColor
     {
         [DataMember(Name = "Alpha")]
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "ColoredLineOutput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "ColoredLineOutput", Namespace = "TTAlgo.Config.v2")]
     public class ColoredLineOutput : Output
     {
         [DataMember]
@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "MarkerSeriesOutput", Namespace = "TTAlgo.Setup.ver2")]
+    [DataContract(Name = "MarkerSeriesOutput", Namespace = "TTAlgo.Config.v2")]
     public class MarkerSeriesOutput : Output
     {
         [DataMember]

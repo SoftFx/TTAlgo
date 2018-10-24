@@ -18,6 +18,8 @@ namespace TickTrader.Algo.Core.Metadata
 
         public string Id => Descriptor.Id;
 
+        public string DisplayName => Descriptor.DisplayName;
+
 
         public ReductionMetadata(Type reflectionInfo, ReductionAttribute reductionAttr)
         {
