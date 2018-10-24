@@ -76,6 +76,7 @@ namespace TickTrader.Algo.Core
         public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
         public Action<Exception> OnException { get; set; }
+        public Action<Exception> OnInitFailed { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
@@ -202,9 +203,11 @@ namespace TickTrader.Algo.Core
             isStopped = true;
         }
 
-        private void OnPluginException(Exception ex)
+        private void OnPluginException(Exception ex, bool init)
         {
             Logger.OnError(ex);
+            if (init)
+                OnInitFailed(ex);
             OnException?.Invoke(ex);
         }
 
@@ -330,11 +333,11 @@ namespace TickTrader.Algo.Core
             statusApi.Apply();
         }
 
-        internal void InvokePluginMethod(Action invokeAction)
+        internal void InvokePluginMethod(Action invokeAction, bool initMethod = false)
         {
             var ex = InvokeMethod(invokeAction);
             if (ex != null)
-                OnPluginException(ex);
+                OnPluginException(ex, initMethod);
         }
 
         private Exception InvokeMethod(Action invokeAction)
@@ -364,60 +367,60 @@ namespace TickTrader.Algo.Core
 
         internal void InvokeCalculate(bool isUpdate)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate));
+            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate), false);
         }
 
         internal void InvokeOnStart()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStart);
+            InvokePluginMethod(PluginProxy.InvokeOnStart, true);
             Logger.OnStart();
         }
 
         internal void InvokeOnStop()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStop);
+            InvokePluginMethod(PluginProxy.InvokeOnStop, false);
             Logger.OnStop();
         }
 
         internal void InvokeInit()
         {
-            InvokePluginMethod(PluginProxy.InvokeInit);
+            InvokePluginMethod(PluginProxy.InvokeInit, true);
             Logger.OnInitialized();
         }
 
         internal void InvokeOnQuote(Quote quote)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote));
+            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote), false);
         }
 
         internal void InvokeAsyncAction(Action asyncAction)
         {
-            InvokePluginMethod(asyncAction);
+            InvokePluginMethod(asyncAction, false);
         }
 
         internal async Task InvokeAsyncStop()
         {
             Task result = null;
-            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop());
+            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop(), false);
             try
             {
                 await result;
             }
             catch (Exception ex)
             {
-                OnPluginException(ex);
+                OnPluginException(ex, false);
             }
         }
 
         internal void FireConnectedEvent()
         {
-            InvokePluginMethod(()=> PluginProxy.InvokeConnectedEvent());
+            InvokePluginMethod(()=> PluginProxy.InvokeConnectedEvent(), false);
             Logger.OnConnected();
         }
 
         internal void FireDisconnectedEvent()
         {
-            InvokePluginMethod(() => PluginProxy.InvokeDisconnectedEvent());
+            InvokePluginMethod(() => PluginProxy.InvokeDisconnectedEvent(), false);
             Logger.OnDisconnected();
         }
 

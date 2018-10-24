@@ -42,6 +42,8 @@ namespace TickTrader.Algo.Core
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
 
+        private bool InRunningState => state == States.Running;
+
         public PluginExecutor(string pluginId)
         {
             descriptor = AlgoAssemblyInspector.GetPlugin(pluginId);
@@ -254,6 +256,7 @@ namespace TickTrader.Algo.Core
                     builder.Logger = _pluginLogger;
                     builder.OnAsyncAction = OnAsyncAction;
                     builder.OnExit = OnExit;
+                    builder.OnInitFailed = OnInitFailed;
                     //builder.OnException = OnException;
 
                     // Setup strategy
@@ -263,7 +266,12 @@ namespace TickTrader.Algo.Core
                     fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
-                    iStrategy.EnqueueCustomInvoke(b => b.InvokeInit()); // enqueue init
+
+                    iStrategy.EnqueueCustomInvoke(b =>
+                    {
+                        if (InRunningState)
+                            b.InvokeInit();
+                    }); 
 
                     // Start
 
@@ -274,7 +282,11 @@ namespace TickTrader.Algo.Core
                     fStrategy.Start(); // enqueue build action
                     calcFixture.Start();
 
-                    iStrategy.EnqueueCustomInvoke(b => b.InvokeOnStart());
+                    iStrategy.EnqueueCustomInvoke(b =>
+                    {
+                        if (InRunningState)
+                            b.InvokeOnStart();
+                    });
 
                     iStrategy.Start(); // Must be last action! It starts queue processing.
 
@@ -398,6 +410,11 @@ namespace TickTrader.Algo.Core
                 ChangeState(States.Stopping);
                 stopTask = DoStop(true);
             }
+        }
+
+        private void OnInitFailed(Exception ex)
+        {
+            OnExit();
         }
 
         #region Setup Methods
