@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
-        private static readonly ISymbolInfo _defaultSymbol = new SymbolToken("EURUSD", SymbolOrigin.Online);
+        private static readonly ISymbolInfo _defaultSymbol = new SymbolToken("none");
 
         private readonly ReductionCollection _reductions;
         private readonly MappingCollectionInfo _mappingsInfo;

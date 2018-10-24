@@ -29,7 +29,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
 
         public InputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
-            : this(metadata, setupContext.DefaultSymbol)
+            : this(metadata, mainSymbol)
         {
             SetupMetadata = setupMetadata;
             SetupContext = setupContext;

@@ -63,7 +63,7 @@ namespace TickTrader.BotAgent.BA.Models
     public class SetupContext : IAlgoSetupContext
     {
         private static MappingKey _defaultMapping = new MappingKey(MappingCollection.BidBarReduction, MappingCollection.DefaultBarToDoubleReduction);
-        private static SymbolToken _defaultSymbol = new SymbolToken("EURUSD");
+        private static SymbolToken _defaultSymbol = new SymbolToken("none");
 
 
         public TimeFrames DefaultTimeFrame => TimeFrames.M1;
