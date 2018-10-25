@@ -325,6 +325,9 @@ namespace TickTrader.Algo.Core
             {
                 while (true)
                 {
+                    if (_tradeQueue.Count > 0)
+                        return _tradeQueue.Dequeue();
+
                     bool isTrade;
                     var next = DequeueUpcoming(out isTrade);
 
@@ -339,7 +342,7 @@ namespace TickTrader.Algo.Core
                     if (next is Action<PluginBuilder>)
                         _eventQueue.Enqueue((Action<PluginBuilder>)next);
                     else
-                        _feedQueue.Enqueue((BarRateUpdate)next);
+                        _feedQueue.Enqueue((RateUpdate)next);
                 }
             }
         }
