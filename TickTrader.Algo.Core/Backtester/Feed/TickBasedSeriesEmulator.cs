@@ -28,7 +28,9 @@ namespace TickTrader.Algo.Core
         {
             if (_e.MoveNext())
             {
-                Current = _e.Current;
+                var quote = _e.Current;
+                Current = quote;
+                UpdateBars(quote);
                 return true;
             }
             else
@@ -43,6 +45,14 @@ namespace TickTrader.Algo.Core
         public override void Stop()
         {
             _e.Dispose();
+        }
+
+        private void UpdateBars(QuoteEntity quote)
+        {
+            foreach (var rec in _bidBars.Values)
+                rec.AppendQuote(quote.CreatingTime, quote.Bid, 1);
+            foreach (var rec in _askBars.Values)
+                rec.AppendQuote(quote.CreatingTime, quote.Ask, 1);
         }
     }
 }
