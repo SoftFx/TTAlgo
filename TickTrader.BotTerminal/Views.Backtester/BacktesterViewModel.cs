@@ -436,7 +436,12 @@ namespace TickTrader.BotTerminal
             var max = allSymbols.Max(s => s.AvailableRange.Value?.Item2);
             var min = allSymbols.Min(s => s.AvailableRange.Value?.Item1);
 
+            bool wasEmpty = DateRange.From == DateTime.MinValue;
+
             DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
+
+            if (wasEmpty)
+                DateRange.ResetSelectedRange();
         }
 
         private void UpdateSymbolsState()

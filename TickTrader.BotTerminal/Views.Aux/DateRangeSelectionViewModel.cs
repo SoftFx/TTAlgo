@@ -62,6 +62,11 @@ namespace TickTrader.BotTerminal
         {
             Min = DateTime.MinValue;
             Max = DateTime.MaxValue;
+            ResetSelectedRange();
+        }
+
+        public void ResetSelectedRange()
+        {
             From = Min;
             To = Max;
         }
@@ -74,8 +79,10 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(Max));
             NotifyOfPropertyChange(nameof(MinRangeDouble));
             NotifyOfPropertyChange(nameof(MaxRangeDouble));
-            From = min;
-            To = max;
+            if (From < min)
+                From = min;
+            if (To > max)
+                To = max;
         }
 
         private double? ToDouble(DateTime? val)
