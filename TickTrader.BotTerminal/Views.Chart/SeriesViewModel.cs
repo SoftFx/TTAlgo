@@ -54,19 +54,17 @@ namespace TickTrader.BotTerminal
         //    return null;
         //}
 
-        public static IRenderableSeriesViewModel CreateIndicatorSeries(IndicatorModel model, OutputSetupModel outputSetup)
+        public static IRenderableSeriesViewModel FromOutputSeries(OutputSeriesModel outputModel)
         {
-            var seriesData = model.GetOutputSeries(outputSetup.Id);
-
-            if (outputSetup is ColoredLineOutputSetupModel)
-                return CreateIndicatorSeries(seriesData, (ColoredLineOutputSetupModel)outputSetup);
-            else if (outputSetup is MarkerSeriesOutputSetupModel)
-                return CreateIndicatorSeries(seriesData, (MarkerSeriesOutputSetupModel)outputSetup);
+            if (outputModel.Setup is ColoredLineOutputSetupModel)
+                return CreateOutputSeries(outputModel.SeriesData, (ColoredLineOutputSetupModel)outputModel.Setup);
+            else if (outputModel.Setup is MarkerSeriesOutputSetupModel)
+                return CreateOutputSeries(outputModel.SeriesData, (MarkerSeriesOutputSetupModel)outputModel.Setup);
 
             return null;
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, ColoredLineOutputSetupModel outputSetup)
+        private static IRenderableSeriesViewModel CreateOutputSeries(IXyDataSeries seriesData, ColoredLineOutputSetupModel outputSetup)
         {
             var plotType = outputSetup.Metadata.Descriptor.PlotType;
 
@@ -121,7 +119,7 @@ namespace TickTrader.BotTerminal
             throw new NotImplementedException("Unsupported plot type: " + plotType);
         }
 
-        private static IRenderableSeriesViewModel CreateIndicatorSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupModel outputSetup)
+        private static IRenderableSeriesViewModel CreateOutputSeries(IXyDataSeries seriesData, MarkerSeriesOutputSetupModel outputSetup)
         {
             var viewModel = new LineRenderableSeriesViewModel();
             viewModel.DataSeries = seriesData;

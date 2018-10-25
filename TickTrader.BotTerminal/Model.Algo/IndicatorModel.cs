@@ -13,13 +13,6 @@ namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel : PluginModel
     {
-        private Dictionary<string, IXyDataSeries> _series = new Dictionary<string, IXyDataSeries>();
-
-
-        public bool HasOverlayOutputs => Setup.Outputs.Any(o => o.Metadata.Descriptor.Target == OutputTargets.Overlay);
-        public bool HasPaneOutputs => Setup.Outputs.Any(o => o.Metadata.Descriptor.Target != OutputTargets.Overlay);
-
-
         public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
             : base(config, agent, host, setupContext)
         {
@@ -31,11 +24,6 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public IXyDataSeries GetOutputSeries(string id)
-        {
-            return _series[id];
-        }
-
         public override void Dispose()
         {
             base.Dispose();
@@ -46,27 +34,6 @@ namespace TickTrader.BotTerminal
                 StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
 
-
-        protected override PluginExecutor CreateExecutor()
-        {
-            var executor = base.CreateExecutor();
-
-            foreach (var outputSetup in Setup.Outputs)
-            {
-                if (outputSetup is ColoredLineOutputSetupModel)
-                {
-                    var model = new DoubleSeriesModel(executor, (ColoredLineOutputSetupModel)outputSetup);
-                    _series.Add(outputSetup.Id, model.SeriesData);
-                }
-                else if (outputSetup is MarkerSeriesOutputSetupModel)
-                {
-                    var model = new MarkerSeriesModel(executor, (MarkerSeriesOutputSetupModel)outputSetup);
-                    _series.Add(outputSetup.Id, model.SeriesData);
-                }
-            }
-
-            return executor;
-        }
 
         protected override async void OnPluginUpdated()
         {
@@ -94,8 +61,6 @@ namespace TickTrader.BotTerminal
             {
                 if (await StopExecutor())
                     ChangeState(PluginStates.Stopped);
-                foreach (var dataLine in _series.Values)
-                    dataLine.Clear();
             }
         }
 

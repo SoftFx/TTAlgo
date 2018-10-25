@@ -1,6 +1,6 @@
-﻿using Machinarium.State;
-using NLog;
+﻿using NLog;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -17,6 +17,7 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private PluginExecutor _executor;
+        private Dictionary<string, OutputSeriesModel> _outputs;
 
 
         public PluginConfig Config { get; private set; }
@@ -37,10 +38,15 @@ namespace TickTrader.BotTerminal
 
         public PluginStates State { get; protected set; }
 
+        public IDictionary<string, OutputSeriesModel> Outputs => _outputs;
+
 
         protected LocalAlgoAgent Agent { get; }
 
         protected IAlgoSetupContext SetupContext { get; }
+
+
+        public event Action OutputsChanged;
 
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -50,6 +56,8 @@ namespace TickTrader.BotTerminal
             Agent = agent;
             Host = host;
             SetupContext = setupContext;
+
+            _outputs = new Dictionary<string, OutputSeriesModel>();
 
             UpdateRefs();
 
@@ -201,6 +209,7 @@ namespace TickTrader.BotTerminal
         {
             if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
+                _logger.Info($"Type: {update.Type}; Key: {update.Value.Key}");
                 OnPluginUpdated();
             }
         }
@@ -209,21 +218,20 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                //foreach (var outputSetup in Setup.Outputs)
-                //{
-                //    if (outputSetup is ColoredLineOutputSetupModel)
-                //    {
-                //        var buffer = executor.GetOutput<double>(outputSetup.Id);
-                //        var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupModel)outputSetup);
-                //        _series.Add(outputSetup.Id, adapter.SeriesData);
-                //    }
-                //    else if (outputSetup is MarkerSeriesOutputSetupModel)
-                //    {
-                //        var buffer = executor.GetOutput<Marker>(outputSetup.Id);
-                //        var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetupModel)outputSetup);
-                //        _series.Add(outputSetup.Id, adapter.SeriesData);
-                //    }
-                //}
+                foreach (var outputSetup in Setup.Outputs)
+                {
+                    if (outputSetup is ColoredLineOutputSetupModel)
+                    {
+                        var seriesModel = new DoubleSeriesModel(executor, (ColoredLineOutputSetupModel)outputSetup);
+                        _outputs.Add(seriesModel.Id, seriesModel);
+                    }
+                    else if (outputSetup is MarkerSeriesOutputSetupModel)
+                    {
+                        var seriesModel = new MarkerSeriesModel(executor, (MarkerSeriesOutputSetupModel)outputSetup);
+                        _outputs.Add(seriesModel.Id, seriesModel);
+                    }
+                }
+                OutputsChanged?.Invoke();
             }
             catch (Exception ex)
             {
@@ -235,9 +243,10 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                //_series.Clear();
+                _outputs.Clear();
+                OutputsChanged?.Invoke();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to create outputs");
             }

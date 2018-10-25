@@ -13,14 +13,38 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Entities;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class OutputSeriesModel<T> : IOutputListener<T>
+    internal abstract class OutputSeriesModel
     {
+        public string Id { get; private set; }
+
+        public string DisplayName { get; private set; }
+
+        public OutputDescriptor Descriptor { get; private set; }
+
+        public string PluginId { get; private set; }
+
+        public OutputSetupModel Setup { get; private set; }
+
         public abstract IXyDataSeries SeriesData { get; }
 
 
+        protected void Init(PluginExecutor executor, OutputSetupModel setup)
+        {
+            Id = setup.Metadata.Id;
+            DisplayName = setup.Metadata.DisplayName;
+            Descriptor = setup.Metadata.Descriptor;
+            PluginId = executor.InstanceId;
+            Setup = setup;
+        }
+    }
+
+
+    internal abstract class OutputSeriesModel<T> : OutputSeriesModel, IOutputListener<T>
+    {
         protected OutputAdapter<T> CreateOutputAdapter(PluginExecutor executor, OutputSetupModel setup)
         {
             var fixture = executor.GetOutput<T>(setup.Id);
@@ -65,12 +89,13 @@ namespace TickTrader.BotTerminal
         public DoubleSeriesModel(PluginExecutor executor, ColoredLineOutputSetupModel setup)
         {
             _seriesData = new XyDataSeries<DateTime, double>();
+            Init(executor, setup);
 
             if (setup.IsEnabled)
             {
                 _adapter = CreateOutputAdapter(executor, setup);
 
-                _seriesData.SeriesName = setup.Metadata.Descriptor.Id;
+                _seriesData.SeriesName = DisplayName;
             }
         }
 
@@ -110,12 +135,13 @@ namespace TickTrader.BotTerminal
         public MarkerSeriesModel(PluginExecutor executor, MarkerSeriesOutputSetupModel setup)
         {
             _seriesData = new XyDataSeries<DateTime, double>();
+            Init(executor, setup);
 
             if (setup.IsEnabled)
             {
                 _adapter = CreateOutputAdapter(executor, setup);
 
-                _seriesData.SeriesName = setup.Metadata.Descriptor.Id;
+                _seriesData.SeriesName = DisplayName;
 
                 //buffer.Updated = Update;
                 //buffer.Appended = Append;
