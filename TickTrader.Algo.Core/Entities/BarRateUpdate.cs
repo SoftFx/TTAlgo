@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteEntity(symbol, bidBar.OpenTime, bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteEntity(symbol, bidBar.CloseTime, bidBar.Close, askBar.Close);
         }
 
         public void Append(QuoteEntity quote)

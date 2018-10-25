@@ -373,34 +373,34 @@
     <value>Bot Instances</value>
   </data>
   <data name="FeedEmulationModel_D" xml:space="preserve">
-    <value>Open prices only (based on D bars)</value>
+    <value>Close prices only (based on D bars)</value>
   </data>
   <data name="FeedEmulationModel_H1" xml:space="preserve">
-    <value>Open prices only (based on H1 bars)</value>
+    <value>Close prices only (based on H1 bars)</value>
   </data>
   <data name="FeedEmulationModel_H4" xml:space="preserve">
-    <value>Open prices only (based on H4 bars)</value>
+    <value>Close prices only (based on H4 bars)</value>
   </data>
   <data name="FeedEmulationModel_M1" xml:space="preserve">
-    <value>Open prices only (based on M1 bars)</value>
+    <value>Close prices only (based on M1 bars)</value>
   </data>
   <data name="FeedEmulationModel_M15" xml:space="preserve">
-    <value>Open prices only (based on M15 bars)</value>
+    <value>Close prices only (based on M15 bars)</value>
   </data>
   <data name="FeedEmulationModel_M30" xml:space="preserve">
-    <value>Open prices only (based on M30 bars)</value>
+    <value>Close prices only (based on M30 bars)</value>
   </data>
   <data name="FeedEmulationModel_M5" xml:space="preserve">
-    <value>Open prices only (based on M5 bars)</value>
+    <value>Close prices only (based on M5 bars)</value>
   </data>
   <data name="FeedEmulationModel_MN" xml:space="preserve">
-    <value>Open prices only (based on MN bars)</value>
+    <value>Close prices only (based on MN bars)</value>
   </data>
   <data name="FeedEmulationModel_S1" xml:space="preserve">
-    <value>Open prices only (based on S1 bars)</value>
+    <value>Close prices only (based on S1 bars)</value>
   </data>
   <data name="FeedEmulationModel_S10" xml:space="preserve">
-    <value>Open prices only (based on S10 bars)</value>
+    <value>Close prices only (based on S10 bars)</value>
   </data>
   <data name="FeedEmulationModel_Ticks" xml:space="preserve">
     <value>Every tick (precise method)</value>
