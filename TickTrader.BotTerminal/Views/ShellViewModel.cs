@@ -110,19 +110,19 @@ namespace TickTrader.BotTerminal
         {
             if (clientModel.Symbols.Snapshot.Count > 0 && Charts.Items.Count == 0)
             {
-                var defaultSymbol = string.Empty;
-                switch (clientModel.Account.Type)
-                {
-                    case AccountTypes.Gross:
-                    case AccountTypes.Cash:
-                        defaultSymbol = "EURUSD";
-                        break;
-                    case AccountTypes.Net:
-                        defaultSymbol = "EUR/USD";
-                        break;
-                }
+                //var defaultSymbol = string.Empty;
+                //switch (clientModel.Account.Type)
+                //{
+                //    case AccountTypes.Gross:
+                //    case AccountTypes.Cash:
+                //        defaultSymbol = "EURUSD";
+                //        break;
+                //    case AccountTypes.Net:
+                //        defaultSymbol = "EUR/USD";
+                //        break;
+                //}
 
-                Charts.Open(clientModel.Symbols.GetOrDefault(defaultSymbol)?.Name ?? clientModel.Symbols.Snapshot.First().Key);
+                Charts.Open(clientModel.Cache.GetDefaultSymbol()?.Name ?? clientModel.Symbols.Snapshot.First().Key);
                 //clientModel.Connected -= OpenDefaultChart;
             }
         }
