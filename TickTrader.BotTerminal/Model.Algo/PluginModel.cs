@@ -102,10 +102,11 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _executor.Stop();
+                    ClearOutputs();
                     UnlockResources();
                     return true;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex, "StopExcecutor() failed!");
                     ChangeState(PluginStates.Faulted, ex.Message);
@@ -134,6 +135,8 @@ namespace TickTrader.BotTerminal
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 
             Host.InitializePlugin(executor);
+
+            CreateOutputs(executor);
 
             return executor;
         }
@@ -199,6 +202,44 @@ namespace TickTrader.BotTerminal
             if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
                 OnPluginUpdated();
+            }
+        }
+
+        private void CreateOutputs(PluginExecutor executor)
+        {
+            try
+            {
+                //foreach (var outputSetup in Setup.Outputs)
+                //{
+                //    if (outputSetup is ColoredLineOutputSetupModel)
+                //    {
+                //        var buffer = executor.GetOutput<double>(outputSetup.Id);
+                //        var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetupModel)outputSetup);
+                //        _series.Add(outputSetup.Id, adapter.SeriesData);
+                //    }
+                //    else if (outputSetup is MarkerSeriesOutputSetupModel)
+                //    {
+                //        var buffer = executor.GetOutput<Marker>(outputSetup.Id);
+                //        var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetupModel)outputSetup);
+                //        _series.Add(outputSetup.Id, adapter.SeriesData);
+                //    }
+                //}
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to create outputs");
+            }
+        }
+
+        private void ClearOutputs()
+        {
+            try
+            {
+                //_series.Clear();
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, "Failed to create outputs");
             }
         }
     }

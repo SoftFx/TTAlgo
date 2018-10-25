@@ -311,7 +311,7 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
-    <Compile Include="Model.Algo\Adapters.cs" />
+    <Compile Include="Model.Algo\OutputModels.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
