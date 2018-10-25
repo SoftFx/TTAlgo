@@ -193,7 +193,7 @@ namespace TickTrader.Algo.Core
 
                     CancelOrder(order, trReason);
 
-                    _collector.LogTrade($"Canceled order #{orderId} {order.Type} {order.Symbol} {order.Side} amount={order.Amount}");
+                    _collector.LogTrade($"Canceled order #{orderId} {order.Type} {order.Symbol} {order.Side} amount={order.RequestedVolume}");
 
                     // set result
                     return new OrderResultEntity(OrderCmdResultCodes.Ok, order);
