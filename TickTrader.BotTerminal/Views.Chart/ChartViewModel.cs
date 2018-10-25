@@ -176,7 +176,7 @@ namespace TickTrader.BotTerminal
                 CrosshairEnabled = Chart.IsCrosshairEnabled,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
-                    Config = i.Model.Setup.Save(),
+                    Config = i.Model.Config,
                 }).ToList(),
             };
         }

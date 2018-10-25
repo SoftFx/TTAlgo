@@ -113,7 +113,7 @@ namespace TickTrader.BotTerminal
                     return;
                 }
 
-                _logger.Info($"Loading charts snapshot({profileStorage.Charts.Count} bots)");
+                _logger.Info($"Loading charts snapshot({profileStorage.Charts.Count} charts)");
 
                 _charts.Clear();
 
