@@ -139,6 +139,8 @@ namespace TickTrader.Algo.Core
 
             _builder.Append(" at price ").AppendNumber(price, priceFormat);
             _builder.Append(", profit=").AppendNumber(profit, priceFormat);
+
+            PrintCharges(charges);
         }
 
         public void AddNetCloseAction(NetPositionCloseInfo closeInfo, Symbol symbol)

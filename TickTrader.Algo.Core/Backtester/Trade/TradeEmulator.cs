@@ -1587,7 +1587,9 @@ namespace TickTrader.Algo.Core
             //if (trReason == TradeTransReasons.Rollover)
             //    CommissionStrategy.OnRollover(position, actualCloseAmount, charges, acc);
             //else
-            //    CommissionStrategy.OnPositionClosed(position, actualCloseAmount, charges, acc);
+            //    CommissionStrategy.OnPositionClosed(position, actualCloseAmount, charges, acc);)
+
+            CommisionEmulator.OnGrossPositionClosed(position, actualCloseAmount, smb, charges, _calcFixture);
 
             if (dropCommission)
             {
