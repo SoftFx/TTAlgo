@@ -441,6 +441,7 @@
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
+    <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedImportViewModel.cs" />
@@ -450,10 +451,10 @@
     <Compile Include="Views.Chart\CloseChartDialogView.xaml.cs">
       <DependentUpon>CloseChartDialogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
-      <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
+    <Compile Include="Views.Chart\OutputPaneView.xaml.cs">
+      <DependentUpon>OutputPaneView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views.Chart\IndicatorPaneViewModel.cs" />
+    <Compile Include="Views.Chart\OutputPaneViewModel.cs" />
     <Compile Include="Views.Chart\IndicatorViewModel.cs" />
     <Compile Include="Views.Chart\SeriesViewModel.cs" />
     <Compile Include="Views.Order\PendingOrderPageView.xaml.cs">
@@ -997,7 +998,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\IndicatorPaneView.xaml">
+    <Page Include="Views.Chart\OutputPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

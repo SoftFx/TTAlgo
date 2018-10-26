@@ -138,7 +138,7 @@
         <ContentControl Content="{Binding}" />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type l:IndicatorPaneViewModel}">
+    <DataTemplate DataType="{x:Type l:OutputPaneViewModel}">
         <ContentControl cal:View.Model="{Binding}" />
     </DataTemplate>
 
@@ -165,7 +165,7 @@
             </Grid.RowDefinitions>
             <ItemsControl Visibility="{Binding Chart.IsReady, Converter={StaticResource boolToVisibilityConverter}}">
                 <ItemsControl.Resources>
-                    <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding Panes}"/>
+                    <CollectionViewSource x:Key="outputPanesViewSrc" Source="{Binding Panes}"/>
                 </ItemsControl.Resources>
                 <ItemsControl.ItemsSource>
                     <CompositeCollection>
@@ -222,7 +222,7 @@
                             </s:SciChartSurface>
                             <ItemsControl ItemsSource="{Binding Bots}" Style="{StaticResource BotPanelStyle}"/>
                         </Grid>
-                        <CollectionContainer Collection="{Binding Source={StaticResource indicatorPanesViewSrc}}"/>
+                        <CollectionContainer Collection="{Binding Source={StaticResource outputPanesViewSrc}}"/>
                     </CompositeCollection>
                 </ItemsControl.ItemsSource>
                 <ItemsControl.ItemsPanel>

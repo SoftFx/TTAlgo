@@ -45,6 +45,7 @@ namespace TickTrader.BotTerminal
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
         private VarDictionary<string, AlgoBotViewModel> _chartBots;
+        private IVarList<OutputGroupViewModel> _allOutputs;
 
 
         public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv)
@@ -67,22 +68,27 @@ namespace TickTrader.BotTerminal
 
             _chartBots = new VarDictionary<string, AlgoBotViewModel>();
             var allIndicators = charts.SelectMany(c => c.Indicators);
+            var allBots = _chartBots.OrderBy((id, bot) => id);
+
+            Indicators = allIndicators.Select(i => new IndicatorViewModel(Chart, i)).AsObservable();
+            Bots = allBots.AsObservable();
+
             var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
-            var indicatorViewModels = allIndicators.Chain().Select(i => new IndicatorViewModel(Chart, i, ChartWindowId, smb));
-            //var overlayIndicators = indicatorViewModels.Chain().Where(i => i.Model.HasOverlayOutputs);
-            var overlaySeries = indicatorViewModels.Chain().SelectMany(i => i.OverlaySeries);
+            var indicatorOutputs = allIndicators.Chain().Select(i => new OutputGroupViewModel(i, ChartWindowId, Chart, smb));
+            var botOutputs = allBots.Chain().Select(b => new OutputGroupViewModel((TradeBotModel)b.Model, ChartWindowId, Chart, smb));
+            _allOutputs = VarCollection.CombineChained(indicatorOutputs, botOutputs);
+            var overlaySeries = _allOutputs.Chain().SelectMany(i => i.OverlaySeries);
             var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
-            //var paneIndicators = indicatorViewModels.Chain().Where(i => i.Model.HasPaneOutputs);
-            var panes = indicatorViewModels.Chain().SelectMany(i => i.Panes);
+            var allPanes = _allOutputs.Chain().SelectMany(i => i.Panes);
 
             Series = allSeries.AsObservable();
-
-            Indicators = indicatorViewModels.AsObservable();
-            Panes = panes.AsObservable();
-            Bots = _chartBots.OrderBy((id, bot) => id).AsObservable();
+            Panes = allPanes.AsObservable();
 
             FilterChartBots();
             _algoEnv.LocalAgentVM.Bots.Updated += BotsOnUpdated;
+
+            UpdatePrecision();
+            _allOutputs.Updated += AllOutputs_Updated;
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -137,9 +143,9 @@ namespace TickTrader.BotTerminal
         }
 
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; private set; }
-        public IReadOnlyList<IndicatorPaneViewModel> Panes { get; private set; }
         public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
         public IReadOnlyList<AlgoBotViewModel> Bots { get; private set; }
+        public IReadOnlyList<OutputPaneViewModel> Panes { get; private set; }
         public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
@@ -307,11 +313,30 @@ namespace TickTrader.BotTerminal
 
         private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
-            NotifyOfPropertyChange("HasIndicators");
-            Precision = smb.Descriptor.Precision;
-            foreach (var indicator in Indicators)
+            NotifyOfPropertyChange(nameof(HasIndicators));
+        }
+
+        private void AllOutputs_Updated(ListUpdateArgs<OutputGroupViewModel> args)
+        {
+            if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
             {
-                Precision = Math.Max(Precision, indicator.Precision);
+                if (args.NewItem != null)
+                    args.NewItem.PrecisionUpdated += UpdatePrecision;
+            }
+            if (args.Action == DLinqAction.Replace || args.Action == DLinqAction.Remove)
+            {
+                if (args.OldItem != null)
+                    args.OldItem.PrecisionUpdated -= UpdatePrecision;
+            }
+            UpdatePrecision();
+        }
+
+        private void UpdatePrecision()
+        {
+            Precision = smb.Descriptor.Precision;
+            foreach (var o in _allOutputs.Snapshot)
+            {
+                Precision = Math.Max(Precision, o.Precision);
             }
             UpdateLabelFormat();
         }
@@ -353,7 +378,10 @@ namespace TickTrader.BotTerminal
 
         private bool BotBelongsToChart(PluginModel bot)
         {
-            return bot.Config.MainSymbol.Name == Symbol && bot.Config.TimeFrame == Chart.TimeFrame && bot.Descriptor.SetupMainSymbol;
+            return bot.Descriptor != null && bot.Config != null && Chart != null
+                && bot.Descriptor.SetupMainSymbol
+                && bot.Config.MainSymbol.Name == Symbol
+                && bot.Config.TimeFrame == Chart.TimeFrame;
         }
 
         private bool IsChartBot(AlgoBotViewModel botVM)

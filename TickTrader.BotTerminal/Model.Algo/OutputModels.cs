@@ -116,7 +116,7 @@ namespace TickTrader.BotTerminal
         {
             Execute.OnUIThread(() =>
             {
-                SeriesData.Clear();
+                _seriesData.Clear();
                 _seriesData.Append(points.Select(p => p.TimeCoordinate.Value), points.Select(p => p.Value));
             });
         }
