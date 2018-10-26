@@ -243,6 +243,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("start downloading bars (" + from + " - " + to + ")");
 
             var correctedTo = to - TimeSpan.FromTicks(1);
+            var hasData = false;
 
             try
             {
@@ -256,8 +257,12 @@ namespace TickTrader.Algo.Common.Model
                         var slice = barSlicer.CompleteSlice(false);
 
                         logger.Debug("downloaded slice {0} - {1}", slice.From, slice.To);
+
                         //var slice = new BarStreamSlice(i, sliceTo, bars);
                         await Cache.Put(key, slice.From, slice.To, slice.Items);
+
+                        hasData = true;
+
                         if (!await outputAction(slice))
                         {
                             logger.Debug("Downloading canceled!");
@@ -272,12 +277,21 @@ namespace TickTrader.Algo.Common.Model
                 {
                     logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
                     await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
+
+                    hasData = true;
+
                     if (!await outputAction(lastSlice))
                     {
                         logger.Debug("Downloading canceled!");
                         throw new TaskCanceledException();
                     }
                     i = lastSlice.To;
+                }
+
+                if (!hasData)
+                {
+                    await WriteEmptyBarSegment(key, from, to);
+                    return to;
                 }
 
                 return i;
@@ -306,6 +320,7 @@ namespace TickTrader.Algo.Common.Model
             var level2 = key.Frame == TimeFrames.TicksLevel2;
             var inputStream = Channel.NewInput<QuoteEntity>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
+            var hasData = false;
 
             logger.Debug("Start downloading quotes (" + from + " - " + to + ")");
 
@@ -324,6 +339,9 @@ namespace TickTrader.Algo.Common.Model
 
                         //var slice = new BarStreamSlice(i, sliceTo, bars);
                         await Cache.Put(key, slice.From, slice.To, slice.Items);
+
+                        hasData = true;
+
                         if (!await outputAction(slice))
                         {
                             logger.Debug("Downloading canceled!");
@@ -338,12 +356,21 @@ namespace TickTrader.Algo.Common.Model
                 {
                     logger.Debug("downloaded slice {0} - {1}", lastSlice.From, lastSlice.To);
                     await Cache.Put(key, lastSlice.From, lastSlice.To, lastSlice.Items);
+
+                    hasData = true;
+
                     if (!await outputAction(lastSlice))
                     {
                         logger.Debug("Downloading canceled!");
                         throw new TaskCanceledException();
                     }
                     i = lastSlice.To;
+                }
+
+                if (!hasData)
+                {
+                    await WriteEmptyQuoteSegment(key, from, to);
+                    return to;
                 }
 
                 return i;
@@ -397,6 +424,16 @@ namespace TickTrader.Algo.Common.Model
             {
                 await buffer.Close();
             }
+        }
+
+        private Task WriteEmptyBarSegment(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return Cache.Put(key, from, to, new BarEntity[0]);
+        }
+
+        private Task WriteEmptyQuoteSegment(FeedCacheKey key, DateTime from, DateTime to)
+        {
+            return Cache.Put(key, from, to, new QuoteEntity[0]);
         }
     }
 
