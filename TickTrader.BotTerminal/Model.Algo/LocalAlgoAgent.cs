@@ -169,7 +169,6 @@ namespace TickTrader.BotTerminal
             if (_bots.TryGetValue(instanceId, out var bot))
             {
                 bot.Configurate(newConfig);
-                _bots[instanceId] = bot;
             }
             return Task.FromResult(this);
         }
