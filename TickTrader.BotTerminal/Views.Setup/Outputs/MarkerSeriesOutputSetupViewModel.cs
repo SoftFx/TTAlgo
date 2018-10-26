@@ -36,6 +36,8 @@ namespace TickTrader.BotTerminal
 
         public override void Reset()
         {
+            base.Reset();
+
             MarkerSize = MarkerSizes.Medium;
         }
 

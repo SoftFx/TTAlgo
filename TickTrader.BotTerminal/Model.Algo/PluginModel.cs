@@ -1,6 +1,6 @@
-﻿using Machinarium.State;
-using NLog;
+﻿using NLog;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -17,6 +17,7 @@ namespace TickTrader.BotTerminal
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private PluginExecutor _executor;
+        private Dictionary<string, OutputSeriesModel> _outputs;
 
 
         public PluginConfig Config { get; private set; }
@@ -37,10 +38,15 @@ namespace TickTrader.BotTerminal
 
         public PluginStates State { get; protected set; }
 
+        public IDictionary<string, OutputSeriesModel> Outputs => _outputs;
+
 
         protected LocalAlgoAgent Agent { get; }
 
         protected IAlgoSetupContext SetupContext { get; }
+
+
+        public event Action OutputsChanged;
 
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -50,6 +56,8 @@ namespace TickTrader.BotTerminal
             Agent = agent;
             Host = host;
             SetupContext = setupContext;
+
+            _outputs = new Dictionary<string, OutputSeriesModel>();
 
             UpdateRefs();
 
@@ -102,10 +110,11 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     _executor.Stop();
+                    ClearOutputs();
                     UnlockResources();
                     return true;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.Error(ex, "StopExcecutor() failed!");
                     ChangeState(PluginStates.Faulted, ex.Message);
@@ -134,6 +143,8 @@ namespace TickTrader.BotTerminal
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 
             Host.InitializePlugin(executor);
+
+            CreateOutputs(executor);
 
             return executor;
         }
@@ -198,7 +209,46 @@ namespace TickTrader.BotTerminal
         {
             if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
+                _logger.Info($"Type: {update.Type}; Key: {update.Value.Key}");
                 OnPluginUpdated();
+            }
+        }
+
+        private void CreateOutputs(PluginExecutor executor)
+        {
+            try
+            {
+                foreach (var outputSetup in Setup.Outputs)
+                {
+                    if (outputSetup is ColoredLineOutputSetupModel)
+                    {
+                        var seriesModel = new DoubleSeriesModel(executor, (ColoredLineOutputSetupModel)outputSetup);
+                        _outputs.Add(seriesModel.Id, seriesModel);
+                    }
+                    else if (outputSetup is MarkerSeriesOutputSetupModel)
+                    {
+                        var seriesModel = new MarkerSeriesModel(executor, (MarkerSeriesOutputSetupModel)outputSetup);
+                        _outputs.Add(seriesModel.Id, seriesModel);
+                    }
+                }
+                OutputsChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to create outputs");
+            }
+        }
+
+        private void ClearOutputs()
+        {
+            try
+            {
+                _outputs.Clear();
+                OutputsChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to create outputs");
             }
         }
     }
