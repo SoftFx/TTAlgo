@@ -209,7 +209,6 @@ namespace TickTrader.BotTerminal
         {
             if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
-                _logger.Info($"Type: {update.Type}; Key: {update.Value.Key}");
                 OnPluginUpdated();
             }
         }

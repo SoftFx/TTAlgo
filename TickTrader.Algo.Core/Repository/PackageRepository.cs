@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core.Repository
                     _watcher.Created -= WatcherOnChanged;
                     _watcher.Deleted -= WatcherOnDeleted;
                     _watcher.Renamed -= WatcherOnRenamed;
-                    _watcher.Error += WatcherOnError;
+                    _watcher.Error -= WatcherOnError;
                 }
 
                 _watcher = new FileSystemWatcher(_repPath);
@@ -108,6 +108,7 @@ namespace TickTrader.Algo.Core.Repository
                 _watcher.Created += WatcherOnChanged;
                 _watcher.Deleted += WatcherOnDeleted;
                 _watcher.Renamed += WatcherOnRenamed;
+                _watcher.Error += WatcherOnError;
 
                 lock (_scanUpdateLockObj)
                 {
