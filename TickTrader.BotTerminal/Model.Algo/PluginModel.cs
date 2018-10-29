@@ -47,6 +47,7 @@ namespace TickTrader.BotTerminal
 
 
         public event Action OutputsChanged;
+        public event Action<PluginModel> RefsUpdated;
 
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -198,6 +199,7 @@ namespace TickTrader.BotTerminal
             PluginRef = pluginRef;
             Descriptor = pluginRef.Metadata.Descriptor;
             ChangeState(PluginStates.Stopped);
+            RefsUpdated?.Invoke(this);
         }
 
         private void Executor_OnRuntimeError(Exception ex)
@@ -209,7 +211,6 @@ namespace TickTrader.BotTerminal
         {
             if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
             {
-                _logger.Info($"Type: {update.Type}; Key: {update.Value.Key}");
                 OnPluginUpdated();
             }
         }

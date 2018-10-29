@@ -147,7 +147,8 @@ namespace TickTrader.Algo.Core.Repository
                 PackageRef = new AlgoPackageRef(FileName, Location, PackageIdentity.CreateInvalid(FileName, FilePath), null);
             }
 
-            OnPackageUpdated();
+            if (!retry && !_isRescanRequested)
+                OnPackageUpdated();
             _stateControl.PushEvent(retry || _isRescanRequested ? Events.DoneLoadRetry : Events.DoneLoad);
         }
 
