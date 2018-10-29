@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Api
         double Profit { get; }
         double Commission { get; }
         double Swap { get; }
+        double Price { get; }
     }
 
     public interface NetPositionList : IEnumerable<NetPosition>

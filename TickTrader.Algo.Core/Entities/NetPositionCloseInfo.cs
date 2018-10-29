@@ -12,6 +12,7 @@ namespace TickTrader.Algo.Core
         public decimal ClosePrice { get; set; }
         public decimal BalanceMovement { get; set; }
         public TradeChargesInfo Charges { get; set; }
+        public PositionAccessor ResultingPosition { get; set; }
 
         public SymbolAccessor SymbolInfo { get; set; }
     }

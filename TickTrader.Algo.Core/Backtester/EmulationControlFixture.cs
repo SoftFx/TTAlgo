@@ -78,6 +78,7 @@ namespace TickTrader.Algo.Core
         private void EmulateStop()
         {
             Executor.EmulateStop();
+            InvokeEmulator.EnableStopPhase();
             InvokeEmulator.EmulateEvents();
         }
 

@@ -41,6 +41,7 @@ namespace TickTrader.Algo.Core
         public DateTime VirtualTimePoint { get { lock (_sync) return _timePoint; } }
         public DateTime SafeVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
+        public bool IsStopPhase { get; private set; }
 
         public event Action<RateUpdate> RateUpdated;
 
@@ -85,6 +86,7 @@ namespace TickTrader.Algo.Core
 
         public override void Start()
         {
+            IsStopPhase = false;
         }
 
         public void EmulateEventsWithFeed()
@@ -92,7 +94,6 @@ namespace TickTrader.Algo.Core
             try
             {
                 StartFeedRead();
-
                 EmulateEvents();
             }
             finally
@@ -120,6 +121,12 @@ namespace TickTrader.Algo.Core
 
                 ExecItem(nextItem);
             }
+        }
+
+        public void EnableStopPhase()
+        {
+            _fatalError = null;
+            IsStopPhase = true;
         }
 
         public bool WarmupByBars(int barCount)

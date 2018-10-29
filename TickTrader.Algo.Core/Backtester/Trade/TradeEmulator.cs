@@ -554,8 +554,11 @@ namespace TickTrader.Algo.Core
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
 
             _opSummary.AddOpenAction(order);
-            if (fillInfo.WasNetPositionClosed)
+            if (fillInfo.NetClose != null)
+            {
                 _opSummary.AddNetCloseAction(fillInfo.NetClose, order.SymbolInfo);
+                _opSummary.AddNetPositionNotification(fillInfo.NetClose.ResultingPosition, fillInfo.NetClose.SymbolInfo);
+            }
 
             return order;
         }
@@ -1228,6 +1231,9 @@ namespace TickTrader.Algo.Core
 
         private void OnStopOut()
         {
+            if (_scheduler.IsStopPhase)
+                return;
+
             var msgBuilder = new StringBuilder();
             msgBuilder.Append("Stop out! margin level: ").AppendNumber(_acc.MarginLevel, _acc.BalanceCurrencyFormat);
             msgBuilder.Append(" equity: ").AppendNumber(_acc.Equity, _acc.BalanceCurrencyFormat);
@@ -1330,6 +1336,8 @@ namespace TickTrader.Algo.Core
             _acc.Balance += balanceMovement;
 
             _collector.OnCommisionCharged(charges.Commission);
+
+            settlementInfo.ResultingPosition = position;
 
             return settlementInfo;
         }
@@ -1468,8 +1476,11 @@ namespace TickTrader.Algo.Core
                 {
                     fillInfo = FillOrder(record.Order, record.ActivationPrice, record.Order.RemainingAmount, TradeTransReasons.PndOrdAct);
                     _opSummary.AddFillAction(record.Order, fillInfo);
-                    if (fillInfo.WasNetPositionClosed)
+                    if (fillInfo.NetClose != null)
+                    {
                         _opSummary.AddNetCloseAction(fillInfo.NetClose, record.Order.SymbolInfo);
+                        _opSummary.AddNetPositionNotification(fillInfo.NetClose.ResultingPosition, fillInfo.NetClose.SymbolInfo);
+                    }
                 }
             }
             else if ((_acc.AccountingType == AccountingTypes.Gross) && (record.ActivationType == ActivationTypes.StopLoss || record.ActivationType == ActivationTypes.TakeProfit))

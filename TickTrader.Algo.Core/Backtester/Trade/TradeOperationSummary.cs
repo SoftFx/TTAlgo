@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Core
         public decimal FillAmount { get; set; }
         public decimal FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
+        public PositionAccessor NetPosition => NetClose?.ResultingPosition;
         public NetPositionCloseInfo NetClose { get; set; }
 
         public bool WasNetPositionClosed => NetClose != null && NetClose.CloseAmount > 0;
@@ -145,15 +146,34 @@ namespace TickTrader.Algo.Core
 
         public void AddNetCloseAction(NetPositionCloseInfo closeInfo, Symbol symbol)
         {
+            if (closeInfo.CloseAmount == 0)
+                return;
+
             var priceFormat = closeInfo.SymbolInfo.PriceFormat;
             var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
 
-            _builder.AppendLine();
+            StartNewAction();
             _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
             _builder.Append(" at price ").AppendNumber(closeInfo.ClosePrice, priceFormat);
             _builder.Append(", profit=").AppendNumber(closeInfo.BalanceMovement, priceFormat);
 
             PrintCharges(closeInfo.Charges);
+        }
+
+        public void AddNetPositionNotification(PositionAccessor pos, SymbolAccessor smbInfo)
+        {
+            if (pos.Volume == 0)
+                return;
+
+            StartNewAction();
+
+            var priceFormat = smbInfo.PriceFormat;
+
+            _builder.Append("Final position ");
+            _builder.Append(pos.Symbol).Append(' ');
+            _builder.AppendNumber(pos.Volume).Append(' ');
+            _builder.Append(pos.Side);
+            _builder.Append(" price=").AppendNumber(pos.Price, priceFormat);
         }
 
         #region print methods
