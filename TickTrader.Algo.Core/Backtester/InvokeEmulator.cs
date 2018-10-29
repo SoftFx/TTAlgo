@@ -148,39 +148,37 @@ namespace TickTrader.Algo.Core
         {
             StartFeedRead();
 
-            if (_eFeed == null)
-            {
-                LogWarmupFail(0, 0);
-                return false;
-            }
-
-            var warmupStart = _eFeed.Current.Time;
-
-            UpdateVirtualTimepoint(warmupStart);
-            LogWarmupStart();
-
+            var warmupStart = _timePoint;
             var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
             var tickCount = 1;
 
             while (true)
             {
-                if (!_eFeed.MoveNext())
+                RateUpdate nextTick;
+
+                if (!ReadNextFeed(out nextTick))
                 {
                     LogWarmupFail(tickCount, buider.Count);
                     return false;
                 }
 
-                UpdateVirtualTimepoint(_eFeed.Current.Time);
+                UpdateVirtualTimepoint(nextTick.Time);
+
+                if (tickCount == 1)
+                {
+                    warmupStart = nextTick.Time;
+                    LogWarmupStart();
+                }
 
                 tickCount++;
 
-                if (!condition(tickCount, buider.Count, warmupStart, _timePoint))
+                if (!condition(tickCount, buider.Count - 1, warmupStart, _timePoint))
                     break;
             }
 
             var warmupEnd = _timePoint;
 
-            LogWarmupEnd(tickCount, buider.Count);
+            LogWarmupEnd(tickCount, buider.Count - 1);
             return true;
         }
 
@@ -247,11 +245,25 @@ namespace TickTrader.Algo.Core
                 {
                     _eFeed = _feed.GetFeedStream().GetEnumerator();
                     if (!_eFeed.MoveNext())
-                        _eFeed = null;
-
-                    UpdateVirtualTimepoint(_settings.EmulationPeriodStart ?? DateTime.MinValue);
+                        StopFeedRead();
                 }
             }
+        }
+
+        private bool ReadNextFeed(out RateUpdate update)
+        {
+            if (_eFeed == null)
+            {
+                update = null;
+                return false;
+            }
+
+            update = _eFeed.Current;
+
+            if (!_eFeed.MoveNext())
+                StopFeedRead();
+
+            return true;
         }
 
         private void StopFeedRead()
@@ -377,15 +389,13 @@ namespace TickTrader.Algo.Core
 
             isTrade = false;
 
-            if (_eFeed == null || !_eFeed.MoveNext())
-            {
-                _eFeed = null;
-                return DequeueDelayed(out isTrade);
-            }
+            RateUpdate feedTick;
 
-            var q = _eFeed.Current;
-            UpdateVirtualTimepoint(q.Time);
-            return q;
+            if (!ReadNextFeed(out feedTick))
+                return DequeueDelayed(out isTrade);
+
+            UpdateVirtualTimepoint(feedTick.Time);
+            return feedTick;
         }
 
         private object DequeueDelayed(out bool isTrade)

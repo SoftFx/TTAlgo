@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core
         private List<BarEntity> _mainSymbolHistory;
         private List<BarEntity> _equityHistory;
         private List<BarEntity> _marginHistory;
+        private string _mainSymbol;
         private TimeFrames _mainTimeframe;
         private string _lastStatus;
 
@@ -52,6 +53,7 @@ namespace TickTrader.Algo.Core
 
             Stats = new TestingStatistics();
             _startTime = DateTime.UtcNow;
+            _mainSymbol = settings.MainSymbol;
             _mainTimeframe = settings.MainTimeframe;
 
             InitJournal(settings);
@@ -255,7 +257,8 @@ namespace TickTrader.Algo.Core
         {
             Stats.TicksCount += update.NumberOfQuotes;
 
-            _mainBarVector.AppendBarPart(update.Time, update.BidOpen, update.BidHigh, update.BidLow, update.Bid, 0);
+            if (update.Symbol == _mainSymbol)
+                _mainBarVector.AppendBarPart(update.Time, update.BidOpen, update.BidHigh, update.BidLow, update.Bid, 0);
         }
 
         public void RegisterEquity(DateTime timepoint, double equity, double margin)

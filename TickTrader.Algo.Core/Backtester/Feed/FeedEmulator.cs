@@ -40,19 +40,17 @@ namespace TickTrader.Algo.Core
                     streams.Remove(e);
                     e.Stop();
                 }
-                else
-                    yield return e.Current;
             }
 
             while (streams.Count > 0)
             {
-                var max = streams.MaxBy(e => e.Current.Time);
-                var nextQuote = max.Current;
+                var min = streams.MinBy(e => e.Current.Time);
+                var nextQuote = min.Current;
 
-                if (!max.MoveNext())
+                if (!min.MoveNext())
                 {
-                    streams.Remove(max);
-                    max.Stop();
+                    streams.Remove(min);
+                    min.Stop();
                 }
 
                 yield return nextQuote;

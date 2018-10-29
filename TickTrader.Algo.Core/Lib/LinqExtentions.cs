@@ -44,6 +44,42 @@ namespace TickTrader.Algo.Core
             return maxElement;
         }
 
+        public static TElement MinBy<TElement, TProperty>(this IEnumerable<TElement> source, Func<TElement, TProperty> selector)
+        {
+            if (source == null)
+                throw new ArgumentNullException("source");
+
+            bool first = true;
+            TElement minElement = default(TElement);
+            TProperty minPropertyVal = default(TProperty);
+
+            var comparer = Comparer<TProperty>.Default;
+
+            foreach (var item in source)
+            {
+                if (first)
+                {
+                    minElement = item;
+                    minPropertyVal = selector(item);
+                    first = false;
+                }
+                else
+                {
+                    var property = selector(item);
+                    if (comparer.Compare(property, minPropertyVal) < 0)
+                    {
+                        minPropertyVal = property;
+                        minElement = item;
+                    }
+                }
+            }
+
+            if (first)
+                throw new InvalidOperationException("Sequence is empty.");
+
+            return minElement;
+        }
+
         public static IEnumerable<TOut> JoinSorted<TIn, TOut>(this IEnumerable<TIn> first, IEnumerable<TIn> second,
             Func<TIn, TIn, int> joinCompare, Func<TIn, TIn, TOut> joinFunc)
         {
