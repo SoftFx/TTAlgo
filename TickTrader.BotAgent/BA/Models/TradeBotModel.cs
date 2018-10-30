@@ -236,7 +236,7 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.MainSymbolCode = setupModel.MainSymbol.Id;
                 executor.TimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;
-                executor.InitSlidingBuffering(1024);
+                executor.InitSlidingBuffering(4000);
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;

@@ -55,6 +55,8 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotStateChanged = delegate { };
 
+        public event Action<ITradeBot> BotUpdated = delegate { };
+
 
         public RemoteAlgoAgent(string name)
         {
@@ -308,6 +310,7 @@ namespace TickTrader.BotTerminal
                         break;
                     case UpdateType.Replaced:
                         _bots[bot.InstanceId].Update(bot);
+                        BotUpdated(_bots[bot.InstanceId]);
                         break;
                     case UpdateType.Removed:
                         if (_bots.ContainsKey(bot.InstanceId))

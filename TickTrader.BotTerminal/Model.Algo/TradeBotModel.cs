@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
         AccountKey Account { get; }
 
 
-        event Action<ITradeBot> ConfigurationChanged;
+        event Action<ITradeBot> Updated;
         event Action<ITradeBot> StateChanged;
         event Action<ITradeBot> StatusChanged;
 
@@ -64,7 +64,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> StatusChanged = delegate { };
         public event Action<ITradeBot> StateChanged = delegate { };
-        public event Action<ITradeBot> ConfigurationChanged = delegate { };
+        public event Action<ITradeBot> Updated = delegate { };
 
 
         public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, AccountKey account)
@@ -127,7 +127,7 @@ namespace TickTrader.BotTerminal
 
             base.Configurate(config);
 
-            ConfigurationChanged(this);
+            Updated?.Invoke(this);
         }
 
         protected override void ChangeState(PluginStates state, string faultMessage = null)
@@ -154,6 +154,11 @@ namespace TickTrader.BotTerminal
         {
             base.UnlockResources();
             Host.Unlock();
+        }
+
+        protected override void OnRefsUpdated()
+        {
+            Updated?.Invoke(this);
         }
 
         private void Host_Connected()

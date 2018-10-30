@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             Agent = agent;
 
             Model.StateChanged += OnStateChanged;
-            Model.ConfigurationChanged += OnConfigurationChanged;
+            Model.Updated += OnUpdated;
             Model.StatusChanged += OnStatusChanged;
         }
 
@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanRemove));
         }
 
-        private void OnConfigurationChanged(ITradeBot bot)
+        private void OnUpdated(ITradeBot bot)
         {
         }
 

@@ -36,6 +36,7 @@ namespace TickTrader.BotTerminal
         event Action<PackageInfo> PackageStateChanged;
         event Action<AccountModelInfo> AccountStateChanged;
         event Action<ITradeBot> BotStateChanged;
+        event Action<ITradeBot> BotUpdated;
 
 
         Task<SetupMetadata> GetSetupMetadata(AccountKey account, SetupContextInfo setupContext);

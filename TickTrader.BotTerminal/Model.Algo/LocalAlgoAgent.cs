@@ -78,6 +78,8 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotStateChanged;
 
+        public event Action<ITradeBot> BotUpdated;
+
 
         public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
         {
@@ -150,6 +152,7 @@ namespace TickTrader.BotTerminal
             _bots.Add(bot.InstanceId, bot);
             IdProvider.RegisterBot(bot);
             bot.StateChanged += OnBotStateChanged;
+            bot.Updated += OnBotUpdated;
             return Task.FromResult(this);
         }
 
@@ -160,6 +163,7 @@ namespace TickTrader.BotTerminal
                 _bots.Remove(instanceId);
                 IdProvider.UnregisterPlugin(instanceId);
                 bot.StateChanged -= OnBotStateChanged;
+                bot.Updated -= OnBotUpdated;
             }
             return Task.FromResult(this);
         }
@@ -292,6 +296,14 @@ namespace TickTrader.BotTerminal
             if (Bots.Snapshot.TryGetValue(bot.InstanceId, out var botModel))
             {
                 BotStateChanged?.Invoke(botModel);
+            }
+        }
+
+        private void OnBotUpdated(ITradeBot bot)
+        {
+            if (Bots.Snapshot.TryGetValue(bot.InstanceId, out var botModel))
+            {
+                BotUpdated?.Invoke(botModel);
             }
         }
 

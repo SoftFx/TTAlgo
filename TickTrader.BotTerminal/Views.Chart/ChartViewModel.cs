@@ -87,6 +87,7 @@ namespace TickTrader.BotTerminal
             Panes = allPanes.AsObservable();
 
             FilterChartBots();
+            _algoEnv.LocalAgent.BotUpdated += BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated += BotsOnUpdated;
 
             UpdatePrecision();
@@ -167,6 +168,9 @@ namespace TickTrader.BotTerminal
             base.TryClose(dialogResult);
 
             Indicators.Foreach(i => _shell.Agent.IdProvider.UnregisterPlugin(i.Model.InstanceId));
+
+            _algoEnv.LocalAgent.BotUpdated -= BotOnUpdated;
+            _algoEnv.LocalAgentVM.Bots.Updated -= BotsOnUpdated;
 
             _shell.ToolWndManager.CloseWindowByKey(this);
 
@@ -416,7 +420,6 @@ namespace TickTrader.BotTerminal
 
         private void FilterChartBots()
         {
-            _chartBots.Values.Foreach(DeinitChartBot);
             _chartBots.Clear();
             _algoEnv.LocalAgentVM.Bots.Where(IsChartBot).Snapshot.Foreach(AddChartBot);
         }
@@ -436,31 +439,16 @@ namespace TickTrader.BotTerminal
 
         private void AddChartBot(AlgoBotViewModel botVM)
         {
-            InitChartBot(botVM);
-            _chartBots.Add(botVM.InstanceId, botVM);
+            if (botVM != null)
+                Execute.OnUIThread(() => _chartBots.Add(botVM.InstanceId, botVM));
         }
 
         private void RemoveChartBot(string botId)
         {
             if (_chartBots.ContainsKey(botId))
             {
-                DeinitChartBot(_chartBots[botId]);
-                _chartBots.Remove(botId);
+                Execute.OnUIThread(() => _chartBots.Remove(botId));
             }
-        }
-
-        private void InitChartBot(AlgoBotViewModel botVM)
-        {
-            var bot = (TradeBotModel)botVM.Model;
-            bot.ConfigurationChanged += BotOnConfigChanged;
-            bot.RefsUpdated += BotOnRefsUpdated;
-        }
-
-        private void DeinitChartBot(AlgoBotViewModel botVM)
-        {
-            var bot = (TradeBotModel)botVM.Model;
-            bot.ConfigurationChanged -= BotOnConfigChanged;
-            bot.RefsUpdated -= BotOnRefsUpdated;
         }
 
         private void BotsOnUpdated(ListUpdateArgs<AlgoBotViewModel> args)
@@ -475,19 +463,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void BotOnConfigChanged(ITradeBot bot)
+        private void BotOnUpdated(ITradeBot bot)
         {
             if (_chartBots.ContainsKey(bot.InstanceId) && !BotBelongsToChart((TradeBotModel)bot))
             {
                 RemoveChartBot(bot.InstanceId);
             }
-        }
-
-        private void BotOnRefsUpdated(PluginModel bot)
-        {
-            if (_chartBots.ContainsKey(bot.InstanceId) && !BotBelongsToChart(bot))
+            else if (!_chartBots.ContainsKey(bot.InstanceId) && bot is TradeBotModel && BotBelongsToChart((TradeBotModel)bot))
             {
-                RemoveChartBot(bot.InstanceId);
+                var botVM = _algoEnv.LocalAgentVM.BotList.FirstOrDefault(b => b.InstanceId == bot.InstanceId);
+                AddChartBot(botVM);
             }
         }
     }

@@ -47,7 +47,6 @@ namespace TickTrader.BotTerminal
 
 
         public event Action OutputsChanged;
-        public event Action<PluginModel> RefsUpdated;
 
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -180,6 +179,10 @@ namespace TickTrader.BotTerminal
             PackageRef?.DecrementRef();
         }
 
+        protected virtual void OnRefsUpdated()
+        {
+        }
+
         protected void UpdateRefs()
         {
             var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
@@ -199,7 +202,7 @@ namespace TickTrader.BotTerminal
             PluginRef = pluginRef;
             Descriptor = pluginRef.Metadata.Descriptor;
             ChangeState(PluginStates.Stopped);
-            RefsUpdated?.Invoke(this);
+            OnRefsUpdated();
         }
 
         private void Executor_OnRuntimeError(Exception ex)
