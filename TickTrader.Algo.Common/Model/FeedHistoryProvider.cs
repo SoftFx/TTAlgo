@@ -89,6 +89,9 @@ namespace TickTrader.Algo.Common.Model
 
             public async Task<Channel<SliceInfo>> DownloadBarSeriesToStorage(string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
             {
+                if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
+                    throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
+
                 var channel = Channel.NewOutput<SliceInfo>();
                 await Actor.OpenChannel(channel,  (a,c) => a.DownloadBarSeriesToStorage(c, symbol, timeFrame, priceType, Prepare(from), Prepare(to)));
                 return channel;
@@ -96,6 +99,9 @@ namespace TickTrader.Algo.Common.Model
 
             public async Task<Channel<SliceInfo>> DownloadTickSeriesToStorage(string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
             {
+                if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
+                    throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
+
                 var channel = Channel.NewOutput<SliceInfo>();
                 await Actor.OpenChannel(channel, (a, c) => a.DownloadTickSeriesToStorage(c, symbol, timeFrame, Prepare(from), Prepare(to)));
                 return channel;
@@ -314,9 +320,6 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task<DateTime> DownloadTicksInternal(Func<Slice<QuoteEntity>, IAwaitable<bool>> outputAction, FeedCacheKey key, DateTime from, DateTime to)
         {
-            if (from.Kind != DateTimeKind.Utc || to.Kind != DateTimeKind.Utc)
-                throw new Exception();
-
             var level2 = key.Frame == TimeFrames.TicksLevel2;
             var inputStream = Channel.NewInput<QuoteEntity>();
             var quoteSlicer = TimeSlicer.GetQuoteSlicer(SliceMaxSize, from, to);
