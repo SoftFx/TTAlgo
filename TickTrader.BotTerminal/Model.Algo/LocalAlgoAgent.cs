@@ -522,7 +522,7 @@ namespace TickTrader.BotTerminal
                     plugin.InitBarStrategy(feedProvider, Algo.Api.BarPriceType.Bid);
                     break;
             }
-            plugin.InitSlidingBuffering(1024);
+            plugin.InitSlidingBuffering(4000);
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)
