@@ -166,6 +166,11 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Error, "Connection lost!");
         }
 
+        public void OnConnectionInfo(string connectionInfo)
+        {
+            AddLogRecord(LogSeverities.Info, $"Connected to {connectionInfo}");
+        }
+
         public void UpdateStatus(string status)
         {
             AddLogRecord(LogSeverities.CustomStatus, status);

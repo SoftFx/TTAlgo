@@ -387,6 +387,11 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeHistory.AlgoAdapter;
         }
 
+        string IAlgoPluginHost.GetConnectionInfo()
+        {
+            return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
+        }
+
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();

@@ -368,6 +368,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void WriteConnectionInfo(string connectionInfo)
+        {
+            lock(_sync)
+            {
+                if (state == States.Running)
+                    iStrategy.EnqueueCustomInvoke(b => builder.LogConnectionInfo(connectionInfo));
+            }
+        }
+
         private async Task DoStop(bool qucik)
         {
             try

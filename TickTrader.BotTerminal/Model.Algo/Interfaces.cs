@@ -90,6 +90,7 @@ namespace TickTrader.BotTerminal
 
         ITradeExecutor GetTradeApi();
         ITradeHistoryProvider GetTradeHistoryApi();
+        string GetConnectionInfo();
 
         event Action ParamsChanged;
         event Action Connected;

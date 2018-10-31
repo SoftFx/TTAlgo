@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core
         void OnAbort();
         void OnConnected();
         void OnDisconnected();
+        void OnConnectionInfo(string connectionInfo);
     }
 
     public static class Null
@@ -192,6 +193,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnDisconnected()
+        {
+        }
+
+        public void OnConnectionInfo(string connectionInfo)
         {
         }
     }
