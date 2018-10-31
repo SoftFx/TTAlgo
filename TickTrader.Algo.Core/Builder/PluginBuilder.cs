@@ -424,6 +424,11 @@ namespace TickTrader.Algo.Core
             Logger.OnDisconnected();
         }
 
+        internal void LogConnectionInfo(string connectionInfo)
+        {
+            Logger.OnConnectionInfo(connectionInfo);
+        }
+
         #endregion
 
         internal void StartBatch()

@@ -24,6 +24,8 @@ namespace TickTrader.BotTerminal
             ? $"{Connection.Server}:{Connection.Port} ({Connection.AccessLevel})"
             : $"{Connection.Server}:{Connection.Port}";
 
+        public bool IsOffline => Connection.State == BotAgentConnectionManager.States.Offline;
+
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
 
         public bool CanAddAccount => Agent.Model.AccessManager.CanAddAccount();
@@ -41,6 +43,7 @@ namespace TickTrader.BotTerminal
             Agent = new AlgoAgentViewModel(Connection.RemoteAgent, _algoEnv);
 
             Connection.StateChanged += ConnectionOnStateChanged;
+            Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
         }
 
 
@@ -85,6 +88,13 @@ namespace TickTrader.BotTerminal
 
         }
 
+        public void ToggleBotAgentConnection()
+        {
+            if (IsOffline)
+                ConnectBotAgent();
+            else DisconnectBotAgent();
+        }
+
         public void ConnectBotAgent()
         {
             _algoEnv.BotAgentManager.Connect(Server);
@@ -124,8 +134,17 @@ namespace TickTrader.BotTerminal
         private void ConnectionOnStateChanged()
         {
             NotifyOfPropertyChange(nameof(Status));
+            NotifyOfPropertyChange(nameof(IsOffline));
             if (Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.Offline)
                 NotifyOfPropertyChange(nameof(DisplayName));
+        }
+
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanAddBot));
+            NotifyOfPropertyChange(nameof(CanAddAccount));
+            NotifyOfPropertyChange(nameof(CanUploadPackage));
+            NotifyOfPropertyChange(nameof(CanDownloadPackage));
         }
     }
 }

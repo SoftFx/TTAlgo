@@ -116,6 +116,7 @@ namespace TickTrader.BotAgent.BA.Models
                 else if (State == PluginStates.Reconnecting)
                 {
                     executor.HandleReconnect();
+                    executor.WriteConnectionInfo(GetConnectionInfo());
                     ChangeState(PluginStates.Running);
                 }
             }
@@ -124,6 +125,7 @@ namespace TickTrader.BotAgent.BA.Models
                 if (State == PluginStates.Running)
                 {
                     executor.HandleDisconnect();
+                    executor.WriteConnectionInfo(GetConnectionInfo());
                     ChangeState(PluginStates.Reconnecting, client.ErrorText);
                 }
             }
@@ -236,7 +238,7 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.MainSymbolCode = setupModel.MainSymbol.Id;
                 executor.TimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;
-                executor.InitSlidingBuffering(1024);
+                executor.InitSlidingBuffering(4000);
 
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;
@@ -250,6 +252,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 executor.Start();
                 _botListener.Start();
+                executor.WriteConnectionInfo(GetConnectionInfo());
 
                 ChangeState(PluginStates.Running);
             }
@@ -270,6 +273,8 @@ namespace TickTrader.BotAgent.BA.Models
         {
             if (_startedEvent != null)
                 await _startedEvent.Task;
+
+            executor.WriteConnectionInfo(GetConnectionInfo());
 
             try
             {
@@ -370,6 +375,11 @@ namespace TickTrader.BotAgent.BA.Models
         {
             if (_closed)
                 throw new InvalidOperationException("Server is shutting down!");
+        }
+
+        private string GetConnectionInfo()
+        {
+            return $"account {_client.Username} on {_client.Address} using {(_client.UseNewProtocol ? "SFX" : "FIX")}";
         }
     }
 }

@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
         public AccountKey Account => Info.Account;
 
 
-        public event Action<ITradeBot> ConfigurationChanged;
+        public event Action<ITradeBot> Updated;
         public event Action<ITradeBot> StateChanged;
         public event Action<ITradeBot> StatusChanged;
 
@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
         public void Update(BotModelInfo info)
         {
             Info = info;
-            ConfigurationChanged?.Invoke(this);
+            Updated?.Invoke(this);
         }
 
         public void UpdateState(BotModelInfo info)

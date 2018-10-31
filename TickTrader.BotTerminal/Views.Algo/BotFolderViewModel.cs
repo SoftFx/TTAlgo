@@ -396,6 +396,7 @@ namespace TickTrader.BotTerminal
                 SelectedBot = null;
 
                 agent.Model.Bots.Updated += BotAgentBotsUpdated;
+                agent.Model.AccessLevelChanged += OnAccessLevelChanged;
             }
         }
 
@@ -404,6 +405,7 @@ namespace TickTrader.BotTerminal
             if (agent != null)
             {
                 agent.Model.Bots.Updated -= BotAgentBotsUpdated;
+                agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
             }
         }
 
@@ -413,6 +415,16 @@ namespace TickTrader.BotTerminal
             {
                 SelectedBot = null;
             }
+        }
+
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanUploadFile));
+            NotifyOfPropertyChange(nameof(CanDownloadFile));
+            NotifyOfPropertyChange(nameof(CanStartLoading));
+            NotifyOfPropertyChange(nameof(CanDeleteFile));
+            NotifyOfPropertyChange(nameof(CanRefreshFolderInfo));
+            NotifyOfPropertyChange(nameof(CanClear));
         }
 
         private void RefreshBotFiles()

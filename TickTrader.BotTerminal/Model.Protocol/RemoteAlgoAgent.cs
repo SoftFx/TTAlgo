@@ -55,6 +55,10 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotStateChanged = delegate { };
 
+        public event Action<ITradeBot> BotUpdated = delegate { };
+
+        public event Action AccessLevelChanged = delegate { };
+
 
         public RemoteAlgoAgent(string name)
         {
@@ -213,6 +217,14 @@ namespace TickTrader.BotTerminal
 
         #region IBotAgentClient implementation
 
+        void IBotAgentClient.AccessLevelChanged()
+        {
+            _syncContext.Invoke(() =>
+            {
+                AccessLevelChanged();
+            });
+        }
+
         void IBotAgentClient.InitPackageList(List<PackageInfo> packages)
         {
             _syncContext.Invoke(() =>
@@ -308,6 +320,7 @@ namespace TickTrader.BotTerminal
                         break;
                     case UpdateType.Replaced:
                         _bots[bot.InstanceId].Update(bot);
+                        BotUpdated(_bots[bot.InstanceId]);
                         break;
                     case UpdateType.Removed:
                         if (_bots.ContainsKey(bot.InstanceId))

@@ -78,6 +78,10 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotStateChanged;
 
+        public event Action<ITradeBot> BotUpdated;
+
+        public event Action AccessLevelChanged;
+
 
         public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
         {
@@ -150,6 +154,7 @@ namespace TickTrader.BotTerminal
             _bots.Add(bot.InstanceId, bot);
             IdProvider.RegisterBot(bot);
             bot.StateChanged += OnBotStateChanged;
+            bot.Updated += OnBotUpdated;
             return Task.FromResult(this);
         }
 
@@ -160,6 +165,7 @@ namespace TickTrader.BotTerminal
                 _bots.Remove(instanceId);
                 IdProvider.UnregisterPlugin(instanceId);
                 bot.StateChanged -= OnBotStateChanged;
+                bot.Updated -= OnBotUpdated;
             }
             return Task.FromResult(this);
         }
@@ -292,6 +298,14 @@ namespace TickTrader.BotTerminal
             if (Bots.Snapshot.TryGetValue(bot.InstanceId, out var botModel))
             {
                 BotStateChanged?.Invoke(botModel);
+            }
+        }
+
+        private void OnBotUpdated(ITradeBot bot)
+        {
+            if (Bots.Snapshot.TryGetValue(bot.InstanceId, out var botModel))
+            {
+                BotUpdated?.Invoke(botModel);
             }
         }
 
@@ -507,6 +521,11 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeHistory.AlgoAdapter;
         }
 
+        string IAlgoPluginHost.GetConnectionInfo()
+        {
+            return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
+        }
+
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
@@ -522,7 +541,7 @@ namespace TickTrader.BotTerminal
                     plugin.InitBarStrategy(feedProvider, Algo.Api.BarPriceType.Bid);
                     break;
             }
-            plugin.InitSlidingBuffering(1024);
+            plugin.InitSlidingBuffering(4000);
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)

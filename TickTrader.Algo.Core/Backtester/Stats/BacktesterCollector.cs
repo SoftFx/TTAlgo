@@ -358,6 +358,10 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        void IPluginLogger.OnConnectionInfo(string connectionInfo)
+        {
+        }
+
         #endregion
     }
 }

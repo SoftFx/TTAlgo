@@ -13,6 +13,7 @@ namespace TickTrader.BotTerminal
         private ChartModelBase _chart;
         private SymbolModel _symbol;
         private VarList<OutputSeriesModel> _overlayOutputs;
+        private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
 
 
@@ -26,7 +27,7 @@ namespace TickTrader.BotTerminal
 
         public IVarList<OutputPaneViewModel> Panes => _panes;
 
-        public IVarList<IRenderableSeriesViewModel> OverlaySeries { get; }
+        public IVarList<IRenderableSeriesViewModel> OverlaySeries => _overlaySeries;
 
         public int Precision { get; private set; }
 
@@ -43,7 +44,7 @@ namespace TickTrader.BotTerminal
 
             _overlayOutputs = new VarList<OutputSeriesModel>();
             _panes = new VarList<OutputPaneViewModel>();
-            OverlaySeries = _overlayOutputs.Select(SeriesViewModel.FromOutputSeries);
+            _overlaySeries = new VarList<IRenderableSeriesViewModel>();
 
             Init();
 
@@ -51,9 +52,16 @@ namespace TickTrader.BotTerminal
         }
 
 
+        public void Dispose()
+        {
+            Model.OutputsChanged -= ModelOnOutputsChanged;
+        }
+
+
         private void Init()
         {
             Model.Outputs.Values.Where(o => o.Descriptor.Target == OutputTargets.Overlay).Foreach(_overlayOutputs.Add);
+            _overlayOutputs.Values.Foreach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
 
             foreach (OutputTargets target in Enum.GetValues(typeof(OutputTargets)))
             {
@@ -84,6 +92,7 @@ namespace TickTrader.BotTerminal
             Execute.OnUIThread(() =>
             {
                 _overlayOutputs.Clear();
+                _overlaySeries.Clear();
                 _panes.Clear();
                 Init();
             });

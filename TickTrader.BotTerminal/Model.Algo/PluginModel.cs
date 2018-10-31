@@ -47,7 +47,6 @@ namespace TickTrader.BotTerminal
 
 
         public event Action OutputsChanged;
-        public event Action<PluginModel> RefsUpdated;
 
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -86,6 +85,7 @@ namespace TickTrader.BotTerminal
 
                 Host.UpdatePlugin(_executor);
                 _executor.Start();
+                _executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
             catch (Exception ex)
@@ -110,6 +110,7 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Stopping);
                 try
                 {
+                    _executor.WriteConnectionInfo(Host.GetConnectionInfo());
                     _executor.Stop();
                     ClearOutputs();
                     UnlockResources();
@@ -153,11 +154,13 @@ namespace TickTrader.BotTerminal
         protected virtual void HandleReconnect()
         {
             _executor.HandleReconnect();
+            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
         }
 
         protected virtual void HandleDisconnect()
         {
             _executor.HandleDisconnect();
+            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
         }
 
         protected virtual void ChangeState(PluginStates state, string faultMessage = null)
@@ -180,6 +183,10 @@ namespace TickTrader.BotTerminal
             PackageRef?.DecrementRef();
         }
 
+        protected virtual void OnRefsUpdated()
+        {
+        }
+
         protected void UpdateRefs()
         {
             var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
@@ -199,7 +206,7 @@ namespace TickTrader.BotTerminal
             PluginRef = pluginRef;
             Descriptor = pluginRef.Metadata.Descriptor;
             ChangeState(PluginStates.Stopped);
-            RefsUpdated?.Invoke(this);
+            OnRefsUpdated();
         }
 
         private void Executor_OnRuntimeError(Exception ex)

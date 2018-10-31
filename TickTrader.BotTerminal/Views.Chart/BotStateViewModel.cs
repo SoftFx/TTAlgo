@@ -46,7 +46,7 @@ namespace TickTrader.BotTerminal
         {
             base.TryClose(dialogResult);
 
-            Bot.Model.ConfigurationChanged -= Bot_ConfigurationChanged;
+            Bot.Model.Updated -= Bot_Updated;
             Bot.Model.StateChanged -= Bot_StateChanged;
         }
 
@@ -75,20 +75,20 @@ namespace TickTrader.BotTerminal
             base.OnActivate();
 
             Bot.Model.StateChanged += Bot_StateChanged;
-            Bot.Model.ConfigurationChanged += Bot_ConfigurationChanged;
+            Bot.Model.Updated += Bot_Updated;
 
             Bot.Model.SubscribeToStatus();
             Bot.Model.SubscribeToLogs();
 
             Bot_StateChanged(Bot.Model);
-            Bot_ConfigurationChanged(Bot.Model);
+            Bot_Updated(Bot.Model);
         }
 
         protected override void OnDeactivate(bool close)
         {
             base.OnDeactivate(close);
 
-            Bot.Model.ConfigurationChanged -= Bot_ConfigurationChanged;
+            Bot.Model.Updated -= Bot_Updated;
             Bot.Model.StateChanged -= Bot_StateChanged;
 
             Bot.Model.UnsubscribeFromStatus();
@@ -118,7 +118,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanStartStop));
         }
 
-        private void Bot_ConfigurationChanged(ITradeBot obj)
+        private void Bot_Updated(ITradeBot obj)
         {
             NotifyOfPropertyChange(nameof(BotInfo));
         }
@@ -134,15 +134,21 @@ namespace TickTrader.BotTerminal
                 res.Add("------------ Plugin Info ------------");
                 res.Add($"Name: {Bot.Model.Descriptor.DisplayName}");
                 res.Add($"Version: {Bot.Model.Descriptor.Version}");
-                //res.Add($"Package Name: {Bot.PackageRef.Name}");
-                //res.Add($"Package Location: {Bot.PackageRef.Location}");
             }
-            if (Bot.Model.Config?.Properties.Any() ?? false)
+            if (Bot.Model.Config != null)
             {
-                res.Add("");
-                res.Add("------------ Parameters ------------");
-                res.AddRange(Bot.Model.Config.Properties.Select(x => x as Algo.Common.Model.Config.Parameter).Where(x => x != null)
-                    .Select(x => $"{x.Id}: {x.ValObj}").OrderBy(x => x).ToArray());
+                res.Add($"Package Name: {Bot.Model.Config.Key.PackageName}");
+                res.Add($"Package Location: {Bot.Model.Config.Key.PackageLocation}");
+                res.Add($"Symbol: {Bot.Model.Config.MainSymbol.Name}");
+                res.Add($"Timeframe: {Bot.Model.Config.TimeFrame}");
+                res.Add($"Show on chart: {Bot.Model.Descriptor.SetupMainSymbol}");
+                if (Bot.Model.Config.Properties.Any())
+                {
+                    res.Add("");
+                    res.Add("------------ Parameters ------------");
+                    res.AddRange(Bot.Model.Config.Properties.Select(x => x as Algo.Common.Model.Config.Parameter).Where(x => x != null)
+                        .Select(x => $"{x.Id}: {x.ValObj}").OrderBy(x => x).ToArray());
+                }
             }
             return res;
         }
