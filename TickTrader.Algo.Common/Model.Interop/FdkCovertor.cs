@@ -251,9 +251,8 @@ namespace TickTrader.Algo.Common.Model
 
         public static CurrencyEntity Convert(CurrencyInfo info)
         {
-            return new CurrencyEntity(info.Name)
+            return new CurrencyEntity(info.Name, info.Precision)
             {
-                Digits = info.Precision,
                 SortOrder = info.SortOrder
             };
         }

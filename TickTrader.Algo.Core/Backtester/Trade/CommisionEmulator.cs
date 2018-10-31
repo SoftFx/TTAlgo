@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.BusinessLogic;
 using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
@@ -19,6 +20,11 @@ namespace TickTrader.Algo.Core
         }
 
         #region Gross & Net
+
+        public static void OnGrossPositionOpened(OrderAccessor position, SymbolAccessor cfg, CalculatorFixture calc)
+        {
+            position.Entity.Commission = (double)CalculateMarginCommission(position.Calculator, position.Amount, cfg, calc, position.IsReducedOpenCommission());
+        }
 
         public static void OnGrossPositionClosed(OrderAccessor position, decimal closeAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture calc)
         {
@@ -36,16 +42,13 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            decimal cmsValue = position.IsReducedCloseCommission()
-                ? (decimal)cfg.CmsValueBookOrders()
-                : (decimal)cfg.CmsValue();
+            charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
 
-            decimal commiss = position.Calculator.CalculateCommission(closeAmount, cmsValue, cfg.CmsValueType(), cfg.CmsChType());
-            commiss = ApplyMinimalMarginCommission(commiss, calc, cfg, charges);
-
+            decimal commiss = CalculateMarginCommission(position.Calculator, closeAmount, cfg, calc, position.IsReducedCloseCommission());
             charges.Commission += RoundValue(commiss, calc.RoundingDigits);
-            if (k == 1)
-                position.Entity.Commission = (double)charges.Commission;
+
+            //if (k == 1)
+            //    position.Entity.Commission = (double)charges.Commission;
         }
 
         public static void OnNetPositionOpened(OrderAccessor fromOrder, PositionAccessor position, decimal fillAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture calc)
@@ -55,46 +58,47 @@ namespace TickTrader.Algo.Core
                 : (decimal)cfg.CmsValue();
 
             decimal commiss = position.Calculator.CalculateCommission(fillAmount, cmsValue, cfg.CmsValueType(), cfg.CmsChType());
-            commiss = ApplyMinimalMarginCommission(commiss, calc, cfg, charges);
+            commiss = ApplyMinimalMarginCommission(commiss, calc, cfg);
 
             charges.Commission = RoundValue(commiss, calc.RoundingDigits);
+            charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
         }
 
-        public static void OnNetRollover(OrderAccessor position, decimal closeAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture account)
-        {
-            if (position.Type == OrderType.Position)
-            {
-                if (position.Commission != null)
-                {
-                    decimal k = closeAmount / (closeAmount + position.RemainingAmount);
-                    if (k == 1)
-                        charges.Commission = position.Commission.Value;
-                    else
-                    {
-                        // charge comission in proportion of close amount to remaining amount
-                        charges.Commission = RoundValue((position.Commission.Value * k), account.RoundingDigits);
-                        position.Entity.Commission = (double)RoundValue((position.Commission.Value - charges.Commission), account.RoundingDigits);
-                    }
-                }
-            }
-        }
+        //public static void OnNetRollover(OrderAccessor position, decimal closeAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture account)
+        //{
+        //    if (position.Type == OrderType.Position)
+        //    {
+        //        if (position.Commission != null)
+        //        {
+        //            decimal k = closeAmount / (closeAmount + position.RemainingAmount);
+        //            if (k == 1)
+        //                charges.Commission = position.Commission.Value;
+        //            else
+        //            {
+        //                // charge comission in proportion of close amount to remaining amount
+        //                charges.Commission = RoundValue((position.Commission.Value * k), account.RoundingDigits);
+        //                position.Entity.Commission = (double)RoundValue((position.Commission.Value - charges.Commission), account.RoundingDigits);
+        //            }
+        //        }
+        //    }
+        //}
 
         public static void OnOrderModified(OrderAccessor order, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture account)
         {
-            if (order.Type == OrderType.Position)
-            {
-                decimal cmsValue = order.IsReducedOpenCommission()
-                    ? (decimal)cfg.CmsValueBookOrders()
-                    : (decimal)cfg.CmsValue();
+            //if (order.Type == OrderType.Position)
+            //{
+            //    decimal cmsValue = order.IsReducedOpenCommission()
+            //        ? (decimal)cfg.CmsValueBookOrders()
+            //        : (decimal)cfg.CmsValue();
 
-                decimal commiss = order.Calculator.CalculateCommission(order.Amount, cmsValue, cfg.CmsValueType(), cfg.CmsChType());
-                commiss = ApplyMinimalMarginCommission(commiss, account, cfg, charges);
+            //    decimal commiss = order.Calculator.CalculateCommission(order.Amount, cmsValue, cfg.CmsValueType(), cfg.CmsChType());
+            //    commiss = ApplyMinimalMarginCommission(commiss, account, cfg);
 
-                order.Entity.Commission = (double)RoundValue(commiss, account.RoundingDigits);
-            }
+            //    order.Entity.Commission = (double)RoundValue(commiss, account.RoundingDigits);
+            //}
         }
 
-        private static decimal ApplyMinimalMarginCommission(decimal commiss, CalculatorFixture account, SymbolAccessor cfg, TradeChargesInfo charges)
+        private static decimal ApplyMinimalMarginCommission(decimal commiss, CalculatorFixture account, SymbolAccessor cfg)
         {
             //decimal minCommissConvRate = account.GetMinCommissionConversionRate(cfg.CmsMinValueCurrency);
             //decimal minCommiss = -(decimal)cfg.CmsMinValue * minCommissConvRate;
@@ -110,6 +114,17 @@ namespace TickTrader.Algo.Core
             //}
 
             return commiss;
+        }
+
+        private static decimal CalculateMarginCommission(OrderCalculator orderCalc, decimal amount, SymbolAccessor cfg, CalculatorFixture accCalc, bool isReduced)
+        {
+            decimal cmsValue = isReduced
+               ? (decimal)cfg.CmsValueBookOrders()
+               : (decimal)cfg.CmsValue();
+
+            decimal commiss = orderCalc.CalculateCommission(amount, cmsValue, cfg.CmsValueType(), cfg.CmsChType());
+            commiss = ApplyMinimalMarginCommission(commiss, accCalc, cfg);
+            return RoundValue(commiss, accCalc.RoundingDigits);
         }
 
         #endregion
@@ -128,6 +143,7 @@ namespace TickTrader.Algo.Core
             ChargeCommission(commission, asset, acc);
             //tradeReport.Commission = commission;
             charges.Commission = commission;
+            charges.CurrencyInfo = (CurrencyEntity)currency;
             //FillExecutionReport(execReport, asset, commission);
         }
 

@@ -630,9 +630,8 @@ namespace TickTrader.Algo.Common.Model
 
         private static CurrencyEntity Convert(SFX.CurrencyInfo info)
         {
-            return new CurrencyEntity(info.Name)
+            return new CurrencyEntity(info.Name, info.Precision)
             {
-                Digits = info.Precision,
                 SortOrder = info.SortOrder
             };
         }

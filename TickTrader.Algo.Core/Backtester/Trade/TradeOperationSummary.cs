@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Core
         public decimal Commission { get; set; }
 
         public decimal Total => Swap + Commission;
+        public CurrencyEntity CurrencyInfo { get; set; }
 
         public void Clear()
         {
@@ -115,8 +116,7 @@ namespace TickTrader.Algo.Core
 
             var charges = info.NetClose?.Charges;
 
-            if (charges != null)
-                _builder.Append(" commission =").Append(charges.Commission);
+            PrintCharges(charges);
         }
 
         public void AddStopLimitActivationAction(OrderAccessor order, decimal price)
@@ -217,8 +217,8 @@ namespace TickTrader.Algo.Core
 
         private void PrintCharges(TradeChargesInfo charges)
         {
-            if (charges != null)
-                _builder.Append(" commission =").Append(charges.Commission);
+            if (charges != null && charges.Commission != 0)
+                _builder.Append(" commission=").AppendNumber(charges.Commission, charges.CurrencyInfo.Format);
         }
 
         #endregion

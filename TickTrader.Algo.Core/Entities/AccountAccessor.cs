@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Core
         {
             BalanceCurrency = currency.Name;
             BalanceCurrencyInfo = currency;
-            BalanceCurrencyFormat = FormatExtentions.CreateTradeFormatInfo(BalanceCurrencyInfo.Digits);
+            BalanceCurrencyFormat = ((CurrencyEntity)currency).Format;
         }
 
         internal void ResetCurrency()

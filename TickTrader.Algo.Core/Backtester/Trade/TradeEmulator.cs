@@ -1156,7 +1156,7 @@ namespace TickTrader.Algo.Core
             position.OpenConversionRate = position.MarginRateCurrent;
 
             // calculate commission
-            //CommissionStrategy.OnPositionOpened(position, charges, acc);
+            CommisionEmulator.OnGrossPositionOpened(position, position.SymbolInfo, _calcFixture);
 
             //// log
             //if (transformOrder)
