@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
             ? $"{Connection.Server}:{Connection.Port} ({Connection.AccessLevel})"
             : $"{Connection.Server}:{Connection.Port}";
 
-        public bool IsOffline => Connection.State == BotAgentConnectionManager.States.Offline;
+        public bool IsOffline => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
 

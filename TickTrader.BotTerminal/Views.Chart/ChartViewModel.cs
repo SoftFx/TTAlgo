@@ -285,7 +285,7 @@ namespace TickTrader.BotTerminal
         public void Drop(object o)
         {
             var plugin = o as AlgoPluginViewModel;
-            if (plugin != null && (plugin.Type == AlgoTypes.Indicator || plugin.Type == AlgoTypes.Robot))
+            if (plugin != null)
             {
                 OpenAlgoSetup(plugin);
             }
@@ -409,7 +409,12 @@ namespace TickTrader.BotTerminal
 
         public bool CanDrop(object o)
         {
-            return o is AlgoPluginViewModel;
+            var plugin = o as AlgoPluginViewModel;
+            if (plugin != null && plugin.Agent.Name == _algoEnv.LocalAgentVM.Name && (plugin.Type == AlgoTypes.Indicator || plugin.Type == AlgoTypes.Robot))
+            {
+                return true;
+            }
+            return false;
         }
 
         private void UpdateLabelFormat()
