@@ -47,12 +47,14 @@ namespace TickTrader.BotTerminal
                 {
                     _selectedAgent.Plugins.Updated -= AllPlugins_Updated;
                     _selectedAgent.Model.BotStateChanged -= BotStateChanged;
+                    _selectedAgent.Model.AccessLevelChanged -= OnAccessLevelChanged;
                 }
                 _selectedAgent = value;
                 NotifyOfPropertyChange(nameof(SelectedAgent));
                 InitAgent();
                 _selectedAgent.Plugins.Updated += AllPlugins_Updated;
                 _selectedAgent.Model.BotStateChanged += BotStateChanged;
+                _selectedAgent.Model.AccessLevelChanged += OnAccessLevelChanged;
             }
         }
 
@@ -242,6 +244,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanOk));
+        }
+
         private void InitAgent()
         {
             Accounts = SelectedAgent.Accounts.AsObservable();
@@ -270,6 +277,9 @@ namespace TickTrader.BotTerminal
 
         private void AllPlugins_Updated(ListUpdateArgs<AlgoPluginViewModel> args)
         {
+            if (SelectedPlugin == null)
+                return;
+
             if (args.Action == DLinqAction.Replace)
             {
                 if (args.NewItem.Key.Equals(SelectedPlugin.Key))
@@ -290,6 +300,7 @@ namespace TickTrader.BotTerminal
             {
                 _selectedAgent.Plugins.Updated -= AllPlugins_Updated;
                 _selectedAgent.Model.BotStateChanged -= BotStateChanged;
+                _selectedAgent.Model.AccessLevelChanged -= OnAccessLevelChanged;
             }
             if (Setup != null)
                 Setup.ValidityChanged -= Validate;

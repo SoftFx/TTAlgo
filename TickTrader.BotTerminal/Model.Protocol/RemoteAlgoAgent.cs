@@ -57,6 +57,8 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotUpdated = delegate { };
 
+        public event Action AccessLevelChanged = delegate { };
+
 
         public RemoteAlgoAgent(string name)
         {
@@ -214,6 +216,14 @@ namespace TickTrader.BotTerminal
 
 
         #region IBotAgentClient implementation
+
+        void IBotAgentClient.AccessLevelChanged()
+        {
+            _syncContext.Invoke(() =>
+            {
+                AccessLevelChanged();
+            });
+        }
 
         void IBotAgentClient.InitPackageList(List<PackageInfo> packages)
         {

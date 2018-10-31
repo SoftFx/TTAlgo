@@ -41,6 +41,7 @@ namespace TickTrader.BotTerminal
             Model.StateChanged += OnStateChanged;
             Model.Updated += OnUpdated;
             Model.StatusChanged += OnStatusChanged;
+            Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
         }
 
 
@@ -101,6 +102,14 @@ namespace TickTrader.BotTerminal
         private void OnStatusChanged(ITradeBot bot)
         {
             NotifyOfPropertyChange(nameof(Status));
+        }
+
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanStart));
+            NotifyOfPropertyChange(nameof(CanStop));
+            NotifyOfPropertyChange(nameof(CanStartStop));
+            NotifyOfPropertyChange(nameof(CanRemove));
         }
     }
 }

@@ -39,6 +39,7 @@ namespace TickTrader.BotTerminal
             Plugins = Agent.Plugins.Where(p => PluginIsFromPackage(p)).AsObservable();
 
             Agent.Model.PackageStateChanged += OnPackageStateChanged;
+            Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
         }
 
 
@@ -60,6 +61,11 @@ namespace TickTrader.BotTerminal
         private bool PluginIsFromPackage(AlgoPluginViewModel plugin)
         {
             return Info.Key.Name == plugin.Key.PackageName && Info.Key.Location == plugin.Key.PackageLocation;
+        }
+
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanRemovePackage));
         }
     }
 }

@@ -55,6 +55,7 @@ namespace TickTrader.BotTerminal
 
             Agent.Model.AccountStateChanged += OnAccountStateChanged;
             Agent.Model.BotStateChanged += OnBotStateChanged;
+            Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
         }
 
 
@@ -94,6 +95,13 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(HasRunningBots));
                 NotifyOfPropertyChange(nameof(CanRemoveAccount));
             }
+        }
+
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanChangeAccount));
+            NotifyOfPropertyChange(nameof(CanRemoveAccount));
+            NotifyOfPropertyChange(nameof(CanTestAccount));
         }
     }
 }

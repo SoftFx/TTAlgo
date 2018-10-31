@@ -80,6 +80,8 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotUpdated;
 
+        public event Action AccessLevelChanged;
+
 
         public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
         {

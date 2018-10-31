@@ -43,6 +43,7 @@ namespace TickTrader.BotTerminal
             Agent = new AlgoAgentViewModel(Connection.RemoteAgent, _algoEnv);
 
             Connection.StateChanged += ConnectionOnStateChanged;
+            Agent.Model.AccessLevelChanged += OnAccessLevelChanged;
         }
 
 
@@ -136,6 +137,14 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(IsOffline));
             if (Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.Offline)
                 NotifyOfPropertyChange(nameof(DisplayName));
+        }
+
+        private void OnAccessLevelChanged()
+        {
+            NotifyOfPropertyChange(nameof(CanAddBot));
+            NotifyOfPropertyChange(nameof(CanAddAccount));
+            NotifyOfPropertyChange(nameof(CanUploadPackage));
+            NotifyOfPropertyChange(nameof(CanDownloadPackage));
         }
     }
 }

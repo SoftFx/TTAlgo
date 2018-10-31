@@ -5,6 +5,8 @@ namespace TickTrader.Algo.Protocol
 {
     public interface IBotAgentClient
     {
+        void AccessLevelChanged();
+
         #region Initialization
 
         void InitPackageList(List<PackageInfo> report);
