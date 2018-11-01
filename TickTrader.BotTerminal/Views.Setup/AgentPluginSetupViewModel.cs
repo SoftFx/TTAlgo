@@ -31,6 +31,7 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _updateSetupCancelSrc;
         private bool _hasPendingRequest;
         private string _requestError;
+        private bool _showFileProgress;
 
 
         public IObservableList<AlgoAgentViewModel> Agents { get; }
@@ -148,9 +149,24 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _requestError = value;
-                NotifyOfPropertyChange(RequestError);
+                NotifyOfPropertyChange(nameof(RequestError));
             }
         }
+
+        public bool ShowFileProgress
+        {
+            get { return _showFileProgress; }
+            set
+            {
+                if (_showFileProgress == value)
+                    return;
+
+                _showFileProgress = value;
+                NotifyOfPropertyChange(nameof(ShowFileProgress));
+            }
+        }
+
+        public ProgressViewModel FileProgress { get; }
 
 
         private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext, PluginSetupMode mode)
@@ -166,6 +182,9 @@ namespace TickTrader.BotTerminal
             SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? (Plugins.Any() ? Plugins.First() : null);
 
             PluginType = GetPluginTypeDisplayName(Type);
+
+            ShowFileProgress = false;
+            FileProgress = new ProgressViewModel();
 
             RunBot = true;
         }
@@ -200,12 +219,19 @@ namespace TickTrader.BotTerminal
             {
                 if (Type == AlgoTypes.Robot && Mode == PluginSetupMode.New)
                 {
-                    await SelectedAgent.Model.AddBot(SelectedAccount.Key, config);
+                    if (!SelectedAgent.Model.Bots.Snapshot.ContainsKey(config.InstanceId))
+                        await SelectedAgent.Model.AddBot(SelectedAccount.Key, config);
+                    else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
+                    await UploadBotFiles(config);
                     SelectedAgent.OpenBotState(config.InstanceId);
                     if (RunBot)
                         await SelectedAgent.Model.StartBot(config.InstanceId);
                 }
-                else await SelectedAgent.Model.ChangeBotConfig(Bot.InstanceId, config);
+                else
+                {
+                    await SelectedAgent.Model.ChangeBotConfig(Bot.InstanceId, config);
+                    await UploadBotFiles(config);
+                }
                 TryClose();
             }
             catch (Exception ex)
@@ -368,6 +394,23 @@ namespace TickTrader.BotTerminal
 
                 NotifyOfPropertyChange(nameof(Setup));
             }
+        }
+
+        private async Task UploadBotFiles(PluginConfig config)
+        {
+            ShowFileProgress = true;
+            foreach (FileParameter fileParam in config.Properties)
+            {
+                var path = fileParam.FileName;
+                if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
+                {
+                    var fileInfo = new System.IO.FileInfo(path);
+                    FileProgress.SetMessage($"Uploading {fileInfo.Name} to AlgoData...");
+                    var fileProgressListener = new FileProgressListenerAdapter(FileProgress, fileInfo.Length);
+                    await SelectedAgent.Model.UploadBotFile(config.InstanceId, BotFolderId.AlgoData, fileInfo.Name, path, fileProgressListener);
+                }
+            }
+            ShowFileProgress = false;
         }
     }
 }

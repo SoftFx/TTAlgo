@@ -279,7 +279,9 @@ namespace TickTrader.BotTerminal
 
         public Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener)
         {
-            throw new NotSupportedException();
+            //throw new NotSupportedException();
+            // used in bot setup
+            return Task.FromResult(this);
         }
 
 
