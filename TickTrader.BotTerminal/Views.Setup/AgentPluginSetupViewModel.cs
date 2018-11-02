@@ -399,7 +399,7 @@ namespace TickTrader.BotTerminal
         private async Task UploadBotFiles(PluginConfig config)
         {
             ShowFileProgress = true;
-            foreach (FileParameter fileParam in config.Properties)
+            foreach (FileParameter fileParam in config.Properties.Where(p => p is FileParameter))
             {
                 var path = fileParam.FileName;
                 if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
