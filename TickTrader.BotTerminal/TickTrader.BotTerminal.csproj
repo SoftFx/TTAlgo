@@ -328,6 +328,7 @@
     <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentStorageModel.cs" />
+    <Compile Include="Model.Protocol\FileProgressListenerAdapter.cs" />
     <Compile Include="Model.Protocol\ProtocolClientSettings.cs" />
     <Compile Include="Model.Protocol\ProtocolConfigSection.cs" />
     <Compile Include="Model.Protocol\ProtocolSettings.cs" />

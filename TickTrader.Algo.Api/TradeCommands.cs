@@ -52,6 +52,7 @@ namespace TickTrader.Algo.Api
         IncorrectMaxVisibleVolume = 113,
         IncorrectExpiration = 114,
         DealingTimeout      = 115,
-        Misconfiguration    = 116
+        Misconfiguration    = 116,
+        OrderLocked         = 117,
     }
 }

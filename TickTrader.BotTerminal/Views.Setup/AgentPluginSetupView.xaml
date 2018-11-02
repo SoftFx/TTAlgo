@@ -127,6 +127,8 @@
                     </GroupBox>
 
                     <TextBlock TextWrapping="Wrap" Text="{Binding RequestError}" Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+
+                    <ContentControl cal:View.Model="{Binding FileProgress}" Visibility="{Binding ShowFileProgress, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
             </ScrollViewer>
 

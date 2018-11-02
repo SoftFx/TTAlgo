@@ -94,7 +94,7 @@ namespace TickTrader.BotTerminal
         public Task WaitConnect()
         {
             Connect();
-            return _stateControl.AsyncWait(s => s == States.Offline || s == States.Online);
+            return _stateControl.AsyncWait(s => s == States.Offline || s == States.Online || s == States.WaitReconnect);
         }
 
         public void Disconnect()
