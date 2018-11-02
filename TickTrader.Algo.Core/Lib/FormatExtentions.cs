@@ -16,6 +16,11 @@ namespace TickTrader.Algo.Core.Lib
             return format;
         }
 
+        public static StringBuilder AppendNumber(this StringBuilder builder, double number, string customFormat)
+        {
+            return builder.Append(number.ToString(customFormat));
+        }
+
         public static StringBuilder AppendNumber(this StringBuilder builder, double number, NumberFormatInfo format)
         {
             return builder.Append(number.ToString("N", format));

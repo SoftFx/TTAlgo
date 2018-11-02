@@ -56,36 +56,36 @@ namespace TickTrader.Algo.Core.Repository
         {
             return; // We should support loading custom reductions in separate app domains before allowing this
 
-            var plugins = Directory.GetFiles(path, "*.ttalgo");
+            //var plugins = Directory.GetFiles(path, "*.ttalgo");
 
-            foreach (var file in plugins)
-            {
-                try
-                {
-                    using (var st = File.OpenRead(file))
-                    {
-                        var packageName = Path.GetFileName(file).ToLowerInvariant();
-                        var pckg = Package.Load(st);
-                        if (!string.IsNullOrEmpty(pckg.Metadata.MainBinaryFile))
-                        {
-                            var extFile = pckg.GetFile(pckg.Metadata.MainBinaryFile);
-                            if (extFile != null)
-                            {
-                                var extAssembly = Assembly.Load(extFile, null);
-                                var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
-                                foreach (var r in reductions)
-                                    Add(new ReductionKey(packageName, location, r.Id), r);
-                            }
-                        }
-                    }
+            //foreach (var file in plugins)
+            //{
+            //    try
+            //    {
+            //        using (var st = File.OpenRead(file))
+            //        {
+            //            var packageName = Path.GetFileName(file).ToLowerInvariant();
+            //            var pckg = Package.Load(st);
+            //            if (!string.IsNullOrEmpty(pckg.Metadata.MainBinaryFile))
+            //            {
+            //                var extFile = pckg.GetFile(pckg.Metadata.MainBinaryFile);
+            //                if (extFile != null)
+            //                {
+            //                    var extAssembly = Assembly.Load(extFile, null);
+            //                    var reductions = AlgoAssemblyInspector.FindReductions(extAssembly);
+            //                    foreach (var r in reductions)
+            //                        Add(new ReductionKey(packageName, location, r.Id), r);
+            //                }
+            //            }
+            //        }
 
-                    _logger.Info("Loadded extensions from " + file);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("Cannot load extensions from " + file + "!", ex);
-                }
-            }
+            //        _logger.Info("Loadded extensions from " + file);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.Error("Cannot load extensions from " + file + "!", ex);
+            //    }
+            //}
         }
 
         public void AddAssembly(string extAssemblyName)

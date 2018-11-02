@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
         private IBacktesterSettings _settings;
         private long _orderIdSeed;
         private double _stopOutLevel = 30;
-        private RateUpdate _lastRate;
+        //private RateUpdate _lastRate;
 
         public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector)
         {
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
             VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += r =>
             {
-                _lastRate = r;
+                //_lastRate = r;
                 CheckActivation(r);
                 RecalculateAccount();
             };
@@ -556,7 +556,7 @@ namespace TickTrader.Algo.Core
             _opSummary.AddOpenAction(order);
             if (fillInfo.NetClose != null)
             {
-                _opSummary.AddNetCloseAction(fillInfo.NetClose, order.SymbolInfo);
+                _opSummary.AddNetCloseAction(fillInfo.NetClose, order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo);
                 _opSummary.AddNetPositionNotification(fillInfo.NetClose.ResultingPosition, fillInfo.NetClose.SymbolInfo);
             }
 
@@ -1234,12 +1234,11 @@ namespace TickTrader.Algo.Core
             if (_scheduler.IsStopPhase)
                 return;
 
-            var msgBuilder = new StringBuilder();
-            msgBuilder.Append("Stop out! margin level: ").AppendNumber(_acc.MarginLevel, _acc.BalanceCurrencyFormat);
-            msgBuilder.Append(" equity: ").AppendNumber(_acc.Equity, _acc.BalanceCurrencyFormat);
-            msgBuilder.Append(" margin: ").AppendNumber(_acc.Margin, _acc.BalanceCurrencyFormat);
-            msgBuilder.Append(" last quote: ").Append(_lastRate);
-            _collector.AddEvent(LogSeverities.Error, msgBuilder.ToString());
+            var lastRate = _calcFixture.GetCurrentRateOrNull(_settings.MainSymbol);
+            var mainSymbol = _context.Builder.Symbols.GetOrDefault(_settings.MainSymbol);
+
+            using (JournalScope())
+                _opSummary.AddStopOutAction(_acc, lastRate, mainSymbol);
 
             _scheduler.SetFatalError(new StopOutException("Stop out!"));
         }
@@ -1478,7 +1477,7 @@ namespace TickTrader.Algo.Core
                     _opSummary.AddFillAction(record.Order, fillInfo);
                     if (fillInfo.NetClose != null)
                     {
-                        _opSummary.AddNetCloseAction(fillInfo.NetClose, record.Order.SymbolInfo);
+                        _opSummary.AddNetCloseAction(fillInfo.NetClose, record.Order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo);
                         _opSummary.AddNetPositionNotification(fillInfo.NetClose.ResultingPosition, fillInfo.NetClose.SymbolInfo);
                     }
                 }
@@ -1702,7 +1701,7 @@ namespace TickTrader.Algo.Core
             // increase reported action number
             position.ActionNo++;
 
-            _opSummary.AddCloseAction(position, profit, closePrice, charges);
+            _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, (CurrencyEntity)_acc.BalanceCurrencyInfo);
             _collector.OnPositionClosed(_scheduler.VirtualTimePoint, profit, charges.Commission, charges.Swap);
 
             //return profitInfo;
@@ -2102,9 +2101,8 @@ namespace TickTrader.Algo.Core
             if (!_opSummary.IsEmpty)
             {
                 var record = _opSummary.GetJournalRecord();
-                var severity = _opSummary.HasErrors ? LogSeverities.TradeFail : LogSeverities.Trade;
 
-                _collector.AddEvent(severity, record);
+                _collector.AddEvent(_opSummary.Severity, record);
             }
         }
 

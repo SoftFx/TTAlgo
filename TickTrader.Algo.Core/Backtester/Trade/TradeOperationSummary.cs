@@ -48,13 +48,13 @@ namespace TickTrader.Algo.Core
         }
 
         public NumberFormatInfo AccountCurrencyFormat { get; set; }
-        public bool HasErrors { get; set; }
+        public LogSeverities Severity { get; private set; }
         public bool IsEmpty => _builder.Length == 0;
 
         public void Clear()
         {
             _builder.Clear();
-            HasErrors = false;
+            Severity = LogSeverities.TradeSuccess;
         }
 
         public string GetJournalRecord()
@@ -82,14 +82,14 @@ namespace TickTrader.Algo.Core
         {
             var currFormat = acc.BalanceCurrencyFormat;
 
-            HasErrors = true;
+            SetTradeFaileSeverity();
 
             StartNewAction();
 
             _builder.Append($"Rejected order {type} {symbol} {side} {amountLots} reason={error}");
 
             if (acc.IsMarginType)
-                _builder.Append(" freeMargin=").Append(acc.Equity - acc.Margin);
+                _builder.Append(" freeMargin=").AppendNumber(acc.Equity - acc.Margin, currFormat);
         }
 
         public void AddModificationAction(OrderAccessor oldOrder, OrderAccessor newOrder)
@@ -130,32 +130,34 @@ namespace TickTrader.Algo.Core
             //return _builder.ToString();
         }
 
-        public void AddCloseAction(OrderAccessor pos, decimal profit, decimal price, TradeChargesInfo charges)
+        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, decimal price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
         {
             var priceFormat = pos.SymbolInfo.PriceFormat;
+            var profitFormat = balanceCurrInf.Format;
 
             StartNewAction();
             _builder.Append($"Closed position ");
             PrintOrderDescription(pos);
 
             _builder.Append(" at price ").AppendNumber(price, priceFormat);
-            _builder.Append(", profit=").AppendNumber(profit, priceFormat);
+            _builder.Append(", profit=").AppendNumber(profit, profitFormat);
 
             PrintCharges(charges);
         }
 
-        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, Symbol symbol)
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, Symbol symbol, CurrencyEntity balanceCurrInfo)
         {
             if (closeInfo.CloseAmount == 0)
                 return;
 
             var priceFormat = closeInfo.SymbolInfo.PriceFormat;
             var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
+            var profitFormat = balanceCurrInfo.Format;
 
             StartNewAction();
             _builder.Append("Closed net position for ").AppendNumber(closeAmountLost);
             _builder.Append(" at price ").AppendNumber(closeInfo.ClosePrice, priceFormat);
-            _builder.Append(", profit=").AppendNumber(closeInfo.BalanceMovement, priceFormat);
+            _builder.Append(", profit=").AppendNumber(closeInfo.BalanceMovement, profitFormat);
 
             PrintCharges(closeInfo.Charges);
         }
@@ -174,6 +176,29 @@ namespace TickTrader.Algo.Core
             _builder.AppendNumber(pos.Volume).Append(' ');
             _builder.Append(pos.Side);
             _builder.Append(" price=").AppendNumber(pos.Price, priceFormat);
+        }
+
+        public void AddStopOutAction(AccountAccessor acc, RateUpdate lastRate, SymbolAccessor rateSymbol)
+        {
+            SetErrorSeverity();
+
+            StartNewAction();
+            _builder.Append("Stop out! margin level: ").AppendNumber(acc.MarginLevel, "N2");
+            _builder.Append(" equity: ").AppendNumber(acc.Equity, acc.BalanceCurrencyFormat);
+            _builder.Append(" margin: ").AppendNumber(acc.Margin, acc.BalanceCurrencyFormat);
+            _builder.Append(" last quote: ");
+            PrintQuote(lastRate, rateSymbol);
+        }
+
+        private void SetTradeFaileSeverity()
+        {
+            if (Severity == LogSeverities.Trade || Severity == LogSeverities.TradeSuccess)
+                Severity = LogSeverities.TradeFail;
+        }
+
+        private void SetErrorSeverity()
+        {
+            Severity = LogSeverities.Error;
         }
 
         #region print methods
@@ -219,6 +244,20 @@ namespace TickTrader.Algo.Core
         {
             if (charges != null && charges.Commission != 0)
                 _builder.Append(" commission=").AppendNumber(charges.Commission, charges.CurrencyInfo.Format);
+        }
+
+        private void PrintQuote(RateUpdate update, SymbolAccessor smbInfo)
+        {
+            var priceFormat = smbInfo.PriceFormat;
+
+            if (update != null)
+            {
+                _builder.AppendNumber(update.Bid, priceFormat);
+                _builder.Append('/');
+                _builder.AppendNumber(update.Ask, priceFormat);
+            }
+            else
+                _builder.Append("N/A");
         }
 
         #endregion

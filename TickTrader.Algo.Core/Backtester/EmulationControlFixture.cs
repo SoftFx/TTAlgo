@@ -107,6 +107,9 @@ namespace TickTrader.Algo.Core
 
         private Exception WrapException(Exception ex)
         {
+            if (ex is AlgoException)
+                return ex;
+
             return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }
