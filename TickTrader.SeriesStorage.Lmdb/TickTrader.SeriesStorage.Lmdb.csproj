@@ -48,6 +48,7 @@
     <Compile Include="LmdbCursor.cs" />
     <Compile Include="LmdbManager.cs" />
     <Compile Include="LmdbStorage.cs" />
+    <Compile Include="LmdbTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

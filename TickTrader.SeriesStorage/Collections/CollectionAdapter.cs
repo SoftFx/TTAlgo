@@ -23,6 +23,11 @@ namespace TickTrader.SeriesStorage
         protected virtual void OnStartAccess() { }
         protected virtual void OnStopAccess() { }
 
+        public ITransaction StartTransaction()
+        {
+            return Storage.StartTransaction();
+        }
+
         public virtual void Dispose()
         {
             Storage.Dispose();
@@ -46,12 +51,12 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(bool reversed = false)
+        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(bool reversed = false, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
-                using (var dbIterator = Storage.CreateCursor())
+                using (var dbIterator = Storage.CreateCursor(transaction))
                 {
                     if (reversed)
                         dbIterator.SeekToLast();
@@ -77,30 +82,33 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(TKey from, bool reversed = false)
+        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(TKey from, bool reversed = false, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
                 byte[] refKey = GetBinKey(from);
 
-                using (var dbIterator = Storage.CreateCursor())
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
                 {
-                    Seek(dbIterator, refKey.ToArray(), reversed);
-
-                    while (true)
+                    using (var dbIterator = Storage.CreateCursor(trScope.Transaction))
                     {
-                        if (!dbIterator.IsValid)
-                            yield break; // end of db
+                        Seek(dbIterator, refKey.ToArray(), reversed);
 
-                        TKey key = GetTypedKey(dbIterator.GetKey());
+                        while (true)
+                        {
+                            if (!dbIterator.IsValid)
+                                yield break; // end of db
 
-                        yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+                            TKey key = GetTypedKey(dbIterator.GetKey());
 
-                        if (reversed)
-                            dbIterator.MoveToPrev();
-                        else
-                            dbIterator.MoveToNext();
+                            yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                            if (reversed)
+                                dbIterator.MoveToPrev();
+                            else
+                                dbIterator.MoveToNext();
+                        }
                     }
                 }
             }
@@ -110,28 +118,31 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed = false)
+        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed = false, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
                 byte[] refKey = GetBinKey(from);
 
-                using (var dbIterator = Storage.CreateCursor())
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
                 {
-                    Seek(dbIterator, refKey.ToArray(), reversed);
-
-                    while (true)
+                    using (var dbIterator = Storage.CreateCursor(trScope.Transaction))
                     {
-                        if (!dbIterator.IsValid)
-                            yield break; // end of db
+                        Seek(dbIterator, refKey.ToArray(), reversed);
 
-                        yield return GetTypedKey(dbIterator.GetKey());
+                        while (true)
+                        {
+                            if (!dbIterator.IsValid)
+                                yield break; // end of db
 
-                        if (reversed)
-                            dbIterator.MoveToPrev();
-                        else
-                            dbIterator.MoveToNext();
+                            yield return GetTypedKey(dbIterator.GetKey());
+
+                            if (reversed)
+                                dbIterator.MoveToPrev();
+                            else
+                                dbIterator.MoveToNext();
+                        }
                     }
                 }
             }
@@ -141,19 +152,22 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public bool Read(TKey key, out ArraySegment<byte> value)
+        public bool Read(TKey key, out ArraySegment<byte> value, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
-                byte[] binValue;
-                if (Storage.Read(GetBinKey(key), out binValue))
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
                 {
-                    value = new ArraySegment<byte>(binValue);
-                    return true;
+                    byte[] binValue;
+                    if (Storage.Read(GetBinKey(key), out binValue, trScope.Transaction))
+                    {
+                        value = new ArraySegment<byte>(binValue);
+                        return true;
+                    }
+                    value = new ArraySegment<byte>();
+                    return false;
                 }
-                value = new ArraySegment<byte>();
-                return false;
             }
             finally
             {
@@ -161,12 +175,16 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public void Remove(TKey key)
+        public void Remove(TKey key, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
-                Storage.Remove(GetBinKey(key));
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+                {
+                    Storage.Remove(GetBinKey(key), trScope.Transaction);
+                    trScope.Commit();
+                }
             }
             finally
             {
@@ -174,12 +192,16 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public void RemoveAll()
+        public void RemoveAll(ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
-                Storage.RemoveAll();
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+                {
+                    Storage.RemoveAll(trScope.Transaction);
+                    trScope.Commit();
+                }
             }
             finally
             {
@@ -187,12 +209,16 @@ namespace TickTrader.SeriesStorage
             }   
         }
 
-        public void RemoveRange(TKey from, TKey to)
+        public void RemoveRange(TKey from, TKey to, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
-                Storage.RemoveRange(GetBinKey(from), GetBinKey(to));
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+                {
+                    Storage.RemoveRange(GetBinKey(from), GetBinKey(to), trScope.Transaction);
+                    trScope.Commit();
+                }
             }
             finally
             {
@@ -200,12 +226,16 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public void Write(TKey key, ArraySegment<byte> value)
+        public void Write(TKey key, ArraySegment<byte> value, ITransaction transaction = null)
         {
             OnStartAccess();
             try
             {
-                Storage.Write(GetBinKey(key), value.ToArray());
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+                {
+                    Storage.Write(GetBinKey(key), value.ToArray(), trScope.Transaction);
+                    trScope.Commit();
+                }
             }
             finally
             {

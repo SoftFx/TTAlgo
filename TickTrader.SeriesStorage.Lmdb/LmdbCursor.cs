@@ -12,12 +12,11 @@ namespace TickTrader.SeriesStorage.Lmdb
         private LightningTransaction _tr;
         private LightningCursor _cursor;
 
-        public LmdbCursor(LightningEnvironment env, string dbName, DatabaseConfiguration cfg, bool readOnly)
+        public LmdbCursor(LightningTransaction transaction, string dbName, DatabaseConfiguration cfg, bool readOnly)
         {
             var trFlags = readOnly ? TransactionBeginFlags.ReadOnly : TransactionBeginFlags.None;
 
-            _tr = env.BeginTransaction(trFlags);
-            //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + _tr.Handle());
+            _tr = transaction;
             var db = _tr.OpenDatabase(dbName, cfg);
             _cursor = _tr.CreateCursor(db);
         }
@@ -43,9 +42,6 @@ namespace TickTrader.SeriesStorage.Lmdb
 
         public void Dispose()
         {
-            //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + _tr.Handle());
-
-            _tr.Dispose();
             _cursor.Dispose();
         }
     }

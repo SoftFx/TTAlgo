@@ -33,130 +33,175 @@ namespace TickTrader.SeriesStorage
         public string Name => _collectionName;
         public long ByteSize => GetSize();
 
-        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(bool reversed)
+        public ITransaction StartTransaction()
         {
-            using (var dbIterator = _emulator.Database.CreateCursor())
+            return _emulator.Database.StartTransaction();
+        }
+
+        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(bool reversed, ITransaction transaction = null)
+        {
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
             {
-                if (reversed)
-                    dbIterator.SeekTo(_maxKey);
-                else
-                    dbIterator.SeekTo(_minKey);
-
-                while (true)
+                using (var dbIterator = _emulator.Database.CreateCursor(trScope.Transaction))
                 {
-                    if (!dbIterator.IsValid)
-                        yield break; // end of db
-
-                    TKey key;
-
-                    if (!TryGetKey(dbIterator.GetKey(), out key))
-                        yield break; // end of collection
-
-                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
-
                     if (reversed)
-                        dbIterator.MoveToPrev();
+                        dbIterator.SeekTo(_maxKey);
                     else
-                        dbIterator.MoveToNext();
+                        dbIterator.SeekTo(_minKey);
+
+                    while (true)
+                    {
+                        if (!dbIterator.IsValid)
+                            break; // end of db
+
+                        TKey key;
+
+                        if (!TryGetKey(dbIterator.GetKey(), out key))
+                            break; // end of collection
+
+                        yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                        if (reversed)
+                            dbIterator.MoveToPrev();
+                        else
+                            dbIterator.MoveToNext();
+                    }
                 }
+
+                trScope.Commit();
             }
         }
 
-        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(TKey from, bool reversed)
-        {
-            byte[] refKey = GetBinKey(from);
-
-            using (var dbIterator = _emulator.Database.CreateCursor())
-            {
-                Seek(dbIterator, refKey.ToArray(), reversed);
-
-                while (true)
-                {
-                    if (!dbIterator.IsValid)
-                        yield break; // end of db
-
-                    TKey key;
-
-                    if (!TryGetKey(dbIterator.GetKey(), out key))
-                        yield break; // end of collection
-
-                    yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
-
-                    if (reversed)
-                        dbIterator.MoveToPrev();
-                    else
-                        dbIterator.MoveToNext();
-                }
-            }
-        }
-
-        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, ArraySegment<byte>>> Iterate(TKey from, bool reversed, ITransaction transaction = null)
         {
             byte[] refKey = GetBinKey(from);
 
-            using (var dbIterator = _emulator.Database.CreateCursor())
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
             {
-                Seek(dbIterator, refKey.ToArray(), reversed);
-
-                while (true)
+                using (var dbIterator = _emulator.Database.CreateCursor(trScope.Transaction))
                 {
-                    if (!dbIterator.IsValid)
-                        yield break; // end of db
+                    Seek(dbIterator, refKey.ToArray(), reversed);
 
-                    TKey key;
+                    while (true)
+                    {
+                        if (!dbIterator.IsValid)
+                            break; // end of db
 
-                    if (!TryGetKey(dbIterator.GetKey(), out key))
-                        yield break; // end of collection
+                        TKey key;
 
-                    yield return key;
+                        if (!TryGetKey(dbIterator.GetKey(), out key))
+                            break; // end of collection
 
-                    if (reversed)
-                        dbIterator.MoveToPrev();
-                    else
-                        dbIterator.MoveToNext();
+                        yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                        if (reversed)
+                            dbIterator.MoveToPrev();
+                        else
+                            dbIterator.MoveToNext();
+                    }
+                }
+
+                trScope.Commit();
+            }
+        }
+
+        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed, ITransaction transaction = null)
+        {
+            byte[] refKey = GetBinKey(from);
+
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+            {
+                using (var dbIterator = _emulator.Database.CreateCursor(trScope.Transaction))
+                {
+                    Seek(dbIterator, refKey.ToArray(), reversed);
+
+                    while (true)
+                    {
+                        if (!dbIterator.IsValid)
+                            break; // end of db
+
+                        TKey key;
+
+                        if (!TryGetKey(dbIterator.GetKey(), out key))
+                            break; // end of collection
+
+                        yield return key;
+
+                        if (reversed)
+                            dbIterator.MoveToPrev();
+                        else
+                            dbIterator.MoveToNext();
+                    }
+
+                    trScope.Commit();
                 }
             }
         }
 
-        public bool Read(TKey key, out ArraySegment<byte> value)
+        public bool Read(TKey key, out ArraySegment<byte> value, ITransaction transaction = null)
         {
             var binKey = GetBinKey(key);
             byte[] binValue;
-            _emulator.Database.Read(binKey, out binValue);
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+            {
+                _emulator.Database.Read(binKey, out binValue, trScope.Transaction);
+                trScope.Commit();
+            }
             value = (binValue == null) ? new ArraySegment<byte>() : new ArraySegment<byte>(binValue);
             return binValue != null;
         }
 
-        public void Write(TKey key, ArraySegment<byte> value)
+        public void Write(TKey key, ArraySegment<byte> value, ITransaction transaction = null)
         {
             EnsureNameHeaderWritten();
             var binKey = GetBinKey(key);
             // TO DO : ToArray() causes bad performance
-            _emulator.Database.Write(binKey, value.ToArray());
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+            {
+                _emulator.Database.Write(binKey, value.ToArray(), trScope.Transaction);
+                trScope.Commit();
+            }
         }
 
-        public void Remove(TKey key)
+        public void Remove(TKey key, ITransaction transaction = null)
         {
             var binKey = GetBinKey(key);
-            _emulator.Database.Remove(binKey);
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+            {
+                _emulator.Database.Remove(binKey, trScope.Transaction);
+                trScope.Commit();
+            }
         }
 
-        public void RemoveRange(TKey from, TKey to)
+        public void RemoveRange(TKey from, TKey to, ITransaction transaction = null)
         {
-            _emulator.Database.RemoveRange(GetBinKey(from), GetBinKey(to));
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+            {
+                _emulator.Database.RemoveRange(GetBinKey(from), GetBinKey(to), trScope.Transaction);
+                trScope.Commit();
+            }
         }
 
-        public void RemoveAll()
+        public void RemoveAll(ITransaction transaction = null)
         {
-            if (_emulator.Database.SupportsRemoveAll)
-                _emulator.Database.RemoveAll();
-            else
-                _emulator.Database.RemoveRange(_maxKey, _maxKey);
+            using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
+            {
+                if (_emulator.Database.SupportsRemoveAll)
+                    _emulator.Database.RemoveAll(trScope.Transaction);
+                else
+                    _emulator.Database.RemoveRange(_maxKey, _maxKey, trScope.Transaction);
+
+                trScope.Commit();
+            }
         }
 
         public void Compact()
         {
-            _emulator.Database.CompactRange(_minKey, _maxKey);
+            using (var trScope = new AutoTransactionScope(null, StartTransaction))
+            {
+                _emulator.Database.CompactRange(_minKey, _maxKey, trScope.Transaction);
+                trScope.Commit();
+            }
         }
 
         public long GetSize()
@@ -253,7 +298,11 @@ namespace TickTrader.SeriesStorage
 
         private void WriteHeader(CollectionHeader h)
         {
-            _emulator.Database.Write(h.GetBinaryKey(), h.Content);
+            using (var tr = StartTransaction())
+            {
+                _emulator.Database.Write(h.GetBinaryKey(), h.Content, tr);
+                tr.Commit();
+            }
         }
 
         private void ThrowIfDisposed()

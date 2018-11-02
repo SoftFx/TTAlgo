@@ -64,7 +64,7 @@ namespace TickTrader.SeriesStorage
 
         private void Init()
         {
-            using (var cursor = _binStorage.CreateCursor())
+            using (var cursor = _binStorage.CreateCursor(null))
             {
                 cursor.SeekToFirst();
 

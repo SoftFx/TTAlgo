@@ -17,6 +17,11 @@ namespace TickTrader.SeriesStorage
             _serializer = serializer;
         }
 
+        public ITransaction StartTransaction()
+        {
+            return _binStorage.StartTransaction();
+        }
+
         public void Dispose()
         {
             _binStorage.Dispose();
@@ -27,7 +32,7 @@ namespace TickTrader.SeriesStorage
             _binStorage.Drop();
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed, ITransaction transaction)
         {
             foreach (var item in _binStorage.Iterate(reversed))
             {
@@ -36,7 +41,7 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed, ITransaction transaction)
         {
             foreach (var item in _binStorage.Iterate(from, reversed))
             {
@@ -45,12 +50,12 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
+        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed, ITransaction transaction = null)
         {
             return _binStorage.IterateKeys(from, reversed);
         }
 
-        public bool Read(TKey key, out TValue value)
+        public bool Read(TKey key, out TValue value, ITransaction transaction = null)
         {
             ArraySegment<byte> bytes;
 
@@ -64,22 +69,22 @@ namespace TickTrader.SeriesStorage
             return true;
         }
 
-        public void Remove(TKey key)
+        public void Remove(TKey key, ITransaction transaction = null)
         {
             _binStorage.Remove(key);
         }
 
-        public void RemoveRange(TKey from, TKey to)
+        public void RemoveRange(TKey from, TKey to, ITransaction transaction = null)
         {
             _binStorage.RemoveRange(from, to);
         }
 
-        public void RemoveAll()
+        public void RemoveAll(ITransaction transaction = null)
         {
             _binStorage.RemoveAll();
         }
 
-        public void Write(TKey key, TValue value)
+        public void Write(TKey key, TValue value, ITransaction transaction = null)
         {
             var binVal = _serializer.Serialize(value);
             _binStorage.Write(key, binVal);

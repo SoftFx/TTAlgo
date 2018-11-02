@@ -25,28 +25,33 @@ namespace TickTrader.SeriesStorage.LevelDb
             _database.Dispose();
         }
 
-        public IKeyValueBinaryCursor CreateCursor()
+        public ITransaction StartTransaction()
+        {
+            return NoTransaction.Instance;
+        }
+
+        public IKeyValueBinaryCursor CreateCursor(ITransaction transaction)
         {
             return new LevelDbCursor(_database.CreateIterator());
         }
 
-        public bool Read(byte[] key, out byte[] value)
+        public bool Read(byte[] key, out byte[] value, ITransaction transaction)
         {
             value = _database.Get(key);
             return key != null;
         }
 
-        public void Write(byte[] key, byte[] value)
+        public void Write(byte[] key, byte[] value, ITransaction transaction)
         {
             _database.Put(key, value);
         }
 
-        public void Remove(byte[] key)
+        public void Remove(byte[] key, ITransaction transaction)
         {
             _database.Delete(key);
         }
 
-        public void RemoveRange(byte[] from, byte[] to)
+        public void RemoveRange(byte[] from, byte[] to, ITransaction transaction)
         {
             using (var dbIterator = _database.CreateIterator())
             {
@@ -69,13 +74,13 @@ namespace TickTrader.SeriesStorage.LevelDb
             }
         }
 
-        public void RemoveAll()
+        public void RemoveAll(ITransaction transaction)
         {
             // RemoveAll() is not supported
             throw new NotSupportedException();
         }
 
-        public void CompactRange(byte[] from, byte[] to)
+        public void CompactRange(byte[] from, byte[] to, ITransaction transaction)
         {
             _database.CompactRange(from, to);
         }

@@ -31,15 +31,17 @@ namespace TickTrader.SeriesStorage
         bool SupportsCursorRemove { get; }
         bool SupportsCompaction { get; }
 
-        IKeyValueBinaryCursor CreateCursor();
-        bool Read(byte[] key, out byte[] value);
-        void Write(byte[] key, byte[] value);
-        void Remove(byte[] key);
-        void RemoveRange(byte[] from, byte[] to);
-        void RemoveAll();
-        void CompactRange(byte[] from, byte[] to);
+        IKeyValueBinaryCursor CreateCursor(ITransaction transaction);
+        bool Read(byte[] key, out byte[] value, ITransaction transaction);
+        void Write(byte[] key, byte[] value, ITransaction transaction);
+        void Remove(byte[] key, ITransaction transaction);
+        void RemoveRange(byte[] from, byte[] to, ITransaction transaction);
+        void RemoveAll(ITransaction transaction);
+        void CompactRange(byte[] from, byte[] to, ITransaction transaction);
         long GetSize();
         long GetSize(byte[] from, byte[] to);
+
+        ITransaction StartTransaction();
     }
 
     public interface IKeyValueBinaryDatabase : IDisposable
@@ -83,16 +85,17 @@ namespace TickTrader.SeriesStorage
 
     public interface ICollectionStorage<TKey, TValue> : IDisposable
     {
-        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed = false);
-        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed = false);
-        IEnumerable<TKey> IterateKeys(TKey from, bool reversed = false);
-        bool Read(TKey key, out TValue value);
-        void Write(TKey key, TValue value);
-        void Remove(TKey key);
-        void RemoveRange(TKey from, TKey to);
-        void RemoveAll();
+        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed = false, ITransaction transaction = null);
+        IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed = false, ITransaction transaction = null);
+        IEnumerable<TKey> IterateKeys(TKey from, bool reversed = false, ITransaction transaction = null);
+        bool Read(TKey key, out TValue value, ITransaction transaction = null);
+        void Write(TKey key, TValue value, ITransaction transaction = null);
+        void Remove(TKey key, ITransaction transaction = null);
+        void RemoveRange(TKey from, TKey to, ITransaction transaction = null);
+        void RemoveAll(ITransaction transaction = null);
         void Drop(); // deletes whole storage
         long GetSize();
+        ITransaction StartTransaction();
     }
 
     public interface IBinaryStorageCollection<TKey> : ICollectionStorage<TKey, ArraySegment<byte>>
@@ -200,8 +203,14 @@ namespace TickTrader.SeriesStorage
     public interface ISeriesStorage<TKey> : ISeriesStorage
         where TKey : IComparable
     {
-        KeyRange<TKey> GetFirstRange(TKey from, TKey to);
-        KeyRange<TKey> GetLastRange(TKey from, TKey to);
-        IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false);
+        KeyRange<TKey> GetFirstRange(TKey from, TKey to, ITransaction transaction = null);
+        KeyRange<TKey> GetLastRange(TKey from, TKey to, ITransaction transaction = null);
+        IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false, ITransaction transaction = null);
+    }
+
+    public interface ITransaction : IDisposable
+    {
+        void Commit();
+        void Abort();
     }
 }

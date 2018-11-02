@@ -59,6 +59,7 @@
     <Compile Include="LightSerializer\LightObjectReader.cs" />
     <Compile Include="LightSerializer\LightObjectWriter.cs" />
     <Compile Include="Lib\Extentions.cs" />
+    <Compile Include="Transactions\AutoTransactionScope.cs" />
     <Compile Include="SeriesDatabase.cs" />
     <Compile Include="TopLayer\SeriesStorageNoMetadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="TopLayer\SeriesStorageWithMetadata.cs" />
     <Compile Include="TopLayer\Slice.cs" />
     <Compile Include="Collections\VirtualCollection.cs" />
+    <Compile Include="Transactions\NoTransaction.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

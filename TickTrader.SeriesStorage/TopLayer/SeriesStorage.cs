@@ -32,46 +32,52 @@ namespace TickTrader.SeriesStorage
 
         protected abstract void WriteInternal(KeyRange<TKey> keyRange, TValue[] values);
         public abstract void Delete(KeyRange<TKey> keyRange);
-        protected abstract IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed);
-        protected abstract IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to, bool reversed);
+        public abstract ITransaction StartTransaction();
+        protected abstract IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed, ITransaction transaction);
+        protected abstract IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to, bool reversed, ITransaction transaction);
 
-        protected void WriteInternal(Slice<TKey, TValue> slice)
+        protected void WriteInternal(Slice<TKey, TValue> slice, ITransaction transaction = null)
         {
             WriteInternal(slice.Range, slice.Content.ToArray());
         }
 
-        public void Write(Slice<TKey, TValue> slice)
+        public void Write(Slice<TKey, TValue> slice, ITransaction transaction = null)
         {
             Write(slice.From, slice.To, slice.Content.ToArray());
         }
 
         public void Write(TKey from, TKey to, params TValue[] values)
         {
+            Write(from, to, null, values);
+        }
+
+        public void Write(TKey from, TKey to, ITransaction transaction, params TValue[] values)
+        {
             Slice<TKey, TValue>.CheckSlice(from, to, new ArraySegment<TValue>(values), _keyFunc, _allowDuplicates);
             WriteInternal(new KeyRange<TKey>(from, to), values);
         }
 
-        public Slice<TKey, TValue> GetFirstSlice(TKey from, TKey to)
+        public Slice<TKey, TValue> GetFirstSlice(TKey from, TKey to, ITransaction transaction = null)
         {
-            return IterateSlicesInternal(from, to, false).FirstOrDefault();
+            return IterateSlicesInternal(from, to, false, transaction).FirstOrDefault();
         }
 
-        public KeyRange<TKey> GetFirstRange(TKey from, TKey to)
+        public KeyRange<TKey> GetFirstRange(TKey from, TKey to, ITransaction transaction = null)
         {
-            return IterateRangesInternal(from, to, false).FirstOrDefault();
+            return IterateRangesInternal(from, to, false, transaction).FirstOrDefault();
         }
 
-        public KeyRange<TKey> GetLastRange(TKey from, TKey to)
+        public KeyRange<TKey> GetLastRange(TKey from, TKey to, ITransaction transaction = null)
         {
-            return IterateRangesInternal(from, to, true).FirstOrDefault();
+            return IterateRangesInternal(from, to, true, transaction).FirstOrDefault();
         }
 
-        public IEnumerable<TValue> IterateReversed(TKey from, TKey to)
+        public IEnumerable<TValue> IterateReversed(TKey from, TKey to, ITransaction transaction = null)
         {
-            return Iterate(from, to, true);
+            return Iterate(from, to, true, transaction);
         }
 
-        public IEnumerable<TValue> Iterate(TKey from, TKey to, bool reversed = false)
+        public IEnumerable<TValue> Iterate(TKey from, TKey to, bool reversed = false, ITransaction transaction = null)
         {
             foreach (var slice in IterateSlices(from, to, reversed))
             {
@@ -95,14 +101,14 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        public IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to, bool reversed = false)
+        public IEnumerable<Slice<TKey, TValue>> IterateSlices(TKey from, TKey to, bool reversed = false, ITransaction transaction = null)
         {
-            return IterateSlicesInternal(from, to, reversed);
+            return IterateSlicesInternal(from, to, reversed, transaction);
         }
 
-        public IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false)
+        public IEnumerable<KeyRange<TKey>> IterateRanges(TKey from, TKey to, bool reversed = false, ITransaction transaction = null)
         {
-            return IterateRangesInternal(from, to, reversed);
+            return IterateRangesInternal(from, to, reversed, transaction);
         }
 
         public abstract double GetSize();

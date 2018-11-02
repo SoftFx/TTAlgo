@@ -57,97 +57,69 @@ namespace TickTrader.SeriesStorage.Lmdb
             _env.Dispose();
         }
 
-        public IKeyValueBinaryCursor CreateCursor()
+        public ITransaction StartTransaction()
         {
-            return new LmdbCursor(_env, DefaultDatabaseName, defaultDbCfg, _readonlyMode);
+            return new LmdbTransaction(_env, _readonlyMode);
         }
 
-        public bool Read(byte[] key, out byte[] value)
+        public IKeyValueBinaryCursor CreateCursor(ITransaction transaction)
         {
-            using (var tr = _env.BeginTransaction())
+            var tr = ((LmdbTransaction)transaction).Handle;
+            return new LmdbCursor(tr, DefaultDatabaseName, defaultDbCfg, _readonlyMode);
+        }
+
+        public bool Read(byte[] key, out byte[] value, ITransaction transaction)
+        {
+            var tr = ((LmdbTransaction)transaction).Handle;
+            var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
+            var result = tr.TryGet(db, key, out value);
+
+            return result;
+        }
+
+        public void Write(byte[] key, byte[] value, ITransaction transaction)
+        {
+            var tr = ((LmdbTransaction)transaction).Handle;
+            var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
+            tr.Put(db, key, value);
+        }
+
+        public void Remove(byte[] key, ITransaction transaction)
+        {
+            var tr = ((LmdbTransaction)transaction).Handle;
+            var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
+            tr.Delete(db, key);
+        }
+
+        public void RemoveRange(byte[] from, byte[] to, ITransaction transaction)
+        {
+            var tr = ((LmdbTransaction)transaction).Handle;
+
+            var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
+            var cursor = tr.CreateCursor(db);
+
+            if (cursor.MoveTo(from))
+                return;
+
+            while (cursor.MoveNext())
             {
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
+                var key = cursor.Current.Key;
 
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                var result = tr.TryGet(db, key, out value);
+                if (KeyHelper.IsLess(key, to))
+                    break;
 
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
-
-                return result;
+                cursor.Delete();
             }
         }
 
-        public void Write(byte[] key, byte[] value)
+        public void RemoveAll(ITransaction transaction)
         {
-            using (var tr = _env.BeginTransaction())
-            {
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
-
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                tr.Put(db, key, value);
-                tr.Commit();
-
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
-            }
+            var tr = ((LmdbTransaction)transaction).Handle;
+            var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
+            db.Truncate(tr);
         }
 
-        public void Remove(byte[] key)
-        {
-            using (var tr = _env.BeginTransaction())
-            {
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
-
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                tr.Delete(db, key);
-                tr.Commit();
-
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
-            }
-        }
-
-        public void RemoveRange(byte[] from, byte[] to)
-        {
-            using (var tr = _env.BeginTransaction())
-            {
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
-
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                var cursor = tr.CreateCursor(db);
-
-                if (cursor.MoveTo(from))
-                    return;
-
-                while (cursor.MoveNext())
-                {
-                    var key = cursor.Current.Key;
-
-                    if (KeyHelper.IsLess(key, to))
-                        break;
-
-                    cursor.Delete();
-                }
-
-                tr.Commit();
-
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
-            }
-        }
-
-        public void RemoveAll()
-        {
-            using (var tr = _env.BeginTransaction())
-            {
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction start " + tr.Handle());
-
-                var db = tr.OpenDatabase(DefaultDatabaseName, defaultDbCfg);
-                db.Truncate(tr);
-                tr.Commit();
-
-                //System.Diagnostics.Debug.WriteLine("LMDB transaction end " + tr.Handle());
-            }
-        }
-
-        public void CompactRange(byte[] from, byte[] to)
+        public void CompactRange(byte[] from, byte[] to, ITransaction transaction)
         {
             throw new NotSupportedException();
         }

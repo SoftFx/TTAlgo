@@ -75,7 +75,12 @@ namespace TickTrader.SeriesStorage
             return SliceStorage.GetSize();
         }
 
-        protected override IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed)
+        public override ITransaction StartTransaction()
+        {
+            return SliceStorage.StartTransaction();
+        }
+
+        protected override IEnumerable<Slice<TKey, TValue>> IterateSlicesInternal(TKey from, TKey to, bool reversed, ITransaction transaction)
         {
             if (!reversed)
             {
@@ -118,7 +123,7 @@ namespace TickTrader.SeriesStorage
             }
         }
 
-        protected override IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to, bool reversed)
+        protected override IEnumerable<KeyRange<TKey>> IterateRangesInternal(TKey from, TKey to, bool reversed, ITransaction transaction)
         {
             if (!reversed)
             {

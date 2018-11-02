@@ -14,6 +14,11 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
         {
         }
 
+        public ITransaction StartTransaction()
+        {
+            return NoTransaction.Instance;
+        }
+
         public void Drop()
         {
             RemoveAll();
@@ -24,7 +29,7 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             return 0;
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(TKey from, bool reversed, ITransaction transaction = null)
         {
             if (reversed)
             {
@@ -42,7 +47,7 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             }
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed = false)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Iterate(bool reversed = false, ITransaction transaction = null)
         {
             if (reversed)
             {
@@ -56,7 +61,7 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
             }
         }
 
-        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed)
+        public IEnumerable<TKey> IterateKeys(TKey from, bool reversed, ITransaction transaction = null)
         {
             var index = list.Keys.BinarySearch(from, BinarySearchTypes.NearestLower);
 
@@ -64,27 +69,27 @@ namespace TickTrader.SeriesStorage.UnitTest.Mocks
                 yield return list.Keys[i];
         }
 
-        public bool Read(TKey key, out TValue val)
+        public bool Read(TKey key, out TValue val, ITransaction transaction = null)
         {
             return list.TryGetValue(key, out val);
         }
 
-        public void Remove(TKey key)
+        public void Remove(TKey key, ITransaction transaction = null)
         {
             list.Remove(key);
         }
 
-        public void RemoveAll()
+        public void RemoveAll(ITransaction transaction = null)
         {
             list.Clear();
         }
 
-        public void RemoveRange(TKey from, TKey to)
+        public void RemoveRange(TKey from, TKey to, ITransaction transaction = null)
         {
             throw new NotImplementedException();
         }
 
-        public void Write(TKey key, TValue value)
+        public void Write(TKey key, TValue value, ITransaction transaction = null)
         {
             list[key] = value;
         }

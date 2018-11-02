@@ -260,9 +260,29 @@ namespace TickTrader.Algo.Common.Model
             return IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue);
         }
 
-        private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey key, DateTime from, DateTime to)
+        private IEnumerable<KeyRange<DateTime>> IterateCacheKeysInternal(FeedCacheKey cacheId, DateTime from, DateTime to)
         {
-            return GetSeries(key)?.IterateRanges(from, to) ?? Enumerable.Empty<KeyRange<DateTime>>();
+            for (var i = from; i < to;)
+            {
+                var page = ReadKeyPage(cacheId, i, to, 20);
+
+                if (page.Count == 0)
+                    break;
+
+                foreach (var key in page)
+                {
+                    yield return key;
+                    i = key.To;
+                }
+            }
+        }
+
+        private List<KeyRange<DateTime>> ReadKeyPage(FeedCacheKey key, DateTime from, DateTime to, int pageSize)
+        {
+            var series = GetSeries(key);
+            if (series != null)
+                return series.IterateRanges(from, to).Take(pageSize).ToList();
+            return new List<KeyRange<DateTime>>();
         }
 
         private void IterateCacheKeysInternal(Channel<KeyRange<DateTime>> channel, FeedCacheKey key, DateTime from, DateTime to)
