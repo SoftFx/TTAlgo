@@ -22,5 +22,15 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
+    <DataTemplate x:Key="AccountAuthInfoTemplate" DataType="{x:Type l:AccountStorageEntry}">
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <Border Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}"
+                        CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="95" TextAlignment="Center" FontSize="12" />
+            </Border>
+            <TextBlock Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
+        </StackPanel>
+    </DataTemplate>
+
 </ResourceDictionary>

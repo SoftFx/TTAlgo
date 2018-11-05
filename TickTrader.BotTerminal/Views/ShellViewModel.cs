@@ -18,7 +18,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, IProfileLoader
+    internal class ShellViewModel : Screen, iOrderUi, IShell, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
 
             BotList = new BotListViewModel(algoEnv);
 
-            AccountPane = new AccountPaneViewModel(cManager, this, this);
+            AccountPane = new AccountPaneViewModel(this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
             DockManagerService = new DockManagerService(algoEnv);
@@ -279,6 +279,7 @@ namespace TickTrader.BotTerminal
         public WindowManager ToolWndManager => wndManager;
         public DockManagerService DockManagerService { get; set; }
         public LocalAlgoAgent Agent { get; }
+        public ConnectionManager ConnectionManager => cManager;
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
@@ -450,10 +451,5 @@ namespace TickTrader.BotTerminal
         }
 
         #endregion
-    }
-
-    internal interface IConnectionViewModel
-    {
-        void Connect(AccountAuthEntry creds);
     }
 }

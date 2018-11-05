@@ -24,6 +24,7 @@ namespace TickTrader.BotTerminal
     {
         void OpenChart(string smb);
         void ShowChart(string smb, ChartPeriods period);
+        void Connect(AccountAuthEntry creds);
 
         iOrderUi OrderCommands { get; }
         UiLock ConnectionLock { get; }
@@ -31,5 +32,6 @@ namespace TickTrader.BotTerminal
         IProfileLoader ProfileLoader { get; }
         LocalAlgoAgent Agent { get; }
         DockManagerService DockManagerService { get; }
+        ConnectionManager ConnectionManager { get; }
     }
 }

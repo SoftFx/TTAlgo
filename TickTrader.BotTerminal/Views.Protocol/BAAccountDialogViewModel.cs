@@ -1,12 +1,16 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
     internal class BAAccountDialogViewModel : Screen, IWindowModel, IPasswordContainer
     {
-        private IAlgoAgent _remoteAgent;
+        private AlgoEnvironment _algoEnv;
+        private AlgoAgentViewModel _selectedAgent;
         private string _login;
         private string _password;
         private string _server;
@@ -17,6 +21,24 @@ namespace TickTrader.BotTerminal
         private string _error;
         private string _success;
 
+
+        public IObservableList<AlgoAgentViewModel> Agents { get; }
+
+        public AlgoAgentViewModel SelectedAgent
+        {
+            get { return _selectedAgent; }
+            set
+            {
+                if (_selectedAgent == value)
+                    return;
+
+                DeinitAlgoAgent(_selectedAgent);
+                _selectedAgent = value;
+                InitAlgoAgent(_selectedAgent);
+                NotifyOfPropertyChange(nameof(SelectedAgent));
+                ValidateState();
+            }
+        }
 
         public string Login
         {
@@ -94,9 +116,9 @@ namespace TickTrader.BotTerminal
         public bool CanChangeAccountKey => IsNewMode && IsEditable;
 
         public bool CanOk => _isValid && IsEditable 
-            && IsNewMode ? _remoteAgent.AccessManager.CanAddAccount() : _remoteAgent.AccessManager.CanChangeAccount();
+            && IsNewMode ? SelectedAgent.Model.AccessManager.CanAddAccount() : SelectedAgent.Model.AccessManager.CanChangeAccount();
 
-        public bool CanTest => _isValid && IsEditable && !string.IsNullOrEmpty(_password) && _remoteAgent.AccessManager.CanTestAccountCreds();
+        public bool CanTest => _isValid && IsEditable && !string.IsNullOrEmpty(_password) && SelectedAgent.Model.AccessManager.CanTestAccountCreds();
 
         public string Error
         {
@@ -107,9 +129,11 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _error = value;
-                Success = null;
+                _success = null;
                 NotifyOfPropertyChange(nameof(Error));
                 NotifyOfPropertyChange(nameof(HasError));
+                NotifyOfPropertyChange(nameof(Success));
+                NotifyOfPropertyChange(nameof(HasSuccess));
             }
         }
 
@@ -124,21 +148,59 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _success = value;
-                Error = null;
+                _error = null;
                 NotifyOfPropertyChange(nameof(Success));
                 NotifyOfPropertyChange(nameof(HasSuccess));
+                NotifyOfPropertyChange(nameof(Error));
+                NotifyOfPropertyChange(nameof(HasError));
             }
         }
 
         public bool HasSuccess => !string.IsNullOrEmpty(_success);
 
+        public ObservableCollection<ServerAuthEntry> Servers => _algoEnv.Shell.ConnectionManager.Servers;
 
-        public BAAccountDialogViewModel(IAlgoAgent remoteAgent, AccountModelInfo account)
+        public ServerAuthEntry SelectedServer
         {
-            _remoteAgent = remoteAgent;
+            get { return null; } // This is a magic trick to make ComboBox reselect already selected items. Do not remove this.
+            set
+            {
+                if (value != null)
+                {
+                    Server = value.Address;
+                }
+                NotifyOfPropertyChange(nameof(SelectedServer));
+            }
+        }
+
+        public ObservableCollection<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts;
+
+        public AccountAuthEntry SelectedAccount
+        {
+            get { return null; } // This is a magic trick to make ComboBox reselect already selected items. Do not remove this.
+            set
+            {
+                if (value != null)
+                {
+                    Login = value.Login;
+                    Password = value.Password;
+                    Server = value.Server.Address;
+                    UseSfxProtocol = value.UseSfxProtocol;
+                }
+                NotifyOfPropertyChange(nameof(SelectedAccount));
+            }
+        }
+
+
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName)
+        {
+            _algoEnv = algoEnv;
             _account = account;
 
             IsEditable = true;
+
+            Agents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
+            SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName);
 
             if (_account == null)
             {
@@ -164,8 +226,8 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (_account == null)
-                    await _remoteAgent.AddAccount(new AccountKey(Server, Login), Password, UseSfxProtocol);
-                else await _remoteAgent.ChangeAccount(_account.Key, Password, UseSfxProtocol);
+                    await SelectedAgent.Model.AddAccount(new AccountKey(Server, Login), Password, UseSfxProtocol);
+                else await SelectedAgent.Model.ChangeAccount(_account.Key, Password, UseSfxProtocol);
             }
             catch (Exception ex)
             {
@@ -182,7 +244,7 @@ namespace TickTrader.BotTerminal
             Error = null;
             try
             {
-                var error = await _remoteAgent.TestAccountCreds(new AccountKey(Server, Login), Password, UseSfxProtocol);
+                var error = await SelectedAgent.Model.TestAccountCreds(new AccountKey(Server, Login), Password, UseSfxProtocol);
                 if (error.Code == ConnectionErrorCodes.None)
                     Success = "Successfully connected";
                 else Error = string.IsNullOrEmpty(error.TextMessage) ? $"{error.Code}" : $"{error.Code} - {error.TextMessage}";
@@ -202,8 +264,32 @@ namespace TickTrader.BotTerminal
 
         private void ValidateState()
         {
-            _isValid = !string.IsNullOrWhiteSpace(_login) && !string.IsNullOrWhiteSpace(_server)
+            _isValid = _selectedAgent != null 
+                && !string.IsNullOrWhiteSpace(_login) 
+                && !string.IsNullOrWhiteSpace(_server)
                 && (!string.IsNullOrEmpty(_password) || _account != null);
+            NotifyOfPropertyChange(nameof(CanOk));
+            NotifyOfPropertyChange(nameof(CanTest));
+        }
+
+        private void InitAlgoAgent(AlgoAgentViewModel agent)
+        {
+            if (agent != null)
+            {
+                agent.Model.AccessLevelChanged += OnAccessLevelChanged;
+            }
+        }
+
+        private void DeinitAlgoAgent(AlgoAgentViewModel agent)
+        {
+            if (agent != null)
+            {
+                agent.Model.AccessLevelChanged -= OnAccessLevelChanged;
+            }
+        }
+
+        private void OnAccessLevelChanged()
+        {
             NotifyOfPropertyChange(nameof(CanOk));
             NotifyOfPropertyChange(nameof(CanTest));
         }

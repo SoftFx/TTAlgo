@@ -211,7 +211,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private AccountAuthEntry CreateEntry(string login, string password, string server, bool useSfx)
+        public AccountAuthEntry CreateEntry(string login, string password, string server, bool useSfx)
         {
             return CreateEntry(new AccountStorageEntry(login, password, server, useSfx));
         }
