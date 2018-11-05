@@ -164,7 +164,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Connect failed: {ex.Message}");
-                Error = "Unknown error";
+                Error = $"Connect failed: {ex.Message}";
             }
 
             IsConnecting = false;
@@ -198,8 +198,8 @@ namespace TickTrader.BotTerminal
             if (_isValid)
             {
                 var port = -1;
-                int.TryParse(_port, out port);
-                if (port < 0 || port > 65535)
+                var parseResult = int.TryParse(_port, out port);
+                if (!parseResult || port < 0 || port > 65535)
                 {
                     _isValid = false;
                 }
