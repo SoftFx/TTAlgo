@@ -8,7 +8,7 @@ using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
-    internal class UploadPackageViewModel : Screen, IWindowModel, IFileProgressListener
+    internal class UploadPackageViewModel : Screen, IWindowModel
     {
         private AlgoEnvironment _algoEnv;
         private AlgoPackageViewModel _selectedPackage;
@@ -132,6 +132,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public ProgressViewModel UploadProgress { get; }
+
 
         private UploadPackageViewModel(AlgoEnvironment algoEnv)
         {
@@ -143,6 +145,8 @@ namespace TickTrader.BotTerminal
                 p => p.Location == RepositoryLocation.LocalRepository
                 || p.Location == RepositoryLocation.CommonRepository).AsObservable();
             BotAgents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
+
+            UploadProgress = new ProgressViewModel();
         }
 
         public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName)
@@ -172,7 +176,9 @@ namespace TickTrader.BotTerminal
             HasPendingRequest = true;
             try
             {
-                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath, this);
+                UploadProgress.SetMessage($"Uploading package {SelectedPackage.Key.Name} from {SelectedPackage.Key.Location} to {SelectedBotAgent.Name}");
+                var progressListener = new FileProgressListenerAdapter(UploadProgress, SelectedPackage.Identity.Size);
+                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath, progressListener);
                 TryClose();
             }
             catch (Exception ex)
@@ -198,7 +204,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateFileName()
         {
-            FileName = SelectedPackage.Identity.FileName;
+            FileName = SelectedPackage?.Identity.FileName;
         }
 
         private void Validate()
@@ -267,18 +273,5 @@ namespace TickTrader.BotTerminal
             if (package.Key.Name == FileName.ToLowerInvariant())
                 Validate();
         }
-
-
-        #region IFileProgressListener implementation
-
-        void IFileProgressListener.Init(long initialProgress)
-        {
-        }
-
-        void IFileProgressListener.IncrementProgress(long progressValue)
-        {
-        }
-
-        #endregion IFileProgressListener implementation
     }
 }

@@ -399,18 +399,24 @@ namespace TickTrader.BotTerminal
         private async Task UploadBotFiles(PluginConfig config)
         {
             ShowFileProgress = true;
-            foreach (FileParameter fileParam in config.Properties.Where(p => p is FileParameter))
+            try
             {
-                var path = fileParam.FileName;
-                if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
+                foreach (FileParameter fileParam in config.Properties.Where(p => p is FileParameter))
                 {
-                    var fileInfo = new System.IO.FileInfo(path);
-                    FileProgress.SetMessage($"Uploading {fileInfo.Name} to AlgoData...");
-                    var fileProgressListener = new FileProgressListenerAdapter(FileProgress, fileInfo.Length);
-                    await SelectedAgent.Model.UploadBotFile(config.InstanceId, BotFolderId.AlgoData, fileInfo.Name, path, fileProgressListener);
+                    var path = fileParam.FileName;
+                    if (System.IO.File.Exists(path) && System.IO.Path.GetFullPath(path) == path)
+                    {
+                        var fileInfo = new System.IO.FileInfo(path);
+                        FileProgress.SetMessage($"Uploading {fileInfo.Name} to AlgoData...");
+                        var fileProgressListener = new FileProgressListenerAdapter(FileProgress, fileInfo.Length);
+                        await SelectedAgent.Model.UploadBotFile(config.InstanceId, BotFolderId.AlgoData, fileInfo.Name, path, fileProgressListener);
+                    }
                 }
             }
-            ShowFileProgress = false;
+            finally
+            {
+                ShowFileProgress = false;
+            }
         }
     }
 }

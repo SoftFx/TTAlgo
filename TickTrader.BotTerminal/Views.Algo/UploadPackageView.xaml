@@ -18,6 +18,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
                 <Label Grid.Row="1" Content="Package"/>
@@ -38,7 +39,8 @@
                 <TextBlock Grid.Row="9" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
-                <Grid Grid.Row="10">
+                <ContentControl Grid.Row="10" cal:View.Model="{Binding UploadProgress}" Visibility="{Binding HasPendingRequest, Converter={StaticResource BoolToVis}}" />
+                <Grid Grid.Row="11">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
