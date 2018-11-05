@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
 using System;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace TickTrader.BotTerminal
 {
     internal class DownloadPackageViewModel : Screen, IWindowModel
     {
+        private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _algoEnv;
         private AlgoPackageViewModel _selectedPackage;
         private AlgoAgentViewModel _selectedBotAgent;
@@ -177,6 +180,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 Error = ex.Message;
+                _logger.Error(ex, "Failed to download package");
             }
             HasPendingRequest = false;
         }

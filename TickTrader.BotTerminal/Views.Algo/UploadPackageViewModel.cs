@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
 using System;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
@@ -10,6 +11,8 @@ namespace TickTrader.BotTerminal
 {
     internal class UploadPackageViewModel : Screen, IWindowModel
     {
+        private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _algoEnv;
         private AlgoPackageViewModel _selectedPackage;
         private AlgoAgentViewModel _selectedBotAgent;
@@ -184,6 +187,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 Error = ex.Message;
+                _logger.Error(ex, "Failed to upload package");
             }
             HasPendingRequest = false;
         }

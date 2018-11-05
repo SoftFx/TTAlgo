@@ -700,7 +700,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadPackageInternal, request);
 
-            request.Chunk = new Lib.FileChunk { Id = 0, IsFinal = false };
+            request.Chunk = new Lib.FileChunk { Id = offset, IsFinal = false };
             var buffer = new byte[chunkSize];
             try
             {
@@ -858,7 +858,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             var clientStream = await ExecuteClientStreamingRequestAuthorized(UploadBotFileInternal, request);
 
-            request.Chunk = new Lib.FileChunk { Id = 0, IsFinal = false };
+            request.Chunk = new Lib.FileChunk { Id = offset, IsFinal = false };
             var buffer = new byte[chunkSize];
             try
             {
