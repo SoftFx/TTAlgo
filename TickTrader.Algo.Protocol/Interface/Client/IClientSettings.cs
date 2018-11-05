@@ -4,8 +4,6 @@
     {
         string ServerAddress { get; }
 
-        string ServerCertificateName { get; }
-
         IProtocolSettings ProtocolSettings { get; }
 
         string Login { get; }

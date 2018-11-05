@@ -31,8 +31,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -52,12 +50,10 @@
                   DisplayMemberPath="Name" IsEnabled="{Binding IsEditable}"/>
         <Label Grid.Row="5" Grid.Column="1" Content="Port"/>
         <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"/>
-        <Label Grid.Row="7" Grid.ColumnSpan="2" Content="Certificate Name"/>
-        <TextBox Grid.Row="8" Grid.ColumnSpan="2" Text="{Binding CertificateName, UpdateSourceTrigger=PropertyChanged}"/>
-        <TextBlock Grid.Row="9" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+        <TextBlock Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
-        <l:FlatButton Grid.Row="10" Grid.ColumnSpan="2" Margin="8"
+        <l:FlatButton Grid.Row="8" Grid.ColumnSpan="2" Margin="8"
                       x:Name="Connect" Content="Connect" 
                       Background="{DynamicResource Dialog_OkButtonBackground}"
                       HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>

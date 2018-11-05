@@ -20,9 +20,6 @@ namespace TickTrader.BotTerminal
         public int Port { get; set; }
 
         [DataMember]
-        public string CertificateName { get; set; }
-
-        [DataMember]
         public bool Connect { get; set; }
 
 
@@ -30,24 +27,23 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        public BotAgentStorageEntry(string login, string password, string server, int port, string certificate)
+        public BotAgentStorageEntry(string login, string password, string server, int port)
         {
             Login = login;
             Password = password;
             ServerAddress = server;
             Port = port;
-            CertificateName = certificate;
         }
 
 
         public BotAgentStorageEntry Clone()
         {
-            return new BotAgentStorageEntry(Login, Password, ServerAddress, Port, CertificateName) { Connect = Connect };
+            return new BotAgentStorageEntry(Login, Password, ServerAddress, Port) { Connect = Connect };
         }
 
         public ProtocolClientSettings ToClientSettings()
         {
-            return new ProtocolClientSettings { Login = Login, Password = Password, Port = Port, ServerAddress = ServerAddress, ServerCertificateName = CertificateName };
+            return new ProtocolClientSettings { Login = Login, Password = Password, Port = Port, ServerAddress = ServerAddress };
         }
     }
 }

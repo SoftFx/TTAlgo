@@ -10,11 +10,9 @@ namespace TickTrader.BotTerminal
 
         public int Port { get; }
 
-        public string CertificateName { get; }
-
 
         public BotAgentServerEntry(ProtocolServerElement cfgElement)
-            : this(cfgElement.Name, cfgElement.Address, cfgElement.Port, cfgElement.CertificateName)
+            : this(cfgElement.Name, cfgElement.Address, cfgElement.Port)
         {
         }
 
@@ -24,16 +22,15 @@ namespace TickTrader.BotTerminal
         }
 
         public BotAgentServerEntry(string name, string address) :
-            this(name, address, 8443, "certificate.pfx")
+            this(name, address, 8443)
         {
         }
 
-        public BotAgentServerEntry(string name, string address, int port, string certificateName)
+        public BotAgentServerEntry(string name, string address, int port)
         {
             Name = name;
             Address = address;
             Port = port;
-            CertificateName = certificateName;
 
             if (string.IsNullOrWhiteSpace(name))
                 Name = address;

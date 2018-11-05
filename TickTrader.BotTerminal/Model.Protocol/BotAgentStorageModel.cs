@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public BotAgentStorageEntry Update(string login, string password, string server, int port, string certName)
+        public BotAgentStorageEntry Update(string login, string password, string server, int port)
         {
             var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
             if (index == -1)
@@ -50,7 +50,6 @@ namespace TickTrader.BotTerminal
             _botAgents[index].Login = login;
             _botAgents[index].Password = password;
             _botAgents[index].Port = port;
-            _botAgents[index].CertificateName = certName;
 
             return _botAgents[index];
         }
