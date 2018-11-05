@@ -16,6 +16,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter]
         public string Tag { get; set; }
 
+        [Parameter(DefaultValue = false)]
+        public bool DoNotExit { get; set; }
+
         protected override void Init()
         {
         }
@@ -26,7 +29,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (double.IsNaN(price))
                 price = 1; // can still try
             OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, price, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
-            Exit();
+            if (!DoNotExit)
+                Exit();
         }
     }
 }
