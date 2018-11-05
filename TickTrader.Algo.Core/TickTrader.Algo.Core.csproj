@@ -124,7 +124,7 @@
     <Compile Include="Entities\FileEntity.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\MockOrder.cs" />
-    <Compile Include="Entities\NetPositionCloseInfo.cs" />
+    <Compile Include="Entities\NetPositionOpenInfo.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
     <Compile Include="Entities\PositionAccessor.cs" />

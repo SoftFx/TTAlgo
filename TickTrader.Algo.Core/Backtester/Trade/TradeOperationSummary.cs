@@ -33,10 +33,10 @@ namespace TickTrader.Algo.Core
         public decimal FillAmount { get; set; }
         public decimal FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
-        public PositionAccessor NetPosition => NetClose?.ResultingPosition;
-        public NetPositionCloseInfo NetClose { get; set; }
+        public NetPositionOpenInfo NetPos { get; set; }
+        public SymbolAccessor SymbolInfo { get; set; }
 
-        public bool WasNetPositionClosed => NetClose != null && NetClose.CloseAmount > 0;
+        public bool WasNetPositionClosed => NetPos?.CloseInfo?.CloseAmount > 0;
     }
 
     internal class TradeOperationSummary
@@ -62,19 +62,14 @@ namespace TickTrader.Algo.Core
             return _builder.ToString();
         }
 
-        public void AddOpenAction(OrderAccessor order)
+        public void AddOpenAction(OrderAccessor order, TradeChargesInfo charges)
         {
             StartNewAction();
 
             _builder.Append($"Opened order ");
             PrintOrderDescription(order);
             PrintAmountAndPrice(order);
-
-            //if (order.Commission != 0)
-            //    _builder.Append(" commission =").Append(order.Commission);
-            //else if (Charges.Commission != 0)
-            //    _builder.Append(" commission =").Append(Charges.Commission);
-
+            PrintCharges(charges);
             PrintComment(order);
         }
 
@@ -114,7 +109,7 @@ namespace TickTrader.Algo.Core
             _builder.Append(" at price ").AppendNumber(info.FillPrice, priceFormat);
             PrintComment(order);
 
-            var charges = info.NetClose?.Charges;
+            var charges = info.NetPos?.Charges;
 
             PrintCharges(charges);
         }
@@ -145,12 +140,12 @@ namespace TickTrader.Algo.Core
             PrintCharges(charges);
         }
 
-        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, Symbol symbol, CurrencyEntity balanceCurrInfo)
+        public void AddNetCloseAction(NetPositionCloseInfo closeInfo, SymbolAccessor symbol, CurrencyEntity balanceCurrInfo, TradeChargesInfo charges = null)
         {
             if (closeInfo.CloseAmount == 0)
                 return;
 
-            var priceFormat = closeInfo.SymbolInfo.PriceFormat;
+            var priceFormat = symbol.PriceFormat;
             var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
             var profitFormat = balanceCurrInfo.Format;
 
@@ -159,7 +154,8 @@ namespace TickTrader.Algo.Core
             _builder.Append(" at price ").AppendNumber(closeInfo.ClosePrice, priceFormat);
             _builder.Append(", profit=").AppendNumber(closeInfo.BalanceMovement, profitFormat);
 
-            PrintCharges(closeInfo.Charges);
+            if (charges != null)
+                PrintCharges(charges);
         }
 
         public void AddNetPositionNotification(PositionAccessor pos, SymbolAccessor smbInfo)

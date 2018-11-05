@@ -499,13 +499,13 @@ namespace TickTrader.Algo.Core
                 if (!dealerRequest.Confirmed || dealerRequest.DealerAmount < 0 || dealerRequest.DealerPrice <= 0)
                     throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
 
-                return ConfirmOrderOpening(order, trReason, dealerRequest.DealerPrice, dealerRequest.DealerAmount);
+                return ConfirmOrderOpening(order, trReason, dealerRequest.DealerPrice, dealerRequest.DealerAmount, options);
             }
 
-            return ConfirmOrderOpening(order, trReason, null, null);
+            return ConfirmOrderOpening(order, trReason, null, null, options);
         }
 
-        private OrderAccessor ConfirmOrderOpening(OrderAccessor order, TradeTransReasons trReason, decimal? execPrice, decimal? execAmount)
+        private OrderAccessor ConfirmOrderOpening(OrderAccessor order, TradeTransReasons trReason, decimal? execPrice, decimal? execAmount, OpenOrderOptions options)
         {
             RateUpdate currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);
 
@@ -553,11 +553,14 @@ namespace TickTrader.Algo.Core
             // fire API event
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
 
-            _opSummary.AddOpenAction(order);
-            if (fillInfo.NetClose != null)
+            bool isFakeOrder = options.HasFlag(OpenOrderOptions.FakeOrder);
+            if (!isFakeOrder)
+                _opSummary.AddOpenAction(order, fillInfo.NetPos?.Charges);
+            if (fillInfo.NetPos != null)
             {
-                _opSummary.AddNetCloseAction(fillInfo.NetClose, order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo);
-                _opSummary.AddNetPositionNotification(fillInfo.NetClose.ResultingPosition, fillInfo.NetClose.SymbolInfo);
+                var closeActionCharges = isFakeOrder ? fillInfo.NetPos.Charges : null;
+                _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo, closeActionCharges);
+                _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, order.SymbolInfo);
             }
 
             return order;
@@ -961,16 +964,16 @@ namespace TickTrader.Algo.Core
 
             //LogTransactionDetails(() => "Final order " + pumpingOrderCopy, JournalEntrySeverities.Info, pumpingOrderCopy);
 
-            decimal profit = 0;
+            //decimal profit = 0;
             OrderAccessor newPos = null;
-            NetPositionCloseInfo closeInfo = null;
+            NetPositionOpenInfo netInfo = null;
 
             if (_acc.Type == AccountTypes.Gross)
                 newPos = CreatePositionFromOrder(TradeTransReasons.PndOrdAct, order, fillPrice, fillAmount, !partialFill);
             else if (_acc.Type == AccountTypes.Net)
             {
-                closeInfo = OpenNetPositionFromOrder(order, fillAmount, fillPrice);
-                profit = closeInfo.BalanceMovement;
+                netInfo = OpenNetPositionFromOrder(order, fillAmount, fillPrice);
+                //profit = netInfo.CloseInfo.BalanceMovement;
             }
 
             //_collector.LogTrade($"Filled Order #{copy.Id} {order.Type} {order.Symbol} Price={fillPrice} Amount={fillAmount} RemainingAmount={copy.RemainingAmount} Profit={profit} Comment=\"{copy.Comment}\"");
@@ -981,7 +984,7 @@ namespace TickTrader.Algo.Core
 
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
 
-            return new FillInfo() { FillAmount = fillAmount, FillPrice = fillPrice, Position = newPos, NetClose = closeInfo };
+            return new FillInfo() { FillAmount = fillAmount, FillPrice = fillPrice, Position = newPos, NetPos = netInfo, SymbolInfo = order.SymbolInfo };
         }
 
         private OrderAccessor CancelOrder(OrderAccessor order, TradeTransReasons trReason)
@@ -1291,7 +1294,7 @@ namespace TickTrader.Algo.Core
             //execReport.AssetMovement = moveReport;
         }
 
-        internal NetPositionCloseInfo OpenNetPositionFromOrder(OrderAccessor fromOrder, decimal fillAmount, decimal fillPrice)
+        internal NetPositionOpenInfo OpenNetPositionFromOrder(OrderAccessor fromOrder, decimal fillAmount, decimal fillPrice)
         {
             var smb = fromOrder.SymbolInfo;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name);
@@ -1319,15 +1322,18 @@ namespace TickTrader.Algo.Core
             //LogTransactionDetails(() => "Position opened: symbol=" + smb.Name + " price=" + fillPrice + " amount=" + fillAmount + " commision=" + charges.Commission + " reason=" + tradeReport.TrReason,
             //JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
-            var settlementInfo = DoNetSettlement(position, fromOrder.Side);
-            settlementInfo.Charges = charges;
+            var openInfo = new NetPositionOpenInfo();
+            openInfo.CloseInfo = DoNetSettlement(position, fromOrder.Side);
+            openInfo.Charges = charges;
+            openInfo.ResultingPosition = position;
+
             //tradeReport.FillAccountSpecificFields();
             //tradeReport.FillPosData(position);
             //tradeReport.OpenConversionRate = fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
-            balanceMovement += settlementInfo.BalanceMovement;
+            balanceMovement += openInfo.CloseInfo.BalanceMovement;
             //execReport.Profit = new ExecProfitInfo(balanceMovement, acc.Balance, acc.BalanceCurrency);
             //SendExecutionReport(execReport, acc);
             //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.CreatePosition, position.SymbolRef, balanceMovement));
@@ -1336,9 +1342,7 @@ namespace TickTrader.Algo.Core
 
             _collector.OnCommisionCharged(charges.Commission);
 
-            settlementInfo.ResultingPosition = position;
-
-            return settlementInfo;
+            return openInfo;
         }
 
         public NetPositionCloseInfo DoNetSettlement(PositionAccessor position, OrderSide fillSide = OrderSide.Buy)
@@ -1346,14 +1350,15 @@ namespace TickTrader.Algo.Core
             decimal oneSideClosingAmount = Math.Min(position.Short.Amount, position.Long.Amount);
             decimal oneSideClosableAmount = Math.Max(position.Short.Amount, position.Long.Amount);
             decimal balanceMovement = 0;
+            decimal closePrice = 0;
             //NetAccountModel acc = position.Acc;
 
             if (oneSideClosingAmount > 0)
             {
                 decimal k = oneSideClosingAmount / oneSideClosableAmount;
                 decimal closeSwap = RoundMoney(k * position.Swap, _calcFixture.RoundingDigits);
-                decimal openPrice = fillSide == OrderSide.Buy ? position.Long.Price : position.Short.Price;
-                decimal closePrice = fillSide == OrderSide.Buy ? position.Short.Price : position.Long.Price;
+                decimal openPrice = fillSide == OrderSide.Sell ? position.Long.Price : position.Short.Price;
+                closePrice = fillSide == OrderSide.Sell ? position.Short.Price : position.Long.Price;
                 decimal profitRate;
                 decimal profit = RoundMoney(position.Calculator.CalculateProfitFixedPrice(openPrice, oneSideClosingAmount, closePrice, TickTraderToAlgo.Convert(fillSide), out profitRate), _calcFixture.RoundingDigits);
 
@@ -1388,9 +1393,8 @@ namespace TickTrader.Algo.Core
 
             var info = new NetPositionCloseInfo();
             info.CloseAmount = oneSideClosingAmount;
-            info.ClosePrice = position.Long.Price;
+            info.ClosePrice = closePrice;
             info.BalanceMovement = balanceMovement;
-            info.SymbolInfo = (SymbolAccessor)position.Calculator.SymbolInfo;
 
             return info;
         }
@@ -1475,10 +1479,10 @@ namespace TickTrader.Algo.Core
                 {
                     fillInfo = FillOrder(record.Order, record.ActivationPrice, record.Order.RemainingAmount, TradeTransReasons.PndOrdAct);
                     _opSummary.AddFillAction(record.Order, fillInfo);
-                    if (fillInfo.NetClose != null)
+                    if (fillInfo.NetPos != null)
                     {
-                        _opSummary.AddNetCloseAction(fillInfo.NetClose, record.Order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo);
-                        _opSummary.AddNetPositionNotification(fillInfo.NetClose.ResultingPosition, fillInfo.NetClose.SymbolInfo);
+                        _opSummary.AddNetCloseAction(fillInfo.NetPos.CloseInfo, record.Order.SymbolInfo, (CurrencyEntity)_acc.BalanceCurrencyInfo);
+                        _opSummary.AddNetPositionNotification(fillInfo.NetPos.ResultingPosition, fillInfo.SymbolInfo);
                     }
                 }
             }
@@ -1770,7 +1774,7 @@ namespace TickTrader.Algo.Core
                     using (JournalScope())
                     {
                         OpenOrder(pos.Calculator, OrderType.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
-                            OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing);
+                            OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
                 }
             }
@@ -2156,6 +2160,7 @@ namespace TickTrader.Algo.Core
     {
         None = 0,
         SkipDealing = 0x01,
-        Stopout = 0x02
+        Stopout = 0x02,
+        FakeOrder = 0x04
     }
 }
