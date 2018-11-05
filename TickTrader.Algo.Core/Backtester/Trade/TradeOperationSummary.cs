@@ -184,6 +184,7 @@ namespace TickTrader.Algo.Core
 
             StartNewAction();
             _builder.Append("Stop out! margin level: ").AppendNumber(acc.MarginLevel, "N2");
+            _builder.Append(" balance: ").AppendNumber(acc.Balance, acc.BalanceCurrencyFormat);
             _builder.Append(" equity: ").AppendNumber(acc.Equity, acc.BalanceCurrencyFormat);
             _builder.Append(" margin: ").AppendNumber(acc.Margin, acc.BalanceCurrencyFormat);
             _builder.Append(" last quote: ");
