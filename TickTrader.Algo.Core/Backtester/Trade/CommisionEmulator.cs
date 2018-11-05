@@ -53,14 +53,7 @@ namespace TickTrader.Algo.Core
 
         public static void OnNetPositionOpened(OrderAccessor fromOrder, PositionAccessor position, decimal fillAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture calc)
         {
-            decimal cmsValue = fromOrder.IsReducedOpenCommission()
-                ? (decimal)cfg.CmsValueBookOrders()
-                : (decimal)cfg.CmsValue();
-
-            decimal commiss = position.Calculator.CalculateCommission(fillAmount, cmsValue, cfg.CmsValueType(), cfg.CmsChType());
-            commiss = ApplyMinimalMarginCommission(commiss, calc, cfg);
-
-            charges.Commission = RoundValue(commiss, calc.RoundingDigits);
+            charges.Commission = CalculateMarginCommission(position.Calculator, fillAmount, cfg, calc, fromOrder.IsReducedOpenCommission());
             charges.CurrencyInfo = (CurrencyEntity)calc.Acc.BalanceCurrencyInfo;
         }
 
