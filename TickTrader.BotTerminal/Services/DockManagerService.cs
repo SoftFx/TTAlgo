@@ -266,12 +266,11 @@ namespace TickTrader.BotTerminal
 
         IScreen IDockManagerServiceProvider.GetScreen(string contentId)
         {
-            if (ContentIdProvider.TryParse(contentId, out var agent, out var bot))
+            if (ContentIdProvider.TryParse(contentId, out var agent, out var botId))
             {
-                var botVM = _algoEnv.Agents.Snapshot.FirstOrDefault(a => a.Name == agent)
-                    ?.Bots.Snapshot.FirstOrDefault(b => b.InstanceId == bot);
-                if (botVM != null)
-                    return new BotStateViewModel(botVM);
+                var agentModel = _algoEnv.Agents.Snapshot.FirstOrDefault(a => a.Name == agent)?.Model;
+                if (agentModel != null)
+                    return new BotStateViewModel(_algoEnv, agentModel, botId);
             }
             return null;
         }
