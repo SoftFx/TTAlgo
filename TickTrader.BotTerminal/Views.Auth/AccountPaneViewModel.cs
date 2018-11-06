@@ -15,24 +15,22 @@ namespace TickTrader.BotTerminal
     internal class AccountPaneViewModel : PropertyChangedBase
     {
         private bool isDropDownOpen;
-        private ConnectionManager cManager;
-        private IConnectionViewModel connectionModel;
         private ObservableCollection<AccountViewModel> accounts;
+        private IShell _shell;
 
-        public AccountPaneViewModel(ConnectionManager cManager, IShell shell, IConnectionViewModel connectionModel)
+        public AccountPaneViewModel(IShell shell)
         {
-            this.cManager = cManager;
-            this.connectionModel = connectionModel;
+            _shell = shell;
             accounts = new ObservableCollection<AccountViewModel>();
-            foreach (var acc in cManager.Accounts)
-                Accounts.Add(CreateAccountViewModel(acc, connectionModel, cManager));
+            foreach (var acc in _shell.ConnectionManager.Accounts)
+                Accounts.Add(CreateAccountViewModel(acc));
 
-            cManager.Accounts.CollectionChanged += (s, e) =>
+            _shell.ConnectionManager.Accounts.CollectionChanged += (s, e) =>
             {
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Accounts.Add(CreateAccountViewModel((AccountAuthEntry)e.NewItems[0], connectionModel, cManager));
+                        Accounts.Add(CreateAccountViewModel((AccountAuthEntry)e.NewItems[0]));
                         break;
                     case NotifyCollectionChangedAction.Remove:
                         {
@@ -47,11 +45,11 @@ namespace TickTrader.BotTerminal
                 }
             };
 
-            this.cManager.ConnectionStateChanged += (os, ns) => NotifyOfPropertyChange(nameof(ConnectionState));
-            this.cManager.CredsChanged += () =>
+            _shell.ConnectionManager.ConnectionStateChanged += (os, ns) => NotifyOfPropertyChange(nameof(ConnectionState));
+            _shell.ConnectionManager.CredsChanged += () =>
             {
                 IsDropDownOpen = false;
-                DisplayedAccount = cManager.Creds;
+                DisplayedAccount = _shell.ConnectionManager.Creds;
                 NotifyOfPropertyChange(nameof(DisplayedAccount));
             };
 
@@ -59,7 +57,7 @@ namespace TickTrader.BotTerminal
         }
 
         public UiLock ConnectionLock { get; private set; }
-        public ConnectionModel.States ConnectionState { get { return cManager.State; } }
+        public ConnectionModel.States ConnectionState { get { return _shell.ConnectionManager.State; } }
         public AccountAuthEntry DisplayedAccount { get; set; }
         public ObservableCollection<AccountViewModel> Accounts { get { return accounts; } }
         public bool IsDropDownOpen
@@ -80,13 +78,13 @@ namespace TickTrader.BotTerminal
 
         public void Connect()
         {
-            connectionModel.Connect(null);
+            _shell.Connect(null);
         }
 
         #region Private methods
-        private AccountViewModel CreateAccountViewModel(AccountAuthEntry acc, IConnectionViewModel connVM, ConnectionManager cManager)
+        private AccountViewModel CreateAccountViewModel(AccountAuthEntry acc)
         {
-            var vm = new AccountViewModel(acc, connectionModel, cManager);
+            var vm = new AccountViewModel(acc, _shell);
             vm.StateChanged += AccountViewModelStateChanged;
             return vm;
         }

@@ -1080,7 +1080,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private async Task DownloadPackageInternal(Lib.DownloadPackageRequest request, IServerStreamWriter<Lib.DownloadPackageResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
-            var res = new Lib.DownloadPackageResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
+            var res = new Lib.DownloadPackageResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = request.Package.ChunkSettings.Offset, IsFinal = false, } };
             if (session == null)
             {
                 res.Chunk.IsFinal = true;
@@ -1108,6 +1108,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                     {
                         res.Chunk.Binary = buffer.Convert(0, cnt);
                         await SendServerStreamResponse(responseStream, session, res);
+                        res.Chunk.Id++;
                     }
                 }
             }
@@ -1239,7 +1240,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private async Task DownloadBotFileInternal(Lib.DownloadBotFileRequest request, IServerStreamWriter<Lib.DownloadBotFileResponse> responseStream, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
-            var res = new Lib.DownloadBotFileResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = 0, IsFinal = false, } };
+            var res = new Lib.DownloadBotFileResponse { ExecResult = execResult, Chunk = new Lib.FileChunk { Id = request.File.ChunkSettings.Offset, IsFinal = false, } };
             if (session == null)
             {
                 res.Chunk.IsFinal = true;
@@ -1267,6 +1268,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                     {
                         res.Chunk.Binary = buffer.Convert(0, cnt);
                         await SendServerStreamResponse(responseStream, session, res);
+                        res.Chunk.Id++;
                     }
                 }
             }

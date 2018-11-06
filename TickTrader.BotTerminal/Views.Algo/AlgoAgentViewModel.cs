@@ -150,7 +150,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_agentModel, account);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, Name);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)

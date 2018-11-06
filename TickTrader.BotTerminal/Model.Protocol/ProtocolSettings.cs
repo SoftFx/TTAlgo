@@ -8,10 +8,6 @@ namespace TickTrader.BotTerminal
 
         public string LogDirectoryName { get; set; }
 
-        public bool LogEvents { get; set; }
-
-        public bool LogStates { get; set; }
-
         public bool LogMessages { get; set; }
 
 
@@ -21,8 +17,6 @@ namespace TickTrader.BotTerminal
             var logsConfig = cfgSection.Logs;
 
             LogDirectoryName = EnvService.Instance.LogFolder;
-            LogEvents = logsConfig.LogEvents;
-            LogStates = logsConfig.LogStates;
             LogMessages = logsConfig.LogMessages;
         }
     }

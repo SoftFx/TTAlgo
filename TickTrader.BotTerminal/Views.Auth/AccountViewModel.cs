@@ -17,25 +17,19 @@ namespace TickTrader.BotTerminal
     internal class AccountViewModel : PropertyChangedBase
     {
         private AccountAuthEntry account;
-        private IConnectionViewModel connectionModel;
         private AccountDisplatMode state;
-        private ConnectionManager cManager;
+        private IShell _shell;
 
-        public AccountViewModel(AccountAuthEntry account, IConnectionViewModel connectionModel)
+        public AccountViewModel(AccountAuthEntry account, IShell shell)
         {
             Account = account;
-            this.connectionModel = connectionModel;
-        }
-
-        public AccountViewModel(AccountAuthEntry account, IConnectionViewModel connectionModel, ConnectionManager cManager) : this(account, connectionModel)
-        {
-            this.cManager = cManager;
-            cManager.CredsChanged += CredsChanged;
+            _shell = shell;
+            _shell.ConnectionManager.CredsChanged += CredsChanged;
         }
 
         private void CredsChanged()
         {
-            if(IsSelected)
+            if (IsSelected)
                 State = AccountDisplatMode.Default;
 
             NotifyOfPropertyChange(nameof(IsSelected));
@@ -55,7 +49,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsSelected
         {
-            get { return Account.Equals(cManager.Creds); }
+            get { return Account.Equals(_shell.ConnectionManager.Creds); }
         }
 
         public AccountDisplatMode State
@@ -74,7 +68,7 @@ namespace TickTrader.BotTerminal
 
         public void Connect()
         {
-           connectionModel.Connect(Account);
+            _shell.Connect(Account);
         }
 
         public void Remove()
@@ -86,8 +80,8 @@ namespace TickTrader.BotTerminal
             else if (State == AccountDisplatMode.ConfirmRemove)
             {
                 State = AccountDisplatMode.Removed;
-                cManager.CredsChanged -= CredsChanged;
-                cManager.RemoveAccount(Account);
+                _shell.ConnectionManager.CredsChanged -= CredsChanged;
+                _shell.ConnectionManager.RemoveAccount(Account);
             }
         }
 

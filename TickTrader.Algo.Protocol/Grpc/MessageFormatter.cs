@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Protocol.Grpc
     internal class MessageFormatter
     {
         private static readonly string[] ExcludedFields = new[] { "password", "binary" };
+        private static readonly string[] EscapedMessages = new[] { "chunk" };
 
 
         private JsonFormatter _formatter;
@@ -64,25 +65,54 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private string Format(IMessage msg)
         {
-            var escapedFields = new List<Tuple<IFieldAccessor, object>>();
+            var escapedFields = new Dictionary<IFieldAccessor, object>();
 
-            foreach (var field in msg.Descriptor.Fields.InFieldNumberOrder())
-            {
-                if (ExcludedFields.Any(f => field.Name.ToLower().Contains(f)))
-                {
-                    escapedFields.Add(new Tuple<IFieldAccessor, object>(field.Accessor, field.Accessor.GetValue(msg)));
-                    field.Accessor.SetValue(msg, GetDefaultValue(field.FieldType));
-                }
-            }
+            EscapeMessage(msg, escapedFields);
 
             var res = _formatter.Format(msg);
 
-            foreach(var field in escapedFields)
-            {
-                field.Item1.SetValue(msg, field.Item2);
-            }
+            RestoreMessage(msg, escapedFields);
 
             return res;
+        }
+
+        private void EscapeMessage(IMessage msg, Dictionary<IFieldAccessor, object> escapedFields)
+        {
+            foreach (var field in msg.Descriptor.Fields.InFieldNumberOrder())
+            {
+                if (field.FieldType == FieldType.Message && EscapedMessages.Any(f => field.Name.ToLower().Contains(f)))
+                {
+                    var innerMsg = (IMessage)field.Accessor.GetValue(msg);
+                    if (innerMsg != null)
+                    {
+                        var innerEscapedFields = new Dictionary<IFieldAccessor, object>();
+                        escapedFields.Add(field.Accessor, innerEscapedFields);
+                        EscapeMessage(innerMsg, innerEscapedFields);
+                    }
+                }
+                else if (ExcludedFields.Any(f => field.Name.ToLower().Contains(f)))
+                {
+                    escapedFields.Add(field.Accessor, field.Accessor.GetValue(msg));
+                    field.Accessor.SetValue(msg, GetDefaultValue(field.FieldType));
+                }
+            }
+        }
+
+        private void RestoreMessage(IMessage msg, Dictionary<IFieldAccessor, object> escapedFields)
+        {
+            foreach (var field in escapedFields)
+            {
+                if (field.Key.Descriptor.FieldType == FieldType.Message)
+                {
+                    var innerMsg = (IMessage)field.Key.GetValue(msg);
+                    if (innerMsg != null)
+                        RestoreMessage(innerMsg, (Dictionary<IFieldAccessor, object>)field.Value);
+                }
+                else
+                {
+                    field.Key.SetValue(msg, field.Value);
+                }
+            }
         }
 
         private object GetDefaultValue(FieldType type)

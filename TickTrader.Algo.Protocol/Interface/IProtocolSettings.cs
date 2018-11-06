@@ -6,10 +6,6 @@
 
         string LogDirectoryName { get; }
 
-        bool LogEvents { get; }
-
-        bool LogStates { get; }
-
         bool LogMessages { get; }
     }
 }

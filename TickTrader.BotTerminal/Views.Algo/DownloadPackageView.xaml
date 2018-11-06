@@ -17,6 +17,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
                 <Label Grid.Row="1" Content="Bot Agent"/>
@@ -47,7 +48,8 @@
                 <TextBlock Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
-                <Grid Grid.Row="8">
+                <ContentControl Grid.Row="8" cal:View.Model="{Binding DownloadProgress}" Visibility="{Binding HasPendingRequest, Converter={StaticResource BoolToVis}}" />
+                <Grid Grid.Row="9">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>

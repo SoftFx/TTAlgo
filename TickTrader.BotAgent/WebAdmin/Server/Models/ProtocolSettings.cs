@@ -8,10 +8,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 
         public string LogDirectoryName { get; set; }
 
-        public bool LogEvents { get; set; }
-
-        public bool LogStates { get; set; }
-
         public bool LogMessages { get; set; }
     }
 }

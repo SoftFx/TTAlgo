@@ -14,7 +14,6 @@ namespace TickTrader.BotTerminal
         private string _login;
         private string _password;
         private string _server;
-        private string _certificateName;
         private string _port;
         private string _error;
         private bool _isValid;
@@ -60,20 +59,6 @@ namespace TickTrader.BotTerminal
 
                 _server = value;
                 NotifyOfPropertyChange(nameof(Server));
-                ValidateState();
-            }
-        }
-
-        public string CertificateName
-        {
-            get => _certificateName;
-            set
-            {
-                if (_certificateName == value)
-                    return;
-
-                _certificateName = value;
-                NotifyOfPropertyChange(nameof(CertificateName));
                 ValidateState();
             }
         }
@@ -132,7 +117,6 @@ namespace TickTrader.BotTerminal
                 {
                     Server = value.Address;
                     Port = value.Port.ToString();
-                    CertificateName = value.CertificateName;
                 }
                 NotifyOfPropertyChange(nameof(SelectedServer));
             }
@@ -155,7 +139,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                Error = await _botAgentManager.Connect(_login, _password, _server, int.Parse(_port), _certificateName);
+                Error = await _botAgentManager.Connect(_login, _password, _server, int.Parse(_port));
                 if (!HasError)
                 {
                     TryClose();
@@ -164,7 +148,7 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Connect failed: {ex.Message}");
-                Error = "Unknown error";
+                Error = $"Connect failed: {ex.Message}";
             }
 
             IsConnecting = false;
@@ -179,7 +163,6 @@ namespace TickTrader.BotTerminal
                 Password = creds.Password;
                 Server = creds.ServerAddress;
                 Port = creds.Port.ToString();
-                CertificateName = creds.CertificateName;
             }
 
             if (_server == null)
@@ -193,13 +176,12 @@ namespace TickTrader.BotTerminal
             _isValid = !string.IsNullOrWhiteSpace(_login)
                 && !string.IsNullOrWhiteSpace(_password)
                 && !string.IsNullOrWhiteSpace(_server)
-                && !string.IsNullOrWhiteSpace(_certificateName)
                 && !string.IsNullOrWhiteSpace(_port);
             if (_isValid)
             {
                 var port = -1;
-                int.TryParse(_port, out port);
-                if (port < 0 || port > 65535)
+                var parseResult = int.TryParse(_port, out port);
+                if (!parseResult || port < 0 || port > 65535)
                 {
                     _isValid = false;
                 }

@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
 using System;
 using System.IO;
 using System.Linq;
@@ -9,8 +10,10 @@ using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
-    internal class DownloadPackageViewModel : Screen, IWindowModel, IFileProgressListener
+    internal class DownloadPackageViewModel : Screen, IWindowModel
     {
+        private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _algoEnv;
         private AlgoPackageViewModel _selectedPackage;
         private AlgoAgentViewModel _selectedBotAgent;
@@ -136,6 +139,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public ProgressViewModel DownloadProgress { get; }
+
 
         private DownloadPackageViewModel(AlgoEnvironment algoEnv)
         {
@@ -144,6 +149,8 @@ namespace TickTrader.BotTerminal
             DisplayName = "Download package";
 
             BotAgents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
+
+            DownloadProgress = new ProgressViewModel();
         }
 
         public DownloadPackageViewModel(AlgoEnvironment algoEnv, string agentName)
@@ -165,12 +172,15 @@ namespace TickTrader.BotTerminal
             HasPendingRequest = true;
             try
             {
-                await SelectedBotAgent.Model.DownloadPackage(SelectedPackage.Key, FilePath, this);
+                DownloadProgress.SetMessage($"Downloading package {SelectedPackage.Key.Name} from {SelectedBotAgent.Name} to {FilePath}");
+                var progressListener = new FileProgressListenerAdapter(DownloadProgress, SelectedPackage.Identity.Size);
+                await SelectedBotAgent.Model.DownloadPackage(SelectedPackage.Key, FilePath, progressListener);
                 TryClose();
             }
             catch (Exception ex)
             {
                 Error = ex.Message;
+                _logger.Error(ex, "Failed to download package");
             }
             HasPendingRequest = false;
         }
@@ -235,18 +245,5 @@ namespace TickTrader.BotTerminal
                 SelectedPackage = null;
             }
         }
-
-
-        #region IFileProgressListener implementation
-
-        void IFileProgressListener.Init(long initialProgress)
-        {
-        }
-
-        void IFileProgressListener.IncrementProgress(long progressValue)
-        {
-        }
-
-        #endregion IFileProgressListener implementation
     }
 }

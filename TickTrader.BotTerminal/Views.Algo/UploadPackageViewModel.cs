@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using NLog;
 using System;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
@@ -8,8 +9,10 @@ using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotTerminal
 {
-    internal class UploadPackageViewModel : Screen, IWindowModel, IFileProgressListener
+    internal class UploadPackageViewModel : Screen, IWindowModel
     {
+        private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _algoEnv;
         private AlgoPackageViewModel _selectedPackage;
         private AlgoAgentViewModel _selectedBotAgent;
@@ -132,6 +135,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public ProgressViewModel UploadProgress { get; }
+
 
         private UploadPackageViewModel(AlgoEnvironment algoEnv)
         {
@@ -143,6 +148,8 @@ namespace TickTrader.BotTerminal
                 p => p.Location == RepositoryLocation.LocalRepository
                 || p.Location == RepositoryLocation.CommonRepository).AsObservable();
             BotAgents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
+
+            UploadProgress = new ProgressViewModel();
         }
 
         public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName)
@@ -172,12 +179,15 @@ namespace TickTrader.BotTerminal
             HasPendingRequest = true;
             try
             {
-                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath, this);
+                UploadProgress.SetMessage($"Uploading package {SelectedPackage.Key.Name} from {SelectedPackage.Key.Location} to {SelectedBotAgent.Name}");
+                var progressListener = new FileProgressListenerAdapter(UploadProgress, SelectedPackage.Identity.Size);
+                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath, progressListener);
                 TryClose();
             }
             catch (Exception ex)
             {
                 Error = ex.Message;
+                _logger.Error(ex, "Failed to upload package");
             }
             HasPendingRequest = false;
         }
@@ -198,7 +208,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateFileName()
         {
-            FileName = SelectedPackage.Identity.FileName;
+            FileName = SelectedPackage?.Identity.FileName;
         }
 
         private void Validate()
@@ -267,18 +277,5 @@ namespace TickTrader.BotTerminal
             if (package.Key.Name == FileName.ToLowerInvariant())
                 Validate();
         }
-
-
-        #region IFileProgressListener implementation
-
-        void IFileProgressListener.Init(long initialProgress)
-        {
-        }
-
-        void IFileProgressListener.IncrementProgress(long progressValue)
-        {
-        }
-
-        #endregion IFileProgressListener implementation
     }
 }

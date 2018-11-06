@@ -11,7 +11,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <UserControl.Resources>
-        
+
         <Style TargetType="TextBlock">
             <Setter Property="OverridesDefaultStyle" Value="True"/>
             <Setter Property="SnapsToDevicePixels" Value="False"/>
@@ -19,16 +19,6 @@
             <Setter Property="Margin" Value="5,4,5,1" />
             <Setter Property="Padding" Value="0"/>
         </Style>
-
-        <DataTemplate x:Key="AccountAuthInfoTemplate" DataType="{x:Type l:AccountStorageEntry}">
-            <StackPanel Orientation="Horizontal" Margin="2">
-                <Border Background="{Binding Server.Color, Converter={StaticResource ColorToBrushConverter}}"
-                        CornerRadius="2" Padding="1" Margin="0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Server.ShortName}" TextTrimming="CharacterEllipsis" Width="95" TextAlignment="Center" FontSize="12" />
-                </Border>
-                <TextBlock Text="{Binding Login}" Margin="6,0,3,0" VerticalAlignment="Center" />
-            </StackPanel>
-        </DataTemplate>
 
     </UserControl.Resources>
 
@@ -55,7 +45,7 @@
         <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Account number"/>
         <ComboBox Grid.Row="2" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
-                  ItemTemplate="{StaticResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
+                  ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
                   IsEditable="True"
                   IsEnabled="{Binding IsEditable}"/>
         <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Account password"/>

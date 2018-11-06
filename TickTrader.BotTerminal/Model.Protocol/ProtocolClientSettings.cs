@@ -9,8 +9,6 @@ namespace TickTrader.BotTerminal
 
         public string ServerAddress { get; set; }
 
-        public string ServerCertificateName { get; set; }
-
         public IProtocolSettings ProtocolSettings => _protocolSettings;
 
         public string Login { get; set; }

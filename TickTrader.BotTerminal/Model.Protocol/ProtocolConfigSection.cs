@@ -26,12 +26,6 @@ namespace TickTrader.BotTerminal
 
     public class LoggingConfigElement : ConfigurationElement
     {
-        [ConfigurationProperty("logEvents", IsRequired = true)]
-        public bool LogEvents => (bool)this["logEvents"];
-
-        [ConfigurationProperty("logStates", IsRequired = true)]
-        public bool LogStates => (bool)this["logStates"];
-
         [ConfigurationProperty("logMessages", IsRequired = true)]
         public bool LogMessages => (bool)this["logMessages"];
     }
@@ -62,8 +56,5 @@ namespace TickTrader.BotTerminal
 
         [ConfigurationProperty("port", IsRequired = true)]
         public int Port => (int)this["port"];
-
-        [ConfigurationProperty("certName", IsRequired = true)]
-        public string CertificateName => (string)this["certName"];
     }
 }
