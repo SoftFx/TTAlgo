@@ -171,6 +171,11 @@
                                 <DataTemplate>
                                     <Border BorderThickness="0">
                                         <StackPanel Orientation="Horizontal">
+                                            <StackPanel.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Remove" cal:Message.Attach="RemovePackage"/>
+                                                </ContextMenu>
+                                            </StackPanel.ContextMenu>
                                             <ContentControl Margin="2,0" Style="{StaticResource PackageIconStyle}" />
                                             <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding FilePath}"/>
                                             <i:Interaction.Behaviors>

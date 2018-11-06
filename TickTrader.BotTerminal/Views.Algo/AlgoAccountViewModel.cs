@@ -2,10 +2,11 @@
 using Machinarium.Qnil;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoAccountViewModel : PropertyChangedBase
+    internal class AlgoAccountViewModel : PropertyChangedBase, IDropHandler
     {
         public AccountModelInfo Info { get; }
 
@@ -42,6 +43,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanTestAccount => Agent.Model.AccessManager.CanTestAccount();
 
+        public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
+
         public bool HasRunningBots => Bots.Any(b => b.IsRunning);
 
 
@@ -74,6 +77,11 @@ namespace TickTrader.BotTerminal
             Agent.TestAccount(Info.Key).Forget();
         }
 
+        public void AddBot()
+        {
+            Agent.OpenBotSetup(Info.Key);
+        }
+
 
         private void OnAccountStateChanged(AccountModelInfo account)
         {
@@ -102,6 +110,26 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanChangeAccount));
             NotifyOfPropertyChange(nameof(CanRemoveAccount));
             NotifyOfPropertyChange(nameof(CanTestAccount));
+            NotifyOfPropertyChange(nameof(CanAddBot));
+        }
+
+        public void Drop(object o)
+        {
+            var algoBot = o as AlgoPluginViewModel;
+            if (algoBot != null)
+            {
+                Agent.OpenBotSetup(Info.Key, algoBot.Info);
+            }
+        }
+
+        public bool CanDrop(object o)
+        {
+            var algoBot = o as AlgoPluginViewModel;
+            if (algoBot != null && algoBot.Agent.Name == Agent.Name && algoBot.Type == AlgoTypes.Robot)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
