@@ -164,7 +164,7 @@ namespace TickTrader.BotTerminal
 
         public async void OpenTradeSetup()
         {
-            var setup = new BacktesterTradeSetupViewModel(_settings, _client.Currencies);
+            var setup = new BacktesterTradeSetupViewModel(_settings, _client.SortedCurrenciesNames);
 
             _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
 

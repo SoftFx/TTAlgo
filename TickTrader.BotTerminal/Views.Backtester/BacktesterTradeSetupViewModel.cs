@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         private BoolVar _isEmulatorSettingsValid;
         private BoolVar _isAdvancedSettingsValid;
 
-        public BacktesterTradeSetupViewModel(BacktesterSettings settings, IVarSet<string, CurrencyEntity> currencies)
+        public BacktesterTradeSetupViewModel(BacktesterSettings settings, IObservableList<string> currencies)
         {
             DisplayName = "Trade emulation setup";
 
@@ -112,16 +112,13 @@ namespace TickTrader.BotTerminal
         public IValidable<string> LeverageStr { get; private set; }
         public IValidable<string> InitialBalanceStr { get; private set; }
 
-        private void InitAccountAndBalanceSettings(BacktesterSettings settings, IVarSet<string, CurrencyEntity> currencies)
+        private void InitAccountAndBalanceSettings(BacktesterSettings settings, IObservableList<string> currencies)
         {
             SelectedAccType = _proprs.AddProperty(settings.AccType);
             BalanceCurrency = _proprs.AddValidable(settings.BalanceCurrency);
 
             AvailableAccountTypes = new AccountTypes[] { AccountTypes.Gross, AccountTypes.Net };
-
-            AvailableCurrencies = currencies.OrderBy((k, c) => c.Name)
-                .Chain().Select(c => c.Name)
-                .Chain().AsObservable();
+            AvailableCurrencies = currencies;
 
             BalanceCurrency.Value = settings.BalanceCurrency ?? GetDefaultCurrency(currencies);
             BalanceCurrency.AddValidationRule(s => !string.IsNullOrWhiteSpace(s), "Balance currency must not be empty!");
@@ -141,9 +138,9 @@ namespace TickTrader.BotTerminal
             _isTradeSettingsValid = ((isMargin & isMarginSetupValid) | (isCash));
         }
 
-        private string GetDefaultCurrency(IVarSet<string, CurrencyEntity> currencies)
+        private string GetDefaultCurrency(IObservableList<string> currencies)
         {
-            return currencies.Snapshot.ContainsKey("USD") ? "USD" : currencies.Snapshot.FirstOrDefault().Key;
+            return currencies.Contains("USD") ? "USD" : currencies.FirstOrDefault();
         }
         
         #endregion

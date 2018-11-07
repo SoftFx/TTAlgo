@@ -52,6 +52,7 @@
     <Compile Include="ListSelectorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SortedListTests.cs" />
+    <Compile Include="DictionaryOrderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

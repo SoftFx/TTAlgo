@@ -142,29 +142,23 @@ namespace TickTrader.BotTerminal
 
         public void AddSymbol()
         {
-            using (var currencies = _clientModel.Currencies.TransformToList((k, v) => k).Chain().AsObservable())
-            {
-                var model = new SymbolCfgEditorViewModel(null, currencies, _customManagedSymbols.Snapshot.ContainsKey);
+            var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, _customManagedSymbols.Snapshot.ContainsKey);
 
-                if (_wndManager.ShowDialog(model, this) == true)
-                {
-                    var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
-                    _wndManager.ShowDialog(actionModel, this);
-                }
+            if (_wndManager.ShowDialog(model, this) == true)
+            {
+                var actionModel = new ActionDialogViewModel("Adding symbol...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
+                _wndManager.ShowDialog(actionModel, this);
             }
         }
 
         public void EditSymbol(SymbolData symbol)
         {
-            using (var currencies = _clientModel.Currencies.TransformToList((k, v) => k).Chain().AsObservable())
-            {
-                var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, currencies, _customManagedSymbols.Snapshot.ContainsKey);
+            var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, _customManagedSymbols.Snapshot.ContainsKey);
 
-                if (_wndManager.ShowDialog(model, this) == true)
-                {
-                    var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.Update(model.GetResultingSymbol()));
-                    _wndManager.ShowDialog(actionModel, this);
-                }
+            if (_wndManager.ShowDialog(model, this) == true)
+            {
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.Update(model.GetResultingSymbol()));
+                _wndManager.ShowDialog(actionModel, this);
             }
         }
 

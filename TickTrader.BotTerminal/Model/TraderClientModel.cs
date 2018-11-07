@@ -35,9 +35,13 @@ namespace TickTrader.BotTerminal
             Connection.StateChanged += State_StateChanged;
             Connection.Deinitalizing += Connection_Deinitalizing;
 
-            this.Account = _core.Cache.Account;
-            this.Symbols = _core.Symbols;
-            this.ObservableSymbolList = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
+            Account = _core.Cache.Account;
+            Symbols = _core.Symbols;
+            SortedSymbols = Symbols.Select((k, v)=> (SymbolModel)v).OrderBy((k, v) => k).AsObservable();
+
+            var orderedCurrencies = Currencies.OrderBy((k, v) => k);
+            SortedCurrencies = orderedCurrencies.AsObservable();
+            SortedCurrenciesNames = orderedCurrencies.Select(c => c.Name).AsObservable();
             //this.History = new FeedHistoryProviderModel(connection, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);
 
             _accountInfo = Account;
@@ -179,9 +183,11 @@ namespace TickTrader.BotTerminal
         public TradeHistoryProvider.Handler TradeHistory => _core.TradeHistory;
         public IVarSet<string, SymbolModel> Symbols { get; private set; }
         public EntityCache Cache => _core.Cache;
-        public IObservableList<SymbolModel> ObservableSymbolList { get; private set; }
+        public IObservableList<SymbolModel> SortedSymbols { get; }
         public QuoteDistributor Distributor => _core.Distributor;
         public FeedHistoryProviderModel.Handler FeedHistory => _core.FeedHistory;
         public IVarSet<string, CurrencyEntity> Currencies => _core.Currencies;
+        public IObservableList<CurrencyEntity> SortedCurrencies { get; }
+        public IObservableList<string> SortedCurrenciesNames { get; }
     }
 }
