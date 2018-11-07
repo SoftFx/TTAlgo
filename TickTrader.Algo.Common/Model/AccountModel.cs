@@ -174,7 +174,10 @@ namespace TickTrader.Algo.Common.Model
             var update = _updateWatingForPosition;
             _updateWatingForPosition = null;
 
-            update.Add(GetPositionUpdateEntity(report));
+            if (update == null)
+                return GetPositionUpdateEntity(report);
+            else
+                update.Add(GetPositionUpdateEntity(report));
 
             return update;
         }
