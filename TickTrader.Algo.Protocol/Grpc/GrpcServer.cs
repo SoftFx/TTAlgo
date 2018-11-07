@@ -1029,9 +1029,35 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = _botAgent.GetPackageWriteStream(request.Package.Key.Convert()))
+                var packagePath = _botAgent.GetPackageWritePath(request.Package.Key.Convert());
+                string oldPackagePath = null;
+                if (File.Exists(packagePath))
                 {
-                    stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
+                    oldPackagePath = $"{packagePath}.old";
+                    File.Move(packagePath, oldPackagePath);
+                }
+                using (var stream = File.Open(packagePath, FileMode.Create, FileAccess.ReadWrite))
+                {
+                    if (oldPackagePath != null)
+                    {
+                        using (var oldStream = File.Open(oldPackagePath, FileMode.Open, FileAccess.Read))
+                        {
+                            for (var chunkId = 0; chunkId < request.Package.ChunkSettings.Offset; chunkId++)
+                            {
+                                var bytesRead = oldStream.Read(buffer, 0, chunkSize);
+                                for (var i = bytesRead; i < chunkSize; i++) buffer[i] = 0;
+                                stream.Write(buffer, 0, chunkSize);
+                            }
+                        }
+                        File.Delete(oldPackagePath);
+                    }
+                    else
+                    {
+                        for (var chunkId = 0; chunkId < request.Package.ChunkSettings.Offset; chunkId++)
+                        {
+                            stream.Write(buffer, 0, chunkSize);
+                        }
+                    }
                     while (await requestStream.MoveNext())
                     {
                         request = GetClientStreamRequest(requestStream, session);
@@ -1101,7 +1127,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = _botAgent.GetPackageReadStream(request.Package.Key.Convert()))
+                using (var stream = File.Open(_botAgent.GetPackageReadPath(request.Package.Key.Convert()), FileMode.Open, FileAccess.Read))
                 {
                     stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
@@ -1261,7 +1287,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.File.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = _botAgent.GetBotFileReadStream(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName))
+                using (var stream = File.Open(_botAgent.GetBotFileReadPath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName), FileMode.Open, FileAccess.Read))
                 {
                     stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
@@ -1306,9 +1332,35 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.File.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = _botAgent.GetBotFileWriteStream(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName))
+                var filePath = _botAgent.GetBotFileWritePath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName);
+                string oldFilePath = null;
+                if (File.Exists(filePath))
                 {
-                    stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
+                    oldFilePath = $"{filePath}.old";
+                    File.Move(filePath, oldFilePath);
+                }
+                using (var stream = File.Open(filePath, FileMode.Create, FileAccess.ReadWrite))
+                {
+                    if (oldFilePath != null)
+                    {
+                        using (var oldStream = File.Open(oldFilePath, FileMode.Open, FileAccess.Read))
+                        {
+                            for (var chunkId = 0; chunkId < request.File.ChunkSettings.Offset; chunkId++)
+                            {
+                                var bytesRead = oldStream.Read(buffer, 0, chunkSize);
+                                for (var i = bytesRead; i < chunkSize; i++) buffer[i] = 0;
+                                stream.Write(buffer, 0, chunkSize);
+                            }
+                        }
+                        File.Delete(oldFilePath);
+                    }
+                    else
+                    {
+                        for (var chunkId = 0; chunkId < request.File.ChunkSettings.Offset; chunkId++)
+                        {
+                            stream.Write(buffer, 0, chunkSize);
+                        }
+                    }
                     while (await requestStream.MoveNext())
                     {
                         request = GetClientStreamRequest(requestStream, session);

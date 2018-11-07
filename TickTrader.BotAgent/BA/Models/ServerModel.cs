@@ -72,8 +72,8 @@ namespace TickTrader.BotAgent.BA.Models
             public List<PluginInfo> GetAllPlugins() => CallActorFlatten(a => a.GetAllPlugins());
             public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActorFlatten(a => a.GetPluginsByType(type));
             public MappingCollectionInfo GetMappingsInfo() => CallActorFlatten(a => a.GetMappingsInfo());
-            public Stream GetPackageReadStream(PackageKey package) => CallActorFlatten(a => a.GetPackageReadStream(package));
-            public Stream GetPackageWriteStream(PackageKey package) => CallActorFlatten(a => a.GetPackageWriteStream(package));
+            public string GetPackageReadPath(PackageKey package) => CallActorFlatten(a => a.GetPackageReadPath(package));
+            public string GetPackageWritePath(PackageKey package) => CallActorFlatten(a => a.GetPackageWritePath(package));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
@@ -490,14 +490,14 @@ namespace TickTrader.BotAgent.BA.Models
             return _packageStorage.Mappings.ToInfo();
         }
 
-        private Stream GetPackageReadStream(PackageKey package)
+        private string GetPackageReadPath(PackageKey package)
         {
-            return _packageStorage.GetPackageReadStream(package);
+            return _packageStorage.GetPackageReadPath(package);
         }
 
-        private Stream GetPackageWriteStream(PackageKey package)
+        private string GetPackageWritePath(PackageKey package)
         {
-            return _packageStorage.GetPackageWriteStream(package);
+            return _packageStorage.GetPackageWritePath(package);
         }
 
         #endregion

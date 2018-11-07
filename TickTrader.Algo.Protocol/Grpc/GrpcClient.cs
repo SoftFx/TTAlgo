@@ -2,6 +2,7 @@
 using Grpc.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -704,9 +705,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             var buffer = new byte[chunkSize];
             try
             {
-                using (var stream = System.IO.File.OpenRead(srcPath))
+                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read))
                 {
-                    stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                    stream.Seek((long)chunkSize * offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
                         request.Chunk.Binary = buffer.Convert(0, cnt);
@@ -751,9 +752,34 @@ namespace TickTrader.Algo.Protocol.Grpc
                 });
 
             var buffer = new byte[chunkSize];
-            using (var stream = System.IO.File.OpenWrite(dstPath))
+            string oldDstPath = null;
+            if (File.Exists(dstPath))
             {
-                stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                oldDstPath = $"{dstPath}.old";
+                File.Move(dstPath, oldDstPath);
+            }
+            using (var stream = File.Open(dstPath, FileMode.Create, FileAccess.ReadWrite))
+            {
+                if (oldDstPath != null)
+                {
+                    using (var oldStream = File.Open(oldDstPath, FileMode.Open, FileAccess.Read))
+                    {
+                        for (var chunkId = 0; chunkId < offset; chunkId++)
+                        {
+                            var bytesRead = oldStream.Read(buffer, 0, chunkSize);
+                            for (var i = bytesRead; i < chunkSize; i++) buffer[i] = 0;
+                            stream.Write(buffer, 0, chunkSize);
+                        }
+                    }
+                    File.Delete(oldDstPath);
+                }
+                else
+                {
+                    for (var chunkId = 0; chunkId < offset; chunkId++)
+                    {
+                        stream.Write(buffer, 0, chunkSize);
+                    }
+                }
                 while (await fileReader.MoveNext())
                 {
                     var response = fileReader.Current;
@@ -821,9 +847,34 @@ namespace TickTrader.Algo.Protocol.Grpc
                 });
 
             var buffer = new byte[chunkSize];
-            using (var stream = System.IO.File.OpenWrite(dstPath))
+            string oldDstPath = null;
+            if (File.Exists(dstPath))
             {
-                stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                oldDstPath = $"{dstPath}.old";
+                File.Move(dstPath, oldDstPath);
+            }
+            using (var stream = File.Open(dstPath, FileMode.Create, FileAccess.ReadWrite))
+            {
+                if (oldDstPath != null)
+                {
+                    using (var oldStream = File.Open(oldDstPath, FileMode.Open, FileAccess.Read))
+                    {
+                        for (var chunkId = 0; chunkId < offset; chunkId++)
+                        {
+                            var bytesRead = oldStream.Read(buffer, 0, chunkSize);
+                            for (var i = bytesRead; i < chunkSize; i++) buffer[i] = 0;
+                            stream.Write(buffer, 0, chunkSize);
+                        }
+                    }
+                    File.Delete(oldDstPath);
+                }
+                else
+                {
+                    for (var chunkId = 0; chunkId < offset; chunkId++)
+                    {
+                        stream.Write(buffer, 0, chunkSize);
+                    }
+                }
                 while (await fileReader.MoveNext())
                 {
                     var response = fileReader.Current;
@@ -862,9 +913,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             var buffer = new byte[chunkSize];
             try
             {
-                using (var stream = System.IO.File.OpenRead(srcPath))
+                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read))
                 {
-                    stream.Seek((long)chunkSize * offset, System.IO.SeekOrigin.Begin);
+                    stream.Seek((long)chunkSize * offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
                     {
                         request.Chunk.Binary = buffer.Convert(0, cnt);
