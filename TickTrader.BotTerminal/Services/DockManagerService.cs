@@ -20,10 +20,14 @@ namespace TickTrader.BotTerminal
 
         event Action<string> RemoveViewEvent;
 
+        event System.Action RemoveViewsEvent;
+
 
         void ViewVisibilityChanged(string contentId, bool opened);
 
         IScreen GetScreen(string contentId);
+
+        bool ShouldClose(string contentId);
     }
 
 
@@ -47,6 +51,7 @@ namespace TickTrader.BotTerminal
         private event Action<string> _toggleViewEvent;
         private event Action<string> _showViewEvent;
         private event Action<string> _removeViewEvent;
+        private event System.Action _removeViewsEvent;
 
 
         #region Bindable properties
@@ -195,6 +200,11 @@ namespace TickTrader.BotTerminal
             _removeViewEvent?.Invoke(contentId);
         }
 
+        public void RemoveViews()
+        {
+            _removeViewsEvent?.Invoke();
+        }
+
 
         #region IDockManagerServiceProvider
 
@@ -228,6 +238,12 @@ namespace TickTrader.BotTerminal
             remove { _removeViewEvent -= value; }
         }
 
+        event System.Action IDockManagerServiceProvider.RemoveViewsEvent
+        {
+            add { _removeViewsEvent += value; }
+            remove { _removeViewsEvent -= value; }
+        }
+
 
         void IDockManagerServiceProvider.ViewVisibilityChanged(string contentId, bool opened)
         {
@@ -250,14 +266,18 @@ namespace TickTrader.BotTerminal
 
         IScreen IDockManagerServiceProvider.GetScreen(string contentId)
         {
-            if (ContentIdProvider.TryParse(contentId, out var agent, out var bot))
+            if (ContentIdProvider.TryParse(contentId, out var agent, out var botId))
             {
-                var botVM = _algoEnv.Agents.Snapshot.FirstOrDefault(a => a.Name == agent)
-                    ?.Bots.Snapshot.FirstOrDefault(b => b.InstanceId == bot);
-                if (botVM != null)
-                    return new BotStateViewModel(botVM);
+                var agentModel = _algoEnv.Agents.Snapshot.FirstOrDefault(a => a.Name == agent)?.Model;
+                if (agentModel != null)
+                    return new BotStateViewModel(_algoEnv, agentModel, botId);
             }
             return null;
+        }
+
+        bool IDockManagerServiceProvider.ShouldClose(string contentId)
+        {
+            return ContentIdProvider.TryParse(contentId, out var agent, out var bot);
         }
 
         #endregion IDockManagerServiceProvider

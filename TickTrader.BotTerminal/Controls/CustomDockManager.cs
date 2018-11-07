@@ -43,6 +43,7 @@ namespace TickTrader.BotTerminal
                     oldService.ToggleViewEvent -= dockManager.ToggleView;
                     oldService.ShowViewEvent -= dockManager.ShowView;
                     oldService.RemoveViewEvent -= dockManager.RemoveView;
+                    oldService.RemoveViewsEvent-= dockManager.RemoveViews;
                 }
 
                 if (newService != null)
@@ -52,6 +53,7 @@ namespace TickTrader.BotTerminal
                     newService.ToggleViewEvent += dockManager.ToggleView;
                     newService.ShowViewEvent += dockManager.ShowView;
                     newService.RemoveViewEvent += dockManager.RemoveView;
+                    newService.RemoveViewsEvent += dockManager.RemoveViews;
                 }
 
                 dockManager.UpdateViewsVisibility();
@@ -82,7 +84,7 @@ namespace TickTrader.BotTerminal
             {
                 if (view.IsVisible)
                 {
-                    InitView(view);
+                    //InitView(view);
                     (view.Content as IScreen)?.Activate();
                 }
                 view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
@@ -146,12 +148,31 @@ namespace TickTrader.BotTerminal
             try
             {
                 var layoutSerializer = new XmlLayoutSerializer(this);
+                layoutSerializer.LayoutSerializationCallback += LoadLayoutCallback;
                 layoutSerializer.Deserialize(stream);
+                layoutSerializer.LayoutSerializationCallback -= LoadLayoutCallback;
                 FindAnchorableViews();
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to load DockManager layout");
+            }
+        }
+
+        private void LoadLayoutCallback(object senser, LayoutSerializationCallbackEventArgs args)
+        {
+            if (DockManagerService.ShouldClose(args.Model.ContentId))
+            {
+                var screen = DockManagerService.GetScreen(args.Model.ContentId);
+                if (screen != null)
+                {
+                    args.Model.Title = screen.DisplayName;
+                    args.Content = screen;
+                }
+                else
+                {
+                    args.Model.Close();
+                }
             }
         }
 
@@ -200,6 +221,18 @@ namespace TickTrader.BotTerminal
                 view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
                 (view.Content as IScreen)?.Deactivate(true);
                 _anchorableViews.Remove(contentId);
+            }
+        }
+
+        private void RemoveViews()
+        {
+            var viewsToClose = _anchorableViews.Values.Where(v => DockManagerService.ShouldClose(v.ContentId)).ToList();
+            foreach (var view in viewsToClose)
+            {
+                view.PropertyChanged -= OnLayoutAnchorablePropertyChanged;
+                (view.Content as IScreen)?.Deactivate(true);
+                _anchorableViews.Remove(view.ContentId);
+                view.Close();
             }
         }
 

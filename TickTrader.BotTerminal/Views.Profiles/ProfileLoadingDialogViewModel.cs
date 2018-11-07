@@ -45,6 +45,7 @@ namespace TickTrader.BotTerminal
                 await Task.Delay(Delay, _token); //give UI some time to display this window
 
                 _charts.CloseAllItems(_token);
+                _dockManagerService.RemoveViews();
                 _agent.RemoveAllBots(_token);
 
                 _token.ThrowIfCancellationRequested();
