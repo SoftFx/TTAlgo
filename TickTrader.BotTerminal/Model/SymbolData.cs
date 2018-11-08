@@ -75,6 +75,13 @@ namespace TickTrader.BotTerminal
             return _storage.IterateBarCache(seriesKey, from, to);
         }
 
+        [Conditional("DEBUG")]
+        public void PrintCacheData(TimeFrames timeFrame, BarPriceType? priceType)
+        {
+            var seriesKey = new FeedCacheKey(Name, timeFrame, priceType);
+            _storage.PrintSlices(seriesKey);
+        }
+
         public virtual void OnRemoved()
         {
             _keys.Dispose();

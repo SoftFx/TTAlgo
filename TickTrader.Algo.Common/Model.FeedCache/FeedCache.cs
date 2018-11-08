@@ -3,6 +3,7 @@ using ActorSharp.Lib;
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -146,6 +147,9 @@ namespace TickTrader.Algo.Common.Model
             {
                 return new TickCrossDomainReader(_baseFolder, key, from, to);
             }
+
+            [Conditional("DEBUG")]
+            public void PrintSlices(FeedCacheKey key) => _ref.Send(a => a.PrintSlices(key));
         }
 
         protected virtual void Start(string folder)
@@ -421,6 +425,54 @@ namespace TickTrader.Algo.Common.Model
         private SeriesStorage<DateTime, TVal> GetSeries<TVal>(FeedCacheKey key, bool addIfMissing = false)
         {
             return (SeriesStorage<DateTime, TVal>)GetSeries(key, addIfMissing);
+        }
+
+        [Conditional("DEBUG")]
+        private void PrintSlices(FeedCacheKey key)
+        {
+            try
+            {
+                Debug.WriteLine("Cache data " + key.ToCodeString() + ":");
+
+                var count = 0;
+                var group = new List<KeyRange<DateTime>>();
+
+                foreach (var slice in IterateCacheKeysInternal(key, DateTime.MinValue, DateTime.MaxValue))
+                {
+                    var last = group.LastOrDefault();
+                    if (last != null && last.To != slice.From)
+                    {
+                        PrintGroup(group);
+                        group.Clear();
+                    }
+
+                    group.Add(slice);
+                    count++;
+                }
+
+                if (group.Count > 0)
+                    PrintGroup(group);
+
+                if (count == 0)
+                    Debug.WriteLine("Series cache is empty.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private void PrintGroup(List<KeyRange<DateTime>> slices)
+        {
+            var from = slices[0].From;
+            var to = slices.Last().To;
+
+            Debug.Write("Cluster " + from + " - " + to + ":");
+            foreach (var slice in slices)
+                Debug.Write(" [" + slice.From + "- " + slice.To + "]");
+
+            Debug.WriteLine("");
         }
     }
 }

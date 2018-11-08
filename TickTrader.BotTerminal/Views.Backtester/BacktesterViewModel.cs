@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -180,6 +181,12 @@ namespace TickTrader.BotTerminal
         public void Stop()
         {
             ProgressMonitor.Cancel();
+        }
+
+        [Conditional("DEBUG")]
+        public void PrintCacheData()
+        {
+            MainSymbolSetup.PrintCacheData(SelectedModel.Value);
         }
 
         private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)

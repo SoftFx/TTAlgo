@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Common.Model
                     throw new Exception("FeedHistoryProviderModel accepts only UTC dates!");
 
                 var channel = Channel.NewOutput<SliceInfo>();
-                await Actor.OpenChannel(channel,  (a,c) => a.DownloadBarSeriesToStorage(c, symbol, timeFrame, priceType, Prepare(from), Prepare(to)));
+                await Actor.OpenChannel(channel, (a, c) => a.DownloadBarSeriesToStorage(c, symbol, timeFrame, priceType, Prepare(from), Prepare(to)));
                 return channel;
             }
 
@@ -401,14 +401,12 @@ namespace TickTrader.Algo.Common.Model
                     {
                         var cacheItem = cache.Current;
 
-                        if (cacheItem.From == i)
-                        {
-                            if (!await buffer.Write(cacheItem))
-                                return;
-                            i = cacheItem.To;
-                        }
-                        else
+                        if (cacheItem.From > i)
                             i = await download(buffer, key, i, cacheItem.From);
+
+                        if (!await buffer.Write(cacheItem))
+                            return;
+                        i = cacheItem.To;
                     }
 
                     if (i < to)

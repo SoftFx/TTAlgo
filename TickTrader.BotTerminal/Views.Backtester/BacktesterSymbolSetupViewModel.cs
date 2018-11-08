@@ -194,6 +194,23 @@ namespace TickTrader.BotTerminal
                 SelectDefaultSymbol();
         }
 
+        public void PrintCacheData(TimeFrames timeFrameChoice)
+        {
+            var smb = SelectedSymbol.Value;
+            var priceChoice = SelectedPriceType.Value;
+
+            if (smb == null)
+                return;
+
+            if (timeFrameChoice == TimeFrames.Ticks || timeFrameChoice == TimeFrames.TicksLevel2)
+                smb.PrintCacheData(timeFrameChoice, null);
+            else
+            {
+                smb.PrintCacheData(timeFrameChoice, BarPriceType.Bid);
+                smb.PrintCacheData(timeFrameChoice, BarPriceType.Ask);
+            }
+        }
+
         //public void InitSeriesBuilder(Backtester tester)
         //{
         //    tester.Feed.AddBarBuilder(SelectedSymbol.Value.Name, SelectedTimeframe.Value, BarPriceType.Bid);
