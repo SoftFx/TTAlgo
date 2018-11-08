@@ -37,6 +37,15 @@ namespace TickTrader.BotTerminal
             {
                 if (_rangeFrom != value)
                 {
+                    if (value > Max)
+                        value = Max;
+
+                    if (value < Min)
+                        value = Min;
+
+                    if (To < value)
+                        To = value;
+
                     _rangeFrom = value;
                     NotifyOfPropertyChange(nameof(From));
                     NotifyOfPropertyChange(nameof(RangeFromDouble));
@@ -51,6 +60,15 @@ namespace TickTrader.BotTerminal
             {
                 if (_rangeTo != value)
                 {
+                    if (value > Max)
+                        value = Max;
+
+                    if (value < Min)
+                        value = Min;
+
+                    if (From > value)
+                        From = value;
+
                     _rangeTo = value;
                     NotifyOfPropertyChange(nameof(To));
                     NotifyOfPropertyChange(nameof(RangeToDouble));
