@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
@@ -211,7 +211,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private AccountAuthEntry CreateEntry(string login, string password, string server, bool useSfx)
+        public AccountAuthEntry CreateEntry(string login, string password, string server, bool useSfx)
         {
             return CreateEntry(new AccountStorageEntry(login, password, server, useSfx));
         }

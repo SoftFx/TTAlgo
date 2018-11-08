@@ -1,0 +1,213 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:meta="clr-namespace:TickTrader.Algo.Core.Metadata;assembly=TickTrader.Algo.Core"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="AlgoListView.Old">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid.Resources>
+                <CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Plugins}">
+                    <CollectionViewSource.SortDescriptions>
+                        <scm:SortDescription PropertyName="Category" />
+                        <scm:SortDescription PropertyName="Type" Direction="Descending" />
+                        <scm:SortDescription PropertyName="DisplayName" />
+                    </CollectionViewSource.SortDescriptions>
+                    <CollectionViewSource.GroupDescriptions>
+                        <PropertyGroupDescription PropertyName="Category" />
+                    </CollectionViewSource.GroupDescriptions>
+                </CollectionViewSource>
+            </Grid.Resources>
+
+            <ListBox Grid.Row="1"
+                 Style="{DynamicResource AlgoListBox_Style}"
+                 ItemsSource="{Binding Source={StaticResource PluginGroupViewSrc}}">
+                <ListBox.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="GroupItem">
+                                <Setter Property="Template" Value="{DynamicResource AlgoListBox_GroupTemplate}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
+                        <GroupStyle.Panel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </GroupStyle.Panel>
+                    </GroupStyle>
+                </ListBox.GroupStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel LastChildFill="True" Margin="3" VerticalAlignment="Center" ToolTip="{Binding Description}">
+                            <Button x:Name="btnArrowDown" DockPanel.Dock="Right"
+                                Style="{DynamicResource ListItemActionButton_Style}">
+                                <Button.Content>
+                                    <Path Width="6" Height="6" Stretch="Fill" 
+                                      Data="{DynamicResource DownArrow}" Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"/>
+                                </Button.Content>
+                            </Button>
+                            <Button x:Name="btnPlus" DockPanel.Dock="Right" Margin="0 0 5 0"
+                                Style="{DynamicResource ListItemActionButton_Style}">
+                                <Path Width="10" Height="10"  Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}" StrokeThickness="1" Stretch="Fill"
+                                  Data="{DynamicResource Plus}"/>
+                            </Button>
+                            <TextBlock Text="{Binding Name}" Margin="0 0 5 0" Foreground="{DynamicResource Shell_PrimaryForeground}"/>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </ControlTemplate>
+
+    <Style x:Key="PluginIconStyle" TargetType="ContentControl">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Type}" Value="{x:Static meta:AlgoTypes.Robot}">
+                <Setter Property="Content" Value="{DynamicResource TradeBotIcon}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Type}" Value="{x:Static meta:AlgoTypes.Indicator}">
+                <Setter Property="Content" Value="{DynamicResource IndicatorIcon}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PackageIconStyle" TargetType="ContentControl">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                <Setter Property="Content" Value="{DynamicResource PackageLockedIcon}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsLocked}" Value="False">
+                <Setter Property="Content" Value="{DynamicResource PackageUnlockedIcon}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <ControlTemplate x:Key="AlgoListView.Classic">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <ComboBox Grid.Row="0" Grid.Column="0"
+                      ItemsSource="{Binding AvailableAgents}"
+                      SelectedItem="{Binding SelectedAgent}"
+                      DisplayMemberPath="Name" />
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      ItemsSource="{Binding AvaliableViewTypes}"
+                      SelectedItem="{Binding SelectedViewType}" />
+            <Border Name="PluginsView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0" Visibility="Hidden">
+                <Border.Resources>
+                    <CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Plugins}">
+                        <CollectionViewSource.SortDescriptions>
+                            <scm:SortDescription PropertyName="Category" />
+                            <scm:SortDescription PropertyName="Type" Direction="Descending" />
+                            <scm:SortDescription PropertyName="DisplayName" />
+                        </CollectionViewSource.SortDescriptions>
+                        <CollectionViewSource.GroupDescriptions>
+                            <PropertyGroupDescription PropertyName="Category" />
+                        </CollectionViewSource.GroupDescriptions>
+                    </CollectionViewSource>
+                </Border.Resources>
+                <TreeView ItemsSource="{Binding Source={StaticResource PluginGroupViewSrc}, Path=Groups}" BorderThickness="0">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                            <TextBlock Text="{Binding Name}"/>
+                            <HierarchicalDataTemplate.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderThickness="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding Description}"/>
+                                            <i:Interaction.Behaviors>
+                                                <l:DragBehavior/>
+                                            </i:Interaction.Behaviors>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </HierarchicalDataTemplate.ItemTemplate>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+            <Border Name="PackagesView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0" Visibility="Hidden">
+                <Border.Resources>
+                    <CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Packages}">
+                        <CollectionViewSource.SortDescriptions>
+                            <scm:SortDescription PropertyName="Location" />
+                            <scm:SortDescription PropertyName="DisplayName" />
+                        </CollectionViewSource.SortDescriptions>
+                        <CollectionViewSource.GroupDescriptions>
+                            <PropertyGroupDescription PropertyName="Location" />
+                        </CollectionViewSource.GroupDescriptions>
+                    </CollectionViewSource>
+                </Border.Resources>
+                <TreeView ItemsSource="{Binding Source={StaticResource PluginGroupViewSrc}, Path=Groups}" BorderThickness="0">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True"/>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                            <TextBlock Text="{Binding Name}"/>
+                            <HierarchicalDataTemplate.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderThickness="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <StackPanel.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Remove" cal:Message.Attach="RemovePackage"/>
+                                                </ContextMenu>
+                                            </StackPanel.ContextMenu>
+                                            <ContentControl Margin="2,0" Style="{StaticResource PackageIconStyle}" />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding FilePath}"/>
+                                            <i:Interaction.Behaviors>
+                                                <l:DragBehavior/>
+                                            </i:Interaction.Behaviors>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </HierarchicalDataTemplate.ItemTemplate>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding SelectedViewType}" Value="{x:Static l:AlgoListViewType.Plugins}">
+                <Setter TargetName="PluginsView" Property="Visibility" Value="Visible" />
+                <Setter TargetName="PackagesView" Property="Visibility" Value="Hidden" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding SelectedViewType}" Value="{x:Static l:AlgoListViewType.Packages}">
+                <Setter TargetName="PluginsView" Property="Visibility" Value="Hidden" />
+                <Setter TargetName="PackagesView" Property="Visibility" Value="Visible" />
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="AlgoListViewStyle" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource AlgoListView.Old}"/>
+    </Style>
+
+    <Style x:Key="AlgoListViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource AlgoListView.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

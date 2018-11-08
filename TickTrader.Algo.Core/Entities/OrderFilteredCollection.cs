@@ -8,9 +8,8 @@ namespace TickTrader.Algo.Core
     internal class OrderFilteredCollection : OrderList
     {
         private Dictionary<string, Order> _filteredOrders = new Dictionary<string, Order>();
-        private OrderList _originalList;
+        private OrdersCollection.OrdersAdapter _originalList;
         private Predicate<Order> _predicate;
-
 
         public Order this[string id]
         {
@@ -25,20 +24,18 @@ namespace TickTrader.Algo.Core
 
         public int Count => _filteredOrders.Count;
 
-
         public event Action<OrderCanceledEventArgs> Canceled;
         public event Action<OrderClosedEventArgs> Closed;
         public event Action<OrderExpiredEventArgs> Expired;
         public event Action<OrderFilledEventArgs> Filled;
         public event Action<OrderModifiedEventArgs> Modified;
         public event Action<OrderOpenedEventArgs> Opened;
-        public event Action<Order> Added;
-        public event Action<Order> Removed;
-        public event Action<Order> Replaced;
+        public event Action<Order> Added { add { } remove { } }
+        public event Action<Order> Removed { add { } remove { } }
+        public event Action<Order> Replaced { add { } remove { } }
         public event Action<OrderActivatedEventArgs> Activated;
 
-
-        public OrderFilteredCollection(OrderList originalList, Predicate<Order> predicate)
+        public OrderFilteredCollection(OrdersCollection.OrdersAdapter originalList, Predicate<Order> predicate)
         {
             _originalList = originalList;
             _predicate = predicate;
@@ -58,8 +55,8 @@ namespace TickTrader.Algo.Core
             _originalList.Modified += OriginalList_Modified;
             _originalList.Opened += OriginalList_Opened;
             _originalList.Activated += OriginalList_Activated;
+            _originalList.Cleared += OriginalList_Cleared;
         }
-
 
         public IEnumerator<Order> GetEnumerator()
         {
@@ -70,7 +67,6 @@ namespace TickTrader.Algo.Core
         {
             return GetEnumerator();
         }
-
 
         private void OriginalList_Added(Order order)
         {
@@ -87,6 +83,11 @@ namespace TickTrader.Algo.Core
             {
                 _filteredOrders.Remove(order.Id);
             }
+        }
+
+        private void OriginalList_Cleared()
+        {
+            _filteredOrders.Clear();
         }
 
         private void OriginalList_Canceled(OrderCanceledEventArgs args)

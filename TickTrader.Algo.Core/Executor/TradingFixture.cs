@@ -10,13 +10,14 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradingFixture : CrossDomainObject, ITradeApi
+    internal class TradingFixture : CrossDomainObject, ITradeApi, IExecutorFixture
     {
         private IFixtureContext context;
         private Dictionary<string, Currency> currencies;
         private AccountAccessor _account;
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
+        private IAccountInfoProvider _dataProvider;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
 
@@ -25,21 +26,22 @@ namespace TickTrader.Algo.Core
             this.context = context;
         }
 
-        public IAccountInfoProvider DataProvider { get; set; }
-
-        internal ITradeExecutor Executor { get { return _executor; } set { _executor = value; } }
-
         public void Start()
         {
-            if (DataProvider != null)
-                DataProvider.SyncInvoke(Init);
+            _executor = context.TradeExecutor;
+            _dataProvider = context.AccInfoProvider;
+
+            context.Builder.TradeApi = this;
+
+            if (_dataProvider != null)
+                _dataProvider.SyncInvoke(Init);
         }
 
         public void Restart()
         {
-            if (DataProvider != null)
+            if (_dataProvider != null)
             {
-                DataProvider.SyncInvoke(() =>
+                _dataProvider.SyncInvoke(() =>
                 {
                     Deinit();
                     Init();
@@ -54,11 +56,11 @@ namespace TickTrader.Algo.Core
             _account = builder.Account;
             _symbols = builder.Symbols;
 
-            DataProvider.OrderUpdated += DataProvider_OrderUpdated;
-            DataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
-            DataProvider.PositionUpdated += DataProvider_PositionUpdated;
+            _dataProvider.OrderUpdated += DataProvider_OrderUpdated;
+            _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
+            //_dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accType = DataProvider.AccountInfo.Type;
+            var accType = _dataProvider.AccountInfo.Type;
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
@@ -66,24 +68,24 @@ namespace TickTrader.Algo.Core
             builder.Account.NetPositions.Clear();
             builder.Account.Assets.Clear();
 
-            builder.Account.Update(DataProvider.AccountInfo, currencies);
+            builder.Account.Update(_dataProvider.AccountInfo, currencies);
 
-            foreach (var order in DataProvider.GetOrders())
+            foreach (var order in _dataProvider.GetOrders())
                 builder.Account.Orders.Add(order);
-            foreach (var position in DataProvider.GetPositions())
-                builder.Account.NetPositions.UpdatePosition(position);
+            foreach (var position in _dataProvider.GetPositions())
+                builder.Account.NetPositions.UpdatePosition(position.PositionInfo);
         }
 
         public void Stop()
         {
-            DataProvider.SyncInvoke(Deinit);
+            _dataProvider.SyncInvoke(Deinit);
         }
 
         private void Deinit()
         {
-            DataProvider.OrderUpdated -= DataProvider_OrderUpdated;
-            DataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
-            DataProvider.PositionUpdated -= DataProvider_PositionUpdated;
+            _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
+            _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
+            //_dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
         }
 
         private void CallListener(OrderExecReport eReport)
@@ -109,7 +111,7 @@ namespace TickTrader.Algo.Core
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
             if (eReport.Action == OrderEntityAction.Removed)
-                return collection.Remove(eReport.OrderCopy);
+                return collection.UpdateAndRemove(eReport.OrderCopy);
             if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
 
@@ -124,7 +126,7 @@ namespace TickTrader.Algo.Core
 
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
-                    accProxy.Balance = report.Balance;
+                    accProxy.Balance = (decimal)report.Balance;
                     context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                 }
                 else if (accProxy.Type == Api.AccountTypes.Cash)
@@ -140,21 +142,37 @@ namespace TickTrader.Algo.Core
             });
         }
 
-        private void DataProvider_PositionUpdated(PositionExecReport report)
+        //private void DataProvider_PositionUpdated(PositionExecReport report)
+        //{
+        //    context.EnqueueTradeUpdate(b =>
+        //    {
+        //        var accProxy = context.Builder.Account;
+        //        var positions = accProxy.NetPositions;
+
+        //        var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
+        //        var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
+        //        var pos = positions.UpdatePosition(report);
+        //        var isClosed = report.ExecAction == OrderExecAction.Closed;
+
+        //        context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
+        //    });
+
+        //}
+
+        private void UpdatePosition(OrderExecReport report)
         {
-            context.EnqueueTradeUpdate(b =>
+            if (report.NetPosition != null)
             {
                 var accProxy = context.Builder.Account;
                 var positions = accProxy.NetPositions;
 
-                var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
-                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
-                var pos = positions.UpdatePosition(report);
+                var oldPos = positions.GetPositionOrNull(report.NetPosition.Symbol);
+                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.NetPosition.Symbol);
+                var pos = positions.UpdatePosition(report.NetPosition);
                 var isClosed = report.ExecAction == OrderExecAction.Closed;
 
                 context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
-            });
-
+            }
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -169,6 +187,8 @@ namespace TickTrader.Algo.Core
         private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
         {
             System.Diagnostics.Debug.WriteLine($"ER: {eReport.Action} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
+
+            UpdatePosition(eReport);
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecAction.Activated)
@@ -274,9 +294,9 @@ namespace TickTrader.Algo.Core
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
             {
-                if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
+                if (eReport.NewBalance != null && acc.Balance != (decimal)eReport.NewBalance.Value)
                 {
-                    acc.Balance = eReport.NewBalance.Value;
+                    acc.Balance = (decimal) eReport.NewBalance.Value;
                     context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }

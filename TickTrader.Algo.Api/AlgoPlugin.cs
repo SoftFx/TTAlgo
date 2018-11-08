@@ -29,18 +29,38 @@ namespace TickTrader.Algo.Api
         public EnvironmentInfo Enviroment { get { return context.Environment; } }
         public SymbolList Symbols { get { return context.Symbols.List; } }
         public CurrencyList Currencies { get { return context.Currencies; } }
-        public string Id { get { return context.Id; } }
+        public string Id { get { return context.InstanceId; } }
         public Symbol Symbol { get { return context.Symbols.MainSymbol; } }
         public BarSeries Bars { get { return context.Feed.Bars; } }
         public double Bid { get { return Symbol.Bid; } }
         public double Ask { get { return Symbol.Ask; } }
         public TimeFrames TimeFrame { get { return context.TimeFrame; } }
 
+        /// <summary>
+        /// Occurs when connection to server is lost.
+        /// </summary>
+        public event EventHandler<DisconnectedEventArgs> Disconnected;
+
+        /// <summary>
+        /// Occurs when connection to server is restored.
+        /// </summary>
+        public event EventHandler<ConnectedEventArgs> Connected;
+
         protected virtual void Init() { }
 
         internal void InvokeInit()
         {
             Init();
+        }
+
+        internal void InvokeConnected(ConnectedEventArgs args)
+        {
+            Connected?.Invoke(this, args);
+        }
+
+        internal void InvokeDisconnected(DisconnectedEventArgs args)
+        {
+            Disconnected?.Invoke(this, args);
         }
 
         public void OnMainThread(Action action)
@@ -57,5 +77,13 @@ namespace TickTrader.Algo.Api
         {
             return context.OnPluginThreadAsync(action);
         }
+    }
+
+    public class ConnectedEventArgs : EventArgs
+    {
+    }
+
+    public class DisconnectedEventArgs : EventArgs
+    {
     }
 }

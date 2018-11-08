@@ -24,8 +24,8 @@ namespace TickTrader.Algo.Core
             this.plugin = plugnInstance;
             this.Coordinator = coordinator;
 
-            Descriptor = AlgoPluginDescriptor.Get(plugin.GetType());
-            Descriptor.Validate();
+            Metadata = AlgoAssemblyInspector.GetPlugin(plugin.GetType());
+            Metadata.Validate();
         }
 
         internal PluginAdapter(Func<AlgoPlugin> pluginFactoy, IPluginContext provider, BuffersCoordinator coordinator)
@@ -43,21 +43,21 @@ namespace TickTrader.Algo.Core
                 AlgoPlugin.activator = null;
             }
 
-            Descriptor = AlgoPluginDescriptor.Get(plugin.GetType());
-            Descriptor.Validate();
+            Metadata = AlgoAssemblyInspector.GetPlugin(plugin.GetType());
+            Metadata.Validate();
         }
 
         public BuffersCoordinator Coordinator { get; private set; }
-        public AlgoPluginDescriptor Descriptor { get; private set; }
+        public PluginMetadata Metadata { get; private set; }
         protected IReadOnlyList<IndicatorAdapter> NestedIndicators { get { return nestedIndacators; } }
         protected AlgoPlugin PluginInstance { get { return plugin; } }
 
         public void SetParameter(string id, object val)
         {
-            var paramDescriptor = Descriptor.Parameters.FirstOrDefault(p => p.Id == id);
-            if (paramDescriptor == null)
+            var paramMetadata = Metadata.Parameters.FirstOrDefault(p => p.Id == id);
+            if (paramMetadata == null)
                 throw new InvalidOperationException("Can't find parameter with id = " + id);
-            paramDescriptor.Set(plugin, val);
+            paramMetadata.Set(plugin, val);
         }
 
         public IDataSeriesProxy GetInput(string id)
@@ -95,6 +95,26 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void InvokeConnectedEvent()
+        {
+            var args = new ConnectedEventArgs();
+
+            for (int i = nestedIndacators.Count - 1; i >= 0; i--)
+                nestedIndacators[i].plugin.InvokeConnected(args);
+
+            plugin.InvokeConnected(args);
+        }
+
+        public void InvokeDisconnectedEvent()
+        {
+            var args = new DisconnectedEventArgs();
+
+            for (int i = nestedIndacators.Count - 1; i >= 0; i--)
+                nestedIndacators[i].plugin.InvokeDisconnected(args);
+
+            plugin.InvokeDisconnected(args);
+        }
+
         IPluginContext IPluginActivator.Activate(AlgoPlugin instance)
         {
             if (plugin == null) // Activate() is called from constructor
@@ -112,7 +132,7 @@ namespace TickTrader.Algo.Core
 
         protected void InitParameters()
         {
-            foreach (var paramProperty in Descriptor.Parameters)
+            foreach (var paramProperty in Metadata.Parameters)
             {
                 if (paramProperty.DefaultValue != null)
                     paramProperty.ResetValue(plugin);
@@ -121,17 +141,17 @@ namespace TickTrader.Algo.Core
 
         protected void BindUpInputs()
         {
-            foreach (var inputProperty in Descriptor.Inputs)
-                ReflectGenericMethod(inputProperty.DatdaSeriesBaseType, "BindInput", inputProperty);
+            foreach (var inputProperty in Metadata.Inputs)
+                ReflectGenericMethod(inputProperty.DataSeriesBaseType, "BindInput", inputProperty);
         }
 
         protected void BindUpOutputs()
         {
-            foreach (var outputProperty in Descriptor.Outputs)
+            foreach (var outputProperty in Metadata.Outputs)
                 ReflectGenericMethod(outputProperty.DataSeriesBaseType, "BindOutput", outputProperty);
         }
 
-        public void BindInput<T>(InputDescriptor d)
+        public void BindInput<T>(InputMetadata d)
         {
             var input = d.CreateInput2<T>();
             input.Buffer = new EmptyBuffer<T>();
@@ -139,7 +159,7 @@ namespace TickTrader.Algo.Core
             inputs.Add(d.Id, input);
         }
 
-        public void BindOutput<T>(OutputDescriptor d)
+        public void BindOutput<T>(OutputMetadata d)
         {
             var output = d.CreateOutput2<T>();
             output.Buffer = OutputBuffer<T>.Create(Coordinator, d.IsHiddenEntity);
@@ -154,24 +174,24 @@ namespace TickTrader.Algo.Core
             genericMethod.Invoke(this, parameters);
         }
 
-        private static AlgoPluginDescriptor GetDescriptorOrThrow(string id)
+        private static PluginMetadata GetMetadataOrThrow(string id)
         {
-            AlgoPluginDescriptor descriptor = AlgoPluginDescriptor.Get(id);
+            PluginMetadata metadata = AlgoAssemblyInspector.GetPlugin(id);
 
-            if (descriptor == null)
-                throw new ArgumentException("Cannot find plugin descriptor: " + id);
+            if (metadata == null)
+                throw new ArgumentException("Cannot find plugin metadata: " + id);
 
-            return descriptor;
+            return metadata;
         }
 
-        public static PluginAdapter Create(AlgoPluginDescriptor descriptor, IPluginContext dataProvider)
+        public static PluginAdapter Create(PluginMetadata metadata, IPluginContext dataProvider)
         {
-            if (descriptor.AlgoLogicType == AlgoTypes.Indicator)
-                return new IndicatorAdapter(() => (AlgoPlugin)descriptor.CreateInstance(), dataProvider);
-            else if (descriptor.AlgoLogicType == AlgoTypes.Robot)
-                return new BotAdapter(() => (TradeBot)descriptor.CreateInstance(), dataProvider);
+            if (metadata.Descriptor.Type == AlgoTypes.Indicator)
+                return new IndicatorAdapter(() => (AlgoPlugin)metadata.CreateInstance(), dataProvider);
+            else if (metadata.Descriptor.Type == AlgoTypes.Robot)
+                return new BotAdapter(() => (TradeBot)metadata.CreateInstance(), dataProvider);
             else
-                throw new InvalidPluginType("Unsupported plugin type: " + descriptor.AlgoLogicType);
+                throw new InvalidPluginType("Unsupported plugin type: " + metadata.Descriptor.Type);
         }
 
         public abstract void InvokeCalculate(bool isUpdate);
@@ -185,29 +205,5 @@ namespace TickTrader.Algo.Core
             for (int i = NestedIndicators.Count - 1; i >= 0; i--)
                 NestedIndicators[i].InvokeCalculate(isUpdate);
         }
-
-        //public static IndicatorAdapter CreateIndicator(string id, IPluginDataProvider dataProvider)
-        //{
-        //    AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-
-        //    if (descriptor.AlgoLogicType != AlgoTypes.Indicator)
-        //        throw new InvalidPluginType("CreateIndicator() can be called only for indicators!");
-
-        //    descriptor.Validate();
-
-        //    return new IndicatorAdapter(() => (AlgoPlugin)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
-        //}
-
-        //public static BotAdapter CreateBot(string id, IPluginDataProvider dataProvider)
-        //{
-        //    AlgoPluginDescriptor descriptor = GetDescriptorOrThrow(id);
-
-        //    if (descriptor.AlgoLogicType != AlgoTypes.Robot)
-        //        throw new InvalidPluginType("CreateBot() can be called only for bot plugins!");
-
-        //    descriptor.Validate();
-
-        //    return new BotAdapter(() => (TradeBot)Activator.CreateInstance(descriptor.AlgoClassType), dataProvider);
-        //}
     }
 }

@@ -9,7 +9,6 @@ using TickTrader.BotAgent.WebAdmin.Server.Core;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.Algo.Core;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +18,7 @@ using TickTrader.BotAgent.WebAdmin.Server.Models;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using Microsoft.AspNetCore.Http;
+using TickTrader.Algo.Protocol;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
@@ -34,7 +34,7 @@ namespace TickTrader.BotAgent.WebAdmin
         }
 
         public IConfigurationRoot Configuration { get; private set; }
-        private string JwtKey => $"{Configuration.GetSecretKey()}{Configuration.GetCredentials().Password}";
+        private string JwtKey => Configuration.GetJwtKey();
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -50,6 +50,15 @@ namespace TickTrader.BotAgent.WebAdmin
             });
             services.AddTransient<IAuthManager, AuthManager>();
 
+            // .NET Core SDK 2.1.4 has broken compatibility with 1.X
+            // This workaround should avoid problematic code paths
+            //var manager = new ApplicationPartManager();
+            //var assemblies = new[] { typeof(Startup).Assembly };
+            //foreach (var assembly in assemblies)
+            //{
+            //    manager.ApplicationParts.Add(new AssemblyPart(assembly));
+            //}
+
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
             services.AddMvc().AddJsonOptions(options =>
             {
@@ -63,10 +72,10 @@ namespace TickTrader.BotAgent.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-            appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
-
             loggerFactory.AddNLog();
             app.AddNLogWeb();
+
+            appLifeTime.ApplicationStopping.Register(() => Shutdown(services, loggerFactory));
 
             LogUnhandledExceptions(loggerFactory);
 
@@ -122,11 +131,16 @@ namespace TickTrader.BotAgent.WebAdmin
             });
         }
 
-        private void Shutdown(IServiceProvider services)
+        private void Shutdown(IServiceProvider services, ILoggerFactory loggerFactory)
         {
             var server = services.GetRequiredService<IBotAgent>();
+            var protocolServer = services.GetRequiredService<ProtocolServer>();
 
+            protocolServer.Stop();
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
+
+            var logger = loggerFactory.CreateLogger(nameof(Startup));
+            logger.LogInformation("Web host stopped");
         }
 
         private void LogUnhandledExceptions(ILoggerFactory loggerFactory)
@@ -134,7 +148,7 @@ namespace TickTrader.BotAgent.WebAdmin
             var logger = loggerFactory.CreateLogger("AppDomain.UnhandledException");
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
-                logger.LogCritical($"(This is definitely a bug!) {e.ExceptionObject}");
+                logger.LogError($"(This is definitely a bug!) {e.ExceptionObject}");
             };
         }
     }

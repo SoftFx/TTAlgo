@@ -10,13 +10,15 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
+using System.Windows.Controls;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
-    internal class ShellViewModel : Screen, IConnectionViewModel, iOrderUi, IShell, IProfileLoader
+    internal class ShellViewModel : Screen, iOrderUi, IShell, IProfileLoader
     {
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -28,12 +30,15 @@ namespace TickTrader.BotTerminal
         private bool isClosed;
         private INotificationCenter notificationCenter;
         private AlgoEnvironment algoEnv;
-        private BotsWarden botsWarden;
         private SymbolManagerViewModel _smbManager;
-        private CustomFeedStorage _userSymbols = new CustomFeedStorage();
+        private SymbolCatalog _symbolsData;
+        private CustomFeedStorage.Handler _userSymbols;
+        private BotAgentManager _botAgentManager;
 
-        public ShellViewModel(ClientModel.Data commonClient)
+        public ShellViewModel(ClientModel.Data commonClient, CustomFeedStorage.Handler customFeedStorage)
         {
+            _userSymbols = customFeedStorage;
+
             DisplayName = EnvService.Instance.ApplicationName;
 
             //var botNameAggregator = new BotNameAggregator();
@@ -43,38 +48,44 @@ namespace TickTrader.BotTerminal
             storage = new PersistModel();
             ThemeSelector.Instance.InitializeSettings(storage);
 
+            ConnectionLock = new UiLock();
             wndManager = new WindowManager(this);
 
-            algoEnv = new AlgoEnvironment();
             cManager = new ConnectionManager(commonClient, storage, eventJournal);
             clientModel = new TraderClientModel(commonClient, eventJournal);
-            algoEnv.Init(clientModel.ObservableSymbolList);
 
-            ProfileManager = new ProfileManagerViewModel(this, storage);
+            Agent = new LocalAlgoAgent(this, clientModel, storage);
 
-            ConnectionLock = new UiLock();
-            AlgoList = new AlgoListViewModel(algoEnv.Repo);
+            _botAgentManager = new BotAgentManager(storage);
+
+            algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
+
+            AlgoList = new AlgoListViewModel(algoEnv);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
             Trade = new TradeInfoViewModel(clientModel, cManager);
+
+            _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
             TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
-            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv, storage);
+            Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
 
-            botsWarden = new BotsWarden(new BotAggregator(Charts));
-            
-            AccountPane = new AccountPaneViewModel(cManager, this, this);
+            ProfileManager = new ProfileManagerViewModel(this, storage);
+
+            BotList = new BotListViewModel(algoEnv);
+
+            AccountPane = new AccountPaneViewModel(this);
             Journal = new JournalViewModel(eventJournal);
-            BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
-            CanConnect = true;
+            //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
+            DockManagerService = new DockManagerService(algoEnv);
 
+            CanConnect = true;
             UpdateCommandStates();
             cManager.ConnectionStateChanged += (o, n) => UpdateDisplayName();
             cManager.ConnectionStateChanged += (o, n) => UpdateCommandStates();
-            cManager.ConnectionStateChanged += (o, n) => UpdateRunningBotsState();
             cManager.LoggedIn += () => UpdateCommandStates();
             cManager.LoggedOut += () => UpdateCommandStates();
             ConnectionLock.PropertyChanged += (s, a) => UpdateCommandStates();
@@ -82,7 +93,7 @@ namespace TickTrader.BotTerminal
             clientModel.Initializing += LoadConnectionProfile;
             clientModel.Connected += OpenDefaultChart;
 
-            storage.ProfileManager.SaveProfileSnapshot = Charts.SaveProfileSnapshot;
+            storage.ProfileManager.SaveProfileSnapshot = SaveProfileSnapshot;
 
             cManager.ConnectionStateChanged += (f, t) =>
             {
@@ -93,27 +104,25 @@ namespace TickTrader.BotTerminal
             //cManager.CredsChanged += () => NotifyOfPropertyChange(nameof(CurrentServerName));
 
             LogStateLoop();
-
-            _userSymbols.Start(EnvService.Instance.CustomFeedCacheFolder);
         }
 
         private void OpenDefaultChart()
         {
             if (clientModel.Symbols.Snapshot.Count > 0 && Charts.Items.Count == 0)
             {
-                var defaultSymbol = string.Empty;
-                switch (clientModel.Account.Type)
-                {
-                    case AccountTypes.Gross:
-                    case AccountTypes.Cash:
-                        defaultSymbol = "EURUSD";
-                        break;
-                    case AccountTypes.Net:
-                        defaultSymbol = "EUR/USD";
-                        break;
-                }
+                //var defaultSymbol = string.Empty;
+                //switch (clientModel.Account.Type)
+                //{
+                //    case AccountTypes.Gross:
+                //    case AccountTypes.Cash:
+                //        defaultSymbol = "EURUSD";
+                //        break;
+                //    case AccountTypes.Net:
+                //        defaultSymbol = "EUR/USD";
+                //        break;
+                //}
 
-                Charts.Open(clientModel.Symbols.GetOrDefault(defaultSymbol)?.Name ?? clientModel.Symbols.Snapshot.First().Key);
+                Charts.Open(clientModel.Cache.GetDefaultSymbol()?.Name ?? clientModel.Symbols.Snapshot.First().Key);
                 //clientModel.Connected -= OpenDefaultChart;
             }
         }
@@ -133,12 +142,6 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanDisconnect));
         }
 
-        private void UpdateRunningBotsState()
-        {
-            if(cManager.Connection.LastError?.Code == Algo.Common.Model.Interop.ConnectionErrorCodes.BlockedAccount)
-                Charts.Items.SelectMany(c => c.Bots).Where(c => c.IsStarted).Foreach(c => c.StartStop());
-        }
-
         private async Task LoadConnectionProfile(object sender, CancellationToken token)
         {
             await ProfileManager.LoadConnectionProfile(cManager.Creds.Server.Address, cManager.Creds.Login, token);
@@ -153,7 +156,7 @@ namespace TickTrader.BotTerminal
 
             if (ConnectionLock.IsLocked)
             {
-                var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots), ShootMode.Logout);
+                var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, ShootMode.Logout);
                 wndManager.ShowDialog(exit, this);
 
                 isConfirmed = exit.IsConfirmed;
@@ -162,7 +165,7 @@ namespace TickTrader.BotTerminal
                     storage.ProfileManager.Stop();
                     if (exit.HasStartedBots)
                     {
-                        var shutdown = new ShutdownDialogViewModel(Charts);
+                        var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
                         wndManager.ShowDialog(shutdown, this);
                     }
                 }
@@ -173,7 +176,7 @@ namespace TickTrader.BotTerminal
         {
             ShootBots(out var isConfirmed);
 
-            if(isConfirmed)
+            if (isConfirmed)
                 Connect(null);
         }
 
@@ -201,14 +204,14 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel(Charts.Items.Any(c => c.HasStartedBots), ShootMode.Exit);
+            var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, ShootMode.Exit);
             wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
                 storage.ProfileManager.Stop();
                 if (exit.HasStartedBots)
                 {
-                    var shutdown = new ShutdownDialogViewModel(Charts);
+                    var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
                     wndManager.ShowDialog(shutdown, this);
                 }
             }
@@ -253,6 +256,11 @@ namespace TickTrader.BotTerminal
             Charts.Open(smb);
         }
 
+        public void ShowChart(string smb, ChartPeriods period)
+        {
+            Charts.OpenOrActivate(smb, period);
+        }
+
         public TradeInfoViewModel Trade { get; }
         public TradeHistoryViewModel TradeHistory { get; }
         public AlgoListViewModel AlgoList { get; set; }
@@ -260,13 +268,18 @@ namespace TickTrader.BotTerminal
         public ChartCollectionViewModel Charts { get; private set; }
         public AccountPaneViewModel AccountPane { get; private set; }
         public JournalViewModel Journal { get; set; }
-        public BotJournalViewModel BotJournal { get; set; }
+        //public BotJournalViewModel BotJournal { get; set; }
         public iOrderUi OrderCommands { get { return this; } }
         public UiLock ConnectionLock { get; private set; }
         public IProfileLoader ProfileLoader => this;
         public ProfileManagerViewModel ProfileManager { get; private set; }
+        public BacktesterViewModel Backtester { get; private set; }
         public SettingsStorage<PreferencesStorageModel> Preferences => storage.PreferencesStorage;
+        public BotListViewModel BotList { get; }
         public WindowManager ToolWndManager => wndManager;
+        public DockManagerService DockManagerService { get; set; }
+        public LocalAlgoAgent Agent { get; }
+        public ConnectionManager ConnectionManager => cManager;
 
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
@@ -281,7 +294,8 @@ namespace TickTrader.BotTerminal
             try
             {
                 await cManager.Disconnect();
-                await Task.Factory.StartNew(() => _userSymbols.Stop());
+                await _userSymbols.Stop();
+                await _botAgentManager.ShutdownDisconnect();
                 await storage.Stop();
             }
             catch (Exception ex)
@@ -294,7 +308,14 @@ namespace TickTrader.BotTerminal
         {
             eventJournal.Info("BotTrader started");
             PrintSystemInfo();
-            ConnectLastOrConnectDefault();
+
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new System.Action(OnLoaded));
+        }
+
+        public void OnLoaded()
+        {
+            _botAgentManager.RestoreConnections();
+            Connect(null); // show connect window
         }
 
         private async void PrintSystemInfo()
@@ -368,13 +389,35 @@ namespace TickTrader.BotTerminal
         public void OpenStorageManager()
         {
             if (_smbManager == null)
-                _smbManager = new SymbolManagerViewModel(clientModel, _userSymbols, ToolWndManager);
+                _smbManager = new SymbolManagerViewModel(clientModel, _symbolsData, ToolWndManager);
 
             wndManager.ShowDialog(_smbManager, this);
         }
 
+        public void OpenBacktester()
+        {
+            if (Backtester == null)
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this);
+
+            wndManager.OpenMdiWindow(Backtester);
+        }
+
         public void CloseChart(object chart)
         {
+        }
+
+        private void SaveProfileSnapshot(ProfileStorageModel profileStorage)
+        {
+            try
+            {
+                Charts.SaveChartsSnapshot(profileStorage);
+                Agent.SaveBotsSnapshot(profileStorage);
+                DockManagerService.SaveLayoutSnapshot(profileStorage);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to save profile snapshot");
+            }
         }
 
         #region OrderUi implementation
@@ -403,15 +446,10 @@ namespace TickTrader.BotTerminal
 
         public void ReloadProfile(CancellationToken token)
         {
-            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, algoEnv.Repo);
+            var loading = new ProfileLoadingDialogViewModel(Charts, storage.ProfileManager, token, Agent, DockManagerService);
             wndManager.ShowDialog(loading, this);
         }
 
         #endregion
-    }
-
-    internal interface IConnectionViewModel
-    {
-        void Connect(AccountAuthEntry creds);
     }
 }

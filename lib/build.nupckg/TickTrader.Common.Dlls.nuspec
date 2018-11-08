@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>TickTrader.Common.Dlls</id>
+    <version>1.0.0.0</version>
+    <authors>SoftFX</authors>
+    <owners>SoftFX</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>TickTrader common libraries</description>
+  </metadata>
+  <files>
+    <file src="..\TickTrader.BusinessLogic.dll" target="lib" />
+    <file src="..\TickTrader.BusinessObjects.dll" target="lib" />
+    <file src="..\TickTrader.Common.dll" target="lib" />
+  </files>
+</package>

@@ -8,6 +8,10 @@
     xmlns:l="clr-namespace:TickTrader.BotTerminal"
     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Resx/Styles.Classic/Charts.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
     <ControlTemplate x:Key="IndicatorOutputRolloverTooltipTemplate">
         <Rectangle Fill="Red" Width="5" Height="5"/>
     </ControlTemplate>
@@ -134,7 +138,7 @@
         <ContentControl Content="{Binding}" />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type l:IndicatorPaneViewModel}">
+    <DataTemplate DataType="{x:Type l:OutputPaneViewModel}">
         <ContentControl cal:View.Model="{Binding}" />
     </DataTemplate>
 
@@ -153,26 +157,6 @@
 
     <l:BindingProxy x:Key="GridLinesColorProxy" Data="{DynamicResource ChartGridLinesColor}" />
 
-    <Style x:Key="AxisBaseStyle" TargetType="s:AxisBase">
-        <Setter Property="FontSize" Value="11"/>
-        <Setter Property="MajorGridLineStyle">
-            <Setter.Value>
-                <Style TargetType="Line">
-                    <Setter Property="Stroke" Value="YellowGreen"/>
-                    <Setter Property="StrokeThickness" Value="1"/>
-                    <Setter Property="X2" Value="4"/>
-                    <Setter Property="Y2" Value="4"/>
-                </Style>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="GrowBy" Value="0.1, 0.1"/>
-        <Setter Property="DrawMinorGridLines" Value="False"/>
-        <Setter Property="DrawMajorTicks" Value="False"/>
-        <Setter Property="DrawMinorTicks" Value="False"/>
-        <Setter Property="DrawMajorBands" Value="False"/>
-        <Setter Property="MaxAutoTicks" Value="25"/>
-    </Style>
-
     <ControlTemplate x:Key="ChartView" x:Shared="False">
         <Grid Margin="4">
             <Grid.RowDefinitions>
@@ -181,7 +165,7 @@
             </Grid.RowDefinitions>
             <ItemsControl Visibility="{Binding Chart.IsReady, Converter={StaticResource boolToVisibilityConverter}}">
                 <ItemsControl.Resources>
-                    <CollectionViewSource x:Key="indicatorPanesViewSrc" Source="{Binding Panes}"/>
+                    <CollectionViewSource x:Key="outputPanesViewSrc" Source="{Binding Panes}"/>
                 </ItemsControl.Resources>
                 <ItemsControl.ItemsSource>
                     <CompositeCollection>
@@ -238,7 +222,7 @@
                             </s:SciChartSurface>
                             <ItemsControl ItemsSource="{Binding Bots}" Style="{StaticResource BotPanelStyle}"/>
                         </Grid>
-                        <CollectionContainer Collection="{Binding Source={StaticResource indicatorPanesViewSrc}}"/>
+                        <CollectionContainer Collection="{Binding Source={StaticResource outputPanesViewSrc}}"/>
                     </CompositeCollection>
                 </ItemsControl.ItemsSource>
                 <ItemsControl.ItemsPanel>

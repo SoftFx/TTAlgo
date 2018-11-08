@@ -7,98 +7,149 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <Style x:Key="BotNameLabelStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
-    </Style>
-
     <ControlTemplate x:Key="BotStateView">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition />
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}" Grid.RowSpan="2"/>
-                <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" HorizontalAlignment="Right" Grid.RowSpan="2" Grid.Column="2"/>
-                <TextBlock Style="{StaticResource BotNameLabelStyle}" Text="{Binding BotName}" Grid.Column="1" Grid.Row="0" />
-                <TextBlock Style="{DynamicResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" Grid.Row="1" />
+                <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotStateStartStopButtonStyle}" HorizontalAlignment="Left" Grid.Column="0"/>
+                <l:FlatButton cal:Message.Attach="OpenSettings" Style="{DynamicResource BotSettingsButtonStyle}" HorizontalAlignment="Right" Grid.Column="2" />
+                <TextBlock Style="{DynamicResource StatusLabelStyle}" Text="{Binding ExecStatus}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" />
             </Grid>
 
             <l:TabControl Grid.Row="2" Style="{DynamicResource DialogTabStyle}" Margin="5"
                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <TabItem Header="Status">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                        <TextBlock Text="{Binding CustomStatus}" TextWrapping="NoWrap" VerticalAlignment="Stretch"
-                                   Margin="4"/>
+                        <TextBlock Text="{Binding Bot.Status}" TextWrapping="NoWrap" VerticalAlignment="Stretch" Margin="4"/>
                     </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Bot Info">
-                    <TextBlock Text="{Binding Path=BotInfo, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch"
-                               Margin="4"/>
+                    <TextBlock Text="{Binding Path=BotInfo, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch" Margin="4"/>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Logs" Background="Transparent"/>
+                            <Border Grid.Column="3" Margin="5 0 0 0">
+                                <TextBlock Margin="5 0" Text="{Binding ErrorsCount}"></TextBlock>
+                                <Border.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger  Binding="{Binding ErrorsCount, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                                <Setter Property="Border.Background" Value="{DynamicResource RateDownColor}"/>
+                                            </DataTrigger>
+                                            <DataTrigger  Binding="{Binding ErrorsCount, Converter={l:NumericalComparative ComparisonOption=EqualZero}}" Value="True">
+                                                <Setter Property="Border.Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                        </Grid>
+                    </TabItem.Header>
+                    <TabItem.Style>
+                        <Style TargetType="{x:Type TabItem}">
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu>
+                                        <MenuItem Header="Clear" cal:Message.Attach="Clear"/>
+                                        <MenuItem cal:Message.Attach="Browse"
+                                                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem.Style>
+                                                <Style TargetType="MenuItem">
+                                                    <Setter Property="Header" Value="Show in folder"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRemote}" Value="True">
+                                                            <Setter Property="Header" Value="Manage Bot Files"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </MenuItem.Style>
+                                        </MenuItem>
+
+                                    </ContextMenu>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabItem.Style>
+                    <ContentControl cal:View.Model="{Binding BotJournal}"/>
                 </TabItem>
             </l:TabControl>
         </Grid>
 
     </ControlTemplate>
 
-    <Style x:Key="BotStateViewStyle.Common" TargetType="Window">
+    <Style x:Key="BotStateViewStyle.Common" TargetType="UserControl">
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
-        <Setter Property="WindowStyle" Value="ToolWindow" />
-        <Setter Property="ResizeMode" Value="CanResize" />
-        <Setter Property="l:Settings.Provider" Value="{Binding Bot.StateViewSettings}" />
-        <Setter Property="Width" Value="{l:Setting Width}" />
-        <Setter Property="Height" Value="{l:Setting Height}" />
-        <Setter Property="Left" Value="{l:Setting Left}" />
-        <Setter Property="Top" Value="{l:Setting Top}" />
-        <Setter Property="WindowState" Value="{l:Setting State}" />
     </Style>
 
-    <Style x:Key="BotStateViewStyle" TargetType="Window" BasedOn="{StaticResource BotStateViewStyle.Common}">
+    <Style x:Key="BotStateViewStyle" TargetType="UserControl" BasedOn="{StaticResource BotStateViewStyle.Common}">
         <Setter Property="Template" Value="{StaticResource BotStateView}"/>
         <Style.Resources>
             <Style x:Key="StatusLabelStyle" TargetType="TextBlock">
                 <Setter Property="FontStyle" Value="Italic" />
                 <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Faulted">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Broken">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
                         <Setter Property="Foreground" Value="Yellow"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
-                        <Setter Property="Foreground" Value="Yellow"/>
+                        <Setter Property="Foreground" Value="Orange"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
                         <Setter Property="Foreground" Value="LightGreen"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Reconnecting...">
+                        <Setter Property="Foreground" Value="SkyBlue"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
         </Style.Resources>
     </Style>
 
-    <Style x:Key="BotStateViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BotStateViewStyle.Common}">
+    <Style x:Key="BotStateViewStyle.Classic" TargetType="UserControl" BasedOn="{StaticResource BotStateViewStyle.Common}">
         <Setter Property="Template" Value="{StaticResource BotStateView}"/>
         <Style.Resources>
             <Style x:Key="StatusLabelStyle" TargetType="TextBlock">
                 <Setter Property="FontStyle" Value="Italic" />
                 <Setter Property="Foreground" Value="{DynamicResource Shell_SecondaryForeground}"/>
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Faulted">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Broken">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
-                        <Setter Property="Foreground" Value="Orange"/>
+                        <Setter Property="Foreground" Value="Yellow"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
                         <Setter Property="Foreground" Value="Orange"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Running">
                         <Setter Property="Foreground" Value="DarkGreen"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding ExecStatus}" Value="Reconnecting...">
+                        <Setter Property="Foreground" Value="SkyBlue"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

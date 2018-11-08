@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Common.Model
             Account = new AccountAdapter(acc);
             MarketModel = new MarketState(NettingCalculationTypes.OneByOne);
 
-            MarketModel.Set(client.Symbols.Snapshot.Values);
+            MarketModel.Set(client.Symbols.Snapshot.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).ThenBy(s => s.Descriptor.Name));
             MarketModel.Set(client.Currencies.Snapshot.Values.Select(c => new CurrencyInfoAdapter(c)));
 
             _subscription = client.Distributor.SubscribeAll();

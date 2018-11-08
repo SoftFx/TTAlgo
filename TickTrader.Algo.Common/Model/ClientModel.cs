@@ -136,6 +136,7 @@ namespace TickTrader.Algo.Common.Model
             public Task<List<SymbolEntity>> GetSymbols() => Actor.Call(a => a.ExecDataRequest(c => c.GetSymbolsCopy()));
             public Task<List<CurrencyEntity>> GetCurrecnies() => Actor.Call(a => a.ExecDataRequest(c => c.GetCurrenciesCopy()));
             public Task<AccountTypes> GetAccountType() => Actor.Call(a => a.ExecDataRequest(c => c.Account.Type.Value));
+            public Task<SymbolEntity> GetDefaultSymbol() => Actor.Call(a => a.ExecDataRequest(c => c.GetDefaultSymbol()));
 
             public Task<PluginFeedProvider> CreateFeedProvider()
             {
@@ -300,7 +301,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Loaded quotes snaphsot.");
 
             var orderStream = Channel.NewInput<OrderEntity>();
-            tradeApi.GetTradeRecords(CreateBlocingChannel(orderStream));
+            tradeApi.GetTradeRecords(CreateBlockingChannel(orderStream));
 
             while (await orderStream.ReadNext())
                 await ApplyUpdate(new AccountModel.LoadOrderUpdate(orderStream.Current));

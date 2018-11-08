@@ -6,7 +6,7 @@ using TickTrader.BotAgent.Extensions;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public class AlgoData : IAlgoData
+    public class AlgoData : IBotFolder
     {
         private static ILogger _log = LogManager.GetLogger(nameof(ClientModel));
 
@@ -40,13 +40,12 @@ namespace TickTrader.BotAgent.BA.Models
                 try
                 {
                     new DirectoryInfo(Folder).Clean();
-                    Directory.Delete(Folder);
                 }
                 catch (Exception ex)
                 {
                     _log.Warn(ex, "Could not clean data folder: " + Folder);
                 }
-               
+
             }
         }
 
@@ -57,14 +56,36 @@ namespace TickTrader.BotAgent.BA.Models
 
         public IFile GetFile(string file)
         {
-            if (file.IsFileNameValid())
-            {
-                var fullPath = Path.Combine(Folder, file);
+            if (!file.IsFileNameValid())
+                throw new ArgumentException($"Incorrect file name {file}");
 
-                return new ReadOnlyFileModel(fullPath);
-            }
+            return new ReadOnlyFileModel(Path.Combine(Folder, file));
+        }
 
-            throw new ArgumentException($"Incorrect file name {file}");
+        public void SaveFile(string file, byte[] bytes)
+        {
+            if (!file.IsFileNameValid())
+                throw new ArgumentException($"Incorrect file name {file}");
+
+            File.WriteAllBytes(Path.Combine(Folder, file), bytes);
+        }
+
+        public string GetFileReadPath(string file)
+        {
+            if (!file.IsFileNameValid())
+                throw new ArgumentException($"Incorrect file name {file}");
+
+            return Path.Combine(Folder, file);
+        }
+
+        public string GetFileWritePath(string file)
+        {
+            if (!file.IsFileNameValid())
+                throw new ArgumentException($"Incorrect file name {file}");
+
+            EnsureDirectoryCreated();
+
+            return Path.Combine(Folder, file);
         }
 
         private void EnsureDirectoryCreated()

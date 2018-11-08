@@ -19,18 +19,19 @@ namespace TickTrader.BotTerminal
         private readonly VarContext varContext = new VarContext();
         private TraderClientModel _client;
 
-        public FeedDownloadViewModel(TraderClientModel clientModel, SymbolModel symbol = null)
+        public FeedDownloadViewModel(TraderClientModel clientModel, SymbolCatalog catalog, SymbolData symbol = null)
         {
             _client = clientModel;
 
-            Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
+            //Symbols = clientModel.Symbols.Select((k, v) => (SymbolModel)v).OrderBy((k, v) => k).Chain().AsObservable();
+            Symbols = catalog.ObservableOnlineSymbols;
 
             DownloadObserver = new ActionViewModel();
             DateRange = new DateRangeSelectionViewModel();
 
             SelectedTimeFrame = varContext.AddProperty(TimeFrames.M1);
             SelectedPriceType = varContext.AddProperty(BarPriceType.Bid);
-            SelectedSymbol = varContext.AddProperty<SymbolModel>(symbol);
+            SelectedSymbol = varContext.AddProperty<SymbolData>(symbol);
             ShowDownloadUi = varContext.AddBoolProperty();
 
             IsRangeLoaded = varContext.AddBoolProperty();
@@ -50,7 +51,7 @@ namespace TickTrader.BotTerminal
 
         public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
-        public IObservableList<SymbolModel> Symbols { get; }
+        public IObservableList<SymbolData> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ActionViewModel DownloadObserver { get; }
 
@@ -58,7 +59,7 @@ namespace TickTrader.BotTerminal
 
         public BoolProperty ShowDownloadUi { get; private set; }
         public BoolProperty IsRangeLoaded { get; private set; }
-        public Property<SymbolModel> SelectedSymbol { get; private set; }
+        public Property<SymbolData> SelectedSymbol { get; private set; }
         public BoolVar DownloadEnabled { get; private set; }
         public BoolVar CancelEnabled { get; private set; }
         public BoolVar IsPriceTypeActual { get; private set; }
@@ -99,15 +100,14 @@ namespace TickTrader.BotTerminal
             DownloadObserver.Start(DownloadAsync);
         }
 
-        private async void UpdateAvailableRange(SymbolModel smb)
+        private async void UpdateAvailableRange(SymbolData smb)
         {
             IsRangeLoaded.Value = false;
-            DateRange.From = null;
-            DateRange.To = null;
+            DateRange.Reset();
 
             if (smb != null)
             {
-                var range = await _client.FeedHistory.GetAvailableRange(smb.Name, BarPriceType.Bid, TimeFrames.M1);
+                var range = await  smb.GetAvailableRange(TimeFrames.M1);
 
                 if (SelectedSymbol.Value == smb)
                 {
@@ -117,24 +117,19 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task DownloadAsync(IActionObserver observer, CancellationToken cancelToken)
+        private async Task<long> DownloadBars(IActionObserver observer, CancellationToken cancelToken, string symbol, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            var symbol = SelectedSymbol.Value.Name;
-            var timeFrame = SelectedTimeFrame.Value;
-            var priceType = SelectedPriceType.Value;
-            var from = DateRange.From.Value;
-            var to = DateRange.To.Value + TimeSpan.FromDays(1);
+            var fromUtc = from.ToUniversalTime();
+            var toUtc = to.ToUniversalTime();
 
-            observer?.SetMessage("Downloading... \n");
+            observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
 
-            var watch = Stopwatch.StartNew();
-            int downloadedCount = 0;
+            var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, fromUtc, toUtc);
 
-            if (!timeFrame.IsTicks())
+            try
             {
-                observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
-
-                var barEnumerator = await _client.FeedHistory.DownloadBarSeriesToStorage(symbol, timeFrame, priceType, from, to);
+                var watch = Stopwatch.StartNew();
+                long downloadedCount = 0;
 
                 while (await barEnumerator.ReadNext())
                 {
@@ -154,21 +149,34 @@ namespace TickTrader.BotTerminal
                     {
                         await barEnumerator.Close();
                         observer.SetMessage("Canceled. " + downloadedCount + " bars were downloaded.");
-                        return;
+                        return downloadedCount;
                     }
                 }
 
                 observer.SetMessage("Completed. " + downloadedCount + " bars were downloaded.");
+
+                return downloadedCount;
             }
-            else // ticks
+            finally
             {
-                //var endDay = to.GetAbsoluteDay();
-                //var totalDays = endDay - from.GetAbsoluteDay();
+                await barEnumerator.Close();
+            }
+        }
 
-                observer?.StartProgress(from.GetAbsoluteDay(), to.GetAbsoluteDay());
+        private async Task<long> DownloadTicks(IActionObserver observer, CancellationToken cancelToken, string symbol, TimeFrames timeFrame, DateTime from, DateTime to)
+        {
+            var fromUtc = from.ToUniversalTime();
+            var toUtc = to.ToUniversalTime();
 
-                var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, from, to);
+            var watch = Stopwatch.StartNew();
+            long downloadedCount = 0;
 
+            observer?.StartProgress(fromUtc.GetAbsoluteDay(), toUtc.GetAbsoluteDay());
+
+            var tickEnumerator = await _client.FeedHistory.DownloadTickSeriesToStorage(symbol, timeFrame, fromUtc, toUtc);
+
+            try
+            {
                 while (await tickEnumerator.ReadNext())
                 {
                     var info = tickEnumerator.Current;
@@ -186,11 +194,40 @@ namespace TickTrader.BotTerminal
                     if (cancelToken.IsCancellationRequested)
                     {
                         observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
-                        return;
+                        return downloadedCount;
                     }
                 }
 
                 observer.SetMessage("Completed: " + downloadedCount + " ticks were downloaded.");
+
+                return downloadedCount;
+            }
+            finally
+            {
+                 await tickEnumerator.Close();
+            }
+        }
+
+        private async Task DownloadAsync(IActionObserver observer, CancellationToken cancelToken)
+        {
+            var symbol = SelectedSymbol.Value.Name;
+            var timeFrame = SelectedTimeFrame.Value;
+            var priceType = SelectedPriceType.Value;
+            var from = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
+            var to = DateTime.SpecifyKind(DateRange.To + TimeSpan.FromDays(1), DateTimeKind.Utc);
+
+            observer?.SetMessage("Downloading... \n");
+
+            try
+            {
+                if (timeFrame.IsTicks())
+                    await DownloadTicks(observer, cancelToken, symbol, timeFrame, from, to);
+                else
+                    await DownloadBars(observer, cancelToken, symbol, timeFrame, priceType, from, to);
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
     }

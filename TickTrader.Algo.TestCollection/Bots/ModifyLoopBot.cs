@@ -6,7 +6,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Modify Loop Bot", Version = "1.0", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Modify Loop Bot", Version = "1.1", Category = "Test Orders",
         Description = "")]
     public class ModifyLoopBot : TradeBot
     {
@@ -58,7 +58,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             while (_runningBot)
             {
-                await Task.Delay(1000);
+                await Delay(1000);
                 Status.WriteLine("{0} operations per second", modifyCounter);
                 modifyCounter = 0;
             }

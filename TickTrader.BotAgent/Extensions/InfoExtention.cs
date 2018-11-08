@@ -1,63 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Common.Info;
 using TickTrader.BotAgent.BA.Models;
-using TickTrader.BotAgent.BA.Repository;
 
 namespace TickTrader.BotAgent.Extensions
 {
     public static class InfoExtention
     {
-        public static PackageInfo GetInfoCopy(this PackageModel package)
+        public static AccountModelInfo GetInfoCopy(this ClientModel acc)
         {
-            return new PackageInfo(package.Name, package.Created, package.IsValid, package.GetPlugins());
+            return new AccountModelInfo
+            {
+                Key = new AccountKey(acc.Address, acc.Username),
+                UseNewProtocol = acc.UseNewProtocol,
+                ConnectionState = acc.ConnectionState,
+                LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
+            };
         }
 
-        public static List<PackageInfo> GetInfo(this PackageStorage storage)
-        {
-            return storage.Packages.Select(GetInfoCopy).ToList();
-        }
-
-        public static AccountInfo GetInfoCopy(this ClientModel acc)
-        {
-            return new AccountInfo(acc.Address, acc.Username, acc.UseNewProtocol);
-        }
-
-        public static List<AccountInfo> GetInfoCopy(this IEnumerable<ClientModel> accList)
+        public static List<AccountModelInfo> GetInfoCopy(this IEnumerable<ClientModel> accList)
         {
             return accList.Select(GetInfoCopy).ToList();
         }
 
-        public static List<TradeBotInfo> GetInfoCopy(this IEnumerable<TradeBotModel> botList)
+        public static List<BotModelInfo> GetInfoCopy(this IEnumerable<TradeBotModel> botList)
         {
             return botList.Select(GetInfoCopy).ToList();
         }
 
-        public static TradeBotInfo GetInfoCopy(this TradeBotModel model)
+        public static BotModelInfo GetInfoCopy(this TradeBotModel model)
         {
-            return new TradeBotInfo()
+            return new BotModelInfo()
             {
+                InstanceId = model.Id,
                 Account = model.Account,
-                BotName = model.BotName,
-                Id = model.Id,
                 State = model.State,
-                Config = model.GetConfigInfo(),
-                Descriptor = model.AlgoRef?.Descriptor,
-                FaultMessage = model.FaultMessage
+                FaultMessage = model.FaultMessage,
+                Config = model.Config,
+                Descriptor = model.AlgoRef?.Metadata.Descriptor,
             };
         }
 
-        public static TradeBotConfig GetConfigInfo(this TradeBotModel model)
+        public static ChangeAction Convert(this UpdateType updateType)
         {
-            return new TradeBotConfig()
+            switch (updateType)
             {
-                Isolated = model.Isolated,
-                Permissions = model.Permissions,
-                Plugin = model.PluginId,
-                PluginConfig = model.Config
-            };
+                case UpdateType.Added:
+                    return ChangeAction.Added;
+                case UpdateType.Replaced:
+                    return ChangeAction.Modified;
+                case UpdateType.Removed:
+                    return ChangeAction.Removed;
+                default:
+                    throw new ArgumentException();
+            }
         }
     }
 }

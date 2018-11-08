@@ -18,10 +18,12 @@ namespace TickTrader.Algo.Api
         double Ask { get; }
         double AskHigh { get; }
         double AskLow { get; }
+        double AskOpen { get; }
         double Bid { get; }
         double BidHigh { get; }
         double BidLow { get; }
-        double NumberOfQuotes { get; }
+        double BidOpen { get; }
+        int NumberOfQuotes { get; }
 
         Quote LastQuote { get; }
     }

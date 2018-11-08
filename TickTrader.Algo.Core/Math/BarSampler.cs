@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TickTrader.Algo.Core.Math
+namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class BarSampler
     {
         private static readonly Dictionary<Api.TimeFrames, BarSampler> cachedSamplers = new Dictionary<Api.TimeFrames, BarSampler>();
@@ -52,6 +53,7 @@ namespace TickTrader.Algo.Core.Math
         public DateTime Close { get; private set; }
     }
 
+    [Serializable]
     internal class FormulaSampler : BarSampler
     {
         private long spTicks;
@@ -76,6 +78,7 @@ namespace TickTrader.Algo.Core.Math
         }
     }
 
+    [Serializable]
     internal class WeekSampler : BarSampler
     {
         public override BarBoundaries GetBar(DateTime timepoint)
@@ -89,6 +92,7 @@ namespace TickTrader.Algo.Core.Math
         }
     }
 
+    [Serializable]
     internal class MonthSampler : BarSampler
     {
         public override BarBoundaries GetBar(DateTime timepoint)

@@ -173,7 +173,6 @@ export class TradeBotLog implements Serializable<TradeBotLog> {
 
 export class TradeBotModel implements Serializable<TradeBotModel>{
     public Id: string;
-    public Isolated: boolean;
     public Account: AccountModel;
     public State: TradeBotStates;
     public PackageName: string;
@@ -186,7 +185,6 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
 
     public Deserialize(input: any): TradeBotModel {
         this.Id = input.Id;
-        this.Isolated = input.Isolated;
         this.Account = new AccountModel().Deserialize(input.Account);
         this.State = TradeBotStates[input.State as string];
         this.PackageName = input.PackageName;
@@ -199,7 +197,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 
     public get IsOnline(): boolean {
-        return this.State === TradeBotStates.Online;
+        return this.State === TradeBotStates.Running;
     }
 
     public get IsProcessing(): boolean {
@@ -209,7 +207,7 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 
     public get IsOffline(): boolean {
-        return this.State === TradeBotStates.Offline;
+        return this.State === TradeBotStates.Stopped;
     }
 
     public get Faulted(): boolean {
@@ -217,23 +215,23 @@ export class TradeBotModel implements Serializable<TradeBotModel>{
     }
 
     public get CanStop(): boolean {
-        return this.State === TradeBotStates.Online
+        return this.State === TradeBotStates.Running
             || this.State === TradeBotStates.Starting
             || this.State === TradeBotStates.Reconnecting;
     }
 
     public get CanStart(): boolean {
-        return this.State === TradeBotStates.Offline
+        return this.State === TradeBotStates.Stopped
             || this.State === TradeBotStates.Faulted;
     }
 
     public get CanDelete(): boolean {
-        return this.State === TradeBotStates.Offline
+        return this.State === TradeBotStates.Stopped
             || this.State === TradeBotStates.Faulted;
     }
 
     public get CanConfigurate(): boolean {
-        return this.State === TradeBotStates.Offline
+        return this.State === TradeBotStates.Stopped
             || this.State === TradeBotStates.Faulted;
     }
 }
@@ -259,7 +257,7 @@ export class TradeBotStateModel implements Serializable<TradeBotStateModel>{
     }
 }
 
-export enum TradeBotStates { Offline, Starting, Faulted, Online, Stopping, Reconnecting, Broken }
+export enum TradeBotStates { Stopped, Starting, Faulted, Running, Stopping, Broken, Reconnecting }
 
 export class TradeBotConfig implements Serializable<TradeBotConfig>{
     public Symbol: string;
@@ -346,7 +344,6 @@ export class SetupModel {
     public PackageName: string;
     public PluginId: string;
     public InstanceId: string;
-    public Isolated: boolean;
     public Account: AccountModel;
     public Symbol: string;
     public Permissions: TradeBotPermissions;
@@ -360,7 +357,6 @@ export class SetupModel {
             PackageName: this.PackageName,
             PluginId: this.PluginId,
             InstanceId: this.InstanceId,
-            Isolated: this.Isolated,
             Account: this.Account,
             Symbol: this.Symbol,
             Parameters: this.Parameters.map(p => this.PayloadParameter(p)),
@@ -373,7 +369,6 @@ export class SetupModel {
 
     public static ForTradeBot(bot: TradeBotModel) {
         let setup = new SetupModel();
-        setup.Isolated = bot.Isolated;
         setup.Symbol = bot.Config.Symbol;
         setup.InstanceId = bot.Id;
         setup.Parameters = bot.Config.Parameters.map(p => new Parameter(p.Id,
@@ -395,10 +390,10 @@ export class SetupModel {
                 pDescriptor));
         setup.Account = null;
         setup.Symbol = "";
-        setup.Isolated = true;
 
         let permissions = new TradeBotPermissions();
         permissions.TradeAllowed = true;
+        permissions.Isolated = true;
 
         setup.Permissions = permissions;
 
@@ -409,5 +404,6 @@ export class SetupModel {
 export class TradeBotPermissions
 {
     public TradeAllowed: boolean;
+    public Isolated: boolean;
 }
 

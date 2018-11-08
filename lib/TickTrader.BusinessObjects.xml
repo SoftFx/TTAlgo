@@ -1268,6 +1268,21 @@
             
              </summary>
         </member>
+        <member name="P:TickTrader.BusinessObjects.Order.MarketBid">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.Order.MarketAsk">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="P:TickTrader.BusinessObjects.Order.MarketTime">
+             <summary>
+            
+             </summary>
+        </member>
         <member name="M:TickTrader.BusinessObjects.Order.Clone">
              <summary>
             

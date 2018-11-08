@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
     [TradeBot(DisplayName = "[T] Bot Log Writer", Version = "1.0", Category = "Plugin Stress Tests",
-       Description = "Writes messages to log with specified rate per second.")]
+        SetupMainSymbol = false, Description = "Writes messages to log with specified rate per second.")]
 
     public class BotLogWriter : TradeBot
     {
@@ -39,7 +35,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     PrintError("Actual message per second: " + 1000 * PrintsPerSecond / watch.ElapsedMilliseconds);
                 }
 
-                await Task.Delay((int)toWait);
+                await Delay((int)toWait);
             }
         }
     }

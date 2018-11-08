@@ -9,18 +9,24 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrdersCollection
+    public class OrdersCollection : IEnumerable<OrderAccessor>
     {
         private PluginBuilder builder;
-        private OrdersFixture fixture;
+        private OrdersAdapter fixture;
 
-        internal OrderList OrderListImpl { get { return fixture; } }
+        internal OrdersAdapter OrderListImpl => fixture;
         internal bool IsEnabled { get { return true; } }
 
         internal OrdersCollection(PluginBuilder builder)
         {
             this.builder = builder;
-            fixture = new OrdersFixture(builder.Symbols);
+            fixture = new OrdersAdapter(builder.Symbols);
+        }
+
+        internal void Add(OrderAccessor order)
+        {
+            fixture.Add(order);
+            Added?.Invoke(order);
         }
 
         public OrderAccessor Add(OrderEntity entity)
@@ -38,12 +44,28 @@ namespace TickTrader.Algo.Core
             return order;
         }
 
+        public OrderAccessor GetOrderOrThrow(string id)
+        {
+            var order = fixture.GetOrNull(id);
+            if (order == null)
+                throw new OrderValidationError("Order Not Found " + id, OrderCmdResultCodes.OrderNotFound);
+            return order;
+        }
+
         public OrderAccessor GetOrderOrNull(string id)
         {
             return fixture.GetOrNull(id);
         }
 
-        public OrderAccessor Remove(OrderEntity entity)
+        public OrderAccessor Remove(string orderId)
+        {
+            var order = fixture.Remove(orderId);
+            if (order != null)
+                Removed?.Invoke(order);
+            return order;
+        }
+
+        public OrderAccessor UpdateAndRemove(OrderEntity entity)
         {
             var order = fixture.Remove(entity.Id);
             order?.Update(entity);
@@ -92,16 +114,26 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod(() => fixture.FireOrderActivated(args));
         }
 
+        public IEnumerator<OrderAccessor> GetEnumerator()
+        {
+            return ((IEnumerable<OrderAccessor>)OrderListImpl).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public event Action<OrderAccessor> Added;
         public event Action<OrderAccessor> Removed;
         public event Action<OrderAccessor> Replaced;
 
-        internal class OrdersFixture : OrderList, IEnumerable<OrderAccessor>
+        internal class OrdersAdapter : OrderList, IEnumerable<OrderAccessor>
         {
             private ConcurrentDictionary<string, OrderAccessor> orders = new ConcurrentDictionary<string, OrderAccessor>();
             private SymbolsCollection _symbols;
 
-            internal OrdersFixture(SymbolsCollection symbols)
+            internal OrdersAdapter(SymbolsCollection symbols)
             {
                 _symbols = symbols;
             }
@@ -117,6 +149,14 @@ namespace TickTrader.Algo.Core
                         return Null.Order;
                     return entity;
                 }
+            }
+
+            public void Add(OrderAccessor order)
+            {
+                if (!orders.TryAdd(order.Id, order))
+                    throw new ArgumentException("Order #" + order.Id + " already exist!");
+
+                Added?.Invoke(order);
             }
 
             public OrderAccessor Add(OrderEntity entity)
@@ -166,6 +206,7 @@ namespace TickTrader.Algo.Core
             public void Clear()
             {
                 orders.Clear();
+                Cleared?.Invoke();
             }
 
             public void FireOrderOpened(OrderOpenedEventArgs args)
@@ -213,6 +254,7 @@ namespace TickTrader.Algo.Core
             public event Action<Order> Added;
             public event Action<Order> Removed;
             public event Action<Order> Replaced;
+            public event Action Cleared;
 
             public IEnumerator<OrderAccessor> GetTypedEnumerator()
             {

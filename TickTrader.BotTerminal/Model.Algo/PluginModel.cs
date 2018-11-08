@@ -1,83 +1,129 @@
-﻿using Machinarium.State;
-using NLog;
+﻿using NLog;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
     internal class PluginModel : CrossDomainObject
     {
-        private enum States { Strating, Running, Stopping }
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        private StateMachine<States> _stateControl = new StateMachine<States>();
         private PluginExecutor _executor;
-        private IAlgoPluginHost _host;
+        private Dictionary<string, OutputSeriesModel> _outputs;
 
-        public AlgoPluginRef PluginRef { get; }
 
-        public string PluginFilePath { get; }
+        public PluginConfig Config { get; private set; }
 
-        public PluginSetup Setup { get; private set; }
+        public string InstanceId { get; }
 
-        public string InstanceId { get; private set; }
+        public AlgoPackageRef PackageRef { get; private set; }
 
-        public bool Isolated { get; private set; }
+        public AlgoPluginRef PluginRef { get; private set; }
 
-        public PluginPermissions Permissions { get; private set; }
+        public PluginSetupModel Setup { get; private set; }
 
-        public IAlgoPluginHost Host => _host;
+        public string FaultMessage { get; private set; }
 
-        public PluginModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
+        public PluginDescriptor Descriptor { get; private set; }
+
+        public IAlgoPluginHost Host { get; }
+
+        public PluginStates State { get; protected set; }
+
+        public IDictionary<string, OutputSeriesModel> Outputs => _outputs;
+
+
+        protected LocalAlgoAgent Agent { get; }
+
+        protected IAlgoSetupContext SetupContext { get; }
+
+
+        public event Action OutputsChanged;
+
+
+        public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
         {
-            _host = host;
-            Setup = pSetup.Setup;
-            PluginRef = Setup.PluginRef;
-            PluginFilePath = pSetup.PluginItem.FilePath;
-            InstanceId = pSetup.InstanceId;
-            Isolated = pSetup.Isolated;
-            Permissions = pSetup.Permissions;
+            Config = config;
+            InstanceId = config.InstanceId;
+            Agent = agent;
+            Host = host;
+            SetupContext = setupContext;
 
-            _executor = CreateExecutor();
-            Setup.SetWorkingFolder(_executor.WorkingFolder);
-            Setup.Apply(_executor);
+            _outputs = new Dictionary<string, OutputSeriesModel>();
+
+            UpdateRefs();
+
+            Agent.Library.PluginUpdated += Library_PluginUpdated;
         }
 
         protected bool StartExcecutor()
         {
+            if (PackageRef?.IsObsolete ?? true)
+                UpdateRefs();
+            if (State == PluginStates.Broken)
+                return false;
+
             try
             {
-                _host.UpdatePlugin(_executor);
+                ChangeState(PluginStates.Starting);
+
+                LockResources();
+                Setup = new PluginSetupModel(PluginRef, Agent, SetupContext);
+                Setup.Load(Config);
+
+                _executor = CreateExecutor();
+                Setup.SetWorkingFolder(_executor.WorkingFolder);
+                Setup.Apply(_executor);
+
+                Host.UpdatePlugin(_executor);
                 _executor.Start();
+                _executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "StartExcecutor() failed!");
+                _logger.Error(ex, "StartExcecutor() failed!");
+                ChangeState(PluginStates.Faulted, ex.Message);
+                UnlockResources();
+
                 return false;
             }
         }
 
-        protected void Configurate(PluginSetup setup, PluginPermissions permissions, bool isolated)
+        internal virtual void Configurate(PluginConfig config)
         {
-            Setup = setup;
-            Permissions = permissions;
-            Isolated = isolated;
-
-            Setup.SetWorkingFolder(_executor.WorkingFolder);
-            Setup.Apply(_executor);
-            _executor.Permissions = permissions;
-            _executor.Isolated = isolated;
+            Config = config;
         }
 
-        protected Task StopExecutor()
+        protected Task<bool> StopExecutor()
         {
-            return Task.Factory.StartNew(() => _executor.Stop());
+            return Task.Factory.StartNew(() =>
+            {
+                ChangeState(PluginStates.Stopping);
+                try
+                {
+                    _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+                    _executor.Stop();
+                    ClearOutputs();
+                    UnlockResources();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "StopExcecutor() failed!");
+                    ChangeState(PluginStates.Faulted, ex.Message);
+                    UnlockResources();
+                    return false;
+                }
+            });
         }
 
         protected void AbortExecutor()
@@ -91,13 +137,16 @@ namespace TickTrader.BotTerminal
 
             executor.OnRuntimeError += Executor_OnRuntimeError;
 
+            executor.TimeFrame = Setup.SelectedTimeFrame;
+            executor.MainSymbolCode = Setup.MainSymbol.Id;
             executor.InstanceId = InstanceId;
-            executor.Isolated = Isolated;
-            executor.Permissions = Permissions;
+            executor.Permissions = Setup.Permissions;
             executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 
-            _host.InitializePlugin(executor);
+            Host.InitializePlugin(executor);
+
+            CreateOutputs(executor);
 
             return executor;
         }
@@ -105,13 +154,110 @@ namespace TickTrader.BotTerminal
         protected virtual void HandleReconnect()
         {
             _executor.HandleReconnect();
+            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+        }
+
+        protected virtual void HandleDisconnect()
+        {
+            _executor.HandleDisconnect();
+            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+        }
+
+        protected virtual void ChangeState(PluginStates state, string faultMessage = null)
+        {
+            State = state;
+            FaultMessage = faultMessage;
+        }
+
+        protected virtual void OnPluginUpdated()
+        {
+        }
+
+        protected virtual void LockResources()
+        {
+            PackageRef.IncrementRef();
+        }
+
+        protected virtual void UnlockResources()
+        {
+            PackageRef?.DecrementRef();
+        }
+
+        protected virtual void OnRefsUpdated()
+        {
+        }
+
+        protected void UpdateRefs()
+        {
+            var packageRef = Agent.Library.GetPackageRef(Config.Key.GetPackageKey());
+            if (packageRef == null)
+            {
+                ChangeState(PluginStates.Broken, $"Package {Config.Key.PackageName} at {Config.Key.PackageLocation} is not found!");
+                return;
+            }
+            var pluginRef = Agent.Library.GetPluginRef(Config.Key);
+            if (pluginRef == null)
+            {
+                ChangeState(PluginStates.Broken, $"Plugin {Config.Key.DescriptorId} is missing in package {Config.Key.PackageName} at {Config.Key.PackageLocation}!");
+                return;
+            }
+
+            PackageRef = packageRef;
+            PluginRef = pluginRef;
+            Descriptor = pluginRef.Metadata.Descriptor;
+            ChangeState(PluginStates.Stopped);
+            OnRefsUpdated();
         }
 
         private void Executor_OnRuntimeError(Exception ex)
         {
-            logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
+            _logger.Error(ex, "Exception in Algo executor! InstanceId=" + InstanceId);
+        }
+
+        private void Library_PluginUpdated(UpdateInfo<PluginInfo> update)
+        {
+            if (update.Type != UpdateType.Removed && update.Value.Key.Equals(Config.Key))
+            {
+                OnPluginUpdated();
+            }
+        }
+
+        private void CreateOutputs(PluginExecutor executor)
+        {
+            try
+            {
+                foreach (var outputSetup in Setup.Outputs)
+                {
+                    if (outputSetup is ColoredLineOutputSetupModel)
+                    {
+                        var seriesModel = new DoubleSeriesModel(executor, (ColoredLineOutputSetupModel)outputSetup);
+                        _outputs.Add(seriesModel.Id, seriesModel);
+                    }
+                    else if (outputSetup is MarkerSeriesOutputSetupModel)
+                    {
+                        var seriesModel = new MarkerSeriesModel(executor, (MarkerSeriesOutputSetupModel)outputSetup);
+                        _outputs.Add(seriesModel.Id, seriesModel);
+                    }
+                }
+                OutputsChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to create outputs");
+            }
+        }
+
+        private void ClearOutputs()
+        {
+            try
+            {
+                _outputs.Clear();
+                OutputsChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to create outputs");
+            }
         }
     }
-
-    internal enum BotModelStates { Stopped, Running, Stopping }
 }

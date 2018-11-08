@@ -23,6 +23,8 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
+            _context.Logger = this;
+
             var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
             var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
 
@@ -129,7 +131,7 @@ namespace TickTrader.Algo.Core
         public void OnInitialized()
         {
             AddLogRecord(LogSeverities.Info, "Bot initialized");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
         }
 
         public void OnStart()
@@ -140,7 +142,7 @@ namespace TickTrader.Algo.Core
         public void OnStop()
         {
             AddLogRecord(LogSeverities.Info, "Bot stopped");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
         }
 
         public void OnExit()
@@ -151,7 +153,22 @@ namespace TickTrader.Algo.Core
         public void OnAbort()
         {
             AddLogRecord(LogSeverities.Info, "Bot aborted");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Descriptor.Version}");
+            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+        }
+
+        public void OnConnected()
+        {
+            AddLogRecord(LogSeverities.Info, "Connection restored.");
+        }
+
+        public void OnDisconnected()
+        {
+            AddLogRecord(LogSeverities.Error, "Connection lost!");
+        }
+
+        public void OnConnectionInfo(string connectionInfo)
+        {
+            AddLogRecord(LogSeverities.Info, $"Connected to {connectionInfo}");
         }
 
         public void UpdateStatus(string status)
@@ -175,12 +192,17 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class BotLogRecord
     {
-        public BotLogRecord(LogSeverities logSeverity, string message, string errorDetails)
+        public BotLogRecord(DateTime time, LogSeverities logSeverity, string message, string errorDetails)
         {
+            Time = time;
             Severity = logSeverity;
             Message = message;
             Details = errorDetails;
-            Time = DateTime.UtcNow;
+        }
+
+        public BotLogRecord(LogSeverities logSeverity, string message, string errorDetails)
+            : this(DateTime.Now, logSeverity, message, errorDetails)
+        {
         }
 
         public DateTime Time { get; set; }

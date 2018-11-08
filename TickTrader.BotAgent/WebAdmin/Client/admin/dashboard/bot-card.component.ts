@@ -26,7 +26,7 @@ export class BotCardComponent implements OnInit {
     }
 
     public get IsOnline(): boolean {
-        return this.TradeBot.State === TradeBotStates.Online;
+        return this.TradeBot.State === TradeBotStates.Running;
     }
 
     public get IsProcessing(): boolean {
@@ -36,7 +36,7 @@ export class BotCardComponent implements OnInit {
     }
 
     public get IsOffline(): boolean {
-        return this.TradeBot.State === TradeBotStates.Offline;
+        return this.TradeBot.State === TradeBotStates.Stopped;
     }
 
     public get Faulted(): boolean {
@@ -48,24 +48,24 @@ export class BotCardComponent implements OnInit {
     }
 
     public get CanStop(): boolean {
-        return (this.TradeBot.State === TradeBotStates.Online
+        return (this.TradeBot.State === TradeBotStates.Running
             || this.TradeBot.State === TradeBotStates.Starting
             || this.TradeBot.State === TradeBotStates.Reconnecting) && !this.Broken;
     }
 
     public get CanStart(): boolean {
-        return (this.TradeBot.State === TradeBotStates.Offline
+        return (this.TradeBot.State === TradeBotStates.Stopped
             || this.TradeBot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 
     public get CanDelete(): boolean {
-        return this.TradeBot.State === TradeBotStates.Offline
+        return this.TradeBot.State === TradeBotStates.Stopped
             || this.TradeBot.State === TradeBotStates.Faulted
             || this.Broken;
     }
 
     public get CanConfigurate(): boolean {
-        return (this.TradeBot.State === TradeBotStates.Offline
+        return (this.TradeBot.State === TradeBotStates.Stopped
             || this.TradeBot.State === TradeBotStates.Faulted) && !this.Broken;
     }
 

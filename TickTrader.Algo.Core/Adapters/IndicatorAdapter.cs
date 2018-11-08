@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Core
 
         public override string ToString()
         {
-            return "Indicator: " + Descriptor.DisplayName;
+            return "Indicator: " + Metadata.Descriptor.DisplayName;
         }
     }
 }

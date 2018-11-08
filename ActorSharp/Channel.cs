@@ -23,7 +23,7 @@ namespace ActorSharp
         }
     }
 
-    public class Channel<T>
+    public class Channel<T> : IAsyncReader<T>
     {
         private static readonly IChannelReader<T> NullReader = new NullReader<T>();
         private static readonly IChannelWriter<T> NullWriter = new NullWriter<T>();

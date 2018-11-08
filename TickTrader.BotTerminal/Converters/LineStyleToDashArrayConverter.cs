@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return  new DoubleCollection(((LineStyles)value).ToStrokeDashArray());
+            return new DoubleCollection(value is LineStyles ? ((LineStyles)value).ToStrokeDashArray() : new double[0]);
         }
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

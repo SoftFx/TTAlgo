@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Common.Model
                 }
 
                 var rxChannel = Channel.NewInput<TradeReportEntity>(1000);
-                _connection.TradeProxy.GetTradeHistory(CreateBlocingChannel(rxChannel), from, to, skipCanceledOrders);
+                _connection.TradeProxy.GetTradeHistory(CreateBlockingChannel(rxChannel), from, to, skipCanceledOrders);
 
                 while (await rxChannel.ReadNext())
                 {

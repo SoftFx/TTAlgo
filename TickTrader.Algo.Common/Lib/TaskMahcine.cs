@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Common.Lib
         public static Task<bool> WaitAsync(this Task t, int timeoutMs)
         {
             return Task.WhenAny(t, Task.Delay(timeoutMs))
-                .ContinueWith(wt => wt == t);
+                .ContinueWith(wt => wt.Result == t);
         }
     }
 }

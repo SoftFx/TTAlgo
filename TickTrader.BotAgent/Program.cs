@@ -4,25 +4,17 @@ using TickTrader.BotAgent.WebAdmin;
 using Microsoft.Extensions.Configuration;
 using TickTrader.BotAgent.BA.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using TickTrader.BotAgent.BA;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using TickTrader.Algo.Core.Metadata;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Common.Model.Config;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
-using System.Security.Cryptography.X509Certificates;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.BotAgent.Extensions;
 using NLog;
-using TickTrader.Algo.Common.Model.Interop;
-using TickTrader.BotAgent.BA.Entities;
 using System.Globalization;
+using ActorSharp;
+using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 
 namespace TickTrader.BotAgent
 {
@@ -63,7 +55,10 @@ namespace TickTrader.BotAgent
 
                 var config = EnsureDefaultConfiguration(pathToAppSettings);
 
-                var cert = GetCertificate(config, logger, pathToContentRoot);
+                var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(), new JwtProvider(config.GetJwtKey()));
+                protocolServer.Start();
+
+                var cert = config.GetCertificate(pathToContentRoot);
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
@@ -72,9 +67,12 @@ namespace TickTrader.BotAgent
                     .UseWebRoot(pathToWebRoot)
                     .UseStartup<Startup>()
                     .AddBotAgent(agent)
+                    .AddProtocolServer(protocolServer)
                     .Build();
 
                 Console.WriteLine($"Web root path: {pathToWebRoot}");
+
+                logger.Info("Starting web host");
 
                 if (isService)
                     host.RunAsCustomService();
@@ -87,34 +85,16 @@ namespace TickTrader.BotAgent
             }
         }
 
-        private static X509Certificate2 GetCertificate(IConfiguration config, Logger logger, string contentRoot)
-        {
-            var sslConf = config.GetSslSettings();
-
-            ValidateSslConfiguration(sslConf, logger);
-
-            var pfxFile = sslConf.File;
-
-            if (!pfxFile.IsPathAbsolute())
-                pfxFile = Path.Combine(contentRoot, pfxFile);
-
-            return new X509Certificate2(pfxFile, sslConf.Password);
-        }
-
-        private static void ValidateSslConfiguration(SslSettings sslConf, Logger logger)
-        {
-            if (sslConf == null)
-                throw new ArgumentException("SSL configuration not found");
-
-            if (string.IsNullOrWhiteSpace(sslConf.File))
-                throw new ArgumentException("Certificate file is not defined");
-        }
 
         private static IConfiguration EnsureDefaultConfiguration(string configFile)
         {
             if (!System.IO.File.Exists(configFile))
             {
                 CreateDefaultConfig(configFile);
+            }
+            else
+            {
+                MigrateConfig(configFile);
             }
 
             var builder = new ConfigurationBuilder()
@@ -128,6 +108,32 @@ namespace TickTrader.BotAgent
         {
             var appSettings = AppSettings.Default;
             SaveConfig(configFile, appSettings);
+        }
+
+        private static void MigrateConfig(string configFile)
+        {
+            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(System.IO.File.ReadAllText(configFile));
+
+            var anyChanges = false;
+
+            if (currentSettings.Protocol == null)
+            {
+                currentSettings.Protocol = AppSettings.Default.Protocol;
+                anyChanges = true;
+            }
+            if (currentSettings.Credentials.Login != null)
+            {
+                var oldCreds = currentSettings.Credentials;
+                currentSettings.Credentials = AppSettings.Default.Credentials;
+                currentSettings.Credentials.AdminLogin = oldCreds.Login;
+                currentSettings.Credentials.AdminPassword = oldCreds.Password;
+                anyChanges = true;
+            }
+
+            if (anyChanges)
+            {
+                SaveConfig(configFile, currentSettings);
+            }
         }
 
         private static void SaveConfig(string configFile, AppSettings appSettings)
@@ -344,68 +350,68 @@ namespace TickTrader.BotAgent
         //    server.Close();
         //}
 
-        private static string GetDisplayName(AccountInfo acc)
-        {
-            return string.Format("account {0} : {1}", acc.Server, acc.Login);
-        }
+        //private static string GetDisplayName(AccountInfo acc)
+        //{
+        //    return string.Format("account {0} : {1}", acc.Server, acc.Login);
+        //}
 
-        private static PluginConfig SetupBot(AlgoPluginDescriptor descriptor)
-        {
-            var config = new BarBasedConfig();
+        //private static PluginConfig SetupBot(PluginMetadata descriptor)
+        //{
+        //    var config = new Algo.Common.Model.Config.TradeBotConfig();
 
-            config.PriceType = BarPriceType.Bid;
-            config.MainSymbol = CommandUi.InputString("symbol");
+        //    //config.PriceType = BarPriceType.Bid;
+        //    config.MainSymbol = CommandUi.InputString("symbol");
 
-            foreach (var prop in descriptor.AllProperties)
-                config.Properties.Add(InputBotParam(prop));
+        //    foreach (var prop in descriptor.AllProperties)
+        //        config.Properties.Add(InputBotParam(prop));
 
-            Console.WriteLine();
-            Console.WriteLine("Configuration:");
-            Console.WriteLine("\tMain Symbol - {0}", config.MainSymbol);
+        //    Console.WriteLine();
+        //    Console.WriteLine("Configuration:");
+        //    Console.WriteLine("\tMain Symbol - {0}", config.MainSymbol);
 
-            foreach (var p in config.Properties)
-                PrintProperty(p);
+        //    foreach (var p in config.Properties)
+        //        PrintProperty(p);
 
-            return config;
-        }
+        //    return config;
+        //}
 
-        private static Property InputBotParam(AlgoPropertyDescriptor descriptor)
-        {
-            if (descriptor is ParameterDescriptor)
-            {
-                var paramDescriptor = (ParameterDescriptor)descriptor;
-                var id = descriptor.Id;
+        //private static Property InputBotParam(PropertyMetadata descriptor)
+        //{
+        //    if (descriptor is ParameterMetadata)
+        //    {
+        //        var paramDescriptor = (ParameterMetadata)descriptor;
+        //        var id = descriptor.Id;
 
-                if (paramDescriptor.IsEnum)
-                {
-                    var enumVal = CommandUi.ChooseNullable(descriptor.DisplayName, paramDescriptor.EnumValues.ToArray());
-                    return new EnumParameter() { Id = id, Value = enumVal ?? (string)paramDescriptor.DefaultValue };
-                }
+        //        if (paramDescriptor.IsEnum)
+        //        {
+        //            var enumVal = CommandUi.ChooseNullable(descriptor.DisplayName, paramDescriptor.EnumValues.ToArray());
+        //            return new EnumParameter() { Id = id, Value = enumVal ?? (string)paramDescriptor.DefaultValue };
+        //        }
 
-                switch (paramDescriptor.DataType)
-                {
-                    case "System.Int32":
-                        var valInt32 = CommandUi.InputNullabelInteger(paramDescriptor.DisplayName);
-                        return new IntParameter() { Id = id, Value = valInt32 ?? (int)paramDescriptor.DefaultValue };
-                    case "System.Double":
-                        var valDouble = CommandUi.InputNullableDouble(paramDescriptor.DisplayName);
-                        return new DoubleParameter() { Id = id, Value = valDouble ?? (double)paramDescriptor.DefaultValue };
-                    case "System.String":
-                        var strVal = CommandUi.InputString(paramDescriptor.DisplayName);
-                        return new StringParameter() { Id = id, Value = CommandUi.InputString(paramDescriptor.DisplayName) };
-                    case "TickTrader.Algo.Api.File":
-                        return new FileParameter() { Id = id, FileName = CommandUi.InputString(paramDescriptor.DisplayName) };
-                }
-            }
+        //        switch (paramDescriptor.DataType)
+        //        {
+        //            case "System.Int32":
+        //                var valInt32 = CommandUi.InputNullabelInteger(paramDescriptor.DisplayName);
+        //                return new IntParameter() { Id = id, Value = valInt32 ?? (int)paramDescriptor.DefaultValue };
+        //            case "System.Double":
+        //                var valDouble = CommandUi.InputNullableDouble(paramDescriptor.DisplayName);
+        //                return new DoubleParameter() { Id = id, Value = valDouble ?? (double)paramDescriptor.DefaultValue };
+        //            case "System.String":
+        //                var strVal = CommandUi.InputString(paramDescriptor.DisplayName);
+        //                return new StringParameter() { Id = id, Value = CommandUi.InputString(paramDescriptor.DisplayName) };
+        //            case "TickTrader.Algo.Api.File":
+        //                return new FileParameter() { Id = id, FileName = CommandUi.InputString(paramDescriptor.DisplayName) };
+        //        }
+        //    }
 
-            throw new ApplicationException($"Parameter '{descriptor.DisplayName}' is of unsupported type!");
-        }
+        //    throw new ApplicationException($"Parameter '{descriptor.DisplayName}' is of unsupported type!");
+        //}
 
-        private static void PrintProperty(Property p)
-        {
-            if (p is Parameter)
-                Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
-        }
+        //private static void PrintProperty(Property p)
+        //{
+        //    if (p is Parameter)
+        //        Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
+        //}
 
         private static void SetupGlobalExceptionLogging(Logger log)
         {
@@ -413,9 +419,14 @@ namespace TickTrader.BotAgent
             {
                 var ex = e.ExceptionObject as Exception;
                 if (ex != null)
-                    log.Fatal(ex);
+                    log.Fatal(ex, "Unhandled Exception on Domain level!");
                 else
-                    log.Fatal("Unhandled Exception!");
+                    log.Fatal("Unhandled Exception on Domain level! No exception specified!");
+            };
+
+            Actor.UnhandledException += (ex) =>
+            {
+                log.Error(ex, "Unhandled Exception on Actor level!");
             };
         }
 

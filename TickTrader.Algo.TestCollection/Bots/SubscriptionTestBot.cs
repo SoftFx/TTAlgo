@@ -10,7 +10,7 @@ namespace TickTrader.Algo.TestCollection.Bots
     public enum SubscribeMethod { FeedProvider = 0, SymbolAccessor = 1 };
 
 
-    [TradeBot(DisplayName = "[T] Subscription Test Bot", Version = "1.2", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Subscription Test Bot", Version = "1.2", Category = "Test Plugin Info", SetupMainSymbol = false,
         Description = "Subcribes to specified number of symbols with specified depth. " +
                       "Prints number of quotes that already came, lastest quote time and depth to bot status window")]
     public class SubscriptionTestBot : TradeBot

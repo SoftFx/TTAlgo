@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Math;
 using TickTrader.SeriesStorage;
 using TickTrader.SeriesStorage.LightSerializer;
 

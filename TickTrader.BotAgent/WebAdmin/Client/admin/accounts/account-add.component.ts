@@ -2,6 +2,7 @@
 import { AccountModel, ObservableRequest } from '../../models/index';
 import { ApiService, ToastrService } from '../../services/index';
 import { FormGroup, FormControl, Validators, FormArray, FormBuilder } from '@angular/forms';
+import { Location } from '@angular/common';
 
 @Component({
     selector: 'account-add-cmp',
@@ -14,7 +15,7 @@ export class AccountAddComponent implements OnInit {
     public AccountForm: FormGroup;
     public AddRequest: ObservableRequest<AccountModel>;
 
-    constructor(private _fBuilder: FormBuilder, private _api: ApiService, private _toastr: ToastrService) { }
+    constructor(private _fBuilder: FormBuilder, private _api: ApiService, private _toastr: ToastrService, private _location: Location) { }
 
     @Output() OnAdded = new EventEmitter<AccountModel>();
 
@@ -38,6 +39,7 @@ export class AccountAddComponent implements OnInit {
                 this.Reset();
                 accountClone.Password = ""; // reset password for local clone
                 this.OnAdded.emit(accountClone);
+                this._location.back();
             },
             err => {
                 if (!err.Handled) {
@@ -56,10 +58,11 @@ export class AccountAddComponent implements OnInit {
     }
 
     public Reset() {
-        this.AccountForm.reset({ UseNewProtocol: true });
+        this.AccountForm.reset({ UseNewProtocol: false });
     }
 
     public Cancel() {
         this.AddRequest = null;
+        this._location.back();
     }
 }

@@ -40,6 +40,8 @@ namespace TickTrader.BotTerminal
             _logger = NLog.LogManager.GetCurrentClassLogger();
 
             _isSaving = false;
+
+            _storageController.TryResolveFormatError = ProfileResolver.TryResolveProfile;
         }
 
 
@@ -61,6 +63,11 @@ namespace TickTrader.BotTerminal
             {
                 await Task.Delay(LoopDelay);
             }
+        }
+
+        public void StartCurrentProfile()
+        {
+            SaveLoop();
         }
 
         public async void Stop()
@@ -131,12 +138,10 @@ namespace TickTrader.BotTerminal
                 _storageController.Reopen();
 
                 OnProfileUpdated();
-
-                SaveLoop();
             }
             catch (Exception ex)
             {
-                _logger.Error($"Can't open current profile {CurrentProfilePath}: {ex.Message}");
+                _logger.Error($"Can't open current profile at {CurrentProfilePath}: {ex.Message}");
             }
         }
 

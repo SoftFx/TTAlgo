@@ -4,6 +4,12 @@
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <ControlTemplate x:Key="DateRangeSelectionView.Template.Classic">
+        <ControlTemplate.Resources>
+            <Style TargetType="DatePicker">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+        </ControlTemplate.Resources>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />

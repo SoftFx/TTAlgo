@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
-using TickTrader.Algo.Common.Model;
 using TickTrader.BotAgent.BA.Repository;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.BotAgent.BA.Exceptions;
@@ -12,10 +11,11 @@ using System.Threading.Tasks;
 using TickTrader.BotAgent.Infrastructure;
 using TickTrader.BotAgent.Extensions;
 using TickTrader.Algo.Common.Lib;
-using TickTrader.Algo.Common.Model.Interop;
 using ActorSharp;
-using TickTrader.BotAgent.BA.Entities;
 using NLog;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -45,7 +45,10 @@ namespace TickTrader.BotAgent.BA.Models
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
 
-            _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p.GetInfoCopy(), a);
+            await _packageStorage.Library.WaitInit();
+
+            _packageStorage.PackageChanged += (p, a) => PackageChanged?.Invoke(p, a);
+            _packageStorage.PackageStateChanged += p => PackageStateChanged?.Invoke(p);
             foreach (var acc in _accounts)
                 await InitAccount(acc);
         }
@@ -60,115 +63,136 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Repository Management
 
-            public List<PackageInfo> GetPackages() => CallActor(a => a._packageStorage.GetInfo());
-            public PackageInfo UpdatePackage(byte[] fileContent, string fileName) => CallActor(a => a.UpdatePackage(fileContent, fileName));
-            public void RemovePackage(string package) => CallActor(a => a.RemovePackage(package));
-            public List<PluginInfo> GetAllPlugins() => throw new NotImplementedException();
-            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => throw new NotImplementedException();
+            public List<PackageInfo> GetPackages() => CallActorFlatten(a => a.GetPackages());
+            public PackageInfo GetPackage(string package) => CallActorFlatten(a => a.GetPackage(package));
+            public void UpdatePackage(byte[] fileContent, string fileName) => CallActorFlatten(a => a.UpdatePackage(fileContent, fileName));
+            public byte[] DownloadPackage(PackageKey package) => CallActorFlatten(a => a.DownloadPackage(package));
+            public void RemovePackage(string package) => CallActorFlatten(a => a.RemovePackage(package));
+            public void RemovePackage(PackageKey package) => CallActorFlatten(a => a.RemovePackage(package));
+            public List<PluginInfo> GetAllPlugins() => CallActorFlatten(a => a.GetAllPlugins());
+            public List<PluginInfo> GetPluginsByType(AlgoTypes type) => CallActorFlatten(a => a.GetPluginsByType(type));
+            public MappingCollectionInfo GetMappingsInfo() => CallActorFlatten(a => a.GetMappingsInfo());
+            public string GetPackageReadPath(PackageKey package) => CallActorFlatten(a => a.GetPackageReadPath(package));
+            public string GetPackageWritePath(PackageKey package) => CallActorFlatten(a => a.GetPackageWritePath(package));
 
             public event Action<PackageInfo, ChangeAction> PackageChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.PackageChanged += value);
-                remove => CallActor(a => a.PackageChanged -= value);
+                add => CallActorFlatten(a => a.PackageChanged += value);
+                remove => CallActorFlatten(a => a.PackageChanged -= value);
+            }
+
+            public event Action<PackageInfo> PackageStateChanged
+            {
+                // Warning! This violates actor model rules! Deadlocks are possible!
+                add => CallActorFlatten(a => a.PackageStateChanged += value);
+                remove => CallActorFlatten(a => a.PackageStateChanged -= value);
             }
 
             #endregion
 
             #region Account Management
 
-            public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActor(a => a.AddAccount(key, password, useNewProtocol));
-            public void ChangeAccountPassword(AccountKey key, string password) => CallActor(a => a.ChangeAccountPassword(key, password));
-            public void ChangeAccountProtocol(AccountKey key) => CallActor(a => a.ChangeAccountProtocol(key));
-            public List<AccountInfo> GetAccounts() => CallActor(a => a._accounts.GetInfoCopy());
-            public void RemoveAccount(AccountKey key) => CallActor(a => a.RemoveAccount(key));
-            public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActor(a => a.GetAccountOrThrow(accountId).TestConnection());
-            public ConnectionErrorInfo TestCreds(string login, string password, string server, bool useNewProtocol) => CallActor(a => a.TestCreds(login, password, server, useNewProtocol));
+            public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActorFlatten(a => a.AddAccount(key, password, useNewProtocol));
+            public void ChangeAccount(AccountKey key, string password, bool useNewProtocol) => CallActorFlatten(a => a.ChangeAccount(key, password, useNewProtocol));
+            public void ChangeAccountPassword(AccountKey key, string password) => CallActorFlatten(a => a.ChangeAccountPassword(key, password));
+            public void ChangeAccountProtocol(AccountKey key) => CallActorFlatten(a => a.ChangeAccountProtocol(key));
+            public List<AccountModelInfo> GetAccounts() => CallActorFlatten(a => a._accounts.GetInfoCopy());
+            public void RemoveAccount(AccountKey key) => CallActorFlatten(a => a.RemoveAccount(key));
+            public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActorFlatten(a => a.GetAccountOrThrow(accountId).TestConnection());
+            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol) => CallActorFlatten(a => a.TestCreds(accountId, password, useNewProtocol));
 
-            public event Action<AccountInfo, ChangeAction> AccountChanged
+            public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.AccountChanged += value);
-                remove => CallActor(a => a.AccountChanged -= value);
+                add => CallActorFlatten(a => a.AccountChanged += value);
+                remove => CallActorFlatten(a => a.AccountChanged -= value);
+            }
+
+            public event Action<AccountModelInfo> AccountStateChanged
+            {
+                // Warning! This violates actor model rules! Deadlocks are possible!
+                add => CallActorFlatten(a => a.AccountStateChanged += value);
+                remove => CallActorFlatten(a => a.AccountStateChanged -= value);
             }
 
             #endregion
 
             #region Bot Management
 
-            public string GenerateBotId(string botDisplayName) => CallActor(a => a.AutogenerateBotId(botDisplayName));
-            public TradeBotInfo AddBot(AccountKey accountId, string botId, TradeBotConfig config) => CallActor(a => a.AddBot(accountId, botId, config));
-            public void ChangeBotConfig(string botId, TradeBotConfig config) => CallActor(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
-            public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActor(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
-            public void StartBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Start());
-            public Task StopBotAsync(string botId) => CallActor(a => a.GetBotOrThrow(botId).StopAsync());
-            public void AbortBot(string botId) => CallActor(a => a.GetBotOrThrow(botId).Abort());
-            public TradeBotInfo GetBotInfo(string botId) => CallActor(a => a.GetBotOrThrow(botId).GetInfoCopy());
-            public List<TradeBotInfo> GetTradeBots() => CallActor(a => a._allBots.Values.GetInfoCopy());
-            public IAlgoData GetAlgoData(string botId) => CallActor(a => a.GetBotOrThrow(botId).AlgoData);
+            public string GenerateBotId(string botDisplayName) => CallActorFlatten(a => a.AutogenerateBotId(botDisplayName));
+            public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActorFlatten(a => a.AddBot(accountId, config));
+            public void ChangeBotConfig(string botId, PluginConfig config) => CallActorFlatten(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
+            public void RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false) => CallActorFlatten(a => a.RemoveBot(botId, cleanLog, cleanAlgoData));
+            public void StartBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Start());
+            public Task StopBotAsync(string botId) => CallActorFlattenAsync(a => a.GetBotOrThrow(botId).StopAsync());
+            public void AbortBot(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).Abort());
+            public BotModelInfo GetBotInfo(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).GetInfoCopy());
+            public List<BotModelInfo> GetTradeBots() => CallActorFlatten(a => a._allBots.Values.GetInfoCopy());
+            public IBotFolder GetAlgoData(string botId) => CallActorFlatten(a => a.GetBotOrThrow(botId).AlgoData);
 
             public IBotLog GetBotLog(string botId)
             {
-                var logRef = CallActor(a => a.GetBotOrThrow(botId).LogRef);
+                var logRef = CallActorFlatten(a => a.GetBotOrThrow(botId).LogRef);
                 return new BotLog.Handler(logRef);
             }
 
-            public ConnectionErrorCodes GetAccountMetadata(AccountKey key, out TradeMetadataInfo info)
+            public ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
             {
-                var result = CallActor(a => a.GetAccountMetadata(key));
+                var result = CallActorFlatten(a => a.GetAccountMetadata(key));
                 info = result.Item2;
                 return result.Item1;
             }
 
-            public event Action<TradeBotInfo, ChangeAction> BotChanged
+            public event Action<BotModelInfo, ChangeAction> BotChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.BotChanged += value);
-                remove => CallActor(a => a.BotChanged -= value);
+                add => CallActorFlatten(a => a.BotChanged += value);
+                remove => CallActorFlatten(a => a.BotChanged -= value);
             }
 
-            public event Action<TradeBotInfo> BotStateChanged
+            public event Action<BotModelInfo> BotStateChanged
             {
                 // Warning! This violates actor model rules! Deadlocks are possible!
-                add => CallActor(a => a.BotStateChanged += value);
-                remove => CallActor(a => a.BotStateChanged -= value);
+                add => CallActorFlatten(a => a.BotStateChanged += value);
+                remove => CallActorFlatten(a => a.BotStateChanged -= value);
             }
 
             #endregion
 
-            public Task ShutdownAsync() => CallActor(a => a.ShutdownAsync());
+            public Task ShutdownAsync() => CallActorFlattenAsync(a => a.ShutdownAsync());
         }
 
         #region Account management
 
-        public event Action<AccountInfo, ChangeAction> AccountChanged;
+        public event Action<AccountModelInfo, ChangeAction> AccountChanged;
+        public event Action<AccountModelInfo> AccountStateChanged;
 
-        public async Task<ConnectionErrorInfo> TestCreds(string login, string password, string server, bool useNewProtocol)
+        public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password, bool useNewProtocol)
         {
-            var acc = new ClientModel(server, login, password, useNewProtocol);
+            var acc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
             await acc.Init(_packageStorage);
 
-            await acc.Init(_packageStorage);
             var testResult = await acc.TestConnection();
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
             {
-                _logger.Error($"Can't stop test connection to {server} - {login} via {(useNewProtocol ? "SFX" : "FIX")}");
+                _logger.Error($"Can't stop test connection to {accountId.Server} - {accountId.Login} via {(useNewProtocol ? "SFX" : "FIX")}");
             }
 
             return testResult;
         }
 
-        private async Task<Tuple<ConnectionErrorCodes, TradeMetadataInfo>> GetAccountMetadata(AccountKey key)
+        private async Task<Tuple<ConnectionErrorInfo, AccountMetadataInfo>> GetAccountMetadata(AccountKey key)
         {
             try
             {
                 var metadata = await GetAccountOrThrow(key).GetMetadata();
-                return Tuple.Create(ConnectionErrorCodes.None, metadata);
+                return Tuple.Create(ConnectionErrorInfo.Ok, metadata);
             }
             catch (CommunicationException ex)
             {
-                return Tuple.Create(ex.FdkCode, (TradeMetadataInfo)null);
+                return Tuple.Create(new ConnectionErrorInfo(ex.FdkCode, ex.Message), (AccountMetadataInfo)null);
             }
         }
 
@@ -209,17 +233,22 @@ namespace TickTrader.BotAgent.BA.Models
             if (acc.HasRunningBots)
                 throw new AccountLockedException("Account cannot be removed! Stop all bots and try again.");
 
+            acc.RemoveAllBots();
             _accounts.Remove(acc);
             DisposeAccount(acc);
 
             Save();
 
-            acc.RemoveAllBots();
-
             AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
                 throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username} via {(acc.UseNewProtocol ? "SFX" : "FIX")}");
+        }
+
+        public void ChangeAccount(AccountKey key, string password, bool useNewProtocol)
+        {
+            var acc = GetAccountOrThrow(key);
+            acc.ChangeConnectionSettings(password, useNewProtocol);
         }
 
         public void ChangeAccountPassword(AccountKey key, string password)
@@ -259,18 +288,10 @@ namespace TickTrader.BotAgent.BA.Models
             acc.BotValidation += OnBotValidation;
             acc.BotInitialized += OnBotInitialized;
             acc.Changed += OnAccountChanged;
+            acc.StateChanged += OnAccountStateChanged;
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
             await acc.Init(_packageStorage);
-        }
-
-        private void DeinitAccount(ClientModel acc)
-        {
-            acc.BotValidation -= OnBotValidation;
-            acc.BotInitialized -= OnBotInitialized;
-            acc.Changed -= OnAccountChanged;
-            acc.BotChanged -= OnBotChanged;
-            acc.BotStateChanged -= OnBotStateChanged;
         }
 
         private void OnBotStateChanged(TradeBotModel bot)
@@ -280,13 +301,23 @@ namespace TickTrader.BotAgent.BA.Models
 
         private void DisposeAccount(ClientModel acc)
         {
+            acc.BotValidation -= OnBotValidation;
+            acc.BotInitialized -= OnBotInitialized;
             acc.Changed -= OnAccountChanged;
+            acc.StateChanged -= OnAccountStateChanged;
+            acc.BotChanged -= OnBotChanged;
+            acc.BotStateChanged -= OnBotStateChanged;
         }
 
         private void OnAccountChanged(ClientModel acc)
         {
             Save();
             AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Modified);
+        }
+
+        private void OnAccountStateChanged(ClientModel acc)
+        {
+            AccountStateChanged?.Invoke(acc.GetInfoCopy());
         }
 
         private void OnBotChanged(TradeBotModel bot, ChangeAction changeAction)
@@ -315,12 +346,12 @@ namespace TickTrader.BotAgent.BA.Models
 
         #region Bot management
 
-        private event Action<TradeBotInfo, ChangeAction> BotChanged;
-        private event Action<TradeBotInfo> BotStateChanged;
+        private event Action<BotModelInfo, ChangeAction> BotChanged;
+        private event Action<BotModelInfo> BotStateChanged;
 
-        private TradeBotInfo AddBot(AccountKey account, string botId, TradeBotConfig config)
+        private BotModelInfo AddBot(AccountKey account, PluginConfig config)
         {
-            var bot = GetAccountOrThrow(account).AddBot(botId, config);
+            var bot = GetAccountOrThrow(account).AddBot(config);
             return bot.GetInfoCopy();
         }
 
@@ -400,15 +431,36 @@ namespace TickTrader.BotAgent.BA.Models
         private PackageStorage _packageStorage;
 
         private event Action<PackageInfo, ChangeAction> PackageChanged;
+        private event Action<PackageInfo> PackageStateChanged;
 
-        private PackageInfo UpdatePackage(byte[] fileContent, string fileName)
+        private List<PackageInfo> GetPackages()
         {
-            return _packageStorage.Update(fileContent, fileName).GetInfoCopy();
+            return _packageStorage.Library.GetPackages().ToList();
+        }
+
+        private PackageInfo GetPackage(string packageName)
+        {
+            return _packageStorage.Library.GetPackage(PackageStorage.GetPackageKey(packageName));
+        }
+
+        private void UpdatePackage(byte[] fileContent, string fileName)
+        {
+            _packageStorage.Update(fileContent, fileName);
+        }
+
+        private byte[] DownloadPackage(PackageKey package)
+        {
+            return _packageStorage.GetPackageBinary(package);
         }
 
         private void RemovePackage(string package)
         {
-            var dPackage = _packageStorage.Get(package);
+            RemovePackage(PackageStorage.GetPackageKey(package));
+        }
+
+        private void RemovePackage(PackageKey package)
+        {
+            var dPackage = _packageStorage.GetPackageRef(package);
             if (dPackage != null)
             {
                 if (dPackage.IsLocked)
@@ -423,18 +475,29 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        private PluginInfo[] GetAllPlugins()
+        private List<PluginInfo> GetAllPlugins()
         {
-            return _packageStorage.Packages
-                .SelectMany(p => p.GetPlugins())
-                .ToArray();
+            return _packageStorage.Library.GetPlugins().ToList();
         }
 
-        private PluginInfo[] GetPluginsByType(AlgoTypes type)
+        private List<PluginInfo> GetPluginsByType(AlgoTypes type)
         {
-            return _packageStorage.Packages
-            .SelectMany(p => p.GetPluginsByType(type))
-            .ToArray();
+            return _packageStorage.Library.GetPlugins(type).ToList();
+        }
+
+        private MappingCollectionInfo GetMappingsInfo()
+        {
+            return _packageStorage.Mappings.ToInfo();
+        }
+
+        private string GetPackageReadPath(PackageKey package)
+        {
+            return _packageStorage.GetPackageReadPath(package);
+        }
+
+        private string GetPackageWritePath(PackageKey package)
+        {
+            return _packageStorage.GetPackageWritePath(package);
         }
 
         #endregion

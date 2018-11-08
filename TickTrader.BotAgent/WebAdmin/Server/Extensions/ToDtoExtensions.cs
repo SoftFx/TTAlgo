@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.BotAgent.BA;
@@ -8,9 +7,8 @@ using TickTrader.BotAgent.BA.Models;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using TickTrader.Algo.Core;
 using System.Reflection;
-using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Model.Setup;
-using TickTrader.BotAgent.BA.Entities;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -25,7 +23,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             nDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
         }
 
-        public static AccountInfoDto ToDto(this TradeMetadataInfo info)
+        public static AccountInfoDto ToDto(this AccountMetadataInfo info)
         {
             return new AccountInfoDto
             {
@@ -33,19 +31,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotDto ToDto(this TradeBotInfo bot)
+        public static TradeBotDto ToDto(this BotModelInfo bot)
         {
             return new TradeBotDto()
             {
-                Id = bot.Id,
-                Isolated = bot.Config.Isolated,
-                Account = bot. Account.ToDto(),
+                Id = bot.InstanceId,
+                Account = bot.Account.ToDto(),
                 State = bot.State.ToString(),
-                PackageName = bot.Config.Plugin.PackageName,
-                BotName = bot.BotName,
+                PackageName = bot.Config.Key.PackageName,
+                BotName = bot.Descriptor?.UiDisplayName,
                 FaultMessage = bot.FaultMessage,
                 Config = bot.ToConfigDto(),
-                Permissions = bot.Config.Permissions.ToDto()
+                Permissions = bot.Config.Permissions.ToDto(),
             };
         }
 
@@ -53,7 +50,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new PermissionsDto
             {
-                TradeAllowed = permissions.TradeAllowed
+                TradeAllowed = permissions.TradeAllowed,
+                Isolated = permissions.Isolated,
             };
         }
 
@@ -81,31 +79,30 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             };
         }
 
-        public static TradeBotConfigDto ToConfigDto(this TradeBotInfo bot)
+        public static TradeBotConfigDto ToConfigDto(this BotModelInfo bot)
         {
-            var pluginDescriptor = bot.Descriptor;
             var config = new TradeBotConfigDto()
             {
-                Symbol = bot.Config.PluginConfig.MainSymbol,
-                Parameters = bot.Config.PluginConfig.Properties.Select(p =>
+                Symbol = bot.Config.MainSymbol.Name,
+                Parameters = bot.Config.Properties.Select(p =>
                      new ParameterDto()
                      {
                          Id = p.Id,
                          Value = ((Parameter)p).ValObj,
-                         Descriptor = pluginDescriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
+                         Descriptor = bot.Descriptor?.Parameters.FirstOrDefault(dp => dp.Id == p.Id)?.ToDto()
                      }).ToArray()
             };
             return config;
         }
 
-        public static PackageDto ToDto(this PackageInfo model)
+        public static PackageDto ToDto(this PackageInfo package)
         {
             return new PackageDto()
             {
-                Name = model.Name,
-                Created = model.Created,
-                Plugins = model.GetPluginsByType(AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
-                IsValid = model.IsValid
+                Name = package.Identity.FileName,
+                Created = package.Identity.LastModifiedUtc.ToLocalTime(),
+                Plugins = package.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).Select(p => p.ToPluginDto()).ToArray(),
+                IsValid = package.IsValid
             };
         }
 
@@ -114,18 +111,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return new PluginDto()
             {
                 Id = plugin.Descriptor.Id,
-                DisplayName = plugin.Descriptor.DisplayName,
-                UserDisplayName = plugin.Descriptor.UserDisplayName,
-                Type = plugin.Descriptor.AlgoLogicType.ToString(),
+                DisplayName = plugin.Descriptor.UiDisplayName,
+                UserDisplayName = plugin.Descriptor.DisplayName,
+                Type = plugin.Descriptor.Type.ToString(),
                 Parameters = plugin.Descriptor.Parameters.Select(p => p.ToDto())
             };
         }
 
-        public static BotStateDto ToBotStateDto(this TradeBotInfo bot)
+        public static BotStateDto ToBotStateDto(this BotModelInfo bot)
         {
             return new BotStateDto
             {
-                Id = bot.Id,
+                Id = bot.InstanceId,
                 State = bot.State.ToString(),
                 FaultMessage = bot.FaultMessage
             };
@@ -137,19 +134,17 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             {
                 Server = account.Server,
                 Login = account.Login,
-                //LastConnectionStatus = ConnectionErrorCodes.None,
-                //UseNewProtocol = account.UseNewProtocol
             };
         }
 
-        public static AccountDto ToDto(this AccountInfo account)
+        public static AccountDto ToDto(this AccountModelInfo account)
         {
             return new AccountDto()
             {
-                Server = account.Server,
-                Login = account.Login,
+                Server = account.Key.Server,
+                Login = account.Key.Login,
                 LastConnectionStatus = ConnectionErrorCodes.None,
-                UseNewProtocol = account.UseSfxProtocol
+                UseNewProtocol = account.UseNewProtocol,
             };
         }
 

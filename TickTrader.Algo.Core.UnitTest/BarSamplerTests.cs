@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.Core.UnitTest
 {

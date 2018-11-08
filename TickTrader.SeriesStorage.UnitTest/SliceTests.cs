@@ -11,11 +11,13 @@ namespace TickTrader.SeriesStorage.UnitTest
     [TestClass]
     public class SliceTests
     {
+        private const bool checkFlags = false;
+
         [TestMethod]
         public void SliceTest_Check_Positive()
         {
             var slice = CreateSlice(1, 10, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-            slice.Check();
+            slice.Check(checkFlags);
         }
 
         [TestMethod]
@@ -24,7 +26,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             Assert.ThrowsException<ArgumentException>(() =>
             {
                 var slice = CreateSlice(2, 10, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-                slice.Check();
+                slice.Check(checkFlags);
             });
         }
 
@@ -34,7 +36,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             Assert.ThrowsException<ArgumentException>(() =>
             {
                 var slice = CreateSlice(0, 2, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-                slice.Check();
+                slice.Check(checkFlags);
             });
         }
 
@@ -44,7 +46,7 @@ namespace TickTrader.SeriesStorage.UnitTest
             Assert.ThrowsException<ArgumentException>(() =>
             {
                 var slice = CreateSlice(2, 3, new MockItem(1, "one"), new MockItem(2, "two"), new MockItem(3, "three"));
-                slice.Check();
+                slice.Check(checkFlags);
             });
         }
 

@@ -1,0 +1,98 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:cal="http://www.caliburnproject.org"
+    xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ContextMenu x:Key="ContextMenu">
+        <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="StartStop" >
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Setter Property="Header" Value="Start"></Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                            <Setter Property="Header" Value="Stop"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <MenuItem Header="Status"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenState" />
+        <MenuItem Header="Settings"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="OpenSettings" />
+    </ContextMenu>
+
+    <ControlTemplate x:Key="AlgoBotView.Old">
+        <!-- Ugly hack to make it work -->
+        <Control cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]">
+            <Control.Template>
+                <ControlTemplate>
+                    <Border CornerRadius="3" Padding="2"
+                            Background="{DynamicResource Chart_BotControl_Background}"
+                            ContextMenu="{StaticResource ContextMenu}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="statusCircle" Width="5" Height="5" Margin="5 0 5 0"/>
+                            <TextBlock Text="{Binding Model.InstanceId}" Width="180" cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]"/>
+                            <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+                            <l:FlatButton cal:Message.Attach="Remove" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanRemove}"/>
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Control.Template>
+        </Control>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="AlgoBotView.Classic">
+        <!-- Ugly hack to make it work -->
+        <Control cal:Message.Attach="[Event MouseDoubleClick] = [Action OpenState]">
+            <Control.Template>
+                <ControlTemplate>
+                    <Border BorderThickness="1" Padding="2"
+                            BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                            ContextMenu="{StaticResource ContextMenu}">
+                        <Border.Background>
+                            <SolidColorBrush Color="White" Opacity="0.7" />
+                        </Border.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Style="{DynamicResource BotStateEllipseStyle}" />
+                            <TextBlock Text="{Binding Model.InstanceId}" Width="150" Margin="2,0,5,0"/>
+                            <l:FlatButton cal:Message.Attach="StartStop" Style="{DynamicResource BotControlStartStopButtonStyle}" IsEnabled="{Binding CanStartStop}"/>
+                            <l:FlatButton cal:Message.Attach="Remove" Style="{DynamicResource BotControlCloseButtonStyle}" IsEnabled="{Binding CanRemove}"/>
+                        </StackPanel>
+                    </Border>
+                </ControlTemplate>
+            </Control.Template>
+        </Control>
+    </ControlTemplate>
+
+    <Style x:Key="AlgoBotViewStyle" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource AlgoBotView.Old}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Shell_PrimaryForeground}"/>
+        <Setter Property="Padding" Value="2"/>
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+        </Style.Resources>
+    </Style>
+
+    <Style x:Key="AlgoBotViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource AlgoBotView.Classic}"/>
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+        </Style.Resources>
+    </Style>
+
+
+</ResourceDictionary>

@@ -8,6 +8,8 @@ namespace ActorSharp
 {
     public class Actor
     {
+        public static event Action<Exception> UnhandledException;
+
         public static Ref<T> SpawnLocal<T>(IContextFactory factory = null, string actorName = null)
             where T : class, new()
         {
@@ -31,6 +33,26 @@ namespace ActorSharp
             }
 
             return new LocalRef<T>(instance, context);
+        }
+
+        public static Task Spawn(Func<Task> asyncFunc)
+        {
+            return Spawn(null, asyncFunc);
+        }
+
+        public static Task Spawn(IContextFactory factory, Func<Task> asyncFunc)
+        {
+            var context = factory?.CreateContext() ?? new PoolContext(10, null);
+
+            var actor = new SingleFunctionActor(asyncFunc);
+            context.Post(s => ((SingleFunctionActor)s).Start(), actor);
+
+            return actor.Task;
+        }
+
+        internal static void OnActorFailed(Exception fault)
+        {
+            UnhandledException?.Invoke(fault);
         }
 
         internal SynchronizationContext Context { get; set; }
@@ -122,7 +144,7 @@ namespace ActorSharp
             return task;
         }
 
-        protected BlockingChannel<T> CreateBlocingChannel<T>(Channel<T> channel)
+        protected BlockingChannel<T> CreateBlockingChannel<T>(Channel<T> channel)
         {
             ContextCheck();
             return new BlockingChannel<T>(channel);

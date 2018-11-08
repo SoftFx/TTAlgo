@@ -25,6 +25,11 @@ namespace Machinarium.Var
             return base.AddIntProperty(initialValue, notifyName);
         }
 
+        public new DoubleProperty AddDoubleProperty(double initialValue = 0, string notifyName = null)
+        {
+            return base.AddDoubleProperty(initialValue, notifyName);
+        }
+
         public new BoolProperty AddBoolProperty(bool initialValue = false, string notifyName = null)
         {
             return base.AddBoolProperty(initialValue, notifyName);
@@ -38,6 +43,11 @@ namespace Machinarium.Var
         public new IntValidable AddIntValidable(int initialValue = 0, string notifyName = null)
         {
             return base.AddIntValidable(initialValue, notifyName);
+        }
+
+        public new DoubleValidable AddDoubleValidable(double initialValue = 0, string notifyName = null)
+        {
+            return base.AddDoubleValidable(initialValue, notifyName);
         }
 
         public new BoolValidable AddBoolValidable(bool initialValue = false, string notifyName = null)
@@ -58,6 +68,11 @@ namespace Machinarium.Var
         public new void TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
         {
             base.TriggerOnChange(var, changeHandler);
+        }
+
+        public new void TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
+        {
+            base.TriggerOnChange(property.Var, changeHandler);
         }
     }
 }

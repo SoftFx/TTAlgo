@@ -354,4 +354,10 @@
   <data name="Order_StopPrice" xml:space="preserve">
     <value>##Order_StopPrice##</value>
   </data>
+  <data name="Tab_Bots" xml:space="preserve">
+    <value>##Tab_Bots##</value>
+  </data>
+  <data name="PluginError_None" xml:space="preserve">
+    <value />
+  </data>
 </root>

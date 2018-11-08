@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package TickTrader.Algo.Protocol.Grpc.Lib;
+
+import "google_protos/wrappers.proto";
+import "descriptors.proto";
+import "keys.proto";
+
+message Property
+{
+	string property_id = 1;
+	oneof property
+	{
+		Parameter parameter = 10;
+		Input input = 11;
+		Output output = 12;
+	}
+}
+
+
+message Parameter
+{
+	oneof parameter
+	{
+		BoolParameter bool = 10;
+		IntParameter int = 11;
+		NullableIntParameter null_int = 12;
+		DoubleParameter double = 13;
+		NullableDoubleParameter null_double = 14;
+		StringParameter string = 15;
+		EnumParameter enum = 16;
+		FileParameter file = 17;
+	}
+}
+
+message BoolParameter
+{
+	bool value = 1;
+}
+
+message IntParameter
+{
+	int32 value = 1;
+}
+
+message NullableIntParameter
+{
+	google.protobuf.Int32Value value = 1;
+}
+
+message DoubleParameter
+{
+	double value = 1;
+}
+
+message NullableDoubleParameter
+{
+	google.protobuf.DoubleValue value = 1;
+}
+
+message StringParameter
+{
+	string value = 1;
+}
+
+message EnumParameter
+{
+	string value = 1;
+}
+
+message FileParameter
+{
+	string file_name = 1;
+}
+
+
+message SymbolConfig
+{
+	enum SymbolOrigin
+	{
+		ONLINE = 0;
+		CUSTOM = 1;
+		SPECIAL = 2;
+	}
+
+	string name = 1;
+	SymbolOrigin origin = 2;
+}
+
+message Input
+{
+	SymbolConfig selected_symbol = 1;
+	oneof input
+	{
+		QuoteInput quote = 10;
+		MappedInput mapped = 11;
+	}
+}
+
+message QuoteInput
+{
+	bool use_l2 = 1;
+}
+
+message MappedInput
+{
+	MappingKey selected_mapping = 1;
+	oneof input
+	{
+		BarToBarInput bar_to_bar = 10;
+		BarToDoubleInput bar_to_double = 11;
+		QuoteToBarInput quote_to_bar = 12;
+		QuoteToDoubleInput quote_to_double = 13;
+	}
+}
+
+message BarToBarInput
+{
+}
+
+message BarToDoubleInput
+{
+}
+
+message QuoteToBarInput
+{
+}
+
+message QuoteToDoubleInput
+{
+}
+
+message OutputColor
+{
+	float alpha = 1;
+	float red = 2;
+	float green = 3;
+	float blue = 4;
+}
+
+message Output
+{
+	bool is_enabled = 1;
+	OutputColor line_color = 2;
+	int32 line_thickness = 3;
+	oneof output
+	{
+		ColoredLineOutput colored_line = 10;
+		MarkerSeriesOutput marker_series = 11;
+	}
+}
+
+message ColoredLineOutput
+{
+	ApiDescriptor.LineStyle line_style = 2;
+}
+
+message MarkerSeriesOutput
+{
+	ApiDescriptor.MarkerSize marker_size = 2;
+}
+
+message PluginPermissions
+{
+	bool trade_allowed = 1;
+	bool isolated = 2;
+}
+
+message PluginConfig
+{
+	PluginKey key = 1;
+	ApiDescriptor.TimeFrame time_frame = 2;
+	SymbolConfig main_symbol = 3;
+	MappingKey selected_mapping = 4;
+	string instance_id = 5;
+	PluginPermissions permissions = 6;
+	repeated Property properties = 7;
+}

@@ -33,6 +33,14 @@ namespace TickTrader.Algo.Core
             return new CompositeTag(isolationTag, userTag).ToString();
         }
 
+        public static string ExtarctUserTarg(string encodedTag)
+        {
+            CompositeTag tag;
+            if (!TryParse(encodedTag, out tag))
+                return "";
+            return tag.Tag;
+        }
+
         public static bool TryParse(string tag, out CompositeTag compositeTag)
         {
             try

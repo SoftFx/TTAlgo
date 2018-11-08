@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Ext;
 
 namespace TickTrader.Algo.Core
 {
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.Core
         public double? StopPrice { get; set; }
         public double? MaxVisibleVolume { get; set; }
         public double? StopLoss { get; set; }
-        public double? TrakeProfit { get; set; }
+        public double? TakeProfit { get; set; }
         public string Comment { get; set; }
         public string Tag { get; set; }
         public DateTime? Expiration { get; set; }

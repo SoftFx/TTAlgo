@@ -8,15 +8,17 @@ namespace TickTrader.BotTerminal
 {
     internal class BotJournal : Journal<BotMessage>
     {
-        private Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>();
+        private Logger _logger;
 
-        public BotJournal() : this(500) { }
+        public BotMessageTypeCounter MessageCount { get; }
 
-        public BotNameAggregator Statistics { get; private set; }
+        public BotJournal(string botId) : this(botId, 1000) { }
 
-        public BotJournal(int journalSize) : base(journalSize)
+        public BotJournal(string botId, int journalSize)
+            : base(1000)
         {
-            Statistics = new BotNameAggregator();
+            _logger = LogManager.GetLogger(LoggerHelper.GetBotLoggerName(botId));
+            MessageCount = new BotMessageTypeCounter();
         }
 
         public override void Add(BotMessage item)
@@ -34,54 +36,42 @@ namespace TickTrader.BotTerminal
                 WriteToLogger(item);
         }
 
-        public void LogStatus(string botName, string status)
+        public void LogStatus(string status)
         {
-            GetOrAddLogger(botName).Trace(status);
+            _logger.Trace(status);
         }
 
         protected override void OnAppended(BotMessage item)
         {
-            Statistics.Register(item);
+            MessageCount.Added(item);
         }
 
         protected override void OnRemoved(BotMessage item)
         {
-            Statistics.UnRegister(item);
+            MessageCount.Removed(item);
         }
 
-        public void RegisterBotLog(string botName)
+        public override void Clear()
         {
-        }
-
-        public void UnregisterBotLog(string botName)
-        {
-            _loggers.Remove(botName);
+            MessageCount.Reset();
+            base.Clear();
         }
 
         private void WriteToLogger(BotMessage message)
         {
-            var logger = GetOrAddLogger(message.Bot);
-
             if (message.Type != JournalMessageType.Error)
-                logger.Info(message.ToString());
+                _logger.Info(message.ToString());
             else
             {
-                logger.Error(message.ToString());
+                _logger.Error(message.ToString());
                 if (message.Details != null)
-                    logger.Error(message.Details);
+                    _logger.Error(message.Details);
             }
         }
 
         private void LogError(BotMessage message)
         {
-            var logger = GetOrAddLogger(message.Bot);
-            logger.Error(message.ToString());
-        }
-
-        private Logger GetOrAddLogger(string botName)
-        {
-            var loggerName = LoggerHelper.GetBotLoggerName(botName);
-            return _loggers.GetOrAdd(loggerName, () => LogManager.GetLogger(loggerName));
+            _logger.Error(message.ToString());
         }
     }
 
@@ -100,6 +90,40 @@ namespace TickTrader.BotTerminal
         public override string ToString()
         {
             return $"{Type} | {Message}";
+        }
+    }
+
+    internal class BotMessageTypeCounter
+    {
+        private Dictionary<JournalMessageType, int> _messagesCnt;
+
+        public int this[JournalMessageType type] => _messagesCnt[type];
+
+        public BotMessageTypeCounter()
+        {
+            _messagesCnt = new Dictionary<JournalMessageType, int>();
+            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            {
+                _messagesCnt.Add(type, 0);
+            }
+        }
+
+        public void Added(BotMessage msg)
+        {
+            _messagesCnt[msg.Type]++;
+        }
+
+        public void Removed(BotMessage msg)
+        {
+            _messagesCnt[msg.Type]--;
+        }
+
+        public void Reset()
+        {
+            foreach (JournalMessageType type in Enum.GetValues(typeof(JournalMessageType)))
+            {
+                _messagesCnt[type] = 0;
+            }
         }
     }
 }

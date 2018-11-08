@@ -9,6 +9,7 @@ using BO = TickTrader.BusinessObjects;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using Machinarium.Qnil;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -108,5 +109,13 @@ namespace TickTrader.Algo.Common.Model
         {
             return Descriptor;
         }
+
+        #region ISymbolInfo
+
+        string Setup.ISymbolInfo.Id => Name;
+
+        Info.SymbolOrigin Setup.ISymbolInfo.Origin => Info.SymbolOrigin.Online;
+
+        #endregion ISymbolInfo
     }
 }

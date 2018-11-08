@@ -9,13 +9,13 @@ namespace TickTrader.BotTerminal
 {
     class ShutdownDialogViewModel : Screen
     {
-        public const int Delay = 1000;
+        public const int Delay = 500;
 
 
         public static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(60);
 
 
-        private ChartCollectionViewModel _charts;
+        private LocalAlgoAgent _algoAgent;
         private int _totalBots;
         private int _stoppedBots;
 
@@ -41,13 +41,19 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ShutdownDialogViewModel(ChartCollectionViewModel charts)
+        public ShutdownDialogViewModel(LocalAlgoAgent algoAgent)
         {
-            _charts = charts;
+            _algoAgent = algoAgent;
 
-            DisplayName = $"Shuting down - {EnvService.Instance.ApplicationName}";
-            TotalBots = _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+            DisplayName = $"Shutting down - {EnvService.Instance.ApplicationName}";
+            TotalBots = _algoAgent.RunningBotsCnt;
             StoppedBots = 0;
+        }
+
+
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
 
             StopBots();
         }
@@ -55,14 +61,14 @@ namespace TickTrader.BotTerminal
 
         private async void StopBots()
         {
-            _charts.Items.Foreach(c => c.StopBots());
+            _algoAgent.StopBots();
 
-            StoppedBots = TotalBots - _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+            StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             var startTime = DateTime.Now;
-            while (_charts.Items.Any(c => c.HasStartedBots) && DateTime.Now - startTime < WaitTimeout)
+            while (_algoAgent.HasRunningBots && DateTime.Now - startTime < WaitTimeout)
             {
                 await Task.Delay(Delay);
-                StoppedBots = TotalBots - _charts.Items.Sum(c => c.Bots.Count(b => b.IsStarted));
+                StoppedBots = TotalBots - _algoAgent.RunningBotsCnt;
             }
 
             TryClose();

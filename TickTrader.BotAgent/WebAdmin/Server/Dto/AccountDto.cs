@@ -1,5 +1,4 @@
-﻿using TickTrader.Algo.Common.Model;
-using TickTrader.Algo.Common.Model.Interop;
+﻿using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Dto
 {

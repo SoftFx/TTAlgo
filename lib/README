@@ -1,0 +1,15 @@
+BotAgent can't load pure .Net assemblies, even if referenced in .csproj and code is normally compiled (thanks .Net Core)
+
+When updating some assemblies pack them into nuget package:
+ - TickTrader.Common
+ - TickTrader.BusinessLogic
+ - TickTrader.BusinessObjects
+
+1. You will need to update package version in build.nupckg\rebuild.all.cmd.
+Otherwise package will be loaded from cache on build machine which will result in no update in release version even if it works for you.
+Local package source is configured for solution, but caching strategy should be considered. NuGet thinks that package is different if version is different, so it will not cache updated file.
+If you mess up with versions you can clean cache from %userprofile%\.nuget\packages. But you can't do it on all buildmachines each time you update dependency.
+
+2. Run build.nupckg\rebuild.all.cmd.
+
+3. Update nuget dependency from NuGet Manager. If you don't see package check "local" package source.

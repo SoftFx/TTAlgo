@@ -18,6 +18,9 @@ namespace ActorSharp
             _context = context;
         }
 
+        internal SynchronizationContext ActorContext => _context;
+        internal TActor ActorInstance => _actor;
+
         /// <summary>
         /// Fire and forget style.
         /// </summary>
@@ -55,6 +58,46 @@ namespace ActorSharp
             var invokeTask = new Task(o =>BindCompletion((Func<TActor, Task<TResult>>)o, src), method);
             _context.Post(ExecTaskSync, invokeTask);
             return src.Task;
+        }
+
+        public override void SendChannel<T>(Channel<T> channel, Action<TActor, Channel<T>> actorMethod)
+        {
+            if (channel.Dicrection == ChannelDirections.In)
+            {
+                var writer = new LocalChannelWriter<T>();
+                channel.Init(writer);
+
+                Action<TActor> task = a =>
+                {
+                    var actorChannel = Channel.NewInput<T>();
+                    var reader = new LocalChannelReader<T>();
+                    reader.Init(writer);
+                    writer.Init(reader, channel.MaxPageSize);
+                    actorChannel.Init(reader);
+                    actorMethod(_actor, actorChannel);
+                };
+
+                _context.Post(ExecAction, task);
+            }
+            else if (channel.Dicrection == ChannelDirections.Out)
+            {
+                var reader = new LocalChannelReader<T>();
+                channel.Init(reader);
+
+                Action<TActor> task = a =>
+                {
+                    var actorChannel = Channel.NewInput<T>();
+                    var writer = new LocalChannelWriter<T>();
+                    writer.Init(reader, channel.MaxPageSize);
+                    reader.Init(writer);
+                    actorChannel.Init(writer);
+                    actorMethod(_actor, actorChannel);
+                };
+
+                _context.Post(ExecAction, task);
+            }
+            else
+                throw new NotImplementedException();
         }
 
         public override Task OpenChannel<T>(Channel<T> channel, Action<TActor, Channel<T>> actorMethod)
@@ -95,7 +138,8 @@ namespace ActorSharp
                 _context.Post(ExecTaskSync, task);
                 return task;
             }
-            throw new NotImplementedException();
+            else
+                throw new NotImplementedException();
         }
 
         public override Task<TResult> OpenChannel<T, TResult>(Channel<T> channel, Func<TActor, Channel<T>, TResult> actorMethod)

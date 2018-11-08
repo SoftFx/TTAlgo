@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
 {
     public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext, CustomFeedProvider
     {
-        private Action<QuoteEntity> _rateUpdateCallback;
+        private Action<RateUpdate> _rateUpdateCallback;
 
         private List<Action> setupActions = new List<Action>();
 
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Core
         //protected abstract IEnumerable<Bar> QueryBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
         //protected abstract IEnumerable<Quote> QueryQuotes(string symbol, DateTime from, DateTime to, bool level2);
 
-        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, Action<QuoteEntity> rateUpdateCallback)
+        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, Action<RateUpdate> rateUpdateCallback)
         {
             ExecContext = executor;
             _rateUpdateCallback = rateUpdateCallback;
@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Core
                 ExecContext.EnqueueQuote(update);
         }
 
-        internal void ApplyUpdate(RateUpdate update)
+        internal BufferUpdateResult ApplyUpdate(RateUpdate update)
         {
             var lastQuote = update.LastQuote;
 
@@ -128,8 +128,9 @@ namespace TickTrader.Algo.Core
             }
 
             _rateUpdateCallback((QuoteEntity)lastQuote);
-
             RateDispenser.OnUpdateEvent(lastQuote);
+
+            return result;
         }
 
         internal RateUpdate InvokeAggregate(RateUpdate last, QuoteEntity quote)

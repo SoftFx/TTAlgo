@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using ActorSharp;
+using Caliburn.Micro;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -34,13 +35,16 @@ namespace TickTrader.BotTerminal
 
             ConfigureCaliburn();
             ConfigurateLogger();
-            ConfigureGlobalWpfExceptionHandling();
+            ConfigureGlobalExceptionHandling();
         }
 
         public static AutoViewManager AutoViewLocator => autoViewLocator;
 
         private void ConfigureCaliburn()
         {
+            ViewLocator.AddDefaultTypeMapping("Page");
+            ViewLocator.AddDefaultTypeMapping("Dialog");
+
             ViewLocator.LocateForModelType = (modelType, displayLocation, context) =>
             {
                 var viewType = ViewLocator.LocateTypeForModelType(modelType, displayLocation, context);
@@ -78,14 +82,24 @@ namespace TickTrader.BotTerminal
 
                 return fe.DataContext;
             });
+
+            MessageBinder.SpecialValues.Add("$tag", context =>
+            {
+                return context.Source.Tag;
+            });
         }
 
-        private void ConfigureGlobalWpfExceptionHandling()
+        private void ConfigureGlobalExceptionHandling()
         {
             Application.DispatcherUnhandledException += (s, e) =>
             {
                 e.Handled = true;
-                logger.Error(e.Exception, "Unhandled Exception on Dispatcher level! Note to QA: this is definitly a bug!");
+                logger.Error(e.Exception, "Unhandled Exception on Dispatcher level!");
+            };
+
+            Actor.UnhandledException += (e) =>
+            {
+                logger.Error(e, "Unhandled Exception on Actor level!");
             };
         }
 
@@ -205,7 +219,12 @@ namespace TickTrader.BotTerminal
                 var dataHandler = clientHandler.CreateDataHandler();
                 await dataHandler.Init();
 
+                var customStorage = new CustomFeedStorage.Handler(Actor.SpawnLocal<CustomFeedStorage>());
+                await customStorage.SyncData();
+                await customStorage.Start(EnvService.Instance.CustomFeedCacheFolder);
+
                 _container.RegisterInstance(typeof(ClientModel.Data), null, dataHandler);
+                _container.RegisterInstance(typeof(CustomFeedStorage.Handler), null, customStorage);
                 _container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
                 _container.Singleton<IEventAggregator, EventAggregator>();
                 _container.Singleton<ShellViewModel>();

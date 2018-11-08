@@ -14,6 +14,9 @@ using SFX = TickTrader.FDK.Common;
 using API = TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using ActorSharp;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -50,14 +53,16 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, 5030,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, 5050,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, 5040,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
-            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, 5060,
-                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: options.LogsFolder);
+            var logsDir = System.IO.Path.Combine(options.LogsFolder, "FDK2");
+
+            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, port: 5030, validateClientCertificate: ValidateCertificate,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
+            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, port: 5050, validateClientCertificate: ValidateCertificate,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
+            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, port: 5040, validateClientCertificate: ValidateCertificate,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
+            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, port: 5060, validateClientCertificate: ValidateCertificate,
+                connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
 
             _feedProxy.InitTaskAdapter();
             _tradeProxy.InitTaskAdapter();
@@ -149,6 +154,12 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxy.SubscribeTradesAsync(false);
             logger.Debug("Trade.History: Subscribed.");
+        }
+
+        private bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // TODO: Add message indicating that certificate is not valid
+            return true;
         }
 
         private void OnLogout(LogoutInfo info)
@@ -267,11 +278,21 @@ namespace TickTrader.Algo.Common.Model
             {
                 try
                 {
-                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from.ToUniversalTime(), to.ToUniversalTime(), DownloadTimeoutMs);
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
+                    var timeEdge = from;
 
                     while (true)
                     {
                         var bar = e.Next(DownloadTimeoutMs);
+
+                        if (bar != null)
+                        {
+                            if (bar.From <= timeEdge)
+                                continue;
+
+                            timeEdge = bar.From;
+                        }
+
                         if (bar == null || !stream.Write(Convert(bar)))
                         {
                             e.Close();
@@ -326,47 +347,7 @@ namespace TickTrader.Algo.Common.Model
                     stream.Close(ex);
                 }
             });
-
-            //throw new NotImplementedException();
-
-            //var buffer = new QuoteSliceBuffer(from, to);
-            //var depth = includeLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
-            //var eTask = _feedHistoryProxy.DownloadQuotesAsync(Guid.NewGuid().ToString(), symbol, depth, from, to);
-            //DownloadQuotesToBuffer(buffer, eTask);
-            //return buffer;
         }
-
-        //private async void DownloadQuotesToBuffer(SliceBuffer<QuoteEntity> buffer, Task<QuoteEnumerator> enumTask)
-        //{
-        //    const int pageSize = 2000;
-
-        //    DateTime lastTickTime = DateTime.MinValue;
-
-        //    try
-        //    {
-        //        using (var e = await enumTask)
-        //        {
-        //            var page = new SFX.Quote[pageSize];
-
-        //            while (true)
-        //            {
-        //                var count = await e.NextAsync(page).ConfigureAwait(false);
-        //                if (count <= 0)
-        //                    break;
-
-        //                var tickArray = ConvertAndFilter(page.Take(count), ref lastTickTime);
-        //                await buffer.WriteAsync(tickArray).ConfigureAwait(false);
-        //            }
-        //        }
-
-        //        await buffer.CompleteWriteAsync();
-        //        buffer.Dispose();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        buffer.SetFailed(ex);
-        //    }
-        //}
 
         public async Task<QuoteEntity[]> DownloadQuotePage(string symbol, DateTime from, int count, bool includeLevel2)
         {
@@ -387,9 +368,28 @@ namespace TickTrader.Algo.Common.Model
         {
             return Task.Factory.StartNew(() =>
             {
-                var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime(), DownloadTimeoutMs);
-                e.Close();
-                return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+                if (timeFrame.IsTicks())
+                {
+                    var depth = timeFrame == TimeFrames.TicksLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
+
+                    var e = _feedHistoryProxy.DownloadQuotes(symbol, depth, DateTime.MinValue, DateTime.MaxValue, DownloadTimeoutMs);
+                    var q = e.Next(DownloadTimeoutMs);
+                    e.Close();
+                    if (q != null)
+                        return new Tuple<DateTime, DateTime>(q.CreatingTime, e.AvailTo);
+                    else
+                        return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+                }
+                else // bars
+                {
+                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime(), DownloadTimeoutMs);
+                    var b = e.Next(DownloadTimeoutMs);
+                    e.Close();
+                    if (b != null)
+                        return new Tuple<DateTime, DateTime>(b.From, e.AvailTo);
+                    else
+                        return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
+                }
             });
         }
 
@@ -401,8 +401,8 @@ namespace TickTrader.Algo.Common.Model
         public event Action<ExecutionReport> ExecutionReport;
         public event Action<TradeReportEntity> TradeTransactionReport;
         public event Action<BalanceOperationReport> BalanceOperation;
-        public event Action<SymbolEntity[]> SymbolInfo;
-        public event Action<CurrencyEntity[]> CurrencyInfo;
+        public event Action<SymbolEntity[]> SymbolInfo { add { } remove { } }
+        public event Action<CurrencyEntity[]> CurrencyInfo { add { } remove { } }
 
         public Task<AccountEntity> GetAccountInfo()
         {
@@ -448,7 +448,7 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TrakeProfit, r.Comment, r.Tag, null));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null));
         }
 
         public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
@@ -531,7 +531,7 @@ namespace TickTrader.Algo.Common.Model
 
         #region Convertors
 
-        private static SymbolEntity Convert(SymbolInfo info)
+        private static SymbolEntity Convert(SFX.SymbolInfo info)
         {
             return new SymbolEntity(info.Name)
             {
@@ -628,11 +628,10 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static CurrencyEntity Convert(CurrencyInfo info)
+        private static CurrencyEntity Convert(SFX.CurrencyInfo info)
         {
-            return new CurrencyEntity(info.Name)
+            return new CurrencyEntity(info.Name, info.Precision)
             {
-                Digits = info.Precision,
                 SortOrder = info.SortOrder
             };
         }
@@ -724,10 +723,10 @@ namespace TickTrader.Algo.Common.Model
             return new AccountEntity()
             {
                 Id = info.AccountId,
-                Balance = info.Balance,
+                Balance = info.Balance ?? 0.0D,
                 BalanceCurrency = info.Currency,
                 Type = Convert(info.Type),
-                Leverage = info.Leverage,
+                Leverage = info.Leverage ?? 1,
                 Assets = info.Assets.Select(Convert).ToArray()
             };
         }
@@ -862,6 +861,8 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.DealerReject;
                         else if (message != null && message.StartsWith("Dealer") && message.EndsWith("did not respond."))
                             return Api.OrderCmdResultCodes.DealingTimeout;
+                        else if (message != null && message.Contains("locked by another operation"))
+                            return Api.OrderCmdResultCodes.OrderLocked;
                         break;
                     }
                 case RejectReason.None:
@@ -901,7 +902,7 @@ namespace TickTrader.Algo.Common.Model
                 Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
-                Swap = p.Swap
+                Swap = p.Swap,
             };
         }
 

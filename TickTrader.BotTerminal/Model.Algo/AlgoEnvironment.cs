@@ -7,34 +7,42 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core.Metadata;
+using Machinarium.Qnil;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoEnvironment : IAlgoGuiMetadata
+    internal class AlgoEnvironment
     {
-        private PluginCatalog _catalog = new PluginCatalog();
-        private ExtCollection _algoExt = new ExtCollection();
-        private BotJournal _botJournal = new BotJournal(1000);
-        private PluginIdProvider _idProvider = new PluginIdProvider();
+        private VarList<AlgoAgentViewModel> _localAgentStub;
 
-        public AlgoEnvironment()
+
+        public IShell Shell { get; }
+
+        public LocalAlgoAgent LocalAgent { get; }
+
+        public BotAgentManager BotAgentManager { get; }
+
+        public AlgoAgentViewModel LocalAgentVM { get; }
+
+        public IVarList<BotAgentViewModel> BotAgents { get; }
+
+        public IVarList<AlgoAgentViewModel> Agents { get; }
+
+
+        public AlgoEnvironment(IShell shell, LocalAlgoAgent localAgent, BotAgentManager botAgentManager)
         {
-            _catalog.AddFolder(EnvService.Instance.AlgoRepositoryFolder);
-            _algoExt.LoadExtentions(EnvService.Instance.AlgoExtFolder, new AlgoLogAdapter("Extensions"));
-            if (EnvService.Instance.AlgoCommonRepositoryFolder != null)
-                _catalog.AddFolder(EnvService.Instance.AlgoCommonRepositoryFolder);
-            _catalog.AddAssembly(Assembly.Load("TickTrader.Algo.Indicators"));
-        }
+            Shell = shell;
+            LocalAgent = localAgent;
+            BotAgentManager = botAgentManager;
 
-        public void Init(IReadOnlyList<SymbolModel> symbolList)
-        {
-            Symbols = symbolList;
-        }
+            ProfileResolver.Mappings = LocalAgent.Mappings;
 
-        public BotJournal BotJournal => _botJournal;
-        public PluginCatalog Repo => _catalog;
-        public ExtCollection Extentions => _algoExt;
-        public PluginIdProvider IdProvider => _idProvider;
-        public IReadOnlyList<ISymbolInfo> Symbols { get; private set; }
+            LocalAgentVM = new AlgoAgentViewModel(LocalAgent, this);
+            _localAgentStub = new VarList<AlgoAgentViewModel>();
+            _localAgentStub.Add(LocalAgentVM);
+            BotAgents = BotAgentManager.BotAgents.OrderBy((k, v) => k).Select(v => new BotAgentViewModel(v, this));
+            Agents = VarCollection.CombineChained(_localAgentStub, BotAgents.Select(b => b.Agent));
+        }
     }
 }

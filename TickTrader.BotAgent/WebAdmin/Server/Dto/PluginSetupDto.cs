@@ -8,9 +8,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Dto
         public string PluginId { get; set; }
         public string InstanceId { get; set; }
         public string Symbol { get; set; }
-        public bool Isolated { get; set; }
         public PermissionsDto Permissions { get; set; }
-        public bool TradeIs { get; set; }
         public AccountDto Account { get; set; }
         public PluginSetupParameter[] Parameters { get; set; }
     }

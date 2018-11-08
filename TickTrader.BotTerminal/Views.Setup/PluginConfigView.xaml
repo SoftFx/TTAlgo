@@ -1,0 +1,626 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+
+    <Style x:Key="LineSampleStyle" TargetType="Line">
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Stretch" Value="Fill"/>
+        <Setter Property="X2" Value="1"/>
+        <Setter Property="Stroke" Value="{DynamicResource Shell_PrimaryForeground}"/>
+        <Setter Property="Margin" Value="5 0 0 0"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Width" Value="100"/>
+    </Style>
+
+    <DataTemplate x:Key="LineStyleItem">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="" Grid.Column="0" />
+            <Line Grid.Column="1" 
+                      Style="{StaticResource LineSampleStyle}"
+                      StrokeDashArray="{Binding Converter={l:LineStyleToDashArrayConverter}}"
+                      StrokeThickness="1" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="LineThicknessItem">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding}" Grid.Column="0" />
+            <Line Grid.Column="1" Style="{StaticResource LineSampleStyle}" StrokeThickness="{Binding}"/>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Double Output Template  -->
+
+    <DataTemplate DataType="{x:Type l:ColoredLineOutputSetupViewModel}">
+        <Grid Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="{Binding DisplayName}"/>
+            <CheckBox Grid.Column="1" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding IsValid}" Margin="5,0,5,0"/>
+            <ComboBox Grid.Column="2" IsEditable="False" IsEnabled="{Binding IsEnabled}"
+                          SelectedItem="{Binding LineThickness}" ItemsSource="{Binding AvailableThicknesses}"
+                          ItemTemplate="{StaticResource LineThicknessItem}"/>
+            <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" 
+                          SelectedItem="{Binding LineStyle}"  ItemsSource="{Binding AvailableLineStyles}"
+                          ItemTemplate="{StaticResource LineStyleItem}"/>
+
+            <l:PopupButton  Grid.Column="4" Background="Transparent">
+                <l:PopupButton.Content>
+                    <Rectangle Width="15" Height="15"
+                           Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
+                           Stroke="{DynamicResource Dialog_ControlBackground}"
+                           Margin="5,0,5,0" StrokeThickness="1" />
+                </l:PopupButton.Content>
+                <l:PopupButton.PopupContent>
+                    <l:ColorPicker SelectedColor="{Binding Path=LineColor, Mode=TwoWay}"/>
+                </l:PopupButton.PopupContent>
+            </l:PopupButton>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Marker Output Template  -->
+
+    <DataTemplate DataType="{x:Type l:MarkerSeriesOutputSetupViewModel}">
+        <Grid Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="{Binding DisplayName}"/>
+            <CheckBox Grid.Column="1" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding IsValid}" Margin="5,0,5,0"/>
+            <ComboBox Grid.Column="2" IsEditable="False" IsEnabled="{Binding IsEnabled}"
+                          SelectedItem="{Binding LineThickness}" ItemsSource="{Binding AvailableThicknesses}"
+                          ItemTemplate="{StaticResource LineThicknessItem}"/>
+            <ComboBox Grid.Column="3" IsEditable="False" IsEnabled="{Binding IsEnabled}" 
+                          SelectedItem="{Binding MarkerSize}"  ItemsSource="{Binding AvailableSizes}"/>
+            <Rectangle Grid.Column="4" Width="15" Height="15"
+                           Fill="{Binding LineColor, Converter={StaticResource ColorToBrushConverter}}"
+                           Stroke="{DynamicResource Dialog_ControlBackground}"
+                           Margin="5,0,5,0" StrokeThickness="1" />
+        </Grid>
+    </DataTemplate>
+
+    <!--  Parameter Template  -->
+
+    <DataTemplate x:Key="LabeledPropertySetup">
+        <Grid Margin="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Label Content="{Binding DisplayName}"/>
+            <ContentControl Content="{Binding}" HorizontalAlignment="Stretch" Grid.Row="1" IsTabStop="False"/>
+        </Grid>
+    </DataTemplate>
+
+    <!--  Input Template  -->
+
+    <DataTemplate x:Key="LabeledInputSetup">
+        <Grid Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Content="{Binding DisplayName}" IsTabStop="False" />
+            <ContentControl Content="{Binding}" HorizontalAlignment="Stretch" Grid.Column="1" IsTabStop="False"/>
+        </Grid>
+    </DataTemplate>
+
+    <!--  AlgoInvalidParameter  -->
+
+    <DataTemplate DataType="{x:Type l:ParameterSetupViewModel+Invalid}">
+        <TextBox Name="input" Text="Invalid parameter" IsEnabled="False"
+                                     HorizontalAlignment="Stretch" />
+    </DataTemplate>
+
+    <!--  Bool Param template  -->
+
+    <DataTemplate DataType="{x:Type l:BoolParamSetupViewModel}">
+        <ComboBox Name="input" SelectedItem="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding BoolValues}" HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+
+    <!--  Int Param template  -->
+
+    <DataTemplate DataType="{x:Type l:IntParamSetupViewModel}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type l:NullableIntParamSetupViewModel}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!--  DoubleParam template -->
+
+    <DataTemplate DataType="{x:Type l:DoubleParamSetupViewModel}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type l:NullableDoubleParamSetupViewModel}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}"
+                                     HorizontalAlignment="Stretch" Margin="0"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!--  StringParam template  -->
+
+    <DataTemplate DataType="{x:Type l:StringParamSetupViewModel}">
+        <TextBox Name="input" Text="{Binding ValueStr, UpdateSourceTrigger=PropertyChanged}"
+                                     HorizontalAlignment="Stretch"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!--  Enum Param template  -->
+
+    <DataTemplate DataType="{x:Type l:EnumParamSetupViewModel}">
+        <ComboBox Name="input"
+                      ItemsSource="{Binding EnumValues}" SelectedItem="{Binding SelectedValue}"
+                      Margin="0">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!--  File Param template  -->
+
+    <DataTemplate DataType="{x:Type l:FileParamSetupViewModel}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Name="input" Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Shell_PrimaryForeground}" ToolTip="{Binding FilePath}" />
+            <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
+                <i:Interaction.Behaviors>
+                    <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" Filter="{Binding Filter}"/>
+                </i:Interaction.Behaviors>
+            </l:FlatButton>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+                <Setter TargetName="input" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Bar Input Setup Template  -->
+
+    <!--<DataTemplate DataType="{x:Type am:BarToBarInput}">
+        <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
+                  SelectedValue="{Binding SelectedSymbol}" ItemsSource="{Binding AvailableSymbols}"
+                  DisplayMemberPath="Name"
+                  IsEnabled="{Binding HasChoice}"/>
+    </DataTemplate>-->
+
+    <DataTemplate DataType="{x:Type l:BarToBarInputSetupViewModel}">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
+            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="DisplayName"
+                      Margin="2,0,0,0" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type l:QuoteToBarInputSetupViewModel}">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
+            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="DisplayName"
+                      Margin="2,0,0,0" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- Tick Input Setup Template  -->
+
+    <DataTemplate DataType="{x:Type l:QuoteInputSetupViewModel}">
+        <ComboBox Grid.Column="1" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SymbolCode}" ItemsSource="{Binding AvailableSymbols}"
+                      IsEnabled="{Binding HasChoice}"/>
+    </DataTemplate>
+
+    <!-- Double (bar based) Input Setup Template  -->
+
+    <DataTemplate DataType="{x:Type l:BarToDoubleInputSetupViewModel}">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
+            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="DisplayName"
+                      Margin="2,0,0,0" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- Double (tick based) Input Setup Template  -->
+
+    <DataTemplate DataType="{x:Type l:QuoteToDoubleInputSetupViewModel}">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Grid.Column="0" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding SelectedSymbol}"
+                      ItemsSource="{Binding AvailableSymbols}"
+                      DisplayMemberPath="Name"/>
+            <ComboBox Grid.Column="1" IsEditable="False" IsEnabled="True"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="DisplayName"
+                      Margin="2,0,0,0" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- Bot setting template -->
+
+    <ControlTemplate x:Key="GeneralSettings" TargetType="Control">
+        <Grid Margin="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
+                     Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
+            <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
+            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
+            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
+                <Setter TargetName="InstanceIdTxt" Property="Background" Value="{DynamicResource Dialog_ErrorBackground}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+                <Setter TargetName="InstanceIdTxt" Property="IsEnabled" Value="False" />
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="MainSymbolSettings" TargetType="Control">
+        <Grid Margin="3">
+
+            <Grid.Resources>
+                <CollectionViewSource x:Key="SymbolsCollection" Source="{Binding AvailableSymbols}">
+                    <CollectionViewSource.GroupDescriptions>
+                        <PropertyGroupDescription PropertyName="Origin"/>
+                    </CollectionViewSource.GroupDescriptions>
+                    <CollectionViewSource.SortDescriptions>
+                        <scm:SortDescription PropertyName="Origin"/>
+                        <scm:SortDescription PropertyName="Name"/>
+                    </CollectionViewSource.SortDescriptions>
+                </CollectionViewSource>
+
+                <DataTemplate x:Key="SymbolComboGroupTemplate">
+                    <Grid IsEnabled="False">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Separator Grid.Column="0"/>
+                        <TextBlock Text="{Binding Name}" Grid.Column="1" Margin="4" FontStyle="Italic"/>
+                        <Separator Grid.Column="2"/>
+                    </Grid>
+                </DataTemplate>
+
+                <DataTemplate x:Key="SymbolComboItemTemplate">
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </Grid.Resources>
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="90"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0" Grid.Column="0" Content="TimeFrame" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" IsEditable="False" Margin="0"
+                      SelectedItem="{Binding SelectedTimeFrame}"
+                      ItemsSource="{Binding AvailableTimeFrames}"/>
+            <Label Grid.Row="2" Grid.Column="0" Content="Main Symbol" />
+            <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="False" Margin="0"
+                      SelectedValue="{Binding MainSymbol}"
+                      ItemTemplate="{StaticResource SymbolComboItemTemplate}"
+                      ItemsSource="{Binding Source={StaticResource SymbolsCollection}}"
+                      DisplayMemberPath="Name">
+                <ComboBox.GroupStyle>
+                    <GroupStyle HeaderTemplate="{StaticResource SymbolComboGroupTemplate}" />
+                </ComboBox.GroupStyle>
+            </ComboBox>
+            <ComboBox Grid.Row="2" Grid.Column="2" IsEditable="False" Margin="2,0,0,0"
+                      ItemsSource="{Binding AvailableMappings}"
+                      SelectedValue="{Binding SelectedMapping}"
+                      DisplayMemberPath="DisplayName"/>
+        </Grid>
+    </ControlTemplate>
+
+    <!-- Old Template  -->
+
+    <ControlTemplate x:Key="PluginConfigView.Old">
+        <Grid Background="{TemplateBinding Background}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <TextBlock TextWrapping="Wrap" Text="{l:ResxBinding Descriptor.Error, Prefix=PluginError_}"
+                       Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+
+            <StackPanel Grid.Row="1">
+
+                <TextBlock TextWrapping="Wrap" Text="{Binding Descriptor.Description}" Margin="3"
+                       Foreground="{DynamicResource Shell_PrimaryForeground}"/>
+
+                <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+
+                <Control Template="{StaticResource GeneralSettings}" />
+
+                <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+
+                <ItemsControl IsTabStop="False" ItemsSource="{Binding Parameters}"
+                              ItemTemplate="{StaticResource LabeledPropertySetup}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2" VerticalAlignment="Top" />
+                            <!--<StackPanel Orientation="Vertical" />-->
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+
+                <ItemsControl ItemsSource="{Binding Inputs}"
+                                  ItemTemplate="{StaticResource LabeledInputSetup}"/>
+
+                <Rectangle HorizontalAlignment="Stretch" Height="1" VerticalAlignment="Center" Margin="10,5,10,5" Fill="{DynamicResource Dialog_ControlBackground}" StrokeThickness="0"/>
+
+                <ItemsControl ItemsSource="{Binding Outputs}"/>
+
+            </StackPanel>
+        </Grid>
+    </ControlTemplate>
+
+    <!--<ControlTemplate x:Key="PluginSetupDialog.Old">
+        <Grid Background="{TemplateBinding Background}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      IsTabStop="False" Grid.Row="1"
+                      Style="{DynamicResource DialogScrollViewer_Style}">
+                <Control Grid.Row="0" Template="{StaticResource PluginSetupView.Old}" />
+            </ScrollViewer>
+
+            <Grid Name="ButtonsPanel" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <l:FlatButton Content="Ok" Grid.Column="0"
+                              cal:Message.Attach="Ok"
+                              Style="{DynamicResource PluginSetupPage_ButtonStyle}"
+                              Background="{DynamicResource Dialog_OkButtonBackground}"
+                              HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                <l:FlatButton Content="Cancel"
+                              cal:Message.Attach="Cancel"
+                              Grid.Column="1" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>
+                --><!--<l:FlatButton x:Name="Reset" Content="Reset"
+                          Grid.Column="0" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>--><!--
+            </Grid>
+        </Grid
+    </ControlTemplate> -->
+
+    <!-- Button Style  (Classic) -->
+
+    <Style x:Key="PluginSetupView.Classic.DlgButtonStyle" TargetType="Button">
+        <Setter Property="Margin" Value="5"/>
+    </Style>
+
+    <!-- Classic Template  -->
+
+    <ControlTemplate x:Key="PluginConfigView.Classic">
+        <Grid Background="{TemplateBinding Background}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <TextBlock Name="ErrorText" TextWrapping="Wrap" Text="{l:ResxBinding Descriptor.Error, Prefix=PluginError_}"
+                       Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+
+            <StackPanel Grid.Row="1" IsEnabled="{Binding PluginIsStopped}">
+                <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Descriptor.Description}" Margin="3"/>
+                </GroupBox>
+                <GroupBox Name="GeneralGroup" Header="General" Margin="4" Visibility="Collapsed">
+                    <Control Template="{StaticResource GeneralSettings}" />
+                </GroupBox>
+                <GroupBox Name="MainSymbolGroup" Header="Main Symbol" Margin="4" Visibility="Collapsed">
+                    <Control Template="{StaticResource MainSymbolSettings}" />
+                </GroupBox>
+                <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
+                    <ItemsControl IsTabStop="False" ItemsSource="{Binding Parameters}"
+                              ItemTemplate="{StaticResource LabeledPropertySetup}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="2" VerticalAlignment="Top" />
+
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DataType}" Value="TickTrader.Algo.Api.File">
+                                        <Setter Property="ToolTip">
+                                            <Setter.Value>
+                                                <TextBlock Text="{Binding FilePath}"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+
+                    </ItemsControl>
+                </GroupBox>
+                <GroupBox Name="InputsGroup" Header="Inputs" Margin="4">
+                    <ItemsControl IsTabStop="False" ItemsSource="{Binding Inputs}"
+                              ItemTemplate="{StaticResource LabeledInputSetup}">
+                    </ItemsControl>
+                </GroupBox>
+                <GroupBox Name="OutputsGroup" Header="Outputs" Margin="4">
+                    <ItemsControl ItemsSource="{Binding Outputs}"/>
+                </GroupBox>
+            </StackPanel>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding Descriptor.Error}" Value="None">
+                <Setter TargetName="ErrorText" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasOutputs}" Value="False">
+                <Setter TargetName="OutputsGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasInputs}" Value="False">
+                <Setter TargetName="InputsGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasParams}" Value="False">
+                <Setter TargetName="ParamsGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasDescription}" Value="False">
+                <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Descriptor.Type}" Value="Robot">
+                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EnableFeedSetup}" Value="True">
+                <Setter TargetName="MainSymbolGroup" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsEmulation}" Value="True">
+                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- Old Style -->
+
+    <Style x:Key="PluginConfigViewStyle.Old" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource PluginConfigView.Old}"/>
+    </Style>
+
+    <!-- Classic Style  -->
+
+    <Style x:Key="PluginConfigViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource PluginConfigView.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

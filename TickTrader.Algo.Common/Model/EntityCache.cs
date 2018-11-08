@@ -77,6 +77,11 @@ namespace TickTrader.Algo.Common.Model
             return _currencies.Values.ToList();
         }
 
+        public SymbolEntity GetDefaultSymbol()
+        {
+            return _symbols.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).ThenBy(s => s.Descriptor.Name).Select(s => s.Descriptor).Where(d => !d.Name.EndsWith("_L")).FirstOrDefault();
+        }
+
         internal EntityCacheUpdate GetAccSnapshot()
         {
             return _acc.GetSnapshotUpdate();

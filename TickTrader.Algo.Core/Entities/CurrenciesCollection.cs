@@ -28,6 +28,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        internal CurrencyEntity GetOrNull(string currency)
+        {
+            return fixture.Get(currency);
+        }
+
         public IEnumerator<CurrencyEntity> GetEnumerator()
         {
             return fixture.GetValues().GetEnumerator();
@@ -66,6 +71,13 @@ namespace TickTrader.Algo.Core
 
                     return sortedCurrencies;
                 }
+            }
+
+            public CurrencyEntity Get(string name)
+            {
+                CurrencyEntity currInfo;
+                currencies.TryGetValue(name, out currInfo);
+                return currInfo;
             }
 
             public void Add(CurrencyEntity currency)

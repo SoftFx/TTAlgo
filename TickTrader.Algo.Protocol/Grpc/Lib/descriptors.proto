@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package TickTrader.Algo.Protocol.Grpc.Lib;
+
+message ApiDescriptor
+{
+	enum TimeFrame
+	{
+		UNKNOWN_TIME_FRAME = 0;
+		M_N = 1;
+		D = 2;
+		W = 3;
+		H4 = 4;
+		H1 = 5;
+		M30 = 6;
+		M15 = 7;
+		M5 = 8;
+		M1 = 9;
+		S10 = 10;
+		S1 = 11;
+		TICKS = 12;
+	}
+
+	enum LineStyle
+	{
+		UNKNOWN_LINE_STYLE = 0;
+		SOLID = 1;
+		DOTS = 2;
+		DOTS_RARE = 3;
+		DOTS_VERY_RARE = 4;
+		LINES_DOTS = 5;
+		LINES = 6;
+	}
+
+	enum PlotType
+	{
+		UNKNOWN_PLOT_TYPE = 0;
+		LINE = 1;
+		HISTOGRAM = 2;
+		POINTS = 3;
+		DISCONTINUOUS_LINE = 4;
+	}
+
+	enum OutputTarget
+	{
+		UNKNOWN_OUTPUT_TARGET = 0;
+		OVERLAY = 1;
+		WINDOW1 = 2;
+		WINDOW2 = 3;
+		WINDOW3 = 4;
+		WINDOW4 = 5;
+	}
+
+	enum MarkerSize
+	{
+		UNKNOWN_MARKER_SIZE = 0;
+		LARGE = 1;
+		MEDIUM = 2;
+		SMALL = 3;
+	}
+}
+
+message PropertyDescriptor
+{
+	enum AlgoPropertyType
+	{
+		UNKNOWN_PROPERTY_TYPE = 0;
+		PARAMETER = 1;
+		INPUT_SERIES = 2;
+		OUTPUT_SERIES = 3;
+	}
+
+	enum AlgoPropertyError
+	{
+		NONE = 0;
+		UNKNOWN_PROPERTY_ERROR = 1;
+		SET_IS_NOT_PUBLIC = 2;
+		GET_IS_NOT_PUBLIC = 3;
+		MULTIPLE_ATTRIBUTES = 4;
+		INPUT_IS_NOT_DATA_SERIES = 5;
+		OUTPUT_IS_NOT_DATA_SERIES = 6;
+		EMPTY_ENUM = 7;
+	}
+
+	string id = 1;
+	string display_name = 2;
+	AlgoPropertyType property_type = 3;
+	AlgoPropertyError error = 4;
+}
+
+message FileFilterEntry
+{
+	string file_type_name = 1;
+	string file_mask = 2;
+}
+
+message ParameterDescriptor
+{
+	PropertyDescriptor property_header = 1;
+	string data_type = 2;
+	string default_value = 3;
+	bool is_required = 4;
+
+	bool is_enum = 5;
+	repeated string enum_values = 6;
+
+	repeated FileFilterEntry file_filters = 7;
+}
+
+message InputDescriptor
+{
+	PropertyDescriptor property_header = 1;
+	string data_series_base_type_full_name = 2;
+}
+
+message OutputDescriptor
+{
+	PropertyDescriptor property_header = 1;
+	string data_series_base_type_full_name = 2;
+	double default_thickness = 3;
+	int32 default_color = 4;
+	ApiDescriptor.LineStyle default_line_style = 5;
+	ApiDescriptor.PlotType plot_type = 6;
+	ApiDescriptor.OutputTarget target = 7;
+	int32 precision = 8;
+	double zero_line = 9;
+}
+
+message PluginDescriptor
+{
+	enum AlgoType
+	{
+		UNKNOWN_PLUGIN_TYPE = 0;
+		INDICATOR = 1;
+		ROBOT = 2;
+	}
+
+	enum AlgoMetadataError
+	{
+		NONE = 0;
+		UNKNOWN_METADATA_ERROR = 1;
+		HAS_INVALID_PROPERTIES = 2;
+		UNKNOWN_BASE_TYPE = 3;
+		INCOMPATIBLE_API_VERSION = 4;
+	}
+
+	string api_version_str = 1;
+	string id = 2;
+	string display_name = 3;
+	AlgoType type = 4;
+	AlgoMetadataError error = 5;
+	string ui_display_name = 6;
+	string category = 7;
+	string version = 8;
+	string description = 9;
+	string copyright = 10;
+
+	repeated ParameterDescriptor parameters = 11;
+	repeated InputDescriptor inputs = 12;
+	repeated OutputDescriptor outputs = 13;
+
+	bool setup_main_symbol = 14;
+}
+
+message ReductionDescriptor
+{
+	enum ReductionType
+	{
+		UNKNOWN_REDUCTION_TYPE = 0;
+		BAR_TO_DOUBLE = 1;
+		FULL_BAR_TO_DOUBLE = 2;
+		FULL_BAR_TO_BAR = 3;
+		QUOTE_TO_DOUBLE = 4;
+		QUOTE_TO_BAR = 5;
+	}
+
+	string api_version_str = 1;
+	string id = 2;
+	string display_name = 3;
+	ReductionType type = 4;
+}

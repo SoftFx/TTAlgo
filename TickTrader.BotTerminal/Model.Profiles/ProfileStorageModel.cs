@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace TickTrader.BotTerminal
 {
-    [DataContract(Namespace = "", Name = "Profile")]
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "Profile")]
     internal class ProfileStorageModel : StorageModelBase<ProfileStorageModel>
     {
         [DataMember]
@@ -13,6 +13,12 @@ namespace TickTrader.BotTerminal
 
         [DataMember]
         public List<ChartStorageEntry> Charts { get; set; }
+
+        [DataMember]
+        public List<TradeBotStorageEntry> Bots { get; set; }
+
+        [DataMember]
+        public string Layout { get; set; }
 
 
         public ProfileStorageModel()
@@ -26,6 +32,8 @@ namespace TickTrader.BotTerminal
             {
                 SelectedChart = SelectedChart,
                 Charts = Charts != null ? new List<ChartStorageEntry>(Charts.Select(c => c.Clone())) : null,
+                Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
+                Layout = Layout,
             };
         }
     }

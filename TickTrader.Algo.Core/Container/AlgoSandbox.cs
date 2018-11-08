@@ -8,16 +8,19 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core.Container
 {
     internal class AlgoSandbox : CrossDomainObject
     {
         private IPluginLoader loader;
+        private List<Assembly> _loadedAssemblies = new List<Assembly>();
 
-        public AlgoSandbox(IPluginLoader src)
+        public AlgoSandbox(IPluginLoader src, bool isolated)
         {
             this.loader = src;
+
             try
             {
                 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
@@ -26,6 +29,10 @@ namespace TickTrader.Algo.Core.Container
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                 src.Init();
                 LoadAndInspect(src.MainAssemblyName);
+                if (isolated)
+                {
+                    AlgoAssemblyInspector.FindReductions(Assembly.Load(ReductionCollection.EmbeddedReductionsAssemblyName)); // loading default reductions in plugin domain
+                }
             }
             catch
             {
@@ -34,7 +41,7 @@ namespace TickTrader.Algo.Core.Container
             }
         }
 
-        public IEnumerable<AlgoPluginDescriptor> AlgoMetadata { get; private set; }
+        public IEnumerable<PluginMetadata> AlgoMetadata { get; private set; }
 
         internal T Activate<T>() where T : MarshalByRefObject, new()
         {
@@ -49,7 +56,7 @@ namespace TickTrader.Algo.Core.Container
         private void LoadAndInspect(string filePath)
         {
             Assembly algoAssembly = LoadAssembly(filePath);
-            AlgoMetadata = AlgoPluginDescriptor.InspectAssembly(algoAssembly);
+            AlgoMetadata = AlgoAssemblyInspector.FindPlugins(algoAssembly);
         }
 
         private Assembly LoadAssembly(string assemblyFileName)
@@ -62,7 +69,9 @@ namespace TickTrader.Algo.Core.Container
             if (assemblyBytes == null)
                 throw new FileNotFoundException($"Package {loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
 
-            return Assembly.Load(assemblyBytes, symbolsBytes);
+            var assembly = Assembly.Load(assemblyBytes, symbolsBytes);
+            _loadedAssemblies.Add(assembly);
+            return assembly;
         }
 
         public override void Dispose()
@@ -75,6 +84,11 @@ namespace TickTrader.Algo.Core.Container
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var name = new AssemblyName(args.Name);
+
+            bool belongsToThisPackage = _loadedAssemblies.Contains(args.RequestingAssembly);
+
+            if (!belongsToThisPackage)
+                return null;
 
             // force plugins to use loaded Api
             if (name.Name == "TickTrader.Algo.Api")

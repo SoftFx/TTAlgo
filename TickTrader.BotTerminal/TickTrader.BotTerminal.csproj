@@ -46,7 +46,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>3</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -71,10 +71,10 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E8396A9005DA25F7DBBF71630A43306F76898D17</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>7AC3EE63A0853ADFACC4035AE665204FD16EA7DB</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>TickTrader.BotTerminal_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>bot-terminal-sign.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>softfx.ico</ApplicationIcon>
@@ -89,8 +89,8 @@
     <Reference Include="Caliburn.Micro.Platform.Core, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.1.0\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
     </Reference>
-    <Reference Include="NLog">
-      <HintPath>..\lib\NLog.dll</HintPath>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.3.4\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="ParallelExtensionsExtras">
       <HintPath>..\lib\ParallelExtensionsExtras.dll</HintPath>
@@ -115,11 +115,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\SciChart.Drawing.DirectX.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net, Version=1.35.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.35.1309\lib\net40\SoftFX.Extended.Net.dll</HintPath>
+    <Reference Include="SoftFX.Extended.Net, Version=1.36.13.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoftFX.FDK.1.35.1500\lib\net40\SoftFX.Extended.Net.dll</HintPath>
     </Reference>
     <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.35.1309\lib\net40\SoftFX.Lrp.dll</HintPath>
+      <HintPath>..\packages\SoftFX.FDK.1.35.1500\lib\net40\SoftFX.Lrp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -162,14 +162,23 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock">
-      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.dll</HintPath>
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
-      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>..\lib\WpfToolkit\Xceed.Wpf.Toolkit.dll</HintPath>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.DataGrid, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +189,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
+    <None Include="bot-terminal-sign.pfx" />
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -187,7 +197,6 @@
     <None Include="Resx\Sounds\Negative.wav" />
     <None Include="Resx\Sounds\Blop.wav" />
     <None Include="Resx\Sounds\Clinking.wav" />
-    <None Include="TickTrader.BotTerminal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -213,16 +222,20 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
+    <Compile Include="Behaviors\StyleInteraction.cs" />
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
+    <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
+    <Compile Include="Controls\AutoColumnsGrid.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
     <Compile Include="Controls\ColorPicker.cs" />
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
+    <Compile Include="Controls\CustomDockManager.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\FlatButton.cs" />
@@ -249,22 +262,29 @@
     <Compile Include="Controls\TabControl.cs" />
     <Compile Include="Controls\ThemeSelector.cs" />
     <Compile Include="Controls\FlatToggleButton.cs" />
+    <Compile Include="Controls\WaitIndicator.cs" />
+    <Compile Include="Controls\WaitLiveIcon.cs" />
     <Compile Include="Converters\BoolConverters.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DoubleToGridLengthConverter.cs" />
     <Compile Include="Converters\FallbackConverter.cs" />
+    <Compile Include="Converters\LogSeverityToBrushConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
     <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
+    <Compile Include="Converters\DoubleCmpConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Extensions\AssemblyExtension.cs" />
+    <Compile Include="Extensions\ChartExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
+    <Compile Include="Extensions\InfoExtensions.cs" />
     <Compile Include="Extensions\LineStyleExtension.cs" />
     <Compile Include="Extensions\ResxCore.cs" />
     <Compile Include="Extensions\ResxExtension.cs" />
@@ -291,20 +311,39 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
-    <Compile Include="Model.Algo\Adapters.cs" />
+    <Compile Include="Model.Algo\OutputModels.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
+    <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
-    <Compile Include="Model\BotAggregator.cs" />
+    <Compile Include="Model.Algo\PluginStateHelper.cs" />
+    <Compile Include="Model.Profiles\ProfileResolver.cs" />
+    <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
+    <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
+    <Compile Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
+    <Compile Include="Model.Profiles\Version1\ProfileResolver.cs" />
+    <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
+    <Compile Include="Model.Protocol\BotAgentManager.cs" />
+    <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
+    <Compile Include="Model.Protocol\BotAgentStorageEntry.cs" />
+    <Compile Include="Model.Protocol\BotAgentStorageModel.cs" />
+    <Compile Include="Model.Protocol\FileProgressListenerAdapter.cs" />
+    <Compile Include="Model.Protocol\ProtocolClientSettings.cs" />
+    <Compile Include="Model.Protocol\ProtocolConfigSection.cs" />
+    <Compile Include="Model.Protocol\ProtocolSettings.cs" />
     <Compile Include="Model.Auth\AuthStorageEntry.cs" />
     <Compile Include="Model.Profiles\ChartStorageEntry.cs" />
     <Compile Include="Model.Profiles\PluginStorageEntry.cs" />
     <Compile Include="Model.Profiles\ProfileManager.cs" />
     <Compile Include="Model.Profiles\ProfileRepository.cs" />
-    <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
+    <Compile Include="Model.Profiles\Version1\ProfileStorageModel.cs" />
     <Compile Include="Infrustructure\PreferencesStorageModel.cs" />
     <Compile Include="Model.Lib\FilteredListModel.cs" />
+    <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
+    <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
+    <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
+    <Compile Include="Model\BacktesterSettings.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
@@ -313,7 +352,8 @@
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\PathHelper.cs" />
-    <Compile Include="Model\SymbolModel.cs" />
+    <Compile Include="Model\SymbolCatalog.cs" />
+    <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
@@ -331,8 +371,6 @@
     <Compile Include="Model\PersistModel.cs" />
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model.Algo\PluginCatalog.cs" />
-    <Compile Include="Model.Algo\PluginCatalogItem.cs" />
-    <Compile Include="Model.Algo\PluginCatalogKey.cs" />
     <Compile Include="Model\UiLock.cs" />
     <Compile Include="Model\ValidationExt.cs" />
     <Compile Include="Model\VsIntegration.cs" />
@@ -366,14 +404,22 @@
     <Compile Include="Model.Algo\Interfaces.cs" />
     <Compile Include="Model\LocMsg.cs" />
     <Compile Include="Model\RateSplitModel.cs" />
-    <Compile Include="Model\SymbolCollectionModel.cs" />
     <Compile Include="Model\TraderClientModel.cs" />
     <Compile Include="Resx\Sounds\Sounds.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Sounds.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\DockManagerService.cs" />
     <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.Algo\AlgoAccountViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoAgentViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoBotViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoPackageViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoPluginViewModel.cs" />
+    <Compile Include="Views.Algo\BotFolderViewModel.cs" />
+    <Compile Include="Views.Algo\DownloadPackageViewModel.cs" />
+    <Compile Include="Views.Algo\UploadPackageViewModel.cs" />
     <Compile Include="Views.Auth\AccountView.xaml.cs">
       <DependentUpon>AccountView.xaml</DependentUpon>
     </Compile>
@@ -389,21 +435,27 @@
     <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
     <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.Aux\ActionViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
+    <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedImportViewModel.cs" />
     <Compile Include="Views.FeedStorage\SymbolCfgEditorViewModel.cs" />
-    <Compile Include="Views.Chart\BotControlViewModel.cs" />
     <Compile Include="Views.Chart\BotStateViewModel.cs" />
     <Compile Include="Views.Chart\CloseChartDialogViewModel.cs" />
     <Compile Include="Views.Chart\CloseChartDialogView.xaml.cs">
       <DependentUpon>CloseChartDialogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views.Chart\IndicatorPaneView.xaml.cs">
-      <DependentUpon>IndicatorPaneView.xaml</DependentUpon>
+    <Compile Include="Views.Chart\OutputPaneView.xaml.cs">
+      <DependentUpon>OutputPaneView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views.Chart\IndicatorPaneViewModel.cs" />
+    <Compile Include="Views.Chart\OutputPaneViewModel.cs" />
     <Compile Include="Views.Chart\IndicatorViewModel.cs" />
     <Compile Include="Views.Chart\SeriesViewModel.cs" />
     <Compile Include="Views.Order\PendingOrderPageView.xaml.cs">
@@ -423,6 +475,34 @@
     </Compile>
     <Compile Include="Views.Profiles\ProfileLoadingDialogViewModel.cs" />
     <Compile Include="Views.Profiles\ProfileManagerViewModel.cs" />
+    <Compile Include="Views.Protocol\BAAccountDialogView.xaml.cs">
+      <DependentUpon>BAAccountDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Protocol\BAAccountDialogViewModel.cs" />
+    <Compile Include="Views.Protocol\BotAgentLoginDialogView.xaml.cs">
+      <DependentUpon>BotAgentLoginDialogView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views.Protocol\BotAgentLoginDialogViewModel.cs" />
+    <Compile Include="Views.Protocol\BotAgentViewModel.cs" />
+    <Compile Include="Views.Setup\AlgoSetupContextStub.cs" />
+    <Compile Include="Views.Setup\Extensions.cs" />
+    <Compile Include="Views.Setup\Inputs\BarToBarInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\BarToDoubleInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\InputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\MappedInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\QuoteInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\QuoteToBarInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Inputs\QuoteToDoubleInputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Outputs\ColoredLineOutputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Outputs\MarkerSeriesOutputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Outputs\OutputSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\EnumParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\FileParamSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\GenericParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\Parameters\ParameterSetupViewModel.cs" />
+    <Compile Include="Views.Setup\LocalPluginSetupViewModel.cs" />
+    <Compile Include="Views.Setup\PluginConfigViewModel.cs" />
+    <Compile Include="Views.Setup\PropertySetupViewModel.cs" />
     <Compile Include="Views.TradeInfo\AccountStatsView.xaml.cs">
       <DependentUpon>AccountStatsView.xaml</DependentUpon>
     </Compile>
@@ -436,24 +516,22 @@
       <DependentUpon>AboutDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\AboutDialogViewModel.cs" />
-    <Compile Include="Views\AlgoListViewModel.cs" />
+    <Compile Include="Views.Algo\AlgoListViewModel.cs" />
     <Compile Include="Views.TradeInfo\AssetsView.xaml.cs">
       <DependentUpon>AssetsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
+    <Compile Include="Views.Algo\BotListViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ChartCollectionViewModel.cs" />
     <Compile Include="Views.Chart\ChartViewModel.cs" />
-    <Compile Include="Views.Chart\PluginSetupViewModel.cs" />
+    <Compile Include="Views.Setup\AgentPluginSetupViewModel.cs" />
     <Compile Include="Views.Auth\LoginDialogView.xaml.cs">
       <DependentUpon>LoginDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginDialogViewModel.cs" />
-    <Compile Include="Views\BotJournalView.xaml.cs">
-      <DependentUpon>BotJournalView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views.TradeInfo\GrossPositionListView.xaml.cs">
       <DependentUpon>GrossPositionListView.xaml</DependentUpon>
     </Compile>
@@ -537,7 +615,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Sounds.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -546,7 +626,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Behaviors\DragDrop\TransparentContainer.xaml">
@@ -637,6 +719,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resx\Styles.Classic\Ellipse.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resx\Styles.Classic\Icons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -662,6 +748,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles.Classic\ToastStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\WaitIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -817,6 +907,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Algo\BotFolderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Algo\DownloadPackageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Algo\UploadPackageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Auth\AccountPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -841,6 +943,30 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Backtester\BacktesterChartPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterPluginSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterStatChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterReportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterSymbolSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterTradeSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Backtester\BacktesterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -861,7 +987,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\BotControlView.xaml">
+    <Page Include="Views.Algo\AlgoBotView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -873,7 +999,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\IndicatorPaneView.xaml">
+    <Page Include="Views.Chart\OutputPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -897,6 +1023,22 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Protocol\BAAccountDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Protocol\BotAgentLoginDialogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Setup\LocalPluginSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Setup\PluginConfigView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.TradeInfo\AccountStatsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -909,13 +1051,21 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\AlgoListView.xaml">
+    <Page Include="Views.Algo\AlgoListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.TradeInfo\AssetsView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views.Algo\BotListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BotJournalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ChartCollectionView.xaml">
       <SubType>Designer</SubType>
@@ -925,17 +1075,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Chart\PluginSetupView.xaml">
+    <Page Include="Views.Setup\AgentPluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Auth\LoginDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\BotJournalView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views.TradeInfo\GrossPositionListView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -1019,13 +1165,25 @@
       <Project>{8bab901c-10bb-4eb7-b81e-716fa05b6957}</Project>
       <Name>TickTrader.Algo.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj">
+      <Project>{4ec2f84d-ef40-498e-a277-4eb91becea4b}</Project>
+      <Name>TickTrader.Algo.Ext</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
       <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
       <Name>TickTrader.Algo.Indicators</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj">
+      <Project>{7ae78bd0-33fd-421e-a16f-37adea680870}</Project>
+      <Name>TickTrader.Algo.Protocol</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.LevelDb\TickTrader.SeriesStorage.LevelDb.csproj">
       <Project>{cb30b69a-de4d-4819-8e83-cf5dd80cd060}</Project>
       <Name>TickTrader.SeriesStorage.LevelDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.SeriesStorage.Lmdb\TickTrader.SeriesStorage.Lmdb.csproj">
+      <Project>{6a279398-a13b-4462-8cb9-f7514b92c584}</Project>
+      <Name>TickTrader.SeriesStorage.Lmdb</Name>
     </ProjectReference>
     <ProjectReference Include="..\TickTrader.SeriesStorage.Protobuf\TickTrader.SeriesStorage.Protobuf.csproj">
       <Project>{af05ccd3-0e2f-4f8a-8124-27b16162a0c1}</Project>
@@ -1073,6 +1231,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resx\Images\FxDialogImg.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

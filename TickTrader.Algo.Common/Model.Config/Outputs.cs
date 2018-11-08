@@ -5,25 +5,33 @@ using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Name = "Output", Namespace = "")]
+    [DataContract(Name = "Output", Namespace = "TTAlgo.Config.v2")]
     public abstract class Output : Property
     {
+        [DataMember(Name = "Enabled")]
+        public bool IsEnabled { get; set; }
+
+        [DataMember(Name = "Color")]
+        public OutputColor LineColor { get; set; }
+
+        [DataMember(Name = "Thickness")]
+        public int LineThickness { get; set; }
     }
 
 
-    [DataContract(Name = "OutputColor", Namespace = "")]
+    [DataContract(Name = "OutputColor", Namespace = "TTAlgo.Config.v2")]
     public class OutputColor
     {
-        [DataMember]
+        [DataMember(Name = "Alpha")]
         public float Alpha { get; set; }
 
-        [DataMember]
+        [DataMember(Name = "Red")]
         public float Red { get; set; }
 
-        [DataMember]
+        [DataMember(Name = "Green")]
         public float Green { get; set; }
 
-        [DataMember]
+        [DataMember(Name = "Blue")]
         public float Blue { get; set; }
 
 
@@ -46,36 +54,18 @@ namespace TickTrader.Algo.Common.Model.Config
     }
 
 
-    [DataContract(Name = "ColoredLineOutput", Namespace = "")]
+    [DataContract(Name = "ColoredLineOutput", Namespace = "TTAlgo.Config.v2")]
     public class ColoredLineOutput : Output
     {
         [DataMember]
-        public OutputColor LineColor { get; set; }
-
-        [DataMember]
-        public int LineThickness { get; set; }
-
-        [DataMember]
         public LineStyles LineStyle { get; set; }
-
-        [DataMember]
-        public bool IsEnabled { get; set; }
     }
 
 
-    [DataContract(Name = "MarkerSeriesOutput", Namespace = "")]
+    [DataContract(Name = "MarkerSeriesOutput", Namespace = "TTAlgo.Config.v2")]
     public class MarkerSeriesOutput : Output
     {
         [DataMember]
-        public OutputColor LineColor { get; set; }
-
-        [DataMember]
-        public int LineThickness { get; set; }
-
-        [DataMember]
         public MarkerSizes MarkerSize { get; set; }
-
-        [DataMember]
-        public bool IsEnabled { get; set; }
     }
 }

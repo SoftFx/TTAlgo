@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Core.Math;
 
 namespace TickTrader.Algo.Core
 {
@@ -60,6 +59,16 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public BufferUpdateResult Update(RateUpdate update)
+        {
+            if (update is QuoteEntity)
+                return Update((Quote)update);
+            else if (update is BarRateUpdate)
+                return Update((BarRateUpdate)update);
+            else
+                throw new Exception("Unsupported RateUpdate implementation!");
+        }
+
         public BufferUpdateResult Update(Quote quote)
         {
             var barBoundaries = sampler.GetBar(quote.Time);
@@ -89,9 +98,17 @@ namespace TickTrader.Algo.Core
             return new BufferUpdateResult() { ExtendedBy = 1 };
         }
 
+        public BufferUpdateResult Update(BarRateUpdate update)
+        {
+            if (priceType == BarPriceType.Bid)
+                return Update(update.BidBar);
+            else
+                return Update(update.AskBar);
+        }
+
         public BufferUpdateResult Update(BarEntity bar)
         {
-            var barOpenTime = bar.OpenTime;
+            var barOpenTime = sampler.GetBar(bar.OpenTime).Open;
 
             if (!Context.BufferingStrategy.InBoundaries(barOpenTime))
                 return new BufferUpdateResult();
@@ -212,12 +229,4 @@ namespace TickTrader.Algo.Core
             AppendData(data);
         }
     }
-
-    //internal class TimeSyncBarSeriesFixture : BarSeriesFixture
-    //{
-    //    public TimeSyncBarSeriesFixture(string symbolCode, IFeedFixtureContext context, ITimeRef syncRef)
-    //        : base(symbolCode, context)
-    //    {
-    //    }
-    //}
 }

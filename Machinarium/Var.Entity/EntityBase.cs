@@ -52,6 +52,16 @@ namespace Machinarium.Var
             return property;
         }
 
+        protected DoubleProperty AddDoubleProperty(double initialValue = 0, string notifyName = null)
+        {
+            var property = new DoubleProperty();
+            property.Value = initialValue;
+            property.Name = notifyName;
+            AddDisposableChild(property);
+            return property;
+        }
+
+
         protected BoolProperty AddBoolProperty(bool initialValue = false, string notifyName = null)
         {
             var property = new BoolProperty();
@@ -73,6 +83,15 @@ namespace Machinarium.Var
         protected IntValidable AddIntValidable(int initialValue = 0, string notifyName = null)
         {
             var property = new IntValidable();
+            property.Value = initialValue;
+            property.Name = notifyName;
+            AddDisposableChild(property);
+            return property;
+        }
+
+        protected DoubleValidable AddDoubleValidable(double initialValue = 0, string notifyName = null)
+        {
+            var property = new DoubleValidable();
             property.Value = initialValue;
             property.Name = notifyName;
             AddDisposableChild(property);
@@ -108,6 +127,12 @@ namespace Machinarium.Var
         protected void TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
         {
             var trigger = new ChangeEvent<T>(var, changeHandler);
+            AddDisposableChild(trigger);
+        }
+
+        protected void TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
+        {
+            var trigger = new ChangeEvent<T>(property.Var, changeHandler);
             AddDisposableChild(trigger);
         }
     }

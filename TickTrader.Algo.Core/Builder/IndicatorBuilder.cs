@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
     {
         private bool isInitialized;
 
-        public IndicatorBuilder(AlgoPluginDescriptor descriptor)
+        public IndicatorBuilder(PluginMetadata descriptor)
             : base(descriptor)
         {
         }

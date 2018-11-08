@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text;
 
 namespace ActorSharp
@@ -14,6 +15,7 @@ namespace ActorSharp
         private int _pageIndex;
         private Action _callback;
         private bool _isClosed;
+        private ExceptionDispatchInfo _fault;
 
         public void Init(ActorPart target)
         {
@@ -41,6 +43,7 @@ namespace ActorSharp
                 if (_rxPage.Last)
                 {
                     // confirm channel close
+                    _fault = _rxPage.Error;
                     _rxPage = null;
                     _isClosed = true;
                 }
@@ -99,7 +102,12 @@ namespace ActorSharp
         public bool GetResult()
         {
             if (_isClosed)
+            {
+                if (_fault != null)
+                    _fault.Throw();
+
                 return false;
+            }
 
             Current = _rxPage[_pageIndex++];
             if (_pageIndex == _rxPage.Count)
@@ -111,7 +119,7 @@ namespace ActorSharp
                     _rxPage = null;
                     _pageIndex = 0;
                     if (toThrow != null)
-                        throw new Exception(_rxPage.Error.Message, _rxPage.Error);
+                        toThrow.Throw();
                 }
                 else
                     ReturnPage();

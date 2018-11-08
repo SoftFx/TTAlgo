@@ -6,24 +6,15 @@ using SciChart.Charting.Model.DataSeries;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Api;
 using System.Linq;
+using TickTrader.Algo.Common.Model.Config;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
     internal class IndicatorModel : PluginModel
     {
-        private Dictionary<string, IXyDataSeries> _series = new Dictionary<string, IXyDataSeries>();
-
-
-        public bool HasOverlayOutputs { get { return Setup.Outputs.Any(o => o.Target == OutputTargets.Overlay); } }
-        public bool HasPaneOutputs { get { return Setup.Outputs.Any(o => o.Target != OutputTargets.Overlay); } }
-
-
-        private bool IsRunning { get; set; }
-        private bool IsStopping { get; set; }
-
-
-        public IndicatorModel(PluginSetupViewModel pSetup, IAlgoPluginHost host)
-            : base(pSetup, host)
+        public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
+            : base(config, agent, host, setupContext)
         {
             host.StartEvent += Host_StartEvent;
             host.StopEvent += Host_StopEvent;
@@ -33,64 +24,43 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public IXyDataSeries GetOutputSeries(string id)
-        {
-            return _series[id];
-        }
-
         public override void Dispose()
         {
             base.Dispose();
 
             Host.StartEvent -= Host_StartEvent;
             Host.StopEvent -= Host_StopEvent;
-            if (IsRunning)
+            if (State == PluginStates.Running)
                 StopIndicator().ContinueWith(t => { /* TO DO: log errors */ });
         }
 
 
-        protected override PluginExecutor CreateExecutor()
+        protected override async void OnPluginUpdated()
         {
-            var executor = base.CreateExecutor();
-
-            foreach (var outputSetup in Setup.Outputs)
+            if (State == PluginStates.Running)
             {
-                if (outputSetup is ColoredLineOutputSetup)
-                {
-                    var buffer = executor.GetOutput<double>(outputSetup.Id);
-                    var adapter = new DoubleSeriesAdapter(buffer, (ColoredLineOutputSetup)outputSetup);
-                    _series.Add(outputSetup.Id, adapter.SeriesData);
-                }
-                else if (outputSetup is MarkerSeriesOutputSetup)
-                {
-                    var buffer = executor.GetOutput<Marker>(outputSetup.Id);
-                    var adapter = new MarkerSeriesAdapter(buffer, (MarkerSeriesOutputSetup)outputSetup);
-                    _series.Add(outputSetup.Id, adapter.SeriesData);
-                }
+                await StopIndicator();
+                UpdateRefs();
+                StartIndicator();
             }
-
-            return executor;
         }
 
 
         private void StartIndicator()
         {
-            if (!IsRunning)
+            if (PluginStateHelper.CanStart(State))
             {
-                IsRunning = StartExcecutor();
+                if (StartExcecutor())
+                    ChangeState(PluginStates.Running);
             }
         }
 
         private async Task StopIndicator()
         {
-            if (IsRunning && !IsStopping)
+            if (State == PluginStates.Running)
             {
-                IsStopping = true;
-                await StopExecutor();
-                IsRunning = false;
-                IsStopping = false;
-                foreach (var dataLine in this._series.Values)
-                    dataLine.Clear();
+                if (await StopExecutor())
+                    ChangeState(PluginStates.Stopped);
             }
         }
 

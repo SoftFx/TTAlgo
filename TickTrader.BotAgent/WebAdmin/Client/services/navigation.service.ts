@@ -8,10 +8,12 @@ export class NavigationService {
 
     Routes: RouteInfo[] = [
         { path: '/dashboard', title: 'Dashboard', menuType: MenuType.SideBar, icon: 'fa fa-tachometer', owner: null },
-        { path: '/configurate', title: 'Add Bot', menuType: MenuType.NavBar, icon: '', owner: "/dashboard" },
         { path: '/repository', title: 'Repository', menuType: MenuType.SideBar, icon: 'fa fa-cloud', owner: null },
         { path: '/accounts', title: 'Accounts', menuType: MenuType.SideBar, icon: 'fa fa-users', owner: null },
         { path: '/logout', title: 'Log Out', menuType: MenuType.NavBar, icon: 'fa fa-sign-out', owner: null },
+        { path: '/configurate', title: 'Add Bot', menuType: MenuType.NavBar, icon: '', owner: "/dashboard" },
+        { path: '/repository/add', title: 'Add Package', menuType: MenuType.NavBar, icon: '', owner: "/repository" },
+        { path: '/accounts/add', title: 'Add Account', menuType: MenuType.NavBar, icon: '', owner: "/accounts" },
     ];
 
     TopMenuItems(): RouteInfo[]{

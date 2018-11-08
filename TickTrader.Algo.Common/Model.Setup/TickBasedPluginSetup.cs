@@ -5,13 +5,11 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class TickBasedPluginSetup : PluginSetup
     {
-        private string _mainSymbol;
+        private ISymbolInfo _mainSymbol;
 
+        public ISymbolInfo MainSymbol => _mainSymbol;
 
-        public string MainSymbol => _mainSymbol;
-
-
-        public TickBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol)
+        public TickBasedPluginSetup(AlgoPluginRef pRef, ISymbolInfo mainSymbol)
             : base(pRef)
         {
             _mainSymbol = mainSymbol;
@@ -50,10 +48,10 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override void Load(PluginConfig cfg)
         {
             var quoteConfig = cfg as QuoteBasedConfig;
-            if (quoteConfig != null)
-            {
-                _mainSymbol = quoteConfig.MainSymbol;
-            }
+            //if (quoteConfig != null)
+            //{
+            //    _mainSymbol = quoteConfig.MainSymbol;
+            //}
 
             base.Load(cfg);
         }
@@ -62,7 +60,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             var config = new QuoteBasedConfig()
             {
-                MainSymbol = MainSymbol,
+                MainSymbol = MainSymbol.Id,
             };
             return config;
         }

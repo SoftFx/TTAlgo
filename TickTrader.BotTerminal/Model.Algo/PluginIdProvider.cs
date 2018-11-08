@@ -5,11 +5,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginIdProvider
+    internal class PluginIdProvider : IPluginIdProvider
     {
         private BotIdHelper _botIdHelper;
         private Dictionary<string, int> _bots;
@@ -22,27 +23,27 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public string GeneratePluginId(AlgoPluginDescriptor descriptor)
+        public string GeneratePluginId(PluginDescriptor descriptor)
         {
-            switch (descriptor.AlgoLogicType)
+            switch (descriptor.Type)
             {
                 case AlgoTypes.Indicator:
-                    return GenerateIndicatorId(descriptor.UserDisplayName);
+                    return GenerateIndicatorId(descriptor.DisplayName);
                 case AlgoTypes.Robot:
-                    return GenerateBotId(descriptor.UserDisplayName);
+                    return GenerateBotId(descriptor.DisplayName);
                 default:
-                    return GenerateId(descriptor.UserDisplayName);
+                    return GenerateId(descriptor.DisplayName);
             }
         }
 
-        public bool IsValidPluginId(AlgoPluginDescriptor descriptor, string pluginId)
+        public bool IsValidPluginId(PluginDescriptor descriptor, string pluginId)
         {
             if (!_botIdHelper.Validate(pluginId))
             {
                 return false;
             }
 
-            switch (descriptor.AlgoLogicType)
+            switch (descriptor.Type)
             {
                 case AlgoTypes.Indicator:
                     return true;
@@ -53,20 +54,31 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void AddPlugin(PluginModel plugin)
+        public void RegisterIndicator(IndicatorModel indicator)
         {
-            if (plugin.Setup.Descriptor.AlgoLogicType == AlgoTypes.Robot)
-            {
-                _bots.Add(plugin.InstanceId, 1);
-            }
         }
 
-        public void RemovePlugin(string pluginId)
+        public void RegisterBot(TradeBotModel bot)
+        {
+            _bots.Add(bot.InstanceId, 1);
+        }
+
+        public void RegisterBot(string instanceId)
+        {
+            _bots.Add(instanceId, 1);
+        }
+
+        public void UnregisterPlugin(string pluginId)
         {
             if (_bots.ContainsKey(pluginId))
             {
                 _bots.Remove(pluginId);
             }
+        }
+
+        public void Reset()
+        {
+            _bots.Clear();
         }
 
 

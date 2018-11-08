@@ -1,65 +1,67 @@
 ﻿using System.Runtime.Serialization;
-using TickTrader.Algo.Api;
-using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Common.Model.Config
 {
-    [DataContract(Name = "Input", Namespace = "")]
-    public abstract class Input : Property
+    [DataContract(Name = "SymbolConfig", Namespace = "TTAlgo.Config.v2")]
+    public class SymbolConfig
     {
-        [DataMember]
-        public string SelectedSymbol { get; set; }
+        [DataMember(Name = "Name")]
+        public string Name { get; set; }
+
+        [DataMember(Name = "Origin")]
+        public SymbolOrigin Origin { get; set; }
     }
 
 
-    [DataContract(Name = "QuoteToQuoteInput", Namespace = "")]
-    public class QuoteToQuoteInput : Input
+    [DataContract(Name = "Input", Namespace = "TTAlgo.Config.v2")]
+    public abstract class Input : Property
     {
-        [DataMember]
+        [DataMember(Name = "Symbol")]
+        public SymbolConfig SelectedSymbol { get; set; }
+
+
+        public Input()
+        {
+            SelectedSymbol = new SymbolConfig();
+        }
+    }
+
+    [DataContract(Name = "QuoteInput", Namespace = "TTAlgo.Config.v2")]
+    public class QuoteInput : Input
+    {
+        [DataMember(Name = "Level2")]
         public bool UseL2 { get; set; }
     }
 
-
-    [DataContract(Name = "QuoteToDoubleInput", Namespace = "")]
-    public class QuoteToDoubleInput : Input
+    [DataContract(Name = "MappedInput", Namespace = "TTAlgo.Config.v2")]
+    public abstract class MappedInput : Input
     {
-        [DataMember]
-        public QuoteToDoubleMappings Mapping { get; set; }
+        [DataMember(Name = "Mapping")]
+        public MappingKey SelectedMapping { get; set; }
     }
 
 
-    [DataContract(Name = "BarInputBase", Namespace = "")]
-    public abstract class BarInputBase : Input
+    [DataContract(Name = "BarToBarInput", Namespace = "TTAlgo.Config.v2")]
+    public class BarToBarInput : MappedInput
     {
     }
 
 
-    [DataContract(Name = "SingleBarInputBase", Namespace = "")]
-    public abstract class SingleBarInputBase : BarInputBase
+    [DataContract(Name = "BarToDoubleInput", Namespace = "TTAlgo.Config.v2")]
+    public class BarToDoubleInput : MappedInput
     {
-        [DataMember]
-        public BarPriceType PriceType { get; set; }
     }
 
 
-    [DataContract(Name = "BarToBarInput", Namespace = "")]
-    public class BarToBarInput : BarInputBase
+    [DataContract(Name = "QuoteToBarInput", Namespace = "TTAlgo.Config.v2")]
+    public class QuoteToBarInput : MappedInput
     {
-        [DataMember]
-        public string SelectedMapping { get; set; }
     }
 
-
-    [DataContract(Name = "BarToDoubleInput", Namespace = "")]
-    public class BarToDoubleInput : BarInputBase
-    {
-        [DataMember]
-        public string SelectedMapping { get; set; }
-    }
-
-
-    [DataContract(Name = "QuoteToBarInput", Namespace = "")]
-    public class QuoteToBarInput : SingleBarInputBase
+    [DataContract(Name = "QuoteToDoubleInput", Namespace = "TTAlgo.Config.v2")]
+    public class QuoteToDoubleInput : MappedInput
     {
     }
 }

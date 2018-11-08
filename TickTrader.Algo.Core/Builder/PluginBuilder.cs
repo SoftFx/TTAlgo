@@ -20,12 +20,16 @@ namespace TickTrader.Algo.Core
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
         private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
+        private TradeApiAdapter _tradeApater;
+        private TradeCommands _commands;
         private bool _isolated;
         private string _instanceId;
+        private PluginPermissions _permissions;
+        private ICalculatorApi _calc;
 
-        internal PluginBuilder(AlgoPluginDescriptor descriptor)
+        internal PluginBuilder(PluginMetadata descriptor)
         {
-            Descriptor = descriptor;
+            Metadata = descriptor;
             marketData = new MarketDataImpl(this);
             Symbols = new SymbolsCollection(marketData);
             Currencies = new CurrenciesCollection();
@@ -37,6 +41,11 @@ namespace TickTrader.Algo.Core
 
             syncContext.OnAsyncAction = OnPluginThread;
 
+            _tradeApater = new TradeApiAdapter(Symbols, Account, logAdapter);
+            _commands = _tradeApater;
+
+            _permissions = new PluginPermissions();
+
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
 
@@ -47,24 +56,41 @@ namespace TickTrader.Algo.Core
         public SymbolsCollection Symbols { get; private set; }
         public CurrenciesCollection Currencies { get; private set; }
         public int DataSize { get { return PluginProxy.Coordinator.VirtualPos; } }
-        public AlgoPluginDescriptor Descriptor { get; private set; }
+        public PluginMetadata Metadata { get; private set; }
         public AccountAccessor Account { get; private set; }
         public Action AccountDataRequested { get; set; }
         public Action SymbolDataRequested { get; set; }
         public Action CurrencyDataRequested { get; set; }
         public DiagnosticInfo Diagnostics { get; set; }
-        public ITradeApi TradeApi { get; set; }
-        public ICalculatorApi Calculator { get; set; }
+        public ITradeApi TradeApi { get => _tradeApater.ExternalApi; set => _tradeApater.ExternalApi = value; }
+        public ICalculatorApi Calculator
+        {
+            get => _calc;
+            set
+            {
+                _calc = value;
+                _tradeApater.Calc = value;
+            }
+        }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
         public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
         public Action<Exception> OnException { get; set; }
+        public Action<Exception> OnInitFailed { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
         public Action OnExit { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
-        public PluginPermissions Permissions { get; set; }
+        public PluginPermissions Permissions
+        {
+            get => _permissions;
+            set
+            {
+                _permissions = value ?? throw new InvalidOperationException("Permissions cannot be null!");
+                _tradeApater.Permissions = value;
+            }
+        }
         public bool Isolated
         {
             get { return _isolated; }
@@ -74,13 +100,14 @@ namespace TickTrader.Algo.Core
                 Account.Isolated = _isolated;
             }
         }
-        public string Id
+        public string InstanceId
         {
             get { return _instanceId; }
             set
             {
                 _instanceId = value;
-                Account.InstanceId = _instanceId;
+                Account.InstanceId = value;
+                _tradeApater.IsolationTag = value;
             }
         }
         public TimeFrames TimeFrame { get; set; }
@@ -176,9 +203,11 @@ namespace TickTrader.Algo.Core
             isStopped = true;
         }
 
-        private void OnPluginException(Exception ex)
+        private void OnPluginException(Exception ex, bool init)
         {
             Logger.OnError(ex);
+            if (init)
+                OnInitFailed(ex);
             OnException?.Invoke(ex);
         }
 
@@ -204,6 +233,15 @@ namespace TickTrader.Algo.Core
             });
             return waithandler.Task;
         }
+
+        #region Emulation
+
+        internal void SetCustomTradeAdapter(TradeCommands adapter)
+        {
+            _commands = adapter;
+        }
+
+        #endregion
 
         #region IPluginContext
 
@@ -249,17 +287,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        TradeCommands IPluginContext.TradeApi
-        {
-            get
-            {
-                if (TradeApi == null)
-                    return new NullTradeApi();
-
-                return new TradeApiAdapter(this, logAdapter);
-            }
-        }
-
+        TradeCommands IPluginContext.TradeApi => _commands;
         IPluginMonitor IPluginContext.Logger => logAdapter;
         StatusApi IPluginContext.StatusApi => statusApi;
         EnvironmentInfo IPluginContext.Environment => this;
@@ -305,11 +333,11 @@ namespace TickTrader.Algo.Core
             statusApi.Apply();
         }
 
-        internal void InvokePluginMethod(Action invokeAction)
+        internal void InvokePluginMethod(Action invokeAction, bool initMethod = false)
         {
             var ex = InvokeMethod(invokeAction);
             if (ex != null)
-                OnPluginException(ex);
+                OnPluginException(ex, initMethod);
         }
 
         private Exception InvokeMethod(Action invokeAction)
@@ -339,49 +367,66 @@ namespace TickTrader.Algo.Core
 
         internal void InvokeCalculate(bool isUpdate)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate));
+            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate), false);
         }
 
         internal void InvokeOnStart()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStart);
+            InvokePluginMethod(PluginProxy.InvokeOnStart, true);
             Logger.OnStart();
         }
 
         internal void InvokeOnStop()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStop);
+            InvokePluginMethod(PluginProxy.InvokeOnStop, false);
             Logger.OnStop();
         }
 
         internal void InvokeInit()
         {
-            InvokePluginMethod(PluginProxy.InvokeInit);
+            InvokePluginMethod(PluginProxy.InvokeInit, true);
             Logger.OnInitialized();
         }
 
         internal void InvokeOnQuote(Quote quote)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote));
+            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote), false);
         }
 
         internal void InvokeAsyncAction(Action asyncAction)
         {
-            InvokePluginMethod(asyncAction);
+            InvokePluginMethod(asyncAction, false);
         }
 
         internal async Task InvokeAsyncStop()
         {
             Task result = null;
-            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop());
+            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop(), false);
             try
             {
                 await result;
             }
             catch (Exception ex)
             {
-                OnPluginException(ex);
+                OnPluginException(ex, false);
             }
+        }
+
+        internal void FireConnectedEvent()
+        {
+            InvokePluginMethod(()=> PluginProxy.InvokeConnectedEvent(), false);
+            Logger.OnConnected();
+        }
+
+        internal void FireDisconnectedEvent()
+        {
+            InvokePluginMethod(() => PluginProxy.InvokeDisconnectedEvent(), false);
+            Logger.OnDisconnected();
+        }
+
+        internal void LogConnectionInfo(string connectionInfo)
+        {
+            Logger.OnConnectionInfo(connectionInfo);
         }
 
         #endregion

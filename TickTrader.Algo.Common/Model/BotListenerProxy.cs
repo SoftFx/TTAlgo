@@ -59,8 +59,11 @@ namespace TickTrader.Algo.Common.Model
         {
             _timer?.Dispose();
 
-            _executor.IsRunningChanged -= Executor_IsRunningChanged;
-            _executor.InitLogging().NewRecords -= ListenerProxy_NewRecords;
+            if (disposing)
+            {
+                _executor.IsRunningChanged -= Executor_IsRunningChanged;
+                _executor.InitLogging().NewRecords -= ListenerProxy_NewRecords;
+            }
 
             base.Dispose(disposing);
         }

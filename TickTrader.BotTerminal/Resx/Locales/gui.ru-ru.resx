@@ -229,7 +229,7 @@
     <value>Продать</value>
   </data>
   <data name="Tab_Algo" xml:space="preserve">
-    <value>Алго?</value>
+    <value>Algo Repository</value>
   </data>
   <data name="Tab_Assets" xml:space="preserve">
     <value>Актив</value>
@@ -329,5 +329,8 @@
   </data>
   <data name="Order_StopPrice" xml:space="preserve">
     <value>Stop Price</value>
+  </data>
+  <data name="Tab_Bots" xml:space="preserve">
+    <value>Бот-экземпляры</value>
   </data>
 </root>

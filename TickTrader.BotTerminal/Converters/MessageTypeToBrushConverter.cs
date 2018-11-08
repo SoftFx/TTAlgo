@@ -25,8 +25,9 @@ namespace TickTrader.BotTerminal
                 case JournalMessageType.Error: return new SolidColorBrush(Colors.Red);
                 case JournalMessageType.Custom: return new SolidColorBrush(Colors.Violet);
                 default: return null;
-            } 
+            }
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();

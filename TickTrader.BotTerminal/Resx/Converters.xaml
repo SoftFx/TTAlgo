@@ -8,11 +8,17 @@
     <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
-    <l:FullDateTimeConverter x:Key="FullDateTimeFormat" />
+    <l:FullDateTimeConverter x:Key="FullDateTimeFormat" ConvertToLocal="True"/>
     <l:FullTimeConverter x:Key="FullTimeFormat" />
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
     <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
     <l:NumberConverter x:Key="ClipboardNumberConverter" Type="Price" />
     <l:StringFormatConverter x:Key="StringFormat"/>
+    <l:DoubleCmpConverter x:Key="CmpL" Mode="Less"/>
+    <l:DoubleCmpConverter x:Key="CmpLe" Mode="LessOrEqual"/>
+    <l:DoubleCmpConverter x:Key="CmpG" Mode="Greater"/>
+    <l:DoubleCmpConverter x:Key="CmpGe" Mode="LessOrEqual"/>
+    <l:LogSeverityToBrushConverter x:Key="LogSeverityConverter" />
+    <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
 
 </ResourceDictionary>

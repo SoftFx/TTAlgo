@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TimerFixture : Api.ITimerApi
+    internal class TimerFixture : Api.ITimerApi, IExecutorFixture
     {
         private IFixtureContext _context;
         private List<TimerProxy> _timers = new List<TimerProxy>();
@@ -22,8 +22,13 @@ namespace TickTrader.Algo.Core
         {
             lock (_timers)
             {
+                _context.Builder.TimerApi = this;
                 _isStarted = true;
             }
+        }
+
+        public void Restart()
+        {
         }
 
         public void Stop()
@@ -70,6 +75,11 @@ namespace TickTrader.Algo.Core
         Task ITimerApi.Delay(TimeSpan period)
         {
             return Task.Delay(period);
+        }
+
+        public void Dispose()
+        {
+            Stop();
         }
 
         private class TimerProxy : Timer

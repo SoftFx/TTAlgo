@@ -70,6 +70,8 @@ namespace TickTrader.Algo.Core
 
         static OrderEntity() { Null = new NullOrder(); }
 
+        public OrderEntity Clone() => new OrderEntity(this);
+
         #region FDK compatibility
         public string OrderId => Id;
         public double Volume => RemainingVolume;

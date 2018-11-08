@@ -21,19 +21,16 @@ namespace TickTrader.Algo.Core
             _builder = builder;
         }
 
-        public PositionAccessor UpdatePosition(PositionExecReport eReport)
+        public PositionAccessor UpdatePosition(PositionEntity eReport)
         {
             PositionAccessor pos;
 
-            if (eReport.ExecAction == OrderExecAction.Closed)
-            {
-                pos = _fixture.RemovePosition(eReport.PositionInfo.Symbol);
-                PositionRemoved?.Invoke(pos);
-            }
+            if (eReport.Volume <= 0)
+                pos = _fixture.RemovePosition(eReport.Symbol);
             else
             {
-                pos = _fixture.UpdatePosition(eReport.PositionInfo, _builder.Symbols.GetOrDefault);
-                PositionUpdated?.Invoke(pos);
+                pos = GetOrCreatePosition(eReport.Symbol);
+                pos.Update(eReport);
             }
 
             return pos;
@@ -67,6 +64,42 @@ namespace TickTrader.Algo.Core
             return _fixture.Values.GetEnumerator();
         }
 
+        #region Emulation
+
+        internal PositionAccessor GetOrCreatePosition(string symbol)
+        {
+            var smbInfo = _builder.Symbols.GetOrDefault(symbol);
+            if (smbInfo == null)
+                throw new OrderValidationError("Symbol Not Found:  " + symbol, OrderCmdResultCodes.SymbolNotFound);
+
+            var pos = _fixture.GetOrDefault(symbol);
+
+            if (pos == null)
+            {
+                pos = _fixture.CreatePosition(smbInfo);
+                pos.Changed += Pos_Changed;
+                pos.Removed += Pos_Removed;
+            }
+
+            return pos;
+        }
+
+        private void Pos_Removed(PositionAccessor pos)
+        {
+            pos.Changed -= Pos_Changed;
+            pos.Removed -= Pos_Removed;
+            var removed = _fixture.RemovePosition(pos.Symbol);
+            if (removed != null)
+                PositionRemoved?.Invoke(pos);
+        }
+
+        private void Pos_Changed(PositionAccessor pos)
+        {
+            PositionUpdated?.Invoke(pos);
+        }
+
+        #endregion
+
         internal class PositionsFixture : NetPositionList
         {
             private ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
@@ -93,19 +126,31 @@ namespace TickTrader.Algo.Core
                 Modified?.Invoke(args);
             }
 
-            public PositionAccessor UpdatePosition(PositionEntity entity, Func<string, Symbol> symbolProvider)
+            //public PositionAccessor UpdatePosition(PositionEntity entity)
+            //{
+            //    PositionAccessor pos;
+
+            //    if (!_positions.TryGetValue(entity.Symbol, out pos))
+            //    {
+            //        pos = new PositionAccessor(entity, symbolProvider);
+            //        _positions[entity.Symbol] = pos;
+            //    }
+            //    else
+            //        pos.Update(entity);
+
+            //    return pos;
+            //}
+
+            //public PositionAccessor GetPosition(string symbol)
+            //{
+            //    PositionAccessor pos;
+            //    _positions.TryGetValue(symbol, out pos);
+            //    return pos;
+            //}
+
+            public PositionAccessor CreatePosition(SymbolAccessor symbol)
             {
-                PositionAccessor pos;
-
-                if (!_positions.TryGetValue(entity.Symbol, out pos))
-                {
-                    pos = new PositionAccessor(entity, symbolProvider);
-                    _positions[entity.Symbol] = pos;
-                }
-                else
-                    pos.Update(entity);
-
-                return pos;
+                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol));
             }
 
             public PositionAccessor RemovePosition(string symbol)
@@ -121,6 +166,19 @@ namespace TickTrader.Algo.Core
                 _positions.TryGetValue(symbol, out entity);
                 return entity;
             }
+
+            //public PositionAccessor GetOrCreate(Symbol symbolInfo)
+            //{
+            //    PositionAccessor pos;
+
+            //    if (!_positions.TryGetValue(symbolInfo.Name, out pos))
+            //    {
+            //        pos = new PositionAccessor(symbolInfo);
+            //        _positions[symbolInfo.Name] = pos;
+            //    }
+
+            //    return pos;
+            //}
 
             public IEnumerator<NetPosition> GetEnumerator()
             {

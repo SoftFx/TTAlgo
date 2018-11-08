@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -11,22 +12,36 @@ namespace TickTrader.BotTerminal
     {
         public void Invoke(Action syncAction)
         {
-            App.Current.Dispatcher.Invoke(syncAction);
+            if (CheckAccess())
+                syncAction();
+            else App.Current.Dispatcher.Invoke(syncAction);
         }
 
         public void Invoke<T>(Action<T> syncAction, T args)
         {
-            App.Current.Dispatcher.Invoke(()=> syncAction(args));
+            if (CheckAccess())
+                syncAction(args);
+            else App.Current.Dispatcher.Invoke(() => syncAction(args));
         }
 
         public T Invoke<T>(Func<T> syncFunc)
         {
+            if (CheckAccess())
+                return syncFunc();
             return App.Current.Dispatcher.Invoke<T>(syncFunc);
         }
 
         public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
         {
-            return App.Current.Dispatcher.Invoke<TOut>(()=> syncFunc(args));
+            if (CheckAccess())
+                return syncFunc(args);
+            return App.Current.Dispatcher.Invoke<TOut>(() => syncFunc(args));
+        }
+
+
+        private bool CheckAccess()
+        {
+            return App.Current.Dispatcher.CheckAccess();
         }
     }
 }

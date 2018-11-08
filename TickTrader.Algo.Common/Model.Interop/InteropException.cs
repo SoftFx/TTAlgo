@@ -1,56 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.Algo.Common.Model.Interop
 {
-    public class InteropException : Exception
+    [Serializable]
+    public class InteropException : Exception, ISerializable
     {
-        public InteropException(string message, ConnectionErrorCodes errorCode)
+        public InteropException()
+        {
+            ErrorCode = ConnectionErrorCodes.Unknown;
+        }
+
+        public InteropException(string message)
             : base(message)
+        {
+            ErrorCode = ConnectionErrorCodes.Unknown;
+        }
+
+        public InteropException(string message, ConnectionErrorCodes errorCode)
         {
             ErrorCode = errorCode;
         }
 
-        public ConnectionErrorCodes ErrorCode { get; }
-    }
-
-    public class ConnectionErrorInfo
-    {
-        private static readonly ConnectionErrorInfo okSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.None);
-        private static readonly ConnectionErrorInfo unknownSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Unknown);
-        private static readonly ConnectionErrorInfo canceledSingleton = new ConnectionErrorInfo(ConnectionErrorCodes.Canceled);
-
-        public static ConnectionErrorInfo Ok => okSingleton;
-        public static ConnectionErrorInfo UnknownNoText => unknownSingleton;
-        public static ConnectionErrorInfo Canceled => canceledSingleton;
-
-        public ConnectionErrorInfo(ConnectionErrorCodes code, string message = null)
+        protected InteropException(SerializationInfo info, StreamingContext context)
+            : base(info.GetString(nameof(Message)))
         {
-            Code = code;
-            TextMessage = message;
+            ErrorCode = (ConnectionErrorCodes)info.GetInt32(nameof(ErrorCode));
         }
 
-        public ConnectionErrorCodes Code { get; }
-        public string TextMessage { get; }
-    }
+        public ConnectionErrorCodes ErrorCode { get; }
 
-    public enum ConnectionErrorCodes
-    {
-        None,
-        Unknown,
-        NetworkError,
-        Timeout,
-        BlockedAccount,
-        ClientInitiated,
-        InvalidCredentials,
-        SlowConnection,
-        ServerError,
-        LoginDeleted,
-        ServerLogout,
-        Canceled,
-        RejectedByServer
+        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue(nameof(Message), Message);
+            info.AddValue(nameof(ErrorCode), (int)ErrorCode);
+        }
     }
 }

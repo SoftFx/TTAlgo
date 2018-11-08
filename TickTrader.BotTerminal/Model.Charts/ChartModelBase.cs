@@ -24,13 +24,15 @@ using SciChart.Charting.Model.ChartSeries;
 using TickTrader.Algo.Common.Model;
 using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
+using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model.Config;
 
 namespace TickTrader.BotTerminal
 {
     public enum SelectableChartTypes { Candle, OHLC, Line, Mountain, DigitalLine, DigitalMountain, Scatter }
     public enum TimelineTypes { Real, Uniform }
 
-    internal abstract class ChartModelBase : PropertyChangedBase, IAlgoSetupFactory, IDisposable, IAlgoPluginHost
+    internal abstract class ChartModelBase : PropertyChangedBase, IDisposable, IAlgoPluginHost, IAlgoSetupContext
     {
         private Logger logger;
         private enum States { Idle, LoadingData, Online, Stopping, Closed, Faulted }
@@ -39,7 +41,6 @@ namespace TickTrader.BotTerminal
         private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
         private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
         private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
-        private readonly AlgoEnvironment algoEnv;
         private SelectableChartTypes chartType;
         private bool isIndicatorsOnline;
         private bool isLoading;
@@ -55,26 +56,24 @@ namespace TickTrader.BotTerminal
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
 
-        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv, TraderClientModel client)
+        public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
         {
             logger = NLog.LogManager.GetCurrentClassLogger();
-            this.ClientModel = client;
+            AlgoEnv = algoEnv;
             this.Model = symbol;
-            this.algoEnv = algoEnv;
-            this.Journal = algoEnv.BotJournal;
 
-            AvailableIndicators = algoEnv.Repo.Indicators.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
-            AvailableBotTraders = algoEnv.Repo.BotTraders.OrderBy((k, v) => v.DisplayName).Chain().AsObservable();
+            AvailableIndicators = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Indicator).AsObservable();
+            AvailableBotTraders = AlgoEnv.LocalAgentVM.Plugins.Where(p => p.Descriptor.Type == AlgoTypes.Robot).AsObservable();
 
             AvailableIndicators.CollectionChanged += AvailableIndicators_CollectionChanged;
             AvailableBotTraders.CollectionChanged += AvailableBotTraders_CollectionChanged;
 
-            this.isConnected = client.IsConnected.Value;
-            client.Connected += Connection_Connected;
-            //client.Disconnected += Connection_Disconnected;
-            client.Deinitializing += Client_Deinitializing;
+            this.isConnected = ClientModel.IsConnected.Value;
+            ClientModel.Connected += Connection_Connected;
+            ClientModel.Disconnected += Connection_Disconnected;
+            ClientModel.Deinitializing += Client_Deinitializing;
 
-            subscription = client.Distributor.Subscribe(symbol.Name);
+            subscription = ClientModel.Distributor.Subscribe(symbol.Name);
             subscription.NewQuote += OnRateUpdate;
 
             CurrentAsk = symbol.CurrentAsk;
@@ -89,29 +88,29 @@ namespace TickTrader.BotTerminal
             stateController.AddTransition(States.Stopping, Events.Stopped, States.Idle);
             stateController.AddTransition(States.Stopping, () => isConnected && !_isDisposed, States.LoadingData);
 
-            stateController.OnEnter(States.LoadingData, ()=> Update(CancellationToken.None));
+            stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
             stateController.OnEnter(States.Online, StartIndicators);
             stateController.OnEnter(States.Stopping, StopIndicators);
 
             stateController.StateChanged += (o, n) => logger.Debug("Chart [" + Model.Name + "] " + o + " => " + n);
         }
 
+        protected LocalAlgoAgent Agent => AlgoEnv.LocalAgent;
         protected SymbolModel Model { get; private set; }
-        protected TraderClientModel ClientModel { get; private set; }
-        protected AlgoEnvironment AlgoEnv => algoEnv;
+        protected TraderClientModel ClientModel => Agent.ClientModel;
+        protected AlgoEnvironment AlgoEnv { get; }
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
-        public IObservableList<PluginCatalogItem> AvailableIndicators { get; private set; }
+        public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
-        public IObservableList<PluginCatalogItem> AvailableBotTraders { get; private set; }
+        public IObservableList<AlgoPluginViewModel> AvailableBotTraders { get; private set; }
         public bool HasAvailableBotTraders => AvailableBotTraders.Count() > 0;
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
-        public BotJournal Journal { get; private set; }
         public double? CurrentAsk { get; private set; }
         public double? CurrentBid { get; private set; }
 
@@ -211,18 +210,18 @@ namespace TickTrader.BotTerminal
         public event System.Action ParamsLocked = delegate { };
         public event System.Action ParamsUnlocked = delegate { };
 
-        public void AddIndicator(PluginSetupViewModel setup)
+        public void AddIndicator(PluginConfig config)
         {
-            var indicator = CreateIndicator(setup);
+            var indicator = CreateIndicator(config);
             indicators.Add(indicator);
-            algoEnv.IdProvider.AddPlugin(indicator);
+            Agent.IdProvider.RegisterIndicator(indicator);
         }
 
         public void RemoveIndicator(IndicatorModel i)
         {
             if (indicators.Remove(i))
             {
-                algoEnv.IdProvider.RemovePlugin(i.InstanceId);
+                Agent.IdProvider.UnregisterPlugin(i.InstanceId);
                 i.Dispose();
             }
         }
@@ -232,12 +231,10 @@ namespace TickTrader.BotTerminal
             return indicatorNextId++;
         }
 
-        protected abstract PluginSetup CreateSetup(AlgoPluginRef catalogItem);
-
         protected abstract void ClearData();
         protected abstract void UpdateSeries();
         protected abstract Task LoadData(CancellationToken cToken);
-        protected abstract IndicatorModel CreateIndicator(PluginSetupViewModel setup);
+        protected abstract IndicatorModel CreateIndicator(PluginConfig config);
         protected abstract void ApplyUpdate(QuoteEntity update);
 
         protected void Support(SelectableChartTypes chartType)
@@ -287,10 +284,10 @@ namespace TickTrader.BotTerminal
             Navigator.Extend(count, endDate);
         }
 
-        //private void Connection_Disconnected()
-        //{
-        //    stateController.ModifyConditions(() => isConnected = false);
-        //}
+        private void Connection_Disconnected()
+        {
+            Disconnected?.Invoke();
+        }
 
         private void Connection_Connected()
         {
@@ -368,11 +365,6 @@ namespace TickTrader.BotTerminal
             stateController.PushEvent(Events.Stopped);
         }
 
-        PluginSetup IAlgoSetupFactory.CreateSetup(AlgoPluginRef catalogItem)
-        {
-            return CreateSetup(catalogItem);
-        }
-
         #region IAlgoPluginHost
 
         void IAlgoPluginHost.Lock()
@@ -395,6 +387,11 @@ namespace TickTrader.BotTerminal
             return ClientModel.TradeHistory.AlgoAdapter;
         }
 
+        string IAlgoPluginHost.GetConnectionInfo()
+        {
+            return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
+        }
+
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
@@ -414,6 +411,18 @@ namespace TickTrader.BotTerminal
         public event System.Action StartEvent = delegate { };
         public event AsyncEventHandler StopEvent = delegate { return CompletedTask.Default; };
         public event System.Action Connected;
+        public event System.Action Disconnected;
+
+        #endregion
+
+
+        #region IAlgoSetupContext
+
+        Api.TimeFrames IAlgoSetupContext.DefaultTimeFrame => TimeFrame;
+
+        ISymbolInfo IAlgoSetupContext.DefaultSymbol => new SymbolToken(SymbolCode);
+
+        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 
         #endregion
     }

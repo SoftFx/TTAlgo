@@ -1,23 +1,40 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.Core.Math
+namespace TickTrader.Algo.Core
 {
-    public class BarVector
+    [Serializable]
+    public class BarVector : IReadOnlyList<BarEntity>
     {
         private readonly List<BarEntity> _list = new List<BarEntity>();
-        private readonly BarSampler _sampler;
+        private readonly BarSequenceBuilder _builder;
 
-        public BarVector(TimeFrames timeFrame)
+        private BarVector(BarSequenceBuilder builder)
         {
-            _sampler = BarSampler.Get(timeFrame);
+            _builder = builder;
+
+            _builder.BarOpened += (b) => _list.Add(b);
         }
 
-        public BarSampler Sampler => _sampler;
+        public BarVector(TimeFrames timeFrame)
+            : this(BarSequenceBuilder.Create(timeFrame))
+        {
+        }
+
+        public BarVector(ITimeSequenceRef masterSequence)
+            : this(BarSequenceBuilder.Create(masterSequence))
+        {
+        }
+
+        public BarVector(BarVector masterVector)
+            : this(BarSequenceBuilder.Create(masterVector._builder))
+        {
+        }
 
         public BarEntity Last
         {
@@ -31,7 +48,26 @@ namespace TickTrader.Algo.Core.Math
             set { _list[0] = value; }
         }
 
+        public ITimeSequenceRef Ref => _builder;
+
         public int Count => _list.Count;
+
+        public BarEntity this[int index] => _list[index];
+
+        public void AppendQuote(DateTime time, double price, double volume)
+        {
+            _builder.AppendQuote(time, price, volume);
+        }
+
+        public void AppendBar(BarEntity bar)
+        {
+            _builder.AppendBar(bar);
+        }
+
+        public void AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
+        {
+            _builder.AppendBarPart(time, open, high, low, close, volume);
+        }
 
         public BarEntity[] ToArray()
         {
@@ -50,64 +86,14 @@ namespace TickTrader.Algo.Core.Math
             return range;
         }
 
-        public void Clear()
+        public IEnumerator<BarEntity> GetEnumerator()
         {
-            _list.Clear();
+            return _list.GetEnumerator();
         }
 
-        public void Append(DateTime time, double open, double high, double low, double close, double volume)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            var boundaries = _sampler.GetBar(time);
-
-            if (Count > 0 && Last.OpenTime == boundaries.Open)
-            {
-                // join
-                Last = UpdateBar(Last, open, high, low, close, volume);
-            }
-            else
-            {
-                // append
-                var entity = new BarEntity();
-                entity.OpenTime = boundaries.Open;
-                entity.CloseTime = boundaries.Close;
-                entity.Open = open;
-                entity.High = high;
-                entity.Low = low;
-                entity.Close = close;
-                entity.Volume = volume;
-                InternalAdd(entity);
-            }
-        }
-
-        private BarEntity UpdateBar(BarEntity bar, double open, double high, double low, double close, double volume)
-        {
-            var entity = new BarEntity();
-            entity.OpenTime = bar.OpenTime;
-            entity.CloseTime = bar.CloseTime;
-            entity.Open = bar.Open;
-            entity.High = System.Math.Max(bar.High, high);
-            entity.Low = System.Math.Min(bar.Low, low);
-            entity.Close = close;
-            entity.Volume = bar.Volume + volume;
-            return entity;
-        }
-
-        public void Append(BarEntity bar)
-        {
-            var boundaries = _sampler.GetBar(bar.OpenTime);
-
-            if (boundaries.Open == bar.OpenTime || boundaries.Close != bar.CloseTime)
-                throw new ArgumentException("Bar has invalid time boundaries!");
-
-            InternalAdd(bar);
-        }
-
-        private void InternalAdd(BarEntity bar)
-        {
-            if (Count > 0 && Last.OpenTime >= bar.OpenTime)
-                throw new ArgumentException("Invlid time sequnce!");
-
-            _list.Add(bar);
+            return _list.GetEnumerator();
         }
     }
 }

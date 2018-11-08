@@ -14,24 +14,30 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _cancelSrc;
         private bool _isCompleted;
 
+        public ActionDialogViewModel(string actionName, Func<Task> factory)
+        {
+            DisplayName = actionName;
+            Handle(factory);
+        }
+
         public ActionDialogViewModel(string actionName, System.Action action)
         {
             DisplayName = actionName;
-            Handle(Task.Factory.StartNew(action));
+            Handle(() => Task.Factory.StartNew(action));
         }
 
         public ActionDialogViewModel(string actionName, Action<CancellationToken> action)
         {
             DisplayName = actionName;
             _cancelSrc = new CancellationTokenSource();
-            Handle(Task.Factory.StartNew(() => action(_cancelSrc.Token)));
+            Handle(() => Task.Factory.StartNew(() => action(_cancelSrc.Token)));
         }
 
         public ActionDialogViewModel(string actionName, Action<IActionObserver> action)
         {
             DisplayName = actionName;
             Progress = new ProgressViewModel();
-            Handle(Task.Factory.StartNew(() => action(Progress)));
+            Handle(() => Task.Factory.StartNew(() => action(Progress)));
         }
 
         public ActionDialogViewModel(string actionName, Action<IActionObserver, CancellationToken> action)
@@ -39,15 +45,16 @@ namespace TickTrader.BotTerminal
             DisplayName = actionName;
             _cancelSrc = new CancellationTokenSource();
             Progress = new ProgressViewModel();
-            Handle(Task.Factory.StartNew(() => action(Progress, _cancelSrc.Token)));
+            Handle(() => Task.Factory.StartNew(() => action(Progress, _cancelSrc.Token)));
         }
 
-        private async void Handle(Task workerTask)
+        private async void Handle(Func<Task> workerTaskFactory)
         {
             Progress = new ProgressViewModel();
             Progress.Start();
             try
             {
+                var workerTask = workerTaskFactory();
                 await workerTask;
             }
             catch (AggregateException ex)

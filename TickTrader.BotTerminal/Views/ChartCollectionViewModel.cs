@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
@@ -16,7 +17,7 @@ namespace TickTrader.BotTerminal
         private TraderClientModel _clientModel;
         private IShell _shell;
         private readonly AlgoEnvironment _algoEnv;
-        private PersistModel _storage;
+        private Dictionary<string, ChartViewModel> _charts;
 
 
         public object SelectedChartProxy
@@ -31,13 +32,13 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv, PersistModel storage)
+        public ChartCollectionViewModel(TraderClientModel clientModel, IShell shell, AlgoEnvironment algoEnv)
         {
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _clientModel = clientModel;
             _algoEnv = algoEnv;
             _shell = shell;
-            _storage = storage;
+            _charts = new Dictionary<string, ChartViewModel>();
 
             clientModel.Symbols.Updated += Symbols_Updated;
         }
@@ -46,18 +47,30 @@ namespace TickTrader.BotTerminal
         public override void ActivateItem(ChartViewModel item)
         {
             base.ActivateItem(item);
+            _charts[item.ChartWindowId] = item;
             NotifyOfPropertyChange(nameof(SelectedChartProxy));
         }
 
-
-        public void Open(string symbol, string period = "M1")
+        public void Open(string symbol, ChartPeriods period = ChartPeriods.M1)
         {
-            ActivateItem(new ChartViewModel(symbol, period, _shell, _clientModel, _algoEnv, _storage));
+            ActivateItem(new ChartViewModel(GenerateChartId(), symbol, period, _algoEnv));
+        }
+
+        public void OpenOrActivate(string symbol, ChartPeriods period)
+        {
+            var chart = Items.FirstOrDefault(c => c.Symbol == symbol && c.SelectedPeriod.Key == period);
+            if (chart != null)
+            {
+                ActivateItem(chart);
+                return;
+            }
+            Open(symbol, period);
         }
 
         public void CloseItem(ChartViewModel chart)
         {
             chart.TryClose();
+            _charts.Remove(chart.ChartWindowId);
         }
 
         public void CloseAllItems(CancellationToken token)
@@ -76,7 +89,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SaveProfileSnapshot(ProfileStorageModel profileStorage)
+        public void SaveChartsSnapshot(ProfileStorageModel profileStorage)
         {
             try
             {
@@ -86,21 +99,35 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to save profile snapshot");
+                _logger.Error(ex, "Failed to save charts snapshot");
             }
         }
 
-        public void LoadProfileSnapshot(ProfileStorageModel profileStorage, CancellationToken token)
+        public void LoadChartsSnaphot(ProfileStorageModel profileStorage, CancellationToken token)
         {
             try
             {
+                if ((profileStorage.Charts?.Count ?? 0) == 0)
+                {
+                    _logger.Info($"Charts snapshot is empty");
+                    return;
+                }
+
+                _logger.Info($"Loading charts snapshot({profileStorage.Charts.Count} charts)");
+
+                _charts.Clear();
+
+                profileStorage.Charts.Where(c => c.Id != null).Foreach(c => _charts[c.Id] = null); // register existing chartIds
+
                 foreach (var chart in profileStorage.Charts.Where(c => _clientModel.Symbols.GetOrDefault(c.Symbol) != null))
                 {
                     if (token.IsCancellationRequested)
                     {
                         return;
                     }
-                    var item = new ChartViewModel(chart.Symbol, chart.SelectedPeriod, _shell, _clientModel, _algoEnv, _storage);
+
+                    var id = chart.Id ?? GenerateChartId(); // generate missing chartIds
+                    var item = new ChartViewModel(id, chart.Symbol, chart.SelectedPeriod, _algoEnv);
                     ActivateItem(item);
                     item.RestoreFromSnapshot(chart);
                 }
@@ -113,7 +140,7 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed to load profile snapshot");
+                _logger.Error(ex, "Failed to load charts snapshot");
             }
         }
 
@@ -126,6 +153,20 @@ namespace TickTrader.BotTerminal
 
                 foreach (var chart in toRemove)
                     CloseItem(chart);
+            }
+        }
+
+        private string GenerateChartId()
+        {
+            var i = 0;
+            while (true)
+            {
+                var idCandidate = $"Chart{i}";
+                if (!_charts.ContainsKey(idCandidate))
+                {
+                    return idCandidate;
+                }
+                i++;
             }
         }
     }

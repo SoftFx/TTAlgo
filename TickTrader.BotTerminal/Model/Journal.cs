@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
             OnAppended(item);
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             Execute.OnUIThread(() => items.Clear());
         }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -13,37 +14,41 @@ namespace TickTrader.Algo.Core
         public enum States { Idle, Running, Stopping }
 
         private object _sync = new object();
-        private LogFixture pluginLogger;
+        private LogFixture _pluginLoggerFixture;
+        private IPluginLogger _pluginLogger = Null.Logger;
         private IPluginMetadata metadata;
         private IPluginFeedProvider feedProvider;
         private ITradeHistoryProvider tradeHistoryProvider;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
-        private SubscriptionManager dispenser;
+        private readonly SubscriptionManager dispenser;
         private InvokeStartegy iStrategy;
-        private CalculatorFixture calcFixture;
-        private TradingFixture accFixture;
-        private TimerFixture _timerFixture;
+        private readonly CalculatorFixture calcFixture;
+        private IExecutorFixture accFixture;
+        private IExecutorFixture _timerFixture;
         private StatusFixture statusFixture;
+        private IAccountInfoProvider _externalAccData;
+        private ITradeExecutor _externalTradeApi;
         private string mainSymbol;
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
-        private AlgoPluginDescriptor descriptor;
+        private readonly PluginMetadata descriptor;
         private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
         private string _botInstanceId;
-        private bool _isolated;
         private PluginPermissions _permissions;
         private States state;
+        private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
+
+        private bool InRunningState => state == States.Running;
 
         public PluginExecutor(string pluginId)
         {
-            this.descriptor = AlgoPluginDescriptor.Get(pluginId);
-            this.accFixture = new TradingFixture(this);
-            this.statusFixture = new StatusFixture(this);
+            descriptor = AlgoAssemblyInspector.GetPlugin(pluginId);
+            statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
             _timerFixture = new TimerFixture(this);
@@ -59,13 +64,13 @@ namespace TickTrader.Algo.Core
 
         public IAccountInfoProvider AccInfoProvider
         {
-            get { return accFixture.DataProvider; }
+            get => _externalAccData;
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-                    accFixture.DataProvider = value;
+                    _externalAccData = value;
                 }
             }
         }
@@ -91,11 +96,7 @@ namespace TickTrader.Algo.Core
                 lock (_sync)
                 {
                     ThrowIfRunning();
-
-                    if (value == null)
-                        throw new InvalidOperationException("InvokeStrategy cannot be null!");
-
-                    iStrategy = value;
+                    iStrategy = value ?? throw new InvalidOperationException("InvokeStrategy cannot be null!");
                 }
             }
         }
@@ -132,13 +133,13 @@ namespace TickTrader.Algo.Core
 
         public ITradeExecutor TradeExecutor
         {
-            get { return accFixture.Executor; }
+            get => _externalTradeApi;
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
-                    accFixture.Executor = value;
+                    _externalTradeApi = value;
                 }
             }
         }
@@ -208,20 +209,6 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public bool Isolated 
-        {
-            get { return _isolated; }
-            set
-            {
-                lock (_sync)
-                {
-                    ThrowIfRunning();
-
-                    _isolated = value;
-                }
-            }
-        }
-
         public PluginPermissions Permissions
         {
             get { return _permissions; }
@@ -251,6 +238,8 @@ namespace TickTrader.Algo.Core
 
                     Validate();
 
+                    accFixture = _tradeFixtureFactory(this);
+
                     // Setup builder
 
                     builder = new PluginBuilder(descriptor);
@@ -258,17 +247,17 @@ namespace TickTrader.Algo.Core
                     builder.TimeFrame = TimeFrame;
                     InitMetadata();
                     InitWorkingFolder();
-                    builder.TradeApi = accFixture;
-                    builder.TimerApi = _timerFixture;
+                    //builder.TradeApi = accFixture;
                     builder.Calculator = calcFixture;
                     builder.TradeHistoryProvider = tradeHistoryProvider;
-                    builder.Id = _botInstanceId;
-                    builder.Isolated = _isolated;
+                    builder.InstanceId = _botInstanceId;
+                    builder.Isolated = _permissions.Isolated;
                     builder.Permissions = _permissions;
                     builder.Diagnostics = this;
-                    builder.Logger = pluginLogger ?? Null.Logger;
+                    builder.Logger = _pluginLogger;
                     builder.OnAsyncAction = OnAsyncAction;
                     builder.OnExit = OnExit;
+                    builder.OnInitFailed = OnInitFailed;
                     //builder.OnException = OnException;
 
                     // Setup strategy
@@ -278,18 +267,27 @@ namespace TickTrader.Algo.Core
                     fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
-                    iStrategy.EnqueueCustomInvoke(b => b.InvokeInit()); // enqueue init
+
+                    iStrategy.EnqueueCustomInvoke(b =>
+                    {
+                        if (InRunningState)
+                            b.InvokeInit();
+                    }); 
 
                     // Start
 
-                    pluginLogger?.Start();
+                    _pluginLoggerFixture?.Start();
                     statusFixture.Start();
                     accFixture.Start();
                     _timerFixture.Start();
                     fStrategy.Start(); // enqueue build action
                     calcFixture.Start();
 
-                    iStrategy.EnqueueCustomInvoke(b => b.InvokeOnStart());
+                    iStrategy.EnqueueCustomInvoke(b =>
+                    {
+                        if (InRunningState)
+                            b.InvokeOnStart();
+                    });
 
                     iStrategy.Start(); // Must be last action! It starts queue processing.
 
@@ -343,20 +341,39 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void HandleDisconnect()
+        {
+            lock (_sync)
+            {
+                if (state == States.Running)
+                    iStrategy.EnqueueCustomInvoke(b => builder.FireDisconnectedEvent());
+            }
+        }
+
         public void HandleReconnect()
         {
             lock (_sync)
             {
                 if (state == States.Running)
                 {
-                    iStrategy.EnqueueCustomInvoke(b =>
+                    iStrategy.EnqueueTradeUpdate(b =>
                     {
                         calcFixture.Stop();
                         accFixture.Restart();
                         calcFixture.Start();
                         builder.Account.FireResetEvent();
+                        builder.FireConnectedEvent();
                     });
                 }
+            }
+        }
+
+        public void WriteConnectionInfo(string connectionInfo)
+        {
+            lock(_sync)
+            {
+                if (state == States.Running)
+                    iStrategy.EnqueueCustomInvoke(b => builder.LogConnectionInfo(connectionInfo));
             }
         }
 
@@ -367,14 +384,14 @@ namespace TickTrader.Algo.Core
                 builder.SetStopped();
 
                 await iStrategy.Stop(qucik).ConfigureAwait(false);
-                if (pluginLogger != null)
-                    await pluginLogger.Stop();
+                if (_pluginLoggerFixture != null)
+                    await _pluginLoggerFixture.Stop();
 
                 System.Diagnostics.Debug.WriteLine("EXECUTOR STOPPED STRATEGY!");
 
                 fStrategy.Stop();
-                calcFixture.Stop();
                 accFixture.Stop();
+                calcFixture.Stop();
                 statusFixture.Stop();
                 _timerFixture.Stop();
 
@@ -405,12 +422,23 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        private void OnInitFailed(Exception ex)
+        {
+            OnExit();
+        }
+
         #region Setup Methods
 
         public T GetFeedStrategy<T>()
             where T: FeedStrategy
         {
             return (T)fStrategy;
+        }
+
+        public void MapInput(string inputName, string symbolCode, Mapping mapping)
+        {
+            // hook to appear in plugin domain
+            mapping?.MapInput(this, inputName, symbolCode);
         }
 
         public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe, List<BarEntity> mainSeries = null)
@@ -484,15 +512,39 @@ namespace TickTrader.Algo.Core
             lock (_sync)
             {
                 ThrowIfRunning();
-                if (pluginLogger == null)
-                    pluginLogger = new LogFixture(this);
-                return pluginLogger;
+                if (_pluginLoggerFixture == null)
+                    _pluginLoggerFixture = new LogFixture(this);
+                _pluginLogger = _pluginLoggerFixture;
+                return _pluginLoggerFixture;
             }
+        }
+
+        #region Emulator Support
+
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings)
+        {
+            var fixture = new EmulationControlFixture(settings, this, calcFixture);
+            InvokeStrategy = fixture.InvokeEmulator;
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector);
+            _pluginLogger = fixture.Collector;
+            _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
+            return fixture;
+        }
+
+        internal PluginBuilder GetBuilder() => builder;
+        internal IExecutorFixture GetTradeFixute() => accFixture;
+
+        internal void EmulateStop()
+        {
+            ChangeState(States.Stopping);
+            stopTask = DoStop(false);
         }
 
         #endregion
 
-        private void ApplyNewRate(QuoteEntity quote)
+        #endregion
+
+        private void ApplyNewRate(RateUpdate quote)
         {
             calcFixture.UpdateRate(quote);
         }
@@ -609,7 +661,7 @@ namespace TickTrader.Algo.Core
         string IFixtureContext.MainSymbolCode => mainSymbol;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
-        IPluginLogger IFixtureContext.Logger => pluginLogger;
+        IPluginLogger IFixtureContext.Logger { get => _pluginLogger; set => _pluginLogger = value; }
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {

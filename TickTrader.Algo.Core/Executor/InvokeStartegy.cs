@@ -44,9 +44,9 @@ namespace TickTrader.Algo.Core
 
         protected virtual void OnInit() { }
 
-        protected void OnFeedUpdate(RateUpdate update)
+        protected BufferUpdateResult OnFeedUpdate(RateUpdate update)
         {
-            FStartegy.ApplyUpdate(update);
+            return FStartegy.ApplyUpdate(update);
         }
 
         protected void OnError(ExecutorException ex)
@@ -375,67 +375,4 @@ namespace TickTrader.Algo.Core
                 return null;
         }
     }
-
-    //[Serializable]
-    //public class DataflowInvokeStartegy : InvokeStartegy
-    //{
-    //    private ActionBlock<object> taskQueue;
-    //    private CancellationTokenSource cancelSrc;
-
-    //    public override void Start()
-    //    {
-    //        this.cancelSrc = new CancellationTokenSource();
-    //        var options = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 1, CancellationToken = cancelSrc.Token };
-    //        taskQueue = new ActionBlock<object>((Action<object>)Process, options);
-    //    }
-
-    //    public async override Task Stop()
-    //    {
-    //        try
-    //        {
-    //            taskQueue.Complete();
-    //            await taskQueue.Completion;
-    //        }
-    //        catch (OperationCanceledException) { }
-    //    }
-
-    //    public override void Abort()
-    //    {
-    //        cancelSrc.Cancel();
-    //    }
-
-    //    public override void EnqueueInvoke(Action<PluginBuilder> a)
-    //    {
-    //        taskQueue.Post(a);
-    //    }
-
-    //    public override void EnqueueInvoke(Task t)
-    //    {
-    //        taskQueue.Post(t);   
-    //    }
-
-    //    private void Enqueue(Action a)
-    //    {
-    //        taskQueue.Post(a);
-    //    }
-
-    //    private void Process(object data)
-    //    {
-    //        try
-    //        {
-    //            if (data is Action<PluginBuilder>)
-    //                ((Action<PluginBuilder>)data)(Builder);
-    //            if (data is Task)
-    //                ((Task)data).RunSynchronously();
-    //        }
-    //        catch (ExecutorException ex)
-    //        {
-    //            OnError(ex);
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            OnRuntimeException(ex);
-    //        }
-    //    }
-    //}
 }

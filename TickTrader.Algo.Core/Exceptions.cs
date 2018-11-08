@@ -1,11 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
+namespace TickTrader.Algo.Core
+{
+    [Serializable]
+    public class MisconfigException : AlgoException
+    {
+        public MisconfigException(string message) : base(message)
+        {
+        }
+
+        protected MisconfigException(SerializationInfo info, StreamingContext context)
+           : base(info, context)
+        {
+        }
+    }
+
+    [Serializable]
+    public class StopOutException : AlgoException
+    {
+        public StopOutException(string message) : base(message)
+        {
+        }
+
+        protected StopOutException(SerializationInfo info, StreamingContext context)
+           : base(info, context)
+        {
+        }
+    }
+}
+
 namespace TickTrader.Algo.Core.Metadata
 {
+    [Serializable]
     public class AlgoException : Exception
     {
         public AlgoException(string msg)
@@ -14,6 +45,7 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
+    [Serializable]
     public class InvalidPluginType : AlgoException
     {
         public InvalidPluginType(string msg)
@@ -22,9 +54,10 @@ namespace TickTrader.Algo.Core.Metadata
         }
     }
 
+    [Serializable]
     public class AlgoMetadataException : AlgoException
     {
-        public AlgoMetadataException(AlgoMetadataErrors errorCode, IEnumerable<AlgoPropertyDescriptor> invalidProperties = null)
+        public AlgoMetadataException(AlgoMetadataErrors errorCode, IEnumerable<PropertyMetadataBase> invalidProperties = null)
             : base(CreateMessageDescription(errorCode, invalidProperties))
         {
             this.ErrorCode = errorCode;
@@ -32,10 +65,10 @@ namespace TickTrader.Algo.Core.Metadata
             if (invalidProperties != null)
                 this.InvalidProperties = invalidProperties.ToArray();
             else
-                this.InvalidProperties = new AlgoPropertyDescriptor[0];
+                this.InvalidProperties = new PropertyMetadataBase[0];
         }
 
-        private static string CreateMessageDescription(AlgoMetadataErrors errorCode, IEnumerable<AlgoPropertyDescriptor> invalidProperties)
+        private static string CreateMessageDescription(AlgoMetadataErrors errorCode, IEnumerable<PropertyMetadataBase> invalidProperties)
         {
             switch (errorCode)
             {
@@ -45,10 +78,10 @@ namespace TickTrader.Algo.Core.Metadata
                     if (invalidProperties != null)
                     {
                         foreach (var property in invalidProperties)
-                            builder.Append("\tproperty ").Append(property.Id).Append(" - ").Append(property.Error.Value);
+                            builder.Append("\tproperty ").Append(property.Id).Append(" - ").Append(property.Error);
                     }
                     return builder.ToString();
-                case AlgoMetadataErrors.UnknwonBaseType:
+                case AlgoMetadataErrors.UnknownBaseType:
                     return "Plugin error: Invalid base class. Your plugin must be derived from Indicator or TradeBot API classes.";
                 case AlgoMetadataErrors.IncompatibleApiVersion:
                     return "Plugin error: Incompatible api version. This client can't support newer api versions. Please update your client.";
@@ -58,6 +91,6 @@ namespace TickTrader.Algo.Core.Metadata
         }
 
         public AlgoMetadataErrors ErrorCode { get; private set; }
-        public AlgoPropertyDescriptor[] InvalidProperties { get; private set; }
+        public PropertyMetadataBase[] InvalidProperties { get; private set; }
     }
 }

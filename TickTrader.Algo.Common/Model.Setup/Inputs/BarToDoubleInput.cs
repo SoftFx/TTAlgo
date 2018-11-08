@@ -29,8 +29,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         public IEnumerable<Mapping> AvailableMappings => _mappings;
 
 
-        public BarToDoubleInputSetup(InputDescriptor descriptor, string symbolCode, BarPriceType defPriceType, IAlgoGuiMetadata metadata = null)
-            : base(descriptor, symbolCode, metadata?.Symbols)
+        public BarToDoubleInputSetup(InputDescriptor descriptor, ISymbolInfo defaultSymbol, BarPriceType defPriceType, IAlgoGuiMetadata metadata = null)
+            : base(descriptor, defaultSymbol, metadata?.Symbols)
         {
             SetMetadata(descriptor);
             _defPriceType = defPriceType;

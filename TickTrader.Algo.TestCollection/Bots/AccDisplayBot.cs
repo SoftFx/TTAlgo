@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Account Info Display Bot", Version = "1.0", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Account Info Display Bot", Version = "1.1", Category = "Test Plugin Info", SetupMainSymbol = false,
         Description = "Prints account info to bot status window. This include account id, type, balance, assets, pending orders, positions")]
     public class AccDisplayBot : TradeBot
     {
@@ -106,7 +106,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 {
                     var tag = string.IsNullOrEmpty(order.Tag) ? "" : "[" + order.Tag + "]";
 
-                    Status.Write("#{0} {1} {2:0.#########}/{3:0.#########}", order.Symbol, order.Side,
+                    Status.Write("#{0} {1} {2} {3} {4:0.#########}/{5:0.#########}", order.Id, order.Symbol, order.Side, order.Type,
                         order.RemainingVolume, order.RequestedVolume);
                     if (printCalcData)
                         Status.Write(" margin={0}", order.Margin.ToString(_baseCurrFormat));

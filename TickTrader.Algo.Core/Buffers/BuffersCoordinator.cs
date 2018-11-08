@@ -41,6 +41,8 @@ namespace TickTrader.Algo.Core
         {
             foreach (var buffer in buffers)
                 buffer.Truncate(bySize);
+
+            VirtualPos -= bySize;
         }
 
         public void Clear()

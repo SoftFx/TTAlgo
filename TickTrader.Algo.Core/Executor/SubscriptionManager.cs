@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
         //private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
         //private HashSet<IAllRatesSubscription> allSymbolsSubscribers = new HashSet<IAllRatesSubscription>();
         private Dictionary<string, SubscriptionCollection> subscribersBySymbol = new Dictionary<string, SubscriptionCollection>();
-        private DateTime _startTime;
+        //private DateTime _startTime;
 
         public SubscriptionManager(IFixtureContext context)
         {
@@ -23,7 +23,6 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            _startTime = DateTime.UtcNow;
             foreach (var entry in subscribersBySymbol)
             {
                 if (entry.Value.GetMaxDepth() != 1)
@@ -37,9 +36,11 @@ namespace TickTrader.Algo.Core
 
         public void OnUpdateEvent(Quote quote)
         {
-            if (quote.Time > _startTime) // old quotes from snapshot should not be sent as new quotes
+            var collection = GetListOrNull(quote.Symbol);
+            if (collection != null)
             {
-                GetListOrNull(quote.Symbol)?.OnUpdate(quote);
+                if (quote.Time > collection.LastQuoteTime) // old quotes from snapshot should not be sent as new quotes
+                    collection.OnUpdate(quote);
             }
         }
 
@@ -142,9 +143,11 @@ namespace TickTrader.Algo.Core
 
             public SubscriptionFixture UserSubscription { get; set; }
             public int CurrentDepth { get; set; }
+            public DateTime LastQuoteTime { get; set; }
 
             public void OnUpdate(Quote quote)
             {
+                LastQuoteTime = quote.Time;
                 UserSubscription?.OnUpdateEvent(quote);
             }
 

@@ -65,6 +65,9 @@ namespace TickTrader.BotTerminal
 
         public async void LoadProfile(string name)
         {
+            if (name == null)
+                return;
+
             var currentSrc = new CancellationTokenSource();
 
             try
@@ -103,6 +106,10 @@ namespace TickTrader.BotTerminal
                 token.ThrowIfCancellationRequested();
 
                 _profileLoader.ReloadProfile(token);
+
+                token.ThrowIfCancellationRequested();
+
+                _profileManager.StartCurrentProfile();
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }
@@ -125,6 +132,10 @@ namespace TickTrader.BotTerminal
                 token.ThrowIfCancellationRequested();
 
                 _profileLoader.ReloadProfile(token);
+
+                token.ThrowIfCancellationRequested();
+
+                _profileManager.StartCurrentProfile();
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

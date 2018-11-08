@@ -8,6 +8,12 @@
         <Setter Property="Stretch" Value="Uniform" />
     </Style>
 
+    <Style x:Key="ListItemIconStyle" TargetType="Path">
+        <Setter Property="Width" Value="13"/>
+        <Setter Property="Height" Value="13"/>
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
+
     <StackPanel x:Key="AddToolBarIcon" Orientation="Horizontal" x:Shared="false">
         <Path Style="{StaticResource ToolBarIconStyle}" Fill="Green" Data="{DynamicResource PlusPath}"/>
         <TextBlock Text="Add" Margin="4,0,0,0"/>
@@ -23,7 +29,13 @@
         <TextBlock Text="Download" Margin="4,0,0,0"/>
     </StackPanel>
 
-    <Path x:Key="RefreshToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource RefreshPath}" Fill="Green"  />
+    <Path x:Key="RefreshToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource RefreshPath}" Fill="Green" />
     <Path x:Key="SearchToolBarIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource MagnifyLens}" Fill="{DynamicResource ToolBarItem_ForegroundBrush}"/>
+
+    <Path x:Key="TradeBotIcon" x:Shared="false" Style="{StaticResource ListItemIconStyle}" Data="{DynamicResource TradeBot}" Stroke="DarkViolet" />
+    <Path x:Key="IndicatorIcon" x:Shared="false" Style="{StaticResource ListItemIconStyle}" Data="{DynamicResource Indicator}" Stroke="DeepSkyBlue" />
+
+    <Path x:Key="PackageLockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ClosedLock}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
+    <Path x:Key="PackageUnlockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource OpenedLock}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
 
 </ResourceDictionary>

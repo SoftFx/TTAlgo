@@ -101,7 +101,7 @@ namespace TickTrader.Algo.Core
                 get
                 {
                     if (sortedSymbols == null)
-                        sortedSymbols = symbols.Values.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ToList();
+                        sortedSymbols = symbols.Values.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name).ToList();
 
                     return sortedSymbols;
                 }

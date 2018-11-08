@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model.Config;
@@ -8,23 +9,19 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class BarBasedPluginSetup : PluginSetup
     {
-        private string _mainSymbol;
+        private ISymbolInfo _mainSymbol;
         private BarPriceType _priceType;
         private IAlgoGuiMetadata _metadata;
 
-
-        public string MainSymbol => _mainSymbol;
-
-        public BarPriceType PriceType => _priceType;
-
-
-        public BarBasedPluginSetup(AlgoPluginRef pRef)
+        public BarBasedPluginSetup(AlgoPluginRef pRef, IAlgoGuiMetadata metadata)
             : base(pRef)
         {
+            _metadata = metadata;
+
             Init();
         }
 
-        public BarBasedPluginSetup(AlgoPluginRef pRef, string mainSymbol, BarPriceType priceType, IAlgoGuiMetadata metadata)
+        public BarBasedPluginSetup(AlgoPluginRef pRef, ISymbolInfo mainSymbol, BarPriceType priceType, IAlgoGuiMetadata metadata)
             : base(pRef)
         {
             _mainSymbol = mainSymbol;
@@ -34,6 +31,8 @@ namespace TickTrader.Algo.Common.Model.Setup
             Init();
         }
 
+        public ISymbolInfo MainSymbol => _mainSymbol;
+        public BarPriceType PriceType => _priceType;
 
         protected override InputSetup CreateInput(InputDescriptor descriptor)
         {
@@ -67,7 +66,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             var barConfig = cfg as BarBasedConfig;
             if (barConfig != null)
             {
-                _mainSymbol = barConfig.MainSymbol;
+                _mainSymbol = _metadata.Symbols.First(s => s.Id == barConfig.MainSymbol);
                 _priceType = barConfig.PriceType;
             }
 
@@ -78,7 +77,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
             var config = new BarBasedConfig()
             {
-                MainSymbol = MainSymbol,
+                MainSymbol = MainSymbol.Id,
                 PriceType = PriceType
             };
             return config;
@@ -87,7 +86,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public override object Clone()
         {
             var save = Save();
-            var setup = new BarBasedPluginSetup(PluginRef);
+            var setup = new BarBasedPluginSetup(PluginRef, _metadata);
             setup.Load(save);
             return setup;
         }
