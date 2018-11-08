@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Common.Model
 
         public SymbolEntity GetDefaultSymbol()
         {
-            return _symbols.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).Select(s => s.Descriptor).Where(d => !d.Name.EndsWith("_L")).FirstOrDefault();
+            return _symbols.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).ThenBy(s => s.Descriptor.Name).Select(s => s.Descriptor).Where(d => !d.Name.EndsWith("_L")).FirstOrDefault();
         }
 
         internal EntityCacheUpdate GetAccSnapshot()
