@@ -58,7 +58,7 @@
             <MenuItem Header="{l:Resx Menu_InstallVSPackage}" cal:Message.Attach="InstallVSPackage"/>
             <Separator/>
             <MenuItem Header="Symbol Manager..." cal:Message.Attach="OpenStorageManager"/>
-            <MenuItem Header="Bot Tester..." cal:Message.Attach="OpenBacktester"/>
+            <MenuItem Header="Backtester..." cal:Message.Attach="OpenBacktester"/>
         </MenuItem>
         <MenuItem Header="{l:Resx Menu_Help}">
             <MenuItem Header="{l:Resx Menu_About}" cal:Message.Attach="About"/>

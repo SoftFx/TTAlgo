@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
-            DisplayName = "Strategy/Indicator Tester";
+            DisplayName = "Backtester";
 
             _env = env ?? throw new ArgumentNullException("env");
             _catalog = catalog ?? throw new ArgumentNullException("catalog");
