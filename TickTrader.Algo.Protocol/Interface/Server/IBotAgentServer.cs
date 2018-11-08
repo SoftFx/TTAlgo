@@ -71,9 +71,9 @@ namespace TickTrader.Algo.Protocol
 
         void RemovePackage(PackageKey package);
 
-        Stream GetPackageReadStream(PackageKey package);
+        string GetPackageReadPath(PackageKey package);
 
-        Stream GetPackageWriteStream(PackageKey package);
+        string GetPackageWritePath(PackageKey package);
 
         string GetBotStatus(string botId);
 
@@ -85,9 +85,9 @@ namespace TickTrader.Algo.Protocol
 
         void DeleteBotFile(string botId, BotFolderId folderId, string fileName);
 
-        Stream GetBotFileReadStream(string botId, BotFolderId folderId, string fileName);
+        string GetBotFileReadPath(string botId, BotFolderId folderId, string fileName);
 
-        Stream GetBotFileWriteStream(string botId, BotFolderId folderId, string fileName);
+        string GetBotFileWritePath(string botId, BotFolderId folderId, string fileName);
 
         #endregion Requests
     }

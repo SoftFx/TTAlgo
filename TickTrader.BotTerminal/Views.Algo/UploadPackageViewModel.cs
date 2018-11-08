@@ -198,11 +198,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void TryClose(bool? dialogResult = null)
+        protected override void OnDeactivate(bool close)
         {
             DeinitAlgoAgent(SelectedBotAgent);
 
-            base.TryClose(dialogResult);
+            base.OnDeactivate(close);
         }
 
 
@@ -268,13 +268,13 @@ namespace TickTrader.BotTerminal
 
         private void BotAgentPackagesUpdated(DictionaryUpdateArgs<PackageKey, PackageInfo> args)
         {
-            if (args.Key.Name == FileName.ToLowerInvariant())
+            if (args.Key.Name == FileName?.ToLowerInvariant())
                 Validate();
         }
 
         private void BotAgentPackageStateChanged(PackageInfo package)
         {
-            if (package.Key.Name == FileName.ToLowerInvariant())
+            if (package.Key.Name == FileName?.ToLowerInvariant())
                 Validate();
         }
     }

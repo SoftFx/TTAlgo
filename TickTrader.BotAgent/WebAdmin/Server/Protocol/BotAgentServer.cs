@@ -157,14 +157,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.RemovePackage(package);
         }
 
-        public Stream GetPackageReadStream(PackageKey package)
+        public string GetPackageReadPath(PackageKey package)
         {
-            return _botAgent.GetPackageReadStream(package);
+            return _botAgent.GetPackageReadPath(package);
         }
 
-        public Stream GetPackageWriteStream(PackageKey package)
+        public string GetPackageWritePath(PackageKey package)
         {
-            return _botAgent.GetPackageWriteStream(package);
+            return _botAgent.GetPackageWritePath(package);
         }
 
         public string GetBotStatus(string botId)
@@ -210,18 +210,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             botFolder.DeleteFile(fileName);
         }
 
-        public Stream GetBotFileReadStream(string botId, BotFolderId folderId, string fileName)
+        public string GetBotFileReadPath(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = GetBotFolder(botId, folderId);
 
-            return botFolder.GetFileReadStream(fileName);
+            return botFolder.GetFileReadPath(fileName);
         }
 
-        public Stream GetBotFileWriteStream(string botId, BotFolderId folderId, string fileName)
+        public string GetBotFileWritePath(string botId, BotFolderId folderId, string fileName)
         {
             var botFolder = GetBotFolder(botId, folderId);
 
-            return botFolder.GetFileWriteStream(fileName);
+            return botFolder.GetFileWritePath(fileName);
         }
 
 

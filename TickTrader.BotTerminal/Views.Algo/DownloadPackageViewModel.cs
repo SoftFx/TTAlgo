@@ -191,11 +191,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public override void TryClose(bool? dialogResult = null)
+        protected override void OnDeactivate(bool close)
         {
             DeinitAlgoAgent(SelectedBotAgent);
 
-            base.TryClose(dialogResult);
+            base.OnDeactivate(close);
         }
 
 

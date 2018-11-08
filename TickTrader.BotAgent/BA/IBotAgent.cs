@@ -23,8 +23,8 @@ namespace TickTrader.BotAgent.BA
         List<PluginInfo> GetAllPlugins();
         List<PluginInfo> GetPluginsByType(AlgoTypes type);
         MappingCollectionInfo GetMappingsInfo();
-        Stream GetPackageReadStream(PackageKey package);
-        Stream GetPackageWriteStream(PackageKey package);
+        string GetPackageReadPath(PackageKey package);
+        string GetPackageWritePath(PackageKey package);
 
         event Action<PackageInfo, ChangeAction> PackageChanged;
         event Action<PackageInfo> PackageStateChanged;
@@ -77,8 +77,8 @@ namespace TickTrader.BotAgent.BA
         IFile GetFile(string decodedFile);
         void DeleteFile(string name);
         void SaveFile(string name, byte[] bytes);
-        Stream GetFileReadStream(string name);
-        Stream GetFileWriteStream(string name);
+        string GetFileReadPath(string name);
+        string GetFileWritePath(string name);
     }
 
     public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
