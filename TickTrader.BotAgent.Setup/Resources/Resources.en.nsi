@@ -12,3 +12,4 @@ LangString ServiceInstallFailMessage 	${LANG_ENGLISH} "Failed to install service
 LangString ServiceStartFailMessage 		${LANG_ENGLISH} "Failed to start service. Error code:"
 LangString ServiceStopFailMessage 		${LANG_ENGLISH} "Failed to stop service. Error code:"
 LangString ServiceUninstallFailMessage 	${LANG_ENGLISH} "Failed to uninstall service. Error code:"
+LangString ServiceConfigFailMessage		${LANG_ENGLISH} "Failed to configure service. Error code:"
