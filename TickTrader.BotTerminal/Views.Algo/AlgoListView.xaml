@@ -173,6 +173,10 @@
                                         <StackPanel Orientation="Horizontal">
                                             <StackPanel.ContextMenu>
                                                 <ContextMenu>
+                                                    <MenuItem Header="Download..." cal:Message.Attach="DownloadPackage" 
+                                                              Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
+                                                    <MenuItem Header="Upload..." cal:Message.Attach="UploadPackage"
+                                                              Visibility="{Binding IsLocal, Converter={StaticResource BoolToVis}}"/>
                                                     <MenuItem Header="Remove" cal:Message.Attach="RemovePackage"/>
                                                 </ContextMenu>
                                             </StackPanel.ContextMenu>

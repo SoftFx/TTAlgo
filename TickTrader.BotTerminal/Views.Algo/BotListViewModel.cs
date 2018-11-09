@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
                 return true;
             }
             var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null && algoPackage.Agent.Name != _algoEnv.LocalAgentVM.Name && algoPackage.Agent.Model.AccessManager.CanUploadPackage())
+            if (algoPackage != null && algoPackage.CanDownloadPackage)
             {
                 return true;
             }

@@ -39,6 +39,8 @@ namespace TickTrader.BotTerminal
 
         public string Name => "Local";
 
+        public bool IsRemote => false;
+
         public IVarSet<PackageKey, PackageInfo> Packages => _packages;
 
         public IVarSet<PluginKey, PluginInfo> Plugins => _plugins;

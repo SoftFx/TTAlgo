@@ -4,8 +4,6 @@ using NLog;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Windows.Data;
 using TickTrader.Algo.Common.Info;
@@ -80,18 +78,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (_bot.Model.IsRemote)
-                {
-                    _bot.Agent.OpenManageBotFilesDialog(_bot.InstanceId, BotFolderId.BotLogs);
-                }
-                else
-                {
-                    var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(_bot.InstanceId));
-
-                    if (!Directory.Exists(logDir))
-                        Directory.CreateDirectory(logDir);
-                    Process.Start(logDir);
-                }
+                _bot.Browse();
             }
             catch (Exception ex)
             {

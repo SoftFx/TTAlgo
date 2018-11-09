@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
 
         public void Browse()
         {
-            BotJournal.Browse();
+            Bot.Browse();
         }
 
         protected override void OnActivate()
