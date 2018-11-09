@@ -84,7 +84,7 @@ Call openLinkNewWindow
   SimpleSC::ExistsService ${Name}
   Pop $0
   ${If} $0 == 0
-    SimpleSC::SetServiceFailure ${Name} 0 "" "" 1 3600000 1 3600000 0 3600000
+    SimpleSC::SetServiceFailure ${Name} 0 "" "" 1 60000 1 60000 0 60000
     Pop $0
     ${If} $0 != 0
       Abort "$(ServiceConfigFailMessage) $0"
