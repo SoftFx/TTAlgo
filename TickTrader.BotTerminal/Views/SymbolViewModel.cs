@@ -32,8 +32,8 @@ namespace TickTrader.BotTerminal
             Bid = model.BidTracker;
             Ask = model.AskTracker;
 
-            Bid.Precision = model.Descriptor.Precision;
-            Ask.Precision = model.Descriptor.Precision;
+            OnInfoUpdated(_model);
+            _model.InfoUpdated += OnInfoUpdated;
 
             DetailsPanel = new SymbolDetailsViewModel(Ask, Bid);
             Level2Panel = new SymbolLevel2ViewModel();
@@ -118,6 +118,12 @@ namespace TickTrader.BotTerminal
         private void OnRateUpdate(QuoteEntity tick)
         {
             QuoteTime = tick.CreatingTime;
+        }
+
+        private void OnInfoUpdated(SymbolModel symbol)
+        {
+            Bid.Precision = symbol.Descriptor.Precision;
+            Ask.Precision = symbol.Descriptor.Precision;
         }
 
         public void OpenOrder()
