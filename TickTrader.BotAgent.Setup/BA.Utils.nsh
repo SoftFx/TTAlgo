@@ -147,4 +147,5 @@ Call openLinkNewWindow
 !define StartService '!insertmacro "_StartService"'
 !define StopService '!insertmacro "_StopService"'
 !define UninstallService '!insertmacro "_UninstallService"'
+!define ConfigureService '!insertmacro "_ConfigureService"'
 ;---END Functions to manage window service---
