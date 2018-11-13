@@ -316,5 +316,18 @@ namespace TickTrader.BotTerminal
                 _logger.Error(ex, "Failed to open bot state");
             }
         }
+
+        public void OpenCopyBotInstanceDialog(string botId)
+        {
+            try
+            {
+                var model = new CopyBotInstanceViewModel(_algoEnv, Name, botId);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoCopyBotInstanceWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open copy bot instance dialog");
+            }
+        }
     }
 }

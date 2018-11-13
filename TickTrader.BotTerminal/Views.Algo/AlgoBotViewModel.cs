@@ -36,6 +36,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
 
+        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
+
 
         public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)
         {
@@ -103,6 +105,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void CopyTo()
+        {
+            Agent.OpenCopyBotInstanceDialog(InstanceId);
+        }
+
 
         private void OnStateChanged(ITradeBot bot)
         {
@@ -131,6 +138,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(CanRemove));
             NotifyOfPropertyChange(nameof(CanBrowse));
+            NotifyOfPropertyChange(nameof(CanCopyTo));
         }
     }
 }

@@ -55,6 +55,9 @@
                 </Style>
             </MenuItem.Style>
         </MenuItem>
+        <MenuItem Header="Copy To..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="CopyTo" />
         <MenuItem Header="Remove"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="Remove" />

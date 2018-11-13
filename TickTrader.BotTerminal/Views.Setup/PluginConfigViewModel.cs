@@ -137,7 +137,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Descriptor, InstanceId);
+        public bool IsInstanceIdValid => Mode == PluginSetupMode.Edit ? true : _idProvider.IsValidPluginId(Descriptor.Type, InstanceId);
 
         public bool AllowTrade
         {
