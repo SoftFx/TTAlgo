@@ -77,7 +77,7 @@ namespace TickTrader.Algo.Core
         PluginBuilder Builder { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
-        IPluginLogger Logger { get; set; }
+        PluginLoggerAdapter Logger { get; }
 
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);

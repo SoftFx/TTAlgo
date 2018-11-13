@@ -112,6 +112,8 @@ namespace TickTrader.Algo.Core
         }
         public TimeFrames TimeFrame { get; set; }
 
+        internal PluginLoggerAdapter LogAdapter => logAdapter;
+
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
         public IReadOnlyDictionary<object, IDataBuffer> DataBuffers { get { return inputBuffers; } }

@@ -661,7 +661,7 @@ namespace TickTrader.Algo.Core
         string IFixtureContext.MainSymbolCode => mainSymbol;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
-        IPluginLogger IFixtureContext.Logger { get => _pluginLogger; set => _pluginLogger = value; }
+        PluginLoggerAdapter IFixtureContext.Logger => builder.LogAdapter;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {

@@ -66,6 +66,7 @@
     <Compile Include="Adapters\BotAdapter.cs" />
     <Compile Include="Adapters\IndicatorAdapter.cs" />
     <Compile Include="Adapters\OutputAdapter.cs" />
+    <Compile Include="Adapters\PluginLoggerAdapter.cs" />
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
