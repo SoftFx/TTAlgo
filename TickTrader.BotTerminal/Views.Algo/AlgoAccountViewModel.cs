@@ -47,6 +47,10 @@ namespace TickTrader.BotTerminal
 
         public bool HasRunningBots => Bots.Any(b => b.IsRunning);
 
+        public string AgentName => Agent.Name;
+
+        public string DisplayNameWithAgent => $"{AgentName} - {DisplayName}";
+
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
         {

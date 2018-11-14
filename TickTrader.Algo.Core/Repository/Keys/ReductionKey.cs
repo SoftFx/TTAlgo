@@ -64,5 +64,15 @@ namespace TickTrader.Algo.Core.Repository
             }
             return res1;
         }
+
+        public ReductionKey Clone()
+        {
+            return new ReductionKey
+            {
+                PackageName = PackageName,
+                PackageLocation = PackageLocation,
+                DescriptorId = DescriptorId,
+            };
+        }
     }
 }

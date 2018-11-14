@@ -2,7 +2,10 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
@@ -25,25 +28,6 @@ namespace TickTrader.BotTerminal
 
         public string From { get; }
 
-        public IObservableList<AlgoAgentViewModel> Agents { get; }
-
-        public AlgoAgentViewModel SelectedAgent
-        {
-            get { return _selectedAgent; }
-            set
-            {
-                if (_selectedAgent == value)
-                    return;
-
-                DeinitAlgoAgent(SelectedAgent);
-                _selectedAgent = value;
-                InitAlgoAgent(SelectedAgent);
-                NotifyOfPropertyChange(nameof(SelectedAgent));
-                NotifyOfPropertyChange(nameof(IsInstanceIdValid));
-                Validate();
-            }
-        }
-
         public IObservableList<AlgoAccountViewModel> Accounts { get; private set; }
 
         public AlgoAccountViewModel SelectedAccount
@@ -56,6 +40,13 @@ namespace TickTrader.BotTerminal
 
                 _selectedAccount = value;
                 NotifyOfPropertyChange(nameof(SelectedAccount));
+                if (_selectedAccount != null && _selectedAgent != _selectedAccount.Agent)
+                {
+                    DeinitAlgoAgent(_selectedAgent);
+                    _selectedAgent = _selectedAccount.Agent;
+                    InitAlgoAgent(_selectedAgent);
+                    NotifyOfPropertyChange(nameof(IsInstanceIdValid));
+                }
                 Validate();
             }
         }
@@ -75,7 +66,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsInstanceIdValid => SelectedAgent != null && !string.IsNullOrEmpty(InstanceId) && SelectedAgent.Model.IdProvider.IsValidPluginId(AlgoTypes.Robot, InstanceId);
+        public bool IsInstanceIdValid => _selectedAgent != null && !string.IsNullOrEmpty(InstanceId) && _selectedAgent.Model.IdProvider.IsValidPluginId(AlgoTypes.Robot, InstanceId);
 
         public bool HasPendingRequest
         {
@@ -109,9 +100,9 @@ namespace TickTrader.BotTerminal
         }
 
         public bool CanOk => !_hasPendingRequest && _isValid
-            && SelectedAgent.Model.AccessManager.CanUploadPackage()
-            && SelectedAgent.Model.AccessManager.CanAddBot()
-            && SelectedAgent.Model.AccessManager.CanUploadBotFile();
+            && _selectedAgent.Model.AccessManager.CanUploadPackage()
+            && _selectedAgent.Model.AccessManager.CanAddBot()
+            && _selectedAgent.Model.AccessManager.CanUploadBotFile();
 
         public bool HasError => !string.IsNullOrEmpty(_error);
 
@@ -138,14 +129,14 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Copy Bot Instance";
 
-            Agents = _algoEnv.Agents.AsObservable();
-            SelectedAgent = Agents.FirstOrDefault();
+            Accounts = _algoEnv.Agents.SelectMany(a => a.Accounts).AsObservable();
+            SelectedAccount = Accounts.FirstOrDefault();
             InstanceId = botId;
             From = $"{agentName}/{botId}";
 
             _fromBotId = botId;
-            _fromAgent = Agents.First(a => a.Name == agentName);
-            _fromBotRemoved = _fromAgent.Model.Bots.Snapshot.ContainsKey(_fromBotId);
+            _fromAgent = _algoEnv.Agents.Snapshot.First(a => a.Name == agentName);
+            _fromBotRemoved = !_fromAgent.Model.Bots.Snapshot.ContainsKey(_fromBotId);
             _fromAgent.Model.Bots.Updated += FromAgentOnBotsUpdated;
 
             CopyProgress = new ProgressViewModel();
@@ -157,6 +148,20 @@ namespace TickTrader.BotTerminal
             HasPendingRequest = true;
             try
             {
+                _logger.Info($"Copying bot from '{From}' to '{_selectedAgent.Name}/{_selectedAccount.DisplayName}/{InstanceId}'");
+
+                if (!_fromAgent.Model.Bots.Snapshot.TryGetValue(_fromBotId, out var srcBot))
+                    throw new ArgumentException("Can't find bot to copy");
+
+                var dstConfig = srcBot.Config.Clone();
+
+                await ResolvePackage(srcBot, dstConfig);
+
+                dstConfig.InstanceId = InstanceId;
+                await _selectedAgent.AddBot(_selectedAccount.Key, dstConfig);
+
+                await ResolveBotFiles(srcBot, dstConfig);
+
                 //CopyProgress.SetMessage($"Downloading package {SelectedPackage.Key.Name} from {SelectedBotAgent.Name} to {FilePath}");
                 //var progressListener = new FileProgressListenerAdapter(CopyProgress, SelectedPackage.Identity.Size);
                 //await SelectedBotAgent.Model.DownloadPackage(SelectedPackage.Key, FilePath, progressListener);
@@ -178,7 +183,7 @@ namespace TickTrader.BotTerminal
 
         protected override void OnDeactivate(bool close)
         {
-            DeinitAlgoAgent(SelectedAgent);
+            DeinitAlgoAgent(_selectedAgent);
             _fromAgent.Model.Bots.Updated -= FromAgentOnBotsUpdated;
 
             base.OnDeactivate(close);
@@ -194,9 +199,6 @@ namespace TickTrader.BotTerminal
         {
             if (agent != null)
             {
-                Accounts = agent.Accounts.AsObservable();
-                SelectedAccount = Accounts.FirstOrDefault();
-
                 agent.Model.AccessLevelChanged += AgentOnAccessLevelChanged;
                 agent.Model.Bots.Updated += AgentOnBotsUpdated;
             }
@@ -236,6 +238,53 @@ namespace TickTrader.BotTerminal
                 _fromBotRemoved = false;
                 Error = null;
             }
+        }
+
+        private async Task ResolvePackage(ITradeBot srcBot, PluginConfig dstConfig)
+        {
+            if (!_fromAgent.Model.Packages.Snapshot.TryGetValue(srcBot.Config.Key.GetPackageKey(), out var srcPackage))
+                throw new ArgumentException("Can't find bot package");
+
+            var uploadSrcPackage = true;
+            var dstPackageKey = dstConfig.Key.GetPackageKey();
+            //TODO: CommonRepository logic
+            var dstPackage = _selectedAgent.Model.Packages.Snapshot.Values.FirstOrDefault(p => p.Identity.Hash == srcPackage.Identity.Hash);
+            if (dstPackage != null)
+            {
+                _logger.Info($"'{_selectedAgent.Name}' has matching package {dstPackage.Key.Name}({dstPackage.Key.Location})");
+                _logger.Info($"Src package: {srcPackage.Identity.Hash}; Dst package: {dstPackage.Identity.Hash}");
+                uploadSrcPackage = false;
+            }
+            else
+            {
+                _logger.Info($"'{_selectedAgent.Name}' has no matching package.");
+            }
+            if (uploadSrcPackage)
+            {
+                var progressListener = new FileProgressListenerAdapter(CopyProgress, srcPackage.Identity.Size);
+
+                var dstPath = "";
+                if (!_fromAgent.Model.IsRemote)
+                {
+                    dstPath = srcPackage.Identity.FilePath;
+                }
+                else
+                {
+
+                    dstPath = Path.GetTempFileName();
+                    CopyProgress.SetMessage($"Downloading {srcPackage.Key.Name} from {_fromAgent.Name}");
+                    await _fromAgent.Model.DownloadPackage(srcPackage.Key, dstPath, progressListener);
+                }
+                var dstPackageName = srcPackage.Key.Name;
+                //TODO: Resolve package name conflict
+                CopyProgress.SetMessage($"Uploading {dstPackageName} to {_fromAgent.Name}");
+                await _selectedAgent.Model.UploadPackage(dstPackageName, dstPath, progressListener);
+            }
+        }
+
+        private async Task ResolveBotFiles(ITradeBot srcBot, PluginConfig dstConfig)
+        {
+
         }
     }
 }

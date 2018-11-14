@@ -12,6 +12,16 @@ namespace TickTrader.Algo.Common.Model.Config
 
         [DataMember(Name = "Origin")]
         public SymbolOrigin Origin { get; set; }
+
+
+        public SymbolConfig Clone()
+        {
+            return new SymbolConfig
+            {
+                Name = Name,
+                Origin = Origin,
+            };
+        }
     }
 
 
@@ -33,6 +43,12 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         [DataMember(Name = "Level2")]
         public bool UseL2 { get; set; }
+
+
+        public override Property Clone()
+        {
+            return new QuoteInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), UseL2 = UseL2 };
+        }
     }
 
     [DataContract(Name = "MappedInput", Namespace = "TTAlgo.Config.v2")]
@@ -46,22 +62,38 @@ namespace TickTrader.Algo.Common.Model.Config
     [DataContract(Name = "BarToBarInput", Namespace = "TTAlgo.Config.v2")]
     public class BarToBarInput : MappedInput
     {
+        public override Property Clone()
+        {
+            return new BarToBarInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
+        }
     }
 
 
     [DataContract(Name = "BarToDoubleInput", Namespace = "TTAlgo.Config.v2")]
     public class BarToDoubleInput : MappedInput
     {
+        public override Property Clone()
+        {
+            return new BarToDoubleInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
+        }
     }
 
 
     [DataContract(Name = "QuoteToBarInput", Namespace = "TTAlgo.Config.v2")]
     public class QuoteToBarInput : MappedInput
     {
+        public override Property Clone()
+        {
+            return new QuoteToBarInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
+        }
     }
 
     [DataContract(Name = "QuoteToDoubleInput", Namespace = "TTAlgo.Config.v2")]
     public class QuoteToDoubleInput : MappedInput
     {
+        public override Property Clone()
+        {
+            return new QuoteToDoubleInput { Id = Id, SelectedSymbol = SelectedSymbol.Clone(), SelectedMapping = SelectedMapping.Clone() };
+        }
     }
 }
