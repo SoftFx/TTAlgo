@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
 
-        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
+        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData) && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
 
 
         public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)

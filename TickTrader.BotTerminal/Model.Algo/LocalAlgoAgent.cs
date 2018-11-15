@@ -261,7 +261,16 @@ namespace TickTrader.BotTerminal
 
         public Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId)
         {
-            throw new NotSupportedException();
+            var path = GetBotFolderPath(botId, folderId);
+            var res = new BotFolderInfo
+            {
+                BotId = botId,
+                FolderId = folderId,
+                Path = path,
+            };
+            if (Directory.Exists(path))
+                res.Files = new DirectoryInfo(path).GetFiles().Select(f => new BotFileInfo { Name = f.Name, Size = f.Length }).ToList();
+            return Task.FromResult(res);
         }
 
         public Task ClearBotFolder(string botId, BotFolderId folderId)
@@ -385,6 +394,19 @@ namespace TickTrader.BotTerminal
                 _packages.Clear();
                 _plugins.Clear();
             });
+        }
+
+        private string GetBotFolderPath(string botId, BotFolderId folderId)
+        {
+            switch (folderId)
+            {
+                case BotFolderId.AlgoData:
+                    return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(botId));
+                case BotFolderId.BotLogs:
+                    return Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(botId));
+                default:
+                    throw new ArgumentException("Unknown bot folder id");
+            }
         }
 
 
