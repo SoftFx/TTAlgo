@@ -261,8 +261,8 @@ namespace TickTrader.BotTerminal
                 _idProvider.Reset();
                 foreach (var bot in bots)
                 {
-                    _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                     _idProvider.RegisterBot(bot.InstanceId);
+                    _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                 }
             });
         }
@@ -317,8 +317,8 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateType.Added:
-                        _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                         _idProvider.RegisterBot(bot.InstanceId);
+                        _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                         break;
                     case UpdateType.Replaced:
                         _bots[bot.InstanceId].Update(bot);
@@ -327,8 +327,8 @@ namespace TickTrader.BotTerminal
                     case UpdateType.Removed:
                         if (_bots.ContainsKey(bot.InstanceId))
                         {
-                            _bots.Remove(bot.InstanceId);
                             _idProvider.UnregisterPlugin(bot.InstanceId);
+                            _bots.Remove(bot.InstanceId);
                         }
                         break;
                 }

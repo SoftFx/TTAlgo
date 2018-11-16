@@ -48,6 +48,7 @@ namespace TickTrader.BotTerminal
                     _selectedAgent = _selectedAccount.Agent;
                     InitAlgoAgent(_selectedAgent);
                     NotifyOfPropertyChange(nameof(IsInstanceIdValid));
+                    NotifyOfPropertyChange(nameof(CanOk));
                 }
                 Validate();
             }
@@ -235,6 +236,7 @@ namespace TickTrader.BotTerminal
             if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Remove)
             {
                 Validate();
+                NotifyOfPropertyChange(nameof(IsInstanceIdValid));
             }
         }
 
@@ -350,7 +352,7 @@ namespace TickTrader.BotTerminal
                         if (!Directory.Exists(dstAlgoDataDir.Path))
                             Directory.CreateDirectory(dstAlgoDataDir.Path);
                         var dstPath = Path.Combine(dstAlgoDataDir.Path, fileName);
-                        File.Copy(srcPath, dstPath);
+                        File.Copy(srcPath, dstPath, true);
                         _logger.Info($"Bot file {fileName} copied to: {dstPath}");
                     }
                     else

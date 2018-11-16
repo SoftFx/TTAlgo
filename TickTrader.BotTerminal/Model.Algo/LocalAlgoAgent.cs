@@ -153,8 +153,8 @@ namespace TickTrader.BotTerminal
         public Task AddBot(AccountKey account, PluginConfig config)
         {
             var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
-            _bots.Add(bot.InstanceId, bot);
             IdProvider.RegisterBot(bot);
+            _bots.Add(bot.InstanceId, bot);
             bot.StateChanged += OnBotStateChanged;
             bot.Updated += OnBotUpdated;
             return Task.FromResult(this);
@@ -164,8 +164,8 @@ namespace TickTrader.BotTerminal
         {
             if (_bots.TryGetValue(instanceId, out var bot))
             {
-                _bots.Remove(instanceId);
                 IdProvider.UnregisterPlugin(instanceId);
+                _bots.Remove(instanceId);
                 bot.StateChanged -= OnBotStateChanged;
                 bot.Updated -= OnBotUpdated;
             }
