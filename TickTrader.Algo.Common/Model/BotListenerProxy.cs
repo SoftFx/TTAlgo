@@ -84,7 +84,7 @@ namespace TickTrader.Algo.Common.Model
                         status = record.Message;
                 }
 
-                if (status != null)
+                if (status != null && _currentStatus != status)
                 {
                     _currentStatus = status;
                     _writer.UpdateStatus(status);

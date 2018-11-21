@@ -150,8 +150,12 @@ namespace TickTrader.BotTerminal
             _statusTimer?.Change(-1, -1);
             try
             {
-                Status = await _agent.GetBotStatus(InstanceId);
-                StatusChanged?.Invoke(this);
+                var status = await _agent.GetBotStatus(InstanceId);
+                if (status != Status)
+                {
+                    Status = status;
+                    StatusChanged?.Invoke(this);
+                }
             }
             catch (Exception ex)
             {
