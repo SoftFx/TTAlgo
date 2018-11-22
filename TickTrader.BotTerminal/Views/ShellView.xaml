@@ -74,7 +74,7 @@
         </StackPanel>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Connecting}">
-                <Setter TargetName="statusCircle" Property="Fill" Value="Yellow"/>
+                <Setter TargetName="statusCircle" Property="Fill" Value="Gold"/>
                 <Setter TargetName="statePanel" Property="ToolTip" Value="Connecting..."/>
             </DataTrigger>
             <DataTrigger Binding="{Binding ConnectionState}" Value="{x:Static c:ConnectionModel+States.Online}">
