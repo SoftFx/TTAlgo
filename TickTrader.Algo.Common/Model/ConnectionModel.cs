@@ -215,11 +215,11 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
-                var connectionId = $"{request.Address} - {request.Usermame}";
+                var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
                 if (request.UseSfx)
-                    _interop = new SfxInterop(_options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, "FDK2", connectionId)));
+                    _interop = new SfxInterop(options);
                 else
-                    _interop = new FdkInterop(_options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, "FDK", connectionId)));
+                    _interop = new FdkInterop(options);
 
                 _interop.Disconnected += _interop_Disconnected;
 
