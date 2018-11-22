@@ -249,7 +249,7 @@ namespace TickTrader.Algo.Core
                     InitWorkingFolder();
                     //builder.TradeApi = accFixture;
                     builder.Calculator = calcFixture;
-                    builder.TradeHistoryProvider = tradeHistoryProvider;
+                    builder.TradeHistoryProvider = new TradeHistoryAdapter(tradeHistoryProvider);
                     builder.InstanceId = _botInstanceId;
                     builder.Isolated = _permissions.Isolated;
                     builder.Permissions = _permissions;

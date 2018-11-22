@@ -11,6 +11,9 @@ namespace TickTrader.Algo.Core.Lib
 {
     public static class AsyncEnumerator
     {
+        private static readonly Task<bool> CompletedTrue = Task.FromResult(true);
+        private static readonly Task<bool> CompletedFalse = Task.FromResult(false);
+
         public static IAsyncEnumerator<T> Empty<T>()
         {
             return new EmptyAsyncEnumerator<T>();
@@ -60,6 +63,11 @@ namespace TickTrader.Algo.Core.Lib
                 foreach (var i in page)
                     yield return i;
             }
+        }
+
+        public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
+        {
+            return new FakeAsyncEnumerator<T>(src);
         }
 
         internal class CrossDomainAdapter<T> : CrossDomainObject, IAsyncCrossDomainEnumerator<T>
@@ -182,6 +190,30 @@ namespace TickTrader.Algo.Core.Lib
             public Task<bool> Next()
             {
                 return Task.FromResult(false);
+            }
+        }
+
+        internal class FakeAsyncEnumerator<T> : IAsyncEnumerator<T>
+        {
+            private IEnumerator<T> _e;
+
+            public FakeAsyncEnumerator(IEnumerable<T> src)
+            {
+                _e = src.GetEnumerator();
+            }
+
+            public T Current => _e.Current;
+
+            public void Dispose()
+            {
+                _e.Dispose();
+            }
+
+            public Task<bool> Next()
+            {
+                if (_e.MoveNext())
+                    return CompletedTrue;
+                return CompletedFalse;
             }
         }
     }

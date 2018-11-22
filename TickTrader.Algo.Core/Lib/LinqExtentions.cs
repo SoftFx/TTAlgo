@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public static int BinarySearch<T, TVal>(this IReadOnlyList<T> list, Func<T, TVal> getter, TVal value,
+        public static int BinarySearchBy<T, TVal>(this IReadOnlyList<T> list, Func<T, TVal> getter, TVal value,
             BinarySearchTypes type = BinarySearchTypes.Exact, IComparer<TVal> comparer = null)
         {
             if (list == null)

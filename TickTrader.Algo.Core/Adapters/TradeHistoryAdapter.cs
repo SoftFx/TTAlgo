@@ -11,43 +11,46 @@ namespace TickTrader.Algo.Core
 {
     internal class TradeHistoryAdapter : TradeHistory
     {
-        private ITradeHistoryProvider _provider;
+        public TradeHistoryAdapter(ITradeHistoryProvider provider)
+        {
+            Provider = provider;
+        }
 
-        public ITradeHistoryProvider Provider { get { return _provider; } set { _provider = value; } }
+        public ITradeHistoryProvider Provider { get; }
 
         public IEnumerator<TradeReport> GetEnumerator()
         {
-            return AsyncEnumerator.ToEnumerable(() => _provider?.GetTradeHistory(false)).GetEnumerator();
+            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(false)).GetEnumerator();
         }
 
         public IEnumerable<TradeReport> Get(bool skipCancelOrders = false)
         {
-            return AsyncEnumerator.ToEnumerable(() => _provider?.GetTradeHistory(skipCancelOrders));
+            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(skipCancelOrders));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, bool skipCancelOrders)
         {
-            return AsyncEnumerator.ToEnumerable(() => _provider?.GetTradeHistory(from, to, skipCancelOrders));
+            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(from, to, skipCancelOrders));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime to, bool skipCancelOrders)
         {
-            return AsyncEnumerator.ToEnumerable(() => _provider?.GetTradeHistory(to, skipCancelOrders));
+            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(to, skipCancelOrders));
         }
 
         public IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders)
         {
-            return _provider?.GetTradeHistory(skipCancelOrders).AsAsync();
+            return Provider?.GetTradeHistory(skipCancelOrders).AsAsync();
         }
 
         public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
         {
-            return _provider?.GetTradeHistory(from, to, skipCancelOrders).AsAsync();
+            return Provider?.GetTradeHistory(from, to, skipCancelOrders).AsAsync();
         }
 
         public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders)
         {
-            return _provider?.GetTradeHistory(to, skipCancelOrders).AsAsync();
+            return Provider?.GetTradeHistory(to, skipCancelOrders).AsAsync();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
