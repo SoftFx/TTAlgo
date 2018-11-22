@@ -1,4 +1,6 @@
 ﻿using Caliburn.Micro;
+using System.Diagnostics;
+using System.IO;
 using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
@@ -31,6 +33,10 @@ namespace TickTrader.BotTerminal
         public bool CanOpenChart => !Model.IsRemote && (Model.Descriptor?.SetupMainSymbol ?? false);
 
         public string Status => Model.Status;
+
+        public bool CanBrowse => !Model.IsRemote || Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+
+        public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData) && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
 
 
         public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)
@@ -83,6 +89,27 @@ namespace TickTrader.BotTerminal
             Agent.OpenBotState(InstanceId);
         }
 
+        public void Browse()
+        {
+            if (Model.IsRemote)
+            {
+                Agent.OpenManageBotFilesDialog(InstanceId, BotFolderId.BotLogs);
+            }
+            else
+            {
+                var logDir = Path.Combine(EnvService.Instance.BotLogFolder, PathHelper.GetSafeFileName(InstanceId));
+
+                if (!Directory.Exists(logDir))
+                    Directory.CreateDirectory(logDir);
+                Process.Start(logDir);
+            }
+        }
+
+        public void CopyTo()
+        {
+            Agent.OpenCopyBotInstanceDialog(InstanceId);
+        }
+
 
         private void OnStateChanged(ITradeBot bot)
         {
@@ -110,6 +137,8 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanStop));
             NotifyOfPropertyChange(nameof(CanStartStop));
             NotifyOfPropertyChange(nameof(CanRemove));
+            NotifyOfPropertyChange(nameof(CanBrowse));
+            NotifyOfPropertyChange(nameof(CanCopyTo));
         }
     }
 }

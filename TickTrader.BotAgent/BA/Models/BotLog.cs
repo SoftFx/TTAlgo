@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.BA.Models
         private void Init(string name, int keepInMemory = 100)
         {
             _name = name;
-            _logDirectory = $"{ServerModel.Environment.BotLogFolder}/{_name.Escape()}/";
+            _logDirectory = Path.Combine(ServerModel.Environment.BotLogFolder, _name.Escape());
             _maxCachedRecords = keepInMemory;
             _logMessages = new CircularList<ILogEntry>(_maxCachedRecords);
             _logger = GetLogger(name);

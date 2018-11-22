@@ -11,13 +11,13 @@
 
     <ContextMenu x:Key="BotContextMenu">
         <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="StartStop" >
+                  cal:Message.Attach="StartStop">
             <MenuItem.Style>
                 <Style TargetType="MenuItem">
-                    <Setter Property="Header" Value="Start"></Setter>
+                    <Setter Property="Header" Value="Start" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                            <Setter Property="Header" Value="Stop"/>
+                            <Setter Property="Header" Value="Stop" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -26,7 +26,7 @@
         <MenuItem Header="Status"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenState" />
-        <MenuItem Header="Settings"
+        <MenuItem Header="Settings..."
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="OpenSettings" />
         <MenuItem Header="Open chart"
@@ -36,12 +36,28 @@
                 <Style TargetType="MenuItem">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding CanOpenChart}" Value="False">
-                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Setter Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </MenuItem.Style>
         </MenuItem>
+        <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="Browse">
+            <MenuItem.Style>
+                <Style TargetType="MenuItem">
+                    <Setter Property="Header" Value="Show in folder..." />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Model.IsRemote}" Value="True">
+                            <Setter Property="Header" Value="Manage Bot Files..." />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </MenuItem.Style>
+        </MenuItem>
+        <MenuItem Header="Copy To..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="CopyTo" />
         <MenuItem Header="Remove"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="Remove" />
@@ -61,31 +77,31 @@
                 </Style>
             </MenuItem.Style>
         </MenuItem>
-        <MenuItem Header="Change connection"
+        <MenuItem Header="Change connection..."
                   cal:Message.Attach="ChangeBotAgent"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <MenuItem Header="Remove connection" 
                   cal:Message.Attach="RemoveBotAgent"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Add Account"
+        <MenuItem Header="Add Account..."
                   cal:Message.Attach="AddAccount"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Add Bot"
+        <MenuItem Header="Add Bot..."
                   cal:Message.Attach="AddBot"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Upload Package"
+        <MenuItem Header="Upload Package..."
                   cal:Message.Attach="UploadPackage"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Download Package"
+        <MenuItem Header="Download Package..."
                   cal:Message.Attach="DownloadPackage"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Manage Bot Files"
+        <MenuItem Header="Manage Bot Files..."
                   cal:Message.Attach="ManageFiles"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
     </ContextMenu>
 
     <ContextMenu x:Key="RemoteAccountContextMenu">
-        <MenuItem Header="Change"
+        <MenuItem Header="Change..."
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="ChangeAccount"/>
         <MenuItem Header="Remove"
@@ -94,7 +110,7 @@
         <MenuItem Header="Test connection"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="TestAccount"/>
-        <MenuItem Header="Add Bot"
+        <MenuItem Header="Add Bot..."
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="AddBot"/>
     </ContextMenu>
@@ -135,7 +151,7 @@
                 <TreeViewItem Header="Bot Agents" ItemsSource="{Binding BotAgents}">
                     <TreeViewItem.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Add BotAgent" cal:Message.Attach="AddBotAgent" />
+                            <MenuItem Header="Register BotAgent..." cal:Message.Attach="AddBotAgent" />
                         </ContextMenu>
                     </TreeViewItem.ContextMenu>
                     <TreeViewItem.ItemContainerStyle>

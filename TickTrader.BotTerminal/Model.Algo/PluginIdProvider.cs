@@ -36,14 +36,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsValidPluginId(PluginDescriptor descriptor, string pluginId)
+        public bool IsValidPluginId(AlgoTypes pluginType, string pluginId)
         {
             if (!_botIdHelper.Validate(pluginId))
             {
                 return false;
             }
 
-            switch (descriptor.Type)
+            switch (pluginType)
             {
                 case AlgoTypes.Indicator:
                     return true;

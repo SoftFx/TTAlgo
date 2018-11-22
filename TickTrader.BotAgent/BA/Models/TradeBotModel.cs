@@ -126,7 +126,7 @@ namespace TickTrader.BotAgent.BA.Models
                 {
                     executor.HandleDisconnect();
                     executor.WriteConnectionInfo(GetConnectionInfo());
-                    ChangeState(PluginStates.Reconnecting, client.ErrorText);
+                    ChangeState(PluginStates.Reconnecting, client.LastError != null && client.LastError.Code != ConnectionErrorCodes.None ? client.ErrorText : null);
                 }
             }
         }

@@ -51,6 +51,11 @@ namespace TickTrader.Algo.Common.Model.Config
         {
             return Color.FromScRgb(Alpha, Red, Green, Blue);
         }
+
+        public OutputColor Clone()
+        {
+            return new OutputColor { Alpha = Alpha, Red = Red, Green = Green, Blue = Blue };
+        }
     }
 
 
@@ -59,6 +64,19 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         [DataMember]
         public LineStyles LineStyle { get; set; }
+
+
+        public override Property Clone()
+        {
+            return new ColoredLineOutput
+            {
+                Id = Id,
+                IsEnabled = IsEnabled,
+                LineStyle = LineStyle,
+                LineThickness = LineThickness,
+                LineColor = LineColor.Clone(),
+            };
+        }
     }
 
 
@@ -67,5 +85,18 @@ namespace TickTrader.Algo.Common.Model.Config
     {
         [DataMember]
         public MarkerSizes MarkerSize { get; set; }
+
+
+        public override Property Clone()
+        {
+            return new MarkerSeriesOutput
+            {
+                Id = Id,
+                IsEnabled = IsEnabled,
+                MarkerSize = MarkerSize,
+                LineThickness = LineThickness,
+                LineColor = LineColor.Clone(),
+            };
+        }
     }
 }

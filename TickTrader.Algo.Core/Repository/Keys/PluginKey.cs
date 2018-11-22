@@ -74,5 +74,15 @@ namespace TickTrader.Algo.Core.Repository
             }
             return res1;
         }
+
+        public PluginKey Clone()
+        {
+            return new PluginKey
+            {
+                PackageName = PackageName,
+                PackageLocation = PackageLocation,
+                DescriptorId = DescriptorId,
+            };
+        }
     }
 }

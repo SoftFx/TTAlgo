@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core
             _lastRates.Clear();
 
             _state = new BL.MarketState(BL.NettingCalculationTypes.OneByOne);
-            _state.Set(_context.Builder.Symbols.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name));
+            _state.Set(_context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name));
             _state.Set(_context.Builder.Currencies);
 
             foreach (var smb in _context.Builder.Symbols)

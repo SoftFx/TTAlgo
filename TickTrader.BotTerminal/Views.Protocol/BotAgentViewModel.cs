@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
             var algoPackage = o as AlgoPackageViewModel;
             if (algoPackage != null)
             {
-                Agent.OpenUploadPackageDialog(algoPackage.Key);
+                Agent.OpenUploadPackageDialog(algoPackage.Key, Agent.Name);
             }
         }
 
@@ -69,7 +69,7 @@ namespace TickTrader.BotTerminal
                 return true;
             }
             var algoPackage = o as AlgoPackageViewModel;
-            if (algoPackage != null && algoPackage.Agent.Name == _algoEnv.LocalAgentVM.Name)
+            if (algoPackage != null && algoPackage.CanUploadPackage && CanUploadPackage)
             {
                 return true;
             }

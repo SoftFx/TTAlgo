@@ -47,21 +47,27 @@ namespace TickTrader.Algo.Common.Model
             const int connectInterval = 10000;
 #if DEBUG
             const int heartbeatInterval = 120000;
+            var logEvents = options.EnableLogs;
+            var logStates = options.EnableLogs;
+            var logMessages = options.EnableLogs;
 #else
             const int heartbeatInterval = 10000;
+            var logEvents = false;
+            var logStates = false;
+            var logMessages = options.EnableLogs;
 #endif
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
             var logsDir = System.IO.Path.Combine(options.LogsFolder, "FDK2");
 
-            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", options.EnableLogs, port: 5030, validateClientCertificate: ValidateCertificate,
+            _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", options.EnableLogs, port: 5050, validateClientCertificate: ValidateCertificate,
+            _feedHistoryProxy = new FDK.Client.QuoteStore("feed.history.proxy", logEvents, logStates, logMessages, port: 5042, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", options.EnableLogs, port: 5040, validateClientCertificate: ValidateCertificate,
+            _tradeProxy = new FDK.Client.OrderEntry("trade.proxy", logEvents, logStates, logMessages, port: 5043, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
-            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", options.EnableLogs, port: 5060, validateClientCertificate: ValidateCertificate,
+            _tradeHistoryProxy = new FDK.Client.TradeCapture("trade.history.proxy", logEvents, logStates, logMessages, port: 5044, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
 
             _feedProxy.InitTaskAdapter();

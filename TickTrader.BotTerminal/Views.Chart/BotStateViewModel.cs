@@ -75,7 +75,7 @@ namespace TickTrader.BotTerminal
 
         public void Browse()
         {
-            BotJournal.Browse();
+            Bot.Browse();
         }
 
         protected override void OnActivate()
@@ -188,6 +188,8 @@ namespace TickTrader.BotTerminal
                 return Enumerable.Empty<string>();
 
             var res = new List<string>();
+            res.Add($"Agent: {Bot.Agent.Name}");
+            res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
             res.Add(Bot.Model.Config.Permissions.ToString());

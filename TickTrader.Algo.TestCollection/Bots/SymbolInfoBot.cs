@@ -20,6 +20,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             Status.WriteLine("Done. Check bot logs");
 
+            Status.WriteLine(string.Join(Environment.NewLine, Symbols.Select((s, i) => $"{i} - {s.Name}")));
+
             Exit();
         }
     }

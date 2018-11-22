@@ -30,6 +30,14 @@ namespace TickTrader.BotTerminal
 
         public bool CanRemovePackage => Agent.Model.AccessManager.CanRemovePackage();
 
+        public bool IsRemote => Agent.Model.IsRemote;
+
+        public bool IsLocal =>!Agent.Model.IsRemote;
+
+        public bool CanUploadPackage => IsLocal;
+
+        public bool CanDownloadPackage => IsRemote && Agent.Model.AccessManager.CanDownloadPackage();
+
 
         public AlgoPackageViewModel(PackageInfo info, AlgoAgentViewModel agent)
         {
@@ -46,6 +54,16 @@ namespace TickTrader.BotTerminal
         public void RemovePackage()
         {
             Agent.RemovePackage(Info.Key).Forget();
+        }
+
+        public void UploadPackage()
+        {
+            Agent.OpenUploadPackageDialog(Key);
+        }
+
+        public void DownloadPackage()
+        {
+            Agent.OpenDownloadPackageDialog(Key);
         }
 
 
@@ -66,6 +84,7 @@ namespace TickTrader.BotTerminal
         private void OnAccessLevelChanged()
         {
             NotifyOfPropertyChange(nameof(CanRemovePackage));
+            NotifyOfPropertyChange(nameof(CanDownloadPackage));
         }
     }
 }

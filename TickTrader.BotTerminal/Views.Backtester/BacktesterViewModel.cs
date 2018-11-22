@@ -507,7 +507,7 @@ namespace TickTrader.BotTerminal
             return descriptor.DisplayName;
         }
 
-        bool IPluginIdProvider.IsValidPluginId(PluginDescriptor descriptor, string pluginId)
+        bool IPluginIdProvider.IsValidPluginId(AlgoTypes pluginType, string pluginId)
         {
             return true;
         }
