@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            var logsDir = System.IO.Path.Combine(options.LogsFolder, "FDK2");
+            var logsDir = options.LogsFolder;
 
             _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
