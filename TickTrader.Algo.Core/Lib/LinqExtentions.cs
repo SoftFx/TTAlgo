@@ -212,6 +212,21 @@ namespace TickTrader.Algo.Core
             else // if (type == BinarySearchTypes.NearestHigher)
                 return lower;
         }
+
+        public static T[] ConcatAll<T>(this IEnumerable<T[]> src)
+        {
+            var totalSize = src.Sum(a => a.Length);
+            var result = new T[totalSize];
+            var i = 0;
+
+            foreach (var array in src)
+            {
+                array.CopyTo(result, i);
+                i += array.Length;
+            }
+
+            return result;
+        }
     }
 
     public enum BinarySearchTypes { NearestLower, Exact, NearestHigher }
