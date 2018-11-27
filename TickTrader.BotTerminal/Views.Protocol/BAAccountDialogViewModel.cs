@@ -206,6 +206,7 @@ namespace TickTrader.BotTerminal
             {
                 IsNewMode = true;
                 DisplayName = "Add account";
+                UseSfxProtocol = true;
             }
             else
             {

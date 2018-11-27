@@ -34,6 +34,8 @@ namespace TickTrader.BotTerminal
 
             logger = NLog.LogManager.GetCurrentClassLogger();
             DisplayName = "Log In";
+            UseSfxProtocol = true;
+            SavePassword = true;
 
             if (displayEntry != null)
                 ApplyAccount(displayEntry);
