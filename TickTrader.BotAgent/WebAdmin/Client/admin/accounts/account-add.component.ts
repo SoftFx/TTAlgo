@@ -27,7 +27,7 @@ export class AccountAddComponent implements OnInit {
             Login: ["", Validators.required],
             Password: ["", Validators.required],
             Server: ["", Validators.required],
-            UseNewProtocol: false
+            UseNewProtocol: true
         });
     }
 
