@@ -26,6 +26,7 @@ namespace TickTrader.BotTerminal
         private IAlgoAgent _agent;
         private string _botId;
         private bool _isInitialized;
+        private bool _isActivated;
 
         public BotStateViewModel(AlgoEnvironment algoEnv, IAlgoAgent agent, string botId)
         {
@@ -82,12 +83,16 @@ namespace TickTrader.BotTerminal
         {
             base.OnActivate();
 
+            _isActivated = true;
+
             Init();
         }
 
         protected override void OnDeactivate(bool close)
         {
             base.OnDeactivate(close);
+
+            _isActivated = false;
 
             Deinit();
         }
@@ -109,7 +114,7 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            if (!_isInitialized)
+            if (!_isInitialized && _isActivated)
             {
                 try
                 {
