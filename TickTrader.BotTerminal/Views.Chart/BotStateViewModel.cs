@@ -194,7 +194,9 @@ namespace TickTrader.BotTerminal
 
             var res = new List<string>();
             res.Add($"Agent: {Bot.Agent.Name}");
-            res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
+            if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.Account, out var acc))
+                res.Add($"Account: {acc.Key.Server} - {acc.Key.Login} ({(acc.UseNewProtocol ? "SFX" : "FIX")})");
+            else res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
             res.Add(Bot.Model.Config.Permissions.ToString());
