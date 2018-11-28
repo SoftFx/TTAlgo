@@ -42,6 +42,13 @@
                 </Style>
             </MenuItem.Style>
         </MenuItem>
+        <Separator/>
+        <MenuItem Header="Add Bot Instance..."
+                  cal:Message.Attach="AddBot"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Copy To..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="CopyTo" />
         <MenuItem cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="Browse">
             <MenuItem.Style>
@@ -55,52 +62,55 @@
                 </Style>
             </MenuItem.Style>
         </MenuItem>
-        <MenuItem Header="Copy To..."
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="CopyTo" />
+        <Separator/>
         <MenuItem Header="Remove"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="Remove" />
     </ContextMenu>
 
     <ContextMenu x:Key="BotAgentContextMenu">
-        <MenuItem cal:Message.Attach="ToggleBotAgentConnection"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}">
-            <MenuItem.Style>
-                <Style TargetType="MenuItem">
-                    <Setter Property="Header" Value="Disconnect"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsOffline}" Value="True">
-                            <Setter Property="Header" Value="Connect"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </MenuItem.Style>
-        </MenuItem>
-        <MenuItem Header="Change connection..."
-                  cal:Message.Attach="ChangeBotAgent"
+        <MenuItem Header="Connect"
+                  cal:Message.Attach="ConnectBotAgent"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Remove connection" 
-                  cal:Message.Attach="RemoveBotAgent"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
         <MenuItem Header="Add Account..."
                   cal:Message.Attach="AddAccount"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
-        <MenuItem Header="Add Bot..."
-                  cal:Message.Attach="AddBot"
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
         <MenuItem Header="Upload Package..."
                   cal:Message.Attach="UploadPackage"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <MenuItem Header="Download Package..."
                   cal:Message.Attach="DownloadPackage"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Add Bot Instance..."
+                  cal:Message.Attach="AddBot"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
         <MenuItem Header="Manage Bot Files..."
                   cal:Message.Attach="ManageFiles"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Change connection..."
+                  cal:Message.Attach="ChangeBotAgent"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <MenuItem Header="Remove connection" 
+                  cal:Message.Attach="RemoveBotAgent"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
+        <MenuItem Header="Disconnect"
+                  cal:Message.Attach="DisconnectBotAgent"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
     </ContextMenu>
 
     <ContextMenu x:Key="RemoteAccountContextMenu">
+        <MenuItem Header="Add Bot Instance..."
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
+                  cal:Message.Attach="AddBot"/>
+        <MenuItem Header="Manage Bot Files..."
+                  cal:Message.Attach="ManageFiles"
+                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"/>
+        <Separator/>
         <MenuItem Header="Change..."
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="ChangeAccount"/>
@@ -110,9 +120,6 @@
         <MenuItem Header="Test connection"
                   cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
                   cal:Message.Attach="TestAccount"/>
-        <MenuItem Header="Add Bot..."
-                  cal:Bind.ModelWithoutContext="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}"
-                  cal:Message.Attach="AddBot"/>
     </ContextMenu>
 
     <l:Behaviors x:Key="TreeViewItemBehaviors" x:Shared="false">
@@ -136,6 +143,9 @@
                     <TreeViewItem.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">
                             <Setter Property="ContextMenu" Value="{StaticResource BotContextMenu}" />
+                            <!-- Mode=OneTime is there for a reason. Thanks to virtualization we have {DisconnectedItem} in DataContext during runtime. This work around seems to fix the issue -->
+                            <Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+                            <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action OpenState()]" />
                         </Style>
                     </TreeViewItem.ItemContainerStyle>
                     <TreeViewItem.ItemTemplate>
@@ -182,6 +192,9 @@
                                     <HierarchicalDataTemplate.ItemContainerStyle>
                                         <Style TargetType="TreeViewItem">
                                             <Setter Property="ContextMenu" Value="{StaticResource BotContextMenu}" />
+                                            <!-- Mode=OneTime is there for a reason. Thanks to virtualization we have {DisconnectedItem} in DataContext during runtime. This work around seems to fix the issue -->
+                                            <Setter Property="cal:Bind.ModelWithoutContext" Value="{Binding Path=DataContext, RelativeSource={RelativeSource Self}, Mode=OneTime}" />
+                                            <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action OpenState()]" />
                                         </Style>
                                     </HierarchicalDataTemplate.ItemContainerStyle>
                                     <HierarchicalDataTemplate.ItemTemplate>

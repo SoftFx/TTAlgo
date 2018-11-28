@@ -24,7 +24,9 @@ namespace TickTrader.BotTerminal
             ? $"{Connection.Server}:{Connection.Port} ({Connection.AccessLevel})"
             : $"{Connection.Server}:{Connection.Port}";
 
-        public bool IsOffline => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
+        public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
+
+        public bool CanDisconnectBotAgent => Connection.State == BotAgentConnectionManager.States.Connecting || Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
 
@@ -52,7 +54,7 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                Agent.OpenBotSetup(null, algoBot.Info);
+                Agent.OpenBotSetup(null, algoBot.Info.Key);
             }
             var algoPackage = o as AlgoPackageViewModel;
             if (algoPackage != null)
@@ -86,13 +88,6 @@ namespace TickTrader.BotTerminal
         {
             _algoEnv.BotAgentManager.Remove(Server);
 
-        }
-
-        public void ToggleBotAgentConnection()
-        {
-            if (IsOffline)
-                ConnectBotAgent();
-            else DisconnectBotAgent();
         }
 
         public void ConnectBotAgent()
@@ -134,7 +129,8 @@ namespace TickTrader.BotTerminal
         private void ConnectionOnStateChanged()
         {
             NotifyOfPropertyChange(nameof(Status));
-            NotifyOfPropertyChange(nameof(IsOffline));
+            NotifyOfPropertyChange(nameof(CanConnectBotAgent));
+            NotifyOfPropertyChange(nameof(CanDisconnectBotAgent));
             if (Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.Offline)
                 NotifyOfPropertyChange(nameof(DisplayName));
         }
