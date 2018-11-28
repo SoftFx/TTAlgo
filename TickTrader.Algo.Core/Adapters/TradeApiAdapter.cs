@@ -130,13 +130,13 @@ namespace TickTrader.Algo.Core
                 var orderResp = await api.OpenOrder(isAysnc, request);
 
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen);
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata));
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata), orderResp.TransactionTime);
             }
             catch (OrderValidationError ex)
             {
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen) { IsServerResponse = false };
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen, null) { IsServerResponse = false };
             }
 
             logger.LogOrderOpenResults(resultEntity, logRequest, smbMetadata);
@@ -164,12 +164,12 @@ namespace TickTrader.Algo.Core
                 else
                     logger.PrintTradeFail("[In] FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
-                return new OrderResultEntity(result.ResultCode, orderToCancel);
+                return new OrderResultEntity(result.ResultCode, orderToCancel, result.TransactionTime);
             }
             catch (OrderValidationError ex)
             {
                 logger.PrintTradeFail("[Self] FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToCancel) { IsServerResponse = false };
+                return new OrderResultEntity(ex.ErrorCode, orderToCancel, null) { IsServerResponse = false };
             }
         }
 
@@ -206,18 +206,18 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed");
-                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
+                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
                 }
                 else
                 {
                     logger.PrintTradeFail("[Out] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
                 }
             }
             catch (OrderValidationError ex)
             {
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose) { IsServerResponse = false };
+                return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
         }
 
@@ -244,18 +244,18 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
-                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
                 }
                 else
                 {
                     logger.PrintTradeFail("[In] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
                 }
             }
             catch (OrderValidationError ex)
             {
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose) { IsServerResponse = false };
+                return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
         }
 
@@ -361,25 +361,20 @@ namespace TickTrader.Algo.Core
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
+                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
                 }
                 else
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, orderToModify);
+                    resultEntity = new OrderResultEntity(result.ResultCode, orderToModify, result.TransactionTime);
                 }
             }
             catch (OrderValidationError ex)
             {
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify) { IsServerResponse = false };
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify, null) { IsServerResponse = false };
             }
 
             logger.LogOrderModifyResults(logRequest, smbMetadata, resultEntity);
             return resultEntity;
-        }
-
-        private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)
-        {
-            return Task.FromResult<OrderCmdResult>(new OrderResultEntity(code));
         }
 
         private double? ConvertNullableVolume(double? volumeInLots, Symbol smbMetadata)

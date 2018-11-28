@@ -11,46 +11,59 @@ namespace TickTrader.Algo.Core
 {
     internal class TradeHistoryAdapter : TradeHistory
     {
-        public TradeHistoryAdapter(ITradeHistoryProvider provider)
+        private SymbolsCollection _symbols;
+
+        public TradeHistoryAdapter(ITradeHistoryProvider provider, SymbolsCollection symbols)
         {
             Provider = provider;
+            _symbols = symbols;
         }
 
         public ITradeHistoryProvider Provider { get; }
 
         public IEnumerator<TradeReport> GetEnumerator()
         {
-            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(false)).GetEnumerator();
+            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(ThQueryOptions.Backwards))).GetEnumerator();
         }
 
-        public IEnumerable<TradeReport> Get(bool skipCancelOrders = false)
+        public IEnumerable<TradeReport> Get(ThQueryOptions options = ThQueryOptions.None)
         {
-            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(skipCancelOrders));
+            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(options)));
         }
 
-        public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, bool skipCancelOrders)
+        public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(from, to, skipCancelOrders));
+            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(from, to, options)));
         }
 
-        public IEnumerable<TradeReport> GetRange(DateTime to, bool skipCancelOrders)
+        public IEnumerable<TradeReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(to, skipCancelOrders));
+            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(to, options)));
         }
 
-        public IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None)
         {
-            return Provider?.GetTradeHistory(skipCancelOrders).AsAsync();
+            return AdaptAsync(Provider?.GetTradeHistory(options));
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Provider?.GetTradeHistory(from, to, skipCancelOrders).AsAsync();
+            return AdaptAsync(Provider?.GetTradeHistory(from, to, options));
         }
 
-        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders)
+        public IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Provider?.GetTradeHistory(to, skipCancelOrders).AsAsync();
+            return AdaptAsync(Provider?.GetTradeHistory(to, options));
+        }
+
+        private IEnumerable<TradeReport> Adapt(IEnumerable<TradeReportEntity> src)
+        {
+            return src.Select(e => new TradeReportAdapter(e, _symbols.GetOrDefault(e.Symbol)));
+        }
+
+        private IAsyncEnumerator<TradeReport> AdaptAsync(IAsyncCrossDomainEnumerator<TradeReportEntity> src)
+        {
+            return src.AsAsync().Select(e => (TradeReport)new TradeReportAdapter(e, _symbols.GetOrDefault(e.Symbol)));
         }
 
         IEnumerator IEnumerable.GetEnumerator()

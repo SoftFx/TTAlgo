@@ -8,13 +8,22 @@ namespace TickTrader.Algo.Api
 {
     public interface TradeHistory : IEnumerable<TradeReport>
     {
-        IEnumerable<TradeReport> Get(bool skipCancelOrders = false);
-        IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, bool skipCancelOrders = false);
-        IEnumerable<TradeReport> GetRange(DateTime to, bool skipCancelOrders = false);
-        IAsyncEnumerator<TradeReport> GetAsync(bool skipCancelOrders = false);
-        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders = false);
-        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, bool skipCancelOrders = false);
+        IEnumerable<TradeReport> Get(ThQueryOptions options = ThQueryOptions.None);
+        IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None);
+        IEnumerable<TradeReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None);
+        IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None);
+        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None);
+        IAsyncEnumerator<TradeReport> GetRangeAsync(DateTime to, ThQueryOptions options = ThQueryOptions.None);
     }
+
+    [Flags]
+    public enum ThQueryOptions
+    {
+        None            = 0x0,
+        SkipCanceled    = 0x1,
+        Backwards       = 0x2
+    }
+
 
     public interface IAsyncEnumerator<T> : IDisposable
     {

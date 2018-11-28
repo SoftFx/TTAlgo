@@ -587,6 +587,7 @@ namespace TickTrader.Algo.Common.Model
             return new ExecutionReport()
             {
                 OrderId = report.OrderId,
+                // ExecTime = report.???
                 Expiration = report.Expiration,
                 Created = report.Created,
                 Modified = report.Modified,

@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Core
     internal class TradeEmulator : TradeCommands, IExecutorFixture
     {
         private ActivationEmulator _activator = new ActivationEmulator();
+        private OrderExpirationEmulator _expirationManager = new OrderExpirationEmulator();
         private CalculatorFixture _calcFixture;
         private AccountAccessor _acc;
         private IFixtureContext _context;
@@ -53,6 +54,7 @@ namespace TickTrader.Algo.Core
         public void Start()
         {
             _context.Builder.SetCustomTradeAdapter(this);
+            _context.Builder.TradeHistoryProvider = _history;
 
             _acc = _context.Builder.Account;
 
@@ -145,7 +147,7 @@ namespace TickTrader.Algo.Core
                         _collector.OnOrderOpened();
 
                         // set result
-                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone());
+                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
                     }
                 }
                 catch (OrderValidationError ex)
@@ -163,7 +165,7 @@ namespace TickTrader.Algo.Core
                 using (JournalScope())
                     _opSummary.AddOpenFailAction(orderType, symbol, side, volumeLots, error, _acc);
 
-                return new OrderResultEntity(error);
+                return new OrderResultEntity(error, null, ExecutionTime);
             });
         }
 
@@ -199,7 +201,7 @@ namespace TickTrader.Algo.Core
                     _collector.LogTrade($"Canceled order #{orderId} {order.Type} {order.Symbol} {order.Side} amount={order.RequestedVolume}");
 
                     // set result
-                    return new OrderResultEntity(OrderCmdResultCodes.Ok, order);
+                    return new OrderResultEntity(OrderCmdResultCodes.Ok, order, ExecutionTime);
                 }
                 catch (OrderValidationError ex)
                 {
@@ -211,7 +213,7 @@ namespace TickTrader.Algo.Core
                     _scheduler.SetFatalError(ex);
                 }
 
-                return new OrderResultEntity(error);
+                return new OrderResultEntity(error, null, ExecutionTime);
             });
         }
 
@@ -273,7 +275,7 @@ namespace TickTrader.Algo.Core
                         _collector.OnOrderModified();
 
                         // set result
-                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone());
+                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
                     }
                 }
                 catch (OrderValidationError ex)
@@ -291,7 +293,7 @@ namespace TickTrader.Algo.Core
 
                 _collector.OnOrderModificatinRejected();
 
-                return new OrderResultEntity(error);
+                return new OrderResultEntity(error, null, ExecutionTime);
             });
         }
 
@@ -350,7 +352,7 @@ namespace TickTrader.Algo.Core
                                 if (!dealerRequest.Confirmed || dealerRequest.DealerPrice <= 0)
                                     throw new OrderValidationError("Order is rejected by dealer", OrderCmdResultCodes.DealerReject);
 
-                                ClosePosition(order, TradeTransReasons.ClientRequest, (decimal)closeVolume, null, closeVolume.NanAwareToDecimal(), dealerRequest.DealerPrice, smbMetadata,
+                                ClosePosition(order, TradeTransReasons.ClientRequest, closeVolume.NanAwareToDecimal(), null, closeVolume.NanAwareToDecimal(), dealerRequest.DealerPrice, smbMetadata,
                                     ClosePositionOptions.None, request.ByOrderId);
                             }
                         }
@@ -370,7 +372,7 @@ namespace TickTrader.Algo.Core
                             }
                         }
 
-                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone());
+                        return new OrderResultEntity(OrderCmdResultCodes.Ok, order.Clone(), ExecutionTime);
                     }
                     else
                         throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
@@ -386,7 +388,7 @@ namespace TickTrader.Algo.Core
                 }
 
                 _collector.LogTradeFail($"Rejected close #{request.OrderId} reason={error}");
-                return new OrderResultEntity(OrderCmdResultCodes.Misconfiguration);
+                return new OrderResultEntity(OrderCmdResultCodes.Misconfiguration, null, ExecutionTime);
             });
         }
 
@@ -1044,17 +1046,16 @@ namespace TickTrader.Algo.Core
                 RecalculateAccount();
 
             // update trade history
-            //TradeReportModel report = TradeReportModel.Create(acc, trReason == TradeTransReasons.Expired ? TradeTransTypes.OrderExpired : TradeTransTypes.OrderCanceled, trReason);
-            //report.FillGenericOrderData(order);
-            //report.FillAccountSpecificFields();
-            //report.OrderRemainingAmount = order.RemainingAmount >= 0 ? order.RemainingAmount : default(decimal?);
-            //report.OrderMaxVisibleAmount = order.MaxVisibleAmount;
+            var report = _history.Create(_scheduler.UnsafeVirtualTimePoint, order.SymbolInfo, trReason == TradeTransReasons.Expired ? TradeExecActions.OrderExpired : TradeExecActions.OrderCanceled, trReason);
+            report.FillGenericOrderData(_calcFixture, order);
+            report.FillAccountSpecificFields(_calcFixture);
+            report.Entity.LeavesQuantity = 0;
+            report.Entity.MaxVisibleQuantity = order.MaxVisibleVolume;
 
-            //if (acc is MarginAccountModel)
-            //{
-            //    MarginAccountModel mAcc = (MarginAccountModel)acc;
-            //    report.FillAccountBalanceConversionRates(mAcc.BalanceCurrency, mAcc.Balance);
-            //}
+            if (_acc.IsMarginType)
+            {
+                report.FillAccountBalanceConversionRates(_calcFixture, _acc.BalanceCurrency, _acc.Balance);
+            }
 
             return order;
         }
@@ -1205,11 +1206,12 @@ namespace TickTrader.Algo.Core
             // Check if order must be activated immediately
             if (activationInfo != null)
             {
-                //var checkActivationTask = new CheckActivationTask(activationInfo.Account.Id, activationInfo.OrderId, currentRate.Symbol);
-                //OperationContext.Current.Infrustrucure.EnqeueTask(checkActivationTask);
+                // TO DO : enqueue activation task
+                Action<PluginBuilder> checkActivationTask = (b) => ActivateOrderTransaction(activationInfo);
+                _scheduler.EnqueueTradeUpdate(checkActivationTask);
             }
 
-            //ExpirationManager.AddOrder(order);
+            RegisterForExpirationCheck(order);
         }
 
         private void ResetOrderActivation(OrderAccessor order)
@@ -1220,7 +1222,7 @@ namespace TickTrader.Algo.Core
         private void UnregisterOrder(OrderAccessor order)
         {
             _activator.RemoveOrder(order);
-            //ExpirationManager.RemoveOrder(order);
+            _expirationManager.RemoveOrder(order);
         }
 
         private void RecalculateAccount()
@@ -1403,13 +1405,17 @@ namespace TickTrader.Algo.Core
 
         internal void CheckActivation(RateUpdate quote)
         {
-            decimal lockedActivateMargin = 0;
-
             IEnumerable<ActivationRecord> records = _activator.CheckPendingOrders(quote);
             foreach (ActivationRecord record in records)
-            {
-                using (JournalScope()) ActivateOrder(record, ref lockedActivateMargin);
-            }
+                ActivateOrderTransaction(record);
+        }
+
+        private void ActivateOrderTransaction(ActivationRecord record)
+        {
+            decimal lockedActivateMargin = 0;
+
+            using (JournalScope())
+                ActivateOrder(record, ref lockedActivateMargin);
         }
 
         // can lead to: 1) new gross position 2) close gross position 3) close net position 4) asset movement
@@ -1784,6 +1790,38 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        private void CheckExpiration()
+        {
+            var expiredOrders = _expirationManager.GetExpiredOrders(this.ExecutionTime);
+
+            if (expiredOrders != null)
+            {
+                foreach (var order in expiredOrders)
+                {
+                    //Logger.Debug(() => "Order id=" + order.OrderId + " has been expired.");
+                    ConfirmOrderCancelation(TradeTransReasons.Expired, order);
+                    //MarkAsAffected(order.Account);
+                }
+            }
+        }
+
+        private async void ExpirationCheckLoop()
+        {
+            while (_expirationManager.Count > 0)
+            {
+                await _scheduler.EmulateAsyncDelay(TimeSpan.FromSeconds(1), true);
+
+                CheckExpiration();
+            }            
+        }
+
+        private void RegisterForExpirationCheck(OrderAccessor order)
+        {
+            bool startLoop = _expirationManager.Count == 0;
+            if (_expirationManager.AddOrder(order) && startLoop)
+                ExpirationCheckLoop();
+        }
+
         #endregion
 
         #region Price Logic
@@ -2130,22 +2168,6 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
-
-        //#region DealerContext
-
-        //AccountDataProvider DealerContext.AccountData => _acc;
-
-        //RateUpdate DealerContext.GetRate(string symbol)
-        //{
-        //    return _calcFixture.GetCurrentRateOrNull(symbol);
-        //}
-
-        //Task DealerContext.Delay(TimeSpan delay)
-        //{
-        //    return _scheduler.EmulateAsyncDelay(delay);
-        //}
-
-        //#endregion
     }
 
     [Flags]

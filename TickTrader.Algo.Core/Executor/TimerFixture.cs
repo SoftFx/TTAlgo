@@ -47,6 +47,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        #region ITimerApi implementation
+
+        DateTime ITimerApi.Now => DateTime.Now;
+        DateTime ITimerApi.UtcNow => DateTime.UtcNow;
+
         Timer ITimerApi.CreateTimer(TimeSpan period, Action<Timer> callback)
         {
             lock (_timers)
@@ -63,6 +68,13 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        Task ITimerApi.Delay(TimeSpan period)
+        {
+            return Task.Delay(period);
+        }
+
+        #endregion
+
         private void Proxy_Disposed(TimerProxy timer)
         {
             lock (_timers)
@@ -70,11 +82,6 @@ namespace TickTrader.Algo.Core
                 _timers.Remove(timer);
                 timer.Disposed -= Proxy_Disposed;
             }
-        }
-
-        Task ITimerApi.Delay(TimeSpan period)
-        {
-            return Task.Delay(period);
         }
 
         public void Dispose()

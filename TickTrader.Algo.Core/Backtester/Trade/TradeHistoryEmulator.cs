@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using Bo = TickTrader.BusinessObjects;
@@ -30,76 +28,103 @@ namespace TickTrader.Algo.Core
 
         #region TradeHistory implementation
 
-        IEnumerable<TradeReport> TradeHistory.Get(bool skipCancelOrders)
+        IEnumerable<TradeReport> TradeHistory.Get(ThQueryOptions options)
         {
-            return GetInternal(skipCancelOrders);
+            return QueryAll(options);
         }
 
-        IAsyncEnumerator<TradeReport> TradeHistory.GetAsync(bool skipCancelOrders)
+        IAsyncEnumerator<TradeReport> TradeHistory.GetAsync(ThQueryOptions options)
         {
-            return GetInternal(skipCancelOrders).SimulateAsync();
+            return QueryAll(options).SimulateAsync();
         }
 
         IEnumerator<TradeReport> IEnumerable<TradeReport>.GetEnumerator()
         {
-            return GetInternal(false).GetEnumerator();
+            return QueryAll(ThQueryOptions.Backwards).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetInternal(false).GetEnumerator();
+            return QueryAll(ThQueryOptions.Backwards).GetEnumerator();
         }
 
-        IEnumerable<TradeReport> TradeHistory.GetRange(DateTime from, DateTime to, bool skipCancelOrders)
+        IEnumerable<TradeReport> TradeHistory.GetRange(DateTime from, DateTime to, ThQueryOptions options)
         {
-            return GetRangeInternal(from, to, skipCancelOrders);
+            return QueryRange(from, to, options);
         }
 
-        IEnumerable<TradeReport> TradeHistory.GetRange(DateTime to, bool skipCancelOrders)
+        IEnumerable<TradeReport> TradeHistory.GetRange(DateTime to, ThQueryOptions options)
         {
-            return GetRangeInternal(DateTime.MinValue, to, skipCancelOrders);
+            return QueryRange(DateTime.MinValue, to, options);
         }
 
-        IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime from, DateTime to, bool skipCancelOrders)
+        IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime from, DateTime to, ThQueryOptions options)
         {
-            return GetRangeInternal(from, to, skipCancelOrders).SimulateAsync();
+            return QueryRange(from, to, options).SimulateAsync();
         }
 
-        IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime to, bool skipCancelOrders)
+        IAsyncEnumerator<TradeReport> TradeHistory.GetRangeAsync(DateTime to, ThQueryOptions options)
         {
-            return GetRangeInternal(DateTime.MinValue, to, skipCancelOrders).SimulateAsync();
+            return QueryRange(DateTime.MinValue, to, options).SimulateAsync();
         }
 
         #endregion
 
-        private IEnumerable<TradeReport> GetInternal(bool skipCancelOrders)
+        private IEnumerable<TradeReport> QueryAll(ThQueryOptions options)
         {
-            if (skipCancelOrders)
-                return SkipCancelReports(_history);
-            return _history;
+            return SkipCancelReports(IterateAll(options), options);
         }
 
-        private IEnumerable<TradeReport> GetRangeInternal(DateTime from, DateTime to, bool skipCancelOrders)
+        private IEnumerable<TradeReport> QueryRange(DateTime from, DateTime to, ThQueryOptions options)
         {
-            var startIndex = _history.BinarySearchBy(r => r.ReportTime, from, BinarySearchTypes.NearestHigher);
+            return SkipCancelReports(Iterate(from, to, options), options);
+        }
 
-            if (startIndex < 0)
-                yield break;
+        private IEnumerable<TradeReportAdapter> IterateAll(ThQueryOptions options)
+        {
+            if (options.HasFlag(ThQueryOptions.Backwards))
+                return _history.IterateBackwards();
+            else
+                return _history;
+        }
 
-            for (int i = startIndex; i < _history.Count; i++)
+        private IEnumerable<TradeReportAdapter> Iterate(DateTime from, DateTime to, ThQueryOptions options)
+        {
+            if (options.HasFlag(ThQueryOptions.Backwards))
             {
-                var item = _history[i];
+                var startIndex = _history.BinarySearchBy(r => r.ReportTime, to, BinarySearchTypes.NearestLower);
 
-                if (item.ReportTime > to)
-                    break;
+                for (int i = startIndex; i >= 0; i--)
+                {
+                    var item = _history[i];
 
-                yield return _history[i];
+                    if (item.ReportTime < from)
+                        break;
+
+                    yield return _history[i];
+                }
+            }
+            else
+            {
+                var startIndex = _history.BinarySearchBy(r => r.ReportTime, from, BinarySearchTypes.NearestHigher);
+
+                for (int i = startIndex; i < _history.Count; i++)
+                {
+                    var item = _history[i];
+
+                    if (item.ReportTime > to)
+                        break;
+
+                    yield return _history[i];
+                }
             }
         }
 
-        private static IEnumerable<TradeReport> SkipCancelReports(IEnumerable<TradeReportAdapter> src)
+        private static IEnumerable<TradeReport> SkipCancelReports(IEnumerable<TradeReportAdapter> src, ThQueryOptions options)
         {
-            return src.Where(r => r.Entity.TradeTransactionReportType != TradeExecActions.OrderCanceled);
+            if (options.HasFlag(ThQueryOptions.SkipCanceled))
+                return src.Where(r => r.Entity.TradeTransactionReportType != TradeExecActions.OrderCanceled);
+            return src;
         }
     }
 }

@@ -51,8 +51,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auto.Tests\TestLauncher.cs" />
-    <Compile Include="Auto.Tests\TradeReportApiTest.cs" />
+    <Compile Include="Auto.Tests\CompositeTradeApiTest.cs" />
+    <Compile Include="Auto.Tests\OrderVerifier.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />

@@ -56,6 +56,8 @@ namespace TickTrader.Algo.Api
 
     internal interface ITimerApi
     {
+        DateTime Now { get; }
+        DateTime UtcNow { get; }
         Timer CreateTimer(TimeSpan period, Action<Timer> callback);
         Task Delay(TimeSpan period);
     }

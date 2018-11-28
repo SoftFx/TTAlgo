@@ -427,9 +427,11 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
         {
-            _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+            var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
+
+            _tradeHistoryProxy.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
@@ -799,6 +801,7 @@ namespace TickTrader.Algo.Common.Model
             return new ExecutionReport()
             {
                 OrderId = report.OrderId,
+                // ExecTime = report.???
                 TradeRequestId = operationId,
                 Expiration = report.Expiration?.ToLocalTime(),
                 Created = report.Created,
@@ -869,6 +872,8 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.DealingTimeout;
                         else if (message != null && message.Contains("locked by another operation"))
                             return Api.OrderCmdResultCodes.OrderLocked;
+                        else if (message != null && message.Contains("Invalid expiration"))
+                            return Api.OrderCmdResultCodes.IncorrectExpiration;
                         break;
                     }
                 case RejectReason.None:

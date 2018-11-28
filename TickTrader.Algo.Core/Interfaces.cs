@@ -45,9 +45,9 @@ namespace TickTrader.Algo.Core
 
     public interface ITradeHistoryProvider
     {
-        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(bool skipCancelOrders);
-        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders);
-        IAsyncCrossDomainEnumerator<TradeReport> GetTradeHistory(DateTime to, bool skipCancelOrders);
+        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(ThQueryOptions options);
+        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime from, DateTime to, ThQueryOptions options);
+        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime to, ThQueryOptions options);
     }
 
     public interface IAsyncCrossDomainEnumerator<T> : IDisposable

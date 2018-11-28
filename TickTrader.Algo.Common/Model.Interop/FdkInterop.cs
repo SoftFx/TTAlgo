@@ -432,13 +432,15 @@ namespace TickTrader.Algo.Common.Model
             });
         }
 
-        public void GetTradeHistory(BlockingChannel<TradeReportEntity> txStream,  DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeHistory(BlockingChannel<TradeReportEntity> txStream,  DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
         {
+            var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
+
             Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    using (var fdkStream = _tradeProxy.Server.GetTradeTransactionReports(TimeDirection.Backward, true, from, to, 1000, skipCancelOrders))
+                    using (var fdkStream = _tradeProxy.Server.GetTradeTransactionReports(direction, true, from, to, 1000, skipCancelOrders))
                     {
 
                         while (!fdkStream.EndOfStream)

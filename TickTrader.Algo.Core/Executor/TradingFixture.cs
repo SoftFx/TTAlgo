@@ -111,7 +111,10 @@ namespace TickTrader.Algo.Core
             var accProxy = context.Builder.Account;
 
             if (eReport.OrderCopy.Type == OrderType.Market && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
+            {
                 eReport.OrderCopy.Type = OrderType.Position;
+                eReport.Action = OrderEntityAction.Updated;
+            }
 
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
@@ -388,7 +391,7 @@ namespace TickTrader.Algo.Core
             reportListeners.Add(operationId, rep =>
             {
                 reportListeners.Remove(operationId);
-                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
             });
 
             orderRequest.OperationId = operationId;
@@ -429,7 +432,7 @@ namespace TickTrader.Algo.Core
                 if (resultContainer.Count == 2)
                 {
                     reportListeners.Remove(operationId);
-                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
                 }
             });
 
@@ -453,11 +456,6 @@ namespace TickTrader.Algo.Core
 
                 return await resultTask.Task;
             }
-        }
-
-        private Task<TradeResultEntity> CreateResult(OrderCmdResultCodes code)
-        {
-            return Task.FromResult<TradeResultEntity>(new TradeResultEntity(code));
         }
 
         private double ConvertVolume(double volumeInLots, Symbol smbMetadata)

@@ -43,13 +43,13 @@ namespace TickTrader.Algo.Core
         public double GrossProfitLoss => Entity.GrossProfitLoss;
         public double NetProfitLoss => Entity.NetProfitLoss;
 
-
         #region Emulation
 
         public static TradeReportAdapter Create(TimeKey key, SymbolAccessor symbol, TradeExecActions repType, Bo.TradeTransReasons reason)
         {
             var entity = new TradeReportEntity(key.ToString());
             entity.Symbol = symbol.Name;
+            entity.ActionType = repType;
             return new TradeReportAdapter(entity, symbol);
         }
 
@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core
             Entity.PositionClosePrice =  (double)closePrice;
             Entity.PositionModified = order.Modified;
             Entity.PositionById = posById;
-            Entity.ReqClosePrice = (double)requestPrice;
+            Entity.ReqClosePrice = (double?)requestPrice;
             //ReqCloseAmount = requestAmount;
             return this;
         }

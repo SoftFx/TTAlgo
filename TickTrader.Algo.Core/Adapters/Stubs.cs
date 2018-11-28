@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Core
     internal class NullTradeApi : ITradeApi
     {
         private static Task<TradeResultEntity> rejectResult
-            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null));
+            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null, null));
 
         public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
         {
@@ -260,6 +260,9 @@ namespace TickTrader.Algo.Core
 
     public class NullTimerApi : ITimerApi
     {
+        public DateTime Now => throw new NotImplementedException("Timer API is not available!");
+        public DateTime UtcNow => throw new NotImplementedException("Timer API is not available!");
+
         public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
         {
             throw new NotImplementedException("Timer API is not available!");

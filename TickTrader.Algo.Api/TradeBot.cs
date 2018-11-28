@@ -288,6 +288,9 @@ namespace TickTrader.Algo.Api
 
         #region Timer
 
+        public DateTime Now => context.TimerApi.Now;
+        public DateTime UtcNow => context.TimerApi.UtcNow;
+
         public Timer CreateTimer(int periodMs, Action<Timer> callback)
         {
             return CreateTimer(TimeSpan.FromMilliseconds(periodMs), callback);
