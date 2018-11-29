@@ -80,6 +80,18 @@ Call openLinkNewWindow
   ${EndIf}
 !macroend
 
+!macro _ConfigureService Name
+  SimpleSC::ExistsService ${Name}
+  Pop $0
+  ${If} $0 == 0
+    SimpleSC::SetServiceFailure ${Name} 0 "" "" 1 60000 1 60000 0 60000
+    Pop $0
+    ${If} $0 != 0
+      Abort "$(ServiceConfigFailMessage) $0"
+    ${EndIf}
+  ${EndIf}
+!macroend
+
 !macro _StartService Name TimeOut
   SimpleSC::ExistsService ${Name}
   Pop $0
@@ -135,4 +147,5 @@ Call openLinkNewWindow
 !define StartService '!insertmacro "_StartService"'
 !define StopService '!insertmacro "_StopService"'
 !define UninstallService '!insertmacro "_UninstallService"'
+!define ConfigureService '!insertmacro "_ConfigureService"'
 ;---END Functions to manage window service---

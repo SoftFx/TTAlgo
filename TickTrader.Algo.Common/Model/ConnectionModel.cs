@@ -215,10 +215,11 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
+                var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
                 if (request.UseSfx)
-                    _interop = new SfxInterop(_options);
+                    _interop = new SfxInterop(options);
                 else
-                    _interop = new FdkInterop(_options);
+                    _interop = new FdkInterop(options);
 
                 _interop.Disconnected += _interop_Disconnected;
 
@@ -506,5 +507,11 @@ namespace TickTrader.Algo.Common.Model
         public bool AutoReconnect { get; set; }
         public bool EnableLogs { get; set; }
         public string LogsFolder { get; set; }
+
+
+        public ConnectionOptions WithNewLogsFolder(string logsFolder)
+        {
+            return new ConnectionOptions { AutoReconnect = AutoReconnect, EnableLogs = EnableLogs, LogsFolder = logsFolder };
+        }
     }
 }

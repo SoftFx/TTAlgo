@@ -200,6 +200,7 @@ Section - FinishSection
 	
 	; Install Service
 	${InstallService} "${SERVICE_NAME}" "${SERVICE_DISPLAY_NAME}" "16" "2" "$INSTDIR\${APPEXE}" 80
+	${ConfigureService} "${SERVICE_NAME}"
 	${StartService} "${SERVICE_NAME}" 30
 	
 	Sleep 5000

@@ -50,8 +50,8 @@ namespace TickTrader.BotAgent
                     pathToContentRoot = Path.GetDirectoryName(pathToExe);
                 }
 
-                var pathToWebRoot = Path.Combine(pathToContentRoot, @"WebAdmin\wwwroot");
-                var pathToAppSettings = Path.Combine(pathToContentRoot, @"WebAdmin\appsettings.json");
+                var pathToWebRoot = Path.Combine(pathToContentRoot, "WebAdmin","wwwroot");
+                var pathToAppSettings = Path.Combine(pathToContentRoot, "WebAdmin", "appsettings.json");
 
                 var config = EnsureDefaultConfiguration(pathToAppSettings);
 

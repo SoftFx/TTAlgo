@@ -24,7 +24,9 @@ namespace TickTrader.BotTerminal
 
     public class AvalonDockStyleSelector : StyleSelector
     {
-        public Style DocumentStyle { get; set; }
+        public Style DefaultStyle { get; set; }
+
+        public Style ChartStyle { get; set; }
 
         public override Style SelectStyle(object item, DependencyObject container)
         {
@@ -34,36 +36,36 @@ namespace TickTrader.BotTerminal
             if (item is ContentPresenter || item is ContentControl)
                 return null;
 
-            return DocumentStyle;
+            if (item is ChartViewModel)
+                return ChartStyle;
+
+            return DefaultStyle;
         }
     }
 
     public class AvalonAnchorTemplateSelector : DataTemplateSelector
     {
-        public DataTemplate AnchorTemplate { get; set; }
-
-        public DataTemplate TradesTemplate { get; set; }
+        public DataTemplate DefaultTemplate { get; set; }
 
         public DataTemplate HistoryTemplate { get; set; }
+
+        public DataTemplate TradesTemplate { get; set; }
 
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            var a = item as LayoutAnchorable;
+            var anchor = item as LayoutAnchorable;
 
-            if (a != null)
+            if (anchor != null)
             {
-                if (a.Title == ResxCore.Instance["Tab_Trade"] as string)
-                {
-                    return TradesTemplate;
-                }
-                if (a.Title == ResxCore.Instance["Tab_History"] as string)
-                {
+                if (anchor.Title == ResxCore.Instance["Tab_History"] as string)
                     return HistoryTemplate;
-                }
+
+                if (anchor.Title == ResxCore.Instance["Tab_Trade"] as string)
+                    return TradesTemplate;
             }
 
-            return AnchorTemplate;
+            return DefaultTemplate;
         }
     }
 }

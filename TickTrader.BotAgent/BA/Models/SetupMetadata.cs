@@ -16,7 +16,7 @@ namespace TickTrader.BotAgent.BA.Models
             return descriptor.DisplayName;
         }
 
-        public bool IsValidPluginId(PluginDescriptor descriptor, string pluginId)
+        public bool IsValidPluginId(AlgoTypes pluginType, string pluginId)
         {
             return true;
         }

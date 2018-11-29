@@ -185,11 +185,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenBotSetup(AccountKey account = null, PluginInfo plugin = null)
+        public void OpenBotSetup(AccountKey account = null, PluginKey pluginKey = null)
         {
             try
             {
-                var model = new AgentPluginSetupViewModel(_algoEnv, Name, account, plugin?.Key, AlgoTypes.Robot, null);
+                var model = new AgentPluginSetupViewModel(_algoEnv, Name, account, pluginKey, AlgoTypes.Robot, null);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", model);
             }
             catch (Exception ex)
@@ -215,7 +215,20 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey, Name);
+                var model = new UploadPackageViewModel(_algoEnv, packageKey);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open upload package dialog");
+            }
+        }
+
+        public void OpenUploadPackageDialog(PackageKey packageKey, string agentName)
+        {
+            try
+            {
+                var model = new UploadPackageViewModel(_algoEnv, packageKey, agentName);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)
@@ -301,6 +314,19 @@ namespace TickTrader.BotTerminal
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed to open bot state");
+            }
+        }
+
+        public void OpenCopyBotInstanceDialog(string botId)
+        {
+            try
+            {
+                var model = new CopyBotInstanceViewModel(_algoEnv, Name, botId);
+                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoCopyBotInstanceWindow", model);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to open copy bot instance dialog");
             }
         }
     }

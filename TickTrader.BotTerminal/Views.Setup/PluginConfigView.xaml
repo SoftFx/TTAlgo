@@ -537,7 +537,7 @@
             <TextBlock Name="ErrorText" TextWrapping="Wrap" Text="{l:ResxBinding Descriptor.Error, Prefix=PluginError_}"
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
 
-            <StackPanel Grid.Row="1" IsEnabled="{Binding PluginIsStopped}">
+            <StackPanel Grid.Row="1">
                 <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
                     <TextBlock TextWrapping="Wrap" Text="{Binding Descriptor.Description}" Margin="3"/>
                 </GroupBox>

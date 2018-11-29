@@ -261,6 +261,7 @@ namespace TickTrader.BotAgent.BA.Models
                 Fault = ex;
                 _log.Error(ex, "StartExecutor() failed!");
                 _startedEvent.SetResult(null);
+                SetRunning(false);
                 if (State != PluginStates.Stopping)
                     await StopExecutor(true);
                 return;
@@ -297,16 +298,6 @@ namespace TickTrader.BotAgent.BA.Models
             _botListener?.Dispose();
             executor?.Dispose();
             executor = null;
-        }
-
-        private void OnExecutorStopped(string err = null)
-        {
-            if (State == PluginStates.Running)
-            {
-                SetRunning(false);
-                ChangeState(PluginStates.Stopped, err);
-                DisposeExecutor();
-            }
         }
 
         private void OnStop()

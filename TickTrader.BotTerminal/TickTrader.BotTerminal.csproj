@@ -222,6 +222,7 @@
     </Compile>
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
+    <Compile Include="Behaviors\CopyTextBehavior.cs" />
     <Compile Include="Behaviors\StyleInteraction.cs" />
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
     <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
@@ -418,6 +419,7 @@
     <Compile Include="Views.Algo\AlgoPackageViewModel.cs" />
     <Compile Include="Views.Algo\AlgoPluginViewModel.cs" />
     <Compile Include="Views.Algo\BotFolderViewModel.cs" />
+    <Compile Include="Views.Algo\CopyBotInstanceViewModel.cs" />
     <Compile Include="Views.Algo\DownloadPackageViewModel.cs" />
     <Compile Include="Views.Algo\UploadPackageViewModel.cs" />
     <Compile Include="Views.Auth\AccountView.xaml.cs">
@@ -908,6 +910,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Algo\BotFolderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Algo\CopyBotInstanceView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

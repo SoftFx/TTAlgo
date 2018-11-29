@@ -7,6 +7,25 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
+    <Style x:Key="StatusTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+    </Style>
+
+    <ContextMenu x:Key="StatusTextBoxContextMenu" >
+        <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
+        <MenuItem Header="Copy All">
+            <i:Interaction.Behaviors>
+                <l:MenuItemCopyTextBehavior Text="{Binding Bot.Status}" />
+            </i:Interaction.Behaviors>
+        </MenuItem>
+    </ContextMenu>
+
     <ControlTemplate x:Key="BotStateView">
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
@@ -28,8 +47,8 @@
             <l:TabControl Grid.Row="2" Style="{DynamicResource DialogTabStyle}" Margin="5"
                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <TabItem Header="Status">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                        <TextBlock Text="{Binding Bot.Status}" TextWrapping="NoWrap" VerticalAlignment="Stretch" Margin="4"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding Bot.Status, Mode=OneWay}" Style="{StaticResource StatusTextBoxStyle}" ContextMenu="{StaticResource StatusTextBoxContextMenu}"/>
                     </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Bot Info">
@@ -110,7 +129,7 @@
                         <Setter Property="Foreground" Value="Red"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
-                        <Setter Property="Foreground" Value="Yellow"/>
+                        <Setter Property="Foreground" Value="Gold"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
                         <Setter Property="Foreground" Value="Orange"/>
@@ -140,7 +159,7 @@
                         <Setter Property="Foreground" Value="Red"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
-                        <Setter Property="Foreground" Value="Yellow"/>
+                        <Setter Property="Foreground" Value="Goldenrod"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
                         <Setter Property="Foreground" Value="Orange"/>

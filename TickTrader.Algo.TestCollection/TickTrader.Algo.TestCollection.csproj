@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
+    <Compile Include="Bots\BotStatusWriter.cs" />
     <Compile Include="Bots\LifecycleTradeBot.cs" />
     <Compile Include="Bots\FeedQueryBot.cs" />
     <Compile Include="Bots\ModifyLoopBot.cs" />

@@ -21,7 +21,7 @@
                 <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Connecting">
-                <Setter Property="Fill" Value="Yellow"/>
+                <Setter Property="Fill" Value="Gold"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Online">
                 <Setter Property="Fill" Value="Green"/>
@@ -44,7 +44,7 @@
                 <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Connecting">
-                <Setter Property="Fill" Value="Yellow"/>
+                <Setter Property="Fill" Value="Gold"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Online">
                 <Setter Property="Fill" Value="Green"/>
@@ -61,7 +61,7 @@
                 <Setter Property="Fill" Value="LightGray"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding State}" Value="Starting">
-                <Setter Property="Fill" Value="Yellow"/>
+                <Setter Property="Fill" Value="Gold"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding State}" Value="Running">
                 <Setter Property="Fill" Value="Green"/>

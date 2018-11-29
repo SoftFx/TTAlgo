@@ -19,6 +19,7 @@ using NLog.Extensions.Logging;
 using NLog.Web;
 using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
@@ -50,14 +51,12 @@ namespace TickTrader.BotAgent.WebAdmin
             });
             services.AddTransient<IAuthManager, AuthManager>();
 
-            // .NET Core SDK 2.1.4 has broken compatibility with 1.X
+            // .NET Core SDK 2.1.4 has broken core-1.1 apps compatibility with net4xx targets
             // This workaround should avoid problematic code paths
-            //var manager = new ApplicationPartManager();
-            //var assemblies = new[] { typeof(Startup).Assembly };
-            //foreach (var assembly in assemblies)
-            //{
-            //    manager.ApplicationParts.Add(new AssemblyPart(assembly));
-            //}
+            // Upgrading to core-2.1 should resolve issue completely
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new AssemblyPart(typeof(Startup).Assembly));
+            services.AddSingleton(manager);
 
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
             services.AddMvc().AddJsonOptions(options =>

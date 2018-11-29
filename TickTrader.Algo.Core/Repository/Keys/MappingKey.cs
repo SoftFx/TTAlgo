@@ -66,5 +66,14 @@ namespace TickTrader.Algo.Core.Repository
                 return SecondaryReduction.CompareTo(other.SecondaryReduction);
             return res;
         }
+
+        public MappingKey Clone()
+        {
+            return new MappingKey
+            {
+                PrimaryReduction = PrimaryReduction.Clone(),
+                SecondaryReduction = SecondaryReduction?.Clone(),
+            };
+        }
     }
 }

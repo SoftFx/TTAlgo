@@ -45,7 +45,13 @@ namespace TickTrader.BotTerminal
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
 
+        public bool CanManageFiles => Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+
         public bool HasRunningBots => Bots.Any(b => b.IsRunning);
+
+        public string AgentName => Agent.Name;
+
+        public string DisplayNameWithAgent => $"{AgentName} - {DisplayName}";
 
 
         public AlgoAccountViewModel(AccountModelInfo info, AlgoAgentViewModel agent)
@@ -82,6 +88,11 @@ namespace TickTrader.BotTerminal
             Agent.OpenBotSetup(Info.Key);
         }
 
+        public void ManageFiles()
+        {
+            Agent.OpenManageBotFilesDialog();
+        }
+
 
         private void OnAccountStateChanged(AccountModelInfo account)
         {
@@ -111,6 +122,7 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(CanRemoveAccount));
             NotifyOfPropertyChange(nameof(CanTestAccount));
             NotifyOfPropertyChange(nameof(CanAddBot));
+            NotifyOfPropertyChange(nameof(CanManageFiles));
         }
 
         public void Drop(object o)
@@ -118,7 +130,7 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                Agent.OpenBotSetup(Info.Key, algoBot.Info);
+                Agent.OpenBotSetup(Info.Key, algoBot.Info.Key);
             }
         }
 
