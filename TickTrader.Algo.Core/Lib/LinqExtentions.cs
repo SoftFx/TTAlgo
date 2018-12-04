@@ -235,6 +235,21 @@ namespace TickTrader.Algo.Core
             for (int i = list.Count - 1; i >= 0; i--)
                 yield return list[i];
         }
+
+        public static T[] ConcatAll<T>(this IEnumerable<T[]> src)
+        {
+            var totalSize = src.Sum(a => a.Length);
+            var result = new T[totalSize];
+            var i = 0;
+
+            foreach (var array in src)
+            {
+                array.CopyTo(result, i);
+                i += array.Length;
+            }
+
+            return result;
+        }
     }
 
     public enum BinarySearchTypes { NearestLower, Exact, NearestHigher }

@@ -53,8 +53,8 @@ namespace TickTrader.Algo.Common.Model
         {
             if (_options.EnableLogs)
             {
-                if (!Directory.Exists(LogPath))
-                    Directory.CreateDirectory(LogPath);
+                if (!Directory.Exists(_options.LogsFolder))
+                    Directory.CreateDirectory(_options.LogsFolder);
             }
 
             isFeedLoggedIn = false;
@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 feedCs.FixEventsFileName = "feed.events.log";
                 feedCs.FixMessagesFileName = "feed.messages.log";
-                feedCs.FixLogDirectory = LogPath;
+                feedCs.FixLogDirectory = _options.LogsFolder;
             }
 
             feedCs.ExcludeMessagesFromLogs = "y|0";
@@ -140,7 +140,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 tradeCs.FixEventsFileName = "trade.events.log";
                 tradeCs.FixMessagesFileName = "trade.messages.log";
-                tradeCs.FixLogDirectory = LogPath;
+                tradeCs.FixLogDirectory = _options.LogsFolder;
             }
 
             _tradeProxy = new DataTrade(tradeCs.ToString());
@@ -158,11 +158,6 @@ namespace TickTrader.Algo.Common.Model
                 if (isFeedCacheLoaded && isTradeCacheLoaded && isSymbolsLoaded && isTradeLoggedIn && isFeedLoggedIn)
                     _connectEvent.TrySetResult(new ConnectionErrorInfo(ConnectionErrorCodes.None));
             }
-        }
-
-        static string LogPath
-        {
-            get { return Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "Logs", "FDK"); }
         }
 
         public async Task Disconnect()

@@ -148,9 +148,26 @@ namespace TickTrader.Algo.Common.Model
             return _feedProxy.GetAvailableRange(symbol, priceType, timeFrame);
         }
 
-        private Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int count)
+        private async Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int pageSize)
         {
-            return _feedProxy.DownloadBarPage(symbol, startTime, count, priceType, timeFrame);
+            var barCount = 0;
+            List<BarEntity[]> pages = new List<BarEntity[]>();
+            var sign = pageSize < 0 ? -1 : 1;
+            var pageSizeAbs = Math.Abs(pageSize);
+
+            while (barCount <= pageSizeAbs)
+            {
+                var reqSize = sign * (pageSizeAbs - barCount);
+                var page = await _feedProxy.DownloadBarPage(symbol, startTime, reqSize, priceType, timeFrame);
+
+                if (page.Length == 0)
+                    break;
+
+                pages.Add(page);
+                barCount += page.Length;
+            }
+
+            return pages.ConcatAll();
         }
 
         private Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)

@@ -129,7 +129,7 @@
                         <Setter Property="Foreground" Value="Red"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
-                        <Setter Property="Foreground" Value="Yellow"/>
+                        <Setter Property="Foreground" Value="Gold"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
                         <Setter Property="Foreground" Value="Orange"/>
@@ -159,7 +159,7 @@
                         <Setter Property="Foreground" Value="Red"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Starting...">
-                        <Setter Property="Foreground" Value="Yellow"/>
+                        <Setter Property="Foreground" Value="Goldenrod"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding ExecStatus}" Value="Stopping...">
                         <Setter Property="Foreground" Value="Orange"/>

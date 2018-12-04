@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Common.Model
             const int connectAttempts = 1;
             const int reconnectAttempts = 0;
 
-            var logsDir = System.IO.Path.Combine(options.LogsFolder, "FDK2");
+            var logsDir = options.LogsFolder;
 
             _feedProxy = new FDK.Client.QuoteFeed("feed.proxy", logEvents, logStates, logMessages, port: 5041, validateClientCertificate: ValidateCertificate,
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
@@ -438,11 +438,12 @@ namespace TickTrader.Algo.Common.Model
         {
             return ExecuteOrderOperation(request, r =>
             {
-                var timeInForce = GetTimeInForce(r.Options, r.Expiration);
+                var timeInForce = GetTimeInForce(r.Expiration);
+                var ioc = GetIoC(r.Options);
                 var clientOrderId = Guid.NewGuid().ToString();
 
                 return _tradeProxy.NewOrderAsync(clientOrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null);
+                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc);
             });
         }
 
@@ -456,7 +457,7 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options)));
         }
 
         public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
@@ -500,39 +501,23 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderTimeInForce? GetTimeInForceReplace(OrderExecOptions? options, DateTime? expiration)
         {
-            if (options != null)
-            {
-                if (options.Value.HasFlag(OrderExecOptions.ImmediateOrCancel))
-                    return OrderTimeInForce.ImmediateOrCancel;
-                else if (expiration != null)
-                    return OrderTimeInForce.GoodTillDate;
-                else
-                    return OrderTimeInForce.GoodTillCancel;
-            }
-            else
-            {
-                if (expiration != null)
-                    return OrderTimeInForce.GoodTillDate;
-                else
-                    return null;
-            }
+            return expiration != null ? OrderTimeInForce.GoodTillDate
+                : (options != null ? OrderTimeInForce.GoodTillCancel : (OrderTimeInForce?)null);
         }
 
-        private OrderTimeInForce GetTimeInForce(OrderExecOptions options, DateTime? expiration)
+        private bool? GetIoCReplace(OrderExecOptions? options)
         {
-            if (options.IsFlagSet(OrderExecOptions.ImmediateOrCancel))
-                return OrderTimeInForce.ImmediateOrCancel;
-            else if (expiration != null)
-                return OrderTimeInForce.GoodTillDate;
-            return OrderTimeInForce.GoodTillCancel;
+            return options.HasValue && options.Value.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
         }
 
         private OrderTimeInForce GetTimeInForce(DateTime? expiration)
         {
-            if (expiration == null)
-                return OrderTimeInForce.GoodTillCancel;
-            else
-                return OrderTimeInForce.GoodTillDate;
+            return expiration != null ? OrderTimeInForce.GoodTillDate : OrderTimeInForce.GoodTillCancel;
+        }
+
+        private bool GetIoC(OrderExecOptions options)
+        {
+            return options.IsFlagSet(OrderExecOptions.ImmediateOrCancel);
         }
 
         #endregion

@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              Padding="0">
-    <Grid Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVis}}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition MinHeight="50"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>

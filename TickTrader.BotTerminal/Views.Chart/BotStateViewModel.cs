@@ -26,6 +26,7 @@ namespace TickTrader.BotTerminal
         private IAlgoAgent _agent;
         private string _botId;
         private bool _isInitialized;
+        private bool _isActivated;
 
         public BotStateViewModel(AlgoEnvironment algoEnv, IAlgoAgent agent, string botId)
         {
@@ -82,12 +83,16 @@ namespace TickTrader.BotTerminal
         {
             base.OnActivate();
 
+            _isActivated = true;
+
             Init();
         }
 
         protected override void OnDeactivate(bool close)
         {
             base.OnDeactivate(close);
+
+            _isActivated = false;
 
             Deinit();
         }
@@ -109,7 +114,7 @@ namespace TickTrader.BotTerminal
 
         private void Init()
         {
-            if (!_isInitialized)
+            if (!_isInitialized && _isActivated)
             {
                 try
                 {
@@ -189,7 +194,9 @@ namespace TickTrader.BotTerminal
 
             var res = new List<string>();
             res.Add($"Agent: {Bot.Agent.Name}");
-            res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
+            if (Bot.Agent.Model.Accounts.Snapshot.TryGetValue(Bot.Account, out var acc))
+                res.Add($"Account: {acc.Key.Server} - {acc.Key.Login} ({(acc.UseNewProtocol ? "SFX" : "FIX")})");
+            else res.Add($"Account: {Bot.Account.Server} - {Bot.Account.Login}");
             res.Add($"Instance Id: {Bot.InstanceId}");
             res.Add("------------ Permissions ------------");
             res.Add(Bot.Model.Config.Permissions.ToString());
