@@ -36,6 +36,18 @@ namespace Machinarium.Var
             return BoolVar.Operator<BoolVar>(() => src.Value == null, src);
         }
 
+        public static BoolVar IsNotNull<T>(this Var<T?> src)
+            where T : struct
+        {
+            return BoolVar.Operator<BoolVar>(() => src.Value.HasValue, src);
+        }
+
+        public static BoolVar IsNull<T>(this Var<T?> src)
+            where T : struct
+        {
+            return BoolVar.Operator<BoolVar>(() => !src.Value.HasValue, src);
+        }
+
         public static IntVar Create<T1>(Var<T1> src1, Func<T1, int> operatorDef)
         {
             return IntVar.Operator<IntVar>(() => operatorDef(src1.Value), src1);

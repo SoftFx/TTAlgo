@@ -62,6 +62,8 @@ namespace TickTrader.BotTerminal
             IsUpdatingRange = new BoolProperty();
             MainTimeFrame = new Property<TimeFrames>();
 
+            TradesPage = new BacktesterTradeGridViewModel();
+
             MainTimeFrame.Value = TimeFrames.M1;
 
             //_availableSymbols = env.Symbols;
@@ -151,6 +153,7 @@ namespace TickTrader.BotTerminal
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
+        public BacktesterTradeGridViewModel TradesPage { get; }
         public PluginConfig PluginConfig { get; private set; }
 
         public void OpenPluginSetup()
@@ -204,6 +207,7 @@ namespace TickTrader.BotTerminal
                 ChartPage.Clear();
                 ResultsPage.Clear();
                 _journalContent.Value = null;
+                TradesPage.Clear(_settings.AccType);
 
                 CheckDuplicateSymbols();
 
@@ -311,6 +315,7 @@ namespace TickTrader.BotTerminal
                 }
 
                 await CollectEvents(tester, observer);
+                await LoadTradeHistory(tester, observer);
                 await LoadStats(observer, tester);
                 await LoadChartData(tester, observer, tester);
 
@@ -340,6 +345,33 @@ namespace TickTrader.BotTerminal
                     return events;
                 }
             });
+        }
+
+        private async Task LoadTradeHistory(Backtester tester, IActionObserver observer)
+        {
+            var totalCount = tester.TradesCount;
+
+            observer.StartProgress(0, totalCount);
+            observer.SetMessage("Loading trades...");
+
+            var items = await Task.Run(() =>
+            {
+                var trades = new List<TransactionReport>(totalCount);
+
+                using (var cde = tester.GetTradeHistory())
+                {
+                    var symbols = _client.Symbols;
+                    var accType = tester.AccountType;
+
+                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
+                        trades.Add(TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol)));
+
+                    return trades;
+                }
+            });
+
+
+            TradesPage.Fill(items);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)

@@ -168,6 +168,9 @@
                 <TabItem Header="Journal">
                     <UserControl Template="{StaticResource JournalPage.Classic}"/>
                 </TabItem>
+                <TabItem Header="Trades">
+                    <ContentControl cal:View.Model="{Binding TradesPage}"/>
+                </TabItem>
                 <TabItem Header="Graph">
                     <ContentControl cal:View.Model="{Binding ChartPage}"/>
                 </TabItem>

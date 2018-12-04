@@ -42,12 +42,14 @@ namespace TickTrader.Algo.Core
         public double GrossProfitLoss => TransactionAmount - Swap - Commission;
         public double Balance => AccountBalance;
         public double BalanceMovement { get => NetProfitLoss; set => NetProfitLoss = value; }
+        public TradeExecActions TradeTransactionReportType => ActionType;
+        public double Quantity => OpenQuantity;
 
         #endregion
 
         #region Unused fields
 
-        public TradeExecActions TradeTransactionReportType { get; set; }
+
         public double? OpenConversionRate { get; set; }
         public double? OrderLastFillAmount { get; set; }
         public double? OrderFillPrice { get; set; }
@@ -87,7 +89,6 @@ namespace TickTrader.Algo.Core
         public double Price { get; set; }
         public double LeavesQuantity { get; set; }
         public double? MaxVisibleQuantity { get; set; }
-        public double Quantity { get; set; }
         public string ClientId { get; set; }
         public string Id { get; set; }
         public string TransactionCurrency { get; set; }

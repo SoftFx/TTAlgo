@@ -19,6 +19,7 @@ namespace TickTrader.BotTerminal
         {
             PriceDigits = symbol?.PriceDigits ?? 5;
             ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
+            LotSize = symbol?.LotSize ?? 1;
 
             IsPosition = transaction.TradeRecordType == OrderType.Position;
             IsMarket = transaction.TradeRecordType == OrderType.Market;
@@ -52,6 +53,17 @@ namespace TickTrader.BotTerminal
             MaxVisibleVolume = GetMaxVisibleVolume(transaction);
         }
 
+        public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, SymbolModel symbol = null)
+        {
+            switch (accountType)
+            {
+                case AccountTypes.Gross: return new GrossTransactionModel(tTransaction, symbol);
+                case AccountTypes.Net: return new NetTransactionModel(tTransaction, symbol);
+                case AccountTypes.Cash: return new CashTransactionModel(tTransaction, symbol);
+                default: throw new NotSupportedException(accountType.ToString());
+            }
+        }
+
         private double? GetMaxVisibleVolume(TradeReportEntity transaction)
         {
             return transaction.MaxVisibleQuantity;
@@ -64,14 +76,14 @@ namespace TickTrader.BotTerminal
         public TransactionSide Side { get; protected set; }
         public TradeExecActions ActionType { get; protected set; }
         public string Symbol { get; protected set; }
-        public double OpenQuantity { get; protected set; }
+        public double? OpenQuantity { get; protected set; }
         public double OpenPrice { get; protected set; }
         public double StopLoss { get; protected set; }
         public double TakeProfit { get; protected set; }
         public DateTime CloseTime { get; protected set; }
-        public double CloseQuantity { get; protected set; }
+        public double? CloseQuantity { get; protected set; }
         public double ClosePrice { get; protected set; }
-        public double RemainingQuantity { get; protected set; }
+        public double? RemainingQuantity { get; protected set; }
         public double Commission { get; protected set; }
         public string CommissionCurrency { get; protected set; }
         public double Swap { get; protected set; }
@@ -86,6 +98,7 @@ namespace TickTrader.BotTerminal
         public bool IsPending { get; protected set; }
         public bool IsBalanceTransaction { get; protected set; }
         public double? MaxVisibleVolume { get; protected set; }
+        public double LotSize { get; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -119,6 +132,7 @@ namespace TickTrader.BotTerminal
 
             return dateTime;
         }
+
         protected virtual TransactionSide GetTransactionSide(TradeReportEntity transaction)
         {
             switch (transaction.TradeRecordSide)
@@ -128,9 +142,10 @@ namespace TickTrader.BotTerminal
                 default: return TransactionSide.None;
             }
         }
+
         protected virtual string GetUniqueId(TradeReportEntity transaction)
         {
-            return transaction.Id;
+            return transaction.OrderId + "-" + transaction.ActionId;
         }
 
         protected virtual string GetId(TradeReportEntity transaction)
@@ -143,9 +158,9 @@ namespace TickTrader.BotTerminal
             return transaction.TransactionCurrency;
         }
 
-        protected virtual double GetRemainingQuntity(TradeReportEntity transaction)
+        protected virtual double? GetRemainingQuntity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.LeavesQuantity;
+            return IsBalanceTransaction ? (double?)null : (transaction.LeavesQuantity / LotSize);
         }
 
         protected virtual double GetClosePrice(TradeReportEntity transaction)
@@ -153,9 +168,9 @@ namespace TickTrader.BotTerminal
             return IsBalanceTransaction ? double.NaN : transaction.PositionClosePrice;
         }
 
-        protected virtual double GetCloseQuantity(TradeReportEntity transaction)
+        protected virtual double? GetCloseQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.PositionLastQuantity;
+            return IsBalanceTransaction ? (double?)null : (transaction.PositionLastQuantity / LotSize);
         }
 
         protected virtual DateTime GetCloseTime(TradeReportEntity transaction)
@@ -168,9 +183,9 @@ namespace TickTrader.BotTerminal
             return IsBalanceTransaction ? double.NaN : transaction.Price;
         }
 
-        protected virtual double GetOpenQuntity(TradeReportEntity transaction)
+        protected virtual double? GetOpenQuntity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.Quantity;
+            return IsBalanceTransaction ? (double?)null : (transaction.Quantity / LotSize);
         }
 
         protected virtual DateTime GetOpenTime(TradeReportEntity transaction)
@@ -212,14 +227,6 @@ namespace TickTrader.BotTerminal
     class NetTransactionModel : TransactionReport
     {
         public NetTransactionModel(TradeReportEntity transaction, SymbolModel model) : base(transaction, model) { }
-
-        protected override string GetUniqueId(TradeReportEntity transaction)
-        {
-            return (transaction.TradeRecordType == OrderType.Limit || transaction.TradeRecordType == OrderType.Stop)
-                && (transaction.ActionId > 1
-                    || (GetRemainingQuntity(transaction) < GetOpenQuntity(transaction) && GetRemainingQuntity(transaction) > 0))
-                ? $"{GetId(transaction)} #{transaction.ActionId}" : GetId(transaction);
-        }
         protected override double GetOpenPrice(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ?
@@ -232,39 +239,29 @@ namespace TickTrader.BotTerminal
     {
         public GrossTransactionModel(TradeReportEntity transaction, SymbolModel symbol) : base(transaction, symbol)
         {
-            PositionId = GetPositionId(transaction);
         }
 
-        public string PositionId { get; private set; }
-
-        private string GetPositionId(TradeReportEntity transaction)
-        {
-            return IsPosition
-                && GetOpenQuntity(transaction) != GetCloseQuantity(transaction)
-                && GetCloseQuantity(transaction) > 0
-                ? $"{transaction.PositionId} #{transaction.ActionId}" : transaction.PositionId;
-        }
-        protected override string GetUniqueId(TradeReportEntity transaction)
-        {
-            return $"{GetId(transaction)} {GetPositionId(transaction)} {transaction.ActionId}";
-        }
         protected override DateTime GetOpenTime(TradeReportEntity transaction)
         {
             return IsPosition ? transaction.PositionOpened : transaction.OrderCreated;
+
         }
-        protected override double GetOpenQuntity(TradeReportEntity transaction)
+
+        protected override double? GetOpenQuntity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : IsPosition ? transaction.PositionQuantity : transaction.Quantity;
+            return IsBalanceTransaction ? (double?)null : IsPosition ? (transaction.PositionQuantity / LotSize) : (transaction.Quantity / LotSize);
         }
+
         protected override double GetOpenPrice(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? double.NaN :
                 transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ? transaction.StopPrice :
                 IsPosition ? transaction.PosOpenPrice : transaction.Price;
         }
-        protected override double GetRemainingQuntity(TradeReportEntity transaction)
+
+        protected override double? GetRemainingQuntity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : IsPosition ? transaction.PositionLeavesQuantity : transaction.LeavesQuantity;
+            return IsBalanceTransaction ? (double?)null : IsPosition ? (transaction.PositionLeavesQuantity / LotSize) : (transaction.LeavesQuantity / LotSize);
         }
     }
 
@@ -314,18 +311,15 @@ namespace TickTrader.BotTerminal
                 default: throw new NotSupportedException(GetTransactionSide(transaction).ToString());
             }
         }
+
         protected override double GetClosePrice(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? double.NaN : transaction.OrderFillPrice ?? 0;
         }
-        protected override double GetCloseQuantity(TradeReportEntity transaction)
+
+        protected override double? GetCloseQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.OrderLastFillAmount ?? 0;
-        }
-        protected override string GetUniqueId(TradeReportEntity transaction)
-        {
-            return transaction.ActionId > 1 || GetCloseQuantity(transaction) < GetOpenQuntity(transaction) && GetCloseQuantity(transaction) > 0 ?
-                $"{GetId(transaction)} #{transaction.ActionId}" : GetId(transaction);
+            return IsBalanceTransaction ? (double?) null : transaction.OrderLastFillAmount ?? 0;
         }
     }
 }

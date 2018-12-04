@@ -8,7 +8,7 @@ using Bo = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TradeHistoryEmulator :  TradeHistory
+    internal class TradeHistoryEmulator : CrossDomainObject,  TradeHistory
     {
         private List<TradeReportAdapter> _history = new List<TradeReportAdapter>();
         private TimeKeyGenerator _idGenerator = new TimeKeyGenerator();
@@ -20,10 +20,19 @@ namespace TickTrader.Algo.Core
             return report;
         }
 
+        public int Count => _history.Count;
+
         public void Reset()
         {
             _idGenerator.Reset();
             _history = new List<TradeReportAdapter>();
+        }
+
+        public IPagedEnumerator<TradeReportEntity> Marshal()
+        {
+            const int pageSize = 4000;
+
+            return _history.Select(r => r.Entity).GetCrossDomainEnumerator(pageSize);
         }
 
         #region TradeHistory implementation

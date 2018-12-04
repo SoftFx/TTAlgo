@@ -58,6 +58,7 @@
                 <ResourceDictionary Source="Views.Setup/PluginConfigView.xaml" />
 
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
+                <ResourceDictionary Source="Views.TradeInfo/TradeHistoryGridView.xaml" />
 
                 <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterSymbolSetupView.xaml" />
@@ -66,6 +67,7 @@
                 <ResourceDictionary Source="Views.Backtester/BacktesterReportView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterStatChartView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterPluginSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterTradeGridView.xaml" />
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

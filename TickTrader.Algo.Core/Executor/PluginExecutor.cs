@@ -525,7 +525,7 @@ namespace TickTrader.Algo.Core
         {
             var fixture = new EmulationControlFixture(settings, this, calcFixture);
             InvokeStrategy = fixture.InvokeEmulator;
-            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector);
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             return fixture;

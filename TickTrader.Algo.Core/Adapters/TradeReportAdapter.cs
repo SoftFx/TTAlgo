@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Core
             //PosAmount = order.Amount;
             //PosRemainingAmount = order.RemainingAmount;
             //PosLastAmount = closeAmount;
-            //Entity.PositionOpened = order.PositionCreated;
+            Entity.PositionOpened = order.PositionCreated;
             Entity.PosOpenPrice = order.Price;
             Entity.PositionClosed = closeTime;
             Entity.PositionClosePrice =  (double)closePrice;

@@ -53,6 +53,7 @@ namespace TickTrader.Algo.Core
         public DateTime? EmulationPeriodStart { get; }
         public DateTime? EmulationPeriodEnd { get; }
         public int EventsCount => _control.Collector.EventsCount;
+        public int TradesCount => _control.TradeHistory.Count;
         public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
         public TimeSpan ServerPing { get; set; }
@@ -112,6 +113,11 @@ namespace TickTrader.Algo.Core
         public IPagedEnumerator<BarEntity> GetMarginHistory(TimeFrames timeFrame)
         {
             return _control.Collector.GetMarginHistory(timeFrame);
+        }
+
+        public IPagedEnumerator<TradeReportEntity> GetTradeHistory()
+        {
+            return _control.TradeHistory.Marshal();
         }
 
         public void InitOutputCollection<T>(string id)

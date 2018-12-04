@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         public enum TimePeriod { All, LastHour, Today, Yesterday, CurrentMonth, PreviousMonth, LastThreeMonths, LastSixMonths, LastYear, Custom }
         public enum TradeDirection { All = 1, Buy, Sell }
 
-        private ObservableSrotedList<string, TransactionReport> _tradesList;
+        private ObservableCollection<TransactionReport> _tradesList;
         private ObservableTask<int> _downloadObserver;
         private TraderClientModel _tradeClient;
         private DateTime _from;
@@ -54,9 +54,9 @@ namespace TickTrader.BotTerminal
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
 
-            _tradesList = new ObservableSrotedList<string, TransactionReport>();
-            TradesList = CollectionViewSource.GetDefaultView(_tradesList);
-            TradesList.Filter = new Predicate<object>(FilterTradesList);
+            _tradesList = new ObservableCollection<TransactionReport>();
+            GridView = new TradeHistoryGridViewModel(_tradesList);
+            GridView.Filter = new Predicate<object>(FilterTradesList);
 
             _tradeClient = tradeClient;
             _tradeClient.Account.AccountTypeChanged += AccountTypeChanged;
@@ -75,10 +75,7 @@ namespace TickTrader.BotTerminal
         }
 
         #region Properties
-        public bool IsNetAccount { get; private set; }
-        public bool IsCachAccount { get; private set; }
-        public bool IsGrossAccount { get; private set; }
-
+        
         public TradeDirection TradeDirectionFilter
         {
             get { return _tradeDirectionFilter; }
@@ -150,7 +147,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ICollectionView TradesList { get; private set; }
+        public TradeHistoryGridViewModel GridView { get; }
 
         public ObservableTask<int> DownloadObserver
         {
@@ -166,6 +163,7 @@ namespace TickTrader.BotTerminal
         }
 
         public bool CanEditPeriod => Period == TimePeriod.Custom;
+
         #endregion
 
         private async void RefreshHistory()
@@ -210,7 +208,7 @@ namespace TickTrader.BotTerminal
 
             _isRefreshing = true;
 
-            bool truncate = newFrom != null && newFrom >= _currenFrom && newTo == _currenTo && !globalChange;
+            bool truncate = newFrom != null && (newFrom >= _currenFrom || _currenFrom == null) && newTo == _currenTo && !globalChange;
 
             _currenFrom = newFrom;
             _currenTo = newTo;
@@ -275,18 +273,7 @@ namespace TickTrader.BotTerminal
 
         private TransactionReport CreateReportModel(TradeReportEntity tTransaction)
         {
-            return CreateReportModel(_tradeClient.Account.Type.Value, tTransaction, GetSymbolFor(tTransaction));
-        }
-
-        private static TransactionReport CreateReportModel(AccountTypes accountType, TradeReportEntity tTransaction, SymbolModel symbol = null)
-        {
-            switch (accountType)
-            {
-                case AccountTypes.Gross: return new GrossTransactionModel(tTransaction, symbol);
-                case AccountTypes.Net: return new NetTransactionModel(tTransaction, symbol);
-                case AccountTypes.Cash: return new CashTransactionModel(tTransaction, symbol);
-                default: throw new NotSupportedException(accountType.ToString());
-            }
+            return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, GetSymbolFor(tTransaction));
         }
 
         private SymbolModel GetSymbolFor(TradeReportEntity transaction)
@@ -315,19 +302,12 @@ namespace TickTrader.BotTerminal
             _tradeClient.TradeHistory.OnTradeReport -= OnReport;
         }
 
-        public string GetTransactionKey(TransactionReport tradeTransaction)
-        {
-            return $"{tradeTransaction.CloseTime.Ticks} {tradeTransaction.UniqueId}";
-        }
-
         private void AddToList(TransactionReport tradeTransaction)
         {
             try
             {
-                var key = GetTransactionKey(tradeTransaction);
-                _tradesList.Add(key, tradeTransaction);
+                _tradesList.Add(tradeTransaction);
             }
-            catch (ArgumentException) { } // shit happens
             catch (Exception ex)
             {
                 logger.Error(ex);
@@ -403,8 +383,7 @@ namespace TickTrader.BotTerminal
 
         private void RefreshCollection()
         {
-            if (this.TradesList != null)
-                TradesList.Refresh();
+            GridView?.Refresh();
         }
 
         private bool FilterTradesList(object o)
@@ -435,45 +414,24 @@ namespace TickTrader.BotTerminal
 
         private void AccountTypeChanged()
         {
-            IsCachAccount = _tradeClient.Account.Type == AccountTypes.Cash;
-            IsGrossAccount = _tradeClient.Account.Type == AccountTypes.Gross;
-            IsNetAccount = _tradeClient.Account.Type == AccountTypes.Net;
-
-            NotifyOfPropertyChange(nameof(IsCachAccount));
-            NotifyOfPropertyChange(nameof(IsGrossAccount));
-            NotifyOfPropertyChange(nameof(IsNetAccount));
-        }
-
-        private void RemoveFromList(string tradeTransactionId)
-        {
-            try
-            {
-                if (_tradesList.ContainsKey(tradeTransactionId))
-                    _tradesList.Remove(tradeTransactionId);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
+            GridView.AccType.Value = _tradeClient.Account.Type ?? AccountTypes.Gross;
         }
 
         private async Task TruncateHistoryAsync(DateTime from, CancellationToken cToken)
         {
-            int deletedCount = 0;
+            int count = 0;
 
-            while (_tradesList.Count > 0)
+            while(_tradesList.Count > 0)
             {
-                var firstRecord = _tradesList.GetFirstKeyValue();
-
-                if (firstRecord.Value.CloseTime.ToLocalTime() >= from)
-                    break;
-
-                _tradesList.Remove(firstRecord.Key);
-
-                if (deletedCount % 400 == 0)
+                if (++count % 400 == 0)
                     await Dispatcher.Yield(DispatcherPriority.DataBind);
 
-                deletedCount++;
+                var lastIndex = _tradesList.Count - 1;
+
+                if (_tradesList[lastIndex].CloseTime.ToLocalTime() >= from)
+                    break;
+
+                _tradesList.RemoveAt(lastIndex);
             }
         }
 

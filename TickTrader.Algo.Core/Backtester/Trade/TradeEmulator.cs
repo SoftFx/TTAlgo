@@ -28,15 +28,16 @@ namespace TickTrader.Algo.Core
         private long _orderIdSeed;
         private double _stopOutLevel = 30;
         //private RateUpdate _lastRate;
-        private TradeHistoryEmulator _history = new TradeHistoryEmulator();
+        private TradeHistoryEmulator _history;
 
-        public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector)
+        public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector, TradeHistoryEmulator history)
         {
             _context = context;
             _calcFixture = calc;
             _scheduler = scheduler;
             _collector = collector;
             _settings = settings;
+            _history = history;
 
             VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += r =>
@@ -1092,7 +1093,7 @@ namespace TickTrader.Algo.Core
                 //position.ClientOrderId = Guid.NewGuid().ToString("D");
                 position.Entity.Side = side;
                 position.Entity.Created = _scheduler.SafeVirtualTimePoint;
-                //position.PositionCreated = OperationContext.ExecutionTime;
+                position.PositionCreated = ExecutionTime;
                 //position.SymbolPrecision = smb.Digits;
 
                 if (parentOrder != null)
@@ -1121,7 +1122,7 @@ namespace TickTrader.Algo.Core
             }
 
             //position.ParentOrderId = (parentOrder != null) ? parentOrder.OrderId : position.OrderId;
-            //position.InitialType = (parentOrder != null) ? parentOrder.InitialType : OrderTypes.Market;
+            position.InitialType = (parentOrder != null) ? parentOrder.InitialType : OrderType.Market;
 
             position.Entity.Type = OrderType.Position;
             //position.Status = OrderStatuses.Calculated;
@@ -1136,7 +1137,7 @@ namespace TickTrader.Algo.Core
             position.Amount = posAmount;
             position.RemainingAmount = posAmount;
             position.Entity.Modified = _scheduler.SafeVirtualTimePoint;
-            //position.Expired = null;
+            position.Entity.Expiration = null;
 
             if (_acc.AccountingType == AccountingTypes.Gross && position.Entity.TakeProfit.HasValue)
             {

@@ -187,11 +187,11 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="{l:Resx Tab_History}"></TextBlock>
                                 <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="TransactionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.TradesList.Count}"></TextBlock>
+                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.GridView.Items.Value.Count}"></TextBlock>
                                 </Border>
                             </Grid>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding TradeHistory.TradesList.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                <DataTrigger Binding="{Binding TradeHistory.GridView.Items.Valut.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
                                     <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
                                 </DataTrigger>
                             </DataTemplate.Triggers>
@@ -304,11 +304,11 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="{Binding Title}" Background="Transparent"/>
                                 <Border Grid.Column="3" Margin="5 0 0 0" Name="TransactionCountPane" Background="{DynamicResource Shell_SecondaryForeground}">
-                                    <TextBlock Margin="5 0" Text="{Binding Content.DataContext.TradeHistory.TradesList.Count}"></TextBlock>
+                                    <TextBlock Margin="5 0" Text="{Binding Content.DataContext.TradeHistory.GridView.Items.Value.Count}"></TextBlock>
                                 </Border>
                             </Grid>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Content.DataContext.TradeHistory.TradesList.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                <DataTrigger Binding="{Binding Content.DataContext.TradeHistory.GridView.Items.Value.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
                                     <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"/>
                                 </DataTrigger>
                             </DataTemplate.Triggers>
