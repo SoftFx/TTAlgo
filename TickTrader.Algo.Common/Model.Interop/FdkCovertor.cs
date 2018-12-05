@@ -427,7 +427,7 @@ namespace TickTrader.Algo.Common.Model
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
-            return new TradeReportEntity(report.Id + ":" + report.ActionId)
+            return new TradeReportEntity()
             {
                 Id = report.Id,
                 OrderId = report.Id,

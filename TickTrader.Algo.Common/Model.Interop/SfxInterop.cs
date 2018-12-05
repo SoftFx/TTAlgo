@@ -951,14 +951,14 @@ namespace TickTrader.Algo.Common.Model
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
-            return new TradeReportEntity(report.Id + ":" + report.ActionId)
+            return new TradeReportEntity()
             {
                 Id = report.Id,
                 OrderId = report.Id,
                 OpenTime = report.OrderCreated,
                 CloseTime = report.TransactionTime,
                 Type = GetRecordType(report),
-                //ActionType = Convert(report.TradeTransactionReportType),
+                ActionType = Convert(report.TradeTransactionReportType),
                 Symbol = isBalanceTransaction ? report.TransactionCurrency : report.Symbol,
                 TakeProfit = report.TakeProfit,
                 StopLoss = report.StopLoss,

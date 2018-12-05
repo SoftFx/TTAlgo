@@ -49,8 +49,10 @@ namespace TickTrader.BotTerminal
             GrossProfitLoss = GetGrossProfitLoss(transaction);
             StopLoss = GetStopLoss(transaction);
             TakeProfit = GetTakeProfit(transaction);
-            UniqueId = GetUniqueId(transaction);
             MaxVisibleVolume = GetMaxVisibleVolume(transaction);
+
+            // should be last (it's based on other fields)
+            UniqueId = GetUniqueId(transaction);
         }
 
         public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, SymbolModel symbol = null)
@@ -145,7 +147,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual string GetUniqueId(TradeReportEntity transaction)
         {
-            return transaction.OrderId + "-" + transaction.ActionId;
+            bool hasMultipleRecords = transaction.ActionId > 1 || RemainingQuantity > 0;
+
+            if (hasMultipleRecords)
+                return $"{transaction.OrderId}-{transaction.ActionId}";
+
+            return transaction.OrderId;
         }
 
         protected virtual string GetId(TradeReportEntity transaction)

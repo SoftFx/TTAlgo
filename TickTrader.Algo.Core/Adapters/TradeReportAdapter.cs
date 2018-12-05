@@ -20,13 +20,13 @@ namespace TickTrader.Algo.Core
 
         public TradeReportEntity Entity { get; }
 
-        public string ReportId => Entity.ReportId;
+        public string ReportId => Entity.Id;
         public string OrderId => Entity.OrderId;
         public DateTime ReportTime => Entity.ReportTime;
         public DateTime OpenTime => Entity.OpenTime;
         public TradeRecordTypes Type => Entity.Type;
         public TradeExecActions ActionType => Entity.ActionType;
-        public string Symbol => Entity.ReportId;
+        public string Symbol => Entity.Symbol;
         public double OpenQuantity => Entity.OpenQuantity / _lotSize;
         public double OpenPrice => Entity.OpenPrice;
         public double StopLoss => Entity.StopLoss;
@@ -47,9 +47,11 @@ namespace TickTrader.Algo.Core
 
         public static TradeReportAdapter Create(TimeKey key, SymbolAccessor symbol, TradeExecActions repType, Bo.TradeTransReasons reason)
         {
-            var entity = new TradeReportEntity(key.ToString());
+            var entity = new TradeReportEntity();
+            entity.TransactionTime = key.Timestamp;
             entity.Symbol = symbol.Name;
             entity.ActionType = repType;
+            entity.Id = key.ToString();
             return new TradeReportAdapter(entity, symbol);
         }
 
@@ -111,9 +113,9 @@ namespace TickTrader.Algo.Core
 
         public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, decimal closeAmount, decimal closePrice, decimal? requestAmount, decimal? requestPrice, string posById)
         {
-            //PosAmount = order.Amount;
-            //PosRemainingAmount = order.RemainingAmount;
-            //PosLastAmount = closeAmount;
+            Entity.PositionQuantity = order.Entity.Volume;
+            Entity.PositionLeavesQuantity = order.Entity.RemainingVolume;
+            Entity.PositionLastQuantity = (double)closeAmount;
             Entity.PositionOpened = order.PositionCreated;
             Entity.PosOpenPrice = order.Price;
             Entity.PositionClosed = closeTime;
@@ -121,7 +123,7 @@ namespace TickTrader.Algo.Core
             Entity.PositionModified = order.Modified;
             Entity.PositionById = posById;
             Entity.ReqClosePrice = (double?)requestPrice;
-            //ReqCloseAmount = requestAmount;
+            Entity.ReqCloseQuantity = (double?)requestAmount;
             return this;
         }
 

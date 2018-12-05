@@ -11,12 +11,6 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TradeReportEntity
     {
-        public TradeReportEntity(string id)
-        {
-            ReportId = id;
-        }
-
-        public string ReportId { get; private set; }
         public string OrderId { get; set; }
         public DateTime OpenTime { get; set; }
         public TradeRecordTypes Type { get; set; }

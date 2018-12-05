@@ -13,6 +13,7 @@ namespace TickTrader.BotTerminal
         public BacktesterTradeGridViewModel()
         {
             GridView = new TradeHistoryGridViewModel(new List<TransactionReport>());
+            GridView.AutoSizeColumns = false;
             GridView.AccType.Value = Algo.Api.AccountTypes.Gross;
         }
 

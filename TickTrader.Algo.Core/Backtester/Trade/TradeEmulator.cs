@@ -1085,7 +1085,7 @@ namespace TickTrader.Algo.Core
             if (transformOrder)
             {
                 position = parentOrder;
-                //position.PositionCreated = OperationContext.ExecutionTime;
+                position.PositionCreated = ExecutionTime;
             }
             else
             {
@@ -1392,7 +1392,7 @@ namespace TickTrader.Algo.Core
                 //                            + " profit=" + profit + " swap=" + closeSwap,
                 //    JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
 
-                _collector.OnPositionClosed(_scheduler.SafeVirtualTimePoint, profit, 0, closeSwap);
+                _collector.OnPositionClosed(ExecutionTime, profit, 0, closeSwap);
                 _scheduler.EnqueueEvent(b => b.Account.NetPositions.FirePositionUpdated(new PositionModifiedEventArgsImpl(copy, position, isClosed)));
             }
 

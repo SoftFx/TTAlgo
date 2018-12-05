@@ -7,7 +7,7 @@
             <Grid.Resources>
                 <l:BindingProxy x:Key="ProxyContext" Data="{Binding}" />
             </Grid.Resources>
-            <DataGrid  ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}"
+            <DataGrid Name="marginGrid"  ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}"
                        SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
                        Visibility="{Binding Data.IsMarginAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                 <DataGrid.ContextMenu>
@@ -120,7 +120,7 @@
                     <DataGridTextColumn Header="Max Visible Volume" Width="*" Binding="{Binding MaxVisibleVolume}"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <DataGrid ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False"
+            <DataGrid Name="cashGrid" ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False"
                   Visibility="{Binding Data.IsCachAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"
                   Style="{DynamicResource DataGrid_Style}"
                   ClipboardCopyMode="IncludeHeader"
@@ -255,6 +255,13 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding AutoSizeColumns}" Value="False">
+                <Setter TargetName="marginGrid" Property="HorizontalAlignment" Value="Left"/>
+                <Setter TargetName="marginGrid" Property="Width" Value="Auto"/>
+                <Setter TargetName="cashGrid" Property="HorizontalAlignment" Value="Left"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <Style x:Key="TradeHistoryGridViewStyle.Classic" TargetType="UserControl">

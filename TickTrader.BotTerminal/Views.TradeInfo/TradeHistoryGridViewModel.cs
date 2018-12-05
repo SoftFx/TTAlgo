@@ -24,6 +24,8 @@ namespace TickTrader.BotTerminal
             IsCachAccount = AccType.Var == AccountTypes.Cash;
             IsMarginAccount = IsGrossAccount | IsNetAccount;
             IsAccTypeSet = AccType.Var.IsNotNull();
+
+            AutoSizeColumns = true;
         }
 
         public Property<ICollectionView> Items { get; }
@@ -35,6 +37,8 @@ namespace TickTrader.BotTerminal
         public BoolVar IsGrossAccount { get; }
         public BoolVar IsMarginAccount { get; }
         public BoolVar IsAccTypeSet { get; }
+
+        public bool AutoSizeColumns { get; set; }
 
         public void Refresh()
         {
