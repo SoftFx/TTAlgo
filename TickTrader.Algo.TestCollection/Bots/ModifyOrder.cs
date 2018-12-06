@@ -35,15 +35,15 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
         public int? ExpirationTimeout { get; set; }
 
-        [Parameter(DisplayName = "IoC Flag", DefaultValue = IocTypes.NoneFlag, IsRequired = false)]
+        [Parameter(DisplayName = "IoC Flag", DefaultValue = IocTypes.DoNotModify, IsRequired = false)]
         public IocTypes IoC { get; set; }
 
         protected override void OnStart()
         {
             OrderExecOptions? options = null;
-            if (IoC == IocTypes.SetFlag)
+            if (IoC == IocTypes.IoC)
                 options = OrderExecOptions.ImmediateOrCancel;
-            if (IoC == IocTypes.DropFlag)
+            if (IoC == IocTypes.None)
                 options = OrderExecOptions.None;
 
             ValidateVolume();
@@ -88,5 +88,5 @@ namespace TickTrader.Algo.TestCollection.Bots
         }
     }
 
-    public enum IocTypes { NoneFlag, DropFlag, SetFlag }
+    public enum IocTypes { DoNotModify, None, IoC }
 }
