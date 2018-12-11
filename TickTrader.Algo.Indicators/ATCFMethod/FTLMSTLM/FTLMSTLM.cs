@@ -14,10 +14,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "FTLM", Target = OutputTargets.Window1, DefaultColor = Colors.DarkKhaki)]
+        [Output(DisplayName = "FTLM", Target = OutputTargets.Window1, DefaultColor = Colors.DarkKhaki, Precision = 6)]
         public DataSeries Ftlm { get; set; }
 
-        [Output(DisplayName = "STLM", Target = OutputTargets.Window1, DefaultColor = Colors.DarkSalmon)]
+        [Output(DisplayName = "STLM", Target = OutputTargets.Window1, DefaultColor = Colors.DarkSalmon, Precision = 6)]
         public DataSeries Stlm { get; set; }
 
         public int LastPositionChanged { get { return _ftlm.LastPositionChanged; } }
