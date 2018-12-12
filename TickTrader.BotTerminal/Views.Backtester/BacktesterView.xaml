@@ -87,7 +87,9 @@
                             <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
                         </ComboBox.GroupStyle>
                     </ComboBox>
-                    
+
+                    <CheckBox Grid.Column="1" Grid.Row="1" Content="Save results to file" IsChecked="{Binding SaveResultsToFile.Value}" Margin="25,0,0,0" VerticalAlignment="Center"/>
+
                     <Button Content="Settings..." Grid.Column="2" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
                             IsEnabled="{Binding IsPluginSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
 
@@ -156,55 +158,88 @@
     </ControlTemplate>
 
     <ControlTemplate x:Key="BacktesterViewTemplate.Classic">
-        <Grid Background="{TemplateBinding Background}">
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <TabControl Grid.Row="0" Margin="5">
-                <TabItem Header="Setup">
-                    <UserControl Template="{StaticResource SetupPage.Classic}"/>
-                </TabItem>
-                <TabItem Header="Journal">
-                    <UserControl Template="{StaticResource JournalPage.Classic}"/>
-                </TabItem>
-                <TabItem Header="Trades">
-                    <ContentControl cal:View.Model="{Binding TradesPage}"/>
-                </TabItem>
-                <TabItem Header="Graph">
-                    <ContentControl cal:View.Model="{Binding ChartPage}"/>
-                </TabItem>
-                <TabItem Header="Report">
-                    <ContentControl cal:View.Model="{Binding ResultsPage}"/>
-                </TabItem>
-            </TabControl>
+        <l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">
+            <Grid Background="{TemplateBinding Background}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-            <Grid Name="LauncherPanel" Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <ContentControl cal:View.Model="{Binding ProgressMonitor}" Grid.Column="0" IsEnabled="False"/>
-                <Button cal:Message.Attach="Start" Content="Start"
-                        IsEnabled="{Binding CanStart.Value}" Grid.Column="1" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />
-                <Button cal:Message.Attach="Stop" Content="Stop"
+                <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
+                    <Button Content="{DynamicResource StartToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
+                </ToolBar>
+
+                <TabControl Name="tabBody" Grid.Row="1" Margin="5">
+                    <TabItem Header="Setup">
+                        <UserControl Template="{StaticResource SetupPage.Classic}"/>
+                    </TabItem>
+                    <TabItem Header="Journal">
+                        <UserControl Template="{StaticResource JournalPage.Classic}"/>
+                    </TabItem>
+                    <TabItem Header="Trades">
+                        <ContentControl cal:View.Model="{Binding TradesPage}"/>
+                    </TabItem>
+                    <TabItem Header="Graph">
+                        <ContentControl cal:View.Model="{Binding ChartPage}"/>
+                    </TabItem>
+                    <TabItem Header="Report">
+                        <ContentControl cal:View.Model="{Binding ResultsPage}"/>
+                    </TabItem>
+                </TabControl>
+
+                <!--<Border Name="progressPopup" Grid.Row="1" Padding="8"
+                    VerticalAlignment="Center" Margin="15"
+                    Background="LightGray" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentControl cal:View.Model="{Binding ProgressMonitor}" Grid.Column="0" IsEnabled="False"/>
+                    -->
+                <!--<Button cal:Message.Attach="Start" Content="Start"
+                        IsEnabled="{Binding CanStart.Value}" Grid.Column="1" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />-->
+                <!--
+                    <Button cal:Message.Attach="Stop" Content="Cancel"
                         IsEnabled="{Binding CanStop.Value}" Grid.Column="2" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />
-            </Grid>
+                </Grid>
+            </Border>-->
 
-        </Grid>
+            </Grid>
+        </l:OverlayPanel>
+
+        <!--<ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">
+                <Setter TargetName="progressPopup" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="tabBody" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="toolBar" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="tabBody" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter TargetName="toolBar" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </ControlTemplate.Triggers>-->
+        
     </ControlTemplate>
 
-    <Style x:Key="BacktesterView.Common" TargetType="Window">
+    <Style x:Key="BacktesterViewStyle.Common" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
-        <Setter Property="WindowStyle" Value="ThreeDBorderWindow" />
+        <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
         <Setter Property="ShowInTaskbar" Value="True"/>
         <Setter Property="Width" Value="700"/>
         <Setter Property="Height" Value="500"/>
     </Style>
 
-    <Style x:Key="BacktesterViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BacktesterView.Common}">
+    <Style x:Key="BacktesterViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BacktesterViewStyle.Common}">
         <Setter Property="Template" Value="{StaticResource BacktesterViewTemplate.Classic}"/>
     </Style>
 

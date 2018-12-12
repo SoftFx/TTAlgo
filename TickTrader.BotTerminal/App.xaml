@@ -31,11 +31,15 @@
                     </l:Theme>-->
                 </l:ThemeSelector>
 
+                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
+                <!--<l:AutoDictionary Source="Controls/*.xaml"/>-->
+
                 <!-- Views (temp!) -->
-                <ResourceDictionary Source="Views.Aux/ProgressView.xaml" />
-                <ResourceDictionary Source="Views.Aux/DateRangeSelectionView.xaml" />
-                <ResourceDictionary Source="Views.Aux/ActionDialogView.xaml" />
-                <ResourceDictionary Source="Views.Aux/ActionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ProgressView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/DateRangeSelectionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionDialogView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionOverlayView.xaml" />
 
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />

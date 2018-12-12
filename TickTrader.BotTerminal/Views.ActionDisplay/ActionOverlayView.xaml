@@ -1,0 +1,42 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="ActionOverlayTemplate.Classic">
+        <Border Name="progressPopup" Grid.Row="1" Padding="8" Margin="15"
+                    Background="LightGray">
+            <Grid>
+                <!--<Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>-->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ContentControl cal:View.Model="{Binding Progress}" Grid.Row="0" IsEnabled="False"/>
+                <Button Name="closeBtn" cal:Message.Attach="Close" Content="Close" Visibility="Collapsed"
+                        IsEnabled="{Binding CanClose}" Grid.Row="1" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <Button Name="cancelBtn" cal:Message.Attach="Cancel" Content="Cancel"
+                        IsEnabled="{Binding CanCancel}" Grid.Row="1" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />
+            </Grid>
+        </Border>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ErrorPhase}" Value="True">
+                <Setter TargetName="closeBtn" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="cancelBtn" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+        
+    </ControlTemplate>
+
+    <Style x:Key="ActionOverlayViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource ActionOverlayTemplate.Classic}"/>
+        <!--<Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>-->
+    </Style>
+
+</ResourceDictionary>

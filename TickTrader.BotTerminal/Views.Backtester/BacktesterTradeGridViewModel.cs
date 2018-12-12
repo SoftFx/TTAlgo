@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace TickTrader.BotTerminal
 {
     class BacktesterTradeGridViewModel
     {
+        private List<TransactionReport> _reports;
+
         public BacktesterTradeGridViewModel()
         {
             GridView = new TradeHistoryGridViewModel(new List<TransactionReport>());
@@ -27,7 +30,16 @@ namespace TickTrader.BotTerminal
 
         public void Fill(List<TransactionReport> reports)
         {
+            _reports = reports;
             GridView.SetCollection(reports);
+        }
+
+        public Task SaveAsCsv(Stream entryStream)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                TradeReportCsvSerializer.Serialize(_reports, entryStream, GridView.GetAccTypeValue());
+            });
         }
     }
 }

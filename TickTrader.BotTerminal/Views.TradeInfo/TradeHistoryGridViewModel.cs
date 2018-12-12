@@ -40,6 +40,8 @@ namespace TickTrader.BotTerminal
 
         public bool AutoSizeColumns { get; set; }
 
+        public AccountTypes GetAccTypeValue() => AccType.Value.Value;
+
         public void Refresh()
         {
             Items.Value.Refresh();

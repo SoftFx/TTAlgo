@@ -38,6 +38,7 @@ namespace TickTrader.BotTerminal
                 AppLockFilePath = Path.Combine(AppDataFolder, "applock");
                 UserProfilesFolder = Path.Combine(appDocumentsFolder, "Profiles");
                 ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
+                BacktestResultsFolder = Path.Combine(appDocumentsFolder, "Backtest Results");
             }
             else
             {
@@ -56,6 +57,7 @@ namespace TickTrader.BotTerminal
                 AppLockFilePath = Path.Combine(AppFolder, "applock");
                 UserProfilesFolder = Path.Combine(AppFolder, "Profiles");
                 ProfilesCacheFolder = Path.Combine(UserProfilesFolder, "Cache");
+                BacktestResultsFolder = Path.Combine(AppFolder, "Backtest Results");
             }
 
             EnsureFolder(AlgoRepositoryFolder);
@@ -69,6 +71,7 @@ namespace TickTrader.BotTerminal
             EnsureFolder(AppDataFolder);
             EnsureFolder(UserProfilesFolder);
             EnsureFolder(ProfilesCacheFolder);
+            EnsureFolder(BacktestResultsFolder);
 
             // This is required for normal Algo plugin execution. Do not change working folder elsewhere!
             Directory.SetCurrentDirectory(AlgoWorkingFolder);
@@ -95,6 +98,7 @@ namespace TickTrader.BotTerminal
         public string AlgoWorkingFolder { get; private set; }
         public string AppDataFolder { get; private set; }
         public string AppLockFilePath { get; private set; }
+        public string BacktestResultsFolder { get; private set; }
         public IObjectStorage UserDataStorage { get; private set; }
         public IObjectStorage ProtectedUserDataStorage { get; private set; }
         public IObjectStorage ProfilesCacheStorage { get; private set; }
