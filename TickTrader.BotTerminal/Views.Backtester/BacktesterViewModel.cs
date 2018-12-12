@@ -271,9 +271,11 @@ namespace TickTrader.BotTerminal
             var chartTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
             var chartPriceLayer = BarPriceType.Bid;
 
+            var progressMin = _emulteFrom.GetAbsoluteDay();
+
             _mainSymbolToken.Id = chartSymbol.Key;
 
-            observer.StartProgress(_emulteFrom.GetAbsoluteDay(), _emulateTo.GetAbsoluteDay());
+            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
             observer.SetMessage("Emulating...");
 
             var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
@@ -300,48 +302,39 @@ namespace TickTrader.BotTerminal
                         tester.InitOutputCollection<Marker>(outputSetup.Id);
                 }
 
-                var updateTimer = new DispatcherTimer();
-                updateTimer.Interval = TimeSpan.FromMilliseconds(50);
-                updateTimer.Tick += (s, a) =>
-                {
-                    var point = tester.CurrentTimePoint;
-                    if (point != null)
-                        observer.SetProgress(tester.CurrentTimePoint.Value.GetAbsoluteDay());
-                };
-                updateTimer.Start();
-
                 Exception execError = null;
 
-                try
+                System.Action updateProgressAction = () => observer.SetProgress(tester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
+
+                using (new UiUpdateTimer(updateProgressAction))
                 {
-                    MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
+                    try
+                    {
+                        MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
 
-                    foreach (var symbolSetup in AdditionalSymbols)
-                        symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
+                        foreach (var symbolSetup in AdditionalSymbols)
+                            symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
 
-                    tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+                        tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 
-                    foreach (var rec in _client.Currencies.Snapshot)
-                        tester.Currencies.Add(rec.Key, rec.Value);
+                        foreach (var rec in _client.Currencies.Snapshot)
+                            tester.Currencies.Add(rec.Key, rec.Value);
 
-                    //foreach (var rec in _client.Symbols.Snapshot)
-                    //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
+                        //foreach (var rec in _client.Symbols.Snapshot)
+                        //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
 
-                    _settings.Apply(tester);
+                        _settings.Apply(tester);
 
-                    _hasDataToSave.Set();
+                        _hasDataToSave.Set();
 
-                    await Task.Run(() => tester.Run(cToken));
+                        await Task.Run(() => tester.Run(cToken));
 
-                    observer.SetProgress(DateRange.To.GetAbsoluteDay());
-                }
-                catch (Exception ex)
-                {
-                    execError = ex;
-                }
-                finally
-                {
-                    updateTimer.Stop();
+                        observer.SetProgress(DateRange.To.GetAbsoluteDay());
+                    }
+                    catch (Exception ex)
+                    {
+                        execError = ex;
+                    }
                 }
 
                 await CollectEvents(tester, observer);
@@ -465,28 +458,54 @@ namespace TickTrader.BotTerminal
                 using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
                 {
                     var jounralEntry = archive.CreateEntry("journal.txt", CompressionLevel.Optimal);
+
                     using (var entryStream = jounralEntry.Open())
-                    {
-                        using (var writer = new System.IO.StreamWriter(entryStream))
-                        {
-                            foreach (var record in JournalRecords.Value)
-                            {
-                                writer.Write(record.Time);
-                                writer.Write(string.Format(" | {0,8} |", record.Severity));
-                                writer.WriteLine(record.Message);
-                            }
-                        }   
-                    }
+                        await SaveJournalTo(entryStream, observer);
 
                     var tradeReportsEntry = archive.CreateEntry("trades.csv", CompressionLevel.Optimal);
                     using (var entryStream = tradeReportsEntry.Open())
-                        await TradesPage.SaveAsCsv(entryStream);
+                        await TradesPage.SaveAsCsv(entryStream, observer);
+
+                    observer.SetMessage("Saving report...");
 
                     var summaryEntry = archive.CreateEntry("summary.txt", CompressionLevel.Optimal);
                     using (var entryStream = summaryEntry.Open())
-                        ResultsPage.SaveAsText(entryStream);
+                        await Task.Run(() => ResultsPage.SaveAsText(entryStream));
                 }
             }
+        }
+
+        private async Task SaveJournalTo(System.IO.Stream stream, IActionObserver observer)
+        {
+            var records = JournalRecords.Value;
+
+            long progress = 0;
+
+            observer.SetMessage("Saving journal...");
+            observer.StartProgress(0, records.Count);
+
+            using (new UiUpdateTimer(() => observer.SetProgress(Interlocked.Read(ref progress))))
+            {
+                await Task.Run(() =>
+                {
+                    using (var writer = new System.IO.StreamWriter(stream))
+                    {
+                        for (int i = 0; i < records.Count; i++)
+                        {
+                            var record = records[i];
+
+                            writer.Write(record.Time);
+                            writer.Write(string.Format(" | {0,8} |", record.Severity));
+                            writer.WriteLine(record.Message);
+
+                            if (i % 10 == 0)
+                                Interlocked.Exchange(ref progress, i);
+                        }
+                    }
+                });
+            }
+
+            observer.StartProgress(0, records.Count);
         }
 
         private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)

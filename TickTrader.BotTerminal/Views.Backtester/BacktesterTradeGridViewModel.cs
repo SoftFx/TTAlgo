@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
@@ -34,12 +36,20 @@ namespace TickTrader.BotTerminal
             GridView.SetCollection(reports);
         }
 
-        public Task SaveAsCsv(Stream entryStream)
+        public async Task SaveAsCsv(Stream entryStream, IActionObserver observer)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                TradeReportCsvSerializer.Serialize(_reports, entryStream, GridView.GetAccTypeValue());
-            });
+            long progress = 0;
+
+            observer.SetMessage("Saving trades...");
+            observer.StartProgress(0, _reports.Count);
+
+            Action writeCsvAction = () => TradeReportCsvSerializer.Serialize(
+                _reports, entryStream, GridView.GetAccTypeValue(), i => Interlocked.Exchange(ref progress, i));
+
+            Action updateProgressAction = () => observer.SetProgress(Interlocked.Read(ref progress));
+
+            using (new UiUpdateTimer(updateProgressAction))
+                await Task.Factory.StartNew(writeCsvAction);
         }
     }
 }

@@ -16,16 +16,16 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Order" Width="*" Binding="{Binding UniqueId}"/>
+                    <DataGridTextColumn Header="Order" Width="85" Binding="{Binding UniqueId}"/>
                     <!--OrderId and PositionId for Gross Account-->
-                    <!--<DataGridTextColumn Header="Order" Width="*" Binding="{Binding OrderId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
-                    <!--<DataGridTextColumn Header="Position" Width="*" Binding="{Binding PositionId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
-                    <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type}"/>
-                    <DataGridTextColumn Header="Trx Type" Width="*" Binding="{Binding ActionType}" />
-                    <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
-                    <DataGridTextColumn Header="Initial Volume" Width="*" Binding="{Binding OpenQuantity}" />
-                    <DataGridTextColumn Header="Open Price" Width="*" SortMemberPath="OpenPrice">
+                    <!--<DataGridTextColumn Header="Order" Width="100" Binding="{Binding OrderId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
+                    <!--<DataGridTextColumn Header="Position" Width="100" Binding="{Binding PositionId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
+                    <DataGridTextColumn Header="Open Time" Width="130" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Type" Width="70" Binding="{Binding Type}"/>
+                    <DataGridTextColumn Header="Trx Type" Width="100" Binding="{Binding ActionType}" />
+                    <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
+                    <DataGridTextColumn Header="Initial Volume" Width="70" Binding="{Binding OpenQuantity}" />
+                    <DataGridTextColumn Header="Open Price" Width="100" SortMemberPath="OpenPrice">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="OpenPrice"/>
@@ -33,7 +33,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="S/L" Width="*" SortMemberPath="StopLoss" Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
+                    <DataGridTextColumn Header="S/L" Width="100" SortMemberPath="StopLoss" Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="StopLoss"/>
@@ -41,7 +41,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="T/P" Width="*" SortMemberPath="TakeProfit" Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
+                    <DataGridTextColumn Header="T/P" Width="100" SortMemberPath="TakeProfit" Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="TakeProfit"/>
@@ -49,9 +49,9 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Close Time" Width="Auto" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Trade Volume" Width="*" Binding="{Binding CloseQuantity}" />
-                    <DataGridTextColumn Header="Close Price" Width="*" SortMemberPath="ClosePrice">
+                    <DataGridTextColumn Header="Close Time" Width="130" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Trade Volume" Width="70" Binding="{Binding CloseQuantity}" />
+                    <DataGridTextColumn Header="Close Price" Width="100" SortMemberPath="ClosePrice">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="ClosePrice"/>
@@ -59,8 +59,8 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Remaining Volume" Width="*" Binding="{Binding RemainingQuantity}" />
-                    <DataGridTextColumn Header="Gross P/L" Width="*" SortMemberPath="GrossProfitLoss">
+                    <DataGridTextColumn Header="Remaining Volume" Width="70" Binding="{Binding RemainingQuantity}" />
+                    <DataGridTextColumn Header="Gross P/L" Width="100" SortMemberPath="GrossProfitLoss">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="GrossProfitLoss"/>
@@ -74,7 +74,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
+                    <DataGridTextColumn Header="Commission" Width="100" SortMemberPath="Commission">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Commission"/>
@@ -88,7 +88,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Swap" Width="*" SortMemberPath="Swap">
+                    <DataGridTextColumn Header="Swap" Width="100" SortMemberPath="Swap">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Swap"/>
@@ -102,7 +102,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Net P/L" Width="*" SortMemberPath="NetProfitLoss">
+                    <DataGridTextColumn Header="Net P/L" Width="100" SortMemberPath="NetProfitLoss">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="NetProfitLoss"/>
@@ -116,8 +116,8 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
-                    <DataGridTextColumn Header="Max Visible Volume" Width="*" Binding="{Binding MaxVisibleVolume}"/>
+                    <DataGridTextColumn Header="Comment" Width="140" Binding="{Binding Comment}" />
+                    <DataGridTextColumn Header="Max Visible Volume" Width="70" Binding="{Binding MaxVisibleVolume}"/>
                 </DataGrid.Columns>
             </DataGrid>
             <DataGrid Name="cashGrid" ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False"
@@ -131,12 +131,12 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Order" Width="*" Binding="{Binding UniqueId}" />
-                    <DataGridTextColumn Header="Open Time" Width="Auto" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type}"/>
-                    <DataGridTextColumn Header="Action" Width="*" Binding="{Binding ActionType}" />
-                    <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
-                    <DataGridTextColumn Header="Requested Quantity" Width="*" SortMemberPath="OpenQuantity" >
+                    <DataGridTextColumn Header="Order" Width="90" Binding="{Binding UniqueId}" />
+                    <DataGridTextColumn Header="Open Time" Width="130" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Type" Width="70" Binding="{Binding Type}"/>
+                    <DataGridTextColumn Header="Action" Width="100" Binding="{Binding ActionType}" />
+                    <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
+                    <DataGridTextColumn Header="Requested Quantity" Width="70" SortMemberPath="OpenQuantity" >
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="OpenQuantity"/>
@@ -150,7 +150,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Requested Rate" Width="*" SortMemberPath="OpenPrice">
+                    <DataGridTextColumn Header="Requested Rate" Width="100" SortMemberPath="OpenPrice">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="OpenPrice"/>
@@ -158,8 +158,8 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Exec Time" Width="Auto" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Exec Quantity" Width="*" SortMemberPath="CloseQuantity" >
+                    <DataGridTextColumn Header="Exec Time" Width="130" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Exec Quantity" Width="70" SortMemberPath="CloseQuantity" >
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="CloseQuantity"/>
@@ -167,7 +167,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Exec Rate" Width="*" SortMemberPath="ClosePrice">
+                    <DataGridTextColumn Header="Exec Rate" Width="100" SortMemberPath="ClosePrice">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="ClosePrice"/>
@@ -175,7 +175,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Remaining Quantity" Width="*" SortMemberPath="RemainingQuantity" >
+                    <DataGridTextColumn Header="Remaining Quantity" Width="70" SortMemberPath="RemainingQuantity" >
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="RemainingQuantity"/>
@@ -189,7 +189,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission">
+                    <DataGridTextColumn Header="Commission" Width="100" SortMemberPath="Commission">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Commission"/>
@@ -205,7 +205,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Asset I" Width="*" SortMemberPath="AssetI">
+                    <DataGridTextColumn Header="Asset I" Width="100" SortMemberPath="AssetI">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="AssetI"/>
@@ -221,7 +221,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Asset II" Width="*" SortMemberPath="AssetII">
+                    <DataGridTextColumn Header="Asset II" Width="100" SortMemberPath="AssetII">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="AssetII"/>
@@ -237,8 +237,8 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" />
-                    <DataGridTextColumn Header="Max Visible Volume" Width="*" SortMemberPath="MaxVisibleVolume" >
+                    <DataGridTextColumn Header="Comment" Width="100" Binding="{Binding Comment}" />
+                    <DataGridTextColumn Header="Max Visible Volume" Width="100" SortMemberPath="MaxVisibleVolume" >
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="MaxVisibleVolume"/>

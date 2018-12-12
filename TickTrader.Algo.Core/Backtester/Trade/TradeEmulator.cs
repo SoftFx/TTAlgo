@@ -1051,7 +1051,7 @@ namespace TickTrader.Algo.Core
             report.FillGenericOrderData(_calcFixture, order);
             report.FillAccountSpecificFields(_calcFixture);
             report.Entity.LeavesQuantity = 0;
-            report.Entity.MaxVisibleQuantity = order.MaxVisibleVolume;
+            report.Entity.MaxVisibleQuantity = order.Entity.MaxVisibleVolume;
 
             if (_acc.IsMarginType)
             {

@@ -61,6 +61,11 @@ namespace TickTrader.BotTerminal
             GetByAccType(accType).Serialize(reports, toStream);
         }
 
+        public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountTypes accType, Action<long> progressCallback)
+        {
+            GetByAccType(accType).Serialize(reports, toStream, progressCallback);
+        }
+
         private static CsvSerializer<TransactionReport> GetByAccType(AccountTypes accType)
         {
             if (accType == AccountTypes.Net)

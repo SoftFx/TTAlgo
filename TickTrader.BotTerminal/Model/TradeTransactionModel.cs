@@ -79,12 +79,12 @@ namespace TickTrader.BotTerminal
         public TradeExecActions ActionType { get; protected set; }
         public string Symbol { get; protected set; }
         public double? OpenQuantity { get; protected set; }
-        public double OpenPrice { get; protected set; }
-        public double StopLoss { get; protected set; }
-        public double TakeProfit { get; protected set; }
+        public double? OpenPrice { get; protected set; }
+        public double? StopLoss { get; protected set; }
+        public double? TakeProfit { get; protected set; }
         public DateTime CloseTime { get; protected set; }
         public double? CloseQuantity { get; protected set; }
-        public double ClosePrice { get; protected set; }
+        public double? ClosePrice { get; protected set; }
         public double? RemainingQuantity { get; protected set; }
         public double Commission { get; protected set; }
         public string CommissionCurrency { get; protected set; }
@@ -170,9 +170,9 @@ namespace TickTrader.BotTerminal
             return IsBalanceTransaction ? (double?)null : (transaction.LeavesQuantity / LotSize);
         }
 
-        protected virtual double GetClosePrice(TradeReportEntity transaction)
+        protected virtual double? GetClosePrice(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.PositionClosePrice;
+            return IsBalanceTransaction ? (double?)null : transaction.PositionClosePrice;
         }
 
         protected virtual double? GetCloseQuantity(TradeReportEntity transaction)
@@ -185,9 +185,9 @@ namespace TickTrader.BotTerminal
             return transaction.TransactionTime;
         }
 
-        protected virtual double GetOpenPrice(TradeReportEntity transaction)
+        protected virtual double? GetOpenPrice(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.Price;
+            return IsBalanceTransaction ? (double?)null : transaction.Price;
         }
 
         protected virtual double? GetOpenQuntity(TradeReportEntity transaction)
@@ -220,24 +220,24 @@ namespace TickTrader.BotTerminal
             return transaction.Commission;
         }
 
-        protected virtual double GetStopLoss(TradeReportEntity transaction)
+        protected virtual double? GetStopLoss(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.StopLoss;
+            return IsBalanceTransaction ? (double?)null : transaction.StopLoss;
         }
 
-        protected virtual double GetTakeProfit(TradeReportEntity transaction)
+        protected virtual double? GetTakeProfit(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.TakeProfit;
+            return IsBalanceTransaction ? (double?)null : transaction.TakeProfit;
         }
     }
 
     class NetTransactionModel : TransactionReport
     {
         public NetTransactionModel(TradeReportEntity transaction, SymbolModel model) : base(transaction, model) { }
-        protected override double GetOpenPrice(TradeReportEntity transaction)
+        protected override double? GetOpenPrice(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ?
-                double.NaN : transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ?
+                (double?)null : transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ?
                 transaction.StopPrice : transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
         }
     }
@@ -259,9 +259,9 @@ namespace TickTrader.BotTerminal
             return IsBalanceTransaction ? (double?)null : IsPosition ? (transaction.PositionQuantity / LotSize) : (transaction.Quantity / LotSize);
         }
 
-        protected override double GetOpenPrice(TradeReportEntity transaction)
+        protected override double? GetOpenPrice(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN :
+            return IsBalanceTransaction ? (double?)null :
                 transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ? transaction.StopPrice :
                 IsPosition ? transaction.PosOpenPrice : transaction.Price;
         }
@@ -319,14 +319,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override double GetClosePrice(TradeReportEntity transaction)
+        protected override double? GetClosePrice(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? double.NaN : transaction.OrderFillPrice ?? 0;
+            return IsBalanceTransaction ? (double?)null : transaction.OrderFillPrice;
         }
 
         protected override double? GetCloseQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? (double?) null : transaction.OrderLastFillAmount ?? 0;
+            return IsBalanceTransaction ? (double?) null : transaction.OrderLastFillAmount;
         }
     }
 }

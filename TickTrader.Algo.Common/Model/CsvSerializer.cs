@@ -59,6 +59,24 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        public void Serialize(IEnumerable<TEntity> entities, Stream toStream, Action<long> progressCallback)
+        {
+            long i = 0;
+
+            using (var writer = new StreamWriter(toStream))
+            {
+                WriteHeader(writer);
+
+                foreach (var rep in entities)
+                    WriteRow(writer, rep);
+
+                if ((++i) % 10 == 0)
+                    progressCallback(i);
+            }
+
+            progressCallback(i);
+        }
+
         private void WriteHeader(TextWriter writer)
         {
             for (int i = 0; i < _columns.Count; i++)
