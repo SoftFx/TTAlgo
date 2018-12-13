@@ -3,24 +3,18 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <l:NotNullConverter x:Key="NotNull" />
-
     <ControlTemplate x:Key="OverlayWndHost.Template" TargetType="l:OverlayPanel">
         <Grid Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"
               VerticalAlignment="{TemplateBinding VerticalAlignment}"
               HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
-            <ContentPresenter x:Name="contenHost" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+            <ContentPresenter x:Name="contenHost" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsEnabled="False" Opacity="0.5"/>
             <ContentControl cal:View.Model="{TemplateBinding OverlayModel}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
         </Grid>
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=OverlayModel, Converter={StaticResource NotNull}}" Value="True">
-                <Setter TargetName="contenHost" Property="Effect">
-                    <Setter.Value>
-                        <BlurEffect Radius="10"/>
-                    </Setter.Value>
-                </Setter>
-                <Setter TargetName="contenHost" Property="Visibility" Value="Hidden"/>
-            </DataTrigger>
+            <Trigger Property="OverlayModel" Value="{x:Null}">
+                <Setter TargetName="contenHost" Property="IsEnabled" Value="True"/>
+                <Setter TargetName="contenHost" Property="Opacity" Value="1"/>
+            </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
