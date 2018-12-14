@@ -206,8 +206,9 @@ namespace TickTrader.Algo.Core
             {
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();
-                context.Logger.NotifyOrderActivation(clone);
-                CallListener(eReport);
+                var isOwnOrder = CallListener(eReport);
+                if (!isOwnOrder && !IsInvisible(clone))
+                    context.Logger.NotifyOrderActivation(clone);
                 context.EnqueueEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Opened)

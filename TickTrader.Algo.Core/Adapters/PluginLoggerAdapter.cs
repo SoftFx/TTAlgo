@@ -232,10 +232,16 @@ namespace TickTrader.Algo.Core
 
         public void NotifyOrderActivation(OrderAccessor order)
         {
+            var smbInfo = order.SymbolInfo;
+            var priceFomat = smbInfo.PriceFormat;
+
             var builder = new StringBuilder();
             builder.Append("Order #").Append(order.Id);
             builder.Append(" activated");
-            PrintCurrentRate(builder, order.SymbolInfo);
+            //builder.AppendNumber(order.ExecPrice, priceFomat);
+            PrintCurrentRate(builder, smbInfo);
+
+            Logger.OnPrintTrade(builder.ToString());
         }
 
         public void NotifyOrderCancelation(OrderAccessor order)
