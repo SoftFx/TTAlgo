@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -24,8 +25,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         [Parameter(DefaultValue = 3, DisplayName = "%D Period")]
         public int DPeriod { get; set; }
 
-        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Parameter(DefaultValue = PriceField.LowHigh, DisplayName = "Price Field")]
         public PriceField TargetPrice { get; set; }
@@ -44,7 +45,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         public StochasticOscillator() { }
 
         public StochasticOscillator(BarSeries bars, int kPeriod, int slowing, int dPeriod,
-            Method targetMethod = Method.Simple, PriceField targetPrice = PriceField.LowHigh)
+            MovingAverageMethod targetMethod = MovingAverageMethod.Simple, PriceField targetPrice = PriceField.LowHigh)
         {
             Bars = bars;
             KPeriod = kPeriod;
@@ -60,9 +61,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
         {
             _dMa = MABase.CreateMaInstance(DPeriod, TargetMethod);
             _dMa.Init();
-            _numMa = MABase.CreateMaInstance(Slowing, Method.Simple);
+            _numMa = MABase.CreateMaInstance(Slowing, MovingAverageMethod.Simple);
             _numMa.Init();
-            _denumMa = MABase.CreateMaInstance(Slowing, Method.Simple);
+            _denumMa = MABase.CreateMaInstance(Slowing, MovingAverageMethod.Simple);
             _denumMa.Init();
         }
 

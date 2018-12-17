@@ -1,10 +1,11 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
     [Indicator(Category = "Trend", DisplayName = "Moving Average", Version = "1.0")]
-    public class MovingAverage : Indicator
+    public class MovingAverage : Indicator, IMovingAverage
     {
         private IMA _maInstance;
         private IShift _shifter;
@@ -15,8 +16,8 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
+        public MovingAverageMethod Method { get; set; }
 
         [Parameter(DefaultValue = 0.0667, DisplayName = "Smooth Factor(CustomEMA)")]
         public double SmoothFactor { get; set; }
@@ -31,13 +32,13 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         public MovingAverage() { }
 
-        public MovingAverage(DataSeries price, int period, int shift, Method targetMethod = Method.Simple,
+        public MovingAverage(DataSeries price, int period, int shift, MovingAverageMethod method = MovingAverageMethod.Simple,
             double smoothFactor = double.NaN)
         {
             Price = price;
             Period = period;
             Shift = shift;
-            TargetMethod = targetMethod;
+            Method = method;
             SmoothFactor = double.IsNaN(smoothFactor) ? 2.0/(period + 1) : smoothFactor;
 
             InitializeIndicator();
@@ -45,7 +46,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         protected void InitializeIndicator()
         {
-            _maInstance = MABase.CreateMaInstance(Period, TargetMethod, SmoothFactor);
+            _maInstance = MABase.CreateMaInstance(Period, Method, SmoothFactor);
             _maInstance.Init();
             _shifter = new SimpleShifter(Shift);
             _shifter.Init();

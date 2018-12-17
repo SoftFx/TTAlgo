@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
@@ -31,9 +32,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
 
         protected void InitializeIndicator()
         {
-            _smaDeMax = MABase.CreateMaInstance(Period, Method.Simple);
+            _smaDeMax = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _smaDeMax.Init();
-            _smaDeMin = MABase.CreateMaInstance(Period, Method.Simple);
+            _smaDeMin = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _smaDeMin.Init();
         }
 

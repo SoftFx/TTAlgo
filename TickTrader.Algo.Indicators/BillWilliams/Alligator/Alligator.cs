@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
@@ -26,8 +27,8 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         [Parameter(DefaultValue = 3, DisplayName = "Lips Shift")]
         public int LipsShift { get; set; }
 
-        [Parameter(DefaultValue = Method.Smoothed, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Smoothed, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -46,7 +47,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         public Alligator() { }
 
         public Alligator(DataSeries price, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
-            int lipsPeriod, int lipsShift, Method targetMethod = Method.Simple)
+            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
         {
             Price = price;
             JawsPeriod = jawsPeriod;

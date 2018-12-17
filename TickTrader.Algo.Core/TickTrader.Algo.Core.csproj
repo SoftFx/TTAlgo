@@ -122,6 +122,7 @@
     <Compile Include="Entities\Dealer\OpenOrderDealerRequest.cs" />
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FileEntity.cs" />
+    <Compile Include="Entities\IndicatorsCollection.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\MockOrder.cs" />
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
@@ -244,6 +245,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj">
       <Project>{4ec2f84d-ef40-498e-a277-4eb91becea4b}</Project>
       <Name>TickTrader.Algo.Ext</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

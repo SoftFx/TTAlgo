@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
@@ -17,8 +18,8 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Parameter(DefaultValue = 0.1, DisplayName = "Deviation(%)")]
         public double Deviation { get; set; }
 
-        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -33,7 +34,7 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
 
         public Envelopes() { }
 
-        public Envelopes(DataSeries price, int period, int shift, Method targetMethod = Method.Simple)
+        public Envelopes(DataSeries price, int period, int shift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
         {
             Price = price;
             Period = period;

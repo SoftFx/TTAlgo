@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
@@ -32,7 +33,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
 
         protected void InitializeIndicator()
         {
-            _ma = MABase.CreateMaInstance(Period, Method.Simple);
+            _ma = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _ma.Init();
         }
 

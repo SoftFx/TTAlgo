@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
@@ -45,7 +46,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
         private void InitializeIndicator()
         {
             _ao = new AwesomeOscillator.AwesomeOscillator(Bars, FastSmaPeriod, SlowSmaPeriod, DataLimit);
-            _aoSma = MABase.CreateMaInstance(FastSmaPeriod, Method.Simple);
+            _aoSma = MABase.CreateMaInstance(FastSmaPeriod, MovingAverageMethod.Simple);
             _aoSma.Init();
         }
 

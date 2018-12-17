@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.MACD
@@ -43,9 +44,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.MACD
 
         protected void InitializeIndicator()
         {
-            _fastEma = new MovingAverage(Price, FastEma, 0, Method.Exponential);
-            _slowEma = new MovingAverage(Price, SlowEma, 0, Method.Exponential);
-            _macdSma = MABase.CreateMaInstance(MacdSma, Method.Simple);
+            _fastEma = new MovingAverage(Price, FastEma, 0, MovingAverageMethod.Exponential);
+            _slowEma = new MovingAverage(Price, SlowEma, 0, MovingAverageMethod.Exponential);
+            _macdSma = MABase.CreateMaInstance(MacdSma, MovingAverageMethod.Simple);
             _macdSma.Init();
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
@@ -32,9 +33,9 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
 
         protected void InitializeIndicator()
         {
-            _positiveMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _positiveMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _positiveMa.Init();
-            _negativeMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _negativeMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _negativeMa.Init();
         }
 

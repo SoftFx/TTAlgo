@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -12,8 +13,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
         [Parameter(DefaultValue = 13, DisplayName = "Period")]
         public int Period { get; set; }
 
-        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
         public AppliedPrice.Target TargetPrice { get; set; }
@@ -28,7 +29,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
 
         public ForceIndex() { }
 
-        public ForceIndex(BarSeries bars, int period, Method targetMethod = Method.Simple,
+        public ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple,
             AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
             Bars = bars;

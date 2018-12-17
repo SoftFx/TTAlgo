@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -47,11 +48,11 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
         protected void InitializeIndicator()
         {
             Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
-            _plusMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _plusMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
             _plusMa.Init();
-            _minusMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _minusMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
             _minusMa.Init();
-            _adxMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _adxMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
             _adxMa.Init();
         }
 

@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -36,7 +37,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
 
         protected void InitializeIndicator()
         {
-            _ema = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, Method.Exponential);
+            _ema = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, MovingAverageMethod.Exponential);
         }
 
         protected override void Init()

@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
@@ -30,8 +31,8 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         [Parameter(DefaultValue = 3, DisplayName = "Lips Shift")]
         public int LipsShift { get; set; }
 
-        [Parameter(DefaultValue = Method.Smoothed, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Smoothed, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -53,7 +54,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         public GatorOscillator() { }
 
         public GatorOscillator(DataSeries price, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
-            int lipsPeriod, int lipsShift, Method targetMethod = Method.Simple)
+            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
         {
             Price = price;
             JawsPeriod = jawsPeriod;

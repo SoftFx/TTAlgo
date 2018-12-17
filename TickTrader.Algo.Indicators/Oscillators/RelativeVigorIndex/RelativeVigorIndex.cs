@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
@@ -41,13 +42,13 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 
         protected void InitializeIndicator()
         {
-            _moveTriMa = new MovingAverage(Bars.Move, 4, 0, Method.Triangular);
-            _rangeTriMa = new MovingAverage(Bars.Range, 4, 0, Method.Triangular);
-            _moveMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _moveTriMa = new MovingAverage(Bars.Move, 4, 0, MovingAverageMethod.Triangular);
+            _rangeTriMa = new MovingAverage(Bars.Range, 4, 0, MovingAverageMethod.Triangular);
+            _moveMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _moveMa.Init();
-            _rangeMa = MABase.CreateMaInstance(Period, Method.Simple);
+            _rangeMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _rangeMa.Init();
-            _rviMa = MABase.CreateMaInstance(4, Method.Triangular);
+            _rviMa = MABase.CreateMaInstance(4, MovingAverageMethod.Triangular);
             _rviMa.Init();
         }
 
