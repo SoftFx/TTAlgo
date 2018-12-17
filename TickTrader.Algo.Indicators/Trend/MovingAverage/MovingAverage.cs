@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         public int Shift { get; set; }
 
         [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
-        public MovingAverageMethod Method { get; set; }
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Parameter(DefaultValue = 0.0667, DisplayName = "Smooth Factor(CustomEMA)")]
         public double SmoothFactor { get; set; }
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             Price = price;
             Period = period;
             Shift = shift;
-            Method = method;
+            TargetMethod = method;
             SmoothFactor = double.IsNaN(smoothFactor) ? 2.0/(period + 1) : smoothFactor;
 
             InitializeIndicator();
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 
         protected void InitializeIndicator()
         {
-            _maInstance = MABase.CreateMaInstance(Period, Method, SmoothFactor);
+            _maInstance = MABase.CreateMaInstance(Period, TargetMethod, SmoothFactor);
             _maInstance.Init();
             _shifter = new SimpleShifter(Shift);
             _shifter.Init();

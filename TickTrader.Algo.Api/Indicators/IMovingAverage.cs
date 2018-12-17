@@ -17,7 +17,7 @@
 
         int Shift { get; }
 
-        MovingAverageMethod Method { get; }
+        MovingAverageMethod TargetMethod { get; }
 
         double SmoothFactor { get; }
 

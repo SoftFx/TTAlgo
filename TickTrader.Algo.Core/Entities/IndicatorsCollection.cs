@@ -5,9 +5,9 @@ namespace TickTrader.Algo.Core
 {
     internal class IndicatorsCollection : IndicatorProvider
     {
-        public IMovingAverage MovingAverage(DataSeries price, int period, int shift = 0, MovingAverageMethod method = MovingAverageMethod.Simple, double smoothFactor = double.NaN)
+        public IMovingAverage MovingAverage(DataSeries price, int period, int shift = 0, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, double smoothFactor = 0.0667)
         {
-            return new Indicators.Trend.MovingAverage.MovingAverage(price, period, shift, method, smoothFactor);
+            return new Indicators.Trend.MovingAverage.MovingAverage(price, period, shift, targetMethod, smoothFactor);
         }
     }
 }
