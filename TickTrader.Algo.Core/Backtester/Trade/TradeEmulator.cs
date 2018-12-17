@@ -438,7 +438,7 @@ namespace TickTrader.Algo.Core
 
             //order.ClientOrderId = request.ClientOrderId;
             //order.Status = OrderStatuses.New;
-            //order.InitialType = request.InitialType ?? request.Type;
+            orderEntity.InitialType = orderType;
             //order.ParentOrderId = request.ParentOrderId;
 
             //decimal? price = (decimal?)request.Price;

@@ -575,6 +575,7 @@ namespace TickTrader.Algo.Core
             var orderEntity = new OrderEntity("-1")
             {
                 Symbol = request.Symbol,
+                InitialType = request.Type,
                 Type = request.Type,
                 Side = request.Side,
                 Price = request.Price,

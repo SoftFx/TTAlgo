@@ -14,6 +14,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private const int pipsDelta = 1000;
 
         private List<OrderVerifier> _tradeRepVerifiers = new List<OrderVerifier>();
+        private TaskCompletionSource<object> _eventWaiter;
 
         private readonly TimeSpan PauseVal = TimeSpan.FromSeconds(1);
 
@@ -27,6 +28,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             try
             {
+                Account.Orders.Opened += a => OnEventFired(a);
+                Account.Orders.Filled += a => OnEventFired(a);
+                Account.Orders.Closed += a => OnEventFired(a);
+                Account.Orders.Modified += a => OnEventFired(a);
+                Account.Orders.Expired += a => OnEventFired(a);
+                Account.Orders.Canceled += a => OnEventFired(a);
+
                 await OpenOrders();
 
                 ReportsIteratorTest();
@@ -69,6 +77,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             var price = GetImmExecPrice(side, type);
 
             var resp = await OpenOrderAsync(Symbol.Name, type, side, volume, null, price, null, null, null, null, OrderExecOptions.None);
+
+            var openedEventArgs = WaitEvent<OrderOpenedEventArgs>();
 
             ThrowIfOpenFailed(resp);
 
@@ -344,6 +354,39 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
             else
                 return Account.TradeHistory.GetRange(from, options).ToList();
+        }
+
+        #endregion
+
+        #region Event Verification
+
+        private async Task<TArgs> WaitEvent<TArgs>()
+        {
+            _eventWaiter = new TaskCompletionSource<object>();
+
+            var delayTask = Delay(1000);
+            var eventTask = _eventWaiter.Task;
+
+            var completedFirst = await Task.WhenAny(delayTask, eventTask);
+
+            if (completedFirst == delayTask)
+                throw new Exception("Timeout reached while wating for event " + typeof(TArgs).Name);
+
+            var argsObj = await eventTask;
+
+            if (argsObj is TArgs)
+                return (TArgs)argsObj;
+
+            throw new Exception("Unexpected event: " + typeof(TArgs).Name);
+        }
+
+        private void OnEventFired<TArgs>(TArgs args)
+        {
+            if (_eventWaiter == null)
+                return; //throw new Exception("Unexpected event: " + args.GetType().Name);
+
+            _eventWaiter.SetResult(args);
+            _eventWaiter = null;
         }
 
         #endregion

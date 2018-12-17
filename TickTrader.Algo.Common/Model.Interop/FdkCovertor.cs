@@ -93,6 +93,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 Symbol = record.Symbol,
                 Comment = record.Comment,
+                InitialType = Convert(record.InitialType) ?? Api.OrderType.Market,
                 Type = Convert(record.Type) ?? Api.OrderType.Market,
                 ClientOrderId = record.ClientOrderId,
                 Price = record.Price,
@@ -618,6 +619,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = report.Commission,
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
+                InitialOrderType = Convert(report.InitialOrderType) ?? Api.OrderType.Market,
                 OrderType = Convert(report.OrderType) ?? Api.OrderType.Market,
                 OrderSide = Convert(report.OrderSide) ?? Api.OrderSide.Buy,
                 Price = report.Price,

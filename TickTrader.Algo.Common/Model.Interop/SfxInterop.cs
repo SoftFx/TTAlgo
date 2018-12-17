@@ -804,6 +804,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = report.Commission,
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
+                InitialOrderType = Convert(report.InitialOrderType),
                 OrderType = Convert(report.OrderType),
                 OrderSide = Convert(report.OrderSide),
                 Price = report.Price,

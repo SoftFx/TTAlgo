@@ -44,6 +44,7 @@ namespace TickTrader.Algo.Common.Model
         public double Commission { get; set; }
         public double AgentCommission { get; set; }
         public double Swap { get; set; }
+        public OrderType InitialOrderType { get; set; }
         public OrderType OrderType { get; set; }
         public OrderSide OrderSide { get; set; }
         public double? Price { get; set; }

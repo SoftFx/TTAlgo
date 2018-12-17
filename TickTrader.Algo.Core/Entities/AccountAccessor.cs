@@ -336,6 +336,7 @@ namespace TickTrader.Algo.Core
             return new OrderEntity("-1")
             {
                 Symbol = symbol.Name,
+                InitialType = type,
                 Type = type,
                 Side = side,
                 Price = price,
