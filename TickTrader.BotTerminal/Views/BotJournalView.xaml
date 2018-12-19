@@ -53,8 +53,8 @@
                   CanUserDeleteRows="False" 
                   SelectionMode="Single">
                 <DataGrid.Columns>
-                    <DataGridTextColumn SortMemberPath="Time" 
-                                    Binding="{Binding Time, Converter={StaticResource FullDateTimeFormat}}"
+                    <DataGridTextColumn SortMemberPath="TimeKey" 
+                                    Binding="{Binding TimeKey.Timestamp, Converter={StaticResource FullDateTimeFormat}}"
                                     SortDirection="Descending" Header="{l:Resx Journal_Time}" Width="Auto"/>
                     <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="*" ClipboardContentBinding="{Binding Message}"
                                             CellTemplate="{StaticResource BotMessageCellTemplate}"/>

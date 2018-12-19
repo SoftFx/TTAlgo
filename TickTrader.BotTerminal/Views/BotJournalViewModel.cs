@@ -122,7 +122,7 @@ namespace TickTrader.BotTerminal
             {
                 return MatchesTypeFilter(bMessage.Type)
                      && (string.IsNullOrEmpty(TextFilter)
-                     || (bMessage.Time.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
+                     || (bMessage.TimeKey.Shift.ToString(FullDateTimeConverter.Format).IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
                      || bMessage.Message.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0));
             }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -63,15 +64,15 @@ namespace TickTrader.BotTerminal
     {
         public BaseJournalMessage()
         {
-            Time = DateTime.UtcNow;
+            TimeKey = new TimeKey(DateTime.UtcNow, 0);
         }
 
-        public BaseJournalMessage(DateTime time)
+        public BaseJournalMessage(TimeKey time)
         {
-            Time = time;
+            TimeKey = time;
         }
 
-        public DateTime Time { get; set; }
+        public TimeKey TimeKey { get; set; }
         public string Message { get; set; }
         public JournalMessageType Type { get; set; }
         public override string ToString()

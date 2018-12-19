@@ -28,6 +28,7 @@ namespace TickTrader.Algo.Core
         private string _mainSymbol;
         private TimeFrames _mainTimeframe;
         private string _lastStatus;
+        private TimeKeyGenerator _logKeyGen = new TimeKeyGenerator();
 
         public BacktesterCollector(PluginExecutor executor)
         {
@@ -137,7 +138,7 @@ namespace TickTrader.Algo.Core
         public void AddEvent(LogSeverities severity, string message, string description = null)
         {
             if (CheckFilter(severity))
-                _events.Add(new BotLogRecord(VirtualTimepoint, severity, message, description));
+                _events.Add(new BotLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description));
         }
 
         public void LogTrade(string message)

@@ -172,7 +172,7 @@ namespace TickTrader.BotTerminal
                 var logs = await _agent.GetBotLogs(InstanceId, _lastLogTimeUtc);
                 if (logs.Length > 0)
                 {
-                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc);
+                    _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
                     Journal.Add(logs.Select(Convert).ToList());
                 }
             }

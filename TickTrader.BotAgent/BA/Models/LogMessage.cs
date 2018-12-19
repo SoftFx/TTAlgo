@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -6,7 +7,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         public LogEntry(LogEntryType type, string message)
         {
-            TimeUtc = DateTime.UtcNow;
+            TimeUtc = new TimeKey(DateTime.UtcNow, 0);
             Type = type;
             Message = message;
         }
@@ -15,7 +16,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public string Message { get; private set; }
 
-        public DateTime TimeUtc { get; private set; }
+        public TimeKey TimeUtc { get; private set; }
 
         public override string ToString()
         {

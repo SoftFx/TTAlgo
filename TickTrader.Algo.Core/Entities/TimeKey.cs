@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public struct TimeKey : IComparable, IComparable<TimeKey>
     {
         public TimeKey(DateTime timestamp, uint shift)
@@ -16,6 +17,11 @@ namespace TickTrader.Algo.Core
 
         public DateTime Timestamp { get; }
         public uint Shift { get; }
+
+        public TimeKey ToLocalTime()
+        {
+            return new TimeKey(Timestamp.ToLocalTime(), Shift);
+        }
 
         public int CompareTo(object obj)
         {

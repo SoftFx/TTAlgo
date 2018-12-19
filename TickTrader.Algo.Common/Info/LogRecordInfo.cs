@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Info
 {
@@ -15,7 +16,7 @@ namespace TickTrader.Algo.Common.Info
 
     public class LogRecordInfo
     {
-        public DateTime TimeUtc { get; set; }
+        public TimeKey TimeUtc { get; set; }
 
         public LogSeverity Severity { get; set; }
 
