@@ -125,9 +125,9 @@
                   AutoGenerateColumns="False" SelectionMode="Single" CanUserReorderColumns="False" CanUserSortColumns="False"
                   BorderThickness="0">
             <DataGrid.Columns>
-                
-                <DataGridTextColumn SortMemberPath="TimeKey" 
-                                    Binding="{Binding TimeKey.Timestamp, Converter={StaticResource UtcDateTimeFormat}}"
+
+                <DataGridTextColumn SortMemberPath="Time" 
+                                    Binding="{Binding Time.Timestamp, Converter={StaticResource UtcDateTimeFormat}}"
                                     SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
                 
                 <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">

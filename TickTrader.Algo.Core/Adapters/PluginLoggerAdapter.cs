@@ -289,10 +289,14 @@ namespace TickTrader.Algo.Core
         {
             var priceFormat = smbInfo?.PriceFormat ?? DefaultPriceFormat;
 
+            if (smbInfo == null || logEntry == null)
+                System.Diagnostics.Debugger.Break();
+
             logEntry.Append(type)
                 .Append(suffix).Append(side)
-                .Append(" ").AppendNumber(volumeLots)
-                .Append(" ").Append(smbInfo.Name);
+                .Append(" ").AppendNumber(volumeLots);
+            if (smbInfo != null)
+                logEntry.Append(" ").Append(smbInfo.Name);
 
             if ((tp != null && !double.IsNaN(tp.Value)) || (sl != null && !double.IsNaN(sl.Value)))
             {
