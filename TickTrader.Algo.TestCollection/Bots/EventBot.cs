@@ -33,14 +33,14 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintEventData(string eventName)
         {
-            _msgBuilder.Append(" ========= ").Append(eventName).AppendLine(" ========= ");
+            _msgBuilder.Append("EVENT ").Append(eventName);
             DoPrint();
         }
 
         private void PrintEventData<TData>(string eventName, TData data)
         {
-            _msgBuilder.Append(" ========= ").Append(eventName).AppendLine(" ========= ");
-            _msgBuilder.PrintPropertiesColumn(data);
+            _msgBuilder.Append("EVENT ").Append(eventName);
+            _msgBuilder.PrintPropertiesColumnOfLines(data);
             DoPrint();
         }
 

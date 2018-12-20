@@ -219,6 +219,8 @@ namespace TickTrader.Algo.Core
                 if (!isOwnOrder && !IsInvisible(clone))
                     context.Logger.NotifyOrderOpened(clone);
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
+                //if (order.Type == OrderType.Position)
+                //    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
@@ -251,7 +253,7 @@ namespace TickTrader.Algo.Core
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     var args = new OrderCanceledEventArgsImpl(clone);
-                    if(!IsInvisible(clone))
+                    if (!IsInvisible(clone))
                         context.Logger.NotifyOrderExpiration(clone);
                     context.EnqueueEvent(b => orderCollection.FireOrderExpired(args));
                 }
@@ -280,6 +282,7 @@ namespace TickTrader.Algo.Core
                         var isOwnOrder = CallListener(eReport);
                         if (!isOwnOrder && !IsInvisible(clone))
                             context.Logger.NotifyOrderFill(clone);
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
                         context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                     }
                 }

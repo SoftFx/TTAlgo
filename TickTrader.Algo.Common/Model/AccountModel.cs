@@ -241,8 +241,9 @@ namespace TickTrader.Algo.Common.Model
             switch (report.ExecutionType)
             {
                 case ExecutionType.New:
-                    if (report.OrderType == OrderType.Market)
-                        return OnOrderOpened(report);
+                    // Ignore
+                    //if (report.OrderType == OrderType.Market)
+                    //    return OnOrderOpened(report);
                     break;
 
                 case ExecutionType.Calculated:

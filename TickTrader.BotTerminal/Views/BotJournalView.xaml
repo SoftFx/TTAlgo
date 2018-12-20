@@ -19,7 +19,7 @@
                     </Border.Background>
                 </Border>
             </Border>
-            <TextBlock Grid.Column="1" Text="{Binding Message}"/>
+            <TextBlock Grid.Column="1" Text="{Binding Message}" TextWrapping="Wrap"/>
         </Grid>
     </DataTemplate>
 
