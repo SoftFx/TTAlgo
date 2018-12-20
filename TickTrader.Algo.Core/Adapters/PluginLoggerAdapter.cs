@@ -289,9 +289,6 @@ namespace TickTrader.Algo.Core
         {
             var priceFormat = smbInfo?.PriceFormat ?? DefaultPriceFormat;
 
-            if (smbInfo == null || logEntry == null)
-                System.Diagnostics.Debugger.Break();
-
             logEntry.Append(type)
                 .Append(suffix).Append(side)
                 .Append(" ").AppendNumber(volumeLots);
