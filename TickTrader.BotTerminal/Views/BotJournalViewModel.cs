@@ -23,10 +23,11 @@ namespace TickTrader.BotTerminal
 
             Journal = CollectionViewSource.GetDefaultView(_bot.Model.Journal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
-            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
+            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
         }
 
         public ICollectionView Journal { get; private set; }
+
         public MessageTypeFilter TypeFilter
         {
             get { return _botJournalFilter.MessageTypeCondition; }
@@ -40,6 +41,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public string TextFilter
         {
             get { return _botJournalFilter.TextFilter; }
@@ -53,6 +55,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public bool IsBotJournalEnabled
         {
             get { return _botJournalFilter.IsEnabled; }
@@ -66,6 +69,7 @@ namespace TickTrader.BotTerminal
                 }
             }
         }
+
         public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
         public bool IsRemote => _bot.Model.IsRemote;
 
