@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 namespace TickTrader.Algo.Indicators.Oscillators.MACD
 {
     [Indicator(Category = "Oscillators", DisplayName = "MACD", Version = "1.0")]
-    public class Macd : Indicator
+    public class Macd : Indicator, IMacd
     {
         private MovingAverage _fastEma, _slowEma;
         private IMA _macdSma;
