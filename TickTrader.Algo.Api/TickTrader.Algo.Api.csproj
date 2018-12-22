@@ -58,8 +58,14 @@
     <Compile Include="File.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Indicators\Oscillators\IMacd.cs" />
+    <Compile Include="Indicators\Trend\IAverageDirectionalMovementIndex.cs" />
+    <Compile Include="Indicators\Trend\IBoolingerBands.cs" />
+    <Compile Include="Indicators\Trend\IEnvelopes.cs" />
+    <Compile Include="Indicators\Trend\IIchimokuKinkoHyo.cs" />
     <Compile Include="Indicators\Trend\IMovingAverage.cs" />
     <Compile Include="IndicatorProvider.cs" />
+    <Compile Include="Indicators\Trend\IParabolicSar.cs" />
+    <Compile Include="Indicators\Trend\IStandardDeviation.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
     <Compile Include="OutputTargets.cs" />

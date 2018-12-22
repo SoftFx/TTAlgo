@@ -1,10 +1,11 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
 {
     [Indicator(Category = "Trend", DisplayName = "Parabolic SAR", Version = "1.0")]
-    public class ParabolicSar : Indicator
+    public class ParabolicSar : Indicator, IParabolicSar
     {
         private double _acceleration, _lastLow, _lastHigh, _price;
         private double _prevAcceleration, _prevLastLow, _prevLastHigh, _prevPrice;

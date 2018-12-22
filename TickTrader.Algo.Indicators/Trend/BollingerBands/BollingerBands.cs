@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 {
     [Indicator(Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.0")]
-    public class BollingerBands : Indicator
+    public class BollingerBands : Indicator, IBoolingerBands
     {
         private StandardDeviation.StandardDeviation _stdDev;
 
@@ -32,11 +33,12 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 
         public BollingerBands() { }
 
-        public BollingerBands(DataSeries price, int period, int shift)
+        public BollingerBands(DataSeries price, int period, int shift, double deviations)
         {
             Price = price;
             Period = period;
             Shift = shift;
+            Deviations = deviations;
 
             InitializeIndicator();
         }

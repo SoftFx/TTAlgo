@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
 {
     [Indicator(Category = "Trend", DisplayName = "Envelopes", Version = "1.0")]
-    public class Envelopes : Indicator
+    public class Envelopes : Indicator, IEnvelopes
     {
         private MovingAverage.MovingAverage _middleLine;
         
@@ -34,12 +34,13 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
 
         public Envelopes() { }
 
-        public Envelopes(DataSeries price, int period, int shift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
+        public Envelopes(DataSeries price, int period, int shift, double deviation, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
         {
             Price = price;
             Period = period;
             Shift = shift;
             TargetMethod = targetMethod;
+            Deviation = deviation;
 
             InitializeIndicator();
         }

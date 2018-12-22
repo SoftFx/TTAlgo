@@ -1,10 +1,11 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
 {
     [Indicator(Category = "Trend", DisplayName = "Ichimoku Kinko Hyo", Version = "1.0")]
-    public class IchimokuKinkoHyo : Indicator
+    public class IchimokuKinkoHyo : Indicator, IIchimokuKinkoHyo
     {
         private IShift _chikouShifter, _senkouAShifter, _senkouBShifter;
 
