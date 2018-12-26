@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
         private void InitializeIndicator()
         {
             Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
-            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price);
+            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price, CountBars);
             _prevTrend = false;
         }
 

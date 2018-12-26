@@ -57,6 +57,16 @@
     <Compile Include="Ext\Reduction.cs" />
     <Compile Include="File.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFTLMSTLM.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFastAdaptiveTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFastTrendLineMomentum.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFATALSignal.cs" />
+    <Compile Include="Indicators\ATCFMethod\IPerfectCommodityChannelIndex.cs" />
+    <Compile Include="Indicators\ATCFMethod\IRangeBoundChannelIndex.cs" />
+    <Compile Include="Indicators\ATCFMethod\IReferenceFastTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\IReferenceSlowTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\ISlowAdaptiveTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\ISlowTrendLineMomentum.cs" />
     <Compile Include="Indicators\Oscillators\IMacd.cs" />
     <Compile Include="Indicators\Trend\IAverageDirectionalMovementIndex.cs" />
     <Compile Include="Indicators\Trend\IBoolingerBands.cs" />
@@ -95,7 +105,6 @@
     <None Include="Properties\algo.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Indicators\ATCFMethod\" />
     <Folder Include="Indicators\BillWilliams\" />
     <Folder Include="Indicators\Other\" />
   </ItemGroup>

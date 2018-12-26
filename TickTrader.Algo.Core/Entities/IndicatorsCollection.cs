@@ -10,6 +10,55 @@ namespace TickTrader.Algo.Core
             return new Indicators.Oscillators.MACD.Macd(price, fastEma, slowEma, macdSma);
         }
 
+
+        #region ATCFMethod
+        public IFastAdaptiveTrendLine FastAdaptiveTrendLine(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.FastAdaptiveTrendLine.FastAdaptiveTrendLine(price, countBars);
+        }
+
+        public IFastTrendLineMomentum FastTrendLineMomentum(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.FastTrendLineMomentum.FastTrendLineMomentum(price, countBars);
+        }
+
+        public IFTLMSTLM FTLMSTLM(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.FTLMSTLM.FtlmStlm(price, countBars);
+        }
+
+        public IPerfectCommodityChannelIndex PerfectCommodityChannelIndex(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.PerfectCommodityChannelIndex.PerfectCommodityChannelIndex(price, countBars);
+        }
+
+        public IRangeBoundChannelIndex RangeBoundChannelIndex(DataSeries price, int std = 18, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.RangeBoundChannelIndex.RangeBoundChannelIndex(price, std, countBars);
+        }
+
+        public IReferenceFastTrendLine ReferenceFastTrendLine(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.ReferenceFastTrendLine.ReferenceFastTrendLine(price, countBars); 
+        }
+
+        public IReferenceSlowTrendLine ReferenceSlowTrendLine(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.ReferenceSlowTrendLine.ReferenceSlowTrendLine(price, countBars);
+        }
+
+        public ISlowAdaptiveTrendLine SlowAdaptiveTrendLine(DataSeries price, int countBras = 300)
+        {
+            return new Indicators.ATCFMethod.SlowAdaptiveTrendLine.SlowAdaptiveTrendLine(price, countBras);
+        }
+
+        public ISlowTrendLineMomentum SlowTrendLineMomentum(DataSeries price, int countBars = 300)
+        {
+            return new Indicators.ATCFMethod.SlowTrendLineMomentum.SlowTrendLineMomentum(price, countBars);
+        }
+        #endregion
+
+
         #region Trend
         public IBoolingerBands BoolingerBands(DataSeries price, int period = 20, int shift = 0, double deviations = 2)
         {
@@ -40,8 +89,6 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.Trend.StandardDeviation.StandardDeviation(price, period, shift, targtMethod);
         }
-
-
         #endregion
     }
 }

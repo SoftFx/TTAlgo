@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "Fast Trend Line Momentum", Version = "1.0")]
-    public class FastTrendLineMomentum : Indicator
+    public class FastTrendLineMomentum : Indicator, IFastTrendLineMomentum
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
         private ReferenceFastTrendLine.ReferenceFastTrendLine _rftl;
@@ -21,17 +22,18 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
 
         public FastTrendLineMomentum() { }
 
-        public FastTrendLineMomentum(DataSeries price)
+        public FastTrendLineMomentum(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
         }
 
         private void InitializeIndicator()
         {
-            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price);
-            _rftl = new ReferenceFastTrendLine.ReferenceFastTrendLine(Price);
+            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price, CountBars);
+            _rftl = new ReferenceFastTrendLine.ReferenceFastTrendLine(Price, CountBars);
         }
 
         protected override void Init()

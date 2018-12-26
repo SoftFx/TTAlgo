@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceFastTrendLine
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "Reference Fast Trend Line", Version = "1.0")]
-    public class ReferenceFastTrendLine : DigitalIndicatorBase
+    public class ReferenceFastTrendLine : DigitalIndicatorBase, IReferenceFastTrendLine
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -18,9 +19,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceFastTrendLine
 
         public ReferenceFastTrendLine() { }
 
-        public ReferenceFastTrendLine(DataSeries price)
+        public ReferenceFastTrendLine(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
         }
