@@ -1,10 +1,11 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Oscillators.MACD;
 
 namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 {
     [Indicator(Category = "Oscillators", DisplayName = "Moving Average of Oscillator", Version = "1.0")]
-    public class MovingAverageOscillator : Indicator
+    public class MovingAverageOscillator : Indicator, IMovingAverageOscillator
     {
         private Macd _macd;
 

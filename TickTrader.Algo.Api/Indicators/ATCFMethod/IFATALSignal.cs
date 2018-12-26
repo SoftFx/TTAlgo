@@ -3,7 +3,5 @@
     public interface IFATALSignal
     {
         int CountBars { get; }
-
-
     }
 }

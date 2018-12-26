@@ -73,7 +73,20 @@
     <Compile Include="Indicators\BillWilliams\IFractals.cs" />
     <Compile Include="Indicators\BillWilliams\IGatorOscillator.cs" />
     <Compile Include="Indicators\BillWilliams\IMarketFacilitationIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IBullsPower.cs" />
+    <Compile Include="Indicators\Oscillators\IAverageTrueRange.cs" />
+    <Compile Include="Indicators\Oscillators\IBearsPower.cs" />
+    <Compile Include="Indicators\Oscillators\ICommodityChannelIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IDeMarker.cs" />
     <Compile Include="Indicators\Oscillators\IMacd.cs" />
+    <Compile Include="Indicators\Oscillators\IMomentum.cs" />
+    <Compile Include="Indicators\Oscillators\IMovingAverageOscillator.cs" />
+    <Compile Include="Indicators\Oscillators\IRelativeStrenghtIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IRelativeVigorIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IStochasticOscillator.cs" />
+    <Compile Include="Indicators\Oscillators\IWilliamsPercentRange.cs" />
+    <Compile Include="Indicators\Other\IHeikenAshi.cs" />
+    <Compile Include="Indicators\Other\IZigZag.cs" />
     <Compile Include="Indicators\Trend\IAverageDirectionalMovementIndex.cs" />
     <Compile Include="Indicators\Trend\IBoolingerBands.cs" />
     <Compile Include="Indicators\Trend\IEnvelopes.cs" />
@@ -110,9 +123,7 @@
   <ItemGroup>
     <None Include="Properties\algo.snk" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Indicators\Other\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy  /Y $(TargetDir)*.*  ..\..\..\Repository.Public\API\</PostBuildEvent>

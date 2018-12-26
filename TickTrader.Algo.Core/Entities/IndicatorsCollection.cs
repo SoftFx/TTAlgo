@@ -5,12 +5,6 @@ namespace TickTrader.Algo.Core
 {
     internal class IndicatorsCollection : IndicatorProvider
     {
-        public IMacd MACD(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9)
-        {
-            return new Indicators.Oscillators.MACD.Macd(price, fastEma, slowEma, macdSma);
-        }
-
-
         #region ATCFMethod
         public IFastAdaptiveTrendLine FastAdaptiveTrendLine(DataSeries price, int countBars = 300)
         {
@@ -92,6 +86,72 @@ namespace TickTrader.Algo.Core
         #endregion
 
 
+        #region Oscillators
+        public IAverageTrueRange AverageTrueRange(BarSeries bars, int period = 14)
+        {
+            return new Indicators.Oscillators.AverageTrueRange.AverageTrueRange(bars, period);
+        }
+
+        public ICommodityChannelIndex CommodityChannelIndex(DataSeries price, int period = 14)
+        {
+            return new Indicators.Oscillators.CommodityChannelIndex.CommodityChannelIndex(price, period);
+        }
+
+        public IDeMarker DeMarker(BarSeries bars, int period = 14)
+        {
+            return new Indicators.Oscillators.DeMarker.DeMarker(bars, period);
+        }
+
+        public IMacd MACD(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9)
+        {
+            return new Indicators.Oscillators.MACD.Macd(price, fastEma, slowEma, macdSma);
+        }
+
+        public IMomentum Momentum(DataSeries price, int period = 14)
+        {
+            return new Indicators.Oscillators.Momentum.Momentum(price, period);
+        }
+
+        public IMovingAverageOscillator MovingAverageOscillator(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9)
+        {
+            return new Indicators.Oscillators.MovingAverageOscillator.MovingAverageOscillator(price, fastEma, slowEma, macdSma);
+        }
+
+        public IRelativeStrenghtIndex RelativeStrenghtIndex(DataSeries price, int period = 14)
+        {
+            return new Indicators.Oscillators.RelativeStrengthIndex.RelativeStrengthIndex(price, period);
+        }
+
+        public IRelativeVigorIndex RelativeVigorIndex(BarSeries bars, int period = 10)
+        {
+            return new Indicators.Oscillators.RelativeVigorIndex.RelativeVigorIndex(bars, period);
+        }
+
+        public IStochasticOscillator StochasticOscillator(BarSeries bars, int kPeriod = 5, int slowing = 3, int dPeriod = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, PriceField targetPrice = PriceField.LowHigh)
+        {
+            return new Indicators.Oscillators.StochasticOscillator.StochasticOscillator(bars, kPeriod, slowing, dPeriod, targetMethod, targetPrice);
+        }
+
+        public IWilliamsPercentRange WilliamsPercentRange(BarSeries bars, int period = 14)
+        {
+            return new Indicators.Oscillators.WilliamsPercentRange.WilliamsPercentRange(bars, period);
+        }
+        #endregion
+
+
+        #region Other
+        public IHeikenAshi HeikenAshi(BarSeries bars)
+        {
+            return new Indicators.Other.HeikenAshi.HeikenAshi(bars);
+        }
+
+        public IZigZag ZigZag(BarSeries bars, int depth = 12, int deviation = 5, int backstep = 3)
+        {
+            return new Indicators.Other.ZigZag.ZigZag(bars, depth, deviation, backstep);
+        }
+        #endregion
+
+
         #region Trend
         public IBoolingerBands BoolingerBands(DataSeries price, int period = 20, int shift = 0, double deviations = 2)
         {
@@ -122,7 +182,6 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.Trend.StandardDeviation.StandardDeviation(price, period, shift, targtMethod);
         }
-
         #endregion
     }
 }

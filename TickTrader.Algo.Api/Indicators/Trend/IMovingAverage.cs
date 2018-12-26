@@ -10,7 +10,6 @@
         Triangular = 5,
     }
 
-
     public interface IMovingAverage
     {
         int Period { get; }

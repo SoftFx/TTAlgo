@@ -7,13 +7,8 @@ using TickTrader.Algo.Indicators.Utility;
 namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
 {
     [Indicator(Category = "Oscillators", DisplayName = "Stochastic Oscillator", Version = "1.0")]
-    public class StochasticOscillator : Indicator
+    public class StochasticOscillator : Indicator, IStochasticOscillator
     {
-        public enum PriceField
-        {
-            LowHigh, CloseClose
-        }
-
         private IMA _dMa, _numMa, _denumMa;
 
         [Parameter(DefaultValue = 5, DisplayName = "%K Period")]

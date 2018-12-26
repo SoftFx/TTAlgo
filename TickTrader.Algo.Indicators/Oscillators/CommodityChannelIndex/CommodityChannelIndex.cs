@@ -1,11 +1,12 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 {
     [Indicator(Category = "Oscillators", DisplayName = "Commodity Channel Index", Version = "1.0")]
-    public class CommodityChannelIndex : Indicator
+    public class CommodityChannelIndex : Indicator, ICommodityChannelIndex
     {
         private MovingAverage _sma;
 

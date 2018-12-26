@@ -4,9 +4,6 @@ namespace TickTrader.Algo.Api
 {
     public interface IndicatorProvider
     {
-        IMacd MACD(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9);
-
-
         #region ATCFMethod
         IFastAdaptiveTrendLine FastAdaptiveTrendLine(DataSeries price, int countBars = 300);
 
@@ -40,6 +37,36 @@ namespace TickTrader.Algo.Api
         IGatorOscillator GatorOscillator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed);
 
         IMarketFacilitationIndex MarketFacilitationIndex(BarSeries bars, double pointSize = 10e-5);
+        #endregion
+
+
+        #region Oscillators
+        IAverageTrueRange AverageTrueRange(BarSeries bars, int period = 14);
+
+        ICommodityChannelIndex CommodityChannelIndex(DataSeries price, int period = 14);
+
+        IMacd MACD(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9);
+
+        IDeMarker DeMarker(BarSeries bars, int period = 14);
+
+        IMomentum Momentum(DataSeries price, int period = 14);
+
+        IMovingAverageOscillator MovingAverageOscillator(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9);
+
+        IRelativeStrenghtIndex RelativeStrenghtIndex(DataSeries price, int period = 14);
+
+        IRelativeVigorIndex RelativeVigorIndex(BarSeries bars, int period = 10);
+
+        IStochasticOscillator StochasticOscillator(BarSeries bars, int kPeriod = 5, int slowing = 3, int dPeriod = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, PriceField targetPrice = PriceField.LowHigh);
+
+        IWilliamsPercentRange WilliamsPercentRange(BarSeries bars, int period = 14);
+        #endregion
+
+
+        #region Other
+        IHeikenAshi HeikenAshi(BarSeries bars);
+
+        IZigZag ZigZag(BarSeries bars, int depth = 12, int deviation = 5, int backstep = 3);
         #endregion
 
 
