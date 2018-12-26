@@ -56,6 +56,39 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.ATCFMethod.SlowTrendLineMomentum.SlowTrendLineMomentum(price, countBars);
         }
+
+        public IMarketFacilitationIndex MarketFacilitationIndex(BarSeries bars, double pointSize = 0.0001)
+        {
+            return new Indicators.BillWilliams.MarketFacilitationIndex.MarketFacilitationIndex(bars, pointSize);
+        }
+        #endregion
+
+
+        #region BillWilliams
+        public IAcceleratorOscillator AcceleratorOscillator(BarSeries bars, int fastSmaPeriod = 5, int slowSmaPeriod = 34, int dataLimit = 34)
+        {
+            return new Indicators.BillWilliams.AcceleratorOscillator.AcceleratorOscillator(bars, fastSmaPeriod, slowSmaPeriod, dataLimit);
+        }
+
+        public IAlligator Alligator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed)
+        {
+            return new Indicators.BillWilliams.Alligator.Alligator(price, jawsPeriod, jawsShift, teethPeriod, teethShift, lipsPeriod, lipsShift, targetMethod);
+        }
+
+        public IAwesomeOscillator AwesomeOscillator(BarSeries bars, int fastSmaPeriod = 5, int slowSmaPeriod = 34, int dataLimit = 34)
+        {
+            return new Indicators.BillWilliams.AwesomeOscillator.AwesomeOscillator(bars, fastSmaPeriod, slowSmaPeriod, dataLimit);
+        }
+
+        public IFractals Fractals(BarSeries bars)
+        {
+            return new Indicators.BillWilliams.Fractals.Fractals(bars);
+        }
+
+        public IGatorOscillator GatorOscillator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed)
+        {
+            return new Indicators.BillWilliams.GatorOscillator.GatorOscillator(price, jawsPeriod, jawsShift, teethPeriod, teethShift, lipsPeriod, lipsShift, targetMethod);
+        }
         #endregion
 
 
@@ -89,6 +122,7 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.Trend.StandardDeviation.StandardDeviation(price, period, shift, targtMethod);
         }
+
         #endregion
     }
 }

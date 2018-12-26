@@ -67,6 +67,12 @@
     <Compile Include="Indicators\ATCFMethod\IReferenceSlowTrendLine.cs" />
     <Compile Include="Indicators\ATCFMethod\ISlowAdaptiveTrendLine.cs" />
     <Compile Include="Indicators\ATCFMethod\ISlowTrendLineMomentum.cs" />
+    <Compile Include="Indicators\BillWilliams\IAcceleratorOscillator.cs" />
+    <Compile Include="Indicators\BillWilliams\IAlligator.cs" />
+    <Compile Include="Indicators\BillWilliams\IAwesomeOscillator.cs" />
+    <Compile Include="Indicators\BillWilliams\IFractals.cs" />
+    <Compile Include="Indicators\BillWilliams\IGatorOscillator.cs" />
+    <Compile Include="Indicators\BillWilliams\IMarketFacilitationIndex.cs" />
     <Compile Include="Indicators\Oscillators\IMacd.cs" />
     <Compile Include="Indicators\Trend\IAverageDirectionalMovementIndex.cs" />
     <Compile Include="Indicators\Trend\IBoolingerBands.cs" />
@@ -105,7 +111,6 @@
     <None Include="Properties\algo.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Indicators\BillWilliams\" />
     <Folder Include="Indicators\Other\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

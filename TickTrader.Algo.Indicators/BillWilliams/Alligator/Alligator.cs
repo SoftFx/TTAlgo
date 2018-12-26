@@ -5,7 +5,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Alligator", Version = "1.0")]
-    public class Alligator : Indicator
+    public class Alligator : Indicator, IAlligator
     {
         private MovingAverage _jaws, _teeth, _lips;
 
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
         public Alligator() { }
 
         public Alligator(DataSeries price, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
-            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
+            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed)
         {
             Price = price;
             JawsPeriod = jawsPeriod;

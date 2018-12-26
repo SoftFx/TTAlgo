@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Market Facilitation Index", Version = "1.0")]
-    public class MarketFacilitationIndex : Indicator
+    public class MarketFacilitationIndex : Indicator, IMarketFacilitationIndex
     {
         private bool _volumeUp, _mfiUp;
 

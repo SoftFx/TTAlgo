@@ -28,6 +28,21 @@ namespace TickTrader.Algo.Api
         #endregion
 
 
+        #region BillWilliams
+        IAcceleratorOscillator AcceleratorOscillator(BarSeries bars, int fastSmaPeriod = 5, int slowSmaPeriod = 34, int dataLimit = 34);
+
+        IAlligator Alligator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed);
+
+        IAwesomeOscillator AwesomeOscillator(BarSeries bars, int fastSmaPeriod = 5, int slowSmaPeriod = 34, int dataLimit = 34);
+
+        IFractals Fractals(BarSeries bars);
+
+        IGatorOscillator GatorOscillator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed);
+
+        IMarketFacilitationIndex MarketFacilitationIndex(BarSeries bars, double pointSize = 10e-5);
+        #endregion
+
+
         #region Trend
         IBoolingerBands BoolingerBands(DataSeries price, int period = 20, int shift = 0, double deviations = 2.0);
 

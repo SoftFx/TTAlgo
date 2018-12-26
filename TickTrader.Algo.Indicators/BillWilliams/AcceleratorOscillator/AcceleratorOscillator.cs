@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Accelerator Oscillator", Version = "1.0")]
-    public class AcceleratorOscillator : Indicator
+    public class AcceleratorOscillator : Indicator, IAcceleratorOscillator
     {
         private AwesomeOscillator.AwesomeOscillator _ao;
         private IMA _aoSma;

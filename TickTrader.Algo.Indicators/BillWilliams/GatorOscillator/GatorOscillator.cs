@@ -7,7 +7,7 @@ using TickTrader.Algo.Indicators.Utility;
 namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Gator Oscillator", Version = "1.0")]
-    public class GatorOscillator : Indicator
+    public class GatorOscillator : Indicator, IGatorOscillator
     {
         private MovingAverage _jaws, _lips, _teethLips, _jawsTeeth;
         private IShift _teethLipsUpShifter, _teethLipsDownShifter, _jawsTeethUpShiter, _jawsTeethDownShiter;
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         public GatorOscillator() { }
 
         public GatorOscillator(DataSeries price, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
-            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
+            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed)
         {
             Price = price;
             JawsPeriod = jawsPeriod;
