@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
     [Indicator(Category = "Trend", DisplayName = "Standard Deviation", Version = "1.0")]
     public class StandardDeviation : Indicator, IStandardDeviation
     {
-        private MovingAverage.MovingAverage _sma, _ma;
+        private IMovingAverage _sma, _ma;
         private IMA _p2Sma;
         private IShift _p2Shifter;
         
@@ -30,8 +30,6 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         public int LastPositionChanged { get { return _p2Shifter.Position; } }
 
-        public double LastMaVal { get { return _ma.Average[LastPositionChanged]; } }
-
         public StandardDeviation() { }
 
         public StandardDeviation(DataSeries price, int period, int shift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
@@ -46,8 +44,8 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage.MovingAverage(Price, Period, Shift);
-            _ma = new MovingAverage.MovingAverage(Price, Period, Shift, TargetMethod);
+            _sma = Indicators.MovingAverage(Price, Period, Shift);
+            _ma = Indicators.MovingAverage(Price, Period, Shift, TargetMethod);
             _p2Sma = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _p2Sma.Init();
             _p2Shifter = new SimpleShifter(Shift);

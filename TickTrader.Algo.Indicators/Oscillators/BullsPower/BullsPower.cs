@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
     [Indicator(Category = "Oscillators", DisplayName = "Bulls Power", Version = "1.0")]
     public class BullsPower : Indicator, IBullsPower
     {
-        private MovingAverage _ema;
+        private IMovingAverage _ema;
 
         [Parameter(DefaultValue = 13, DisplayName = "Period")]
         public int Period { get; set; }
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
 
         protected void InitializeIndicator()
         {
-            _ema = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, MovingAverageMethod.Exponential);
+            _ema = Indicators.MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, MovingAverageMethod.Exponential);
         }
 
         protected override void Init()

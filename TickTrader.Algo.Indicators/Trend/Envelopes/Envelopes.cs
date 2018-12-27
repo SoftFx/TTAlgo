@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
     [Indicator(Category = "Trend", DisplayName = "Envelopes", Version = "1.0")]
     public class Envelopes : Indicator, IEnvelopes
     {
-        private MovingAverage.MovingAverage _middleLine;
+        private IMovingAverage _middleLine;
         
         [Parameter(DefaultValue = 7, DisplayName = "Period")]
         public int Period { get; set; }
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
 
         protected void InitializeIndicator()
         {
-            _middleLine = new MovingAverage.MovingAverage(Price, Period, Shift, TargetMethod);
+            _middleLine = Indicators.MovingAverage(Price, Period, Shift, TargetMethod);
         }
 
         protected override void Init()

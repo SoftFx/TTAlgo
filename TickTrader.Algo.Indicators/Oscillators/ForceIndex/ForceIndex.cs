@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
     [Indicator(Category = "Oscillators", DisplayName = "Force Index", Version = "1.0")]
     public class ForceIndex : Indicator, IForceIndex
     {
-        private MovingAverage _ma;
+        private IMovingAverage _ma;
 
         [Parameter(DefaultValue = 13, DisplayName = "Period")]
         public int Period { get; set; }
@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
 
         protected void InitializeIndicator()
         {
-            _ma = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, TargetMethod);
+            _ma = Indicators.MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, TargetMethod);
         }
 
         protected override void Init()

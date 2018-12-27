@@ -7,7 +7,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
     [Indicator(Category = "Bill Williams", DisplayName = "Alligator", Version = "1.0")]
     public class Alligator : Indicator, IAlligator
     {
-        private MovingAverage _jaws, _teeth, _lips;
+        private IMovingAverage _jaws, _teeth, _lips;
 
         [Parameter(DefaultValue = 13, DisplayName = "Jaws Period")]
         public int JawsPeriod { get; set; }
@@ -63,9 +63,9 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
 
         private void InitializeIndicator()
         {
-            _jaws = new MovingAverage(Price, JawsPeriod, JawsShift, TargetMethod);
-            _teeth = new MovingAverage(Price, TeethPeriod, TeethShift, TargetMethod);
-            _lips = new MovingAverage(Price, LipsPeriod, LipsShift, TargetMethod);
+            _jaws = Indicators.MovingAverage(Price, JawsPeriod, JawsShift, TargetMethod);
+            _teeth = Indicators.MovingAverage(Price, TeethPeriod, TeethShift, TargetMethod);
+            _lips = Indicators.MovingAverage(Price, LipsPeriod, LipsShift, TargetMethod);
         }
 
         protected override void Init()

@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
     [Indicator(Category = "Oscillators", DisplayName = "Relative Vigor Index", Version = "1.0")]
     public class RelativeVigorIndex : Indicator, IRelativeVigorIndex
     {
-        private MovingAverage _moveTriMa, _rangeTriMa;
+        private IMovingAverage _moveTriMa, _rangeTriMa;
         private IMA _rviMa, _moveMa, _rangeMa;
 
         [Parameter(DefaultValue = 10, DisplayName = "Period")]
@@ -42,8 +42,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
 
         protected void InitializeIndicator()
         {
-            _moveTriMa = new MovingAverage(Bars.Move, 4, 0, MovingAverageMethod.Triangular);
-            _rangeTriMa = new MovingAverage(Bars.Range, 4, 0, MovingAverageMethod.Triangular);
+            _moveTriMa = Indicators.MovingAverage(Bars.Move, 4, 0, MovingAverageMethod.Triangular);
+            _rangeTriMa = Indicators.MovingAverage(Bars.Range, 4, 0, MovingAverageMethod.Triangular);
             _moveMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _moveMa.Init();
             _rangeMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);

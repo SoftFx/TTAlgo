@@ -6,7 +6,8 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
     [Indicator(Category = "Trend", DisplayName = "Bollinger Bands", Version = "1.0")]
     public class BollingerBands : Indicator, IBoolingerBands
     {
-        private StandardDeviation.StandardDeviation _stdDev;
+        private IStandardDeviation _stdDev;
+        private IMovingAverage _ma;
 
         [Parameter(DefaultValue = 20, DisplayName = "Period")]
         public int Period { get; set; }
@@ -45,7 +46,8 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
 
         protected void InitializeIndicator()
         {
-            _stdDev = new StandardDeviation.StandardDeviation(Price, Period, Shift);
+            _stdDev = Indicators.StandardDeviation(Price, Period, Shift);
+            _ma = Indicators.MovingAverage(Price, Period, Shift);
         }
 
         protected override void Init()
@@ -56,7 +58,7 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            var maVal = _stdDev.LastMaVal;
+            var maVal = _ma.Average[_stdDev.LastPositionChanged];
             var stdDev = _stdDev.StdDev[_stdDev.LastPositionChanged];
 
             MiddleLine[pos] = maVal;

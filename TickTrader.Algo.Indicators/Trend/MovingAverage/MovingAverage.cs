@@ -39,7 +39,8 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             Period = period;
             Shift = shift;
             TargetMethod = method;
-            SmoothFactor = double.IsNaN(smoothFactor) ? 2.0/(period + 1) : smoothFactor;
+            SmoothFactor = method == MovingAverageMethod.Exponential ? 2.0 / (period + 1) :
+                (method == MovingAverageMethod.CustomExponential ? smoothFactor : double.NaN);
 
             InitializeIndicator();
         }

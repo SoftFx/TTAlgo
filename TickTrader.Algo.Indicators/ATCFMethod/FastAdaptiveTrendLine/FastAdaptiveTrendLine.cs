@@ -27,6 +27,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
             InitializeIndicator();
         }
 
+        public int HasEnoughBars()
+        {
+            return CoefficientsCount;
+        }
+
         private void InitializeIndicator() { }
 
         protected override void Init()

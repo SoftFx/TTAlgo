@@ -6,8 +6,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
     [Indicator(Category = "AT&CF Method", DisplayName = "FTLM-STLM", Version = "1.0")]
     public class FtlmStlm : Indicator, IFTLMSTLM
     {
-        private FastTrendLineMomentum.FastTrendLineMomentum _ftlm;
-        private SlowTrendLineMomentum.SlowTrendLineMomentum _stlm;
+        private IFastTrendLineMomentum _ftlm;
+        private ISlowTrendLineMomentum _stlm;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -35,8 +35,8 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
 
         private void InitializeIndicator()
         {
-            _ftlm = new FastTrendLineMomentum.FastTrendLineMomentum(Price, CountBars);
-            _stlm = new SlowTrendLineMomentum.SlowTrendLineMomentum(Price, CountBars);
+            _ftlm = Indicators.FastTrendLineMomentum(Price, CountBars);
+            _stlm = Indicators.SlowTrendLineMomentum(Price, CountBars);
         }
 
         protected override void Init()

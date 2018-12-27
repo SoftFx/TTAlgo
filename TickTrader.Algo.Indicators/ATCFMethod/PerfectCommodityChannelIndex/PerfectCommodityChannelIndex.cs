@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
     [Indicator(Category = "AT&CF Method", DisplayName = "Perfect Commodity Channel Index", Version = "1.0")]
     public class PerfectCommodityChannelIndex : Indicator, IPerfectCommodityChannelIndex
     {
-        private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
+        private IFastAdaptiveTrendLine _fatl;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
 
         private void InitializeIndicator()
         {
-            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price, CountBars);
+            _fatl = Indicators.FastAdaptiveTrendLine(Price, CountBars);
         }
 
         protected override void Init()

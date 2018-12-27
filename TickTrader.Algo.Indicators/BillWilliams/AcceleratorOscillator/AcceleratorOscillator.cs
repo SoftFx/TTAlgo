@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
     [Indicator(Category = "Bill Williams", DisplayName = "Accelerator Oscillator", Version = "1.0")]
     public class AcceleratorOscillator : Indicator, IAcceleratorOscillator
     {
-        private AwesomeOscillator.AwesomeOscillator _ao;
+        private IAwesomeOscillator _ao;
         private IMA _aoSma;
 
         [Parameter(DisplayName = "Fast SMA Period", DefaultValue = 5)]
@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
 
         private void InitializeIndicator()
         {
-            _ao = new AwesomeOscillator.AwesomeOscillator(Bars, FastSmaPeriod, SlowSmaPeriod, DataLimit);
+            _ao = Indicators.AwesomeOscillator(Bars, FastSmaPeriod, SlowSmaPeriod, DataLimit);
             _aoSma = MABase.CreateMaInstance(FastSmaPeriod, MovingAverageMethod.Simple);
             _aoSma.Init();
         }

@@ -8,6 +8,8 @@
 
         DataSeries Fatl { get; }
 
+        int HasEnoughBars();
+
         int LastPositionChanged { get; }
     }
 }

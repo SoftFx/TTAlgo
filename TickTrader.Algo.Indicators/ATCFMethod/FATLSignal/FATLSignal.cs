@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
     [Indicator(Category = "AT&CF Method", DisplayName = "FATLs", Version = "1.0")]
     public class FatlSignal : Indicator, IFATALSignal
     {
-        private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
+        private IFastAdaptiveTrendLine _fatl;
         private bool _trend, _prevTrend;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
         private void InitializeIndicator()
         {
             Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
-            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price, CountBars);
+            _fatl = Indicators.FastAdaptiveTrendLine(Price, CountBars);
             _prevTrend = false;
         }
 
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
             {
                 _prevTrend = _trend;
             }
-            if (Bars.Count > _fatl.CoefficientsCount - 1)
+            if (Bars.Count > _fatl.HasEnoughBars() - 1)
             {
                 var tmp = _fatl.Fatl[pos] - _fatl.Fatl[pos + 1];
                 if (!double.IsNaN(tmp))
@@ -92,5 +92,6 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
                 Down[CountBars] = double.NaN;
             }
         }
+
     }
 }
