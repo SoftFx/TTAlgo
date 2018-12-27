@@ -9,5 +9,7 @@
         DataSeries Ftlm { get; }
 
         DataSeries Stlm { get; }
+
+        int LastPositionChanged { get; }
     }
 }

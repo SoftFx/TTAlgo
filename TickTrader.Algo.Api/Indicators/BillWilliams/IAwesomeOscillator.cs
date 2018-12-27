@@ -13,5 +13,7 @@
         DataSeries ValueUp { get; }
 
         DataSeries ValueDown { get; }
+
+        int LastPositionChanged { get; }
     }
 }

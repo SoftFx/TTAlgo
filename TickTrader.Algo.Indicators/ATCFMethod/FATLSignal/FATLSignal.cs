@@ -1,10 +1,10 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Utility;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "FATLs", Version = "1.0")]
-    public class FatlSignal : Indicator
+    public class FatlSignal : Indicator, IFATALSignal
     {
         private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
         private bool _trend, _prevTrend;
@@ -30,9 +30,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
 
         public FatlSignal() { }
 
-        public FatlSignal(BarSeries bars, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public FatlSignal(BarSeries bars, int countBars, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
         {
             Bars = bars;
+            CountBars = countBars;
             TargetPrice = targetPrice;
 
             InitializeIndicator();

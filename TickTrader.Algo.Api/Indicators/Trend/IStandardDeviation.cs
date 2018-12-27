@@ -11,5 +11,7 @@
         DataSeries Price { get; }
 
         DataSeries StdDev { get; }
+
+        int LastPositionChanged { get; }
     }
 }

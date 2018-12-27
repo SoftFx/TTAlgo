@@ -23,5 +23,7 @@
         DataSeries Stoch { get; }
 
         DataSeries Signal { get; }
+
+        int LastPositionChanged { get; }
     }
 }

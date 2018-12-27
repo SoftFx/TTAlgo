@@ -9,5 +9,7 @@
         BarSeries Bars { get; }
 
         DataSeries Sar { get; }
+
+        int LastPositionChanged { get; }
     }
 }

@@ -11,5 +11,7 @@
         DataSeries HaOpen { get; }
 
         DataSeries HaClose { get; }
+
+        int LastPositionChanged { get; }
     }
 }

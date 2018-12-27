@@ -7,5 +7,7 @@
         DataSeries Price { get; }
 
         DataSeries Pcci { get; }
+
+        int LastPositionChanged { get; }
     }
 }

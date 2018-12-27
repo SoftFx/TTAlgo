@@ -25,5 +25,7 @@
         DataSeries JawsTeethUp { get; }
 
         DataSeries JawsTeethDown { get; }
+
+        int LastPositionChanged { get; }
     }
 }

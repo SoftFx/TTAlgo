@@ -7,5 +7,7 @@
         DataSeries Price { get; }
 
         DataSeries Rstl { get; }
+
+        int LastPositionChanged { get; }
     }
 }

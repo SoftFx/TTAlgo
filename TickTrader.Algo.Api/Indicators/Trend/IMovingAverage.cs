@@ -23,5 +23,7 @@
         DataSeries Price { get; }
 
         DataSeries Average { get; }
+
+        int LastPositionChanged { get; }
     }
 }

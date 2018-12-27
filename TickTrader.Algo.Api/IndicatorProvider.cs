@@ -9,6 +9,8 @@ namespace TickTrader.Algo.Api
 
         IFastTrendLineMomentum FastTrendLineMomentum(DataSeries price, int countBars = 300);
 
+        IFATALSignal FATALSignal(BarSeries bars, int countBars = 300, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+
         IFTLMSTLM FTLMSTLM(DataSeries price, int countBars = 300);
 
         IPerfectCommodityChannelIndex PerfectCommodityChannelIndex(DataSeries price, int countBars = 300);
@@ -43,11 +45,17 @@ namespace TickTrader.Algo.Api
         #region Oscillators
         IAverageTrueRange AverageTrueRange(BarSeries bars, int period = 14);
 
+        IBearsPower BearsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+
+        IBullsPower BullsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+
         ICommodityChannelIndex CommodityChannelIndex(DataSeries price, int period = 14);
 
         IMacd MACD(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9);
 
         IDeMarker DeMarker(BarSeries bars, int period = 14);
+
+        IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
 
         IMomentum Momentum(DataSeries price, int period = 14);
 
@@ -71,6 +79,8 @@ namespace TickTrader.Algo.Api
 
 
         #region Trend
+        IAverageDirectionalMovementIndex AverageDirectionalMovementIndex(BarSeries bars, int period = 14, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+
         IBoolingerBands BoolingerBands(DataSeries price, int period = 20, int shift = 0, double deviations = 2.0);
 
         IEnvelopes Envelopes(DataSeries price, int period = 7, int shift = 0, double deviation = 0.1, MovingAverageMethod targetMethod = MovingAverageMethod.Simple);

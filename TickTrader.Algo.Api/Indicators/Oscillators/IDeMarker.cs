@@ -7,5 +7,7 @@
         BarSeries Bars { get; }
 
         DataSeries DeMark { get; }
+
+        int LastPositionChanged { get; }
     }
 }

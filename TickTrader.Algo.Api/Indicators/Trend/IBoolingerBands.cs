@@ -15,5 +15,7 @@
         DataSeries TopLine { get; }
 
         DataSeries BottomLine { get; }
+
+        int LastPositionChanged { get; }
     }
 }

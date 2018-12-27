@@ -11,5 +11,7 @@
         DataSeries Price { get; }
 
         DataSeries OsMa { get; }
+
+        int LastPositionChanged { get; }
     }
 }

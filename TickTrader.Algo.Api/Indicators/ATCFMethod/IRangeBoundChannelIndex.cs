@@ -17,5 +17,7 @@
         DataSeries UpperBound2 { get; }
 
         DataSeries LowerBound2 { get; }
+
+        int LastPositionChanged { get; }
     }
 }

@@ -13,5 +13,7 @@
         DataSeries MfiDownVolumeUp { get; }
 
         DataSeries MfiDownVolumeDown { get; }
+
+        int LastPositionChanged { get; }
     }
 }

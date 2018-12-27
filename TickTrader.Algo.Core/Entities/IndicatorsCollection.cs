@@ -16,6 +16,11 @@ namespace TickTrader.Algo.Core
             return new Indicators.ATCFMethod.FastTrendLineMomentum.FastTrendLineMomentum(price, countBars);
         }
 
+        public IFATALSignal FATALSignal(BarSeries bars, int countBars = 300, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            return new Indicators.ATCFMethod.FATLSignal.FatlSignal(bars, countBars, targetPrice);
+        }
+
         public IFTLMSTLM FTLMSTLM(DataSeries price, int countBars = 300)
         {
             return new Indicators.ATCFMethod.FTLMSTLM.FtlmStlm(price, countBars);
@@ -92,6 +97,16 @@ namespace TickTrader.Algo.Core
             return new Indicators.Oscillators.AverageTrueRange.AverageTrueRange(bars, period);
         }
 
+        public IBearsPower BearsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            return new Indicators.Oscillators.BearsPower.BearsPower(bars, period, targetPrice);
+        }
+
+        public IBullsPower BullsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            return new Indicators.Oscillators.BullsPower.BullsPower(bars, period, targetPrice);
+        }
+
         public ICommodityChannelIndex CommodityChannelIndex(DataSeries price, int period = 14)
         {
             return new Indicators.Oscillators.CommodityChannelIndex.CommodityChannelIndex(price, period);
@@ -100,6 +115,11 @@ namespace TickTrader.Algo.Core
         public IDeMarker DeMarker(BarSeries bars, int period = 14)
         {
             return new Indicators.Oscillators.DeMarker.DeMarker(bars, period);
+        }
+
+        public IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            return new Indicators.Oscillators.ForceIndex.ForceIndex(bars, period, targetMethod, targetPrice);
         }
 
         public IMacd MACD(DataSeries price, int fastEma = 12, int slowEma = 26, int macdSma = 9)
@@ -153,6 +173,11 @@ namespace TickTrader.Algo.Core
 
 
         #region Trend
+        public IAverageDirectionalMovementIndex AverageDirectionalMovementIndex(BarSeries bars, int period = 14, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        {
+            return new Indicators.Trend.AverageDirectionalMovementIndex.AverageDirectionalMovementIndex(bars, period, targetPrice);
+        }
+
         public IBoolingerBands BoolingerBands(DataSeries price, int period = 20, int shift = 0, double deviations = 2)
         {
             return new Indicators.Trend.BollingerBands.BollingerBands(price, period, shift, deviations);

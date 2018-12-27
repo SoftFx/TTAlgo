@@ -7,5 +7,7 @@
         DataSeries Price { get; }
 
         DataSeries Moment { get; }
+
+        int LastPositionChanged { get; }
     }
 }

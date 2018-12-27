@@ -13,5 +13,7 @@
         DataSeries Zigzag { get; }
 
         DataSeries ZigzagLine { get; }
+
+        int LastPositionChanged { get; }
     }
 }

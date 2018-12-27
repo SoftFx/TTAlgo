@@ -7,5 +7,7 @@
         DataSeries Price { get; }
 
         DataSeries Fatl { get; }
+
+        int LastPositionChanged { get; }
     }
 }

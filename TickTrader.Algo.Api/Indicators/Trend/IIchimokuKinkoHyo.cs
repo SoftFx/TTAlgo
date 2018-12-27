@@ -19,5 +19,7 @@
         DataSeries SenkouB { get; }
 
         DataSeries Chikou { get; }
+
+        int LastPositionChanged { get; }
     }
 }

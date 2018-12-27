@@ -78,6 +78,7 @@
     <Compile Include="Indicators\Oscillators\IBearsPower.cs" />
     <Compile Include="Indicators\Oscillators\ICommodityChannelIndex.cs" />
     <Compile Include="Indicators\Oscillators\IDeMarker.cs" />
+    <Compile Include="Indicators\Oscillators\IForceIndex.cs" />
     <Compile Include="Indicators\Oscillators\IMacd.cs" />
     <Compile Include="Indicators\Oscillators\IMomentum.cs" />
     <Compile Include="Indicators\Oscillators\IMovingAverageOscillator.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="IndicatorProvider.cs" />
     <Compile Include="Indicators\Trend\IParabolicSar.cs" />
     <Compile Include="Indicators\Trend\IStandardDeviation.cs" />
+    <Compile Include="Indicators\Utility\AppliedPriceHelper.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
     <Compile Include="OutputTargets.cs" />

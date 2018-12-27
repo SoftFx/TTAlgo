@@ -1,12 +1,11 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
-using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
 {
     [Indicator(Category = "Oscillators", DisplayName = "Bears Power", Version = "1.0")]
-    public class BearsPower : Indicator
+    public class BearsPower : Indicator, IBearsPower
     {
         private MovingAverage _ema;
 

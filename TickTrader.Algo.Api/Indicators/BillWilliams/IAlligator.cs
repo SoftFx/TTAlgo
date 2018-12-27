@@ -21,5 +21,7 @@
         DataSeries Teeth { get; }
 
         DataSeries Lips { get; }
+
+        int LastPositionChanged { get; }
     }
 }

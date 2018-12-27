@@ -7,5 +7,7 @@
         DataSeries Price { get; }
 
         DataSeries Ftlm { get; }
+
+        int LastPositionChanged { get; }
     }
 }
