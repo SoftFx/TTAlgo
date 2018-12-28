@@ -97,6 +97,10 @@
     <Compile Include="Indicators\Trend\IParabolicSar.cs" />
     <Compile Include="Indicators\Trend\IStandardDeviation.cs" />
     <Compile Include="Indicators\Utility\AppliedPrice.cs" />
+    <Compile Include="Indicators\Volumes\IAccumulationDistribution.cs" />
+    <Compile Include="Indicators\Volumes\IMoneyFlowIndex.cs" />
+    <Compile Include="Indicators\Volumes\IOnBalanceVolume.cs" />
+    <Compile Include="Indicators\Volumes\IVolumes.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
     <Compile Include="OutputTargets.cs" />

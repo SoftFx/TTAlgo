@@ -103,5 +103,16 @@ namespace TickTrader.Algo.Api
         IStandardDeviation StandardDeviation(DataSeries price, int period = 20, int shift = 0, MovingAverageMethod targtMethod = MovingAverageMethod.Simple);
 
         #endregion
+
+
+        #region Volumes
+        IAccumulationDistribution AccumulationDistribution(BarSeries bars);
+
+        IMoneyFlowIndex MoneyFlowIndex(BarSeries bars, int period = 14);
+
+        IOnBalanceVolume OnBalanceVolume(BarSeries bars, AppliedPrice targetPrice = AppliedPrice.Close);
+
+        IVolumes Volumes(BarSeries bars);
+        #endregion
     }
 }

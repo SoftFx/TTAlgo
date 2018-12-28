@@ -218,5 +218,30 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
+
+
+        #region Volumes
+
+        public IAccumulationDistribution AccumulationDistribution(BarSeries bars)
+        {
+            return new Indicators.Volumes.AccumulationDistribution.AccumulationDistribution(bars);
+        }
+
+        public IMoneyFlowIndex MoneyFlowIndex(BarSeries bars, int period = 14)
+        {
+            return new Indicators.Volumes.MoneyFlowIndex.MoneyFlowIndex(bars, period);
+        }
+
+        public IOnBalanceVolume OnBalanceVolume(BarSeries bars, AppliedPrice targetPrice = AppliedPrice.Close)
+        {
+            return new Indicators.Volumes.OnBalanceVolume.OnBalanceVolume(bars, targetPrice);
+        }
+
+        public IVolumes Volumes(BarSeries bars)
+        {
+            return new Indicators.Volumes.Volumes.Volumes(bars);
+        }
+
+        #endregion
     }
 }

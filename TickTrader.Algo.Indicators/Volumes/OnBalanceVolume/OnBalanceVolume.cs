@@ -6,7 +6,7 @@ using TickTrader.Algo.Indicators.Utility;
 namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 {
     [Indicator(Category = "Volumes", DisplayName = "On Balance Volume", Version = "1.0")]
-    public class OnBalanceVolume : Indicator
+    public class OnBalanceVolume : Indicator, IOnBalanceVolume
     {
         [Parameter(DefaultValue = AppliedPrice.Close, DisplayName = "Apply To")]
         public AppliedPrice TargetPrice { get; set; }
