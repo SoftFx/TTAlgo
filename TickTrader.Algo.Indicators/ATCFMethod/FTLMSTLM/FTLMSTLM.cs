@@ -33,6 +33,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _ftlm.HasEnoughBars(barsCount) && _stlm.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
             _ftlm = Indicators.FastTrendLineMomentum(Price, CountBars);

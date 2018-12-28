@@ -1,6 +1,7 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
 {
@@ -12,8 +13,8 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
         [Parameter(DefaultValue = 13, DisplayName = "Period")]
         public int Period { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
+        [Parameter(DefaultValue = AppliedPrice.Close, DisplayName = "Apply To")]
+        public AppliedPrice TargetPrice { get; set; }
 
         [Input]
         public new BarSeries Bars { get; set; }
@@ -25,7 +26,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
 
         public BearsPower() { }
 
-        public BearsPower(BarSeries bars, int period, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public BearsPower(BarSeries bars, int period, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             Bars = bars;
             Period = period;
@@ -36,7 +37,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
 
         protected void InitializeIndicator()
         {
-            _ema = Indicators.MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, MovingAverageMethod.Exponential);
+            _ema = Indicators.MovingAverage(AppliedPriceHelper.GetDataSeries(Bars, TargetPrice), Period, 0, MovingAverageMethod.Exponential);
         }
 
         protected override void Init()

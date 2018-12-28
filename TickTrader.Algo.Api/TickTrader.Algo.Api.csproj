@@ -60,7 +60,7 @@
     <Compile Include="Indicators\ATCFMethod\IFTLMSTLM.cs" />
     <Compile Include="Indicators\ATCFMethod\IFastAdaptiveTrendLine.cs" />
     <Compile Include="Indicators\ATCFMethod\IFastTrendLineMomentum.cs" />
-    <Compile Include="Indicators\ATCFMethod\IFATALSignal.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFATLSignal.cs" />
     <Compile Include="Indicators\ATCFMethod\IPerfectCommodityChannelIndex.cs" />
     <Compile Include="Indicators\ATCFMethod\IRangeBoundChannelIndex.cs" />
     <Compile Include="Indicators\ATCFMethod\IReferenceFastTrendLine.cs" />
@@ -96,7 +96,7 @@
     <Compile Include="IndicatorProvider.cs" />
     <Compile Include="Indicators\Trend\IParabolicSar.cs" />
     <Compile Include="Indicators\Trend\IStandardDeviation.cs" />
-    <Compile Include="Indicators\Utility\AppliedPriceHelper.cs" />
+    <Compile Include="Indicators\Utility\AppliedPrice.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
     <Compile Include="OutputTargets.cs" />

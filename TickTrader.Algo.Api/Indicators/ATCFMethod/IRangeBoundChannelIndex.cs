@@ -19,5 +19,8 @@
         DataSeries LowerBound2 { get; }
 
         int LastPositionChanged { get; }
+
+
+        bool HasEnoughBars(int barsCount);
     }
 }

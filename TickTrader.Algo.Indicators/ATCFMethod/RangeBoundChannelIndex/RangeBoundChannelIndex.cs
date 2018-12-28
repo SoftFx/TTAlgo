@@ -63,6 +63,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return barsCount > CoefficientsCount - 1;
+        }
+
         private void InitializeIndicator()
         {
             _ma = new AnotherSma(CountBars);

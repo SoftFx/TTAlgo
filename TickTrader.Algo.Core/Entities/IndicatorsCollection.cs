@@ -6,6 +6,7 @@ namespace TickTrader.Algo.Core
     internal class IndicatorsCollection : IndicatorProvider
     {
         #region ATCFMethod
+
         public IFastAdaptiveTrendLine FastAdaptiveTrendLine(DataSeries price, int countBars = 300)
         {
             return new Indicators.ATCFMethod.FastAdaptiveTrendLine.FastAdaptiveTrendLine(price, countBars);
@@ -16,7 +17,7 @@ namespace TickTrader.Algo.Core
             return new Indicators.ATCFMethod.FastTrendLineMomentum.FastTrendLineMomentum(price, countBars);
         }
 
-        public IFATALSignal FATALSignal(BarSeries bars, int countBars = 300, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public IFATLSignal FATLSignal(BarSeries bars, int countBars = 300, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             return new Indicators.ATCFMethod.FATLSignal.FatlSignal(bars, countBars, targetPrice);
         }
@@ -60,10 +61,12 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.BillWilliams.MarketFacilitationIndex.MarketFacilitationIndex(bars, pointSize);
         }
+
         #endregion
 
 
         #region BillWilliams
+
         public IAcceleratorOscillator AcceleratorOscillator(BarSeries bars, int fastSmaPeriod = 5, int slowSmaPeriod = 34, int dataLimit = 34)
         {
             return new Indicators.BillWilliams.AcceleratorOscillator.AcceleratorOscillator(bars, fastSmaPeriod, slowSmaPeriod, dataLimit);
@@ -88,21 +91,23 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.BillWilliams.GatorOscillator.GatorOscillator(price, jawsPeriod, jawsShift, teethPeriod, teethShift, lipsPeriod, lipsShift, targetMethod);
         }
+
         #endregion
 
 
         #region Oscillators
+
         public IAverageTrueRange AverageTrueRange(BarSeries bars, int period = 14)
         {
             return new Indicators.Oscillators.AverageTrueRange.AverageTrueRange(bars, period);
         }
 
-        public IBearsPower BearsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public IBearsPower BearsPower(BarSeries bars, int period = 13, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             return new Indicators.Oscillators.BearsPower.BearsPower(bars, period, targetPrice);
         }
 
-        public IBullsPower BullsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public IBullsPower BullsPower(BarSeries bars, int period = 13, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             return new Indicators.Oscillators.BullsPower.BullsPower(bars, period, targetPrice);
         }
@@ -117,7 +122,7 @@ namespace TickTrader.Algo.Core
             return new Indicators.Oscillators.DeMarker.DeMarker(bars, period);
         }
 
-        public IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             return new Indicators.Oscillators.ForceIndex.ForceIndex(bars, period, targetMethod, targetPrice);
         }
@@ -156,10 +161,12 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.Oscillators.WilliamsPercentRange.WilliamsPercentRange(bars, period);
         }
+
         #endregion
 
 
         #region Other
+
         public IHeikenAshi HeikenAshi(BarSeries bars)
         {
             return new Indicators.Other.HeikenAshi.HeikenAshi(bars);
@@ -169,11 +176,13 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.Other.ZigZag.ZigZag(bars, depth, deviation, backstep);
         }
+
         #endregion
 
 
         #region Trend
-        public IAverageDirectionalMovementIndex AverageDirectionalMovementIndex(BarSeries bars, int period = 14, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+
+        public IAverageDirectionalMovementIndex AverageDirectionalMovementIndex(BarSeries bars, int period = 14, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             return new Indicators.Trend.AverageDirectionalMovementIndex.AverageDirectionalMovementIndex(bars, period, targetPrice);
         }
@@ -207,6 +216,7 @@ namespace TickTrader.Algo.Core
         {
             return new Indicators.Trend.StandardDeviation.StandardDeviation(price, period, shift, targtMethod);
         }
+
         #endregion
     }
 }

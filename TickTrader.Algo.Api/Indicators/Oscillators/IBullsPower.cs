@@ -4,7 +4,7 @@
     {
         int Period { get; }
 
-        AppliedPrice.Target TargetPrice { get; }
+        AppliedPrice TargetPrice { get; }
 
         BarSeries Bars { get; }
 

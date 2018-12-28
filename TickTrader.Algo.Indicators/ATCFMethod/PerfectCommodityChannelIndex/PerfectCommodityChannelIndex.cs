@@ -29,6 +29,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _fatl.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
             _fatl = Indicators.FastAdaptiveTrendLine(Price, CountBars);

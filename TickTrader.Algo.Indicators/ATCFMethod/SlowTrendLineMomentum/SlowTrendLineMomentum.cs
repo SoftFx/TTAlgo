@@ -30,6 +30,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _satl.HasEnoughBars(barsCount) && _rstl.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
             _satl = Indicators.SlowAdaptiveTrendLine(Price, CountBars);

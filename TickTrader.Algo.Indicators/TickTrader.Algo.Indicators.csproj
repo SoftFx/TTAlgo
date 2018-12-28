@@ -83,7 +83,7 @@
     <Compile Include="Trend\IchimokuKinkoHyo\IchimokuKinkoHyo.cs" />
     <Compile Include="Trend\ParabolicSAR\ParabolicSAR.cs" />
     <Compile Include="Trend\StandardDeviation\StandardDeviation.cs" />
-    <Compile Include="Utility\AppliedPrice.cs" />
+    <Compile Include="Utility\AppliedPriceHelper.cs" />
     <Compile Include="Other\HeikenAshi\HeikenAshi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Trend\MovingAverage\CustomEMA.cs" />

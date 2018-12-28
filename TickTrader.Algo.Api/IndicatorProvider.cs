@@ -5,11 +5,12 @@ namespace TickTrader.Algo.Api
     public interface IndicatorProvider
     {
         #region ATCFMethod
+
         IFastAdaptiveTrendLine FastAdaptiveTrendLine(DataSeries price, int countBars = 300);
 
         IFastTrendLineMomentum FastTrendLineMomentum(DataSeries price, int countBars = 300);
 
-        IFATALSignal FATALSignal(BarSeries bars, int countBars = 300, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+        IFATLSignal FATLSignal(BarSeries bars, int countBars = 300, AppliedPrice targetPrice = AppliedPrice.Close);
 
         IFTLMSTLM FTLMSTLM(DataSeries price, int countBars = 300);
 
@@ -24,10 +25,12 @@ namespace TickTrader.Algo.Api
         ISlowAdaptiveTrendLine SlowAdaptiveTrendLine(DataSeries price, int countBars = 300);
 
         ISlowTrendLineMomentum SlowTrendLineMomentum(DataSeries price, int countBars = 300);
+
         #endregion
 
 
         #region BillWilliams
+
         IAcceleratorOscillator AcceleratorOscillator(BarSeries bars, int fastSmaPeriod = 5, int slowSmaPeriod = 34, int dataLimit = 34);
 
         IAlligator Alligator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed);
@@ -39,15 +42,17 @@ namespace TickTrader.Algo.Api
         IGatorOscillator GatorOscillator(DataSeries price, int jawsPeriod = 13, int jawsShift = 8, int teethPeriod = 8, int teethShift = 5, int lipsPeriod = 5, int lipsShift = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed);
 
         IMarketFacilitationIndex MarketFacilitationIndex(BarSeries bars, double pointSize = 10e-5);
+
         #endregion
 
 
         #region Oscillators
+
         IAverageTrueRange AverageTrueRange(BarSeries bars, int period = 14);
 
-        IBearsPower BearsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+        IBearsPower BearsPower(BarSeries bars, int period = 13, AppliedPrice targetPrice = AppliedPrice.Close);
 
-        IBullsPower BullsPower(BarSeries bars, int period = 13, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+        IBullsPower BullsPower(BarSeries bars, int period = 13, AppliedPrice targetPrice = AppliedPrice.Close);
 
         ICommodityChannelIndex CommodityChannelIndex(DataSeries price, int period = 14);
 
@@ -55,7 +60,7 @@ namespace TickTrader.Algo.Api
 
         IDeMarker DeMarker(BarSeries bars, int period = 14);
 
-        IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+        IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice targetPrice = AppliedPrice.Close);
 
         IMomentum Momentum(DataSeries price, int period = 14);
 
@@ -68,18 +73,22 @@ namespace TickTrader.Algo.Api
         IStochasticOscillator StochasticOscillator(BarSeries bars, int kPeriod = 5, int slowing = 3, int dPeriod = 3, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, PriceField targetPrice = PriceField.LowHigh);
 
         IWilliamsPercentRange WilliamsPercentRange(BarSeries bars, int period = 14);
+
         #endregion
 
 
         #region Other
+
         IHeikenAshi HeikenAshi(BarSeries bars);
 
         IZigZag ZigZag(BarSeries bars, int depth = 12, int deviation = 5, int backstep = 3);
+
         #endregion
 
 
         #region Trend
-        IAverageDirectionalMovementIndex AverageDirectionalMovementIndex(BarSeries bars, int period = 14, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close);
+
+        IAverageDirectionalMovementIndex AverageDirectionalMovementIndex(BarSeries bars, int period = 14, AppliedPrice targetPrice = AppliedPrice.Close);
 
         IBoolingerBands BoolingerBands(DataSeries price, int period = 20, int shift = 0, double deviations = 2.0);
 
@@ -92,6 +101,7 @@ namespace TickTrader.Algo.Api
         IParabolicSar ParabolicSar(BarSeries bars, double step = 0.02, double maximum = 0.2);
 
         IStandardDeviation StandardDeviation(DataSeries price, int period = 20, int shift = 0, MovingAverageMethod targtMethod = MovingAverageMethod.Simple);
+
         #endregion
     }
 }

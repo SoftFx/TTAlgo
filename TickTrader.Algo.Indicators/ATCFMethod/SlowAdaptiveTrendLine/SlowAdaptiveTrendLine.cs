@@ -27,6 +27,11 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowAdaptiveTrendLine
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return barsCount > CoefficientsCount - 1;
+        }
+
         private void InitializeIndicator() { }
 
         protected override void Init()

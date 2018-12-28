@@ -1,17 +1,20 @@
 ﻿namespace TickTrader.Algo.Api.Indicators
 {
-    public interface IForceIndex
+    public interface IFATLSignal
     {
-        int Period { get; }
-
-        MovingAverageMethod TargetMethod { get; }
+        int CountBars { get; }
 
         AppliedPrice TargetPrice { get; }
 
         BarSeries Bars { get; }
 
-        DataSeries Force { get; }
+        DataSeries Up { get; }
+
+        DataSeries Down { get; }
 
         int LastPositionChanged { get; }
+
+
+        bool HasEnoughBars(int barsCount);
     }
 }

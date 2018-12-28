@@ -9,5 +9,8 @@
         DataSeries Pcci { get; }
 
         int LastPositionChanged { get; }
+
+
+        bool HasEnoughBars(int barsCount);
     }
 }
