@@ -124,5 +124,6 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get { return double.NaN; } }
         public double Margin => double.NaN;
         public double Profit => double.NaN;
+        public OrderExecOptions Options => OrderExecOptions.None;
     }
 }
