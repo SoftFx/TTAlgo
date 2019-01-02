@@ -122,7 +122,7 @@ namespace TickTrader.Algo.Core
             return new Indicators.Oscillators.DeMarker.DeMarker(bars, period);
         }
 
-        public IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice targetPrice = AppliedPrice.Close)
+        public IForceIndex ForceIndex(BarSeries bars, int period = 13, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             return new Indicators.Oscillators.ForceIndex.ForceIndex(bars, period, targetMethod, targetPrice);
         }

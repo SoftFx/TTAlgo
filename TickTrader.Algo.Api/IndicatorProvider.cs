@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Api
 
         IDeMarker DeMarker(BarSeries bars, int period = 14);
 
-        IForceIndex ForceIndex(BarSeries bars, int period, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice targetPrice = AppliedPrice.Close);
+        IForceIndex ForceIndex(BarSeries bars, int period = 13, MovingAverageMethod targetMethod = MovingAverageMethod.Simple, AppliedPrice targetPrice = AppliedPrice.Close);
 
         IMomentum Momentum(DataSeries price, int period = 14);
 
