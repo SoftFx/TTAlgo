@@ -95,6 +95,16 @@ namespace TickTrader.Algo.TestCollection.Bots
 		#endregion
 
 
+		#region Volumes
+
+		private IAccumulationDistribution _ad;
+		private IMoneyFlowIndex _mfi;
+		private IOnBalanceVolume _obv;
+		private IVolumes _volumes;
+
+		#endregion
+
+
 		protected override void Init()
         {
             var price = Bars.Close;
@@ -185,15 +195,31 @@ namespace TickTrader.Algo.TestCollection.Bots
 
 					break;
 
+				case IndicatorsGroup.Volumes:
+
+					#region
+
+					_ad = Indicators.AccumulationDistribution(bars);
+					_mfi = Indicators.MoneyFlowIndex(bars);
+					_obv = Indicators.OnBalanceVolume(bars);
+					_volumes = Indicators.Volumes(bars);
+
+					#endregion
+
+					break;
+
 				default:
                     break;
            }
+
+			Status.WriteLine("Bot init");
+			Status.Flush();
         }
 
         protected override void OnQuote(Quote quote)
         {
-            if (Bars[0].OpenTime <= _timeOpenLastBar)
-                return;
+            //if (Bars[0].OpenTime <= _timeOpenLastBar)
+            //    return;
 
             _timeOpenLastBar = Bars[0].OpenTime;
 
@@ -222,7 +248,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.WriteLine($"RangeBoundChannelIndex LowerBound: {_rbci.LowerBound[0]:F9}");
                     Status.WriteLine($"RangeBoundChannelIndex LowerBound2: {_rbci.LowerBound2[0]:F9}\n");
 
-                    Status.WriteLine($"ReferenceFastTrendLine: {_rftl.Rftl[0]:F9}");
+                    Status.WriteLine($"ReferenceFastTrendLine: {_rftl.Rftl[0]:F9}\n");
                     Status.WriteLine($"ReferenceSlowTrendLine: {_rstl.Rstl[0]:F9}\n");
 
                     Status.WriteLine($"SlowAdaptiveTrendLine: {_satl.Satl[0]:F9}");
@@ -342,6 +368,23 @@ namespace TickTrader.Algo.TestCollection.Bots
 					Status.WriteLine($"Parabolic SAR: {_ps.Sar[0]:F9}\n");
 
 					Status.WriteLine($"StandardDeviation: {_sd.StdDev[0]:F9}\n");
+
+					#endregion
+
+					break;
+
+				case IndicatorsGroup.Volumes:
+
+					#region
+
+					Status.WriteLine($"AccumulationDistribution: {_ad.Ad[0]:F9}\n");
+
+					Status.WriteLine($"MoneyFlowIndex: {_mfi.Mfi[0]:F9}\n");
+
+					Status.WriteLine($"OnBalanceVolume: {_obv.Obv[0]:F9}\n");
+
+					Status.WriteLine($"Volume Up: {_volumes.ValueUp[0]:F9}");
+					Status.WriteLine($"Volume Down: {_volumes.ValueDown[0]:F9}");
 
 					#endregion
 

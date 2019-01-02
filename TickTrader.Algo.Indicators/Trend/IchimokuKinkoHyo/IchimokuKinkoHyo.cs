@@ -46,7 +46,9 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
             TenkanSen = tenkanSen;
             KijunSen = kijunSen;
             SenkouSpanB = senkouSpanB;
-        }
+
+			InitializeIndicator();
+		}
 
         protected void InitializeIndicator()
         {
