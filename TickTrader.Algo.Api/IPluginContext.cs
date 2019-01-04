@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Api
         void OnPluginThread(Action action);
         void BeginOnPluginThread(Action action);
         Task OnPluginThreadAsync(Action action);
+        void SetFeedBufferSize(int newSize);
     }
 
     internal interface IHelperApi

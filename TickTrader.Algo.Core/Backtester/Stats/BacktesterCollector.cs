@@ -286,6 +286,11 @@ namespace TickTrader.Algo.Core
             AddEvent(LogSeverities.Error, message);
         }
 
+        void IPluginLogger.OnError(string message)
+        {
+            AddEvent(LogSeverities.Error, message);
+        }
+
         void IPluginLogger.OnExit()
         {
             AddEvent(LogSeverities.Info, "Bot called Exit()");

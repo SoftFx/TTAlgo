@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         void OnPrintTradeFail(string entry);
         void OnError(Exception ex);
         void OnError(string message, Exception ex);
+        void OnError(string message);
         void OnInitialized();
         void OnStart();
         void OnStop();
@@ -62,6 +63,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnError(string message, Exception ex)
+        {
+        }
+
+        public void OnError(string message)
         {
         }
 

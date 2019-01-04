@@ -79,6 +79,7 @@ namespace TickTrader.Algo.Core
         public Action<Exception> OnInitFailed { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
         public Action OnExit { get; set; }
+        public Action<int> OnInputResize { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
@@ -320,6 +321,11 @@ namespace TickTrader.Algo.Core
         Task IPluginContext.OnPluginThreadAsync(Action action)
         {
             return OnPluginThreadAsync(action);
+        }
+
+        void IPluginContext.SetFeedBufferSize(int newSize)
+        {
+            OnInputResize?.Invoke(newSize);
         }
 
         #endregion IPluginContext

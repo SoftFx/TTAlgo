@@ -258,6 +258,7 @@ namespace TickTrader.Algo.Core
                     builder.OnAsyncAction = OnAsyncAction;
                     builder.OnExit = OnExit;
                     builder.OnInitFailed = OnInitFailed;
+                    builder.OnInputResize = OnInputResize;
                     //builder.OnException = OnException;
 
                     // Setup strategy
@@ -441,7 +442,7 @@ namespace TickTrader.Algo.Core
             mapping?.MapInput(this, inputName, symbolCode);
         }
 
-        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe, List<BarEntity> mainSeries = null)
+        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
         {
             lock (_sync)
             {
@@ -613,6 +614,14 @@ namespace TickTrader.Algo.Core
         private void OnRuntimeException(Exception ex)
         {
             OnRuntimeError?.Invoke(ex);
+        }
+
+        private void OnInputResize(int newSize)
+        {
+            string error;
+            fStrategy.BufferingStrategy.OnUserSetBufferSize(newSize, out error);
+            if (error != null)
+                _pluginLogger.OnError(error);
         }
 
         private void OnAsyncAction(Action asyncAction)

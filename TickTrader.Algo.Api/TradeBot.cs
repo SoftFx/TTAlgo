@@ -312,6 +312,19 @@ namespace TickTrader.Algo.Api
         }
 
         #endregion
+
+        #region Setup
+
+        /// <summary>
+        /// Changes the size of input buffers. This method can be called only from Init().
+        /// </summary>
+        /// <param name="newSize"></param>
+        public void SetInputSize(int newSize)
+        {
+            context.SetFeedBufferSize(newSize);
+        }
+
+        #endregion
     }
 
     public interface Timer : IDisposable
