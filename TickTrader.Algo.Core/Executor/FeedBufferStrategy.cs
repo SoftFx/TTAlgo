@@ -31,7 +31,10 @@ namespace TickTrader.Algo.Core
         public void Start()
         {
             foreach (var buff in _toLoad)
-                LoadData(buff);
+            {
+                if (!buff.IsLoaded) // buffers can have pre-loaded data
+                    LoadData(buff);
+            }
 
             _toLoad.Clear();
 
