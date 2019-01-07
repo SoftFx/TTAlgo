@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
     internal class StatusFixture
     {
         private IFixtureContext context;
-        private IPluginLogger logger;
+        private PluginLoggerAdapter logger;
 
         public StatusFixture(IFixtureContext context)
         {

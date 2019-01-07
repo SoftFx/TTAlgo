@@ -38,8 +38,9 @@ namespace TickTrader.Algo.Core
             //_delayedQueue = new  C5.IntervalHeap<EmulatedAction>(eventComparer);
         }
 
-        public DateTime VirtualTimePoint { get { lock (_sync) return _timePoint; } }
-        public DateTime SafeVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
+        public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
+        public DateTime SafeVirtualTimePoint { get { lock (_sync) return _timePoint; } }
+        public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
         public bool IsStopPhase { get; private set; }
 
@@ -321,7 +322,7 @@ namespace TickTrader.Algo.Core
 
             var acc = Builder.Account;
             if (acc.IsMarginType)
-                _collector.RegisterEquity(VirtualTimePoint, acc.Equity, acc.Margin);
+                _collector.RegisterEquity(SafeVirtualTimePoint, acc.Equity, acc.Margin);
         }
 
         public override Task Stop(bool quick)

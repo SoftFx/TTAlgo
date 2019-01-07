@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
         Task<PositionEntity[]> GetPositions();
 
         void GetTradeRecords(BlockingChannel<OrderEntity> rxStream);
-        void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders);
+        void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards);
 
         event Action<PositionEntity> PositionReport;
         event Action<ExecutionReport> ExecutionReport;

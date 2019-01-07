@@ -43,7 +43,6 @@ namespace TickTrader.Algo.Core
             RateDispenser.ClearUserSubscriptions();
             OnInit();
             BufferingStrategy.Init(this);
-            BufferingStrategy.Start();
             setupActions.ForEach(a => a());
         }
 
@@ -72,7 +71,7 @@ namespace TickTrader.Algo.Core
         private void StartStrategy()
         {
             Feed.Subscribe(Feed_FeedUpdated);
-            ExecContext.EnqueueCustomInvoke(b => BatchBuild(BufferSize));
+            ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
 
             // apply snapshot
             foreach (var quote in Feed.GetSnapshot())
@@ -89,13 +88,16 @@ namespace TickTrader.Algo.Core
             Feed.Unsubscribe();
         }
 
-        private void BatchBuild(int x)
+        private void LoadDataAndBuild()
         {
+            BufferingStrategy.Start();
+
             var builder = ExecContext.Builder;
+            var barCount = BufferSize;
 
             builder.StartBatch();
 
-            for (int i = 0; i < x; i++)
+            for (int i = 0; i < barCount; i++)
             {
                 builder.IncreaseVirtualPosition();
                 builder.InvokeCalculate(false);

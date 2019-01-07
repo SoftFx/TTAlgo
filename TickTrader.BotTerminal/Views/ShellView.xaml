@@ -115,12 +115,12 @@
 
     <ControlTemplate x:Key="HistoryTransactionsCntTemplate">
         <Border>
-            <TextBlock Margin="5 0" Text="{Binding TradeHistory.TradesList.Count}" />
+            <TextBlock Margin="5 0" Text="{Binding TradeHistory.GridView.Items.Value.Count}" />
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Background" Value="{DynamicResource Shell_SecondaryForeground}"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding TradeHistory.TradesList.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                        <DataTrigger Binding="{Binding TradeHistory.GridView.Items.Value.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
                             <Setter Property="Background" Value="{DynamicResource RateUpColor}"/>
                         </DataTrigger>
                     </Style.Triggers>
@@ -295,11 +295,11 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="{l:Resx Tab_History}"></TextBlock>
                                 <Border Grid.Column="1" Margin="5 0 0 0" CornerRadius="4" Name="TransactionCountPane" Background="{DynamicResource ShellPanel_BackgroundBrush}">
-                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.TradesList.Count}"></TextBlock>
+                                    <TextBlock Margin="5 0" Text="{Binding TradeHistory.GridView.Items.Value.Count}"></TextBlock>
                                 </Border>
                             </Grid>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding TradeHistory.TradesList.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
+                                <DataTrigger Binding="{Binding TradeHistory.GridView.Items.Value.Count, Converter={l:NumericalComparative ComparisonOption=AboveZero}}" Value="True">
                                     <Setter TargetName="TransactionCountPane" Property="Background" Value="{DynamicResource RateUpColor}"></Setter>
                                 </DataTrigger>
                             </DataTemplate.Triggers>

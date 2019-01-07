@@ -77,7 +77,7 @@ namespace TickTrader.BotTerminal
 
     internal class BotMessage : BaseJournalMessage
     {
-        public BotMessage(DateTime time, string botName, string message, JournalMessageType type) : base(time)
+        public BotMessage(TimeKey time, string botName, string message, JournalMessageType type) : base(time)
         {
             Type = type;
             Message = message;

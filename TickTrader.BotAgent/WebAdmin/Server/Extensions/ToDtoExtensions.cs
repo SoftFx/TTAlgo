@@ -73,7 +73,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         {
             return new LogEntryDto
             {
-                Time = entry.TimeUtc,
+                Time = entry.TimeUtc.Timestamp,
                 Type = entry.Type.ToString(),
                 Message = entry.Message
             };

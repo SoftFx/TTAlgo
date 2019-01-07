@@ -20,56 +20,56 @@ namespace TickTrader.Algo.TestCollection.Bots
         public TradeHistoryFilters Filter { get; set; }
 
         [Parameter]
-        public BoolEnum SkipCancelOrders { get; set; }
-
-        private bool SkipCancels => SkipCancelOrders == BoolEnum.True;
+        public bool SkipCancelOrders { get; set; }
 
         protected async override void OnStart()
         {
             var builder = new StringBuilder();
+
+            var options = SkipCancelOrders ? ThQueryOptions.SkipCanceled : ThQueryOptions.None;
 
             try
             {
                 if (ExecType == SyncOrAsync.Sync)
                 {
                     if (Filter == TradeHistoryFilters.All)
-                        Print(Account.TradeHistory.Get(SkipCancels));
+                        Print(Account.TradeHistory.Get(options));
                     else if (Filter == TradeHistoryFilters.Today)
-                        Print(Account.TradeHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), SkipCancels));
+                        Print(Account.TradeHistory.GetRange(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
                     else if (Filter == TradeHistoryFilters.Yesterday)
-                        Print(Account.TradeHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, SkipCancels));
+                        Print(Account.TradeHistory.GetRange(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
                     else if (Filter == TradeHistoryFilters.ThisYear)
                     {
                         var from = new DateTime(DateTime.Now.Year, 1, 1);
                         var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
-                        Print(Account.TradeHistory.GetRange(from, to, SkipCancels));
+                        Print(Account.TradeHistory.GetRange(from, to, options));
                     }
                     else if (Filter == TradeHistoryFilters.PreviousYear)
                     {
                         var from = new DateTime(DateTime.Now.Year - 1, 1, 1);
                         var to = new DateTime(DateTime.Now.Year, 1, 1);
-                        Print(Account.TradeHistory.GetRange(from, to, SkipCancels));
+                        Print(Account.TradeHistory.GetRange(from, to, options));
                     }
                 }
                 else
                 {
                     if (Filter == TradeHistoryFilters.All)
-                        await Print(Account.TradeHistory.GetAsync(SkipCancels));
+                        await Print(Account.TradeHistory.GetAsync(options));
                     else if (Filter == TradeHistoryFilters.Today)
-                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), SkipCancels));
+                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today, DateTime.Today + TimeSpan.FromDays(1), options));
                     else if (Filter == TradeHistoryFilters.Yesterday)
-                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, SkipCancels));
+                        await Print(Account.TradeHistory.GetRangeAsync(DateTime.Today - TimeSpan.FromDays(1), DateTime.Today, options));
                     else if (Filter == TradeHistoryFilters.ThisYear)
                     {
                         var from = new DateTime(DateTime.Now.Year, 1, 1);
                         var to = new DateTime(DateTime.Now.Year + 1, 1, 1);
-                        await Print(Account.TradeHistory.GetRangeAsync(from, to, SkipCancels));
+                        await Print(Account.TradeHistory.GetRangeAsync(from, to, options));
                     }
                     else if (Filter == TradeHistoryFilters.PreviousYear)
                     {
                         var from = new DateTime(DateTime.Now.Year - 1, 1, 1);
                         var to = new DateTime(DateTime.Now.Year, 1, 1);
-                        await Print(Account.TradeHistory.GetRangeAsync(from, to, SkipCancels));
+                        await Print(Account.TradeHistory.GetRangeAsync(from, to, options));
                     }
                 }
 

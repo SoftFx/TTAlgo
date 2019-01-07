@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
                 Ref.Swap(ref from, ref to);
 
             var vector = GetOrAddBuilder(priceType, timeFrame);
-            var index = vector.BinarySearch(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
+            var index = vector.BinarySearchBy(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
 
             if (index < 0)
                 yield break;
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
                 yield break;
             else if (size > 0)
             {
-                var index = vector.BinarySearch(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
+                var index = vector.BinarySearchBy(b => b.OpenTime, from, BinarySearchTypes.NearestHigher);
 
                 if (index < 0)
                     yield break;
@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                var index = vector.BinarySearch(b => b.OpenTime, from, BinarySearchTypes.NearestLower);
+                var index = vector.BinarySearchBy(b => b.OpenTime, from, BinarySearchTypes.NearestLower);
 
                 if (index < 0)
                     yield break;

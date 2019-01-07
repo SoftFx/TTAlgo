@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Core
         private ActionBlock<BotLogRecord[]> _logSender;
         private IFixtureContext _context;
         private CancellationTokenSource _stopSrc;
+        private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
 
         internal LogFixture(IFixtureContext context)
         {
@@ -23,7 +24,7 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            _context.Logger = this;
+            _context.Builder.Logger = this;
 
             var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
             var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
@@ -89,6 +90,11 @@ namespace TickTrader.Algo.Core
         public void OnError(string message, Exception ex)
         {
             AddLogRecord(LogSeverities.Error, message, ex.ToString());
+        }
+
+        public void OnError(string message)
+        {
+            AddLogRecord(LogSeverities.Error, message);
         }
 
         public void OnPrintError(string entry)
@@ -180,7 +186,8 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                _logBuffer.SendAsync(new BotLogRecord(logSeverity, message, errorDetails)).Wait();
+                var timeKey = _keyGen.NextKey(DateTime.Now);
+                _logBuffer.SendAsync(new BotLogRecord(timeKey, logSeverity, message, errorDetails)).Wait();
             }
             catch (Exception ex)
             {
@@ -192,7 +199,7 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class BotLogRecord
     {
-        public BotLogRecord(DateTime time, LogSeverities logSeverity, string message, string errorDetails)
+        public BotLogRecord(TimeKey time, LogSeverities logSeverity, string message, string errorDetails)
         {
             Time = time;
             Severity = logSeverity;
@@ -200,12 +207,7 @@ namespace TickTrader.Algo.Core
             Details = errorDetails;
         }
 
-        public BotLogRecord(LogSeverities logSeverity, string message, string errorDetails)
-            : this(DateTime.Now, logSeverity, message, errorDetails)
-        {
-        }
-
-        public DateTime Time { get; set; }
+        public TimeKey Time { get; set; }
         public LogSeverities Severity { get; set; }
         public string Message { get; set; }
         public string Details { get; set; }

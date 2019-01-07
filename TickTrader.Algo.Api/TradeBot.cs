@@ -288,6 +288,9 @@ namespace TickTrader.Algo.Api
 
         #region Timer
 
+        public DateTime Now => context.TimerApi.Now;
+        public DateTime UtcNow => context.TimerApi.UtcNow;
+
         public Timer CreateTimer(int periodMs, Action<Timer> callback)
         {
             return CreateTimer(TimeSpan.FromMilliseconds(periodMs), callback);
@@ -306,6 +309,19 @@ namespace TickTrader.Algo.Api
         public Task Delay(TimeSpan period)
         {
             return context.TimerApi.Delay(period);
+        }
+
+        #endregion
+
+        #region Setup
+
+        /// <summary>
+        /// Changes the size of input buffers. This method can be called only from Init().
+        /// </summary>
+        /// <param name="newSize"></param>
+        public void SetInputSize(int newSize)
+        {
+            context.SetFeedBufferSize(newSize);
         }
 
         #endregion

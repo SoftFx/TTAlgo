@@ -59,12 +59,12 @@ namespace TickTrader.Algo.Core.UnitTest
         {
             dispenser = new SubscriptionManager(this);
             Builder = new PluginBuilder(new Metadata.PluginMetadata(typeof(MockBot)));
-            Logger = new NullLogger();
+            Builder.Logger = new NullLogger();
             bStrategy = new TimeSpanStrategy(TimePeriodStart, TimePeriodEnd);
         }
 
         public PluginBuilder Builder { get; private set; }
-        public IPluginLogger Logger { get; set; }
+        public PluginLoggerAdapter Logger => Builder.LogAdapter;
         public string MainSymbolCode { get; set; }
         public TimeFrames TimeFrame { get; set; }
         public DateTime TimePeriodEnd { get; set; }

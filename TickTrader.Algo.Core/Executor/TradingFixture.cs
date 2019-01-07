@@ -88,17 +88,22 @@ namespace TickTrader.Algo.Core
             //_dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
         }
 
-        private void CallListener(OrderExecReport eReport)
+        private bool CallListener(OrderExecReport eReport)
         {
             if (eReport.OperationId != null)
-                InvokeListener(eReport.OperationId, eReport);
+                return InvokeListener(eReport.OperationId, eReport);
+            return false;
         }
 
-        private void InvokeListener(string operationId, OrderExecReport rep)
+        private bool InvokeListener(string operationId, OrderExecReport rep)
         {
             Action<OrderExecReport> listener;
             if (reportListeners.TryGetValue(operationId, out listener))
+            {
                 listener(rep);
+                return true;
+            }
+            return false;
         }
 
         private OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
@@ -106,7 +111,10 @@ namespace TickTrader.Algo.Core
             var accProxy = context.Builder.Account;
 
             if (eReport.OrderCopy.Type == OrderType.Market && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
+            {
                 eReport.OrderCopy.Type = OrderType.Position;
+                eReport.Action = OrderEntityAction.Updated;
+            }
 
             if (eReport.Action == OrderEntityAction.Added)
                 return collection.Add(eReport.OrderCopy);
@@ -127,14 +135,17 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
+                    context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
                     context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                 }
                 else if (accProxy.Type == Api.AccountTypes.Cash)
                 {
                     AssetChangeType assetChange;
                     var asset = accProxy.Assets.Update(new AssetEntity(report.Balance, report.CurrencyCode), currencies, out assetChange);
+                    var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
+                        context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)currencyInfo);
                         context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
                         context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                     }
@@ -195,15 +206,21 @@ namespace TickTrader.Algo.Core
             {
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();
-                CallListener(eReport);
+                var isOwnOrder = CallListener(eReport);
+                if (!isOwnOrder && !IsInvisible(clone))
+                    context.Logger.NotifyOrderActivation(clone);
                 context.EnqueueEvent(b => orderCollection.FireOrderActivated(new OrderActivatedEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Opened)
             {
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();
-                CallListener(eReport);
+                var isOwnOrder = CallListener(eReport);
+                if (!isOwnOrder && !IsInvisible(clone))
+                    context.Logger.NotifyOrderOpened(clone);
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
+                //if (order.Type == OrderType.Position)
+                //    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
@@ -212,7 +229,9 @@ namespace TickTrader.Algo.Core
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
-                    CallListener(eReport);
+                    var isOwnOrder = CallListener(eReport);
+                    if (!isOwnOrder && !IsInvisible(clone))
+                        context.Logger.NotifyOrderClosed(clone);
                     context.EnqueueEvent(b => b.Account.Orders.FireOrderClosed(new OrderClosedEventArgsImpl(clone)));
                 }
             }
@@ -221,7 +240,9 @@ namespace TickTrader.Algo.Core
                 // Limit Ioc doesn't appear in order collection
                 var order = ApplyOrderEntity(eReport, orderCollection);
                 var clone = order.Clone();
-                CallListener(eReport);
+                var isOwnOrder = CallListener(eReport);
+                if (!isOwnOrder && !IsInvisible(clone))
+                    context.Logger.NotifyOrderCancelation(clone);
                 context.EnqueueEvent(b => orderCollection.FireOrderCanceled(new OrderCanceledEventArgsImpl(clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Expired)
@@ -232,6 +253,8 @@ namespace TickTrader.Algo.Core
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
                     var args = new OrderCanceledEventArgsImpl(clone);
+                    if (!IsInvisible(clone))
+                        context.Logger.NotifyOrderExpiration(clone);
                     context.EnqueueEvent(b => orderCollection.FireOrderExpired(args));
                 }
             }
@@ -242,7 +265,9 @@ namespace TickTrader.Algo.Core
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var newOrder = order.Clone();
-                    CallListener(eReport);
+                    var isOwnOrder = CallListener(eReport);
+                    if (!isOwnOrder && !IsInvisible(newOrder))
+                        context.Logger.NotifyOrderModification(newOrder);
                     context.EnqueueEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
@@ -254,7 +279,10 @@ namespace TickTrader.Algo.Core
                     var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
                     if (clone != null)
                     {
-                        CallListener(eReport);
+                        var isOwnOrder = CallListener(eReport);
+                        if (!isOwnOrder && !IsInvisible(clone))
+                            context.Logger.NotifyOrderFill(clone);
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
                         context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                     }
                 }
@@ -266,6 +294,8 @@ namespace TickTrader.Algo.Core
                     {
                         var order = ApplyOrderEntity(eReport, orderCollection);
                         var clone = order.Clone();
+                        if (!IsInvisible(clone))
+                            context.Logger.NotifyOrderFill(clone);
                         context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(oldOrder, clone)));
                     }
                     else
@@ -273,6 +303,8 @@ namespace TickTrader.Algo.Core
                         var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
                         if (clone != null)
                         {
+                            if (!IsInvisible(clone))
+                                context.Logger.NotifyOrderFill(clone);
                             context.EnqueueEvent(b => orderCollection.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                         }
                         CallListener(eReport);
@@ -322,6 +354,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        private bool IsInvisible(OrderAccessor order)
+        {
+            return context.Builder.Isolated && order.InstanceId != context.Builder.InstanceId;
+        }
+
         #region TradeCommands impl
 
         public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request)
@@ -361,7 +398,7 @@ namespace TickTrader.Algo.Core
             reportListeners.Add(operationId, rep =>
             {
                 reportListeners.Remove(operationId);
-                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
             });
 
             orderRequest.OperationId = operationId;
@@ -402,7 +439,7 @@ namespace TickTrader.Algo.Core
                 if (resultContainer.Count == 2)
                 {
                     reportListeners.Remove(operationId);
-                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
+                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
                 }
             });
 
@@ -426,11 +463,6 @@ namespace TickTrader.Algo.Core
 
                 return await resultTask.Task;
             }
-        }
-
-        private Task<TradeResultEntity> CreateResult(OrderCmdResultCodes code)
-        {
-            return Task.FromResult<TradeResultEntity>(new TradeResultEntity(code));
         }
 
         private double ConvertVolume(double volumeInLots, Symbol smbMetadata)

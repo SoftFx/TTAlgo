@@ -31,11 +31,15 @@
                     </l:Theme>-->
                 </l:ThemeSelector>
 
+                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
+                <!--<l:AutoDictionary Source="Controls/*.xaml"/>-->
+
                 <!-- Views (temp!) -->
-                <ResourceDictionary Source="Views.Aux/ProgressView.xaml" />
-                <ResourceDictionary Source="Views.Aux/DateRangeSelectionView.xaml" />
-                <ResourceDictionary Source="Views.Aux/ActionDialogView.xaml" />
-                <ResourceDictionary Source="Views.Aux/ActionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ProgressView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/DateRangeSelectionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionDialogView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionView.xaml" />
+                <ResourceDictionary Source="Views.ActionDisplay/ActionOverlayView.xaml" />
 
                 <ResourceDictionary Source="Views/ShellView.xaml" />
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
@@ -58,6 +62,7 @@
                 <ResourceDictionary Source="Views.Setup/PluginConfigView.xaml" />
 
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
+                <ResourceDictionary Source="Views.TradeInfo/TradeHistoryGridView.xaml" />
 
                 <ResourceDictionary Source="Views.Backtester/BacktesterView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterSymbolSetupView.xaml" />
@@ -66,6 +71,7 @@
                 <ResourceDictionary Source="Views.Backtester/BacktesterReportView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterStatChartView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterPluginSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterTradeGridView.xaml" />
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

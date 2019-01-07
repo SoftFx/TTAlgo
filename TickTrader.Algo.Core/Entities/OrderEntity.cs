@@ -44,6 +44,7 @@ namespace TickTrader.Algo.Core
         public double? RequestedVolume { get; set; }
         public double RemainingVolume { get; set; }
         public string Symbol { get; set; }
+        public OrderType InitialType { get; set; }
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
         public double? Price { get; set; }

@@ -91,6 +91,9 @@ namespace TickTrader.BotTerminal
 
         private void ConfigureGlobalExceptionHandling()
         {
+            if (System.Diagnostics.Debugger.IsAttached)
+                return;
+
             Application.DispatcherUnhandledException += (s, e) =>
             {
                 e.Handled = true;

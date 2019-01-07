@@ -8,19 +8,43 @@ namespace TickTrader.Algo.Core
 {
     public abstract class FeedBufferStrategy
     {
+        private List<ILoadableFeedBuffer> _toLoad = new List<ILoadableFeedBuffer>();
+
         protected IFeedBuffer MainBuffer { get; private set; }
+        protected bool IsStarted { get; private set; }
         private IFeedBuferStrategyContext Context { get; set; }
 
         internal void Init(IFeedBuferStrategyContext context)
         {
             Context = context;
             MainBuffer = context.MainBuffer;
+
+            _toLoad.Add(MainBuffer);
         }
 
         public abstract void OnBufferExtended();
-        public abstract void Start();
-        public abstract void InitBuffer(IFeedLoader buffer);
         public abstract bool InBoundaries(DateTime timePoint);
+        public abstract void OnUserSetBufferSize(int newSize, out string error);
+
+        protected abstract void LoadData(ILoadableFeedBuffer buffer);
+
+        public void Start()
+        {
+            foreach (var buff in _toLoad)
+                LoadData(buff);
+
+            _toLoad.Clear();
+
+            IsStarted = true;
+        }
+
+        public void InitBuffer(ILoadableFeedBuffer buffer)
+        {
+            if (IsStarted)
+                LoadData(buffer);
+            else
+                _toLoad.Add(buffer);
+        }
 
         protected void TruncateBuffers(int bySize)
         {
@@ -28,7 +52,7 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    public interface IFeedLoader
+    public interface ILoadableFeedBuffer
     {
         bool IsLoaded { get; }
 
@@ -37,7 +61,7 @@ namespace TickTrader.Algo.Core
         void LoadFeed(DateTime from, int size);
     }
 
-    public interface IFeedBuffer : IFeedLoader, ITimeRef
+    public interface IFeedBuffer : ILoadableFeedBuffer, ITimeRef
     {
     }
 
@@ -56,10 +80,9 @@ namespace TickTrader.Algo.Core
             _size = size;
         }
 
-        public override void Start()
+        protected override void LoadData(ILoadableFeedBuffer buffer)
         {
-            if (!MainBuffer.IsLoaded)
-                MainBuffer.LoadFeed(_size);
+            buffer.LoadFeed(_size);
         }
 
         public override void OnBufferExtended()
@@ -73,15 +96,22 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public override void InitBuffer(IFeedLoader buffer)
-        {
-            if (!buffer.IsLoaded)
-                buffer.LoadFeed(_size);
-        }
-
         public override bool InBoundaries(DateTime timePoint)
         {
             return true; // do not need to check boundaries in this strategy
+        }
+
+        public override void OnUserSetBufferSize(int newSize, out string error)
+        {
+            if (IsStarted)
+                error = "SetInputSize() can be called only during initialization! Please call it from Init() override.";
+            else if (newSize <= 1)
+                error = "SetInputSize() : New size must be greater than 1!";
+            else
+            {
+                error = null;
+                _size = newSize;
+            }
         }
     }
 
@@ -96,24 +126,23 @@ namespace TickTrader.Algo.Core
             _to = to;
         }
 
-        public override void Start()
+        protected override void LoadData(ILoadableFeedBuffer buffer)
         {
-            if (!MainBuffer.IsLoaded)
-                MainBuffer.LoadFeed(_from, _to);
+            buffer.LoadFeed(_from, _to);
         }
 
         public override void OnBufferExtended()
         {
         }
 
-        public override void InitBuffer(IFeedLoader buffer)
-        {
-            buffer.LoadFeed(_from, _to);
-        }
-
         public override bool InBoundaries(DateTime timePoint)
         {
             return timePoint >= _from || timePoint <= _to;
+        }
+
+        public override void OnUserSetBufferSize(int newSize, out string error)
+        {
+            error = "SetInputSize() is not supported!";
         }
     }
 }
