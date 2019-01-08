@@ -332,6 +332,7 @@ namespace TickTrader.Algo.Common.Model
         private OrderUpdateAction MockMarkedFilled(ExecutionReport report)
         {
             report.OrderType = OrderType.Position;
+            report.LeavesVolume = report.InitialVolume.Value;
             return new OrderUpdateAction(report, OrderExecAction.Opened, OrderEntityAction.Added);
         }
 
