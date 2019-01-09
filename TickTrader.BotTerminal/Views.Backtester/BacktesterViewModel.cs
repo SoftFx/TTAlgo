@@ -95,6 +95,8 @@ namespace TickTrader.BotTerminal
 
             Plugins = env.LocalAgentVM.PluginList;
 
+            TradeSettingsSummary = _var.AddProperty<string>();
+
             _mainSymbolToken = SpecialSymbols.MainSymbolPlaceholder;
             var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
             var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISymbolInfo)s.ToSymbolToken());
@@ -140,6 +142,8 @@ namespace TickTrader.BotTerminal
             {
                 GetAllSymbols().Foreach(s => s.Reset());
             };
+
+            UpdateTradeSummary();
         }
 
         public Property<ActionOverlayViewModel> ActionOverlay { get; private set; }
@@ -149,6 +153,7 @@ namespace TickTrader.BotTerminal
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
+        public Property<string> TradeSettingsSummary { get; private set; }
         public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
@@ -184,7 +189,10 @@ namespace TickTrader.BotTerminal
             _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
 
             if (await setup.Result)
+            {
                 _settings = setup.GetSettings();
+                UpdateTradeSummary();
+            }
         }
 
         public async void StartEmulation()
@@ -606,6 +614,12 @@ namespace TickTrader.BotTerminal
 
                 unique.Add(name);
             }
+        }
+
+        private void UpdateTradeSummary()
+        {
+            if (_settings.AccType == AccountTypes.Gross || _settings.AccType == AccountTypes.Net)
+                TradeSettingsSummary.Value = string.Format("{0} {1} {2} l:{3}", _settings.AccType, _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage);
         }
 
         #region IAlgoSetupMetadata

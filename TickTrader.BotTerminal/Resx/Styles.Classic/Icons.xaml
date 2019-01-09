@@ -48,4 +48,6 @@
     <Path x:Key="PackageLockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ClosedLock}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
     <Path x:Key="PackageUnlockedIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource OpenedLock}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
 
+    <Path x:Key="CogwheelIcon" x:Shared="false" Style="{StaticResource ListItemIconStyle}" Data="{DynamicResource Cogwheel}" Fill="{DynamicResource Shell_PrimaryForeground}"/>
+
 </ResourceDictionary>
