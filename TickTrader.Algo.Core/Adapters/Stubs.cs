@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         void OnPrintTradeFail(string entry);
         void OnError(Exception ex);
         void OnError(string message, Exception ex);
+        void OnError(string message);
         void OnInitialized();
         void OnStart();
         void OnStop();
@@ -55,73 +56,6 @@ namespace TickTrader.Algo.Core
         public static ITradeApi TradeApi => tradeApi;
     }
 
-    internal class PluginLoggerAdapter : IPluginMonitor
-    {
-        private IPluginLogger logger;
-
-        public PluginLoggerAdapter()
-        {
-            this.logger = Null.Logger;
-        }
-
-        public IPluginLogger Logger
-        {
-            get { return logger; }
-            set
-            {
-                if (value == null)
-                    throw new InvalidOperationException("Logger cannot be null!");
-
-                this.logger = value;
-            }
-        }
-
-        public void UpdateStatus(string status)
-        {
-            logger.UpdateStatus(status);
-        }
-
-        public void Print(string entry)
-        {
-            logger.OnPrint(entry);
-        }
-
-        public void Print(string entry, object[] parameters)
-        {
-            logger.OnPrint(entry, parameters);
-        }
-
-        public void PrintError(string entry)
-        {
-            logger.OnPrintError(entry);
-        }
-
-        public void PrintError(string entry, object[] parameters)
-        {
-            logger.OnPrintError(entry, parameters);
-        }
-
-        public void PrintInfo(string entry)
-        {
-            logger.OnPrintInfo(entry);
-        }
-
-        public void PrintTrade(string entry)
-        {
-            logger.OnPrintTrade(entry);
-        }
-
-        public void PrintTradeSuccess(string entry)
-        {
-            logger.OnPrintTradeSuccess(entry);
-        }
-
-        public void PrintTradeFail(string entry)
-        {
-            logger.OnPrintTradeFail(entry);
-        }
-    }
-
     public class NullLogger : IPluginLogger
     {
         public void OnError(Exception ex)
@@ -129,6 +63,10 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnError(string message, Exception ex)
+        {
+        }
+
+        public void OnError(string message)
         {
         }
 
@@ -204,7 +142,7 @@ namespace TickTrader.Algo.Core
     internal class NullTradeApi : ITradeApi
     {
         private static Task<TradeResultEntity> rejectResult
-            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null));
+            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null, null));
 
         public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
         {
@@ -327,6 +265,9 @@ namespace TickTrader.Algo.Core
 
     public class NullTimerApi : ITimerApi
     {
+        public DateTime Now => throw new NotImplementedException("Timer API is not available!");
+        public DateTime UtcNow => throw new NotImplementedException("Timer API is not available!");
+
         public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
         {
             throw new NotImplementedException("Timer API is not available!");

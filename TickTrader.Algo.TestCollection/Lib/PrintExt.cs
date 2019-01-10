@@ -38,14 +38,38 @@ namespace TickTrader.Algo.TestCollection
         public static void PrintPropertiesLine<T>(this StringBuilder sb, T obj)
         {
             var type = typeof(T);
-            PrintPropertiesLine(sb, type, obj);
+            PrintPropertiesLine(sb, type, obj, false);
         }
 
-        private static void PrintPropertiesLine(StringBuilder sb, Type type, object obj)
+        public static void PrintPropertiesColumnOfLines<T>(this StringBuilder sb, T obj)
+        {
+            var type = typeof(T);
+
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(type))
+            {
+                var pName = descriptor.Name;
+                var pValue = descriptor.GetValue(obj);
+                var pType = descriptor.PropertyType;
+
+                if (sb.Length > 0)
+                    sb.AppendLine();
+
+                if (descriptor.IsPrintPrimitive() || pValue == null)
+                    sb.Append($"{pName} = {pValue}");
+                else
+                {
+                    sb.Append(pName).Append(": ");
+                    PrintPropertiesLine(sb, pType, pValue, false);
+                }
+            }
+        }
+
+        private static void PrintPropertiesLine(StringBuilder sb, Type type, object obj, bool wrapp)
         {
             var first = true;
 
-            sb.Append("{");
+            if (wrapp)
+                sb.Append("{");
 
             foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(type))
             {
@@ -62,11 +86,12 @@ namespace TickTrader.Algo.TestCollection
                 else
                 {
                     sb.Append($"{pNname}=");
-                    PrintPropertiesLine(sb, descriptor.PropertyType, pValue);
+                    PrintPropertiesLine(sb, descriptor.PropertyType, pValue, true);
                 }
             }
 
-            sb.Append("}");
+            if (wrapp)
+                sb.Append("}");
         }
 
         private static bool IsPrintPrimitive(this PropertyDescriptor descriptor)

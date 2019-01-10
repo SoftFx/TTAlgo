@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Common.Model
             ContextInvoke(() => _updateQueue.Enqueue(report));
         }
 
-        private async void GetTradeHistory(Channel<TradeReportEntity> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders)
+        private async void GetTradeHistory(Channel<TradeReportEntity> txChannel, DateTime? from, DateTime? to, bool skipCanceledOrders, bool backwards)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Common.Model
                 }
 
                 var rxChannel = Channel.NewInput<TradeReportEntity>(1000);
-                _connection.TradeProxy.GetTradeHistory(CreateBlockingChannel(rxChannel), from, to, skipCanceledOrders);
+                _connection.TradeProxy.GetTradeHistory(CreateBlockingChannel(rxChannel), from, to, skipCanceledOrders, backwards);
 
                 while (await rxChannel.ReadNext())
                 {
@@ -170,7 +170,7 @@ namespace TickTrader.Algo.Common.Model
             private Channel<TradeReportEntity> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
             {
                 var channel = Channel.NewOutput<TradeReportEntity>(1000);
-                Actor.OpenChannel(channel, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders));
+                Actor.OpenChannel(channel, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders, true));
                 return channel;
             }
 
@@ -190,27 +190,28 @@ namespace TickTrader.Algo.Common.Model
                 _ref = historyRef;
             }
 
-            IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(bool skipCancelOrders)
+            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(ThQueryOptions options)
             {
-                return GetTradeHistoryInternal(null, null, skipCancelOrders)
-                    .AsCrossDomain(r => (TradeReport)r);
+                return GetTradeHistoryInternal(null, null, options).AsCrossDomain();
             }
 
-            IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime from, DateTime to, bool skipCancelOrders)
+            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(DateTime from, DateTime to, ThQueryOptions options)
             {
-                return GetTradeHistoryInternal(from, to, skipCancelOrders)
-                    .AsCrossDomain(r => (TradeReport)r);
+                return GetTradeHistoryInternal(from, to, options).AsCrossDomain();
             }
 
-            IAsyncCrossDomainEnumerator<TradeReport> ITradeHistoryProvider.GetTradeHistory(DateTime to, bool skipCancelOrders)
+            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(DateTime to, ThQueryOptions options)
             {
-                return GetTradeHistoryInternal(null, to, skipCancelOrders)
-                    .AsCrossDomain(r => (TradeReport)r);
+                return GetTradeHistoryInternal(null, to, options).AsCrossDomain();
             }
 
-            private BlockingChannel<TradeReportEntity> GetTradeHistoryInternal(DateTime? from, DateTime? to, bool skipCancelOrders)
+            private BlockingChannel<TradeReportEntity> GetTradeHistoryInternal(DateTime? from, DateTime? to, ThQueryOptions options)
             {
-                return _ref.OpenBlockingChannel<TradeHistoryProvider, TradeReportEntity>(ChannelDirections.Out, 1000, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders));
+                bool skipCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
+                bool backwards = options.HasFlag(ThQueryOptions.Backwards);
+
+                return _ref.OpenBlockingChannel<TradeHistoryProvider, TradeReportEntity>(ChannelDirections.Out, 1000,
+                    (a, c) => a.GetTradeHistory(c, from, to, skipCancels, backwards));
             }
         }
     }

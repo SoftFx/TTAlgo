@@ -974,7 +974,8 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new Lib.LogRecordInfo
             {
-                TimeUtc = Timestamp.FromDateTime(logRecord.TimeUtc),
+                TimeUtc = Timestamp.FromDateTime(logRecord.TimeUtc.Timestamp),
+                TimeShit = logRecord.TimeUtc.Shift,
                 Severity = logRecord.Severity.Convert(),
                 Message = Convert(logRecord.Message),
             };

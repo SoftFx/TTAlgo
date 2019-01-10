@@ -157,6 +157,7 @@
     <Compile Include="Model\BotListenerProxy.cs" />
     <Compile Include="Model\ConnectionModel.cs" />
     <Compile Include="Entities\ExecutionReport.cs" />
+    <Compile Include="Model\CsvSerializer.cs" />
     <Compile Include="Model\EntityCache.cs" />
     <Compile Include="Model\FdkExtension.cs" />
     <Compile Include="Model.Interop\FdkCovertor.cs" />

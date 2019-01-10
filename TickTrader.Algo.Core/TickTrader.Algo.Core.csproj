@@ -66,11 +66,15 @@
     <Compile Include="Adapters\BotAdapter.cs" />
     <Compile Include="Adapters\IndicatorAdapter.cs" />
     <Compile Include="Adapters\OutputAdapter.cs" />
+    <Compile Include="Adapters\PluginLoggerAdapter.cs" />
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
+    <Compile Include="Adapters\TradeReportAdapter.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />
+    <Compile Include="Backtester\Trade\OrderExpirationEmulator.cs" />
+    <Compile Include="Backtester\Trade\TradeHistoryEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationIndex.cs" />
     <Compile Include="Backtester\Trade\ActivationRecord.cs" />
@@ -140,6 +144,7 @@
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
+    <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\TimerFixture.cs" />

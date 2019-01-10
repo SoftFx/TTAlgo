@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
         }
 
         public AccountAccessor Acc => acc;
+        public BL.MarketState Market => _state;
         public bool IsCalculated => marginCalc?.IsCalculated ?? true;
         public int RoundingDigits => marginCalc?.RoundingDigits ??  BL.AccountCalculator.DefaultRounding;
 

@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TimerApiEmulator : Api.ITimerApi, IExecutorFixture
+    internal class TimerApiEmulator : ITimerApi, IExecutorFixture
     {
         private InvokeEmulator _scheduler;
         private IFixtureContext _context;
@@ -35,6 +35,11 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        #region ITimerApi
+
+        public DateTime Now => _scheduler.SafeVirtualTimePoint;
+        public DateTime UtcNow => DateTime.SpecifyKind(Now, DateTimeKind.Utc);
+
         public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
         {
             return new TimerEmulator(this, period, callback);
@@ -44,6 +49,8 @@ namespace TickTrader.Algo.Core
         {
             return _scheduler.EmulateAsyncDelay(period, false);
         }
+
+        #endregion
 
         private class TimerEmulator : Api.Timer
         {

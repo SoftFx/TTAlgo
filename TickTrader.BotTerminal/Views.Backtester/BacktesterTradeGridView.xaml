@@ -1,0 +1,14 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:local="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="BacktesterTradeGridView.Classic">
+        <ContentControl cal:View.Model="{Binding GridView}"/>
+    </ControlTemplate>
+
+    <Style x:Key="BacktesterTradeGridViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BacktesterTradeGridView.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

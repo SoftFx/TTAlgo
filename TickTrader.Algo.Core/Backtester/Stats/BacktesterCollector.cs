@@ -28,6 +28,7 @@ namespace TickTrader.Algo.Core
         private string _mainSymbol;
         private TimeFrames _mainTimeframe;
         private string _lastStatus;
+        private TimeKeyGenerator _logKeyGen = new TimeKeyGenerator();
 
         public BacktesterCollector(PluginExecutor executor)
         {
@@ -40,7 +41,7 @@ namespace TickTrader.Algo.Core
         public TestingStatistics Stats { get; private set; }
         public InvokeEmulator InvokeEmulator { get; internal set; }
 
-        private DateTime VirtualTimepoint => InvokeEmulator.VirtualTimePoint;
+        private DateTime VirtualTimepoint => InvokeEmulator.SafeVirtualTimePoint;
 
         public int EventsCount => _events.Count;
         public int BarCount => _mainSymbolHistory.Count;
@@ -137,7 +138,7 @@ namespace TickTrader.Algo.Core
         public void AddEvent(LogSeverities severity, string message, string description = null)
         {
             if (CheckFilter(severity))
-                _events.Add(new BotLogRecord(VirtualTimepoint, severity, message, description));
+                _events.Add(new BotLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description));
         }
 
         public void LogTrade(string message)
@@ -281,6 +282,11 @@ namespace TickTrader.Algo.Core
         }
 
         void IPluginLogger.OnError(string message, Exception ex)
+        {
+            AddEvent(LogSeverities.Error, message);
+        }
+
+        void IPluginLogger.OnError(string message)
         {
             AddEvent(LogSeverities.Error, message);
         }

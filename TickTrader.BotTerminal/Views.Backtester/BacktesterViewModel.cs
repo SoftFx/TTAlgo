@@ -1,12 +1,14 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using Microsoft.Win32;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -41,6 +43,8 @@ namespace TickTrader.BotTerminal
         private DateTime _emulateTo;
         private BacktesterSettings _settings = new BacktesterSettings();
         private BoolProperty _allSymbolsValid;
+        private BoolProperty _hasDataToSave;
+        private BoolProperty _isRunning;
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
@@ -52,17 +56,24 @@ namespace TickTrader.BotTerminal
             _client = client;
 
             _allSymbolsValid = _var.AddBoolProperty();
+            _hasDataToSave = _var.AddBoolProperty();
+            _isRunning = _var.AddBoolProperty();
 
             _localWnd = new WindowManager(this);
 
-            ProgressMonitor = new ActionViewModel();
+            ActionOverlay = new Property<ActionOverlayViewModel>();
             AdditionalSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
 
             DateRange = new DateRangeSelectionViewModel();
             IsUpdatingRange = new BoolProperty();
             MainTimeFrame = new Property<TimeFrames>();
+            
+            TradesPage = new BacktesterTradeGridViewModel();
 
             MainTimeFrame.Value = TimeFrames.M1;
+
+            SaveResultsToFile = new BoolProperty();
+            SaveResultsToFile.Set();
 
             //_availableSymbols = env.Symbols;
 
@@ -75,11 +86,12 @@ namespace TickTrader.BotTerminal
             SelectedPlugin = new Property<AlgoPluginViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
-            IsRunning = ProgressMonitor.IsRunning;
-            IsStopping = ProgressMonitor.IsCancelling;
+            //IsRunning = ActionOverlay.IsRunning;
+            //IsStopping = ActionOverlay.IsCancelling;
             CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var;
             CanSetup = !IsRunning & client.IsConnected;
-            CanStop = ProgressMonitor.CanCancel;
+            //CanStop = ActionOverlay.CanCancel;
+            //CanSave = !IsRunning & _hasDataToSave.Var;
 
             Plugins = env.LocalAgentVM.PluginList;
 
@@ -130,20 +142,21 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        public ActionViewModel ProgressMonitor { get; private set; }
+        public Property<ActionOverlayViewModel> ActionOverlay { get; private set; }
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
         public Property<List<TimeFrames>> AvailableModels { get; private set; }
         public Property<TimeFrames> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
+        public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
-        public BoolVar IsRunning { get; }
-        public BoolVar IsStopping { get; }
+        public BoolVar IsRunning => _isRunning.Var;
+        //public BoolVar IsStopping { get; }
         public BoolVar CanSetup { get; }
         public BoolVar CanStart { get; }
-        public BoolVar CanStop { get; }
+        //public BoolVar CanStop { get; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
@@ -151,6 +164,7 @@ namespace TickTrader.BotTerminal
         public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
+        public BacktesterTradeGridViewModel TradesPage { get; }
         public PluginConfig PluginConfig { get; private set; }
 
         public void OpenPluginSetup()
@@ -173,20 +187,36 @@ namespace TickTrader.BotTerminal
                 _settings = setup.GetSettings();
         }
 
-        public void Start()
+        public async void StartEmulation()
         {
-            ProgressMonitor.Start(DoEmulation);
+            //ProgressMonitor.Start(DoEmulation);
+            //var actionObserver = new ActionViewModel();
+            ///yield return OverlayPanel.ShowDialog(null);
+            ///
+            
+            var observer = new ActionOverlayViewModel(DoEmulation);
+
+            ActionOverlay.Value = observer;
+            IsRunning.Set();
+            await observer.Completed;
+
+            IsRunning.Unset();
+            ActionOverlay.Value = null;
         }
 
-        public void Stop()
-        {
-            ProgressMonitor.Cancel();
-        }
+        //public void Stop()
+        //{
+        //    ActionOverlay.Cancel();
+        //}
 
         [Conditional("DEBUG")]
         public void PrintCacheData()
         {
             MainSymbolSetup.PrintCacheData(SelectedModel.Value);
+        }
+
+        public void SaveResults()
+        {
         }
 
         private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
@@ -204,6 +234,8 @@ namespace TickTrader.BotTerminal
                 ChartPage.Clear();
                 ResultsPage.Clear();
                 _journalContent.Value = null;
+                TradesPage.Clear(_settings.AccType);
+                _hasDataToSave.Clear();
 
                 CheckDuplicateSymbols();
 
@@ -239,9 +271,11 @@ namespace TickTrader.BotTerminal
             var chartTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
             var chartPriceLayer = BarPriceType.Bid;
 
+            var progressMin = _emulteFrom.GetAbsoluteDay();
+
             _mainSymbolToken.Id = chartSymbol.Key;
 
-            observer.StartProgress(_emulteFrom.GetAbsoluteDay(), _emulateTo.GetAbsoluteDay());
+            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
             observer.SetMessage("Emulating...");
 
             var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
@@ -268,51 +302,48 @@ namespace TickTrader.BotTerminal
                         tester.InitOutputCollection<Marker>(outputSetup.Id);
                 }
 
-                var updateTimer = new DispatcherTimer();
-                updateTimer.Interval = TimeSpan.FromMilliseconds(50);
-                updateTimer.Tick += (s, a) =>
-                {
-                    var point = tester.CurrentTimePoint;
-                    if (point != null)
-                        observer.SetProgress(tester.CurrentTimePoint.Value.GetAbsoluteDay());
-                };
-                updateTimer.Start();
-
                 Exception execError = null;
 
-                try
+                System.Action updateProgressAction = () => observer.SetProgress(tester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
+
+                using (new UiUpdateTimer(updateProgressAction))
                 {
-                    MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
+                    try
+                    {
+                        MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
 
-                    foreach (var symbolSetup in AdditionalSymbols)
-                        symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
+                        foreach (var symbolSetup in AdditionalSymbols)
+                            symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
 
-                    tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+                        tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 
-                    foreach (var rec in _client.Currencies.Snapshot)
-                        tester.Currencies.Add(rec.Key, rec.Value);
+                        foreach (var rec in _client.Currencies.Snapshot)
+                            tester.Currencies.Add(rec.Key, rec.Value);
 
-                    //foreach (var rec in _client.Symbols.Snapshot)
-                    //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
+                        //foreach (var rec in _client.Symbols.Snapshot)
+                        //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
 
-                    _settings.Apply(tester);
+                        _settings.Apply(tester);
 
-                    await Task.Run(() => tester.Run(cToken));
+                        _hasDataToSave.Set();
 
-                    observer.SetProgress(DateRange.To.GetAbsoluteDay());
-                }
-                catch (Exception ex)
-                {
-                    execError = ex;
-                }
-                finally
-                {
-                    updateTimer.Stop();
+                        await Task.Run(() => tester.Run(cToken));
+
+                        observer.SetProgress(DateRange.To.GetAbsoluteDay());
+                    }
+                    catch (Exception ex)
+                    {
+                        execError = ex;
+                    }
                 }
 
                 await CollectEvents(tester, observer);
+                await LoadTradeHistory(tester, observer);
                 await LoadStats(observer, tester);
                 await LoadChartData(tester, observer, tester);
+
+                if (SaveResultsToFile.Value)
+                    await SaveResults(pluginRef.Metadata.Descriptor, observer);
 
                 if (execError != null)
                     throw execError; //observer.SetMessage(execError.Message);
@@ -340,6 +371,33 @@ namespace TickTrader.BotTerminal
                     return events;
                 }
             });
+        }
+
+        private async Task LoadTradeHistory(Backtester tester, IActionObserver observer)
+        {
+            var totalCount = tester.TradesCount;
+
+            observer.StartProgress(0, totalCount);
+            observer.SetMessage("Loading trades...");
+
+            var items = await Task.Run(() =>
+            {
+                var trades = new List<TransactionReport>(totalCount);
+
+                using (var cde = tester.GetTradeHistory())
+                {
+                    var symbols = _client.Symbols;
+                    var accType = tester.AccountType;
+
+                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
+                        trades.Add(TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol)));
+
+                    return trades;
+                }
+            });
+
+
+            TradesPage.Fill(items);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)
@@ -388,6 +446,66 @@ namespace TickTrader.BotTerminal
                     return chartData;
                 }
             });
+        }
+
+        private async Task SaveResults(PluginDescriptor dPlugin, IActionObserver observer)
+        {
+            var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
+            var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
+
+            using (var stream = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
+            {
+                using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
+                {
+                    var jounralEntry = archive.CreateEntry("journal.txt", CompressionLevel.Optimal);
+
+                    using (var entryStream = jounralEntry.Open())
+                        await SaveJournalTo(entryStream, observer);
+
+                    var tradeReportsEntry = archive.CreateEntry("trades.csv", CompressionLevel.Optimal);
+                    using (var entryStream = tradeReportsEntry.Open())
+                        await TradesPage.SaveAsCsv(entryStream, observer);
+
+                    observer.SetMessage("Saving report...");
+
+                    var summaryEntry = archive.CreateEntry("summary.txt", CompressionLevel.Optimal);
+                    using (var entryStream = summaryEntry.Open())
+                        await Task.Run(() => ResultsPage.SaveAsText(entryStream));
+                }
+            }
+        }
+
+        private async Task SaveJournalTo(System.IO.Stream stream, IActionObserver observer)
+        {
+            var records = JournalRecords.Value;
+
+            long progress = 0;
+
+            observer.SetMessage("Saving journal...");
+            observer.StartProgress(0, records.Count);
+
+            using (new UiUpdateTimer(() => observer.SetProgress(Interlocked.Read(ref progress))))
+            {
+                await Task.Run(() =>
+                {
+                    using (var writer = new System.IO.StreamWriter(stream))
+                    {
+                        for (int i = 0; i < records.Count; i++)
+                        {
+                            var record = records[i];
+
+                            writer.Write(record.Time);
+                            writer.Write(string.Format(" | {0,8} |", record.Severity));
+                            writer.WriteLine(record.Message);
+
+                            if (i % 10 == 0)
+                                Interlocked.Exchange(ref progress, i);
+                        }
+                    }
+                });
+            }
+
+            observer.StartProgress(0, records.Count);
         }
 
         private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)

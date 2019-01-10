@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
             Buffer = context.Builder.GetBarBuffer(key);
 
             if (data != null)
-                AppendData(data);
+                AppendSnapshot(data);
         }
 
         internal InputBuffer<BarEntity> Buffer { get; private set; }
@@ -108,6 +108,9 @@ namespace TickTrader.Algo.Core
 
         public BufferUpdateResult Update(BarEntity bar)
         {
+            if (!IsLoaded)
+                return new BufferUpdateResult();
+
             var barOpenTime = sampler.GetBar(bar.OpenTime).Open;
 
             if (!Context.BufferingStrategy.InBoundaries(barOpenTime))
@@ -190,7 +193,7 @@ namespace TickTrader.Algo.Core
             return new BarEntity(boundaries.Open, boundaries.Close, price, double.IsNaN(price) ? price : 0);
         }
 
-        private void AppendData(List<BarEntity> data)
+        private void AppendSnapshot(List<BarEntity> data)
         {
             IsLoaded = true;
 
@@ -213,20 +216,20 @@ namespace TickTrader.Algo.Core
         public void LoadFeed(DateTime from, DateTime to)
         {
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
-            AppendData(data);
+            AppendSnapshot(data);
         }
 
         public void LoadFeed(int size)
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
-            AppendData(data);
+            AppendSnapshot(data);
         }
 
         public void LoadFeed(DateTime from, int size)
         {
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, size, Context.TimeFrame);
-            AppendData(data);
+            AppendSnapshot(data);
         }
     }
 }

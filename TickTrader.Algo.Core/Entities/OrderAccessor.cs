@@ -127,6 +127,7 @@ namespace TickTrader.Algo.Core
         internal decimal? OpenConversionRate { get;  set; }
         internal SymbolAccessor SymbolInfo => _symbol;
         public decimal? ClosePrice { get; set; }
+        internal DateTime PositionCreated { get; set; }
 
         internal void FireChanged()
         {

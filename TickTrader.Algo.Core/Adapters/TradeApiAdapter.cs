@@ -45,6 +45,7 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
             string encodedTag = CompositeTag.NewTag(IsolationTag, tag);
+            SymbolAccessor smbMetadata = null;
 
             var logRequest = new OpenOrderRequest // mock request for logging
             {
@@ -75,7 +76,7 @@ namespace TickTrader.Algo.Core
             try
             {
                 ValidateTradePersmission();
-                var smbMetadata = GetSymbolOrThrow(symbol);
+                smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradeEnabled(smbMetadata);
 
                 ValidateVolumeLots(volumeLots, smbMetadata);
@@ -124,21 +125,21 @@ namespace TickTrader.Algo.Core
 
                 ValidateMargin(request, smbMetadata);
 
-                LogOrderOpening(logRequest);
+                logger.LogOrderOpening(logRequest, smbMetadata);
 
                 var orderResp = await api.OpenOrder(isAysnc, request);
 
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen);
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata));
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata), orderResp.TransactionTime);
             }
             catch (OrderValidationError ex)
             {
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen) { IsServerResponse = false };
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen, null) { IsServerResponse = false };
             }
 
-            LogOrderOpenResults(resultEntity, logRequest);
+            logger.LogOrderOpenResults(resultEntity, logRequest, smbMetadata);
             return resultEntity;
         }
 
@@ -163,12 +164,12 @@ namespace TickTrader.Algo.Core
                 else
                     logger.PrintTradeFail("[In] FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
 
-                return new OrderResultEntity(result.ResultCode, orderToCancel);
+                return new OrderResultEntity(result.ResultCode, orderToCancel, result.TransactionTime);
             }
             catch (OrderValidationError ex)
             {
                 logger.PrintTradeFail("[Self] FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToCancel) { IsServerResponse = false };
+                return new OrderResultEntity(ex.ErrorCode, orderToCancel, null) { IsServerResponse = false };
             }
         }
 
@@ -205,18 +206,18 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed");
-                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
+                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
                 }
                 else
                 {
                     logger.PrintTradeFail("[Out] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
                 }
             }
             catch (OrderValidationError ex)
             {
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose) { IsServerResponse = false };
+                return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
         }
 
@@ -243,18 +244,18 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
-                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
                 }
                 else
                 {
                     logger.PrintTradeFail("[In] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new OrderResultEntity(result.ResultCode, orderToClose);
+                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
                 }
             }
             catch (OrderValidationError ex)
             {
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose) { IsServerResponse = false };
+                return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
         }
 
@@ -267,6 +268,7 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
             Order orderToModify = null;
+            SymbolAccessor smbMetadata = null;
 
             var logRequest = new ReplaceOrderRequest // mock request for logging
             {
@@ -287,7 +289,7 @@ namespace TickTrader.Algo.Core
                 ValidateTradePersmission();
 
                 orderToModify = GetOrderOrThrow(orderId);
-                var smbMetadata = GetSymbolOrThrow(orderToModify.Symbol);
+                smbMetadata = GetSymbolOrThrow(orderToModify.Symbol);
                 var orderType = orderToModify.Type;
 
                 // update mock request values
@@ -353,31 +355,26 @@ namespace TickTrader.Algo.Core
 
                 ValidateMargin(request, smbMetadata);
 
-                LogOrderModifying(logRequest);
+                logger.LogOrderModifying(logRequest, smbMetadata);
 
                 var result = await api.ModifyOrder(isAysnc, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata));
+                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
                 }
                 else
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, orderToModify);
+                    resultEntity = new OrderResultEntity(result.ResultCode, orderToModify, result.TransactionTime);
                 }
             }
             catch (OrderValidationError ex)
             {
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify) { IsServerResponse = false };
+                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify, null) { IsServerResponse = false };
             }
 
-            LogOrderModifyResults(logRequest, resultEntity);
+            logger.LogOrderModifyResults(logRequest, smbMetadata, resultEntity);
             return resultEntity;
-        }
-
-        private Task<OrderCmdResult> CreateResult(OrderCmdResultCodes code)
-        {
-            return Task.FromResult<OrderCmdResult>(new OrderResultEntity(code));
         }
 
         private double? ConvertNullableVolume(double? volumeInLots, Symbol smbMetadata)
@@ -578,6 +575,7 @@ namespace TickTrader.Algo.Core
             var orderEntity = new OrderEntity("-1")
             {
                 Symbol = request.Symbol,
+                InitialType = request.Type,
                 Type = request.Type,
                 Side = request.Side,
                 Price = request.Price,
@@ -652,141 +650,7 @@ namespace TickTrader.Algo.Core
 
         #region Logging
 
-        private void LogOrderOpening(OpenOrderRequest request)
-        {
-            var logEntry = new StringBuilder();
-            logEntry.Append("[Out] Opening ");
-            AppendOrderParams(logEntry, " Order to ", request);
-
-            logger.PrintTrade(logEntry.ToString());
-        }
-
-        private void LogOrderOpenResults(OrderResultEntity result, OpenOrderRequest request)
-        {
-            var logEntry = new StringBuilder();
-
-            if (result.IsCompleted)
-            {
-                var order = result.ResultingOrder;
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
-                logEntry.Append("SUCCESS: Opened ");
-                if (order != null)
-                {
-                    if (!double.IsNaN(order.LastFillPrice) && !double.IsNaN(order.LastFillVolume))
-                    {
-                        logEntry.Append("#").Append(order.Id).Append(" ");
-                        AppendIocOrderParams(logEntry, " ", order);
-                    }
-                    else
-                    {
-                        logEntry.Append("#").Append(order.Id).Append(" ");
-                        AppendOrderParams(logEntry, " ", order);
-                    }
-                }
-                else
-                    logEntry.Append("Null Order");
-
-                logger.PrintTradeSuccess(logEntry.ToString());
-            }
-            else
-            {
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
-                logEntry.Append("FAILED Opening ");
-                AppendOrderParams(logEntry, " Order to ", request);
-                logEntry.Append(" error=").Append(result.ResultCode);
-
-                logger.PrintTradeFail(logEntry.ToString());
-            }
-        }
-
-        private void LogOrderModifying(ReplaceOrderRequest request)
-        {
-            var logEntry = new StringBuilder();
-            logEntry.Append("[Out] Modifying order #").Append(request.OrderId).Append(" to ");
-            AppendOrderParams(logEntry, " ", request);
-
-            logger.PrintTrade(logEntry.ToString());
-        }
-
-        private void LogOrderModifyResults(ReplaceOrderRequest request, OrderResultEntity result)
-        {
-            var logEntry = new StringBuilder();
-
-            if (result.IsCompleted)
-            {
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
-                logEntry.Append("SUCCESS: Modified order #").Append(request.OrderId).Append(" to ");
-                if (result.ResultingOrder != null)
-                {
-                    AppendOrderParams(logEntry, " ", result.ResultingOrder);
-                }
-                else
-                    logEntry.Append("Null Order");
-
-                logger.PrintTradeSuccess(logEntry.ToString());
-            }
-            else
-            {
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
-                logEntry.Append("FAILED Modifying order #").Append(request.OrderId).Append(" to ");
-                AppendOrderParams(logEntry, " ", request);
-                logEntry.Append(" error=").Append(result.ResultCode);
-
-                logger.PrintTradeFail(logEntry.ToString());
-            }
-        }
-
-        private void AppendOrderParams(StringBuilder logEntry, string suffix, Order order)
-        {
-            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit);
-        }
-
-        private void AppendIocOrderParams(StringBuilder logEntry, string suffix, Order order)
-        {
-            AppendOrderParams(logEntry, suffix, order.Symbol, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit);
-        }
-
-        private void AppendOrderParams(StringBuilder logEntry, string suffix, OpenOrderRequest request)
-        {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.Volume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
-        }
-
-        private void AppendOrderParams(StringBuilder logEntry, string suffix, ReplaceOrderRequest request)
-        {
-            AppendOrderParams(logEntry, suffix, request.Symbol, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
-        }
-
-        private void AppendOrderParams(StringBuilder logEntry, string suffix, string symbol, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp)
-        {
-            logEntry.Append(type)
-                .Append(suffix).Append(side)
-                .Append(" ").Append(volumeLots)
-                .Append(" ").Append(symbol);
-
-            if ((tp != null && !double.IsNaN(tp.Value)) || (sl != null && !double.IsNaN(sl.Value)))
-            {
-                logEntry.Append(" (");
-                if (sl != null)
-                    logEntry.Append("SL:").Append(sl.Value);
-                if (sl != null && tp != null)
-                    logEntry.Append(", ");
-                if (tp != null)
-                    logEntry.Append("TP:").Append(tp.Value);
-
-                logEntry.Append(")");
-            }
-
-            if (!double.IsNaN(price))
-                logEntry.Append(" at price ").Append(price);
-
-            if (!double.IsNaN(stopPrice))
-            {
-                if (!double.IsNaN(price))
-                    logEntry.Append(", stop price ").Append(stopPrice);
-                else
-                    logEntry.Append(" at stop price ").Append(stopPrice);
-            }
-        }
+       
 
         #endregion
     }

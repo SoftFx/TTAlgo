@@ -1,6 +1,7 @@
 ﻿using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,6 +41,19 @@ namespace TickTrader.BotTerminal
         public void Clear()
         {
             Stats = null;
+        }
+
+        public void SaveAsText(Stream file)
+        {
+            using (var writer = new StreamWriter(file))
+            {
+                foreach (var prop in StatProperties.Value)
+                {
+                    writer.Write(prop.Key);
+                    writer.Write(": ");
+                    writer.WriteLine(prop.Value);
+                }
+            }
         }
 
         private void RebuildReport(TestingStatistics newStats)
