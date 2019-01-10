@@ -1,6 +1,5 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
-using TickTrader.Algo.Indicators.Oscillators.MACD;
 
 namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 {

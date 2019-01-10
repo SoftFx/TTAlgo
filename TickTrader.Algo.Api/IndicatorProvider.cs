@@ -106,6 +106,7 @@ namespace TickTrader.Algo.Api
 
 
         #region Volumes
+
         IAccumulationDistribution AccumulationDistribution(BarSeries bars);
 
         IMoneyFlowIndex MoneyFlowIndex(BarSeries bars, int period = 14);
@@ -113,6 +114,7 @@ namespace TickTrader.Algo.Api
         IOnBalanceVolume OnBalanceVolume(BarSeries bars, AppliedPrice targetPrice = AppliedPrice.Close);
 
         IVolumes Volumes(BarSeries bars);
+
         #endregion
     }
 }

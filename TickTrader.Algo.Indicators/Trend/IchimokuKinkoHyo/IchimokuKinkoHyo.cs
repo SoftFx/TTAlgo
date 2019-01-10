@@ -47,8 +47,8 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
             KijunSen = kijunSen;
             SenkouSpanB = senkouSpanB;
 
-			InitializeIndicator();
-		}
+            InitializeIndicator();
+        }
 
         protected void InitializeIndicator()
         {
@@ -68,22 +68,22 @@ namespace TickTrader.Algo.Indicators.Trend.IchimokuKinkoHyo
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            Tenkan[pos] = (PeriodHelper.FindMax(Bars.High, TenkanSen) + PeriodHelper.FindMin(Bars.Low, TenkanSen))/2;
-            Kijun[pos] = (PeriodHelper.FindMax(Bars.High, KijunSen) + PeriodHelper.FindMin(Bars.Low, KijunSen))/2;
+            Tenkan[pos] = (PeriodHelper.FindMax(Bars.High, TenkanSen) + PeriodHelper.FindMin(Bars.Low, TenkanSen)) / 2;
+            Kijun[pos] = (PeriodHelper.FindMax(Bars.High, KijunSen) + PeriodHelper.FindMin(Bars.Low, KijunSen)) / 2;
             Chikou[pos] = double.NaN;
             if (IsUpdate)
             {
                 _chikouShifter.UpdateLast(Bars[pos].Close);
-                _senkouAShifter.UpdateLast((Tenkan[pos] + Kijun[pos])/2);
+                _senkouAShifter.UpdateLast((Tenkan[pos] + Kijun[pos]) / 2);
                 _senkouBShifter.UpdateLast((PeriodHelper.FindMax(Bars.High, SenkouSpanB) +
-                                            PeriodHelper.FindMin(Bars.Low, SenkouSpanB))/2);
+                                            PeriodHelper.FindMin(Bars.Low, SenkouSpanB)) / 2);
             }
             else
             {
                 _chikouShifter.Add(Bars[pos].Close);
-                _senkouAShifter.Add((Tenkan[pos] + Kijun[pos])/2);
+                _senkouAShifter.Add((Tenkan[pos] + Kijun[pos]) / 2);
                 _senkouBShifter.Add((PeriodHelper.FindMax(Bars.High, SenkouSpanB) +
-                                     PeriodHelper.FindMin(Bars.Low, SenkouSpanB))/2);
+                                     PeriodHelper.FindMin(Bars.Low, SenkouSpanB)) / 2);
             }
             Chikou[_chikouShifter.Position] = _chikouShifter.Result;
             SenkouA[_senkouAShifter.Position] = _senkouAShifter.Result;

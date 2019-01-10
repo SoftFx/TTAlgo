@@ -1,7 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator

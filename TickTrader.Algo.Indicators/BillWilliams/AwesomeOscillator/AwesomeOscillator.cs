@@ -1,12 +1,13 @@
 ﻿using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Awesome Oscillator", Version = "1.0")]
     public class AwesomeOscillator : Indicator, IAwesomeOscillator
     {
+        private IMovingAverage _slowSma, _fastSma;
+
         [Parameter(DisplayName = "Fast SMA Period", DefaultValue = 5)]
         public int FastSmaPeriod { get; set; }
 
@@ -15,8 +16,6 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
 
         [Parameter(DisplayName = "Data Limit", DefaultValue = 34)]
         public int DataLimit { get; set; }
-
-        private IMovingAverage _slowSma, _fastSma;
 
         [Input]
         public new BarSeries Bars { get; set; }

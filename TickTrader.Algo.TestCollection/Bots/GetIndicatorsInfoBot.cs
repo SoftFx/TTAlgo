@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
 
@@ -15,7 +11,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         Oscillators,
         Other,
         Trend,
-		Volumes
+        Volumes
     }
 
     [TradeBot(DisplayName = "[T] Get Indicators Info Bot", Version = "1.0", Category = "Test Plugin Info",
@@ -52,66 +48,66 @@ namespace TickTrader.Algo.TestCollection.Bots
         private IGatorOscillator _gatorOscillator;
         private IMarketFacilitationIndex _marketFacilitationIndex;
 
-		#endregion
+        #endregion
 
 
-		#region Oscillators
+        #region Oscillators
 
-		private IAverageTrueRange _avr;
-		private IBearsPower _bearsPower;
-		private IBullsPower _bullsPower;
-		private ICommodityChannelIndex _cci;
-		private IDeMarker _deMarker;
-		private IForceIndex _fi;
-		private IMacd _macd;
-		private IMomentum _momentum;
-		private IMovingAverageOscillator _mao;
-		private IRelativeStrenghtIndex _rsi;
-		private IRelativeVigorIndex _rvi;
-		private IStochasticOscillator _so;
-		private IWilliamsPercentRange _wpr;
+        private IAverageTrueRange _avr;
+        private IBearsPower _bearsPower;
+        private IBullsPower _bullsPower;
+        private ICommodityChannelIndex _cci;
+        private IDeMarker _deMarker;
+        private IForceIndex _fi;
+        private IMacd _macd;
+        private IMomentum _momentum;
+        private IMovingAverageOscillator _mao;
+        private IRelativeStrenghtIndex _rsi;
+        private IRelativeVigorIndex _rvi;
+        private IStochasticOscillator _so;
+        private IWilliamsPercentRange _wpr;
 
-		#endregion
-
-
-		#region Other
-
-		private IHeikenAshi _ha;
-		private IZigZag _zz;
-
-		#endregion
+        #endregion
 
 
-		#region Trend
+        #region Other
 
-		private IAverageDirectionalMovementIndex _admi;
-		private IBoolingerBands _bb;
-		private IEnvelopes _envelopes;
-		private IIchimokuKinkoHyo _ikh;
-		private IMovingAverage _ma;
-		private IParabolicSar _ps;
-		private IStandardDeviation _sd;
+        private IHeikenAshi _ha;
+        private IZigZag _zz;
 
-		#endregion
+        #endregion
 
 
-		#region Volumes
+        #region Trend
 
-		private IAccumulationDistribution _ad;
-		private IMoneyFlowIndex _mfi;
-		private IOnBalanceVolume _obv;
-		private IVolumes _volumes;
+        private IAverageDirectionalMovementIndex _admi;
+        private IBoolingerBands _bb;
+        private IEnvelopes _envelopes;
+        private IIchimokuKinkoHyo _ikh;
+        private IMovingAverage _ma;
+        private IParabolicSar _ps;
+        private IStandardDeviation _sd;
 
-		#endregion
+        #endregion
 
 
-		protected override void Init()
+        #region Volumes
+
+        private IAccumulationDistribution _ad;
+        private IMoneyFlowIndex _mfi;
+        private IOnBalanceVolume _obv;
+        private IVolumes _volumes;
+
+        #endregion
+
+
+        protected override void Init()
         {
             var price = Bars.Close;
             var bars = Bars;
 
-           switch (SelectGroup)
-           {
+            switch (SelectGroup)
+            {
                 case IndicatorsGroup.ATCFMethod:
 
                     #region
@@ -146,74 +142,74 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     break;
 
-				case IndicatorsGroup.Oscillators:
+                case IndicatorsGroup.Oscillators:
 
-					#region
+                    #region
 
-					_avr = Indicators.AverageTrueRange(bars);
-					_bearsPower = Indicators.BearsPower(bars);
-					_bullsPower = Indicators.BullsPower(bars);
-					_cci = Indicators.CommodityChannelIndex(price);
-					_deMarker = Indicators.DeMarker(bars);
-					_fi = Indicators.ForceIndex(bars, 13); //removed
-					_macd = Indicators.MACD(price);
-					_momentum = Indicators.Momentum(price);
-					_mao = Indicators.MovingAverageOscillator(price);
-					_rsi = Indicators.RelativeStrenghtIndex(price);
-					_rvi = Indicators.RelativeVigorIndex(bars);
-					_so = Indicators.StochasticOscillator(bars);
-					_wpr = Indicators.WilliamsPercentRange(bars);
+                    _avr = Indicators.AverageTrueRange(bars);
+                    _bearsPower = Indicators.BearsPower(bars);
+                    _bullsPower = Indicators.BullsPower(bars);
+                    _cci = Indicators.CommodityChannelIndex(price);
+                    _deMarker = Indicators.DeMarker(bars);
+                    _fi = Indicators.ForceIndex(bars, 13); //removed
+                    _macd = Indicators.MACD(price);
+                    _momentum = Indicators.Momentum(price);
+                    _mao = Indicators.MovingAverageOscillator(price);
+                    _rsi = Indicators.RelativeStrenghtIndex(price);
+                    _rvi = Indicators.RelativeVigorIndex(bars);
+                    _so = Indicators.StochasticOscillator(bars);
+                    _wpr = Indicators.WilliamsPercentRange(bars);
 
-					#endregion
+                    #endregion
 
-					break;
-
-				case IndicatorsGroup.Other:
-
-					#region
-
-					_ha = Indicators.HeikenAshi(bars);
-					_zz = Indicators.ZigZag(bars);
-
-					#endregion
-
-					break;
-
-				case IndicatorsGroup.Trend:
-
-					#region
-
-					_admi = Indicators.AverageDirectionalMovementIndex(bars);
-					_bb = Indicators.BoolingerBands(price);
-					_envelopes = Indicators.Envelopes(price);
-					_ikh = Indicators.IchimokuKinHyo(bars);
-					_ma = Indicators.MovingAverage(price);
-					_ps = Indicators.ParabolicSar(bars);
-					_sd = Indicators.StandardDeviation(price);
-
-					#endregion
-
-					break;
-
-				case IndicatorsGroup.Volumes:
-
-					#region
-
-					_ad = Indicators.AccumulationDistribution(bars);
-					_mfi = Indicators.MoneyFlowIndex(bars);
-					_obv = Indicators.OnBalanceVolume(bars);
-					_volumes = Indicators.Volumes(bars);
-
-					#endregion
-
-					break;
-
-				default:
                     break;
-           }
 
-			Status.WriteLine("Bot init");
-			Status.Flush();
+                case IndicatorsGroup.Other:
+
+                    #region
+
+                    _ha = Indicators.HeikenAshi(bars);
+                    _zz = Indicators.ZigZag(bars);
+
+                    #endregion
+
+                    break;
+
+                case IndicatorsGroup.Trend:
+
+                    #region
+
+                    _admi = Indicators.AverageDirectionalMovementIndex(bars);
+                    _bb = Indicators.BoolingerBands(price);
+                    _envelopes = Indicators.Envelopes(price);
+                    _ikh = Indicators.IchimokuKinHyo(bars);
+                    _ma = Indicators.MovingAverage(price);
+                    _ps = Indicators.ParabolicSar(bars);
+                    _sd = Indicators.StandardDeviation(price);
+
+                    #endregion
+
+                    break;
+
+                case IndicatorsGroup.Volumes:
+
+                    #region
+
+                    _ad = Indicators.AccumulationDistribution(bars);
+                    _mfi = Indicators.MoneyFlowIndex(bars);
+                    _obv = Indicators.OnBalanceVolume(bars);
+                    _volumes = Indicators.Volumes(bars);
+
+                    #endregion
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            Status.WriteLine("Bot init");
+            Status.Flush();
         }
 
         protected override void OnQuote(Quote quote)
@@ -223,9 +219,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
             _timeOpenLastBar = Bars[0].OpenTime;
 
-			Status.WriteLine($"Open time bar: {Bars[0].OpenTime.ToString()}\n");
+            Status.WriteLine($"Open time bar: {Bars[0].OpenTime.ToString()}\n");
 
-			switch (SelectGroup)
+            switch (SelectGroup)
             {
                 case IndicatorsGroup.ATCFMethod:
 
@@ -272,8 +268,8 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.WriteLine($"AwesomeOscillator valueUp: {_awesomeOscillator.ValueUp[0]:F9}");
                     Status.WriteLine($"AwesomeOscillator valueDown: {_awesomeOscillator.ValueDown[0]:F9}\n");
 
-                    Status.WriteLine($"Fractls FractalsUp: {_fractals.FractalsUp[0].Y:F9}");
-                    Status.WriteLine($"Fractls FractalsDown: {_fractals.FractalsDown[0].Y:F9}\n");
+                    Status.WriteLine($"Fractals FractalsUp: {_fractals.FractalsUp[0].Y:F9}");
+                    Status.WriteLine($"Fractals FractalsDown: {_fractals.FractalsDown[0].Y:F9}\n");
 
                     Status.WriteLine($"GatorOscillator TeethLipsUp: {_gatorOscillator.TeethLipsUp[0]:F9}");
                     Status.WriteLine($"GatorOscillator TeethLipsDown: {_gatorOscillator.TeethLipsDown[0]:F9}");
@@ -289,112 +285,112 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     break;
 
-				case IndicatorsGroup.Oscillators:
+                case IndicatorsGroup.Oscillators:
 
-					#region
+                    #region
 
-					Status.WriteLine($"AverageTrueRanger: {_avr.Atr[0]:F9}\n");
+                    Status.WriteLine($"AverageTrueRanger: {_avr.Atr[0]:F9}\n");
 
-					Status.WriteLine($"BearsPower: {_bearsPower.Bears[0]:F9}\n");
+                    Status.WriteLine($"BearsPower: {_bearsPower.Bears[0]:F9}\n");
 
-					Status.WriteLine($"BullsPower: {_bullsPower.Bulls[0]:F9}\n");
+                    Status.WriteLine($"BullsPower: {_bullsPower.Bulls[0]:F9}\n");
 
-					Status.WriteLine($"CommodityChannelIndex: {_cci.Cci[0]:F9}\n");
+                    Status.WriteLine($"CommodityChannelIndex: {_cci.Cci[0]:F9}\n");
 
-					Status.WriteLine($"DeMarker: {_deMarker.DeMark[0]:F9}\n");
+                    Status.WriteLine($"DeMarker: {_deMarker.DeMark[0]:F9}\n");
 
-					Status.WriteLine($"ForceIndex: {_fi.Force[0]:F9}\n");
+                    Status.WriteLine($"ForceIndex: {_fi.Force[0]:F9}\n");
 
-					Status.WriteLine($"MACD series: {_macd.MacdSeries[0]:F9}");
-					Status.WriteLine($"MACD signals: {_macd.Signal[0]:F9}\n");
+                    Status.WriteLine($"MACD series: {_macd.MacdSeries[0]:F9}");
+                    Status.WriteLine($"MACD signals: {_macd.Signal[0]:F9}\n");
 
-					Status.WriteLine($"Momentum: {_momentum.Moment[0]:F9}\n");
+                    Status.WriteLine($"Momentum: {_momentum.Moment[0]:F9}\n");
 
-					Status.WriteLine($"MA oscillator: {_mao.OsMa[0]:F9}\n");
+                    Status.WriteLine($"MA oscillator: {_mao.OsMa[0]:F9}\n");
 
-					Status.WriteLine($"Relative Strength Index: {_rsi.Rsi[0]:F9}\n");
+                    Status.WriteLine($"Relative Strength Index: {_rsi.Rsi[0]:F9}\n");
 
-					Status.WriteLine($"Relative Vigor Index RviAverage: {_rvi.RviAverage[0]:F9}");
-					Status.WriteLine($"Relative Vigor Index Signal: {_rvi.Signal[0]:F9}\n");
+                    Status.WriteLine($"Relative Vigor Index RviAverage: {_rvi.RviAverage[0]:F9}");
+                    Status.WriteLine($"Relative Vigor Index Signal: {_rvi.Signal[0]:F9}\n");
 
-					Status.WriteLine($"StochasticOscillator Stoch: {_so.Stoch[0]:F9}");
-					Status.WriteLine($"StochasticOscillator Signal: {_so.Signal[0]:F9}\n");
+                    Status.WriteLine($"StochasticOscillator Stoch: {_so.Stoch[0]:F9}");
+                    Status.WriteLine($"StochasticOscillator Signal: {_so.Signal[0]:F9}\n");
 
-					Status.WriteLine($"Williams Percent Range: {_wpr.Wpr[0]:F9}\n");
+                    Status.WriteLine($"Williams Percent Range: {_wpr.Wpr[0]:F9}\n");
 
-					#endregion
+                    #endregion
 
-					break;
+                    break;
 
-				case IndicatorsGroup.Other:
+                case IndicatorsGroup.Other:
 
-					#region
+                    #region
 
-					Status.WriteLine($"HeikenAshi Low/High: {_ha.HaLowHigh[0]:F9}");
-					Status.WriteLine($"HeikenAshi High/Low: {_ha.HaHighLow[0]:F9}");
-					Status.WriteLine($"HeikenAshi Open: {_ha.HaOpen[0]:F9}");
-					Status.WriteLine($"HeikenAshi Close: {_ha.HaClose[0]:F9}\n");
+                    Status.WriteLine($"HeikenAshi Low/High: {_ha.HaLowHigh[0]:F9}");
+                    Status.WriteLine($"HeikenAshi High/Low: {_ha.HaHighLow[0]:F9}");
+                    Status.WriteLine($"HeikenAshi Open: {_ha.HaOpen[0]:F9}");
+                    Status.WriteLine($"HeikenAshi Close: {_ha.HaClose[0]:F9}\n");
 
-					Status.WriteLine($"ZigZag: {_zz.Zigzag[0]:F9}");
-					Status.WriteLine($"ZigZag line: {_zz.ZigzagLine[0]:F9}\n");
+                    Status.WriteLine($"ZigZag: {_zz.Zigzag[0]:F9}");
+                    Status.WriteLine($"ZigZag line: {_zz.ZigzagLine[0]:F9}\n");
 
-					#endregion
+                    #endregion
 
-					break;
+                    break;
 
-				case IndicatorsGroup.Trend:
+                case IndicatorsGroup.Trend:
 
-					#region
+                    #region
 
-					Status.WriteLine($"AverageDirectionalMovementIndex ADX: {_admi.Adx[0]:F9}");
-					Status.WriteLine($"AverageDirectionalMovementIndex +DMI: {_admi.PlusDmi[0]:F9}");
-					Status.WriteLine($"AverageDirectionalMovementIndex -DMI: {_admi.MinusDmi[0]:F9}\n");
+                    Status.WriteLine($"AverageDirectionalMovementIndex ADX: {_admi.Adx[0]:F9}");
+                    Status.WriteLine($"AverageDirectionalMovementIndex +DMI: {_admi.PlusDmi[0]:F9}");
+                    Status.WriteLine($"AverageDirectionalMovementIndex -DMI: {_admi.MinusDmi[0]:F9}\n");
 
-					Status.WriteLine($"BollingerBands Middle Line: {_bb.MiddleLine[0]:F9}");
-					Status.WriteLine($"BollingerBands Top Line: {_bb.TopLine[0]:F9}");
-					Status.WriteLine($"BollingerBands Botton Line: {_bb.BottomLine[0]:F9}\n");
+                    Status.WriteLine($"BollingerBands Middle Line: {_bb.MiddleLine[0]:F9}");
+                    Status.WriteLine($"BollingerBands Top Line: {_bb.TopLine[0]:F9}");
+                    Status.WriteLine($"BollingerBands Botton Line: {_bb.BottomLine[0]:F9}\n");
 
-					Status.WriteLine($"Envelopes Top Line: {_envelopes.TopLine[0]:F9}");
-					Status.WriteLine($"Envelopes Botton Line: {_envelopes.BottomLine[0]:F9}\n");
+                    Status.WriteLine($"Envelopes Top Line: {_envelopes.TopLine[0]:F9}");
+                    Status.WriteLine($"Envelopes Botton Line: {_envelopes.BottomLine[0]:F9}\n");
 
-					Status.WriteLine($"IchimokuKinkoHyo Tenkan-sen: {_ikh.Tenkan[0]:F9}");
-					Status.WriteLine($"IchimokuKinkoHyo Kijun-sen: {_ikh.Kijun[0]:F9}");
-					Status.WriteLine($"IchimokuKinkoHyo Senkou Span A: {_ikh.SenkouA[0]:F9}");
-					Status.WriteLine($"IchimokuKinkoHyo Senkou Span B: {_ikh.SenkouB[0]:F9}");
-					Status.WriteLine($"IchimokuKinkoHyo Chikou Span: {_ikh.Chikou[0]:F9}\n");
+                    Status.WriteLine($"IchimokuKinkoHyo Tenkan-sen: {_ikh.Tenkan[0]:F9}");
+                    Status.WriteLine($"IchimokuKinkoHyo Kijun-sen: {_ikh.Kijun[0]:F9}");
+                    Status.WriteLine($"IchimokuKinkoHyo Senkou Span A: {_ikh.SenkouA[0]:F9}");
+                    Status.WriteLine($"IchimokuKinkoHyo Senkou Span B: {_ikh.SenkouB[0]:F9}");
+                    Status.WriteLine($"IchimokuKinkoHyo Chikou Span: {_ikh.Chikou[0]:F9}\n");
 
-					Status.WriteLine($"Moving Average: {_ma.Average[0]:F9}\n");
+                    Status.WriteLine($"Moving Average: {_ma.Average[0]:F9}\n");
 
-					Status.WriteLine($"Parabolic SAR: {_ps.Sar[0]:F9}\n");
+                    Status.WriteLine($"Parabolic SAR: {_ps.Sar[0]:F9}\n");
 
-					Status.WriteLine($"StandardDeviation: {_sd.StdDev[0]:F9}\n");
+                    Status.WriteLine($"StandardDeviation: {_sd.StdDev[0]:F9}\n");
 
-					#endregion
+                    #endregion
 
-					break;
+                    break;
 
-				case IndicatorsGroup.Volumes:
+                case IndicatorsGroup.Volumes:
 
-					#region
+                    #region
 
-					Status.WriteLine($"AccumulationDistribution: {_ad.Ad[0]:F9}\n");
+                    Status.WriteLine($"AccumulationDistribution: {_ad.Ad[0]:F9}\n");
 
-					Status.WriteLine($"MoneyFlowIndex: {_mfi.Mfi[0]:F9}\n");
+                    Status.WriteLine($"MoneyFlowIndex: {_mfi.Mfi[0]:F9}\n");
 
-					Status.WriteLine($"OnBalanceVolume: {_obv.Obv[0]:F9}\n");
+                    Status.WriteLine($"OnBalanceVolume: {_obv.Obv[0]:F9}\n");
 
-					Status.WriteLine($"Volume Up: {_volumes.ValueUp[0]:F9}");
-					Status.WriteLine($"Volume Down: {_volumes.ValueDown[0]:F9}");
+                    Status.WriteLine($"Volume Up: {_volumes.ValueUp[0]:F9}");
+                    Status.WriteLine($"Volume Down: {_volumes.ValueDown[0]:F9}");
 
-					#endregion
+                    #endregion
 
-					break;
+                    break;
 
-				default:
+                default:
                     break;
             }
 
-			Status.Flush();
-		}
+            Status.Flush();
+        }
     }
 }

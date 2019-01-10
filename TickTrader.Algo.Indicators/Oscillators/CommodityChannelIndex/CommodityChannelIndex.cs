@@ -1,7 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Indicators;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 {
