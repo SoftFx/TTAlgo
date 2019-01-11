@@ -14,6 +14,8 @@ namespace TickTrader.BotTerminal
 {
     public class SciChartBehavior
     {
+        private static string _cursorTextFormatting;
+
         public static readonly DependencyProperty XAxisProperty = DependencyProperty.RegisterAttached(
             "XAxis", typeof(IAxis), typeof(SciChartBehavior), new PropertyMetadata(OnXAxisChanged));
 
@@ -58,13 +60,22 @@ namespace TickTrader.BotTerminal
         {
             var scs = d as SciChartSurface;
             if (scs == null) return;
-
             scs.XAxis = (IAxis)e.NewValue;
             if (e.NewValue != null)
             {
                 var style = GetXAxisStyle(d);
                 ((AxisBase)e.NewValue).Style = style;
             }
+
+            //if (scs.XAxis.CursorTextFormatting != null)
+            //    _cursorTextFormatting = scs.XAxis.CursorTextFormatting;
+            //else
+            //{
+            //    if (_cursorTextFormatting == "d MMMM yyyy HH:mm:ss")
+            //        scs.XAxis.CursorTextFormatting = "d MMM yyyy HH:mm:ss";
+            //    else
+            //        scs.XAxis.CursorTextFormatting = null;
+            //}
         }
 
         private static void OnXAxisStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -74,7 +85,10 @@ namespace TickTrader.BotTerminal
 
             var axis = GetXAxis(d);
             if (axis != null)
+            {
                 ((AxisBase)axis).Style = (Style)e.NewValue;
+            }
+                 
         }
     }
 }
