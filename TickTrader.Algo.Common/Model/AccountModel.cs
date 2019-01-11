@@ -171,6 +171,8 @@ namespace TickTrader.Algo.Common.Model
 
         internal EntityCacheUpdate GetPositionUpdate(PositionEntity report)
         {
+            System.Diagnostics.Debug.WriteLine("PR  #" + report.Symbol + " " + report.Side + " " + report.Volume + " p=" + report.Price);
+
             var update = DequeueWatingUpdate();
             _updateWatingForPosition = null;
 
@@ -358,6 +360,10 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
         {
+            // ignore market rejections
+            if (report.OrderType == OrderType.Market)
+                return null;
+
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.None);
             //ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
             //OrderUpdate?.Invoke(report, null, algoAction);

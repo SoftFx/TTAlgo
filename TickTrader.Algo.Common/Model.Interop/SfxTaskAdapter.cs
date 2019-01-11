@@ -427,8 +427,6 @@ namespace TickTrader.Algo.Common.Model
 
             public void OnReport(FDK2.ExecutionReport report)
             {
-                System.Diagnostics.Debug.WriteLine("rep #" + report.OrderId + " last=" + report.Last);
-
                 _reports.Add(report);
                 if (report.Last)
                     SetResult(_reports);
