@@ -1,12 +1,8 @@
 ﻿using System;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.MovingAverage
 {
-    public enum Method
-    {
-        Simple, Exponential, Smoothed, LinearWeighted, CustomExponential, Triangular
-    }
-
     internal abstract class MABase : IMA
     {
         public int Period { get; private set; }
@@ -57,7 +53,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             LastAdded = value;
         }
 
-        internal static IMA CreateMaInstance(int period, Method targetMethod, double smoothFactor = double.NaN)
+        internal static IMA CreateMaInstance(int period, MovingAverageMethod targetMethod, double smoothFactor = double.NaN)
         {
             IMA instance;
             if (double.IsNaN(smoothFactor))
@@ -66,22 +62,22 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             }
             switch (targetMethod)
             {
-                case Method.Simple:
+                case MovingAverageMethod.Simple:
                     instance = new SMA(period);
                     break;
-                case Method.Exponential:
+                case MovingAverageMethod.Exponential:
                     instance = new EMA(period, smoothFactor);
                     break;
-                case Method.Smoothed:
+                case MovingAverageMethod.Smoothed:
                     instance = new SMMA(period);
                     break;
-                case Method.LinearWeighted:
+                case MovingAverageMethod.LinearWeighted:
                     instance = new LWMA(period);
                     break;
-                case Method.CustomExponential:
+                case MovingAverageMethod.CustomExponential:
                     instance = new CustomEMA(period, smoothFactor);
                     break;
-                case Method.Triangular:
+                case MovingAverageMethod.Triangular:
                     instance = new TriMA(period);
                     break;
                 default:

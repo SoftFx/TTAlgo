@@ -1,20 +1,21 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 {
     [Indicator(Category = "Trend", DisplayName = "Average Directional Movement Index", Version = "1.0")]
-    public class AverageDirectionalMovementIndex : Indicator
+    public class AverageDirectionalMovementIndex : Indicator, IAverageDirectionalMovementIndex
     {
         private IMA _plusMa, _minusMa, _adxMa;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
+        [Parameter(DefaultValue = AppliedPrice.Close, DisplayName = "Apply To")]
+        public AppliedPrice TargetPrice { get; set; }
 
         [Input]
         public new BarSeries Bars { get; set; }
@@ -34,8 +35,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         public AverageDirectionalMovementIndex() { }
 
-        public AverageDirectionalMovementIndex(BarSeries bars, int period,
-            AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public AverageDirectionalMovementIndex(BarSeries bars, int period, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             Bars = bars;
             Period = period;
@@ -46,12 +46,12 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
 
         protected void InitializeIndicator()
         {
-            Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
-            _plusMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            Price = AppliedPriceHelper.GetDataSeries(Bars, TargetPrice);
+            _plusMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
             _plusMa.Init();
-            _minusMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _minusMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
             _minusMa.Init();
-            _adxMa = MABase.CreateMaInstance(Period, Method.Exponential);
+            _adxMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential);
             _adxMa.Init();
         }
 

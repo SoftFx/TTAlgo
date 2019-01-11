@@ -1,10 +1,11 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.WilliamsPercentRange
 {
     [Indicator(Category = "Oscillators", DisplayName = "Williams Percent Range", Version = "1.0")]
-    public class WilliamsPercentRange : Indicator
+    public class WilliamsPercentRange : Indicator, IWilliamsPercentRange
     {
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }

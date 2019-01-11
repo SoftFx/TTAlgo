@@ -151,12 +151,16 @@ namespace TickTrader.BotTerminal
             {
                 navigator = value;
                 TimeAxis = value.CreateAxis();
-
-                Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
-                cursorTextFormatBinding.Source = this;
-                cursorTextFormatBinding.Mode = BindingMode.TwoWay;
-                TimeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
+                CreateXAxisBinging(TimeAxis);
             }
+        }
+
+        public void CreateXAxisBinging(AxisBase timeAxis)
+        {
+            Binding cursorTextFormatBinding = new Binding(nameof(DateAxisLabelFormat));
+            cursorTextFormatBinding.Source = this;
+            cursorTextFormatBinding.Mode = BindingMode.TwoWay;
+            timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
         }
 
         public AxisBase TimeAxis

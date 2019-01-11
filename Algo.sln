@@ -32,7 +32,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.CoreUsageSa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.Indicators", "TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj", "{127406A9-5D62-4FE7-9680-1D2DEED7564F}"
 	ProjectSection(ProjectDependencies) = postProject
-		{8BAB901C-10BB-4EB7-B81E-716FA05B6957} = {8BAB901C-10BB-4EB7-B81E-716FA05B6957}
 		{8901C84D-FB62-433C-A25F-4D24255B9453} = {8901C84D-FB62-433C-A25F-4D24255B9453}
 	EndProjectSection
 EndProject

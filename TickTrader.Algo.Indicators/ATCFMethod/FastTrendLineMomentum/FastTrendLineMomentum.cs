@@ -1,12 +1,13 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "Fast Trend Line Momentum", Version = "1.0")]
-    public class FastTrendLineMomentum : Indicator
+    public class FastTrendLineMomentum : Indicator, IFastTrendLineMomentum
     {
-        private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
-        private ReferenceFastTrendLine.ReferenceFastTrendLine _rftl;
+        private IFastAdaptiveTrendLine _fatl;
+        private IReferenceFastTrendLine _rftl;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -21,17 +22,23 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
 
         public FastTrendLineMomentum() { }
 
-        public FastTrendLineMomentum(DataSeries price)
+        public FastTrendLineMomentum(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _fatl.HasEnoughBars(barsCount) && _rftl.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
-            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price);
-            _rftl = new ReferenceFastTrendLine.ReferenceFastTrendLine(Price);
+            _fatl = Indicators.FastAdaptiveTrendLine(Price, CountBars);
+            _rftl = Indicators.ReferenceFastTrendLine(Price, CountBars);
         }
 
         protected override void Init()

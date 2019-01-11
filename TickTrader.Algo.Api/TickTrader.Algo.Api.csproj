@@ -57,6 +57,50 @@
     <Compile Include="Ext\Reduction.cs" />
     <Compile Include="File.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFTLMSTLM.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFastAdaptiveTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFastTrendLineMomentum.cs" />
+    <Compile Include="Indicators\ATCFMethod\IFATLSignal.cs" />
+    <Compile Include="Indicators\ATCFMethod\IPerfectCommodityChannelIndex.cs" />
+    <Compile Include="Indicators\ATCFMethod\IRangeBoundChannelIndex.cs" />
+    <Compile Include="Indicators\ATCFMethod\IReferenceFastTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\IReferenceSlowTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\ISlowAdaptiveTrendLine.cs" />
+    <Compile Include="Indicators\ATCFMethod\ISlowTrendLineMomentum.cs" />
+    <Compile Include="Indicators\BillWilliams\IAcceleratorOscillator.cs" />
+    <Compile Include="Indicators\BillWilliams\IAlligator.cs" />
+    <Compile Include="Indicators\BillWilliams\IAwesomeOscillator.cs" />
+    <Compile Include="Indicators\BillWilliams\IFractals.cs" />
+    <Compile Include="Indicators\BillWilliams\IGatorOscillator.cs" />
+    <Compile Include="Indicators\BillWilliams\IMarketFacilitationIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IBullsPower.cs" />
+    <Compile Include="Indicators\Oscillators\IAverageTrueRange.cs" />
+    <Compile Include="Indicators\Oscillators\IBearsPower.cs" />
+    <Compile Include="Indicators\Oscillators\ICommodityChannelIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IDeMarker.cs" />
+    <Compile Include="Indicators\Oscillators\IForceIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IMacd.cs" />
+    <Compile Include="Indicators\Oscillators\IMomentum.cs" />
+    <Compile Include="Indicators\Oscillators\IMovingAverageOscillator.cs" />
+    <Compile Include="Indicators\Oscillators\IRelativeStrenghtIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IRelativeVigorIndex.cs" />
+    <Compile Include="Indicators\Oscillators\IStochasticOscillator.cs" />
+    <Compile Include="Indicators\Oscillators\IWilliamsPercentRange.cs" />
+    <Compile Include="Indicators\Other\IHeikenAshi.cs" />
+    <Compile Include="Indicators\Other\IZigZag.cs" />
+    <Compile Include="Indicators\Trend\IAverageDirectionalMovementIndex.cs" />
+    <Compile Include="Indicators\Trend\IBoolingerBands.cs" />
+    <Compile Include="Indicators\Trend\IEnvelopes.cs" />
+    <Compile Include="Indicators\Trend\IIchimokuKinkoHyo.cs" />
+    <Compile Include="Indicators\Trend\IMovingAverage.cs" />
+    <Compile Include="IndicatorProvider.cs" />
+    <Compile Include="Indicators\Trend\IParabolicSar.cs" />
+    <Compile Include="Indicators\Trend\IStandardDeviation.cs" />
+    <Compile Include="Indicators\Utility\AppliedPrice.cs" />
+    <Compile Include="Indicators\Volumes\IAccumulationDistribution.cs" />
+    <Compile Include="Indicators\Volumes\IMoneyFlowIndex.cs" />
+    <Compile Include="Indicators\Volumes\IOnBalanceVolume.cs" />
+    <Compile Include="Indicators\Volumes\IVolumes.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
     <Compile Include="OutputTargets.cs" />
@@ -85,6 +129,7 @@
   <ItemGroup>
     <None Include="Properties\algo.snk" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy  /Y $(TargetDir)*.*  ..\..\..\Repository.Public\API\</PostBuildEvent>

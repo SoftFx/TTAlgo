@@ -63,6 +63,7 @@ namespace TickTrader.BotTerminal
         private void UpdateAxis()
         {
             TimeAxis = Chart.Navigator.CreateAxis();
+            Chart.CreateXAxisBinging(TimeAxis);
             TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
             NotifyOfPropertyChange(nameof(TimeAxis));
         }

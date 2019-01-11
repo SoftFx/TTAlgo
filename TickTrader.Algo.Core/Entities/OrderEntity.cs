@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Core
             LastFillVolume = src.LastFillVolume;
             Swap = src.Swap;
             Commission = src.Commission;
+            Options = src.Options;
         }
 
         public string Id { get; private set; }
@@ -125,5 +126,6 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get { return double.NaN; } }
         public double Margin => double.NaN;
         public double Profit => double.NaN;
+        public OrderExecOptions Options => OrderExecOptions.None;
     }
 }

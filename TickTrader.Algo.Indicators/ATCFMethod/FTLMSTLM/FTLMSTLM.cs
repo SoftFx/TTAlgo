@@ -1,12 +1,13 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "FTLM-STLM", Version = "1.0")]
-    public class FtlmStlm : Indicator
+    public class FtlmStlm : Indicator, IFTLMSTLM
     {
-        private FastTrendLineMomentum.FastTrendLineMomentum _ftlm;
-        private SlowTrendLineMomentum.SlowTrendLineMomentum _stlm;
+        private IFastTrendLineMomentum _ftlm;
+        private ISlowTrendLineMomentum _stlm;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -24,17 +25,23 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
 
         public FtlmStlm() { }
 
-        public FtlmStlm(DataSeries price)
+        public FtlmStlm(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _ftlm.HasEnoughBars(barsCount) && _stlm.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
-            _ftlm = new FastTrendLineMomentum.FastTrendLineMomentum(Price);
-            _stlm = new SlowTrendLineMomentum.SlowTrendLineMomentum(Price);
+            _ftlm = Indicators.FastTrendLineMomentum(Price, CountBars);
+            _stlm = Indicators.SlowTrendLineMomentum(Price, CountBars);
         }
 
         protected override void Init()

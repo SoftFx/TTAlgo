@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
 
         public override void InvokeCalculate(bool isUpdate)
         {
-            // Do nothing. Bots does not have Calculate() method
+            InvokeCalculateForNestedIndicators(isUpdate);
         }
 
         public override void InvokeOnQuote(Quote quote)
