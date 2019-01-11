@@ -273,7 +273,7 @@ namespace TickTrader.BotTerminal
 
             var progressMin = _emulteFrom.GetAbsoluteDay();
 
-            _mainSymbolToken.Id = chartSymbol.Key;
+            _mainSymbolToken.Id = chartSymbol.Name;
 
             observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
             observer.SetMessage("Emulating...");

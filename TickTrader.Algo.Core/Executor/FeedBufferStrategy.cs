@@ -45,7 +45,7 @@ namespace TickTrader.Algo.Core
         {
             if (IsStarted)
                 LoadData(buffer);
-            else
+            else if(!_toLoad.Contains(buffer))
                 _toLoad.Add(buffer);
         }
 

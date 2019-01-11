@@ -11,10 +11,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         {
         }
 
-
         public override void Load(Property srcProperty)
         {
-            var input = srcProperty as BarToBarInput;
+            var input = srcProperty as BarToDoubleInput;
             if (input != null)
             {
                 LoadConfig(input);
@@ -23,11 +22,10 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override Property Save()
         {
-            var input = new BarToBarInput();
+            var input = new BarToDoubleInput();
             SaveConfig(input);
             return input;
         }
-
 
         protected override Mapping GetMapping(MappingKey mappingKey)
         {
