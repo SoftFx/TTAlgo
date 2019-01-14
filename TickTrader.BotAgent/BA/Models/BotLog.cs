@@ -125,19 +125,19 @@ namespace TickTrader.BotAgent.BA.Models
 
             var logFile = new FileTarget(logTarget)
             {
-                FileName = Layout.FromString($"{_logDirectory}${{shortdate}}-log{_fileExtension}"),
+                FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
             };
 
             var errorFile = new FileTarget(errTarget)
             {
-                FileName = Layout.FromString($"{_logDirectory}${{shortdate}}-error{_fileExtension}"),
+                FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
             };
 
             var statusFile = new FileTarget(statusTarget)
             {
-                FileName = Layout.FromString($"{_logDirectory}${{shortdate}}-status{_fileExtension}"),
+                FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
             };
 
