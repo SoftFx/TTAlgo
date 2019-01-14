@@ -1318,7 +1318,7 @@ namespace TickTrader.Algo.Core
             //tradeReport.Entity.MinCommissionConversionRate =  (double)charges.MinCommissionConversionRate;
 
             decimal balanceMovement = charges.Total;
-            tradeReport.Entity.BalanceMovement = (double)balanceMovement;
+            tradeReport.Entity.TransactionAmount = (double)balanceMovement;
 
             if (fromOrder.Type == OrderType.Market || fromOrder.RemainingAmount == 0)
                 _acc.Orders.Remove(fromOrder.Id);
@@ -1379,13 +1379,13 @@ namespace TickTrader.Algo.Core
                 if (position.IsEmpty)
                     position.Remove();
 
-                report.Entity.NetProfitLoss += (double)balanceMovement;
+                report.Entity.TransactionAmount += (double)balanceMovement;
                 report.Entity.PositionClosed = ExecutionTime;
                 report.Entity.PosOpenPrice = (double)openPrice;
                 report.Entity.PositionClosePrice = (double)closePrice;
                 report.Entity.PositionLastQuantity = (double)oneSideClosingAmount;
                 report.Entity.Swap += (double)closeSwap;
-                report.Entity.NetProfitLoss += (double)profit;
+                report.Entity.TransactionAmount += (double)profit;
                 report.Entity.CloseConversionRate = (double)profitRate;
 
                 //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice

@@ -141,7 +141,7 @@ namespace TickTrader.Algo.Core
         public TradeReportAdapter FillBalanceMovement(decimal balance, decimal movement)
         {
             Entity.AccountBalance = (double)balance;
-            Entity.NetProfitLoss = (double)movement;
+            Entity.TransactionAmount = (double)movement;
             return this;
         }
 
@@ -150,7 +150,7 @@ namespace TickTrader.Algo.Core
             Entity.Commission +=  (double)charges.Commission;
             //Entity.AgentCommission += (double)charges.AgentCommission;
             Entity.Swap += (double)charges.Swap;
-            Entity.NetProfitLoss = (double)balanceMovement;
+            Entity.TransactionAmount = (double)balanceMovement;
             //Entity.BalanceMovement = balanceMovement;
             //Entity.MinCommissionCurrency = charges.MinCommissionCurrency;
             //Entity.MinCommissionConversionRate = charges.MinCommissionConversionRate;
