@@ -18,7 +18,7 @@ namespace TickTrader.BotTerminal
 
         static TradeReportCsvSerializer()
         {
-            AddCommon(s => s.AddColumn("Order", r => r.UniqueId));
+            AddCommon(s => s.AddColumn("Order", r => r.UniqueId.ToString()));
             AddCommon(s => s.AddColumn("Open Time", r => r.OpenTime));
             AddCommon(s => s.AddEnumColumn("Type", r => r.Type));
             AddCommon(s => s.AddEnumColumn("Trx Type", r => r.ActionType));

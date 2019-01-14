@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
             return transaction.MaxVisibleQuantity;
         }
 
-        public string UniqueId { get; protected set; }
+        public TradeReportKey UniqueId { get; protected set; }
         public string OrderId { get; protected set; }
         public DateTime OpenTime { get; protected set; }
         public AggregatedTransactionType Type { get; protected set; }
@@ -145,14 +145,21 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected virtual string GetUniqueId(TradeReportEntity transaction)
+        protected virtual TradeReportKey GetUniqueId(TradeReportEntity transaction)
         {
             bool hasMultipleRecords = transaction.ActionId > 1 || RemainingQuantity > 0;
 
-            if (hasMultipleRecords)
-                return $"{transaction.OrderId}-{transaction.ActionId}";
+            var numericOrderId = long.Parse(transaction.OrderId);
 
-            return transaction.OrderId;
+            if (hasMultipleRecords)
+                return new TradeReportKey(numericOrderId, transaction.ActionId);
+            else
+                return new TradeReportKey(numericOrderId, null);
+
+            //if (hasMultipleRecords)
+            //    return $"{transaction.OrderId}-{transaction.ActionId}";
+
+            //return transaction.OrderId;
         }
 
         protected virtual string GetId(TradeReportEntity transaction)
