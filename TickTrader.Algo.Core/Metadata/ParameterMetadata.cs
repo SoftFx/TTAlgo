@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Core.Metadata
 
             if (reflectionInfo.PropertyType.IsEnum)
             {
-                Descriptor.IsEnum = true;            
+                Descriptor.IsEnum = true;
                 Descriptor.EnumValues.AddRange(Enum.GetValues(reflectionInfo.PropertyType).Cast<object>().Select(o => o.ToString()));
 
                 if (Descriptor.EnumValues.Count == 0)

@@ -94,7 +94,6 @@
     <Compile Include="Bots\TradeCommandsTest.cs" />
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
-    <Compile Include="Bots\GetMAInformation.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
     <Compile Include="Indicators\MultipleInputIndicator.cs" />

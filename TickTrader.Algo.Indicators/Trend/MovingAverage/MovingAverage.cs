@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "Average", Target = OutputTargets.Overlay, PlotType = PlotType.Histogram)]
+        [Output(DisplayName = "Average", Target = OutputTargets.Overlay)]
         public DataSeries Average { get; set; }
 
         public int LastPositionChanged { get { return _shifter.Position; } }
