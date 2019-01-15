@@ -12,6 +12,7 @@ namespace TickTrader.BotTerminal
     public class FullDateTimeConverter : IValueConverter
     {
         public const string Format = "yyyy.MM.dd HH:mm:ss.fff";
+        public const int FormatFixedLength = 23;
 
         public FullDateTimeConverter()
         {

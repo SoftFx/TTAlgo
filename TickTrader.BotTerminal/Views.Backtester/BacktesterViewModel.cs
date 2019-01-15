@@ -448,6 +448,8 @@ namespace TickTrader.BotTerminal
             });
         }
 
+        #region Results saving
+
         private async Task SaveResults(PluginSetupModel pluginSetup, IActionObserver observer)
         {
             var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
@@ -498,10 +500,19 @@ namespace TickTrader.BotTerminal
                         for (int i = 0; i < records.Count; i++)
                         {
                             var record = records[i];
+                            var sevString = TxtFormat(record.Severity);
 
                             writer.Write(record.Time.Timestamp.ToString(FullDateTimeConverter.Format));
-                            writer.Write(" | ");
-                            writer.WriteLine(record.Message);
+                            writer.Write(" [{0}] ", sevString);
+
+                            var nextLineSpaceSize = FullDateTimeConverter.FormatFixedLength + 4 + sevString.Length;
+                            var msgLines = SplitIntoLines(record.Message);
+                            writer.WriteLine(msgLines[0]);
+                            for (int j = 1; j < msgLines.Length; j++)
+                            {
+                                writer.Write(new string(' ', nextLineSpaceSize));
+                                writer.WriteLine(msgLines[j]);
+                            }
 
                             if (i % 10 == 0)
                                 Interlocked.Exchange(ref progress, i);
@@ -557,6 +568,22 @@ namespace TickTrader.BotTerminal
             foreach (var input in setup.Inputs)
                 writer.WriteLine("{0} = {1}", input.DisplayName, input.ValueAsText);
         }
+
+        private string TxtFormat(LogSeverities severity)
+        {
+            switch (severity)
+            {
+                case LogSeverities.TradeSuccess: return "Trade";
+                default: return severity.ToString();
+            }
+        }
+
+        private string[] SplitIntoLines(string message)
+        {
+            return message.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        }
+
+        #endregion
 
         private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)
         {
