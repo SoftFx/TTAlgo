@@ -1362,10 +1362,11 @@ namespace TickTrader.Algo.Core
             {
                 decimal k = oneSideClosingAmount / oneSideClosableAmount;
                 decimal closeSwap = RoundMoney(k * position.Swap, _calcFixture.RoundingDigits);
-                decimal openPrice = fillSide == OrderSide.Buy ? position.Long.Price : position.Short.Price;
-                closePrice = fillSide == OrderSide.Buy ? position.Short.Price : position.Long.Price;
+                decimal openPrice = fillSide == OrderSide.Sell ? position.Long.Price : position.Short.Price;
+                closePrice = fillSide == OrderSide.Sell ? position.Short.Price : position.Long.Price;
                 decimal profitRate;
-                decimal profit = RoundMoney(position.Calculator.CalculateProfitFixedPrice(openPrice, oneSideClosingAmount, closePrice, TickTraderToAlgo.Convert(fillSide), out profitRate), _calcFixture.RoundingDigits);
+                decimal profit = RoundMoney(position.Calculator.CalculateProfitFixedPrice(openPrice, oneSideClosingAmount, closePrice,
+                    TickTraderToAlgo.Convert(fillSide.Revert()), out profitRate), _calcFixture.RoundingDigits);
 
                 var copy = position.Clone();
 
@@ -1385,7 +1386,6 @@ namespace TickTrader.Algo.Core
                 report.Entity.PositionClosePrice = (double)closePrice;
                 report.Entity.PositionLastQuantity = (double)oneSideClosingAmount;
                 report.Entity.Swap += (double)closeSwap;
-                report.Entity.TransactionAmount += (double)profit;
                 report.Entity.CloseConversionRate = (double)profitRate;
 
                 //LogTransactionDetails(() => "Position closed: symbol=" + position.Symbol + " amount=" + oneSideClosingAmount + " open=" + openPrice + " close=" + closePrice
