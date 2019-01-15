@@ -28,13 +28,14 @@ namespace TickTrader.BotTerminal
             AddGrossOnly(s => s.AddColumn("Stop Loss",  r => r.StopLoss));
             AddGrossOnly(s => s.AddColumn("Take Profit",  r => r.TakeProfit));
             AddCommon(s => s.AddColumn("Close Time", r => r.CloseTime));
-            AddCommon(s => s.AddColumn("Close Volume", r => r.CloseQuantity));
+            AddCommon(s => s.AddColumn("Trade Volume", r => r.CloseQuantity));
             AddCommon(s => s.AddColumn("Close Price",  r => r.ClosePrice));
             AddCommon(s => s.AddColumn("Remaining Volume",  r => r.RemainingQuantity));
             AddCommon(s => s.AddColumn("Gross P/L",  r => r.GrossProfitLoss));
             AddCommon(s => s.AddColumn("Commission",  r => r.Commission));
             AddCommon(s => s.AddColumn("Swap",  r => r.Swap));
             AddCommon(s => s.AddColumn("Net P/L",  r => r.NetProfitLoss));
+            AddCommon(s => s.AddColumn("Max Visible V", r => r.MaxVisibleVolume));
             AddCommon(s => s.AddColumn("Comment",  r => r.Comment));
         }
 
@@ -46,14 +47,12 @@ namespace TickTrader.BotTerminal
 
         private static void AddNetOnly(Action<CsvSerializer<TransactionReport>> addAction)
         {
-            addAction(_grossSerializer);
             addAction(_netSerializer);
         }
 
         private static void AddGrossOnly(Action<CsvSerializer<TransactionReport>> addAction)
         {
             addAction(_grossSerializer);
-            addAction(_netSerializer);
         }
 
         public static void Serialize(IEnumerable<TransactionReport> reports, Stream toStream, AccountTypes accType)

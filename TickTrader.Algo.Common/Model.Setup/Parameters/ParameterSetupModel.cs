@@ -11,7 +11,6 @@ namespace TickTrader.Algo.Common.Model.Setup
         public static readonly string NullableIntTypeName = typeof(int?).GetTypeInfo().FullName;
         public static readonly string NullableDoubleTypeName = typeof(double?).GetTypeInfo().FullName;
 
-
         public ParameterMetadata Descriptor { get; }
 
         public string DataType { get; }
@@ -19,6 +18,8 @@ namespace TickTrader.Algo.Common.Model.Setup
         public bool IsRequired { get; }
 
         public virtual bool IsReadonly => false;
+
+        public abstract string ValueAsText { get; }
 
 
         public ParameterSetupModel(ParameterMetadata descriptor)
@@ -30,20 +31,18 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetMetadata(descriptor);
         }
 
-
         public abstract object GetValueToApply();
-
 
         public override void Apply(IPluginSetupTarget target)
         {
             target.SetParameter(Id, GetValueToApply());
         }
 
-
         public class Invalid : ParameterSetupModel
         {
             public override bool IsReadonly => true;
 
+            public override string ValueAsText => "n/a";
 
             public Invalid(ParameterMetadata descriptor, object error = null)
                 : base(descriptor)
@@ -53,7 +52,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 else
                     Error = new ErrorMsgModel(error);
             }
-
 
             public override object GetValueToApply()
             {

@@ -6,6 +6,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class BarToDoubleInputSetupModel : MappedInputSetupModel
     {
+        public override string EntityPrefix => "Bar";
+
         public BarToDoubleInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {

@@ -83,6 +83,11 @@ namespace TickTrader.BotTerminal
         public event System.Action<BacktesterSymbolSetupViewModel> Removed;
         public event System.Action OnAdd;
 
+        public string AsText()
+        {
+            return SelectedSymbol.Value.Name + " " + SelectedTimeframe.Value;
+        }
+
         public async void UpdateAvailableRange(TimeFrames timeFrame)
         {
             var smb = SelectedSymbol.Value;

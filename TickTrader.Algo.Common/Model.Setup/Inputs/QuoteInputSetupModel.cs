@@ -8,13 +8,13 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         private bool _useL2;
 
+        public override string ValueAsText => SelectedSymbol.Name + ".Quote" + (_useL2 ? "L2" : "");
 
         public QuoteInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext, bool useL2)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
             _useL2 = useL2;
         }
-
 
         public override void Apply(IPluginSetupTarget target)
         {

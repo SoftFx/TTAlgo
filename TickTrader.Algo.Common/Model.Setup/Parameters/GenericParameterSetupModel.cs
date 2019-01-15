@@ -9,8 +9,9 @@ namespace TickTrader.Algo.Common.Model.Setup
         private T _value;
         private string _valueStr;
 
-
         public T DefaultValue { get; }
+
+        public override string ValueAsText => ValueStr;
 
         public T Value
         {
@@ -106,12 +107,10 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         internal override UiConverter<bool> Converter => UiConverter.Bool;
 
-
         public BoolParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
         }
-
 
         public override Property Save()
         {
@@ -119,17 +118,14 @@ namespace TickTrader.Algo.Common.Model.Setup
         }
     }
 
-
     public class IntParamSetupModel : ParameterSetupModel<int>
     {
         internal override UiConverter<int> Converter => UiConverter.Int;
-
 
         public IntParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
         }
-
 
         public override Property Save()
         {
@@ -142,11 +138,9 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         internal override UiConverter<int?> Converter => UiConverter.NullableInt;
 
-
         public NullableIntParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
-
 
         public override Property Save()
         {
@@ -159,11 +153,9 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         internal override UiConverter<double> Converter => UiConverter.Double;
 
-
         public DoubleParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
-
 
         public override Property Save()
         {
@@ -176,11 +168,9 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         internal override UiConverter<double?> Converter => UiConverter.NullableDouble;
 
-
         public NullableDoubleParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
-
 
         public override Property Save()
         {
@@ -193,11 +183,9 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         internal override UiConverter<string> Converter => UiConverter.String;
 
-
         public StringParamSetupModel(ParameterMetadata descriptor) : base(descriptor)
         {
         }
-
 
         public override Property Save()
         {

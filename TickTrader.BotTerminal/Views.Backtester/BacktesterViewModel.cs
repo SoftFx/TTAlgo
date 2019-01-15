@@ -343,7 +343,7 @@ namespace TickTrader.BotTerminal
                 await LoadChartData(tester, observer, tester);
 
                 if (SaveResultsToFile.Value)
-                    await SaveResults(pluginRef.Metadata.Descriptor, observer);
+                    await SaveResults(pluginSetupModel, observer);
 
                 if (execError != null)
                     throw execError; //observer.SetMessage(execError.Message);
@@ -448,8 +448,9 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private async Task SaveResults(PluginDescriptor dPlugin, IActionObserver observer)
+        private async Task SaveResults(PluginSetupModel pluginSetup, IActionObserver observer)
         {
+            var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
             var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 
@@ -468,9 +469,13 @@ namespace TickTrader.BotTerminal
 
                     observer.SetMessage("Saving report...");
 
-                    var summaryEntry = archive.CreateEntry("summary.txt", CompressionLevel.Optimal);
+                    var summaryEntry = archive.CreateEntry("report.txt", CompressionLevel.Optimal);
                     using (var entryStream = summaryEntry.Open())
                         await Task.Run(() => ResultsPage.SaveAsText(entryStream));
+
+                    var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
+                    using (var entryStream = setupEntry.Open())
+                        await Task.Run(() => SaveTestSetupAsText(pluginSetup, entryStream));
                 }
             }
         }
@@ -494,8 +499,8 @@ namespace TickTrader.BotTerminal
                         {
                             var record = records[i];
 
-                            writer.Write(record.Time);
-                            writer.Write(string.Format(" | {0,8} |", record.Severity));
+                            writer.Write(record.Time.Timestamp.ToString(FullDateTimeConverter.Format));
+                            writer.Write(" | ");
                             writer.WriteLine(record.Message);
 
                             if (i % 10 == 0)
@@ -506,6 +511,51 @@ namespace TickTrader.BotTerminal
             }
 
             observer.StartProgress(0, records.Count);
+        }
+
+        private void SaveTestSetupAsText(PluginSetupModel setup, System.IO.Stream stream)
+        {
+            var dPlugin = setup.Metadata.Descriptor;
+
+            using (var writer = new System.IO.StreamWriter(stream))
+            {
+                SaveFeedSetupAsText(setup, writer);
+                writer.WriteLine();
+                SaveTradeSetupAsText(writer);
+                writer.WriteLine();
+                SavePluginSetupAsText(setup, writer);
+            }
+        }
+
+        private void SaveFeedSetupAsText(PluginSetupModel setup, System.IO.StreamWriter writer)
+        {
+            writer.WriteLine("Main symbol: " + MainSymbolSetup.AsText());
+            writer.WriteLine("Model: based on " + SelectedModel.Value);
+            foreach (var addSymbols in AdditionalSymbols)
+                writer.WriteLine("+Symbol " + MainSymbolSetup.AsText());
+
+            writer.WriteLine("Period: from {0} to {1}", _emulteFrom.ToShortDateString(), _emulateTo.ToShortDateString());
+        }
+
+        private void SaveTradeSetupAsText(System.IO.StreamWriter writer)
+        {
+            _settings.SaveAsText(writer);
+        }
+
+        private void SavePluginSetupAsText(PluginSetupModel setup, System.IO.StreamWriter writer)
+        {
+            var dPlugin = setup.Metadata.Descriptor;
+
+            if (dPlugin.Type == AlgoTypes.Indicator)
+                writer.WriteLine("Indicator: {0} v{1}", dPlugin.DisplayName , dPlugin.Version);
+            else if (dPlugin.Type == AlgoTypes.Robot)
+                writer.WriteLine("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version);
+
+            foreach (var param in setup.Parameters)
+                writer.WriteLine("{0} = {1}", param.DisplayName, param.ValueAsText);
+
+            foreach (var input in setup.Inputs)
+                writer.WriteLine("{0} = {1}", input.DisplayName, input.ValueAsText);
         }
 
         private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)
