@@ -21,10 +21,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Selected Group", DefaultValue = IndicatorsGroup.ATCFMethod)]
         public IndicatorsGroup SelectGroup { get; set; }
 
-        private DateTime _timeOpenLastBar = DateTime.MinValue;
-
-        #region ATCFMethod
-
+        //ATCF method
         private IFastAdaptiveTrendLine _fatl;
         private IFastTrendLineMomentum _ftlm;
         private IFATLSignal _fatls;
@@ -36,11 +33,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         private ISlowAdaptiveTrendLine _satl;
         private ISlowTrendLineMomentum _stlm;
 
-        #endregion
 
-
-        #region BillWilliams
-
+        //BillWilliams
         private IAcceleratorOscillator _acceleratorOscillator;
         private IAlligator _alligator;
         private IAwesomeOscillator _awesomeOscillator;
@@ -48,11 +42,8 @@ namespace TickTrader.Algo.TestCollection.Bots
         private IGatorOscillator _gatorOscillator;
         private IMarketFacilitationIndex _marketFacilitationIndex;
 
-        #endregion
 
-
-        #region Oscillators
-
+        //Oscillators
         private IAverageTrueRange _avr;
         private IBearsPower _bearsPower;
         private IBullsPower _bullsPower;
@@ -67,19 +58,13 @@ namespace TickTrader.Algo.TestCollection.Bots
         private IStochasticOscillator _so;
         private IWilliamsPercentRange _wpr;
 
-        #endregion
 
-
-        #region Other
-
+        //Other
         private IHeikenAshi _ha;
         private IZigZag _zz;
 
-        #endregion
 
-
-        #region Trend
-
+        //Trend
         private IAverageDirectionalMovementIndex _admi;
         private IBoolingerBands _bb;
         private IEnvelopes _envelopes;
@@ -88,17 +73,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         private IParabolicSar _ps;
         private IStandardDeviation _sd;
 
-        #endregion
 
-
-        #region Volumes
-
+        //Volumes
         private IAccumulationDistribution _ad;
         private IMoneyFlowIndex _mfi;
         private IOnBalanceVolume _obv;
         private IVolumes _volumes;
-
-        #endregion
 
 
         protected override void Init()
@@ -109,8 +89,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             switch (SelectGroup)
             {
                 case IndicatorsGroup.ATCFMethod:
-
-                    #region
 
                     _fatl = Indicators.FastAdaptiveTrendLine(price);
                     _ftlm = Indicators.FastTrendLineMomentum(price);
@@ -123,13 +101,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                     _satl = Indicators.SlowAdaptiveTrendLine(price);
                     _stlm = Indicators.SlowTrendLineMomentum(price);
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.BillWilliams:
-
-                    #region
 
                     _acceleratorOscillator = Indicators.AcceleratorOscillator(bars);
                     _alligator = Indicators.Alligator(price);
@@ -138,20 +112,16 @@ namespace TickTrader.Algo.TestCollection.Bots
                     _gatorOscillator = Indicators.GatorOscillator(price);
                     _marketFacilitationIndex = Indicators.MarketFacilitationIndex(bars);
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Oscillators:
-
-                    #region
 
                     _avr = Indicators.AverageTrueRange(bars);
                     _bearsPower = Indicators.BearsPower(bars);
                     _bullsPower = Indicators.BullsPower(bars);
                     _cci = Indicators.CommodityChannelIndex(price);
                     _deMarker = Indicators.DeMarker(bars);
-                    _fi = Indicators.ForceIndex(bars, 13); //removed
+                    _fi = Indicators.ForceIndex(bars); 
                     _macd = Indicators.MACD(price);
                     _momentum = Indicators.Momentum(price);
                     _mao = Indicators.MovingAverageOscillator(price);
@@ -160,24 +130,16 @@ namespace TickTrader.Algo.TestCollection.Bots
                     _so = Indicators.StochasticOscillator(bars);
                     _wpr = Indicators.WilliamsPercentRange(bars);
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Other:
 
-                    #region
-
                     _ha = Indicators.HeikenAshi(bars);
                     _zz = Indicators.ZigZag(bars);
-
-                    #endregion
 
                     break;
 
                 case IndicatorsGroup.Trend:
-
-                    #region
 
                     _admi = Indicators.AverageDirectionalMovementIndex(bars);
                     _bb = Indicators.BoolingerBands(price);
@@ -187,24 +149,19 @@ namespace TickTrader.Algo.TestCollection.Bots
                     _ps = Indicators.ParabolicSar(bars);
                     _sd = Indicators.StandardDeviation(price);
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Volumes:
-
-                    #region
 
                     _ad = Indicators.AccumulationDistribution(bars);
                     _mfi = Indicators.MoneyFlowIndex(bars);
                     _obv = Indicators.OnBalanceVolume(bars);
                     _volumes = Indicators.Volumes(bars);
 
-                    #endregion
-
                     break;
 
                 default:
+                
                     break;
             }
 
@@ -213,19 +170,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         }
 
         protected override void OnQuote(Quote quote)
-        {
-            //if (Bars[0].OpenTime <= _timeOpenLastBar)
-            //    return;
-
-            _timeOpenLastBar = Bars[0].OpenTime;
-
+        { 
             Status.WriteLine($"Open time bar: {Bars[0].OpenTime.ToString()}\n");
 
             switch (SelectGroup)
             {
                 case IndicatorsGroup.ATCFMethod:
-
-                    #region
 
                     Status.WriteLine($"FATL: {_fatl.Fatl[0]:F9}");
                     Status.WriteLine($"FTLM: {_ftlm.Ftlm[0]:F9}\n");
@@ -250,13 +200,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.WriteLine($"SlowAdaptiveTrendLine: {_satl.Satl[0]:F9}");
                     Status.WriteLine($"SlowTrendLineMomentum: {_stlm.Stlm[0]:F9}\n");
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.BillWilliams:
-
-                    #region
 
                     Status.WriteLine($"AcceleratorOscillator valueUp: {_acceleratorOscillator.ValueUp[0]:F9}");
                     Status.WriteLine($"AcceleratorOscillator valueDown: {_acceleratorOscillator.ValueDown[0]:F9}\n");
@@ -281,13 +227,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.WriteLine($"MarketFacilitationIndex MfiDownVolumeUp: {_marketFacilitationIndex.MfiDownVolumeUp[0]:F9}");
                     Status.WriteLine($"MarketFacilitationIndex MfiDownVolumeDown: {_marketFacilitationIndex.MfiDownVolumeDown[0]:F9}\n");
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Oscillators:
-
-                    #region
 
                     Status.WriteLine($"AverageTrueRanger: {_avr.Atr[0]:F9}\n");
 
@@ -318,13 +260,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     Status.WriteLine($"Williams Percent Range: {_wpr.Wpr[0]:F9}\n");
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Other:
-
-                    #region
 
                     Status.WriteLine($"HeikenAshi Low/High: {_ha.HaLowHigh[0]:F9}");
                     Status.WriteLine($"HeikenAshi High/Low: {_ha.HaHighLow[0]:F9}");
@@ -334,13 +272,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                     Status.WriteLine($"ZigZag: {_zz.Zigzag[0]:F9}");
                     Status.WriteLine($"ZigZag line: {_zz.ZigzagLine[0]:F9}\n");
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Trend:
-
-                    #region
 
                     Status.WriteLine($"AverageDirectionalMovementIndex ADX: {_admi.Adx[0]:F9}");
                     Status.WriteLine($"AverageDirectionalMovementIndex +DMI: {_admi.PlusDmi[0]:F9}");
@@ -365,13 +299,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     Status.WriteLine($"StandardDeviation: {_sd.StdDev[0]:F9}\n");
 
-                    #endregion
-
                     break;
 
                 case IndicatorsGroup.Volumes:
-
-                    #region
 
                     Status.WriteLine($"AccumulationDistribution: {_ad.Ad[0]:F9}\n");
 
@@ -381,8 +311,6 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     Status.WriteLine($"Volume Up: {_volumes.ValueUp[0]:F9}");
                     Status.WriteLine($"Volume Down: {_volumes.ValueDown[0]:F9}");
-
-                    #endregion
 
                     break;
 

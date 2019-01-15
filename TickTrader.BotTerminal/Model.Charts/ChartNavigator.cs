@@ -57,7 +57,6 @@ namespace TickTrader.BotTerminal
             rangeBinding.Source = this;
             rangeBinding.Mode = BindingMode.TwoWay;
             axis.SetBinding(AxisBase.VisibleRangeProperty, rangeBinding);
-
             
             //Binding rangeLimitBinding = new Binding("VisibleRangeLimit");
             //rangeLimitBinding.Source = this;

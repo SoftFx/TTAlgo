@@ -23,7 +23,6 @@ namespace TickTrader.BotTerminal
         private SymbolModel _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
-
         public PluginModel Model { get; }
 
         public string DisplayName => Model.InstanceId;
