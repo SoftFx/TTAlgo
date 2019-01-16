@@ -139,6 +139,7 @@ namespace TickTrader.BotTerminal
             client.Connected += () =>
             {
                 GetAllSymbols().Foreach(s => s.Reset());
+                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
             };
         }
 

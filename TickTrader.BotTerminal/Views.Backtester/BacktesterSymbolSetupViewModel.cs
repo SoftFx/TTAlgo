@@ -18,6 +18,7 @@ namespace TickTrader.BotTerminal
     internal class BacktesterSymbolSetupViewModel : EntityBase
     {
         private IntProperty _requestsCount;
+        private bool _suppressRangeUpdates;
 
         public BacktesterSymbolSetupViewModel(SymbolSetupType type, IObservableList<SymbolData> symbols, Var<SymbolData> smbSource = null)
         {
@@ -90,6 +91,9 @@ namespace TickTrader.BotTerminal
 
         public async void UpdateAvailableRange(TimeFrames timeFrame)
         {
+            if (_suppressRangeUpdates)
+                return;
+
             var smb = SelectedSymbol.Value;
 
             if (smb != null)
@@ -195,8 +199,21 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
-            if (SelectedSymbol.Value == null || !AvailableSymbols.Contains(SelectedSymbol.Value))
-                SelectDefaultSymbol();
+            _suppressRangeUpdates = true;
+
+            try
+            {
+
+                if (SelectedSymbol.Value == null || !AvailableSymbols.Contains(SelectedSymbol.Value))
+                    SelectDefaultSymbol();
+            }
+            finally
+            {
+                _suppressRangeUpdates = false;
+            }
+
+            if (SetupType == SymbolSetupType.Additional)
+                UpdateAvailableRange(SelectedTimeframe.Value);
         }
 
         public void PrintCacheData(TimeFrames timeFrameChoice)
