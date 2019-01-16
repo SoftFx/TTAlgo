@@ -32,6 +32,8 @@ namespace TickTrader.Algo.Core
         public decimal FinalBalance { get; internal set; }
         public decimal TotalComission { get; internal set; }
         public decimal TotalSwap { get; internal set; }
+        
+        public int AccBalanceDigits { get; internal set; }
 
         public decimal[] ProfitByHours { get; }
         public decimal[] LossByHours { get; }

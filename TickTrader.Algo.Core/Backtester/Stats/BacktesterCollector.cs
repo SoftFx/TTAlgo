@@ -77,6 +77,7 @@ namespace TickTrader.Algo.Core
             {
                 Stats.InitialBalance = (decimal)settings.InitialBalance;
                 Stats.FinalBalance = (decimal)acc.Balance;
+                Stats.AccBalanceDigits = acc.BalanceCurrencyInfo.Digits;
             }
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
