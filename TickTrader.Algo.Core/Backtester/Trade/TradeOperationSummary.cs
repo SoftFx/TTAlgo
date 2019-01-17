@@ -69,6 +69,7 @@ namespace TickTrader.Algo.Core
             _builder.Append($"Opened order ");
             PrintOrderDescription(order);
             PrintAmountAndPrice(order);
+            PrintAuxFields(order);
             PrintCharges(charges);
             PrintComment(order);
         }
@@ -93,6 +94,7 @@ namespace TickTrader.Algo.Core
             _builder.Append($"Order is modified ");
             PrintOrderDescription(newOrder);
             PrintAmountAndPrice(newOrder);
+            PrintAuxFields(newOrder);
         }
 
         public void AddFillAction(OrderAccessor order, FillInfo info)
@@ -229,6 +231,19 @@ namespace TickTrader.Algo.Core
                 _builder.Append(" price=").AppendNumber(order.Price, priceFormat);
             if (order.Entity.StopPrice != null)
                 _builder.Append(" stopPrice=").AppendNumber(order.StopPrice, priceFormat);
+        }
+
+        private void PrintAuxFields(OrderAccessor order)
+        {
+            var priceFormat = order.SymbolInfo.PriceFormat;
+
+            var tp = order.Entity.TakeProfit;
+            var sl = order.Entity.StopLoss;
+
+            if (tp != null)
+                _builder.Append(", tp=").AppendNumber(tp.Value, priceFormat);
+            if (sl != null)
+                _builder.Append(", sl=").AppendNumber(sl.Value, priceFormat);
         }
 
         private void StartNewAction()

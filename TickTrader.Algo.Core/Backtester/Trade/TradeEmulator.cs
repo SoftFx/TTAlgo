@@ -1429,6 +1429,9 @@ namespace TickTrader.Algo.Core
             //if (account.IsBlocked)
             //    return;
 
+            if (record.Order.RemainingVolume == 0) 
+                return; // already activated
+
             //GroupSecurityCfg securityCfg = account.GetSecurityCfg(smbInfo);
             if ((record.ActivationType == ActivationTypes.Pending) && (record.Order.Type == OrderType.Stop))
             {
