@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Machinarium.Var;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,22 +13,32 @@ namespace TickTrader.BotTerminal
         private DateTime _rangeFrom;
         private DateTime _rangeTo;
 
-        public double MaxRangeDouble => Max.GetAbsoluteDay();
-        public double MinRangeDouble => Min.GetAbsoluteDay();
+        public DateRangeSelectionViewModel(bool dateOnly = true)
+        {
+            DateOnlyMode = dateOnly;
 
-        public DateTime Min { get; private set; }
-        public DateTime Max { get; private set; }
+            MaxRangeDouble = new DoubleProperty();
+            MinRangeDouble = new DoubleProperty();
+            Min = new Property<DateTime>();
+            Max = new Property<DateTime>();
+        }
+
+        public bool DateOnlyMode { get; }
+        public DoubleProperty MaxRangeDouble { get; }
+        public DoubleProperty MinRangeDouble { get; }
+        public Property<DateTime> Min { get; }
+        public Property<DateTime> Max { get; }
 
         public double RangeFromDouble
         {
-            get => ToDouble(From) ?? 0;
-            set { From = DateTimeExt.FromTotalDays((int)value); }
+            get => ToRangeDouble(From);
+            set { From = FromRangeDouble(value); }
         }
 
         public double RangeToDouble
         {
-            get => ToDouble(To) ?? 100;
-            set { To = DateTimeExt.FromTotalDays((int)value); }
+            get => ToRangeDouble(To);
+            set { To = FromRangeDouble(value); }
         }
 
         public DateTime From
@@ -37,11 +48,11 @@ namespace TickTrader.BotTerminal
             {
                 if (_rangeFrom != value)
                 {
-                    if (value > Max)
-                        value = Max;
+                    if (value > Max.Value)
+                        value = Max.Value;
 
-                    if (value < Min)
-                        value = Min;
+                    if (value < Min.Value)
+                        value = Min.Value;
 
                     if (To < value)
                         To = value;
@@ -60,11 +71,11 @@ namespace TickTrader.BotTerminal
             {
                 if (_rangeTo != value)
                 {
-                    if (value > Max)
-                        value = Max;
+                    if (value > Max.Value)
+                        value = Max.Value;
 
-                    if (value < Min)
-                        value = Min;
+                    if (value < Min.Value)
+                        value = Min.Value;
 
                     if (From > value)
                         From = value;
@@ -78,36 +89,42 @@ namespace TickTrader.BotTerminal
 
         public void Reset()
         {
-            Min = DateTime.MinValue;
-            Max = DateTime.MaxValue;
+            UpdateBoundaries(DateTime.MinValue, DateTime.MaxValue);
             ResetSelectedRange();
         }
 
         public void ResetSelectedRange()
         {
-            From = Min;
-            To = Max;
+            From = Min.Value;
+            To = Max.Value;
         }
 
         public void UpdateBoundaries(DateTime min, DateTime max)
         {
-            Min = min;
-            Max = max;
-            NotifyOfPropertyChange(nameof(Min));
-            NotifyOfPropertyChange(nameof(Max));
-            NotifyOfPropertyChange(nameof(MinRangeDouble));
-            NotifyOfPropertyChange(nameof(MaxRangeDouble));
+            Min.Value = DateTime.MinValue;
+            Max.Value = DateTime.MaxValue;
+
             if (From < min)
                 From = min;
+
             if (To > max)
                 To = max;
+
+            Min.Value = min;
+            Max.Value = max;
+
+            MinRangeDouble.Value = ToRangeDouble(min);
+            MaxRangeDouble.Value = ToRangeDouble(max);
         }
 
-        private double? ToDouble(DateTime? val)
+        private double ToRangeDouble(DateTime val)
         {
-            if (val == null)
-                return null;
-            return val.Value.GetAbsoluteDay();
+            return val.GetAbsoluteDay();
+        }
+
+        private DateTime FromRangeDouble(double val)
+        {
+            return DateTimeExt.FromTotalDays((int)val);
         }
     }
 }

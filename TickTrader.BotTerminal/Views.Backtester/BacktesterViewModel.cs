@@ -64,7 +64,7 @@ namespace TickTrader.BotTerminal
             ActionOverlay = new Property<ActionOverlayViewModel>();
             AdditionalSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
 
-            DateRange = new DateRangeSelectionViewModel();
+            DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
             MainTimeFrame = new Property<TimeFrames>();
             
