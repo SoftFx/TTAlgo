@@ -26,6 +26,7 @@ namespace TickTrader.BotTerminal
             IsAccTypeSet = AccType.Var.IsNotNull();
 
             AutoSizeColumns = true;
+            ConvertTimeToLocal = true;
         }
 
         public Property<ICollectionView> Items { get; }
@@ -39,6 +40,7 @@ namespace TickTrader.BotTerminal
         public BoolVar IsAccTypeSet { get; }
 
         public bool AutoSizeColumns { get; set; }
+        public bool ConvertTimeToLocal { get; set; }
 
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;
 
