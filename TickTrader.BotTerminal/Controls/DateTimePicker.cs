@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -29,11 +30,22 @@ namespace TickTrader.BotTerminal
         public static readonly ICommand DecreaseDateTimeCommand = new RoutedUICommand(nameof(DecreaseDateTimeCommand), nameof(DecreaseDateTimeCommand), typeof(DateTimePicker));
 
         #region Dependency Property
+
+        public bool CoerceInvalidText
+        {
+            get { return (bool)GetValue(CoerceInvalidTextProperty); }
+            set { SetValue(CoerceInvalidTextProperty, value); }
+        }
+
+        public static readonly DependencyProperty CoerceInvalidTextProperty =
+            DependencyProperty.Register(nameof(CoerceInvalidText), typeof(bool), typeof(DateTimePicker), new UIPropertyMetadata(true));
+
         public bool IsDropDownOpen
         {
             get { return (bool)GetValue(IsDropDownOpenProperty); }
             set { SetValue(IsDropDownOpenProperty, value); }
         }
+
         public static readonly DependencyProperty IsDropDownOpenProperty =
             DependencyProperty.Register(nameof(IsDropDownOpen), typeof(bool), typeof(DateTimePicker), new UIPropertyMetadata(false));
       
@@ -42,6 +54,7 @@ namespace TickTrader.BotTerminal
             get { return (bool)GetValue(CanIncreaseProperty); }
             set { SetValue(CanIncreaseProperty, value); }
         }
+
         public static readonly DependencyProperty CanIncreaseProperty =
             DependencyProperty.Register(nameof(CanIncrease), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(true));
 
@@ -50,6 +63,7 @@ namespace TickTrader.BotTerminal
             get { return (bool)GetValue(CanDecreaseProperty); }
             set { SetValue(CanDecreaseProperty, value); }
         }
+
         public static readonly DependencyProperty CanDecreaseProperty =
             DependencyProperty.Register(nameof(CanDecrease), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(true));
 
@@ -58,15 +72,16 @@ namespace TickTrader.BotTerminal
             get { return (bool)GetValue(ShowDropDownButtonProperty); }
             set { SetValue(ShowDropDownButtonProperty, value); }
         }
+
         public static readonly DependencyProperty ShowDropDownButtonProperty =
             DependencyProperty.Register(nameof(ShowDropDownButton), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(true));
-
 
         public bool ShowUpDownButton
         {
             get { return (bool)GetValue(ShowUpDownButtonProperty); }
             set { SetValue(ShowUpDownButtonProperty, value); }
         }
+
         public static readonly DependencyProperty ShowUpDownButtonProperty =
             DependencyProperty.Register(nameof(ShowUpDownButton), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(true));
 
@@ -75,6 +90,7 @@ namespace TickTrader.BotTerminal
             get { return (bool)GetValue(ShowCalendarButtonProperty); }
             set { SetValue(ShowCalendarButtonProperty, value); }
         }
+
         public static readonly DependencyProperty ShowCalendarButtonProperty =
             DependencyProperty.Register(nameof(ShowCalendarButton), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(true));
 
@@ -83,6 +99,7 @@ namespace TickTrader.BotTerminal
             get { return (DateTime?)GetValue(SelectedDateTimeProperty); }
             set { SetValue(SelectedDateTimeProperty, value); }
         }
+
         public static readonly DependencyProperty SelectedDateTimeProperty =
             DependencyProperty.Register(nameof(SelectedDateTime), typeof(DateTime?), typeof(DateTimePicker), new UIPropertyMetadata(DateTime.Now, OnSelectedDateTimeChanged, OnCoerceSelectedDateTime));
 
@@ -91,6 +108,7 @@ namespace TickTrader.BotTerminal
             get { return (bool)GetValue(DateTextIsWrongProperty); }
             set { SetValue(DateTextIsWrongProperty, value); }
         }
+
         public static readonly DependencyProperty DateTextIsWrongProperty =
             DependencyProperty.Register(nameof(DateTextIsWrong), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(false));
 
@@ -99,14 +117,16 @@ namespace TickTrader.BotTerminal
             get { return (string)GetValue(DisplayedDateTimeProperty); }
             set { SetValue(DisplayedDateTimeProperty, value); }
         }
+
         public static readonly DependencyProperty DisplayedDateTimeProperty =
-            DependencyProperty.Register(nameof(DisplayedDateTime), typeof(string), typeof(DateTimePicker), new UIPropertyMetadata("", OnDisplayedDateTimeChanged, OnCoerceDisplayedDateTime));
+            DependencyProperty.Register(nameof(DisplayedDateTime), typeof(string), typeof(DateTimePicker), new UIPropertyMetadata("", OnDisplayedDateTimeChanged));
 
         public DateTime Maximum
         {
             get { return (DateTime)GetValue(MaximumProperty); }
             set { SetValue(MaximumProperty, value); }
         }
+
         public static readonly DependencyProperty MaximumProperty =
             DependencyProperty.Register(nameof(Maximum), typeof(DateTime), typeof(DateTimePicker), new PropertyMetadata(DateTime.MaxValue));
 
@@ -115,6 +135,7 @@ namespace TickTrader.BotTerminal
             get { return (DateTime)GetValue(MinimumProperty); }
             set { SetValue(MinimumProperty, value); }
         }
+
         public static readonly DependencyProperty MinimumProperty =
             DependencyProperty.Register(nameof(Minimum), typeof(DateTime), typeof(DateTimePicker), new PropertyMetadata(DateTime.MinValue));
 
@@ -123,10 +144,12 @@ namespace TickTrader.BotTerminal
             get { return (string)GetValue(FormatProperty); }
             set { SetValue(FormatProperty, value); }
         }
+
         public static readonly DependencyProperty FormatProperty =
             DependencyProperty.Register(nameof(Format), typeof(string), typeof(DateTimePicker), new PropertyMetadata("dd-MM-yyyy HH:mm"));
 
         #endregion
+
         static DateTimePicker()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(DateTimePicker), new FrameworkPropertyMetadata(typeof(DateTimePicker)));
@@ -135,11 +158,13 @@ namespace TickTrader.BotTerminal
         }
 
         #region Override
+
         public override void OnApplyTemplate()
         {
             if (datePickerTextBox != null)
             {
                 datePickerTextBox.PreviewKeyDown -= datePickerTextBox_PreviewKeyDown;
+                datePickerTextBox.TextChanged -= DatePickerTextBox_TextChanged;
                 datePickerTextBox = null;
             }
 
@@ -148,16 +173,23 @@ namespace TickTrader.BotTerminal
             datePickerTextBox = GetTemplateChild(PartDateTimeTextBox) as DatePickerTextBox;
 
             if (datePickerTextBox != null)
+            {
                 datePickerTextBox.PreviewKeyDown += datePickerTextBox_PreviewKeyDown;
+                datePickerTextBox.TextChanged += DatePickerTextBox_TextChanged;
+                datePickerTextBox.LostFocus += DatePickerTextBox_LostFocus;
+            }
         }
+
         #endregion
 
         #region Event hendlers
+
         private static void OnDecreaseDateTimeCommand(object sender, ExecutedRoutedEventArgs e)
         {
             var self = sender as DateTimePicker;
             self.OnUpDown(Direction.Down);
         }
+
         private static void OnIncreaseDateTimeCommand(object sender, ExecutedRoutedEventArgs e)
         {
             var self = sender as DateTimePicker;
@@ -172,16 +204,22 @@ namespace TickTrader.BotTerminal
         private static void OnSelectedDateTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var self = d as DateTimePicker;
-            if (!self._dateTimeIsUpdating)
+            self.ApplyNewSelectedDate((DateTime?)e.NewValue);
+        }
+
+        private void ApplyNewSelectedDate(DateTime? newValue)
+        {
+            if (!_dateTimeIsUpdating)
             {
-                self._dateTimeIsUpdating = true;
+                _dateTimeIsUpdating = true;
 
-                self.DisplayedDateTime = self.GetFormattedDateTimeString((DateTime?)e.NewValue, self.Format);
-                self.IsDropDownOpen = false;
+                DisplayedDateTime = GetFormattedDateTimeString(newValue, Format);
+                IsDropDownOpen = false;
 
-                self._dateTimeIsUpdating = false;
+                _dateTimeIsUpdating = false;
             }
         }
+
         private static object OnCoerceSelectedDateTime(DependencyObject d, object baseValue)
         {
             var self = d as DateTimePicker;
@@ -191,6 +229,7 @@ namespace TickTrader.BotTerminal
             self.CanDecrease = true;
 
             if (value.HasValue)
+            {
                 if (value.Value > self.Maximum)
                 {
                     self.CanIncrease = false;
@@ -201,6 +240,7 @@ namespace TickTrader.BotTerminal
                     self.CanDecrease = false;
                     return self.Minimum;
                 }
+            }
 
             return baseValue;
         }
@@ -210,26 +250,20 @@ namespace TickTrader.BotTerminal
             var self = d as DateTimePicker;
             if (!self._dateTimeIsUpdating)
             {
+                self._dateTimeIsUpdating = true;
                 if (string.IsNullOrEmpty((string)e.NewValue))
+                {
                     self.SelectedDateTime = null;
+                    self.DateTextIsWrong = false;
+                }
                 else
-                    self.SelectedDateTime = self.ParseDateTimeText((string)e.NewValue, self.Format);
-            }
-        }
-
-        private static object OnCoerceDisplayedDateTime(DependencyObject d, object baseValue)
-        {
-            var self = d as DateTimePicker;
-
-            if (string.IsNullOrEmpty((string)baseValue) || self.ParseDateTimeText((string)baseValue, self.Format).HasValue)
-            {
-                self.DateTextIsWrong = false;
-                return baseValue;
-            }
-            else
-            {
-                self.DateTextIsWrong = false;
-                return DependencyProperty.UnsetValue;
+                {
+                    var parsedDate = self.ParseDateTimeText((string)e.NewValue, self.Format);
+                    self.DateTextIsWrong = parsedDate == null;
+                    if (!self.DateTextIsWrong || !self.CoerceInvalidText)
+                        self.SelectedDateTime = parsedDate;
+                }
+                self._dateTimeIsUpdating = false;
             }
         }
 
@@ -246,19 +280,35 @@ namespace TickTrader.BotTerminal
                 case Key.Down:
                     OnUpDown(Direction.Down);
                     break;
-                case Key.Enter:
-                    DisplayedDateTime = datePickerTextBox.Text;
-                    break;
+                //case Key.Enter:
+                //    DisplayedDateTime = datePickerTextBox.Text;
+                //    break;
             }
+        }
+
+        private void DatePickerTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            DisplayedDateTime = datePickerTextBox.Text;
+        }
+
+        private void DatePickerTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (!DateTextIsWrong || CoerceInvalidText)
+            {
+                ApplyNewSelectedDate(SelectedDateTime);
+                DateTextIsWrong = false;
+            }       
         }
 
         #endregion
 
         #region Private methods
+
         private string GetFormattedDateTimeString(DateTime? value, string format)
         {
             return value.HasValue ? value.Value.ToString(format) : null;
         }
+
         private DateTime SmartUpdateDateTime(int direction)
         {
             var dt = SelectedDateTime.HasValue ? SelectedDateTime.Value : DateTime.Now;
@@ -285,20 +335,23 @@ namespace TickTrader.BotTerminal
 
             return dt;
         }
+
         private DateTime? ParseDateTimeText(string value, string format, bool flexible = true)
         {
             DateTime datetime;
 
             if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
-                if (!DateTime.TryParse(value, out datetime))
+                //if (!DateTime.TryParse(value, out datetime))
                     return null;
 
             return datetime;
         }
+
         private bool IsDateInExpectedFormat()
         {
             return ParseDateTimeText(datePickerTextBox.Text, Format).HasValue;
         }
+
         #endregion
     }
 }

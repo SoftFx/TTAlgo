@@ -5,17 +5,14 @@
 
     <ControlTemplate x:Key="DateRangeSelectionView.Template.Classic">
         <ControlTemplate.Resources>
-            <Style TargetType="t:DateTimePicker">
+            <Style TargetType="l:DateTimePicker" BasedOn="{StaticResource {x:Type l:DateTimePicker}}">
                 <Setter Property="Margin" Value="5"/>
-                <Setter Property="Format" Value="Custom"/>
-                <Setter Property="FormatString" Value="yyyy-MM-dd HH:mm"/>
-                <Setter Property="ClipValueToMinMax" Value="True"/>
+                <Setter Property="Format" Value="yyyy-MM-dd HH:mm"/>
                 <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="ShowButtonSpinner" Value="False"/>
+                <Setter Property="ShowUpDownButton" Value="False"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding DateOnlyMode}" Value="True">
-                        <Setter Property="FormatString" Value="yyyy-MM-dd"/>
-                        <Setter Property="TimePickerVisibility" Value="Collapsed"/>
+                        <Setter Property="Format" Value="yyyy-MM-dd"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -33,9 +30,10 @@
             <t:RangeSlider Grid.Row="1" Grid.ColumnSpan="2"
                                        Minimum="{Binding MinRangeDouble.Value}" Maximum="{Binding MaxRangeDouble.Value}"
                                        LowerValue="{Binding RangeFromDouble}" HigherValue="{Binding RangeToDouble}" Step="1" />
-            <t:DateTimePicker x:Name="FromPicker" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" Value="{Binding From}"
-                                    Minimum="{Binding Min.Value}" Maximum="{Binding Max.Value}" />
-            <t:DateTimePicker x:Name="ToPicker" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right" Value="{Binding To}"
+            <l:DateTimePicker x:Name="FromPicker" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left"
+                              SelectedDateTime="{Binding From, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=300}"
+                              Minimum="{Binding Min.Value}" Maximum="{Binding Max.Value}" />
+            <l:DateTimePicker x:Name="ToPicker" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Right" SelectedDateTime="{Binding To, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                     Minimum="{Binding Min.Value}" Maximum="{Binding Max.Value}" />
         </Grid>
     </ControlTemplate>
