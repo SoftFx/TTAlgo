@@ -91,6 +91,7 @@ namespace TickTrader.Algo.Core
         public void Stop()
         {
             CloseAllPositions(TradeTransReasons.Rollover);
+            CancelAllPendings(TradeTransReasons.Rollover);
         }
 
         public void Restart()
@@ -197,9 +198,8 @@ namespace TickTrader.Algo.Core
                     //if (Request.StopoutFlag)
                     //    trReason = TradeTransReasons.StopOut;
 
-                    CancelOrder(order, trReason);
-
-                    _collector.LogTrade($"Canceled order #{orderId} {order.Type} {order.Symbol} {order.Side} amount={order.RequestedVolume}");
+                    using (JournalScope())
+                        CancelOrder(order, trReason);
 
                     // set result
                     return new OrderResultEntity(OrderCmdResultCodes.Ok, order, ExecutionTime);
@@ -1058,6 +1058,8 @@ namespace TickTrader.Algo.Core
                 report.FillAccountBalanceConversionRates(_calcFixture, _acc.BalanceCurrency, _acc.Balance);
             }
 
+            _opSummary.AddCancelAction(order);
+
             return order;
         }
 
@@ -1767,13 +1769,10 @@ namespace TickTrader.Algo.Core
             {
                 _collector.LogTrade($"Closing {toClose.Count} positions remaining after startegy stopped.");
 
-                foreach (var order in _acc.Orders)
+                foreach (var order in toClose)
                 {
-                    if (order.Type == OrderType.Position)
-                    {
-                        using (JournalScope())
-                            ClosePosition(order, reason, null, null, null, null, order.SymbolInfo, ClosePositionOptions.None);
-                    }
+                    using (JournalScope())
+                        ClosePosition(order, reason, null, null, null, null, order.SymbolInfo, ClosePositionOptions.None);
                 }
             }
 
@@ -1790,6 +1789,22 @@ namespace TickTrader.Algo.Core
                         OpenOrder(pos.Calculator, OrderType.Market, pos.Side.Revert(), pos.VolumeUnits, null, null, null, null, null, "",
                             OrderExecOptions.None, null, null, OpenOrderOptions.SkipDealing | OpenOrderOptions.FakeOrder);
                     }
+                }
+            }
+        }
+
+        private void CancelAllPendings(TradeTransReasons reason)
+        {
+            var toCancel = _acc.Orders.Where(o => o.IsPending).ToList();
+
+            if (toCancel.Count > 0)
+            {
+                _collector.LogTrade($"Cancelling {toCancel.Count} orders remaining after startegy stopped.");
+
+                foreach (var order in toCancel)
+                {
+                    using (JournalScope())
+                        CancelOrder(order, reason);
                 }
             }
         }
