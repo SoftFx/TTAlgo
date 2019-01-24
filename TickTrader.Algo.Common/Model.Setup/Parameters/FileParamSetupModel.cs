@@ -11,12 +11,13 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         private string _filePath;
 
-
         public string DefaultFile { get; private set; }
 
         public string FileName { get; private set; }
 
         public string Filter { get; private set; }
+
+        public override string ValueAsText => FilePath;
 
         public string FilePath
         {
@@ -40,7 +41,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
         }
 
-
         public FileParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)
         {
@@ -58,7 +58,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             }
             Filter = filterStrBuilder.ToString();
         }
-
 
         public override string ToString()
         {

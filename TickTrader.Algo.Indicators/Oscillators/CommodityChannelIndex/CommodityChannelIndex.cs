@@ -1,13 +1,13 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 {
     [Indicator(Category = "Oscillators", DisplayName = "Commodity Channel Index", Version = "1.0")]
-    public class CommodityChannelIndex : Indicator
+    public class CommodityChannelIndex : Indicator, ICommodityChannelIndex
     {
-        private MovingAverage _sma;
+        private IMovingAverage _sma;
 
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage(Price, Period, 0);
+            _sma = Indicators.MovingAverage(Price, Period, 0);
         }
 
         protected override void Init()

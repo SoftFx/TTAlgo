@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Oscillators.Momentum
 {
     [Indicator(Category = "Oscillators", DisplayName = "Momentum", Version = "1.0")]
-    public class Momentum : Indicator
+    public class Momentum : Indicator, IMomentum
     {
         [Parameter(DefaultValue = 14, DisplayName = "Period")]
         public int Period { get; set; }

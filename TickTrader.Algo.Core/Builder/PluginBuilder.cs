@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core
         private string _instanceId;
         private PluginPermissions _permissions;
         private ICalculatorApi _calc;
+        private IndicatorsCollection _indicators;
 
         internal PluginBuilder(PluginMetadata descriptor)
         {
@@ -45,6 +46,8 @@ namespace TickTrader.Algo.Core
             _commands = _tradeApater;
 
             _permissions = new PluginPermissions();
+
+            _indicators = new IndicatorsCollection();
 
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
@@ -298,6 +301,7 @@ namespace TickTrader.Algo.Core
         bool IPluginContext.IsStopped => isStopped;
         ITimerApi IPluginContext.TimerApi => TimerApi;
         TimeFrames IPluginContext.TimeFrame => TimeFrame;
+        IndicatorProvider IPluginContext.Indicators => _indicators;
 
         void IPluginContext.OnExit()
         {

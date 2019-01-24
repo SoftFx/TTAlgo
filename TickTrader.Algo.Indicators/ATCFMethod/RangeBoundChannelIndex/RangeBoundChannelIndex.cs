@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
     }
 
     [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index", Version = "1.1")]
-    public class RangeBoundChannelIndex : DigitalIndicatorBase
+    public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndex
     {
         private IMA _ma;
         private List<double> _calcCache;
@@ -53,11 +54,18 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         public RangeBoundChannelIndex() { }
 
-        public RangeBoundChannelIndex(DataSeries price)
+        public RangeBoundChannelIndex(DataSeries price, int std, int countBars)
         {
             Price = price;
+            Std = std;
+            CountBars = countBars;
 
             InitializeIndicator();
+        }
+
+        public bool HasEnoughBars(int barsCount)
+        {
+            return barsCount > CoefficientsCount - 1;
         }
 
         private void InitializeIndicator()

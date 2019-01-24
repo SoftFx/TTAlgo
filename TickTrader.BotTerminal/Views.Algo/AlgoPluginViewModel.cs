@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using System;
+using System.IO;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
@@ -33,7 +34,15 @@ namespace TickTrader.BotTerminal
             Info = info;
             Agent = agent;
 
-            Description = string.Join(Environment.NewLine, Info.Descriptor.Description, string.Empty, $"Package {Info.Key.PackageName} at {Info.Key.PackageLocation}").Trim();
+            var packageDisplayName = Info.Key.PackageName;
+            var packagePath = "Unknown path";
+            if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
+            {
+                packageDisplayName = packageInfo.Identity.FileName;
+                packagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
+            }
+
+            Description = string.Join(Environment.NewLine, Info.Descriptor.Description, string.Empty, $"Agent {Agent.Name}. Package {packageDisplayName} at {packagePath}").Trim();
 
             switch (Type)
             {

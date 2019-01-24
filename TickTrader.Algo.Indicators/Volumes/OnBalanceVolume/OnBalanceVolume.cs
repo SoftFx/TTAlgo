@@ -1,14 +1,15 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 {
     [Indicator(Category = "Volumes", DisplayName = "On Balance Volume", Version = "1.0")]
-    public class OnBalanceVolume : Indicator
+    public class OnBalanceVolume : Indicator, IOnBalanceVolume
     {
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
+        [Parameter(DefaultValue = AppliedPrice.Close, DisplayName = "Apply To")]
+        public AppliedPrice TargetPrice { get; set; }
 
         [Input]
         public new BarSeries Bars { get; set; }
@@ -22,7 +23,7 @@ namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 
         public OnBalanceVolume() { }
 
-        public OnBalanceVolume(BarSeries bars, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public OnBalanceVolume(BarSeries bars, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             Bars = bars;
             TargetPrice = targetPrice;
@@ -32,7 +33,7 @@ namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
 
         protected void InitializeIndicator()
         {
-            Price = AppliedPrice.GetDataSeries(Bars, TargetPrice);
+            Price = AppliedPriceHelper.GetDataSeries(Bars, TargetPrice);
         }
 
         protected override void Init()

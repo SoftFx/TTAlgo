@@ -1,12 +1,12 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Trend.Envelopes
 {
     [Indicator(Category = "Trend", DisplayName = "Envelopes", Version = "1.0")]
-    public class Envelopes : Indicator
+    public class Envelopes : Indicator, IEnvelopes
     {
-        private MovingAverage.MovingAverage _middleLine;
+        private IMovingAverage _middleLine;
         
         [Parameter(DefaultValue = 7, DisplayName = "Period")]
         public int Period { get; set; }
@@ -17,8 +17,8 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
         [Parameter(DefaultValue = 0.1, DisplayName = "Deviation(%)")]
         public double Deviation { get; set; }
 
-        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -33,19 +33,20 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
 
         public Envelopes() { }
 
-        public Envelopes(DataSeries price, int period, int shift, Method targetMethod = Method.Simple)
+        public Envelopes(DataSeries price, int period, int shift, double deviation, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
         {
             Price = price;
             Period = period;
             Shift = shift;
             TargetMethod = targetMethod;
+            Deviation = deviation;
 
             InitializeIndicator();
         }
 
         protected void InitializeIndicator()
         {
-            _middleLine = new MovingAverage.MovingAverage(Price, Period, Shift, TargetMethod);
+            _middleLine = Indicators.MovingAverage(Price, Period, Shift, TargetMethod);
         }
 
         protected override void Init()

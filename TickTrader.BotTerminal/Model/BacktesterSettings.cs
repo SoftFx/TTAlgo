@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,6 +32,18 @@ namespace TickTrader.BotTerminal
             tester.WarmupSize = WarmupValue;
             tester.WarmupUnits = WarmupUnits;
             tester.JournalFlags = JournalSettings;
+        }
+
+        public void SaveAsText(StreamWriter writer)
+        {
+            writer.WriteLine("Account: {0}", AccType);
+            if (AccType == AccountTypes.Net || AccType == AccountTypes.Gross)
+            {
+                writer.WriteLine("Initial balance: {0} {1}", InitialBalance, BalanceCurrency);
+                writer.WriteLine("Leverage: {0}", Leverage);
+            }
+            writer.WriteLine("Emulated ping: {0}ms", ServerPingMs);
+            writer.WriteLine("Warmup: {0} {1}", WarmupValue, WarmupUnits);
         }
     }
 }

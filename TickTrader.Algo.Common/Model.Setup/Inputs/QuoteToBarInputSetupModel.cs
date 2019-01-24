@@ -6,11 +6,12 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class QuoteToBarInputSetupModel : MappedInputSetupModel
     {
+        public override string EntityPrefix => "Quote";
+
         public QuoteToBarInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
         }
-
 
         public override void Load(Property srcProperty)
         {

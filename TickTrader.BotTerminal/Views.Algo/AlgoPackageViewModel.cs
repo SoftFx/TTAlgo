@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
 
         public string DisplayName => Info.Identity.FileName;
 
-        public string FilePath => Info.Identity.FilePath;
+        public string Description { get; }
 
         public IObservableList<AlgoPluginViewModel> Plugins { get; }
 
@@ -45,6 +45,7 @@ namespace TickTrader.BotTerminal
             Agent = agent;
 
             Plugins = Agent.Plugins.Where(p => PluginIsFromPackage(p)).AsObservable();
+            Description = $"Agent {Agent.Name}. Path {Info.Identity.FilePath}";
 
             Agent.Model.PackageStateChanged += OnPackageStateChanged;
             Agent.Model.AccessLevelChanged += OnAccessLevelChanged;

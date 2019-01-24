@@ -23,7 +23,6 @@ namespace TickTrader.BotTerminal
         private SymbolModel _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
-
         public PluginModel Model { get; }
 
         public string DisplayName => Model.InstanceId;
@@ -63,6 +62,7 @@ namespace TickTrader.BotTerminal
         private void UpdateAxis()
         {
             TimeAxis = Chart.Navigator.CreateAxis();
+            Chart.CreateXAxisBinging(TimeAxis);
             TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
             NotifyOfPropertyChange(nameof(TimeAxis));
         }

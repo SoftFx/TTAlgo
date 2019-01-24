@@ -69,11 +69,11 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetupMetadata = metadata;
             SetupContext = context;
 
+            MainSymbolPlaceholder = SpecialSymbols.MainSymbolPlaceholder;
             _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
             _tickBasedInputs = Metadata.Inputs.Select(CreateTickBasedInput).ToList();
             _outputs = Metadata.Outputs.Select(CreateOutput).ToList();
-            MainSymbolPlaceholder = SpecialSymbols.MainSymbolPlaceholder;
             Permissions = new PluginPermissions();
 
             _allProperties = _parameters.Concat<PropertySetupModel>(_barBasedInputs).Concat(_tickBasedInputs).Concat(_outputs).ToList();

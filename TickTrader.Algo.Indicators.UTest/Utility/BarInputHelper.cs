@@ -1,5 +1,5 @@
-﻿using TickTrader.Algo.Core;
-using TickTrader.Algo.Indicators.Utility;
+﻿using TickTrader.Algo.Api.Indicators;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Indicators.UTest.Utility
 {
@@ -10,36 +10,36 @@ namespace TickTrader.Algo.Indicators.UTest.Utility
             builder.MapBarInput(inputName, symbol);
         }
 
-        public static void MapPrice(IndicatorBuilder builder, string symbol, AppliedPrice.Target targetPrice,
+        public static void MapPrice(IndicatorBuilder builder, string symbol, AppliedPrice targetPrice,
             string inputName = "Price")
         {
             switch (targetPrice)
             {
-                case AppliedPrice.Target.Close:
+                case AppliedPrice.Close:
                     builder.MapBarInput(inputName, symbol, entity => entity.Close);
                     break;
-                case AppliedPrice.Target.Open:
+                case AppliedPrice.Open:
                     builder.MapBarInput(inputName, symbol, entity => entity.Open);
                     break;
-                case AppliedPrice.Target.High:
+                case AppliedPrice.High:
                     builder.MapBarInput(inputName, symbol, entity => entity.High);
                     break;
-                case AppliedPrice.Target.Low:
+                case AppliedPrice.Low:
                     builder.MapBarInput(inputName, symbol, entity => entity.Low);
                     break;
-                case AppliedPrice.Target.Median:
+                case AppliedPrice.Median:
                     builder.MapBarInput(inputName, symbol, entity => (entity.High + entity.Low)/2);
                     break;
-                case AppliedPrice.Target.Typical:
+                case AppliedPrice.Typical:
                     builder.MapBarInput(inputName, symbol, entity => (entity.High + entity.Low + entity.Close)/3);
                     break;
-                case AppliedPrice.Target.Weighted:
+                case AppliedPrice.Weighted:
                     builder.MapBarInput(inputName, symbol, entity => (entity.High + entity.Low + 2*entity.Close)/4);
                     break;
-                case AppliedPrice.Target.Move:
+                case AppliedPrice.Move:
                     builder.MapBarInput(inputName, symbol, entity => entity.Close - entity.Open);
                     break;
-                case AppliedPrice.Target.Range:
+                case AppliedPrice.Range:
                     builder.MapBarInput(inputName, symbol, entity => entity.High - entity.Low);
                     break;
             }

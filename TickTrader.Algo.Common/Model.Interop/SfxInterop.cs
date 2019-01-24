@@ -751,7 +751,7 @@ namespace TickTrader.Algo.Common.Model
         private static OrderExecOptions GetOptions(SFX.ExecutionReport record)
         {
             var isLimit = record.OrderType == SFX.OrderType.Limit || record.OrderType == SFX.OrderType.StopLimit;
-            if (isLimit && record.OrderTimeInForce == OrderTimeInForce.ImmediateOrCancel)
+            if (isLimit && record.ImmediateOrCancelFlag)
                 return OrderExecOptions.ImmediateOrCancel;
             return OrderExecOptions.None;
         }
@@ -786,7 +786,7 @@ namespace TickTrader.Algo.Common.Model
                 Magic = report.Magic,
                 IsReducedOpenCommission = report.ReducedOpenCommission,
                 IsReducedCloseCommission = report.ReducedCloseCommission,
-                ImmediateOrCancel = report.OrderTimeInForce == OrderTimeInForce.ImmediateOrCancel,
+                ImmediateOrCancel = report.ImmediateOrCancelFlag,
                 MarketWithSlippage = report.MarketWithSlippage,
                 TradePrice = report.TradePrice ?? 0,
                 Assets = report.Assets.Select(Convert).ToArray(),
@@ -955,7 +955,6 @@ namespace TickTrader.Algo.Common.Model
                 CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
                 CloseQuantity = report.PositionLastQuantity,
-                NetProfitLoss = report.TransactionAmount,
                 ClosePrice = report.PositionClosePrice,
                 Swap = report.Swap,
                 RemainingQuantity = report.LeavesQuantity,
@@ -970,7 +969,7 @@ namespace TickTrader.Algo.Common.Model
                 DstAssetMovement = report.DstAssetMovement,
                 DstAssetToUsdConversionRate = report.DstAssetToUsdConversionRate,
                 Expiration = report.Expiration,
-                ImmediateOrCancel = report.TimeInForce == OrderTimeInForce.ImmediateOrCancel,
+                ImmediateOrCancel = report.ImmediateOrCancel,
                 IsReducedCloseCommission = report.ReducedCloseCommission,
                 IsReducedOpenCommission = report.ReducedOpenCommission,
                 LeavesQuantity = report.LeavesQuantity,

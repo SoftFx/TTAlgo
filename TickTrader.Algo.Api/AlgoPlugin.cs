@@ -35,6 +35,7 @@ namespace TickTrader.Algo.Api
         public double Bid { get { return Symbol.Bid; } }
         public double Ask { get { return Symbol.Ask; } }
         public TimeFrames TimeFrame { get { return context.TimeFrame; } }
+        public IndicatorProvider Indicators { get { return context.Indicators; } }
 
         /// <summary>
         /// Occurs when connection to server is lost.

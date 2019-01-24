@@ -1,12 +1,13 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Other.ZigZag
 {
 
     [Indicator(Category = "Other", DisplayName = "ZigZag", Version = "1.0")]
-    public class ZigZag : Indicator
+    public class ZigZag : Indicator, IZigZag
     {
         private bool? _peakNext, _prevPeakNext;
         private double _lastLow, _lastHigh, _prevLastLow, _prevLastHigh;

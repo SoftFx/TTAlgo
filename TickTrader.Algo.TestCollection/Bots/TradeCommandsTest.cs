@@ -355,7 +355,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var order = Account.Orders[orderId];
             var maxVisibleVolume = Volume;
-            var newMaxVisibleVolume = Volume * 0.1;
+            var newMaxVisibleVolume = Symbol.MinTradeVolume;
             var title = (isAsync) ? "Async test: " : "Test: ";
 
             _testCount++;

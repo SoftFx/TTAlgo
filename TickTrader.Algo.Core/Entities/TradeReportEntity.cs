@@ -28,14 +28,13 @@ namespace TickTrader.Algo.Core
         public string CommissionCurrency { get; set; }
         public double Swap { get; set; }
         public string Comment { get; set; }
-        public double NetProfitLoss { get; set; }
 
         #region Aliases
 
         public DateTime ReportTime => TransactionTime;
         public double GrossProfitLoss => TransactionAmount - Swap - Commission;
         public double Balance => AccountBalance;
-        public double BalanceMovement { get => NetProfitLoss; set => NetProfitLoss = value; }
+        public double NetProfitLoss => TransactionAmount;
         public TradeExecActions TradeTransactionReportType => ActionType;
         public double Quantity => OpenQuantity;
 

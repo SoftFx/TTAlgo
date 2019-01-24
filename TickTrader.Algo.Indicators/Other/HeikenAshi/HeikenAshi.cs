@@ -1,11 +1,11 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Other.HeikenAshi
 {
-
     [Indicator(Category = "Other", DisplayName = "Heiken Ashi", Version = "1.0")]
-    public class HeikenAshi : Indicator
+    public class HeikenAshi : Indicator, IHeikenAshi
     {
         [Input]
         public new BarSeries Bars { get; set; }

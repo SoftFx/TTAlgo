@@ -1,12 +1,13 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "Slow Trend Line Momentum", Version = "1.0")]
-    public class SlowTrendLineMomentum : Indicator
+    public class SlowTrendLineMomentum : Indicator, ISlowTrendLineMomentum
     {
-        private SlowAdaptiveTrendLine.SlowAdaptiveTrendLine _satl;
-        private ReferenceSlowTrendLine.ReferenceSlowTrendLine _rstl;
+        private ISlowAdaptiveTrendLine _satl;
+        private IReferenceSlowTrendLine _rstl;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -21,17 +22,23 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
 
         public SlowTrendLineMomentum() { }
 
-        public SlowTrendLineMomentum(DataSeries price)
+        public SlowTrendLineMomentum(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _satl.HasEnoughBars(barsCount) && _rstl.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
-            _satl = new SlowAdaptiveTrendLine.SlowAdaptiveTrendLine(Price);
-            _rstl = new ReferenceSlowTrendLine.ReferenceSlowTrendLine(Price);
+            _satl = Indicators.SlowAdaptiveTrendLine(Price, CountBars);
+            _rstl = Indicators.ReferenceSlowTrendLine(Price, CountBars);
         }
 
         protected override void Init()

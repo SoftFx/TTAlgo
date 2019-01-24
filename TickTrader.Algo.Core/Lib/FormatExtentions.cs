@@ -16,6 +16,16 @@ namespace TickTrader.Algo.Core.Lib
             return format;
         }
 
+        public static string FormatPlain(this decimal number, NumberFormatInfo format)
+        {
+            return number.ToString("N", format);
+        }
+
+        public static string FormatPlain(this double number, NumberFormatInfo format)
+        {
+            return number.ToString("N", format);
+        }
+
         public static StringBuilder AppendNumber(this StringBuilder builder, double number, string customFormat)
         {
             return builder.Append(number.ToString(customFormat));

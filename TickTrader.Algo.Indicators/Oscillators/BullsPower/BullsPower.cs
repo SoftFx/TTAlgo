@@ -1,19 +1,19 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
 {
     [Indicator(Category = "Oscillators", DisplayName = "Bulls Power", Version = "1.0")]
-    public class BullsPower : Indicator
+    public class BullsPower : Indicator, IBullsPower
     {
-        private MovingAverage _ema;
+        private IMovingAverage _ema;
 
         [Parameter(DefaultValue = 13, DisplayName = "Period")]
         public int Period { get; set; }
 
-        [Parameter(DefaultValue = AppliedPrice.Target.Close, DisplayName = "Apply To")]
-        public AppliedPrice.Target TargetPrice { get; set; }
+        [Parameter(DefaultValue = AppliedPrice.Close, DisplayName = "Apply To")]
+        public AppliedPrice TargetPrice { get; set; }
 
         [Input]
         public new BarSeries Bars { get; set; }
@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
 
         public BullsPower() { }
 
-        public BullsPower(BarSeries bars, int period, AppliedPrice.Target targetPrice = AppliedPrice.Target.Close)
+        public BullsPower(BarSeries bars, int period, AppliedPrice targetPrice = AppliedPrice.Close)
         {
             Bars = bars;
             Period = period;
@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
 
         protected void InitializeIndicator()
         {
-            _ema = new MovingAverage(AppliedPrice.GetDataSeries(Bars, TargetPrice), Period, 0, Method.Exponential);
+            _ema = Indicators.MovingAverage(AppliedPriceHelper.GetDataSeries(Bars, TargetPrice), Period, 0, MovingAverageMethod.Exponential);
         }
 
         protected override void Init()

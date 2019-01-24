@@ -19,6 +19,7 @@ namespace TickTrader.BotTerminal
         {
             GridView = new TradeHistoryGridViewModel(new List<TransactionReport>());
             GridView.AutoSizeColumns = false;
+            GridView.ConvertTimeToLocal = false;
             GridView.AccType.Value = Algo.Api.AccountTypes.Gross;
         }
 
