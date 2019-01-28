@@ -94,14 +94,14 @@ namespace TickTrader.BotTerminal
         public static readonly DependencyProperty ShowCalendarButtonProperty =
             DependencyProperty.Register(nameof(ShowCalendarButton), typeof(bool), typeof(DateTimePicker), new PropertyMetadata(true));
 
-        public DateTime? SelectedDateTime
+        public DateTime SelectedDateTime
         {
-            get { return (DateTime?)GetValue(SelectedDateTimeProperty); }
+            get { return (DateTime)GetValue(SelectedDateTimeProperty); }
             set { SetValue(SelectedDateTimeProperty, value); }
         }
 
         public static readonly DependencyProperty SelectedDateTimeProperty =
-            DependencyProperty.Register(nameof(SelectedDateTime), typeof(DateTime?), typeof(DateTimePicker), new UIPropertyMetadata(DateTime.Now, OnSelectedDateTimeChanged, OnCoerceSelectedDateTime));
+            DependencyProperty.Register(nameof(SelectedDateTime), typeof(DateTime), typeof(DateTimePicker), new UIPropertyMetadata(DateTime.Now, OnSelectedDateTimeChanged, OnCoerceSelectedDateTime));
 
         public bool DateTextIsWrong
         {
@@ -119,7 +119,7 @@ namespace TickTrader.BotTerminal
         }
 
         public static readonly DependencyProperty DisplayedDateTimeProperty =
-            DependencyProperty.Register(nameof(DisplayedDateTime), typeof(string), typeof(DateTimePicker), new UIPropertyMetadata("", OnDisplayedDateTimeChanged));
+            DependencyProperty.Register(nameof(DisplayedDateTime), typeof(string), typeof(DateTimePicker), new UIPropertyMetadata("", OnDisplayedDateTimeChanged, OnCoerceDisplayedDateTime));
 
         public DateTime Maximum
         {
@@ -247,29 +247,40 @@ namespace TickTrader.BotTerminal
 
         private static void OnDisplayedDateTimeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+
             var self = d as DateTimePicker;
             if (!self._dateTimeIsUpdating)
             {
                 self._dateTimeIsUpdating = true;
-                if (string.IsNullOrEmpty((string)e.NewValue))
-                {
-                    self.SelectedDateTime = null;
-                    self.DateTextIsWrong = false;
-                }
-                else
-                {
-                    var parsedDate = self.ParseDateTimeText((string)e.NewValue, self.Format);
-                    self.DateTextIsWrong = parsedDate == null;
-                    if (!self.DateTextIsWrong || !self.CoerceInvalidText)
-                        self.SelectedDateTime = parsedDate;
-                }
+
+                var parsedDate = self.ParseDateTimeText((string)e.NewValue, self.Format);
+                self.DateTextIsWrong = parsedDate == null;
+                if (parsedDate != null)
+                    self.SelectedDateTime = parsedDate.Value;
+
                 self._dateTimeIsUpdating = false;
+            }
+        }
+
+        private static object OnCoerceDisplayedDateTime(DependencyObject d, object baseValue)
+        {
+            var self = (DateTimePicker)d;
+
+            if (string.IsNullOrEmpty((string)baseValue) || self.IsDateInExpectedFormat((string)baseValue))
+            {
+                self.DateTextIsWrong = false;
+                return baseValue;
+            }
+            else
+            {
+                self.DateTextIsWrong = true;
+                return DependencyProperty.UnsetValue;
             }
         }
 
         private void datePickerTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (!IsDateInExpectedFormat())
+            if (!IsDateInExpectedFormat(datePickerTextBox.Text))
                 return;
 
             switch (e.Key)
@@ -306,12 +317,12 @@ namespace TickTrader.BotTerminal
 
         private string GetFormattedDateTimeString(DateTime? value, string format)
         {
-            return value.HasValue ? value.Value.ToString(format) : null;
+            return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : null;
         }
 
         private DateTime SmartUpdateDateTime(int direction)
         {
-            var dt = SelectedDateTime.HasValue ? SelectedDateTime.Value : DateTime.Now;
+            var dt = SelectedDateTime;
 
             try
             {
@@ -347,9 +358,9 @@ namespace TickTrader.BotTerminal
             return datetime;
         }
 
-        private bool IsDateInExpectedFormat()
+        private bool IsDateInExpectedFormat(string date)
         {
-            return ParseDateTimeText(datePickerTextBox.Text, Format).HasValue;
+            return ParseDateTimeText(date, Format).HasValue;
         }
 
         #endregion

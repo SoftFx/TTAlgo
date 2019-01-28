@@ -66,9 +66,10 @@
                                            Grid.ColumnSpan="3"
                                            HorizontalAlignment="Stretch"
                                            VerticalContentAlignment="Center" 
-                                           Padding="2 2 24 2" 
+                                           Padding="2 2 4 2" 
                                            MinHeight="{Binding ElementName=CalendarButton, Path=ActualHeight}"
-                                           Text="{Binding DisplayedDateTime, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+                                           Text="{Binding DisplayedDateTime, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+/>
 
                         <Grid Grid.Column="1" Focusable="False" Visibility="{TemplateBinding ShowUpDownButton, Converter={StaticResource BoolToVis}}">
                             <Grid.RowDefinitions>
