@@ -14,15 +14,16 @@ namespace TickTrader.Algo.Core
     {
         private object _sync = new object();
         private FeedQueue _feedQueue;
-        private IPriorityQueue<EmulatedAction> _delayedQueue = new C5.IntervalHeap<EmulatedAction>();
+        private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
         private Queue<Action<PluginBuilder>> _eventQueue = new Queue<Action<PluginBuilder>>();
         private FeedEmulator _feed;
+        private TimeSeriesAggregator _eventAggr = new TimeSeriesAggregator();
         private IBacktesterSettings _settings;
         private long _feedCount;
         private DateTime _timePoint;
         private long _safeTimePoint;
-        private IEnumerator<RateUpdate> _eFeed;
+        private FeedReader _feedReader;
         private volatile bool _canceled;
         private BacktesterCollector _collector;
         private bool _stopFlag;
@@ -34,8 +35,6 @@ namespace TickTrader.Algo.Core
             _collector = collector;
             _collector.InvokeEmulator = this;
             _feed = feed;
-            //var eventComparer = Comparer<EmulatedAction>.Create((x, y) => x.Time.CompareTo(y.Time));
-            //_delayedQueue = new  C5.IntervalHeap<EmulatedAction>(eventComparer);
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
@@ -43,6 +42,7 @@ namespace TickTrader.Algo.Core
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
         public bool IsStopPhase { get; private set; }
+        public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
 
         public event Action<RateUpdate> RateUpdated;
 
@@ -88,6 +88,14 @@ namespace TickTrader.Algo.Core
         public override void Start()
         {
             IsStopPhase = false;
+            _eventAggr.Add(_delayedQueue);
+            _eventAggr.Add(_feedReader);
+
+            if (Scheduler.HasJobs)
+            {
+                Scheduler.Init(_timePoint);
+                _eventAggr.Add(Scheduler);
+            }
         }
 
         public void EmulateEventsWithFeed()
@@ -242,40 +250,36 @@ namespace TickTrader.Algo.Core
         {
             lock (_sync)
             {
-                if (_eFeed == null)
-                {
-                    _eFeed = _feed.GetFeedStream().GetEnumerator();
-                    if (!_eFeed.MoveNext())
-                        StopFeedRead();
-                }
+                if (_feedReader == null)
+                    _feedReader = new FeedReader(_feed);
             }
         }
 
         private bool ReadNextFeed(out RateUpdate update)
         {
-            if (_eFeed == null)
+            if (_feedReader.IsCompeted)
             {
-                update = null;
+                update = default(RateUpdate);
                 return false;
             }
 
-            update = _eFeed.Current;
-
-            if (!_eFeed.MoveNext())
-                StopFeedRead();
+            update = _feedReader.Take();
 
             return true;
         }
 
         private void StopFeedRead()
         {
-            _eFeed?.Dispose();
-            _eFeed = null;
+            if (_feedReader != null)
+            {
+                _feedReader.Dispose();
+                _feedReader = null;
+            }
         }
 
         private void EmulateDelayed(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTrade)
         {
-            _delayedQueue.Add(new EmulatedAction { Action = invokeAction, Time = _timePoint + delay, IsTrade = isTrade });
+            _delayedQueue.Add(new TimeEvent(_timePoint + delay, isTrade, invokeAction));
         }
 
         private void UpdateVirtualTimepoint(DateTime newVal)
@@ -284,32 +288,7 @@ namespace TickTrader.Algo.Core
 
             if (++_feedCount % 50 == 0)
                 Interlocked.Exchange(ref _safeTimePoint, newVal.Ticks);
-
-            // enqueue triggered delays
-            while (_delayedQueue.Count > 0 && newVal < _delayedQueue.FindMin().Time)
-            {
-                var delayedItem = _delayedQueue.DeleteMin();
-                if (delayedItem.IsTrade)
-                    _tradeQueue.Enqueue(delayedItem.Action);
-                else
-                    _eventQueue.Enqueue(delayedItem.Action);
-            }
         }
-
-        //private IEnumerable<QuoteEntity> ReadFeedStream()
-        //{
-        //    var e = _feed.GetFeedStream();
-
-        //    while (true)
-        //    {
-        //        var page = e.GetNextPage();
-        //        if (page.Count == 0)
-        //            yield break;
-
-        //        foreach (var q in page)
-        //            yield return q;
-        //    }
-        //}
 
         private void EmulateRateUpdate(RateUpdate rate)
         {
@@ -351,7 +330,7 @@ namespace TickTrader.Algo.Core
                     bool isTrade;
                     var next = DequeueUpcoming(out isTrade);
 
-                    if(next == null)
+                    if (next == null)
                         return null;
 
                     if (isTrade)
@@ -384,47 +363,16 @@ namespace TickTrader.Algo.Core
 
         private object DequeueUpcoming(out bool isTrade)
         {
-            var delayed = DequeueDelayed(out isTrade);
-            if (delayed != null)
-                return delayed;
-
-            isTrade = false;
-
-            RateUpdate feedTick;
-
-            if (!ReadNextFeed(out feedTick))
-                return DequeueDelayed(out isTrade);
-
-            UpdateVirtualTimepoint(feedTick.Time);
-            return feedTick;
-        }
-
-        private object DequeueDelayed(out bool isTrade)
-        {
-            if (_delayedQueue.Count > 0)
+            if (_feedReader.IsCompeted && _delayedQueue.IsEmpty)
             {
-                if (_eFeed == null || _eFeed.Current.Time >= _delayedQueue.FindMin().Time)
-                {
-                    var delayed = _delayedQueue.DeleteMin();
-                    UpdateVirtualTimepoint(delayed.Time);
-                    isTrade = delayed.IsTrade;
-                    return delayed.Action;
-                }
+                isTrade = false;
+                return null;
             }
-            isTrade = false;
-            return null;
-        }
-    }
 
-    internal struct EmulatedAction : IComparable<EmulatedAction>
-    {
-        public DateTime Time { get; set; }
-        public bool IsTrade { get; set; }
-        public Action<PluginBuilder> Action { get; set; }
-
-        public int CompareTo(EmulatedAction other)
-        {
-            return Time.CompareTo(other.Time);
+            var next = _eventAggr.Dequeue();
+            UpdateVirtualTimepoint(next.Time);
+            isTrade = next.IsTrade;
+            return next.Content;
         }
     }
 }

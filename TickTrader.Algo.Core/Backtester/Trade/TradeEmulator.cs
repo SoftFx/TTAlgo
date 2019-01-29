@@ -39,6 +39,9 @@ namespace TickTrader.Algo.Core
             _settings = settings;
             _history = history;
 
+            if (_settings.AccountType == AccountTypes.Net || _settings.AccountType == AccountTypes.Gross)
+                _scheduler.Scheduler.AddDailyJob(b => Rollover(), 0, 0);
+
             VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += r =>
             {
@@ -1843,6 +1846,136 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
+        #region Rollover & Swap
+
+        private void Rollover()
+        {
+            bool updated = false;
+            decimal totalSwap = 0;
+            int affectedSymbolsCount = 0;
+
+            foreach (SymbolAccessor info in _context.Builder.Symbols)
+            {
+                if (info.SwapEnabled && info.LastQuote != null && _scheduler.UnsafeVirtualTimePoint - info.LastQuote.Time <= TimeSpan.FromHours(1))
+                {
+                    decimal swapAmount = 0;
+
+                    if (_acc.Type == AccountTypes.Gross)
+                    {
+                        if (UpdateGrossSwaps(info, out swapAmount))
+                            updated = true;
+                    }
+                    else if (_acc.Type == AccountTypes.Net)
+                    {
+                        if (UpdateNetSwaps(info, out swapAmount))
+                            updated = true;
+                    }
+
+                    totalSwap += swapAmount;
+                    affectedSymbolsCount++;
+                }
+            }
+
+            if (updated)
+                RecalculateAccount();
+
+            if (affectedSymbolsCount > 0)
+                _collector.LogTrade("Rollover, totalSwap=" + totalSwap.FormatPlain(_acc.BalanceCurrencyFormat));
+        }
+
+        public bool UpdateGrossSwaps(SymbolAccessor smbInfo, out decimal totalSwap)
+        {
+            bool swapUpdated = false;
+            totalSwap = 0;
+
+            if (smbInfo.SwapEnabled)
+            {
+                var positions = _calcFixture.GetGrossPositions(smbInfo.Name).ToList(); // Perf. warning: .ToList()
+
+                if (positions != null)
+                {
+                    foreach (OrderAccessor order in positions)
+                    {
+                        decimal swap = order.Calculator.CalculateSwap(order.RemainingAmount, TickTraderToAlgo.Convert(order.Side));
+                        decimal roundedSwap = RoundMoney(swap, _acc.BalanceCurrencyInfo.Digits);
+
+                        if (roundedSwap != 0)
+                        {
+                            order.SetSwap((order.Swap ?? 0) + roundedSwap);
+                            //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={order.Symbol} side={order.Side} volume={order.RemainingAmount:G29} charged={swap:G29} total={order.Swap:G29} currency={acc.BalanceCurrency}",
+                            //    JournalEntrySeverities.Info, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
+                            //SendExecutionReport(order.Clone(), smbInfo, OrderExecutionEvents.Modified, acc, null);
+                            swapUpdated = true;
+                        }
+
+                        totalSwap += roundedSwap;
+
+                        //try
+                        //{
+
+                        //}
+                        //catch (BusinessLogicException ex)
+                        //{
+                        //    //LogTransactionDetails(() => $"Swap not charged: account={acc.AccountLogin} symbol={smbInfo.Name} volume={order.RemainingAmount} reason={ex.CalcError}. {ex.Message}",
+                        //    //    JournalEntrySeverities.Error, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
+                        //    //isError = true;
+                        //}
+                    }
+                }
+            }
+
+            return swapUpdated;
+        }
+
+        public bool UpdateNetSwaps(SymbolAccessor smbInfo, out decimal totalSwap)
+        {
+            totalSwap = 0;
+
+            if (smbInfo.SwapEnabled)
+            {
+                PositionAccessor pos = _acc.NetPositions.GetPositionOrNull(smbInfo.Name);
+
+                if (pos != null)
+                {
+
+                    decimal swap = pos.Calculator.CalculateSwap(pos.Long.Amount, OrderSides.Buy)
+                                   + pos.Calculator.CalculateSwap(pos.Short.Amount, OrderSides.Sell);
+
+                    decimal roundedSwap = RoundMoney(swap, _acc.BalanceCurrencyInfo.Digits);
+
+                    if (roundedSwap != 0)
+                    {
+                        pos.Swap += roundedSwap;
+
+                        totalSwap += roundedSwap;
+
+                        //var netPos = pos.ToBusinessObject();
+                        //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={smbInfo.Name} side={netPos.Side} volume={netPos.Amount:G29} charged={roundedSwap:G29} total={netPos.Swap:G29} currency={acc.BalanceCurrency}",
+                        //    JournalEntrySeverities.Info, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
+
+                        //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.Rollover, smbInfo));
+
+                        return true;
+                    }
+                    //try
+                    //{
+                    //}
+                    //catch (BusinessLogicException ex)
+                    //{
+                    //    //var netPos = pos.ToBusinessObject();
+                    //    //Func<string> errMsg = () => $"Swap not charged: account={acc.AccountLogin} side={netPos.Side} symbol={smbInfo.Name} volume={netPos.Amount:G29} reason={ex.CalcError}. {ex.Message}";
+                    //    //LogTransactionDetails(errMsg, JournalEntrySeverities.Error, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
+
+                    //    //throw new ServerFaultException<OperationFault>(errMsg());
+                    //}
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Price Logic
 
         private decimal? GetCurrentOpenPrice(OrderAccessor order, RateUpdate currentRate = null)
@@ -1918,10 +2051,6 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
-
-        #region Commission & Swap
-
-        #endregion 
 
         #region Rounding
 

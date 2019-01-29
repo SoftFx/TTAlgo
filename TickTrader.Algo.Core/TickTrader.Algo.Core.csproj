@@ -72,6 +72,10 @@
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
     <Compile Include="Adapters\TradeReportAdapter.cs" />
+    <Compile Include="Backtester\DelayedEventsQueue.cs" />
+    <Compile Include="Backtester\Feed\FeedReader.cs" />
+    <Compile Include="Backtester\ScheduleEmulator.cs" />
+    <Compile Include="Backtester\TimeEvent.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />
     <Compile Include="Backtester\Trade\OrderExpirationEmulator.cs" />
     <Compile Include="Backtester\Trade\TradeHistoryEmulator.cs" />

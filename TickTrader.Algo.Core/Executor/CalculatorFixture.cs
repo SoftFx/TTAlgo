@@ -243,6 +243,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public IEnumerable<OrderAccessor> GetGrossPositions(string symbol)
+        {
+            return marginCalc.GetNetting(symbol)?.Orders.Where(o => o.Type == BO.OrderTypes.Position).Cast<OrderAccessor>();
+        }
+
         #endregion
 
         private class MarginCalcAdapter : BL.AccountCalculator
