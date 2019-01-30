@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment _env;
         private IShell _shell;
         private SymbolCatalog _catalog;
-        private Property<List<BotLogRecord>> _journalContent = new Property<List<BotLogRecord>>();
+        
         private SymbolToken _mainSymbolToken;
         private IVarList<ISymbolInfo> _symbolTokens;
         private IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
@@ -167,7 +167,7 @@ namespace TickTrader.BotTerminal
         public DateRangeSelectionViewModel DateRange { get; }
         public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
         //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
-        public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
+        public BacktesterJournalViewModel JournalPage { get; } = new BacktesterJournalViewModel();
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
         public BacktesterTradeGridViewModel TradesPage { get; }
@@ -242,7 +242,7 @@ namespace TickTrader.BotTerminal
             {
                 ChartPage.Clear();
                 ResultsPage.Clear();
-                _journalContent.Value = null;
+                JournalPage.Clear();
                 TradesPage.Clear(_settings.AccType);
                 _hasDataToSave.Clear();
 
@@ -346,7 +346,7 @@ namespace TickTrader.BotTerminal
                     }
                 }
 
-                await CollectEvents(tester, observer);
+                await CollectEvents(tester, pluginSetupModel, observer);
                 await LoadTradeHistory(tester, observer);
                 await LoadStats(observer, tester);
                 await LoadChartData(tester, observer, tester);
@@ -361,16 +361,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task CollectEvents(Backtester tester, IActionObserver observer)
+        private async Task CollectEvents(Backtester tester, PluginSetupModel pluginSetup, IActionObserver observer)
         {
             var totalCount = tester.EventsCount;
 
             observer.StartProgress(0, totalCount);
             observer.SetMessage("Updating journal...");
 
-            _journalContent.Value = await Task.Run(() =>
+            JournalPage.SetData(await Task.Run(() =>
             {
                 var events = new List<BotLogRecord>(totalCount);
+
+                events.Add(CreateInfoRecord(0, PluginSetupToText(pluginSetup, true)));
+                events.Add(CreateInfoRecord(1, FeedSetupToText(pluginSetup)));
+                events.Add(CreateInfoRecord(2, _settings.ToText(true)));
 
                 using (var cde = tester.GetEvents())
                 {
@@ -379,7 +383,12 @@ namespace TickTrader.BotTerminal
 
                     return events;
                 }
-            });
+            }));
+        }
+
+        private BotLogRecord CreateInfoRecord(uint no, string message)
+        {
+            return new BotLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
         }
 
         private async Task LoadTradeHistory(Backtester tester, IActionObserver observer)
@@ -472,7 +481,7 @@ namespace TickTrader.BotTerminal
                     var jounralEntry = archive.CreateEntry("journal.txt", CompressionLevel.Optimal);
 
                     using (var entryStream = jounralEntry.Open())
-                        await SaveJournalTo(entryStream, observer);
+                        await JournalPage.SaveToFile(entryStream, observer);
 
                     var tradeReportsEntry = archive.CreateEntry("trades.csv", CompressionLevel.Optimal);
                     using (var entryStream = tradeReportsEntry.Open())
@@ -491,105 +500,69 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task SaveJournalTo(System.IO.Stream stream, IActionObserver observer)
-        {
-            var records = JournalRecords.Value;
-
-            long progress = 0;
-
-            observer.SetMessage("Saving journal...");
-            observer.StartProgress(0, records.Count);
-
-            using (new UiUpdateTimer(() => observer.SetProgress(Interlocked.Read(ref progress))))
-            {
-                await Task.Run(() =>
-                {
-                    using (var writer = new System.IO.StreamWriter(stream))
-                    {
-                        for (int i = 0; i < records.Count; i++)
-                        {
-                            var record = records[i];
-                            var sevString = TxtFormat(record.Severity);
-
-                            writer.Write(record.Time.Timestamp.ToString(FullDateTimeConverter.Format));
-                            writer.Write(" [{0}] ", sevString);
-
-                            var nextLineSpaceSize = FullDateTimeConverter.FormatFixedLength + 4 + sevString.Length;
-                            var msgLines = SplitIntoLines(record.Message);
-                            writer.WriteLine(msgLines[0]);
-                            for (int j = 1; j < msgLines.Length; j++)
-                            {
-                                writer.Write(new string(' ', nextLineSpaceSize));
-                                writer.WriteLine(msgLines[j]);
-                            }
-
-                            if (i % 10 == 0)
-                                Interlocked.Exchange(ref progress, i);
-                        }
-                    }
-                });
-            }
-
-            observer.StartProgress(0, records.Count);
-        }
-
         private void SaveTestSetupAsText(PluginSetupModel setup, System.IO.Stream stream)
         {
             var dPlugin = setup.Metadata.Descriptor;
 
             using (var writer = new System.IO.StreamWriter(stream))
             {
-                SaveFeedSetupAsText(setup, writer);
-                writer.WriteLine();
-                SaveTradeSetupAsText(writer);
-                writer.WriteLine();
-                SavePluginSetupAsText(setup, writer);
+                writer.WriteLine(FeedSetupToText(setup));
+                writer.WriteLine(TradeSetupToText());
+                writer.WriteLine(PluginSetupToText(setup, false));
             }
         }
 
-        private void SaveFeedSetupAsText(PluginSetupModel setup, System.IO.StreamWriter writer)
+        private string FeedSetupToText(PluginSetupModel setup)
         {
-            writer.WriteLine("Main symbol: " + MainSymbolSetup.AsText());
-            writer.WriteLine("Model: based on " + SelectedModel.Value);
+            var writer = new StringBuilder();
+
+            writer.AppendLine("Main symbol: " + MainSymbolSetup.AsText());
+            writer.AppendLine("Model: based on " + SelectedModel.Value);
+
             foreach (var addSymbols in AdditionalSymbols)
-                writer.WriteLine("+Symbol " + MainSymbolSetup.AsText());
+                writer.AppendLine("+Symbol " + addSymbols.AsText());
 
-            writer.WriteLine("Period: from {0} to {1}", _emulteFrom.ToShortDateString(), _emulateTo.ToShortDateString());
+            writer.AppendFormat("Period: {0} to {1}", _emulteFrom.ToShortDateString(), _emulateTo.ToShortDateString());
+
+            return writer.ToString();
         }
 
-        private void SaveTradeSetupAsText(System.IO.StreamWriter writer)
+        private string TradeSetupToText()
         {
-            _settings.SaveAsText(writer);
+            return _settings.ToText(false);
         }
 
-        private void SavePluginSetupAsText(PluginSetupModel setup, System.IO.StreamWriter writer)
+        private string PluginSetupToText(PluginSetupModel setup, bool compact)
         {
+            var writer = new StringBuilder();
             var dPlugin = setup.Metadata.Descriptor;
 
             if (dPlugin.Type == AlgoTypes.Indicator)
-                writer.WriteLine("Indicator: {0} v{1}", dPlugin.DisplayName , dPlugin.Version);
+                writer.AppendFormat("Indicator: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
             else if (dPlugin.Type == AlgoTypes.Robot)
-                writer.WriteLine("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version);
+                writer.AppendFormat("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version).AppendLine();
 
+            int count = 0;
             foreach (var param in setup.Parameters)
-                writer.WriteLine("{0} = {1}", param.DisplayName, param.ValueAsText);
+            {
+                if (compact && count > 0)
+                    writer.Append(", ");
+                writer.AppendFormat("{0}={1}", param.DisplayName, param.GetQuotedValue());
+                if (!compact)
+                    writer.AppendLine();
+                count++;
+            }
 
             foreach (var input in setup.Inputs)
-                writer.WriteLine("{0} = {1}", input.DisplayName, input.ValueAsText);
-        }
-
-        private string TxtFormat(LogSeverities severity)
-        {
-            switch (severity)
             {
-                case LogSeverities.TradeSuccess: return "Trade";
-                default: return severity.ToString();
+                if (compact)
+                    writer.Append(' ');
+                writer.AppendFormat("{0} = {1}", input.DisplayName, input.ValueAsText);
+                if (!compact)
+                    writer.AppendLine();
             }
-        }
 
-        private string[] SplitIntoLines(string message)
-        {
-            return message.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            return writer.ToString();
         }
 
         #endregion

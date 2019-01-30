@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
     {
         private C5.IPriorityQueue<TimeEvent> _delayedQueue = new C5.IntervalHeap<TimeEvent>();
 
-        public DateTime NextOccurrance { get; private set; }
+        public DateTime NextOccurrance { get; private set; } = DateTime.MaxValue;
         public bool IsEmpty => _delayedQueue.Count == 0;
 
         public TimeEvent Take()

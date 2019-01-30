@@ -1890,7 +1890,7 @@ namespace TickTrader.Algo.Core
 
             if (smbInfo.SwapEnabled)
             {
-                var positions = _calcFixture.GetGrossPositions(smbInfo.Name).ToList(); // Perf. warning: .ToList()
+                var positions = _calcFixture.GetGrossPositions(smbInfo.Name)?.ToList(); // Perf. warning: .ToList()
 
                 if (positions != null)
                 {

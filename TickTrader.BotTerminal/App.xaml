@@ -72,6 +72,7 @@
                 <ResourceDictionary Source="Views.Backtester/BacktesterStatChartView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterPluginSetupView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterTradeGridView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterJournalView.xaml" />
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

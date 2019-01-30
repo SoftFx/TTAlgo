@@ -12,7 +12,7 @@
     <DataTemplate x:Key="ModelTemplate">
         <TextBlock Text="{l:ResxBinding Prefix=FeedEmulationModel_}"/>
     </DataTemplate>
-    
+
     <ControlTemplate x:Key="SetupPage.Classic">
 
         <ControlTemplate.Resources>
@@ -55,7 +55,7 @@
         <ScrollViewer Name="ScrollPanel" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <Grid Name="RootGrid" MinWidth="300" Width="{Binding ViewportWidth, ElementName=ScrollPanel}">
                 <Grid Margin="5" IsEnabled="{Binding CanSetup.Value}">
-                    
+
                     <Grid.Resources>
                         <CollectionViewSource x:Key="PluginsCollection" Source="{Binding Plugins}">
                             <CollectionViewSource.GroupDescriptions>
@@ -122,43 +122,6 @@
 
     </ControlTemplate>
 
-    <ControlTemplate x:Key="JournalPage.Classic">
-        <DataGrid Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding JournalRecords.Value}" IsReadOnly="True"
-                  AutoGenerateColumns="False" SelectionMode="Single" CanUserReorderColumns="False" CanUserSortColumns="False"
-                  BorderThickness="0">
-            <DataGrid.Columns>
-
-                <DataGridTextColumn SortMemberPath="Time" 
-                                    Binding="{Binding Time.Timestamp, Converter={StaticResource UtcDateTimeFormat}}"
-                                    SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
-                
-                <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10" Background="{Binding Severity, Converter={StaticResource LogSeverityConverter}}" BorderBrush="Black" BorderThickness="1">
-                                    <Border CornerRadius="5">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0.5,0.5" EndPoint="0,0">
-                                                <GradientStop Color="#00FFFFFF" Offset="0.0" />
-                                                <GradientStop Color="#AAFFFFFF" Offset="0.5" />
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
-                                </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding Message}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-    </ControlTemplate>
-
     <ControlTemplate x:Key="BacktesterViewTemplate.Classic">
         <l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">
             <Grid Background="{TemplateBinding Background}">
@@ -177,7 +140,7 @@
                         <UserControl Template="{StaticResource SetupPage.Classic}"/>
                     </TabItem>
                     <TabItem Header="Journal">
-                        <UserControl Template="{StaticResource JournalPage.Classic}"/>
+                        <UserControl cal:View.Model="{Binding JournalPage}"/>
                     </TabItem>
                     <TabItem Header="Trades">
                         <ContentControl cal:View.Model="{Binding TradesPage}"/>
