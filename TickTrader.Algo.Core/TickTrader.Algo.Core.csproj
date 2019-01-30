@@ -66,11 +66,15 @@
     <Compile Include="Adapters\BotAdapter.cs" />
     <Compile Include="Adapters\IndicatorAdapter.cs" />
     <Compile Include="Adapters\OutputAdapter.cs" />
+    <Compile Include="Adapters\PluginLoggerAdapter.cs" />
     <Compile Include="Adapters\Stubs.cs" />
     <Compile Include="Adapters\SynchronizationContextAdapter.cs" />
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
+    <Compile Include="Adapters\TradeReportAdapter.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />
+    <Compile Include="Backtester\Trade\OrderExpirationEmulator.cs" />
+    <Compile Include="Backtester\Trade\TradeHistoryEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationIndex.cs" />
     <Compile Include="Backtester\Trade\ActivationRecord.cs" />
@@ -122,6 +126,7 @@
     <Compile Include="Entities\Dealer\OpenOrderDealerRequest.cs" />
     <Compile Include="Entities\EventArgs.cs" />
     <Compile Include="Entities\FileEntity.cs" />
+    <Compile Include="Entities\IndicatorsCollection.cs" />
     <Compile Include="Entities\MarkerEntity.cs" />
     <Compile Include="Entities\MockOrder.cs" />
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
@@ -139,6 +144,7 @@
     <Compile Include="Entities\SymbolEntity.cs" />
     <Compile Include="Entities\SymbolsCollection.cs" />
     <Compile Include="Builder\IndicatorBuilder.cs" />
+    <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
@@ -244,6 +250,10 @@
     <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj">
       <Project>{4ec2f84d-ef40-498e-a277-4eb91becea4b}</Project>
       <Name>TickTrader.Algo.Ext</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TickTrader.Algo.Indicators\TickTrader.Algo.Indicators.csproj">
+      <Project>{127406a9-5d62-4fe7-9680-1d2deed7564f}</Project>
+      <Name>TickTrader.Algo.Indicators</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

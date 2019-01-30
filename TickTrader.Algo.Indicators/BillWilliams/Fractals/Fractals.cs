@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Fractals", Version = "1.0")]
-    public class Fractals : Indicator
+    public class Fractals : Indicator, IFractals
     {
         [Input]
         public new BarSeries Bars { get; set; }

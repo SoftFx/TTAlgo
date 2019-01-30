@@ -58,7 +58,6 @@ namespace TickTrader.BotTerminal
         {
             var scs = d as SciChartSurface;
             if (scs == null) return;
-
             scs.XAxis = (IAxis)e.NewValue;
             if (e.NewValue != null)
             {
@@ -74,7 +73,9 @@ namespace TickTrader.BotTerminal
 
             var axis = GetXAxis(d);
             if (axis != null)
+            {
                 ((AxisBase)axis).Style = (Style)e.NewValue;
+            }   
         }
     }
 }

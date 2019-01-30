@@ -954,10 +954,15 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new LogRecordInfo
             {
-                TimeUtc = logRecord.TimeUtc.ToDateTime(),
+                TimeUtc = logRecord.GetTimeKey(),
                 Severity = logRecord.Severity.Convert(),
                 Message = logRecord.Message,
             };
+        }
+
+        public static TimeKey GetTimeKey(this Lib.LogRecordInfo record)
+        {
+            return new TimeKey(record.TimeUtc.ToDateTime(), record.TimeShit);
         }
 
         public static BotFileInfo Convert(this Lib.BotFileInfo botFile)

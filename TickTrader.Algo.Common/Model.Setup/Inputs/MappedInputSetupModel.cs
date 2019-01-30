@@ -9,12 +9,14 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         public Mapping SelectedMapping { get; protected set; }
 
+        public abstract string EntityPrefix { get; }
+
+        public override string ValueAsText => SelectedSymbol.Name + "." + EntityPrefix + "." + SelectedMapping.DisplayName;
 
         public MappedInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
         }
-
 
         public override void Apply(IPluginSetupTarget target)
         {
@@ -28,9 +30,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             SelectedMapping = GetMapping(SetupContext.DefaultMapping);
         }
 
-
         protected abstract Mapping GetMapping(MappingKey mappingKey);
-
 
         protected override void LoadConfig(Input input)
         {

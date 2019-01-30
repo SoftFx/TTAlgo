@@ -113,6 +113,9 @@ namespace TickTrader.Algo.Core
 
             public SymbolAccessor GetOrDefault(string symbol)
             {
+                if (string.IsNullOrEmpty(symbol))
+                    return null;
+
                 SymbolAccessor entity;
                 symbols.TryGetValue(symbol, out entity);
                 return entity;

@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public static int BinarySearch<T, TVal>(this IReadOnlyList<T> list, Func<T, TVal> getter, TVal value,
+        public static int BinarySearchBy<T, TVal>(this IReadOnlyList<T> list, Func<T, TVal> getter, TVal value,
             BinarySearchTypes type = BinarySearchTypes.Exact, IComparer<TVal> comparer = null)
         {
             if (list == null)
@@ -211,6 +211,29 @@ namespace TickTrader.Algo.Core
             }
             else // if (type == BinarySearchTypes.NearestHigher)
                 return lower;
+        }
+
+        public static IEnumerable<T> IterateBackwards<T>(this IEnumerable<T> src)
+        {
+            if (src is IList<T>)
+                return IterateBackwards((IList<T>)src);
+
+            if (src is IReadOnlyList<T>)
+                return IterateBackwards((IReadOnlyList<T>)src);
+
+            return src.Reverse();
+        }
+
+        private static IEnumerable<T> IterateBackwards<T>(this IList<T> list)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+                yield return list[i];
+        }
+
+        private static IEnumerable<T> IterateBackwards<T>(this IReadOnlyList<T> list)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+                yield return list[i];
         }
 
         public static T[] ConcatAll<T>(this IEnumerable<T[]> src)

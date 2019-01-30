@@ -6,11 +6,12 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public class QuoteToDoubleInputSetupModel : MappedInputSetupModel
     {
+        public override string EntityPrefix => "Quote";
+
         public QuoteToDoubleInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
         }
-
 
         public override void Load(Property srcProperty)
         {
@@ -27,7 +28,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             SaveConfig(input);
             return input;
         }
-
 
         protected override Mapping GetMapping(MappingKey mappingKey)
         {

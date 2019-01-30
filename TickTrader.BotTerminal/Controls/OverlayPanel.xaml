@@ -1,0 +1,25 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="OverlayWndHost.Template" TargetType="l:OverlayPanel">
+        <Grid Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"
+              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+              HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
+            <ContentPresenter x:Name="contenHost" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsEnabled="False" Opacity="0.5"/>
+            <ContentControl cal:View.Model="{TemplateBinding OverlayModel}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="OverlayModel" Value="{x:Null}">
+                <Setter TargetName="contenHost" Property="IsEnabled" Value="True"/>
+                <Setter TargetName="contenHost" Property="Opacity" Value="1"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style TargetType="l:OverlayPanel">
+        <Setter Property="Template" Value="{StaticResource OverlayWndHost.Template}"/>
+    </Style>
+    
+</ResourceDictionary>

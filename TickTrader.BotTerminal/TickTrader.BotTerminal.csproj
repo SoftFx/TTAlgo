@@ -254,6 +254,7 @@
       <DependentUpon>BusyIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\FlatRadioButton.cs" />
+    <Compile Include="Controls\OverlayPanel.cs" />
     <Compile Include="Controls\PathBox.xaml.cs">
       <DependentUpon>PathBox.xaml</DependentUpon>
     </Compile>
@@ -277,6 +278,7 @@
     <Compile Include="Converters\ColorToHexConverter.cs" />
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\DoubleCmpConverter.cs" />
+    <Compile Include="Converters\NotNullConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
@@ -312,6 +314,7 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
+    <Compile Include="Lib\UiUpdateTimer.cs" />
     <Compile Include="Model.Algo\OutputModels.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
@@ -359,7 +362,8 @@
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
-    <Compile Include="Model\TradeHistoryProvider.cs" />
+    <Compile Include="Model\TradeReportCsvSerializer.cs" />
+    <Compile Include="Model\TradeReportKey.cs" />
     <Compile Include="Model\TradeTransactionModel.cs" />
     <Compile Include="Model\Journal.cs" />
     <Compile Include="Model\ObservableTask.cs" />
@@ -413,6 +417,7 @@
     </Compile>
     <Compile Include="Services\DockManagerService.cs" />
     <Compile Include="Services\EnvService.cs" />
+    <Compile Include="Views.ActionDisplay\ActionOverlayViewModel.cs" />
     <Compile Include="Views.Algo\AlgoAccountViewModel.cs" />
     <Compile Include="Views.Algo\AlgoAgentViewModel.cs" />
     <Compile Include="Views.Algo\AlgoBotViewModel.cs" />
@@ -434,14 +439,15 @@
       <DependentUpon>LoginPageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.Auth\LoginPageViewModel.cs" />
-    <Compile Include="Views.Aux\ActionDialogViewModel.cs" />
-    <Compile Include="Views.Aux\DateRangeSelectionViewModel.cs" />
-    <Compile Include="Views.Aux\ActionViewModel.cs" />
+    <Compile Include="Views.ActionDisplay\ActionDialogViewModel.cs" />
+    <Compile Include="Views.ActionDisplay\DateRangeSelectionViewModel.cs" />
+    <Compile Include="Views.ActionDisplay\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterTradeGridViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
@@ -513,6 +519,7 @@
     <Compile Include="Views.TradeInfo\AssetViewModel.cs" />
     <Compile Include="Views.TradeInfo\OrderViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionViewModel.cs" />
+    <Compile Include="Views.TradeInfo\TradeHistoryGridViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeHistoryViewModel.cs" />
     <Compile Include="Views\AboutDialogView.xaml.cs">
       <DependentUpon>AboutDialogView.xaml</DependentUpon>
@@ -560,7 +567,7 @@
     <Compile Include="Views.TradeInfo\OrderListViewModel.cs" />
     <Compile Include="Views.TradeInfo\PositionListViewModel.cs" />
     <Compile Include="Views\NotificationsViewModel.cs" />
-    <Compile Include="Views.Aux\ProgressViewModel.cs" />
+    <Compile Include="Views.ActionDisplay\ProgressViewModel.cs" />
     <Compile Include="Views\ShellViewModel.cs" />
     <Compile Include="Views\ShutdownDialogView.xaml.cs">
       <DependentUpon>ShutdownDialogView.xaml</DependentUpon>
@@ -678,6 +685,10 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
     <Page Include="Controls.Chart\MarkerAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\OverlayPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -909,6 +920,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.ActionDisplay\ActionOverlayView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Algo\BotFolderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -937,15 +952,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Aux\ActionDialogView.xaml">
+    <Page Include="Views.ActionDisplay\ActionDialogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Aux\DateRangeSelectionView.xaml">
+    <Page Include="Views.ActionDisplay\DateRangeSelectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Aux\ActionView.xaml">
+    <Page Include="Views.ActionDisplay\ActionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -966,6 +981,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterSymbolSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterTradeGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1049,6 +1068,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.TradeInfo\TradeHistoryGridView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.TradeInfo\TradeHistoryView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1121,7 +1144,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views.Aux\ProgressView.xaml">
+    <Page Include="Views.ActionDisplay\ProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

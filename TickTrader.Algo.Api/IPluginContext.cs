@@ -22,10 +22,12 @@ namespace TickTrader.Algo.Api
         DiagnosticInfo Diagnostics { get; }
         bool IsStopped { get; }
         TimeFrames TimeFrame { get; }
+        IndicatorProvider Indicators { get; }
         void OnExit();
         void OnPluginThread(Action action);
         void BeginOnPluginThread(Action action);
         Task OnPluginThreadAsync(Action action);
+        void SetFeedBufferSize(int newSize);
     }
 
     internal interface IHelperApi
@@ -56,6 +58,8 @@ namespace TickTrader.Algo.Api
 
     internal interface ITimerApi
     {
+        DateTime Now { get; }
+        DateTime UtcNow { get; }
         Timer CreateTimer(TimeSpan period, Action<Timer> callback);
         Task Delay(TimeSpan period);
     }

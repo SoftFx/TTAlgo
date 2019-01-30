@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core
         private string _instanceId;
         private PluginPermissions _permissions;
         private ICalculatorApi _calc;
+        private IndicatorsCollection _indicators;
 
         internal PluginBuilder(PluginMetadata descriptor)
         {
@@ -45,6 +46,8 @@ namespace TickTrader.Algo.Core
             _commands = _tradeApater;
 
             _permissions = new PluginPermissions();
+
+            _indicators = new IndicatorsCollection();
 
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
@@ -73,12 +76,13 @@ namespace TickTrader.Algo.Core
             }
         }
         public IPluginLogger Logger { get { return logAdapter.Logger; } set { logAdapter.Logger = value; } }
-        public ITradeHistoryProvider TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
+        public TradeHistory TradeHistoryProvider { get { return Account.HistoryProvider; } set { Account.HistoryProvider = value; } }
         public CustomFeedProvider CustomFeedProvider { get { return marketData.CustomCommds; } set { marketData.CustomCommds = value; } }
         public Action<Exception> OnException { get; set; }
         public Action<Exception> OnInitFailed { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
         public Action OnExit { get; set; }
+        public Action<int> OnInputResize { get; set; }
         public string Status { get { return statusApi.Status; } }
         public string DataFolder { get; set; }
         public string BotDataFolder { get; set; }
@@ -111,6 +115,8 @@ namespace TickTrader.Algo.Core
             }
         }
         public TimeFrames TimeFrame { get; set; }
+
+        internal PluginLoggerAdapter LogAdapter => logAdapter;
 
         public Action<string> StatusUpdated { get { return statusApi.Updated; } set { statusApi.Updated = value; } }
 
@@ -295,6 +301,7 @@ namespace TickTrader.Algo.Core
         bool IPluginContext.IsStopped => isStopped;
         ITimerApi IPluginContext.TimerApi => TimerApi;
         TimeFrames IPluginContext.TimeFrame => TimeFrame;
+        IndicatorProvider IPluginContext.Indicators => _indicators;
 
         void IPluginContext.OnExit()
         {
@@ -318,6 +325,11 @@ namespace TickTrader.Algo.Core
         Task IPluginContext.OnPluginThreadAsync(Action action)
         {
             return OnPluginThreadAsync(action);
+        }
+
+        void IPluginContext.SetFeedBufferSize(int newSize)
+        {
+            OnInputResize?.Invoke(newSize);
         }
 
         #endregion IPluginContext

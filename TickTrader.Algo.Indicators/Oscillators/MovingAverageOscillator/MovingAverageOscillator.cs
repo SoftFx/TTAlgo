@@ -1,12 +1,12 @@
 ﻿using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Oscillators.MACD;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 {
     [Indicator(Category = "Oscillators", DisplayName = "Moving Average of Oscillator", Version = "1.0")]
-    public class MovingAverageOscillator : Indicator
+    public class MovingAverageOscillator : Indicator, IMovingAverageOscillator
     {
-        private Macd _macd;
+        private IMacd _macd;
 
         [Parameter(DefaultValue = 12, DisplayName = "Fast EMA")]
         public int FastEma { get; set; }
@@ -39,7 +39,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
 
         protected void InitializeIndicator()
         {
-            _macd = new Macd(Price, FastEma, SlowEma, MacdSma);
+            _macd = Indicators.MACD(Price, FastEma, SlowEma, MacdSma);
         }
 
         protected override void Init()

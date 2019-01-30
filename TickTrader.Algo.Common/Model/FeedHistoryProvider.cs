@@ -150,29 +150,56 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int pageSize)
         {
-            var barCount = 0;
-            List<BarEntity[]> pages = new List<BarEntity[]>();
-            var sign = pageSize < 0 ? -1 : 1;
-            var pageSizeAbs = Math.Abs(pageSize);
+            var pages = new List<BarEntity[]>();
 
-            while (barCount <= pageSizeAbs)
+            var from = startTime.ToUniversalTime();
+            var isBackward = pageSize < 0;
+            pageSize = Math.Abs(pageSize);
+
+            while (pageSize > 0)
             {
-                var reqSize = sign * (pageSizeAbs - barCount);
-                var page = await _feedProxy.DownloadBarPage(symbol, startTime, reqSize, priceType, timeFrame);
+                if (!isBackward && from > DateTime.UtcNow)
+                    break; // we get last bar somehow even it is out of our requested frame
+
+                var page = await _feedProxy.DownloadBarPage(symbol, from, isBackward ? -pageSize : pageSize, priceType, timeFrame);
 
                 if (page.Length == 0)
                     break;
 
                 pages.Add(page);
-                barCount += page.Length;
+                pageSize -= page.Length;
+
+                from = isBackward ? page.First().OpenTime.AddMilliseconds(-1) : page.Last().CloseTime.AddMilliseconds(1);
             }
 
             return pages.ConcatAll();
         }
 
-        private Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
+        private async Task<QuoteEntity[]> GetQuotePage(string symbol, DateTime startTime, int count, bool includeLevel2)
         {
-            return _feedProxy.DownloadQuotePage(symbol, startTime, count, includeLevel2);
+            var pages = new List<QuoteEntity[]>();
+
+            var from = startTime.ToUniversalTime();
+            var isBackward = count < 0;
+            count = Math.Abs(count);
+
+            while (count > 0)
+            {
+                if (!isBackward && from > DateTime.UtcNow)
+                    break; // we get last bar somehow even it is out of our requested frame
+
+                var page = await _feedProxy.DownloadQuotePage(symbol, startTime, isBackward ? -count : count, includeLevel2);
+
+                if (page.Length == 0)
+                    break;
+
+                pages.Add(page);
+                count -= page.Length;
+
+                from = isBackward ? page.First().Time.AddMilliseconds(-1) : page.Last().Time.AddMilliseconds(1);
+            }
+
+            return pages.ConcatAll();
         }
 
         private async Task<List<BarEntity>> GetBarList(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime from, DateTime to)

@@ -62,7 +62,11 @@ namespace TickTrader.BotTerminal
         {
             IScreen existing = GetWindowModel(wndKey);
             if (existing != null)
+            {
+                _adapter.SetWindowTopmost(existing, true);
                 existing.Activate();
+                _adapter.SetWindowTopmost(existing, false);
+            }
             else
                 OpenMdiWindow(wndKey, wndModelfactory());
         }
@@ -127,6 +131,12 @@ namespace TickTrader.BotTerminal
             {
             }
 
+            public void SetWindowTopmost(object rootModel, bool state)
+            {
+                var wnd = _windows.GetOrDefault(rootModel);
+                wnd.Topmost = state;
+            }
+
             public Window GetWindow(object rootModel)
             {
                 return _windows.GetOrDefault(rootModel);
@@ -149,6 +159,7 @@ namespace TickTrader.BotTerminal
                         _windows.Remove(rootModel);
                     };
                 }
+
                 return wnd;
             }
 

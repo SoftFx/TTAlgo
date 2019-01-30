@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "Fast Adaptive Trend Line", Version = "1.0")]
-    public class FastAdaptiveTrendLine : DigitalIndicatorBase
+    public class FastAdaptiveTrendLine : DigitalIndicatorBase, IFastAdaptiveTrendLine
     {
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -18,11 +19,17 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
 
         public FastAdaptiveTrendLine() { }
 
-        public FastAdaptiveTrendLine(DataSeries price)
+        public FastAdaptiveTrendLine(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
+        }
+
+        public bool HasEnoughBars(int barsCount)
+        {
+            return barsCount > CoefficientsCount - 1;
         }
 
         private void InitializeIndicator() { }

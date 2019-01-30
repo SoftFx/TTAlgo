@@ -37,10 +37,6 @@ namespace TickTrader.Algo.Core.Metadata
 
             _isDefaultValueDirectlyAssignable = DefaultValue != null && DefaultValue.GetType() == reflectionInfo.PropertyType;
 
-            Descriptor.DataType = reflectionInfo.PropertyType.FullName;
-            Descriptor.DefaultValue = DefaultValue?.ToString() ?? string.Empty;
-            Descriptor.IsRequired = attribute.IsRequired;
-
             if (reflectionInfo.PropertyType.IsEnum)
             {
                 Descriptor.IsEnum = true;
@@ -49,9 +45,18 @@ namespace TickTrader.Algo.Core.Metadata
                 if (Descriptor.EnumValues.Count == 0)
                     SetError(AlgoPropertyErrors.EmptyEnum);
 
-                if (DefaultValue == null && Descriptor.EnumValues.Count > 0)
-                    Descriptor.DefaultValue = Descriptor.EnumValues[0].ToString();
+                //we can't pass custom enums between domains
+                if (attribute.DefaultValue != null && attribute.DefaultValue.GetType() == reflectionInfo.PropertyType)
+                    DefaultValue = attribute.DefaultValue.ToString();
+                else if (Descriptor.EnumValues.Count > 0)
+                    DefaultValue = Descriptor.EnumValues[0].ToString();
+
+                _isDefaultValueDirectlyAssignable = DefaultValue != null; 
             }
+
+            Descriptor.DataType = reflectionInfo.PropertyType.FullName;
+            Descriptor.DefaultValue = DefaultValue?.ToString() ?? string.Empty;
+            Descriptor.IsRequired = attribute.IsRequired;
 
             var filterEntries = reflectionInfo.GetCustomAttributes<FileFilterAttribute>(false);
             if (filterEntries != null)

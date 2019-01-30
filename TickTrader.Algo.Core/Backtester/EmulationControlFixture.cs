@@ -10,11 +10,12 @@ namespace TickTrader.Algo.Core
 {
     internal class EmulationControlFixture : CrossDomainObject
     {
-        public DateTime EmulationTimePoint => InvokeEmulator.SafeVirtualTimePoint;
+        public DateTime EmulationTimePoint => InvokeEmulator.SlimUpdateVirtualTimePoint;
         public InvokeEmulator InvokeEmulator { get; }
         public BacktesterCollector Collector { get; }
         public PluginExecutor Executor { get; }
         public FeedEmulator Feed { get; }
+        public TradeHistoryEmulator TradeHistory { get; }
         public IBacktesterSettings Settings { get; }
 
         public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
@@ -23,6 +24,7 @@ namespace TickTrader.Algo.Core
             Feed = new FeedEmulator();
             Collector = new BacktesterCollector(executor);
             InvokeEmulator = new InvokeEmulator(settings, Collector, Feed);
+            TradeHistory = new TradeHistoryEmulator();
             Executor = executor;
         }
 

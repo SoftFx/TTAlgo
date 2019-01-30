@@ -1,9 +1,10 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Volumes.Volumes
 {
     [Indicator(Category = "Volumes", DisplayName = "Volumes", Version = "1.0")]
-    public class Volumes : Indicator
+    public class Volumes : Indicator, IVolumes
     {
         [Input]
         public new BarSeries Bars { get; set; }

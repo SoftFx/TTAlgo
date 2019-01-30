@@ -36,7 +36,7 @@ namespace TickTrader.SeriesStorage
                 if (_databases.TryGetValue(storageName, out untypedCollection))
                 {
                     if (untypedCollection is Database<TKey>)
-                        return (VirtualCollection<TKey>)untypedCollection;
+                        return (IBinaryStorageCollection<TKey>)untypedCollection;
                     throw new Exception("Collection with same name and different key type alredy exist!");
                 }
 

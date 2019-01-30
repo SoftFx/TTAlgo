@@ -74,6 +74,7 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume => _entity.LastFillVolume / _lotSize ?? double.NaN;
         public double Margin => (double)(_margin ?? 0);
         public double Profit => (double)(_profit ?? 0);
+        public OrderExecOptions Options => _entity.Options;
 
         public bool IsPending => Type == OrderType.Limit || Type == OrderType.StopLimit || Type == OrderType.Stop;
 
@@ -126,6 +127,7 @@ namespace TickTrader.Algo.Core
         internal decimal? OpenConversionRate { get;  set; }
         internal SymbolAccessor SymbolInfo => _symbol;
         public decimal? ClosePrice { get; set; }
+        internal DateTime PositionCreated { get; set; }
 
         internal void FireChanged()
         {

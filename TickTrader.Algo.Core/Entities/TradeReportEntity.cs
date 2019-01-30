@@ -4,20 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using Bo = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class TradeReportEntity : TradeReport
+    public class TradeReportEntity
     {
-        public TradeReportEntity(string id)
-        {
-            ReportId = id;
-        }
-
-        public string ReportId { get; private set; }
         public string OrderId { get; set; }
-        public DateTime ReportTime { get; set; }
         public DateTime OpenTime { get; set; }
         public TradeRecordTypes Type { get; set; }
         public TradeExecActions ActionType { get; set; }
@@ -33,14 +27,22 @@ namespace TickTrader.Algo.Core
         public double Commission { get; set; }
         public string CommissionCurrency { get; set; }
         public double Swap { get; set; }
-        public double Balance { get; set; }
         public string Comment { get; set; }
-        public double GrossProfitLoss { get; set; }
-        public double NetProfitLoss { get; set; }
 
-        #region FDK compatibility
+        #region Aliases
 
-        public TradeExecActions TradeTransactionReportType { get; set; }
+        public DateTime ReportTime => TransactionTime;
+        public double GrossProfitLoss => TransactionAmount - Swap - Commission;
+        public double Balance => AccountBalance;
+        public double NetProfitLoss => TransactionAmount;
+        public TradeExecActions TradeTransactionReportType => ActionType;
+        public double Quantity => OpenQuantity;
+
+        #endregion
+
+        #region Unused fields
+
+
         public double? OpenConversionRate { get; set; }
         public double? OrderLastFillAmount { get; set; }
         public double? OrderFillPrice { get; set; }
@@ -80,7 +82,6 @@ namespace TickTrader.Algo.Core
         public double Price { get; set; }
         public double LeavesQuantity { get; set; }
         public double? MaxVisibleQuantity { get; set; }
-        public double Quantity { get; set; }
         public string ClientId { get; set; }
         public string Id { get; set; }
         public string TransactionCurrency { get; set; }

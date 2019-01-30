@@ -370,33 +370,19 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        public async Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            return Task.Factory.StartNew(() =>
+            if (timeFrame.IsTicks())
             {
-                if (timeFrame.IsTicks())
-                {
-                    var depth = timeFrame == TimeFrames.TicksLevel2 ? QuoteDepth.Level2 : QuoteDepth.Top;
-
-                    var e = _feedHistoryProxy.DownloadQuotes(symbol, depth, DateTime.MinValue, DateTime.MaxValue, DownloadTimeoutMs);
-                    var q = e.Next(DownloadTimeoutMs);
-                    e.Close();
-                    if (q != null)
-                        return new Tuple<DateTime, DateTime>(q.CreatingTime, e.AvailTo);
-                    else
-                        return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
-                }
-                else // bars
-                {
-                    var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(timeFrame), DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime(), DownloadTimeoutMs);
-                    var b = e.Next(DownloadTimeoutMs);
-                    e.Close();
-                    if (b != null)
-                        return new Tuple<DateTime, DateTime>(b.From, e.AvailTo);
-                    else
-                        return new Tuple<DateTime, DateTime>(e.AvailFrom, e.AvailTo);
-                }
-            });
+                var level2 = timeFrame == TimeFrames.TicksLevel2;
+                var info = await _feedHistoryProxy.GetQuotesHistoryInfoAsync(symbol, level2);
+                return new Tuple<DateTime, DateTime>(info.AvailFrom ?? DateTime.MinValue, info.AvailTo ?? DateTime.MinValue);
+            }
+            else // bars
+            {
+                var info = await _feedHistoryProxy.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeFrame), ConvertBack(priceType));
+                return new Tuple<DateTime, DateTime>(info.AvailFrom ?? DateTime.MinValue, info.AvailTo ?? DateTime.MinValue);
+            }
         }
 
         #endregion
@@ -427,9 +413,11 @@ namespace TickTrader.Algo.Common.Model
                 .ContinueWith(t => t.Result.Select(Convert).ToArray());
         }
 
-        public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders)
+        public void GetTradeHistory(BlockingChannel<TradeReportEntity> rxStream, DateTime? from, DateTime? to, bool skipCancelOrders, bool backwards)
         {
-            _tradeHistoryProxy.DownloadTradesAsync(TimeDirection.Forward, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
+            var direction = backwards ? TimeDirection.Backward : TimeDirection.Forward;
+
+            _tradeHistoryProxy.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
         public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
@@ -763,7 +751,7 @@ namespace TickTrader.Algo.Common.Model
         private static OrderExecOptions GetOptions(SFX.ExecutionReport record)
         {
             var isLimit = record.OrderType == SFX.OrderType.Limit || record.OrderType == SFX.OrderType.StopLimit;
-            if (isLimit && record.OrderTimeInForce == OrderTimeInForce.ImmediateOrCancel)
+            if (isLimit && record.ImmediateOrCancelFlag)
                 return OrderExecOptions.ImmediateOrCancel;
             return OrderExecOptions.None;
         }
@@ -784,6 +772,7 @@ namespace TickTrader.Algo.Common.Model
             return new ExecutionReport()
             {
                 OrderId = report.OrderId,
+                // ExecTime = report.???
                 TradeRequestId = operationId,
                 Expiration = report.Expiration?.ToLocalTime(),
                 Created = report.Created,
@@ -797,7 +786,7 @@ namespace TickTrader.Algo.Common.Model
                 Magic = report.Magic,
                 IsReducedOpenCommission = report.ReducedOpenCommission,
                 IsReducedCloseCommission = report.ReducedCloseCommission,
-                ImmediateOrCancel = report.OrderTimeInForce == OrderTimeInForce.ImmediateOrCancel,
+                ImmediateOrCancel = report.ImmediateOrCancelFlag,
                 MarketWithSlippage = report.MarketWithSlippage,
                 TradePrice = report.TradePrice ?? 0,
                 Assets = report.Assets.Select(Convert).ToArray(),
@@ -815,6 +804,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = report.Commission,
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
+                InitialOrderType = Convert(report.InitialOrderType),
                 OrderType = Convert(report.OrderType),
                 OrderSide = Convert(report.OrderSide),
                 Price = report.Price,
@@ -854,6 +844,8 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.DealingTimeout;
                         else if (message != null && message.Contains("locked by another operation"))
                             return Api.OrderCmdResultCodes.OrderLocked;
+                        else if (message != null && message.Contains("Invalid expiration"))
+                            return Api.OrderCmdResultCodes.IncorrectExpiration;
                         break;
                     }
                 case RejectReason.None:
@@ -946,16 +938,14 @@ namespace TickTrader.Algo.Common.Model
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
-            return new TradeReportEntity(report.Id + ":" + report.ActionId)
+            return new TradeReportEntity()
             {
                 Id = report.Id,
                 OrderId = report.Id,
-                ReportTime = report.TransactionTime,
                 OpenTime = report.OrderCreated,
                 CloseTime = report.TransactionTime,
                 Type = GetRecordType(report),
-                //ActionType = Convert(report.TradeTransactionReportType),
-                Balance = report.AccountBalance,
+                ActionType = Convert(report.TradeTransactionReportType),
                 Symbol = isBalanceTransaction ? report.TransactionCurrency : report.Symbol,
                 TakeProfit = report.TakeProfit,
                 StopLoss = report.StopLoss,
@@ -965,8 +955,6 @@ namespace TickTrader.Algo.Common.Model
                 CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
                 CloseQuantity = report.PositionLastQuantity,
-                NetProfitLoss = report.TransactionAmount,
-                GrossProfitLoss = report.TransactionAmount - report.Swap - report.Commission,
                 ClosePrice = report.PositionClosePrice,
                 Swap = report.Swap,
                 RemainingQuantity = report.LeavesQuantity,
@@ -981,7 +969,7 @@ namespace TickTrader.Algo.Common.Model
                 DstAssetMovement = report.DstAssetMovement,
                 DstAssetToUsdConversionRate = report.DstAssetToUsdConversionRate,
                 Expiration = report.Expiration,
-                ImmediateOrCancel = report.TimeInForce == OrderTimeInForce.ImmediateOrCancel,
+                ImmediateOrCancel = report.ImmediateOrCancel,
                 IsReducedCloseCommission = report.ReducedCloseCommission,
                 IsReducedOpenCommission = report.ReducedOpenCommission,
                 LeavesQuantity = report.LeavesQuantity,
@@ -1014,7 +1002,6 @@ namespace TickTrader.Algo.Common.Model
                 PosRemainingSide = Convert(report.PosRemainingSide),
                 Price = report.Price,
                 ProfitCurrency = report.ProfitCurrency,
-                Quantity = report.Quantity,
                 ProfitCurrencyToUsdConversionRate = report.ProfitCurrencyToUsdConversionRate,
                 ReqClosePrice = report.ReqClosePrice,
                 ReqCloseQuantity = report.ReqCloseQuantity,
@@ -1025,7 +1012,6 @@ namespace TickTrader.Algo.Common.Model
                 SrcAssetToUsdConversionRate = report.SrcAssetToUsdConversionRate,
                 TradeRecordSide = Convert(report.OrderSide),
                 TradeRecordType = Convert(report.OrderType),
-                TradeTransactionReportType = Convert(report.TradeTransactionReportType),
                 ReqOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
                 Tag = report.Tag,

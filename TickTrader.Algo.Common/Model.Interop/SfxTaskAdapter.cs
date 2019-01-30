@@ -80,6 +80,7 @@ namespace TickTrader.Algo.Common.Model
             client.GetCurrencyListAsync(taskSrc);
             return taskSrc.Task;
         }
+
         public static Task<FDK2.SymbolInfo[]> GetSymbolListAsync(this FDK.Client.QuoteFeed client)
         {
             var taskSrc = new TaskCompletionSource<FDK2.SymbolInfo[]>();
@@ -123,6 +124,9 @@ namespace TickTrader.Algo.Common.Model
 
             client.QuoteListResultEvent += (c, d, r) => SetCompleted(d, r);
             client.QuoteListErrorEvent += (c, d, ex) => SetFailed<Bar[]>(d, ex);
+
+            client.HistoryInfoResultEvent += (c, d, r) => SetCompleted(d, r);
+            client.HistoryInfoErrorEvent += (c, d, ex) => SetFailed<HistoryInfo>(d, ex);
 
             //client.BarDownloadResultEvent += (c, d, r) => ((BlockingChannel<BarEntity>)d)?.Write(SfxInterop.Convert(r));
             //client.BarDownloadResultEndEvent += (c, d) => ((BlockingChannel<BarEntity>)d)?.Close();
@@ -170,6 +174,21 @@ namespace TickTrader.Algo.Common.Model
             client.GetQuoteListAsync(taskSrc, symbol, quoteDepth, from, count);
             return taskSrc.Task;
         }
+
+        public static Task<HistoryInfo> GetBarsHistoryInfoAsync(this FDK.Client.QuoteStore client, string symbol, BarPeriod period, PriceType priceType)
+        {
+            var taskSrc = new TaskCompletionSource<HistoryInfo>();
+            client.GetBarsHistoryInfoAsync(taskSrc, symbol, period, priceType);
+            return taskSrc.Task;
+        }
+
+        public static Task<HistoryInfo> GetQuotesHistoryInfoAsync(this FDK.Client.QuoteStore client, string symbol, bool level2)
+        {
+            var taskSrc = new TaskCompletionSource<HistoryInfo>();
+            client.GetQuotesHistoryInfoAsync(taskSrc, symbol, level2);
+            return taskSrc.Task;
+        }
+
 
         //public static void DownloadBarsAsync(this FDK.QuoteStore.Client client, BlockingChannel<BarEntity> stream, string symbol, PriceType priceType, BarPeriod barPeriod, DateTime from, DateTime to)
         //{
@@ -408,8 +427,6 @@ namespace TickTrader.Algo.Common.Model
 
             public void OnReport(FDK2.ExecutionReport report)
             {
-                System.Diagnostics.Debug.WriteLine("rep #" + report.OrderId + " last=" + report.Last);
-
                 _reports.Add(report);
                 if (report.Last)
                     SetResult(_reports);

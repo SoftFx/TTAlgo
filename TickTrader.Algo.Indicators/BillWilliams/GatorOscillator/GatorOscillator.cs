@@ -1,14 +1,14 @@
 ﻿using System;
 using TickTrader.Algo.Api;
-using TickTrader.Algo.Indicators.Trend.MovingAverage;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
 {
     [Indicator(Category = "Bill Williams", DisplayName = "Gator Oscillator", Version = "1.0")]
-    public class GatorOscillator : Indicator
+    public class GatorOscillator : Indicator, IGatorOscillator
     {
-        private MovingAverage _jaws, _lips, _teethLips, _jawsTeeth;
+        private IMovingAverage _jaws, _lips, _teethLips, _jawsTeeth;
         private IShift _teethLipsUpShifter, _teethLipsDownShifter, _jawsTeethUpShiter, _jawsTeethDownShiter;
         private bool _lipsUp, _jawsUp;
 
@@ -30,8 +30,8 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         [Parameter(DefaultValue = 3, DisplayName = "Lips Shift")]
         public int LipsShift { get; set; }
 
-        [Parameter(DefaultValue = Method.Smoothed, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Smoothed, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
         public GatorOscillator() { }
 
         public GatorOscillator(DataSeries price, int jawsPeriod, int jawsShift, int teethPeriod, int teethShift,
-            int lipsPeriod, int lipsShift, Method targetMethod = Method.Simple)
+            int lipsPeriod, int lipsShift, MovingAverageMethod targetMethod = MovingAverageMethod.Smoothed)
         {
             Price = price;
             JawsPeriod = jawsPeriod;
@@ -69,10 +69,10 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
 
         private void InitializeIndicator()
         {
-            _jaws = new MovingAverage(Price, JawsPeriod, JawsShift - TeethShift, TargetMethod);
-            _jawsTeeth = new MovingAverage(Price, TeethPeriod, 0, TargetMethod);
-            _teethLips = new MovingAverage(Price, TeethPeriod, TeethShift - LipsShift, TargetMethod);
-            _lips = new MovingAverage(Price, LipsPeriod, 0, TargetMethod);
+            _jaws = Indicators.MovingAverage(Price, JawsPeriod, JawsShift - TeethShift, TargetMethod);
+            _jawsTeeth = Indicators.MovingAverage(Price, TeethPeriod, 0, TargetMethod);
+            _teethLips = Indicators.MovingAverage(Price, TeethPeriod, TeethShift - LipsShift, TargetMethod);
+            _lips = Indicators.MovingAverage(Price, LipsPeriod, 0, TargetMethod);
             var jawsTeethPos = Math.Max(JawsPeriod + JawsShift, TeethPeriod + TeethShift);
             var teethLipsPos = Math.Max(TeethPeriod + TeethShift, LipsPeriod + LipsShift);
             var jawsTeethShift = Math.Max(JawsPeriod + JawsShift - TeethShift, TeethPeriod - JawsShift + TeethShift);

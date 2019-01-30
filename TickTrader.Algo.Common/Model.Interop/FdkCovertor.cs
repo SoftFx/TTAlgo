@@ -93,6 +93,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 Symbol = record.Symbol,
                 Comment = record.Comment,
+                InitialType = Convert(record.InitialType) ?? Api.OrderType.Market,
                 Type = Convert(record.Type) ?? Api.OrderType.Market,
                 ClientOrderId = record.ClientOrderId,
                 Price = record.Price,
@@ -427,16 +428,14 @@ namespace TickTrader.Algo.Common.Model
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
                 || report.TradeTransactionReportType == TradeTransactionReportType.BalanceTransaction;
 
-            return new TradeReportEntity(report.Id + ":" + report.ActionId)
+            return new TradeReportEntity()
             {
                 Id = report.Id,
                 OrderId = report.Id,
-                ReportTime = report.TransactionTime,
                 OpenTime = report.OrderCreated,
                 CloseTime = report.TransactionTime,
                 Type = GetRecordType(report),
                 ActionType = Convert(report.TradeTransactionReportType),
-                Balance = report.AccountBalance,
                 Symbol = isBalanceTransaction ? report.TransactionCurrency : report.Symbol,
                 TakeProfit = report.TakeProfit,
                 StopLoss = report.StopLoss,
@@ -446,8 +445,7 @@ namespace TickTrader.Algo.Common.Model
                 CommissionCurrency = report.DstAssetCurrency ?? report.TransactionCurrency,
                 OpenQuantity = report.Quantity,
                 CloseQuantity = report.PositionLastQuantity,
-                NetProfitLoss = report.TransactionAmount,
-                GrossProfitLoss = report.TransactionAmount - report.Swap - report.Commission,
+                TransactionAmount = report.TransactionAmount,
                 ClosePrice = report.PositionClosePrice,
                 Swap = report.Swap,
                 RemainingQuantity = report.LeavesQuantity,
@@ -495,7 +493,6 @@ namespace TickTrader.Algo.Common.Model
                 PosRemainingSide = Convert(report.PosRemainingSide),
                 Price = report.Price,
                 ProfitCurrency = report.ProfitCurrency,
-                Quantity = report.Quantity,
                 ProfitCurrencyToUsdConversionRate = report.ProfitCurrencyToUsdConversionRate,
                 ReqClosePrice = report.ReqClosePrice,
                 ReqCloseQuantity = report.ReqCloseQuantity,
@@ -506,11 +503,9 @@ namespace TickTrader.Algo.Common.Model
                 SrcAssetToUsdConversionRate = report.SrcAssetToUsdConversionRate,
                 TradeRecordSide = Convert(report.TradeRecordSide) ?? Api.OrderSide.Buy,
                 TradeRecordType =  Convert(report.TradeRecordType) ?? Api.OrderType.Market,
-                TradeTransactionReportType = Convert(report.TradeTransactionReportType),
                 ReqOpenQuantity = report.ReqOpenQuantity,
                 StopPrice = report.StopPrice,
                 Tag = report.Tag,
-                TransactionAmount = report.TransactionAmount,
                 TransactionCurrency = report.TransactionCurrency,
                 TransactionTime = report.TransactionTime,
                 UsdToDstAssetConversionRate = report.UsdToDstAssetConversionRate,
@@ -590,6 +585,7 @@ namespace TickTrader.Algo.Common.Model
             return new ExecutionReport()
             {
                 OrderId = report.OrderId,
+                // ExecTime = report.???
                 Expiration = report.Expiration,
                 Created = report.Created,
                 Modified = report.Modified,
@@ -622,6 +618,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = report.Commission,
                 AgentCommission = report.AgentCommission,
                 Swap = report.Swap,
+                InitialOrderType = Convert(report.InitialOrderType) ?? Api.OrderType.Market,
                 OrderType = Convert(report.OrderType) ?? Api.OrderType.Market,
                 OrderSide = Convert(report.OrderSide) ?? Api.OrderSide.Buy,
                 Price = report.Price,

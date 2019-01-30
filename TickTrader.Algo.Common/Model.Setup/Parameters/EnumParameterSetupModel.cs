@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public string SelectedValue { get; protected set; }
 
+        public override string ValueAsText => SelectedValue;
 
         public EnumParamSetupModel(ParameterMetadata descriptor)
             : base(descriptor)

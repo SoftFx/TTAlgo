@@ -9,16 +9,15 @@ namespace TickTrader.Algo.Common.Model.Setup
     {
         private ISymbolInfo _mainSymbol;
 
-
         protected IAlgoSetupMetadata SetupMetadata { get; }
 
         protected IAlgoSetupContext SetupContext { get; }
 
+        public abstract string ValueAsText { get; }
 
         public InputMetadata Metadata { get; }
 
         public ISymbolInfo SelectedSymbol { get; protected set; }
-
 
         private InputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol)
         {
@@ -35,12 +34,10 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetupContext = setupContext;
         }
 
-
         public override void Reset()
         {
             SelectedSymbol = _mainSymbol;
         }
-
 
         protected virtual void LoadConfig(Input input)
         {
@@ -53,9 +50,10 @@ namespace TickTrader.Algo.Common.Model.Setup
             input.SelectedSymbol = SelectedSymbol.ToConfig();
         }
 
-
         public class Invalid : InputSetupModel
         {
+            public override string ValueAsText => "n/a";
+
             public Invalid(InputMetadata descriptor, object error = null)
                 : base(descriptor, null)
             {
@@ -64,7 +62,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 else
                     Error = new ErrorMsgModel(error);
             }
-
 
             public override void Apply(IPluginSetupTarget target)
             {

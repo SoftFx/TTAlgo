@@ -1,10 +1,12 @@
 ﻿using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -13,16 +15,19 @@ namespace TickTrader.BotTerminal
         private TestingStatistics _stats;
         private Property<Dictionary<string, string>> _statProperties;
         private Property<List<BacktesterStatChartViewModel>> _charts;
+        private IntProperty _depositDigits;
 
         public BacktesterReportViewModel()
         {
             _statProperties = AddProperty<Dictionary<string, string>>();
             _charts = AddProperty<List<BacktesterStatChartViewModel>>();
+            _depositDigits = AddIntProperty(2);
             RebuildReport(new TestingStatistics());
         }
 
         public Var<Dictionary<string, string>> StatProperties => _statProperties.Var;
         public Var<List<BacktesterStatChartViewModel>> Charts => _charts.Var;
+        public Var<int> DepositDigits => _depositDigits.Var;
 
         public TestingStatistics Stats
         {
@@ -42,19 +47,33 @@ namespace TickTrader.BotTerminal
             Stats = null;
         }
 
+        public void SaveAsText(Stream file)
+        {
+            using (var writer = new StreamWriter(file))
+            {
+                foreach (var prop in StatProperties.Value)
+                {
+                    writer.Write(prop.Key);
+                    writer.Write(": ");
+                    writer.WriteLine(prop.Value);
+                }
+            }
+        }
+
         private void RebuildReport(TestingStatistics newStats)
         {
             var newPropertis = new Dictionary<string, string>();
+            var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(newStats.AccBalanceDigits);
 
             newPropertis.Add("Bars", newStats.BarsCount.ToString());
             newPropertis.Add("Ticks", newStats.TicksCount.ToString());
-            newPropertis.Add("Initial deposit", newStats.InitialBalance.ToString("N2"));
-            newPropertis.Add("Final equity", newStats.FinalBalance.ToString("N2"));
-            newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).ToString("N2"));
-            newPropertis.Add("Gross profit", newStats.GrossProfit.ToString("N2"));
-            newPropertis.Add("Gross loss", newStats.GrossLoss.ToString("N2"));
-            newPropertis.Add("Commission", newStats.TotalComission.ToString("N2"));
-            newPropertis.Add("Swap", newStats.TotalSwap.ToString("N2"));
+            newPropertis.Add("Initial deposit", newStats.InitialBalance.FormatPlain(balanceNumbersFormat));
+            newPropertis.Add("Final equity", newStats.FinalBalance.FormatPlain(balanceNumbersFormat));
+            newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).FormatPlain(balanceNumbersFormat));
+            newPropertis.Add("Gross profit", newStats.GrossProfit.FormatPlain(balanceNumbersFormat));
+            newPropertis.Add("Gross loss", newStats.GrossLoss.FormatPlain(balanceNumbersFormat));
+            newPropertis.Add("Commission", newStats.TotalComission.FormatPlain(balanceNumbersFormat));
+            newPropertis.Add("Swap", newStats.TotalSwap.FormatPlain(balanceNumbersFormat));
 
             newPropertis.Add("Testing time", Format(newStats.Elapsed));
 

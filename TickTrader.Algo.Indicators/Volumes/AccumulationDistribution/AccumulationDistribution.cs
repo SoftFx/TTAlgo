@@ -1,10 +1,11 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.Volumes.AccumulationDistribution
 {
     [Indicator(Category = "Volumes", DisplayName = "Accumulation/Distribution", Version = "1.0")]
-    public class AccumulationDistribution : Indicator
+    public class AccumulationDistribution : Indicator, IAccumulationDistribution
     {
         [Input]
         public new BarSeries Bars { get; set; }

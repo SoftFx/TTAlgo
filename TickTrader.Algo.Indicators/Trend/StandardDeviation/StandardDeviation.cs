@@ -1,14 +1,15 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 using TickTrader.Algo.Indicators.Utility;
 
 namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 {
     [Indicator(Category = "Trend", DisplayName = "Standard Deviation", Version = "1.0")]
-    public class StandardDeviation : Indicator
+    public class StandardDeviation : Indicator, IStandardDeviation
     {
-        private MovingAverage.MovingAverage _sma, _ma;
+        private IMovingAverage _sma, _ma;
         private IMA _p2Sma;
         private IShift _p2Shifter;
         
@@ -18,8 +19,8 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
         [Parameter(DefaultValue = 0, DisplayName = "Shift")]
         public int Shift { get; set; }
 
-        [Parameter(DefaultValue = Method.Simple, DisplayName = "Method")]
-        public Method TargetMethod { get; set; }
+        [Parameter(DefaultValue = MovingAverageMethod.Simple, DisplayName = "Method")]
+        public MovingAverageMethod TargetMethod { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -29,11 +30,9 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         public int LastPositionChanged { get { return _p2Shifter.Position; } }
 
-        public double LastMaVal { get { return _ma.Average[LastPositionChanged]; } }
-
         public StandardDeviation() { }
 
-        public StandardDeviation(DataSeries price, int period, int shift, Method targetMethod = Method.Simple)
+        public StandardDeviation(DataSeries price, int period, int shift, MovingAverageMethod targetMethod = MovingAverageMethod.Simple)
         {
             Price = price;
             Period = period;
@@ -45,9 +44,9 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
 
         protected void InitializeIndicator()
         {
-            _sma = new MovingAverage.MovingAverage(Price, Period, Shift);
-            _ma = new MovingAverage.MovingAverage(Price, Period, Shift, TargetMethod);
-            _p2Sma = MABase.CreateMaInstance(Period, Method.Simple);
+            _sma = Indicators.MovingAverage(Price, Period, Shift);
+            _ma = Indicators.MovingAverage(Price, Period, Shift, TargetMethod);
+            _p2Sma = MABase.CreateMaInstance(Period, MovingAverageMethod.Simple);
             _p2Sma.Init();
             _p2Shifter = new SimpleShifter(Shift);
             _p2Shifter.Init();

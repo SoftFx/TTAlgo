@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
@@ -20,7 +21,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
     }
 
     [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index", Version = "1.1")]
-    public class RangeBoundChannelIndex : DigitalIndicatorBase
+    public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndex
     {
         private IMA _ma;
         private List<double> _calcCache;
@@ -34,30 +35,37 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.Teal)]
+        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.Teal, Precision = 6)]
         public DataSeries Rbci { get; set; }
 
-        [Output(DisplayName = "Upper Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Upper Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries UpperBound { get; set; }
 
-        [Output(DisplayName = "Lower Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Lower Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries LowerBound { get; set; }
 
-        [Output(DisplayName = "Upper Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Upper Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries UpperBound2 { get; set; }
 
-        [Output(DisplayName = "Lower Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare)]
+        [Output(DisplayName = "Lower Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries LowerBound2 { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
 
         public RangeBoundChannelIndex() { }
 
-        public RangeBoundChannelIndex(DataSeries price)
+        public RangeBoundChannelIndex(DataSeries price, int std, int countBars)
         {
             Price = price;
+            Std = std;
+            CountBars = countBars;
 
             InitializeIndicator();
+        }
+
+        public bool HasEnoughBars(int barsCount)
+        {
+            return barsCount > CoefficientsCount - 1;
         }
 
         private void InitializeIndicator()

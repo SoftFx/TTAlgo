@@ -181,7 +181,7 @@ namespace TickTrader.BotTerminal
             {
                 UploadProgress.SetMessage($"Uploading package {SelectedPackage.Key.Name} from {SelectedPackage.Key.Location} to {SelectedBotAgent.Name}");
                 var progressListener = new FileProgressListenerAdapter(UploadProgress, SelectedPackage.Identity.Size);
-                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.FilePath, progressListener);
+                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.Identity.FilePath, progressListener);
                 TryClose();
             }
             catch (Exception ex)

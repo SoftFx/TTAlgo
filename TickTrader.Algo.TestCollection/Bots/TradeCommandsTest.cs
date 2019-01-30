@@ -85,7 +85,6 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private async Task PerfomOrder(OrderType orderType, OrderSide orderSide, bool isAsync, OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
-
             var prices = GetPrices(orderType, orderSide);
             var title = (isAsync) ? "Async test: " : "Test: ";
             var postTitle = (tag == null) ? "" : " with tag";
@@ -125,16 +124,15 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                 VerifyOrder(someOrder.Id, realOrderType, orderSide, Volume, price, secondPrice, null, null, null, null, tag);
 
-
-
                 if (orderType != OrderType.Market && orderType != OrderType.Position)
                 {
                     Volume *= 2;
                     await TestModifyVolume(someOrder.Id, isAsync, Volume, postTitle);
                 }
-                    
 
-                await TestAddModifyComment(someOrder.Id, isAsync, postTitle);
+                if (Account.Type == AccountTypes.Gross || orderType != OrderType.Market)
+                    await TestAddModifyComment(someOrder.Id, isAsync, postTitle);
+
                 if (Account.Type == AccountTypes.Gross)
                 {
                     await TestAddModifyStopLoss(someOrder.Id, isAsync, postTitle);
@@ -153,10 +151,10 @@ namespace TickTrader.Algo.TestCollection.Bots
 
                     if (orderType != OrderType.Limit)
                         await TestModifyStopPrice(someOrder.Id, price, newPrice, isAsync, postTitle);
-                }
 
-                if (someOrder != null)
-                    await TestCancelOrder(someOrder.Id, orderSide, orderType, tag, false, isAsync);
+                    if (someOrder != null)
+                        await TestCancelOrder(someOrder.Id, orderSide, orderType, tag, false, isAsync);
+                }
             }
             catch (Exception e)
             {
@@ -357,7 +355,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             var order = Account.Orders[orderId];
             var maxVisibleVolume = Volume;
-            var newMaxVisibleVolume = Volume * 0.1;
+            var newMaxVisibleVolume = Symbol.MinTradeVolume;
             var title = (isAsync) ? "Async test: " : "Test: ";
 
             _testCount++;
@@ -527,6 +525,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         {
             var order = Account.Orders[orderId];
+
+            if (type == OrderType.Position && !(Account.Type == AccountTypes.Gross)) // only in case of Gross account type market orders appear in Orders collection
+                return;
 
             if (order.IsNull)
                 throw new ApplicationException("Verification failed - order #" + orderId + " does not exis in order collection");

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace TickTrader.BotTerminal
     public class FullDateTimeConverter : IValueConverter
     {
         public const string Format = "yyyy.MM.dd HH:mm:ss.fff";
+        public const int FormatFixedLength = 23;
 
         public FullDateTimeConverter()
         {
@@ -29,6 +31,26 @@ namespace TickTrader.BotTerminal
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [ValueConversion(typeof(DateTime?), typeof(string))]
+    public class KindAwareDateTimeConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var timestamp = (DateTime)values[0];
+            var toLocal = (bool)values[1];
+
+            if (toLocal)
+                return ((DateTime?)timestamp)?.ToLocalTime().ToString(FullDateTimeConverter.Format);
+            else
+                return ((DateTime?)timestamp)?.ToString(FullDateTimeConverter.Format);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

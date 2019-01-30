@@ -249,7 +249,7 @@ namespace TickTrader.Algo.Core
                     InitWorkingFolder();
                     //builder.TradeApi = accFixture;
                     builder.Calculator = calcFixture;
-                    builder.TradeHistoryProvider = tradeHistoryProvider;
+                    builder.TradeHistoryProvider = new TradeHistoryAdapter(tradeHistoryProvider, builder.Symbols);
                     builder.InstanceId = _botInstanceId;
                     builder.Isolated = _permissions.Isolated;
                     builder.Permissions = _permissions;
@@ -258,6 +258,7 @@ namespace TickTrader.Algo.Core
                     builder.OnAsyncAction = OnAsyncAction;
                     builder.OnExit = OnExit;
                     builder.OnInitFailed = OnInitFailed;
+                    builder.OnInputResize = OnInputResize;
                     //builder.OnException = OnException;
 
                     // Setup strategy
@@ -441,7 +442,7 @@ namespace TickTrader.Algo.Core
             mapping?.MapInput(this, inputName, symbolCode);
         }
 
-        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe, List<BarEntity> mainSeries = null)
+        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
         {
             lock (_sync)
             {
@@ -525,7 +526,7 @@ namespace TickTrader.Algo.Core
         {
             var fixture = new EmulationControlFixture(settings, this, calcFixture);
             InvokeStrategy = fixture.InvokeEmulator;
-            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector);
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             return fixture;
@@ -615,6 +616,14 @@ namespace TickTrader.Algo.Core
             OnRuntimeError?.Invoke(ex);
         }
 
+        private void OnInputResize(int newSize)
+        {
+            string error;
+            fStrategy.BufferingStrategy.OnUserSetBufferSize(newSize, out error);
+            if (error != null)
+                _pluginLogger.OnError(error);
+        }
+
         private void OnAsyncAction(Action asyncAction)
         {
             lock (_sync)
@@ -661,7 +670,7 @@ namespace TickTrader.Algo.Core
         string IFixtureContext.MainSymbolCode => mainSymbol;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
-        IPluginLogger IFixtureContext.Logger { get => _pluginLogger; set => _pluginLogger = value; }
+        PluginLoggerAdapter IFixtureContext.Logger => builder.LogAdapter;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {

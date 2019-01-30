@@ -1,7 +1,7 @@
 ﻿using System;
-using TickTrader.Algo.Indicators.Utility;
 using TickTrader.Algo.Indicators.UTest.TestCases;
 using TickTrader.Algo.Indicators.UTest.Utility;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.PerfectCommodityChannelIndex
 {
@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.PerfectCommodityChann
 
         protected override void SetupInput()
         {
-            BarInputHelper.MapPrice(Builder, Symbol, AppliedPrice.Target.Close);
+            BarInputHelper.MapPrice(Builder, Symbol, AppliedPrice.Close);
         }
 
         protected override void GetOutput()

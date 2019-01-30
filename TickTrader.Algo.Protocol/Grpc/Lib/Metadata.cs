@@ -110,19 +110,20 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "IAEoCzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVn",
             "aW5EZXNjcmlwdG9yIm4KC1BsdWdpblN0YXRlEgsKB1NUT1BQRUQQABIMCghT",
             "VEFSVElORxABEgsKB0ZBVUxURUQQAhILCgdSVU5OSU5HEAMSDAoIU1RPUFBJ",
-            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiL8AQoNTG9nUmVj",
+            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiKPAgoNTG9nUmVj",
             "b3JkSW5mbxIsCgh0aW1lX3V0YxgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
             "aW1lc3RhbXASTgoIc2V2ZXJpdHkYAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28u",
             "UHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mby5Mb2dTZXZlcml0eRIP",
-            "CgdtZXNzYWdlGAMgASgJIlwKC0xvZ1NldmVyaXR5EggKBElORk8QABIJCgVF",
-            "UlJPUhABEgkKBVRSQURFEAISEQoNVFJBREVfU1VDQ0VTUxADEg4KClRSQURF",
-            "X0ZBSUwQBBIKCgZDVVNUT00QBSIpCgtCb3RGaWxlSW5mbxIMCgRuYW1lGAEg",
-            "ASgJEgwKBHNpemUYAiABKAMi6QEKDUJvdEZvbGRlckluZm8SDgoGYm90X2lk",
-            "GAEgASgJEk8KCWZvbGRlcl9pZBgCIAEoDjI8LlRpY2tUcmFkZXIuQWxnby5Q",
-            "cm90b2NvbC5HcnBjLkxpYi5Cb3RGb2xkZXJJbmZvLkJvdEZvbGRlcklkEgwK",
-            "BHBhdGgYAyABKAkSPQoFZmlsZXMYBCADKAsyLi5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuQm90RmlsZUluZm8iKgoLQm90Rm9sZGVySWQS",
-            "DQoJQUxHT19EQVRBEAASDAoIQk9UX0xPR1MQAWIGcHJvdG8z"));
+            "CgdtZXNzYWdlGAMgASgJEhEKCXRpbWVfc2hpdBgEIAEoDSJcCgtMb2dTZXZl",
+            "cml0eRIICgRJTkZPEAASCQoFRVJST1IQARIJCgVUUkFERRACEhEKDVRSQURF",
+            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUiKQoLQm90",
+            "RmlsZUluZm8SDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDIukBCg1Cb3RG",
+            "b2xkZXJJbmZvEg4KBmJvdF9pZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4y",
+            "PC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVy",
+            "SW5mby5Cb3RGb2xkZXJJZBIMCgRwYXRoGAMgASgJEj0KBWZpbGVzGAQgAygL",
+            "Mi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdEZpbGVJ",
+            "bmZvIioKC0JvdEZvbGRlcklkEg0KCUFMR09fREFUQRAAEgwKCEJPVF9MT0dT",
+            "EAFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -140,7 +141,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Parser, new[]{ "Code", "TextMessage" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ConnectionErrorInfo.Types.ConnectionErrorCode) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Parser, new[]{ "Key", "UseNewProtocol", "ConnectionState", "LastError" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Types.ConnectionState) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.PluginState) }, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Parser, new[]{ "TimeUtc", "Severity", "Message" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Parser, new[]{ "TimeUtc", "Severity", "Message", "TimeShit" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo.Parser, new[]{ "Name", "Size" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Parser, new[]{ "BotId", "FolderId", "Path", "Files" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) }, null)
           }));
@@ -3163,6 +3164,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       TimeUtc = other.timeUtc_ != null ? other.TimeUtc.Clone() : null;
       severity_ = other.severity_;
       message_ = other.message_;
+      timeShit_ = other.timeShit_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3204,6 +3206,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
     }
 
+    /// <summary>Field number for the "time_shit" field.</summary>
+    public const int TimeShitFieldNumber = 4;
+    private uint timeShit_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint TimeShit {
+      get { return timeShit_; }
+      set {
+        timeShit_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as LogRecordInfo);
@@ -3220,6 +3233,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (!object.Equals(TimeUtc, other.TimeUtc)) return false;
       if (Severity != other.Severity) return false;
       if (Message != other.Message) return false;
+      if (TimeShit != other.TimeShit) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -3229,6 +3243,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (timeUtc_ != null) hash ^= TimeUtc.GetHashCode();
       if (Severity != 0) hash ^= Severity.GetHashCode();
       if (Message.Length != 0) hash ^= Message.GetHashCode();
+      if (TimeShit != 0) hash ^= TimeShit.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3254,6 +3269,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(26);
         output.WriteString(Message);
       }
+      if (TimeShit != 0) {
+        output.WriteRawTag(32);
+        output.WriteUInt32(TimeShit);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -3270,6 +3289,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (Message.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Message);
+      }
+      if (TimeShit != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(TimeShit);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3293,6 +3315,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (other.Message.Length != 0) {
         Message = other.Message;
+      }
+      if (other.TimeShit != 0) {
+        TimeShit = other.TimeShit;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3318,6 +3343,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           }
           case 26: {
             Message = input.ReadString();
+            break;
+          }
+          case 32: {
+            TimeShit = input.ReadUInt32();
             break;
           }
         }

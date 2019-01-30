@@ -9,6 +9,7 @@
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
     <l:FullDateTimeConverter x:Key="FullDateTimeFormat" ConvertToLocal="True"/>
+    <l:KindAwareDateTimeConverter x:Key="KindAwareFullDateTime"/>
     <l:FullTimeConverter x:Key="FullTimeFormat" />
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
     <l:NumberConverter x:Key="AmountConverter" Type="Currency" />

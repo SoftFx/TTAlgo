@@ -1,11 +1,12 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
 {
     [Indicator(Category = "Oscillators", DisplayName = "Relative Strength Index", Version = "1.0")]
-    public class RelativeStrengthIndex : Indicator
+    public class RelativeStrengthIndex : Indicator, IRelativeStrenghtIndex
     {
         private IMA _uMa, _dMa;
 
@@ -37,9 +38,9 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
 
         protected void InitializeIndicator()
         {
-            _uMa = MABase.CreateMaInstance(Period, Method.Exponential, 1.0/Period);
+            _uMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential, 1.0/Period);
             _uMa.Init();
-            _dMa = MABase.CreateMaInstance(Period, Method.Exponential, 1.0/Period);
+            _dMa = MABase.CreateMaInstance(Period, MovingAverageMethod.Exponential, 1.0/Period);
             _dMa.Init();
         }
 

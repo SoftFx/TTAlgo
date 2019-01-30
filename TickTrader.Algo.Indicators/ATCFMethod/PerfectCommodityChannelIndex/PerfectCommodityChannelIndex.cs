@@ -1,11 +1,12 @@
 ﻿using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
 {
     [Indicator(Category = "AT&CF Method", DisplayName = "Perfect Commodity Channel Index", Version = "1.0")]
-    public class PerfectCommodityChannelIndex : Indicator
+    public class PerfectCommodityChannelIndex : Indicator, IPerfectCommodityChannelIndex
     {
-        private FastAdaptiveTrendLine.FastAdaptiveTrendLine _fatl;
+        private IFastAdaptiveTrendLine _fatl;
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
@@ -20,16 +21,22 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.PerfectCommodityChannelIndex
 
         public PerfectCommodityChannelIndex() { }
 
-        public PerfectCommodityChannelIndex(DataSeries price)
+        public PerfectCommodityChannelIndex(DataSeries price, int countBars)
         {
             Price = price;
+            CountBars = countBars;
 
             InitializeIndicator();
         }
 
+        public bool HasEnoughBars(int barsCount)
+        {
+            return _fatl.HasEnoughBars(barsCount);
+        }
+
         private void InitializeIndicator()
         {
-            _fatl = new FastAdaptiveTrendLine.FastAdaptiveTrendLine(Price);
+            _fatl = Indicators.FastAdaptiveTrendLine(Price, CountBars);
         }
 
         protected override void Init()
