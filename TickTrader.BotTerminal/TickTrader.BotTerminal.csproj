@@ -358,7 +358,6 @@
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
-    <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />

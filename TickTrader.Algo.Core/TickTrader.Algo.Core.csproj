@@ -185,10 +185,10 @@
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />
     <Compile Include="Math\BarVector.cs" />
+    <Compile Include="Math\BarVector2.cs" />
     <Compile Include="Math\BarVectorBase.cs" />
     <Compile Include="Math\MathExt.cs" />
     <Compile Include="Math\Rounding.cs" />
-    <Compile Include="Math\SyncBarVector.cs" />
     <Compile Include="Metadata\AlgoAssemblyInspector.cs" />
     <Compile Include="Metadata\Descriptors\InputDescriptor.cs" />
     <Compile Include="Metadata\Descriptors\OutputDescriptor.cs" />

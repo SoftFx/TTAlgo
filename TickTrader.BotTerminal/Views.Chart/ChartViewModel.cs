@@ -33,8 +33,7 @@ namespace TickTrader.BotTerminal
 {
     public enum ChartPeriods { MN1, W1, D1, H4, H1, M30, M15, M5, M1, S10, S1, Ticks };
 
-
-    class ChartViewModel : Screen, IDropHandler
+    internal class ChartViewModel : Screen, IDropHandler
     {
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ChartModelBase activeChart;
@@ -44,9 +43,8 @@ namespace TickTrader.BotTerminal
         private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
-        private VarDictionary<string, AlgoBotViewModel> _chartBots;
-        private VarList<OutputGroupViewModel> _allOutputs;
-
+        private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
+        private VarList<OutputGroupViewModel> _allOutputs = new VarList<OutputGroupViewModel>();
 
         public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv)
         {
@@ -66,7 +64,6 @@ namespace TickTrader.BotTerminal
             this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
-            _chartBots = new VarDictionary<string, AlgoBotViewModel>();
             var allIndicators = charts.SelectMany(c => c.Indicators);
             var allBots = _chartBots.OrderBy((id, bot) => id);
 
@@ -78,7 +75,6 @@ namespace TickTrader.BotTerminal
             //_indicatorOutputs = new VarList<OutputGroupViewModel>();
             //_botOutputs = new VarList<OutputGroupViewModel>();
             //var allOutputs = VarCollection.CombineChained(_indicatorOutputs, _botOutputs);
-            _allOutputs = new VarList<OutputGroupViewModel>();
             var overlaySeries = _allOutputs.Chain().SelectMany(i => i.OverlaySeries);
             var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
             var allPanes = _allOutputs.Chain().SelectMany(i => i.Panes);
