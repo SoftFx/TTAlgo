@@ -31,6 +31,7 @@ namespace TickTrader.BotAgent.BA.Models
         private PackageStorage _packageRepo;
         private TaskCompletionSource<object> _startedEvent;
         private bool _closed;
+        private string _workingFolder;
 
         public TradeBotModel(PluginConfig config)
         {
@@ -67,6 +68,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 _client = client;
                 _packageRepo = packageRepo;
+                _workingFolder = workingFolder;
 
                 UpdatePackage();
 
@@ -148,6 +150,7 @@ namespace TickTrader.BotAgent.BA.Models
             if (!IsStopped())
                 throw new InvalidStateException("Trade bot has been already started!");
 
+            CheckWorkingFolder();
             UpdatePackage();
 
             if (State == PluginStates.Broken)
@@ -184,6 +187,14 @@ namespace TickTrader.BotAgent.BA.Models
         private void OnBotExited()
         {
             DoStop(null).Forget();
+        }
+
+        private void CheckWorkingFolder()
+        {
+            if (!System.IO.Directory.Exists(_workingFolder))
+            {
+                System.IO.Directory.CreateDirectory(_workingFolder);
+            }
         }
 
         private Task DoStop(string error)
