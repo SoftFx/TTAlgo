@@ -88,7 +88,7 @@ namespace TickTrader.BotAgent.BA.Models
             return Path.Combine(Folder, file);
         }
 
-        private void EnsureDirectoryCreated()
+        public void EnsureDirectoryCreated()
         {
             if (!Directory.Exists(Folder))
             {
