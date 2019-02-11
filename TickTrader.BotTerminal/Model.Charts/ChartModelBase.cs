@@ -103,6 +103,7 @@ namespace TickTrader.BotTerminal
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
         public abstract Api.TimeFrames TimeFrame { get; }
+        public abstract ITimeVectorRef TimeSyncRef { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
@@ -113,6 +114,7 @@ namespace TickTrader.BotTerminal
         public string SymbolCode { get { return Model.Name; } }
         public double? CurrentAsk { get; private set; }
         public double? CurrentBid { get; private set; }
+        public bool IsIndicatorsOnline => isIndicatorsOnline;
 
         protected void Activate()
         {

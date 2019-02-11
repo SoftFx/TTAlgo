@@ -156,6 +156,11 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
+        protected override IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel outputSetup)
+        {
+            return new CachingOutputCollector<T>(fixture, outputSetup);
+        }
+
         private void Host_Connected()
         {
             if (State == PluginStates.Reconnecting)

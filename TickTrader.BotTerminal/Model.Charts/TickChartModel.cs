@@ -39,6 +39,7 @@ namespace TickTrader.BotTerminal
         }
 
         public override TimeFrames TimeFrame { get { return TimeFrames.Ticks; } }
+        public override ITimeVectorRef TimeSyncRef => null;
 
         public new void Activate()
         {

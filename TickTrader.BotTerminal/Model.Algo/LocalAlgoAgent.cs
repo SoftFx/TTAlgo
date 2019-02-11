@@ -36,7 +36,6 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, TradeBotModel> _bots;
         private PreferencesStorageModel _preferences;
 
-
         public string Name => "Local";
 
         public bool IsRemote => false;
@@ -57,8 +56,6 @@ namespace TickTrader.BotTerminal
 
         public AccessManager AccessManager { get; }
 
-
-
         public PluginIdProvider IdProvider { get; }
 
         public MappingCollection Mappings { get; }
@@ -72,7 +69,6 @@ namespace TickTrader.BotTerminal
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !PluginStateHelper.IsStopped(b.State));
 
         public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !PluginStateHelper.IsStopped(b.State));
-
 
         public event Action<PackageInfo> PackageStateChanged;
 
@@ -526,6 +522,8 @@ namespace TickTrader.BotTerminal
 
 
         #region IAlgoPluginHost
+
+        ITimeVectorRef IAlgoPluginHost.TimeSyncRef => null;
 
         void IAlgoPluginHost.Lock()
         {

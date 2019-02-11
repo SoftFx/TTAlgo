@@ -241,6 +241,7 @@
     <Compile Include="Repository\ReductionCollection.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
+    <Compile Include="Math\TimeVectorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

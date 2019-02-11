@@ -61,6 +61,14 @@ namespace TickTrader.Algo.Core
             Volume += volume;
         }
 
+        public void AppendPart(double open, double high, double low, double close, double volume)
+        {
+            High = System.Math.Max(High, high);
+            Low = System.Math.Min(Low, low);
+            Close = close;
+            Volume += volume;
+        }
+
         internal void AppendNanProof(double price, double volume)
         {
             Close = price;

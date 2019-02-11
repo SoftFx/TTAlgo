@@ -2,16 +2,24 @@
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(Category = "Test Bot Routine", DisplayName = "[T] Test Bot Outputs", Version = "1.0",
+    [TradeBot(Category = "Test Bot Routine", DisplayName = "[T] Test Bot Outputs", Version = "1.1",
         Description = "Draws best bids/asks on each quote")]
     public class TestBotOutputs : TradeBot
     {
+        [Parameter(DefaultValue = -1)]
+        public int SetBuffLength { get; set; }
+
         [Output(DisplayName = "Best Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries BestBid { get; set; }
 
         [Output(DisplayName = "Best Ask", Target = OutputTargets.Overlay, DefaultColor = Colors.Red)]
         public DataSeries BestAsk { get; set; }
 
+        protected override void Init()
+        {
+            if (SetBuffLength > 0)
+                SetInputSize(SetBuffLength);
+        }
 
         protected override void OnStart()
         {

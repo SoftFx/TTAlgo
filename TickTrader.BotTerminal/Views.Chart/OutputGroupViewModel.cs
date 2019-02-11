@@ -2,20 +2,23 @@
 using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
     internal class OutputGroupViewModel
     {
         private ChartModelBase _chart;
+        private List<OutputSeriesModel> _outputModels;
         private SymbolModel _symbol;
         private VarList<OutputSeriesModel> _overlayOutputs;
         private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
-
 
         public PluginModel Model { get; }
 
@@ -31,9 +34,7 @@ namespace TickTrader.BotTerminal
 
         public int Precision { get; private set; }
 
-
         public event System.Action PrecisionUpdated;
-
 
         public OutputGroupViewModel(PluginModel plugin, string windowId, ChartModelBase chart, SymbolModel symbol)
         {
@@ -51,30 +52,56 @@ namespace TickTrader.BotTerminal
             Model.OutputsChanged += ModelOnOutputsChanged;
         }
 
-
         public void Dispose()
         {
             Model.OutputsChanged -= ModelOnOutputsChanged;
-        }
 
+            DisposeOutputModels();
+        }
 
         private void Init()
         {
-            Model.Outputs.Values.Where(o => o.Descriptor.Target == OutputTargets.Overlay).Foreach(_overlayOutputs.Add);
+            DisposeOutputModels();
+
+            _outputModels = CreateOutputModels(Model).ToList();
+
+            _outputModels.Where(o => o.Descriptor.Target == OutputTargets.Overlay).Foreach(_overlayOutputs.Add);
             _overlayOutputs.Values.Foreach(o => _overlaySeries.Add(SeriesViewModel.FromOutputSeries(o)));
 
             foreach (OutputTargets target in Enum.GetValues(typeof(OutputTargets)))
             {
                 if (target != OutputTargets.Overlay)
                 {
-                    if (Model.Outputs.Values.Any(o => o.Descriptor.Target == target))
+                    if (_outputModels.Any(o => o.Descriptor.Target == target))
                     {
-                        _panes.Add(new OutputPaneViewModel(Model, ChartWindowId, _chart, _symbol, target));
+                        _panes.Add(new OutputPaneViewModel(Model, _outputModels, ChartWindowId, _chart, _symbol, target));
                     }
                 }
             }
 
             UpdatePrecision();
+        }
+
+        private void DisposeOutputModels()
+        {
+            if (_outputModels != null)
+            {
+                _outputModels.ForEach(m => m.Dispose());
+                _outputModels = null;
+            }
+        }
+
+        private IEnumerable<OutputSeriesModel> CreateOutputModels(PluginModel plugin)
+        {
+            foreach (var outputCollector in plugin.Outputs.Values)
+            {
+                var outputSetup = outputCollector.OutputConfig;
+
+                if (outputSetup is ColoredLineOutputSetupModel)
+                    yield return new DoubleSeriesModel(plugin, _chart, outputCollector, (ColoredLineOutputSetupModel)outputSetup);
+                else if (outputSetup is MarkerSeriesOutputSetupModel)
+                    yield return new MarkerSeriesModel(plugin, _chart, outputCollector, (MarkerSeriesOutputSetupModel)outputSetup);
+            }
         }
 
         private void UpdatePrecision()

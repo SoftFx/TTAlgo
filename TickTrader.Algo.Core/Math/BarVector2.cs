@@ -9,68 +9,80 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public class BarVector2 : IReadOnlyList<BarEntity>, IDisposable
+    public abstract class BarVectorBase2 : TimeVectorBase<BarEntity>
     {
-        private CircularList<BarEntity> _barList = new CircularList<BarEntity>();
+        private TimeFrames _timeFrame;
         private BarSampler _sampler;
 
-        protected internal BarVector2(TimeFrames timeFrame)
+        protected BarVectorBase2(TimeFrames timeFrame)
         {
             TimeFrame = timeFrame;
             _sampler = BarSampler.Get(timeFrame);
         }
 
-        public static BarVector2 Create(TimeFrames timeFrame)
-        {
-            return new BarVector2(timeFrame);
-        }
-
-        public static BarVector2 Create(BarVector2 master)
-        {
-            return new Slave(master, i =>
-            {
-                var masterBar = master[i];
-                return new BarEntity(masterBar.OpenTime, masterBar.CloseTime, double.NaN, double.NaN);
-            });
-        }
-
-        public static BarVector2 Create(BarVector2 master, Func<int, BarEntity> fillBarFunc)
-        {
-            return new Slave(master, fillBarFunc);
-        }
-
-        public int Count => _barList.Count;
-        public TimeFrames TimeFrame { get; }
-        public BarEntity this[int index] => _barList[index];
-
-        protected event Action Extended;
-
         public void AppendBar(BarEntity bar)
         {
+            AppendBarIntenral(bar, false);
+        }
+
+        public bool TryAppendBar(BarEntity bar)
+        {
+            return AppendBarIntenral(bar, true);
+        }
+
+        private bool AppendBarIntenral(BarEntity bar, bool noThrow)
+        {
             var boundaries = _sampler.GetBar(bar.OpenTime);
-            var currentBar = GetLastBar();
+            var currentBar = GetLastItem();
 
             if (currentBar != null && currentBar.OpenTime >= boundaries.Open)
-                throw new ArgumentException("Invalid time sequnce!");
+            {
+                if (noThrow)
+                    return false;
+                else
+                    throw new ArgumentException("Invalid time sequnce!");
+            }
 
-            if (boundaries.Open == bar.OpenTime || boundaries.Close != bar.CloseTime)
-                throw new ArgumentException("Bar has invalid time boundaries!");
+            if (boundaries.Open != bar.OpenTime || boundaries.Close != bar.CloseTime)
+            {
+                if (noThrow)
+                    return false;
+                else
+                    throw new ArgumentException("Bar has invalid time boundaries!");
+            }
 
-            Append(bar);
+            return Append(bar) != null;
         }
 
         public BarEntity AppendQuote(DateTime time, double price, double volume)
         {
+            return AppendQuoteInternal(false, time, price, volume);
+        }
+
+        public BarEntity TryAppendQuote(DateTime time, double price, double volume)
+        {
+            return AppendQuoteInternal(true, time, price, volume);
+        }
+
+        private BarEntity AppendQuoteInternal(bool noThrow, DateTime time, double price, double volume)
+        {
             var boundaries = _sampler.GetBar(time);
-            var currentBar = GetLastBar();
+            int currentBarIndex;
+            var currentBar = GetLastItem(out currentBarIndex);
 
             if (currentBar != null && currentBar.OpenTime > boundaries.Open)
-                throw new ArgumentException("Invalid time sequnce!");
+            {
+                if (noThrow)
+                    return null;
+                else
+                    throw new ArgumentException("Invalid time sequnce!");
+            }
 
             if (currentBar != null && currentBar.OpenTime == boundaries.Open)
             {
                 // append last bar
                 currentBar.AppendNanProof(price, volume);
+                OnBarUpdated(currentBarIndex, currentBar);
             }
             else
             {
@@ -84,7 +96,8 @@ namespace TickTrader.Algo.Core
         public BarEntity AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
         {
             var boundaries = _sampler.GetBar(time);
-            var currentBar = GetLastBar();
+            int currentBarIndex;
+            var currentBar = GetLastItem(out currentBarIndex);
 
             if (currentBar != null && currentBar.OpenTime > boundaries.Open)
                 throw new ArgumentException("Invalid time sequnce!");
@@ -92,7 +105,8 @@ namespace TickTrader.Algo.Core
             if (currentBar != null && currentBar.OpenTime == boundaries.Open)
             {
                 // join
-                currentBar = UpdateBar(currentBar, open, high, low, close, volume);
+                currentBar.AppendPart(open, high, low, close, volume);
+                OnBarUpdated(currentBarIndex, currentBar);
             }
             else
             {
@@ -111,145 +125,65 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
-        protected virtual BarEntity Append(BarEntity newBar)
+        public void AppendRange(IEnumerable<BarEntity> barRange)
         {
-            _barList.Add(newBar);
-            Extended?.Invoke();
-            return newBar;
+            foreach (var bar in barRange)
+                AppendBar(bar);
         }
 
-        protected virtual BarEntity GetLastBar()
-        {
-            if (Count == 0)
-                return null;
-            else
-                return _barList[Count - 1];
-        }
+        protected virtual void OnBarUpdated(int barIndex, BarEntity bar) { }
 
-        private static BarEntity UpdateBar(BarEntity bar, double open, double high, double low, double close, double volume)
+        public TimeFrames TimeFrame
         {
-            var entity = new BarEntity();
-            entity.OpenTime = bar.OpenTime;
-            entity.CloseTime = bar.CloseTime;
-            entity.Open = bar.Open;
-            entity.High = System.Math.Max(bar.High, high);
-            entity.Low = System.Math.Min(bar.Low, low);
-            entity.Close = close;
-            entity.Volume = bar.Volume + volume;
-            return entity;
-        }
-
-        public IEnumerator<BarEntity> GetEnumerator()
-        {
-            return _barList.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _barList.GetEnumerator();
-        }
-
-        public virtual void Dispose()
-        {
-        }
-
-        private class Slave : BarVector2
-        {
-            private BarVector2 _master;
-            private int _syncIndex = 0;
-            private CircularList<BarEntity> _futureBars = new CircularList<BarEntity>();
-            private Func<int, BarEntity> _emptyBarFunc;
-
-            public Slave(BarVector2 master, Func<int, BarEntity> emptyBarFunc) : base(master.TimeFrame)
+            get => _timeFrame;
+            set
             {
-                _master = master;
-                _emptyBarFunc = emptyBarFunc;
-
-                _master.Extended += _master_Extended;
-            }
-
-            protected override BarEntity Append(BarEntity newBar)
-            {
-                if (_master.Count == 0)
+                if (_timeFrame != value)
                 {
-                    // no sync possible, cache
-                    _futureBars.Enqueue(newBar);
-                    return newBar;
-                }
+                    if (!IsEmpty)
+                        throw new InvalidOperationException("Vector is not empty! Cannot change TimeFrame!");
 
-                return SyncTo(newBar);
-            }
-
-            private BarEntity SyncTo(BarEntity newBar)
-            {
-                while (_syncIndex < _master.Count)
-                {
-                    var masterBar = _master[_syncIndex];
-
-                    if (masterBar.OpenTime == newBar.OpenTime)
-                    {
-                        // hit
-                        _barList.Add(newBar);
-                        _syncIndex++;
-                        return newBar;
-                    }
-                    else if (newBar.OpenTime < masterBar.OpenTime)
-                    {
-                        // too old, skip
-                        return null;
-                    }
-                    else
-                    {
-                        var fillBar = _emptyBarFunc(_syncIndex);
-                        _barList.Add(fillBar);
-                        _syncIndex++;
-                    }
-                }
-
-                // no corresponding bar yet
-                _futureBars.Enqueue(newBar);
-                return newBar;
-            }
-
-            private void _master_Extended()
-            {
-                var masterCurrentBar = _master.GetLastBar();
-
-                while (_futureBars.Count > 0)
-                {
-                    var cachedBar = _futureBars[0];
-
-                    if (cachedBar.OpenTime < masterCurrentBar.OpenTime)
-                    {
-                        // skip
-                        _futureBars.Dequeue();
-                    }
-                    else if (cachedBar.OpenTime == masterCurrentBar.OpenTime)
-                    {
-                        // take
-                        var newBar = _futureBars.Dequeue();
-                        SyncTo(newBar);
-                        return;
-                    }
-                    else
-                        return;
+                    _timeFrame = value;
                 }
             }
-
-            protected override BarEntity GetLastBar()
-            {
-                if (_futureBars.Count > 0)
-                    return _futureBars[_futureBars.Count - 1];
-
-                return base.GetLastBar();
-            }
-
-            public override void Dispose()
-            {
-                _master.Extended -= _master_Extended;
-
-                base.Dispose();
-            }
         }
+
+        protected override DateTime GetItemTimeCoordinate(BarEntity item) => item.OpenTime;
+    }
+
+    public sealed class BarVector2 : BarVectorBase2
+    {
+        private CircularList<BarEntity> _barList = new CircularList<BarEntity>();
+
+        private BarVector2(TimeFrames timeFrame) : base(timeFrame)
+        {
+        }
+
+        public static BarVector2 Create(TimeFrames timeFrame)
+        {
+            return new BarVector2(timeFrame);
+        }
+
+        public static BarVector2 Create(BarVector2 master)
+        {
+            var newVector = new BarVector2(master.TimeFrame);
+            newVector.InitSynchronization(master, i =>
+            {
+                var masterBar = master[i];
+                return new BarEntity(masterBar.OpenTime, masterBar.CloseTime, double.NaN, double.NaN);
+            });
+            return newVector;
+        }
+
+        #region TimeVectorBase implementation
+
+        public override int Count => _barList.Count;
+        public override BarEntity this[int index] => _barList[index];
+
+        protected override void AddToInternalCollection(BarEntity item) => _barList.Add(item);
+        public override IEnumerator<BarEntity> GetEnumerator() => _barList.GetEnumerator();
+        protected override void ClearInternalCollection() => _barList.Clear();
+
+        #endregion
     }
 }

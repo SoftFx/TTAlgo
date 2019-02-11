@@ -88,6 +88,8 @@ namespace TickTrader.BotTerminal
         void Unlock();
 
         bool IsStarted { get; }
+        ITimeVectorRef TimeSyncRef { get; }
+
         void InitializePlugin(PluginExecutor plugin);
         void UpdatePlugin(PluginExecutor plugin);
 

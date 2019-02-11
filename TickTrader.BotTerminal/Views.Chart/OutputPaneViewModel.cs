@@ -41,8 +41,7 @@ namespace TickTrader.BotTerminal
 
         public string YAxisLabelFormat { get; private set; }
 
-
-        public OutputPaneViewModel(PluginModel plugin, string windowId, ChartModelBase chart, SymbolModel symbol, OutputTargets target)
+        public OutputPaneViewModel(PluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, ChartModelBase chart, SymbolModel symbol, OutputTargets target)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -52,12 +51,11 @@ namespace TickTrader.BotTerminal
             _outputs = new VarList<OutputSeriesModel>();
             Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();
 
-            Model.Outputs.Values.Where(o => o.Descriptor.Target == target).Foreach(_outputs.Add);
+            ouputModels.Where(o => o.Descriptor.Target == target).Foreach(_outputs.Add);
 
             UpdateAxis();
             UpdatePrecision();
         }
-
 
         private void UpdateAxis()
         {

@@ -21,16 +21,10 @@ namespace TickTrader.Algo.Core
 
         internal void BindTo(OutputBuffer<T> buffer, ITimeRef timeRef)
         {
-            if (buffer == null)
-                throw new ArgumentNullException("buffer");
-
-            if (timeRef == null)
-                throw new ArgumentNullException("timeRef");
-
             Unbind();
 
-            this.buffer = buffer;
-            this.timeRef = timeRef;
+            this.buffer = buffer ?? throw new ArgumentNullException("buffer");
+            this.timeRef = timeRef ?? throw new ArgumentNullException("timeRef");
 
             buffer.Appended = OnAppend;
             buffer.Updated = OnUpdate;
@@ -40,6 +34,7 @@ namespace TickTrader.Algo.Core
                 isBatch = false;
                 OnAllUpdated();
             };
+            buffer.Truncated = OnTruncate;
         }
 
         private void OnAppend(int index, T data)
@@ -75,6 +70,11 @@ namespace TickTrader.Algo.Core
             AllUpdated(list);
         }
 
+        private void OnTruncate(int truncateSize)
+        {
+            Truncated?.Invoke(truncateSize);
+        }
+
         internal override void Unbind()
         {
             if (buffer != null)
@@ -83,6 +83,7 @@ namespace TickTrader.Algo.Core
                 buffer.Updated = null;
                 buffer.BeginBatchBuild = null;
                 buffer.EndBatchBuild = null;
+                buffer.Truncated = null;
                 buffer = null;
             }
         }
@@ -95,6 +96,7 @@ namespace TickTrader.Algo.Core
         public event Action<Point[]> AllUpdated = delegate { };
         public event Action<Point> Updated = delegate { };
         public event Action<Point> Appended = delegate { };
+        public event Action<int> Truncated;
 
         [Serializable]
         public struct Point
