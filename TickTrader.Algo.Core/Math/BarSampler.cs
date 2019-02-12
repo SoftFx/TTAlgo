@@ -83,10 +83,7 @@ namespace TickTrader.Algo.Core
     {
         public override BarBoundaries GetBar(DateTime timepoint)
         {
-            int diff = timepoint.DayOfWeek - DayOfWeek.Monday;
-            if (diff < 0)
-                diff += 7;
-            var weekStart =  timepoint.AddDays(-diff).Date;
+            var weekStart = timepoint.StartOfWeek(DayOfWeek.Sunday);
             var weekEnd = weekStart.AddDays(7).Date;
             return new BarBoundaries(weekStart, weekEnd);
         }

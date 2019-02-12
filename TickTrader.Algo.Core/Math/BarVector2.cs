@@ -143,6 +143,7 @@ namespace TickTrader.Algo.Core
                     if (!IsEmpty)
                         throw new InvalidOperationException("Vector is not empty! Cannot change TimeFrame!");
 
+                    _sampler = BarSampler.Get(value);
                     _timeFrame = value;
                 }
             }
