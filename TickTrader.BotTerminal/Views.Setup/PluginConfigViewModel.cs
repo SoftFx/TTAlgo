@@ -1,8 +1,14 @@
 ﻿using Caliburn.Micro;
+using Machinarium.Var;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Serialization;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
@@ -32,7 +38,6 @@ namespace TickTrader.BotTerminal
         private IPluginIdProvider _idProvider;
         private bool _allowTrade;
         private bool _isolate;
-        private SymbolInfo _defaultSymbol;
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
 
@@ -177,15 +182,20 @@ namespace TickTrader.BotTerminal
             _idProvider = idProvider;
             Mode = mode;
 
+            _paramsFileHistory.SetContext(plugin.ToString());
+
             Init();
         }
 
         public void Load(PluginConfig cfg)
         {
-            SelectedTimeFrame = cfg.TimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
-                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
-            SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+            if (!IsFixedFeed)
+            {
+                SelectedTimeFrame = cfg.TimeFrame;
+                MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
+                    ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+                SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+            }
             InstanceId = cfg.InstanceId;
             AllowTrade = cfg.Permissions.TradeAllowed;
             Isolated = cfg.Permissions.Isolated;
@@ -200,9 +210,12 @@ namespace TickTrader.BotTerminal
         public PluginConfig Save()
         {
             var cfg = new PluginConfig();
-            cfg.TimeFrame = SelectedTimeFrame;
-            cfg.MainSymbol = MainSymbol.ToConfig();
-            cfg.SelectedMapping = SelectedMapping.Key;
+            if (!IsFixedFeed)
+            {
+                cfg.TimeFrame = SelectedTimeFrame;
+                cfg.MainSymbol = MainSymbol.ToConfig();
+                cfg.SelectedMapping = SelectedMapping.Key;
+            }
             cfg.InstanceId = InstanceId;
             cfg.Permissions = new PluginPermissions();
             cfg.Permissions.TradeAllowed = _allowTrade;
@@ -231,6 +244,99 @@ namespace TickTrader.BotTerminal
             IsValid = CheckValidity();
             ValidityChanged();
         }
+
+        #region Load & save parameters
+
+        private const string ParamsFileFilter = "Param files (*.apr)|*.apr";
+        private readonly XmlWriterSettings ParamsXmlSettings = new XmlWriterSettings() { Indent = true };
+        private static readonly FileHistory _paramsFileHistory = new FileHistory();
+
+        public Var<ObservableCollection<FileHistory.Entry>> ConfigLoadHistory => _paramsFileHistory.Items;
+
+        public IEnumerable<IResult> SaveParams()
+        {
+            var dialog = new SaveFileDialog();
+            dialog.FileName = Plugin.Descriptor.DisplayName + ".apr";
+            dialog.Filter = ParamsFileFilter;
+
+            var showAction = VmActions.ShowWin32Dialog(dialog);
+            yield return showAction;
+
+            if (showAction.Result == true)
+            {
+                Exception saveError = null;
+
+                try
+                {
+                    var config = Save();
+                    var serializer = new DataContractSerializer(typeof(PluginConfig));
+                    using (var stream = XmlWriter.Create(dialog.FileName, ParamsXmlSettings))
+                        serializer.WriteObject(stream, config);
+                    _paramsFileHistory.Add(dialog.FileName, false);
+                }
+                catch (Exception ex)
+                {
+                    saveError = ex;
+                }
+
+                yield return VmActions.ShowError("Failed to save parameters: " + saveError.Message, "Error");
+            }
+        }
+
+        public IEnumerable<IResult> LoadParams()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            //    var wnd = Window.GetWindow(this);
+            dialog.Filter = ParamsFileFilter;
+            dialog.CheckFileExists = true;
+
+            var showAction = VmActions.ShowWin32Dialog(dialog);
+            yield return showAction;
+
+            if (showAction.Result == true)
+            {
+                var ex = LoadParamsFromFile(dialog.FileName);
+                if (ex != null)
+                    yield return VmActions.ShowError("Failed to load parameters: " + ex.Message);
+            }
+        }
+
+        public IResult LoadParamsFrom(FileHistory.Entry historyItem)
+        {
+            var ex  = LoadParamsFromFile(historyItem.FullPath);
+
+            if (ex != null)
+            {
+                _paramsFileHistory.Remove(historyItem);
+                return VmActions.ShowError("Failed to load parameters: " + ex.Message);
+            }
+
+            return null;
+        }
+
+        private Exception LoadParamsFromFile(string filePath)
+        {
+            PluginConfig cfg = null;
+
+            try
+            {
+                var serializer = new DataContractSerializer(typeof(PluginConfig));
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                    cfg = (PluginConfig)serializer.ReadObject(stream);
+                _paramsFileHistory.Add(filePath, true);
+
+                if (cfg != null)
+                    Load(cfg);
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex;
+            }
+        }
+
+        #endregion
 
         private bool CheckValidity()
         {

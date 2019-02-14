@@ -18,6 +18,9 @@
                 <!-- Images -->
                 <ResourceDictionary Source="Resx/Images/Images.xaml"/>
 
+                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
+                <ResourceDictionary Source="Controls/DropDownMenuButton.xaml"/>
+
                 <!-- Themes -->
                 <l:ThemeSelector>
                     <l:Theme ThemeName="Classic" StylePrefix="Classic">
@@ -31,7 +34,6 @@
                     </l:Theme>-->
                 </l:ThemeSelector>
 
-                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
                 <!--<l:AutoDictionary Source="Controls/*.xaml"/>-->
 
                 <!-- Views (temp!) -->

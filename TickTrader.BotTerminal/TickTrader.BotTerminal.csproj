@@ -239,6 +239,7 @@
     <Compile Include="Controls\CustomDockManager.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
+    <Compile Include="Controls\DropDownMenuButton.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
     <Compile Include="Controls\KeyValueLabel.cs" />
@@ -303,6 +304,7 @@
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
+    <Compile Include="Infrustructure\VmActions.cs" />
     <Compile Include="Infrustructure\WindowStorageModel.cs" />
     <Compile Include="Infrustructure\WindowManager.cs" />
     <Compile Include="Interfaces.cs" />
@@ -356,6 +358,7 @@
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
+    <Compile Include="Model\FileHistory.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\ModelExtentions.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
@@ -690,6 +693,10 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
     <Page Include="Controls.Chart\MarkerAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\DropDownMenuButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

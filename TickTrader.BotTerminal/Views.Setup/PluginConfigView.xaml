@@ -3,6 +3,7 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
                     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:t="http://schemas.xceed.com/wpf/xaml/toolkit"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -538,6 +539,12 @@
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
 
             <StackPanel Grid.Row="1">
+                <StackPanel Name="ToolButtons" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,3,15,0">
+                    <l:DropDownMenuButton x:Name="LoadParamsButton" Content="Load..." Height="21" Width="65" Margin="0,0,7,0"
+                                          ItemsSource="{Binding ConfigLoadHistory.Value}"
+                                          cal:Message.Attach="[Event Click] = [Action LoadParams]; [Event ItemClick] = [Action LoadParamsFrom(LoadParamsButton.ClickedItem)]"/>
+                    <Button Content="Save..." cal:Message.Attach="SaveParams" Height="21" Width="65"/>
+                </StackPanel>
                 <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
                     <TextBlock TextWrapping="Wrap" Text="{Binding Descriptor.Description}" Margin="3"/>
                 </GroupBox>
@@ -547,32 +554,34 @@
                 <GroupBox Name="MainSymbolGroup" Header="Main Symbol" Margin="4" Visibility="Collapsed">
                     <Control Template="{StaticResource MainSymbolSettings}" />
                 </GroupBox>
-                <GroupBox Name="ParamsGroup" Header="Parameters" Margin="4">
-                    <ItemsControl IsTabStop="False" ItemsSource="{Binding Parameters}"
-                              ItemTemplate="{StaticResource LabeledPropertySetup}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="2" VerticalAlignment="Top" />
+                <Grid Name="ParamsGroup" Margin="4">
+                    <GroupBox Header="Parameters">
+                        <ItemsControl IsTabStop="False" ItemsSource="{Binding Parameters}"
+                                  ItemTemplate="{StaticResource LabeledPropertySetup}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="2" VerticalAlignment="Top" />
 
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
 
-                        <ItemsControl.ItemContainerStyle>
-                            <Style TargetType="ContentPresenter">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding DataType}" Value="TickTrader.Algo.Api.File">
-                                        <Setter Property="ToolTip">
-                                            <Setter.Value>
-                                                <TextBlock Text="{Binding FilePath}"/>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DataType}" Value="TickTrader.Algo.Api.File">
+                                            <Setter Property="ToolTip">
+                                                <Setter.Value>
+                                                    <TextBlock Text="{Binding FilePath}"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
 
-                    </ItemsControl>
-                </GroupBox>
+                        </ItemsControl>
+                    </GroupBox>
+                </Grid>
                 <GroupBox Name="InputsGroup" Header="Inputs" Margin="4">
                     <ItemsControl IsTabStop="False" ItemsSource="{Binding Inputs}"
                               ItemTemplate="{StaticResource LabeledInputSetup}">
