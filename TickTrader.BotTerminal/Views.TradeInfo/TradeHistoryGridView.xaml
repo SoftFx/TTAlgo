@@ -20,7 +20,7 @@
                     <!--OrderId and PositionId for Gross Account-->
                     <!--<DataGridTextColumn Header="Order" Width="100" Binding="{Binding OrderId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
                     <!--<DataGridTextColumn Header="Position" Width="100" Binding="{Binding PositionId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
-                    <DataGridTextColumn Header="Open Time" Width="130">
+                    <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime">
                         <DataGridTextColumn.Binding>
                             <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
                                 <Binding Path="OpenTime"/>
@@ -146,7 +146,7 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order" Width="90" Binding="{Binding UniqueId}" />
-                    <DataGridTextColumn Header="Open Time" Width="130">
+                    <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime">
                         <DataGridTextColumn.Binding>
                             <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
                                 <Binding Path="OpenTime"/>
@@ -179,7 +179,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Exec Time" Width="130">
+                    <DataGridTextColumn Header="Exec Time" Width="130" SortMemberPath="CloseTime">
                         <DataGridTextColumn.Binding>
                             <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
                                 <Binding Path="CloseTime"/>
