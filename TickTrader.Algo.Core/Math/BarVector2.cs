@@ -168,7 +168,7 @@ namespace TickTrader.Algo.Core
         public static BarVector2 Create(BarVector2 master)
         {
             var newVector = new BarVector2(master.TimeFrame);
-            newVector.InitSynchronization(master, i =>
+            newVector.InitSynchronization(master.Ref, i =>
             {
                 var masterBar = master[i];
                 return new BarEntity(masterBar.OpenTime, masterBar.CloseTime, double.NaN, double.NaN);

@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
         }
 
         public override Api.TimeFrames TimeFrame { get { return timeframe; } }
-        public override ITimeVectorRef TimeSyncRef => _barVector;
+        public override ITimeVectorRef TimeSyncRef => _barVector.Ref;
 
         protected override void ClearData()
         {

@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
     {
         private IAlgoPluginHost _host;
         private OutputCollector<T> _collector;
-        private OutputSynchronizer _synchronizer;
+        private OutputSynchronizer<T> _synchronizer;
 
         public OutputSeriesModel(IOutputCollector collector, IAlgoPluginHost host, bool isEnabled)
         {
@@ -56,11 +56,10 @@ namespace TickTrader.BotTerminal
 
             if (_collector.IsNotSyncrhonized)
             {
-                _synchronizer = OutputSynchronizer.CreateShiftSynchronizer();
-                _synchronizer.AppendEmpty += t => AppendInternal(t, NanValue);
+                _synchronizer = new OutputSynchronizer<T>(NanValue);
+                _synchronizer.DoAppend = AppendInternal;
+                _synchronizer.DoUpdate = UpdateInternal;
             }
-            else
-                _synchronizer = OutputSynchronizer.Null;
         }
 
         protected void Enable()
@@ -73,10 +72,10 @@ namespace TickTrader.BotTerminal
         {
             Clear();
 
-            _synchronizer.Start(_host.TimeSyncRef);
+            _synchronizer?.Start(_host.TimeSyncRef);
 
             if (_collector.IsNotSyncrhonized)
-                LoadSnapshot(_collector.Cache);
+                _synchronizer.AppendSnapshot(_collector.Cache);
 
             _collector.Appended += Append;
             _collector.Updated += Update;
@@ -86,7 +85,7 @@ namespace TickTrader.BotTerminal
 
         private Task Stop(object sender, CancellationToken cancelToken)
         {
-            _synchronizer.Stop();
+            _synchronizer?.Stop();
 
             _collector.Appended -= Append;
             _collector.Updated -= Update;
@@ -96,33 +95,36 @@ namespace TickTrader.BotTerminal
             return CompletedTask.Default;
         }
 
-        private void LoadSnapshot(IEnumerable<OutputFixture<T>.Point> points)
-        {
-            foreach (var p in points)
-                Append(p);
-        }
-
         private void Append(OutputFixture<T>.Point point)
         {
-            if (_synchronizer.ApproveAppend(point.TimeCoordinate.Value, point.Index))
+            if (_synchronizer != null)
+                _synchronizer.Append(point);
+            else
                 AppendInternal(point.TimeCoordinate.Value, point.Value);
         }
 
         private void Update(OutputFixture<T>.Point point)
         {
-            var newIndex = _synchronizer.ApproveUpdate(point.TimeCoordinate.Value, point.Index);
-            if (newIndex >= 0)
-                UpdateInternal(newIndex, point.TimeCoordinate.Value, point.Value);
+            if (_synchronizer != null)
+                _synchronizer.Update(point);
+            else
+                UpdateInternal(point.Index, point.TimeCoordinate.Value, point.Value);
         }
 
         private void _collector_SnapshotAppended(OutputFixture<T>.Point[] points)
         {
-            LoadSnapshot(points);
+            if (_synchronizer != null)
+                _synchronizer.AppendSnapshot(points);
+            else
+            {
+                foreach (var p in points)
+                    AppendInternal(p.TimeCoordinate.Value, p.Value);
+            }
         }
 
         private void _collector_Truncated(int size)
         {
-            _synchronizer.OnTruncate(size);
+            _synchronizer.Truncate(size);
         }
 
         protected abstract T NanValue { get; }

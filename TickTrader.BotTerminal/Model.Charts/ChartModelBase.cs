@@ -260,7 +260,6 @@ namespace TickTrader.BotTerminal
                 await StopEvent.InvokeAsync(this);
                 await LoadData(cToken);
                 ApplyQueue();
-                StartEvent();
                 stateController.PushEvent(Events.Loaded);
             }
             catch (Exception ex)

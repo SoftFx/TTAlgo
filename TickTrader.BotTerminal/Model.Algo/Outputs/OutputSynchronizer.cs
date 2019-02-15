@@ -7,109 +7,109 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal abstract class OutputSynchronizer
+    internal class OutputSynchronizer<T>
     {
-        public abstract void Start(ITimeVectorRef baseVector);
-        public abstract void Stop();
-        public abstract bool ApproveAppend(DateTime itemTime, int itemIndex);
-        public abstract int ApproveUpdate(DateTime itemTime, int itemIndex);
-        public abstract void OnTruncate(int truncateSize);
+        private ITimeVectorRef _baseVector;
+        private int _size;
+        private T _emptyValue;
 
-        public virtual event Action<DateTime> AppendEmpty;
-
-        public static OutputSynchronizer Null { get; } = new NullSynchronizer();
-        public static OutputSynchronizer CreateShiftSynchronizer() => new ShiftSynchronizer();
-
-        private class NullSynchronizer : OutputSynchronizer
+        public OutputSynchronizer(T emptyValue)
         {
-            public override void Start(ITimeVectorRef baseVector) { }
-            public override void Stop() { }
-            public override bool ApproveAppend(DateTime itemTime, int itemIndex) => true;
-            public override int ApproveUpdate(DateTime itemTime, int itemIndex) => itemIndex;
-            public override void OnTruncate(int truncateSize) { }
-
-            public override event Action<DateTime> AppendEmpty { add { } remove { } }
+            _emptyValue = emptyValue;
         }
 
-        private class ShiftSynchronizer : OutputSynchronizer
+        public Action<DateTime, T> DoAppend { get; set; }
+        public Action<int, DateTime, T> DoUpdate { get; set; }
+
+        public void Start(ITimeVectorRef baseVector)
         {
-            private bool _isInSync;
-            private int _shift;
-            private DateTime _baseTime;
-            private ITimeVectorRef _baseVector;
+            _baseVector = baseVector;
+            _size = 0;
+        }
 
-            public override void Start(ITimeVectorRef baseVector)
+        public void Stop()
+        {
+        }
+
+        public void AppendSnapshot(IEnumerable<OutputFixture<T>.Point> points)
+        {
+            int syncIndex = -1;
+
+            foreach (var point in points)
             {
-                if (baseVector.Count <= 0)
-                    throw new InvalidOperationException("Reference vector is empty!");
+                var pointTime = point.TimeCoordinate.Value;
 
-                _baseVector = baseVector;
-                _baseTime = baseVector.GetTimeAt(0);
-                _isInSync = false;
-            }
-
-            public override void Stop()
-            {
-                _isInSync = false;
-                _baseVector = null;
-                _baseTime = DateTime.MaxValue;
-                _shift = 0;
-            }
-
-            public override bool ApproveAppend(DateTime itemTime, int itemIndex)
-            {
-                if (_isInSync)
-                    return true;
-
-                if (itemTime >= _baseTime)
+                if (syncIndex >= 0)
                 {
-                    // calculate shift
-                    var baseIndex = GetBaseIndexByTime(itemTime);
-                    _shift = baseIndex - itemIndex;
+                    while (true)
+                    {
+                        syncIndex++;
 
-                    if (_shift > 0)
-                        FillEmptySpace(_shift);
+                        if (syncIndex >= _baseVector.Count)
+                            return; // end of base vector -> exit
 
-                    _isInSync = true;
-                    return true;
+                        var baseTime = _baseVector[syncIndex];
+
+                        if (baseTime == pointTime)
+                        {
+                            // hit -> append point
+                            DoAppend?.Invoke(pointTime, point.Value);
+                            _size++;
+                            break; // take next point
+                        }
+                        else if (pointTime > baseTime)
+                        {
+                            // miss => base vector does not have this point -> skip point
+                            break; // take next point
+                        }
+                        else // if (pointTime < baseTime)
+                        {
+                            // miss -> base vector contains point we dont have -> fill empty point
+                            DoAppend?.Invoke(pointTime, _emptyValue);
+                            _size++;
+                        }
+                    }
                 }
+                else if (pointTime >= _baseVector[0])
+                    syncIndex = Append(point);
+            }
+        }
 
-                return false;
+        public int Append(OutputFixture<T>.Point point)
+        {
+            var pointTime = point.TimeCoordinate.Value;
+            var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
+
+            if (index >= 0)
+            {
+                FillEmptySpace(index);
+                DoAppend?.Invoke(pointTime, point.Value);
+                _size++;
             }
 
-            public override int ApproveUpdate(DateTime itemTime, int itemIndex)
+            return index;
+        }
+
+        public void Update(OutputFixture<T>.Point point)
+        {
+            var pointTime = point.TimeCoordinate.Value;
+            var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
+            if (index >= 0)
+                DoUpdate?.Invoke(index, pointTime, point.Value);
+        }
+
+        public void Truncate(int truncateSize)
+        {
+            _size -= truncateSize;
+        }
+
+        private void FillEmptySpace(int targetSize)
+        {
+            while (_size < targetSize)
             {
-                if (!_isInSync)
-                    return -1;
-
-                return itemIndex + _shift;
-            }
-
-            public override void OnTruncate(int truncateSize)
-            {
-                _shift += truncateSize;
-            }
-
-            private int GetBaseIndexByTime(DateTime time)
-            {
-                int i = 0;
-
-                for (;i < _baseVector.Count; i++)
-                {
-                    if (time <= _baseVector.GetTimeAt(i))
-                        break;
-                }
-
-                return i;
-            }
-
-            private void FillEmptySpace(int stopIndex)
-            {
-                for (int i = 0; i < stopIndex; i++)
-                {
-                    var time = _baseVector.GetTimeAt(i);
-                    AppendEmpty(time);
-                }
+                var pointTime = _baseVector[_size];
+                DoAppend?.Invoke(pointTime, _emptyValue);
+                _size++;
             }
         }
     }

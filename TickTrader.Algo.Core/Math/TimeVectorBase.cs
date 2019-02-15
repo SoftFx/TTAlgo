@@ -8,25 +8,26 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public interface ITimeVectorRef
+    public interface ITimeVectorRef : IReadOnlyList<DateTime>
     {
-        DateTime GetTimeAt(int index);
-        int Count { get; }
         event Action Extended;
     }
 
-    public abstract class TimeVectorBase<T> : ITimeVectorRef, IReadOnlyList<T>, IDisposable
+    public abstract class TimeVectorBase<T> : IReadOnlyList<T>, IDisposable
     {
         private ISynchroniser _sync;
+        private RefImpl _ref;
 
         protected TimeVectorBase()
         {
+            _ref = new RefImpl(this);
         }
 
         public abstract int Count { get; }
         public abstract T this[int index] { get; }
         public int WaitingSyncCount => _sync?.CachedItemsCount ?? 0;
         public bool IsEmpty => Count + WaitingSyncCount == 0;
+        public ITimeVectorRef Ref => _ref;
 
         public virtual void Clear()
         {
@@ -37,8 +38,6 @@ namespace TickTrader.Algo.Core
         protected abstract void ClearInternalCollection();
 
         protected abstract DateTime GetItemTimeCoordinate(T item);
-
-        public event Action Extended;
 
         public void InitSynchronization(ITimeVectorRef masterVector, Func<int, T> fillItemFunc)
         {
@@ -58,7 +57,7 @@ namespace TickTrader.Algo.Core
         private T AppendNoSync(T newItem)
         {
             AddToInternalCollection(newItem);
-            Extended?.Invoke();
+            _ref.OnExtended();
             return newItem;
         }
 
@@ -86,11 +85,6 @@ namespace TickTrader.Algo.Core
                 return this[Count - 1];
         }
 
-        public DateTime GetTimeAt(int index)
-        {
-            return GetItemTimeCoordinate(this[index]);
-        }
-
         public abstract IEnumerator<T> GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -101,6 +95,36 @@ namespace TickTrader.Algo.Core
         public virtual void Dispose()
         {
             _sync?.Dispose();
+        }
+
+        private class RefImpl : ITimeVectorRef
+        {
+            private TimeVectorBase<T> _vector;
+
+            public RefImpl(TimeVectorBase<T> vector)
+            {
+                _vector = vector;
+            }
+
+            public int Count => _vector.Count;
+            public DateTime this[int index] => _vector.GetItemTimeCoordinate(_vector[index]);
+
+            public event Action Extended;
+
+            public void OnExtended()
+            {
+                Extended?.Invoke();
+            }
+
+            public IEnumerator<DateTime> GetEnumerator()
+            {
+                return _vector.Select(i => _vector.GetItemTimeCoordinate(i)).GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
 
         private interface ISynchroniser : IDisposable
@@ -152,7 +176,7 @@ namespace TickTrader.Algo.Core
             private void _master_Extended()
             {
                 //var masterLastItem = 
-                var masterItemTime = _master.GetTimeAt(_master.Count - 1);
+                var masterItemTime = _master[_master.Count - 1];
 
                 while (_futureItems.Count > 0)
                 {
@@ -194,7 +218,7 @@ namespace TickTrader.Algo.Core
 
                 while (_syncIndex < _master.Count)
                 {
-                    var masterItemTime = _master.GetTimeAt(_syncIndex);
+                    var masterItemTime = _master[_syncIndex];
 
                     if (masterItemTime == newItemTime)
                     {
