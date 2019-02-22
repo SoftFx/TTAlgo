@@ -151,6 +151,7 @@
     <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\ExecutorHandler.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />

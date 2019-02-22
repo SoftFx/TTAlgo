@@ -3,7 +3,7 @@
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <ControlTemplate x:Key="JournalPage.Classic">
-        <DataGrid Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding JournalRecords.Value}" IsReadOnly="True"
+        <DataGrid Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding JournalRecords}" IsReadOnly="True"
                   AutoGenerateColumns="False" SelectionMode="Single" CanUserReorderColumns="False" CanUserSortColumns="False"
                   BorderThickness="0">
             <DataGrid.Columns>

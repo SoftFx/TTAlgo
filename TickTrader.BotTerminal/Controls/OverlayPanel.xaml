@@ -7,15 +7,15 @@
         <Grid Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"
               VerticalAlignment="{TemplateBinding VerticalAlignment}"
               HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
-            <ContentPresenter x:Name="contenHost" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsEnabled="False" Opacity="0.5"/>
+            <ContentPresenter x:Name="contenHost" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsEnabled="True" Opacity="1"/>
             <ContentControl cal:View.Model="{TemplateBinding OverlayModel}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
         </Grid>
-        <ControlTemplate.Triggers>
+        <!--<ControlTemplate.Triggers>
             <Trigger Property="OverlayModel" Value="{x:Null}">
                 <Setter TargetName="contenHost" Property="IsEnabled" Value="True"/>
                 <Setter TargetName="contenHost" Property="Opacity" Value="1"/>
             </Trigger>
-        </ControlTemplate.Triggers>
+        </ControlTemplate.Triggers>-->
     </ControlTemplate>
 
     <Style TargetType="l:OverlayPanel">

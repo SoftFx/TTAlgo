@@ -14,26 +14,25 @@ namespace TickTrader.Algo.Core
     {
         private static int IdSeed;
 
-        //private AlgoPluginRef _pluginRef;
         private readonly FeedEmulator _feed;
-        private readonly PluginExecutor _executor;
+        private readonly ExecutorHandler _executor;
         private EmulationControlFixture _control;
         private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
         private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
         private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
 
-        public Backtester(AlgoPluginRef pluginRef, DateTime? from, DateTime? to)
+        public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext updateSync, DateTime? from, DateTime? to)
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
-            _executor = pluginRef.CreateExecutor();
-            _executor.Metadata = this;
+            _executor = new ExecutorHandler(pluginRef, updateSync);
+            _executor.Core.Metadata = this;
 
             EmulationPeriodStart = from;
             EmulationPeriodEnd = to;
 
-            _control = _executor.InitEmulation(this);
+            _control = _executor.Core.InitEmulation(this);
             _feed = _control.Feed;
-            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
+            _executor.Core.InitBarStrategy(_feed, Api.BarPriceType.Bid);
 
             Leverage = 100;
             InitialBalance = 10000;
@@ -41,6 +40,7 @@ namespace TickTrader.Algo.Core
             AccountType = AccountTypes.Gross;
         }
 
+        public ExecutorHandler Executor => _executor;
         public string MainSymbol { get; set; }
         public AccountTypes AccountType { get; set; }
         public string BalanceCurrency { get; set; }
@@ -52,7 +52,6 @@ namespace TickTrader.Algo.Core
         public TimeFrames MainTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; }
         public DateTime? EmulationPeriodEnd { get; }
-        public int EventsCount => _control.Collector.EventsCount;
         public int TradesCount => _control.TradeHistory.Count;
         public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
@@ -66,19 +65,20 @@ namespace TickTrader.Algo.Core
         {
             cToken.Register(() => _control.CancelEmulation());
 
-            _executor.InitSlidingBuffering(4000);
+            _executor.Core.InitSlidingBuffering(4000);
 
-            _executor.MainSymbolCode = MainSymbol;
-            _executor.TimeFrame = MainTimeframe;
-            _executor.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
-            _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
+            _executor.Core.MainSymbolCode = MainSymbol;
+            _executor.Core.TimeFrame = MainTimeframe;
+            _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
+            _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             _control.OnStart();
+            _executor.Start();
 
             if (!_control.WarmUp(WarmupSize, WarmupUnits))
                 return;
 
-            _executor.Start();
+            _executor.Core.Start();
 
             try
             {
@@ -87,17 +87,13 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
+                _executor.Stop();
             }
         }
 
         public void CancelTesting()
         {
             _control.CancelEmulation();
-        }
-
-        public IPagedEnumerator<BotLogRecord> GetEvents()
-        {
-            return _control.Collector.GetEvents();
         }
 
         public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
@@ -148,17 +144,17 @@ namespace TickTrader.Algo.Core
 
         void IPluginSetupTarget.SetParameter(string id, object value)
         {
-            _executor.SetParameter(id, value);
+            _executor.Core.SetParameter(id, value);
         }
 
         T IPluginSetupTarget.GetFeedStrategy<T>()
         {
-            return _executor.GetFeedStrategy<T>();
+            return _executor.Core.GetFeedStrategy<T>();
         }
 
         void IPluginSetupTarget.MapInput(string inputName, string symbolCode, Mapping mapping)
         {
-            _executor.MapInput(inputName, symbolCode, mapping);
+            _executor.Core.MapInput(inputName, symbolCode, mapping);
         }
 
         #endregion

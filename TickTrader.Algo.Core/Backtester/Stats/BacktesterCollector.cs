@@ -16,7 +16,6 @@ namespace TickTrader.Algo.Core
     internal class BacktesterCollector : CrossDomainObject, IPluginLogger
     {
         private PluginExecutor _executor;
-        private List<BotLogRecord> _events = new List<BotLogRecord>();
         private Dictionary<string, object> _outputBuffers = new Dictionary<string, object>();
         private BarSequenceBuilder _mainBarVector;
         private BarSequenceBuilder _equityBuilder;
@@ -43,7 +42,7 @@ namespace TickTrader.Algo.Core
 
         private DateTime VirtualTimepoint => InvokeEmulator.SafeVirtualTimePoint;
 
-        public int EventsCount => _events.Count;
+        //public int EventsCount => _events.Count;
         public int BarCount => _mainSymbolHistory.Count;
 
         public void OnStart(IBacktesterSettings settings)
@@ -97,7 +96,7 @@ namespace TickTrader.Algo.Core
             _mainBarVector = null;
             _equityBuilder = null;
             _marginBuilder = null;
-            _events = null;
+            //_events = null;
 
             base.Dispose();
         }
@@ -139,7 +138,12 @@ namespace TickTrader.Algo.Core
         public void AddEvent(LogSeverities severity, string message, string description = null)
         {
             if (CheckFilter(severity))
-                _events.Add(new BotLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description));
+            {
+                var record = new BotLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
+                _executor.OnUpdate(record);
+
+                //_events.Add();
+            }
         }
 
         public void LogTrade(string message)
@@ -150,11 +154,6 @@ namespace TickTrader.Algo.Core
         public void LogTradeFail(string message)
         {
             AddEvent(LogSeverities.TradeFail, message);
-        }
-
-        public IPagedEnumerator<BotLogRecord> GetEvents()
-        {
-            return _events.GetCrossDomainEnumerator(4000);
         }
 
         public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)

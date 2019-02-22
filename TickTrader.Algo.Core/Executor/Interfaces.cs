@@ -78,6 +78,7 @@ namespace TickTrader.Algo.Core
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
+        bool IsGlobalUpdateMarshalingEnabled { get; }
 
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
@@ -85,6 +86,8 @@ namespace TickTrader.Algo.Core
         void EnqueueCustomInvoke(Action<PluginBuilder> action);
         void ProcessNextOrderUpdate();
         void OnInternalException(Exception ex);
+
+        void SendExtUpdate(object update);
 
         IPluginFeedProvider FeedProvider { get; }
         SubscriptionManager Dispenser { get; }

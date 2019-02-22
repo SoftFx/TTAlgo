@@ -993,6 +993,9 @@ namespace TickTrader.Algo.Core
 
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
 
+            if (tradeReport != null)
+                _history.Add(tradeReport);
+
             return new FillInfo() { FillAmount = fillAmount, FillPrice = fillPrice, Position = newPos, NetPos = netInfo, SymbolInfo = order.SymbolInfo };
         }
 
@@ -1060,6 +1063,8 @@ namespace TickTrader.Algo.Core
             {
                 report.FillAccountBalanceConversionRates(_calcFixture, _acc.BalanceCurrency, _acc.Balance);
             }
+
+            _history.Add(report);
 
             _opSummary.AddCancelAction(order);
 
@@ -1678,13 +1683,15 @@ namespace TickTrader.Algo.Core
             var trTime = _scheduler.UnsafeVirtualTimePoint;
 
             // update trade history
-            _history.Create(trTime, smb, TradeExecActions.PositionClosed, trReason)
+            var tReport = _history.Create(trTime, smb, TradeExecActions.PositionClosed, trReason)
                 .FillGenericOrderData(_calcFixture, position)
                 .FillClosePosData(position, trTime, actualCloseAmount, closePrice, reqAmount, reqPrice, posById)
                 .FillCharges(charges, profit, totalProfit)
                 .FillProfitConversionRates(_acc.BalanceCurrency, profit, _calcFixture)
                 .FillAccountBalanceConversionRates(_calcFixture, _acc.BalanceCurrency, _acc.Balance)
                 .FillAccountSpecificFields(_calcFixture);
+
+            _history.Add(tReport);
 
             var orderCopy = position.Clone();
 

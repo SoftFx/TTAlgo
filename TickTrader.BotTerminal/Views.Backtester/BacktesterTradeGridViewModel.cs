@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 {
     class BacktesterTradeGridViewModel
     {
-        private List<TransactionReport> _reports;
+        private ObservableCollection<TransactionReport> _reports = new ObservableCollection<TransactionReport>();
 
         public BacktesterTradeGridViewModel()
         {
@@ -21,20 +21,20 @@ namespace TickTrader.BotTerminal
             GridView.AutoSizeColumns = false;
             GridView.ConvertTimeToLocal = false;
             GridView.AccType.Value = Algo.Api.AccountTypes.Gross;
+            GridView.SetCollection(_reports);
         }
 
         public TradeHistoryGridViewModel GridView { get; }
 
         public void Clear(AccountTypes newAccType)
         {
-            GridView.SetCollection(new List<TransactionReport>());
+            _reports.Clear();
             GridView.AccType.Value = newAccType;
         }
 
-        public void Fill(List<TransactionReport> reports)
+        public void Append(TransactionReport report)
         {
-            _reports = reports;
-            GridView.SetCollection(reports);
+            _reports.Add(report);
         }
 
         public async Task SaveAsCsv(Stream entryStream, IActionObserver observer)

@@ -299,7 +299,7 @@ namespace TickTrader.BotTerminal
             //packageRef.IncrementRef();
             //packageRef.DecrementRef();
 
-            using (var tester = new Backtester(pluginRef, _emulteFrom, _emulateTo))
+            using (var tester = new Backtester(pluginRef, new DispatcherSync(), _emulteFrom, _emulateTo))
             {
                 pluginSetupModel.Apply(tester);
 
@@ -310,6 +310,9 @@ namespace TickTrader.BotTerminal
                     else if (outputSetup is MarkerSeriesOutputSetupModel)
                         tester.InitOutputCollection<Marker>(outputSetup.Id);
                 }
+
+                tester.Executor.LogUpdated += JournalPage.Append;
+                tester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
 
                 Exception execError = null;
 
@@ -346,8 +349,6 @@ namespace TickTrader.BotTerminal
                     }
                 }
 
-                await CollectEvents(tester, pluginSetupModel, observer);
-                await LoadTradeHistory(tester, observer);
                 await LoadStats(observer, tester);
                 await LoadChartData(tester, observer, tester);
 
@@ -361,61 +362,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task CollectEvents(Backtester tester, PluginSetupModel pluginSetup, IActionObserver observer)
-        {
-            var totalCount = tester.EventsCount;
-
-            observer.StartProgress(0, totalCount);
-            observer.SetMessage("Updating journal...");
-
-            JournalPage.SetData(await Task.Run(() =>
-            {
-                var events = new List<BotLogRecord>(totalCount);
-
-                events.Add(CreateInfoRecord(0, PluginSetupToText(pluginSetup, true)));
-                events.Add(CreateInfoRecord(1, FeedSetupToText(pluginSetup)));
-                events.Add(CreateInfoRecord(2, _settings.ToText(true)));
-
-                using (var cde = tester.GetEvents())
-                {
-                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
-                        events.Add(record);
-
-                    return events;
-                }
-            }));
-        }
-
         private BotLogRecord CreateInfoRecord(uint no, string message)
         {
             return new BotLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
         }
 
-        private async Task LoadTradeHistory(Backtester tester, IActionObserver observer)
+        private void Executor_TradeHistoryUpdated(TradeReportEntity record)
         {
-            var totalCount = tester.TradesCount;
-
-            observer.StartProgress(0, totalCount);
-            observer.SetMessage("Loading trades...");
-
-            var items = await Task.Run(() =>
-            {
-                var trades = new List<TransactionReport>(totalCount);
-
-                using (var cde = tester.GetTradeHistory())
-                {
-                    var symbols = _client.Symbols;
-                    var accType = tester.AccountType;
-
-                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
-                        trades.Add(TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol)));
-
-                    return trades;
-                }
-            });
-
-
-            TradesPage.Fill(items);
+            var symbols = _client.Symbols;
+            var accType = _settings.AccType;
+            var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
+            TradesPage.Append(trRep);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)

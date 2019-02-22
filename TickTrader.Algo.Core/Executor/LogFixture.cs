@@ -26,40 +26,46 @@ namespace TickTrader.Algo.Core
         {
             _context.Builder.Logger = this;
 
-            var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
-            var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
+            if (!_context.IsGlobalUpdateMarshalingEnabled)
+            {
+                var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
+                var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
 
-            _stopSrc = new CancellationTokenSource();
-            _logBuffer = new BufferBlock<BotLogRecord>(bufferOptions);
-            _logSender = new ActionBlock<BotLogRecord[]>(msgList =>
+                _stopSrc = new CancellationTokenSource();
+                _logBuffer = new BufferBlock<BotLogRecord>(bufferOptions);
+                _logSender = new ActionBlock<BotLogRecord[]>(msgList =>
+                {
+                    try
+                    {
+                        NewRecords?.Invoke(msgList);
+                    }
+                    catch (Exception ex)
+                    {
+                        _context.OnInternalException(ex);
+                    }
+                }, senderOptions);
+
+                _logBuffer.BatchLinkTo(_logSender, 30);
+            }
+        }
+
+        public async Task Stop()
+        {
+            if (!_context.IsGlobalUpdateMarshalingEnabled)
             {
                 try
                 {
-                    NewRecords?.Invoke(msgList);
+                    _logBuffer.Complete();
+                    await _logBuffer.Completion;
+                    await Task.Delay(100);
+                    _stopSrc.Cancel();
+                    _logSender.Complete();
+                    await _logSender.Completion;
                 }
                 catch (Exception ex)
                 {
                     _context.OnInternalException(ex);
                 }
-            }, senderOptions);
-
-            _logBuffer.BatchLinkTo(_logSender, 30);
-        }
-
-        public async Task Stop()
-        {
-            try
-            {
-                _logBuffer.Complete();
-                await _logBuffer.Completion;
-                await Task.Delay(100);
-                _stopSrc.Cancel();
-                _logSender.Complete();
-                await _logSender.Completion;
-            }
-            catch (Exception ex)
-            {
-                _context.OnInternalException(ex);
             }
         }
 
@@ -187,7 +193,11 @@ namespace TickTrader.Algo.Core
             try
             {
                 var timeKey = _keyGen.NextKey(DateTime.Now);
-                _logBuffer.SendAsync(new BotLogRecord(timeKey, logSeverity, message, errorDetails)).Wait();
+                var record = new BotLogRecord(timeKey, logSeverity, message, errorDetails);
+                if (_logBuffer != null)
+                    _logBuffer.SendAsync(record).Wait();
+                else
+                    _context.SendExtUpdate(record);
             }
             catch (Exception ex)
             {

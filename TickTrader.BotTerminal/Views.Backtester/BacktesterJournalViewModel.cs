@@ -1,6 +1,7 @@
 ﻿using Machinarium.Var;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,23 +13,28 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterJournalViewModel
     {
-        private Property<List<BotLogRecord>> _journalContent = new Property<List<BotLogRecord>>();
+        //private Property<ObservableCollection<BotLogRecord>> _journalContent = new Property<ObservableCollection<BotLogRecord>>();
 
-        public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
+        public ObservableCollection<BotLogRecord> JournalRecords { get; } = new ObservableCollection<BotLogRecord>();
 
-        public void SetData(List<BotLogRecord> records)
+        //public void SetData(List<BotLogRecord> records)
+        //{
+        //    _journalContent.Value = records;
+        //}
+
+        public void Append(BotLogRecord record)
         {
-            _journalContent.Value = records;
+            JournalRecords.Add(record);
         }
 
         public void Clear()
         {
-            _journalContent.Value = null;
+            JournalRecords.Clear();
         }
 
         public async Task SaveToFile(System.IO.Stream stream, IActionObserver observer)
         {
-            var records = JournalRecords.Value;
+            var records = JournalRecords;
 
             long progress = 0;
 

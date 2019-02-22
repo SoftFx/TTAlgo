@@ -223,6 +223,9 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        internal bool IsGlobalmarshalingenabled { get; set; }
+        internal Action<object> OnUpdate { get; set; }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
@@ -671,6 +674,7 @@ namespace TickTrader.Algo.Core
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
         PluginLoggerAdapter IFixtureContext.Logger => builder.LogAdapter;
+        bool IFixtureContext.IsGlobalUpdateMarshalingEnabled => IsGlobalmarshalingenabled;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
@@ -706,6 +710,8 @@ namespace TickTrader.Algo.Core
         {
             OnInternalException(ex);
         }
+
+        void IFixtureContext.SendExtUpdate(object update) => OnUpdate(update);
 
         #endregion
 

@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core
             Collector = new BacktesterCollector(executor);
             InvokeEmulator = new InvokeEmulator(settings, Collector, Feed);
             TradeHistory = new TradeHistoryEmulator();
+            TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
             Executor = executor;
         }
 
@@ -113,6 +114,11 @@ namespace TickTrader.Algo.Core
                 return ex;
 
             return new AlgoException(ex.GetType().Name + ": " + ex.Message);
+        }
+
+        private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
+        {
+            Executor.OnUpdate(rep.Entity);
         }
     }
 }
