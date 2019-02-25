@@ -1,6 +1,8 @@
 ﻿using Machinarium.Var;
+using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,19 +16,18 @@ namespace TickTrader.BotTerminal
     {
         private TestingStatistics _stats;
         private Property<Dictionary<string, string>> _statProperties;
-        private Property<List<BacktesterStatChartViewModel>> _charts;
         private IntProperty _depositDigits;
 
         public BacktesterReportViewModel()
         {
             _statProperties = AddProperty<Dictionary<string, string>>();
-            _charts = AddProperty<List<BacktesterStatChartViewModel>>();
             _depositDigits = AddIntProperty(2);
             RebuildReport(new TestingStatistics());
         }
 
         public Var<Dictionary<string, string>> StatProperties => _statProperties.Var;
-        public Var<List<BacktesterStatChartViewModel>> Charts => _charts.Var;
+        public ObservableCollection<BacktesterStatChartViewModel> SmallCharts { get; } = new ObservableCollection<BacktesterStatChartViewModel>();
+        public ObservableCollection<BacktesterStatChartViewModel> LargeCharts { get; } = new ObservableCollection<BacktesterStatChartViewModel>();
         public Var<int> DepositDigits => _depositDigits.Var;
 
         public TestingStatistics Stats
@@ -45,6 +46,8 @@ namespace TickTrader.BotTerminal
         public void Clear()
         {
             Stats = null;
+            SmallCharts.Clear();
+            LargeCharts.Clear();
         }
 
         public void SaveAsText(Stream file)
@@ -88,18 +91,29 @@ namespace TickTrader.BotTerminal
             newPropertis.Add("Order modifications", newStats.OrderModifications.ToString());
             newPropertis.Add("Order modifications rejected", newStats.OrderModificationRejected.ToString());
 
-            var newCharts = new List<BacktesterStatChartViewModel>();
+            _statProperties.Value = newPropertis;
 
-            newCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
+            SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
                 .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns)
                 .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns));
 
-            newCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
+            SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
                 .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns)
                 .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns));
+        }
 
-            _charts.Value = newCharts;
-            _statProperties.Value = newPropertis;
+        public void AddEquityChart(OhlcDataSeries<DateTime, double> bars)
+        {
+            var chart = new BacktesterStatChartViewModel("Equity", ReportDiagramTypes.CategoryDatetime);
+            chart.AddBarSeries(bars, ReportSeriesStyles.Equity);
+            LargeCharts.Add(chart);
+        }
+
+        public void AddMarginChart(OhlcDataSeries<DateTime, double> bars)
+        {
+            var chart = new BacktesterStatChartViewModel("Margin", ReportDiagramTypes.CategoryDatetime);
+            chart.AddBarSeries(bars, ReportSeriesStyles.Margin);
+            LargeCharts.Add(chart);
         }
 
         private static string Format(TimeSpan timeSpan)

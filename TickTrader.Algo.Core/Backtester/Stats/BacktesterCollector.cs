@@ -68,6 +68,36 @@ namespace TickTrader.Algo.Core
 
             _marginBuilder = BarSequenceBuilder.Create(_mainBarVector);
             _marginBuilder.BarOpened += (b) => _marginHistory.Add(b);
+
+            if (settings.ChartDataMode == BacktesterStreamingModes.Snapshot)
+                _mainBarVector.BarOpened += (b) => _mainSymbolHistory.Add(b);
+            else if(settings.ChartDataMode == BacktesterStreamingModes.BarCompletion)
+                _mainBarVector.BarClosed += (b) => SendUpdate(b, ChartDataType.MainRate);
+            else if(settings.ChartDataMode == BacktesterStreamingModes.Realtime)
+            {
+                _mainBarVector.BarUpdated += (b) => SendUpdate(b, ChartDataType.MainRate);
+                _mainBarVector.BarOpened += (b) => SendUpdate(b, ChartDataType.MainRate);
+            }
+
+            if (settings.EquityDataMode == BacktesterStreamingModes.Snapshot)
+                _equityBuilder.BarOpened += (b) => _equityHistory.Add(b);
+            else if (settings.ChartDataMode == BacktesterStreamingModes.BarCompletion)
+                _equityBuilder.BarClosed += (b) => SendUpdate(b, ChartDataType.Equity);
+            else if (settings.ChartDataMode == BacktesterStreamingModes.Realtime)
+            {
+                _equityBuilder.BarUpdated += (b) => SendUpdate(b, ChartDataType.Equity);
+                _equityBuilder.BarOpened += (b) => SendUpdate(b, ChartDataType.Equity);
+            }
+
+            if (settings.MarginDataMode == BacktesterStreamingModes.Snapshot)
+                _marginBuilder.BarOpened += (b) => _marginHistory.Add(b);
+            else if (settings.ChartDataMode == BacktesterStreamingModes.BarCompletion)
+                _marginBuilder.BarClosed += (b) => SendUpdate(b, ChartDataType.Margin);
+            else if (settings.ChartDataMode == BacktesterStreamingModes.Realtime)
+            {
+                _marginBuilder.BarUpdated += (b) => SendUpdate(b, ChartDataType.Margin);
+                _marginBuilder.BarOpened += (b) => SendUpdate(b, ChartDataType.Margin);
+            }
         }
 
         public void OnStop(IBacktesterSettings settings, AccountAccessor acc)
@@ -99,6 +129,11 @@ namespace TickTrader.Algo.Core
             //_events = null;
 
             base.Dispose();
+        }
+
+        private void SendUpdate(BarEntity bar, ChartDataType type)
+        {
+            _executor.OnUpdate(new ChartDataUpdate(type, bar));
         }
 
         #region Journal

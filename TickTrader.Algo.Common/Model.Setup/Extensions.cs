@@ -43,19 +43,22 @@ namespace TickTrader.Algo.Common.Model.Setup
         public static ISymbolInfo ResolveMainSymbol(this SymbolConfig config, IAlgoSetupMetadata metadata, IAlgoSetupContext context, ISymbolInfo mainSymbol)
         {
             ISymbolInfo res = null;
-            switch (config.Origin)
+            if (config != null)
             {
-                case SymbolOrigin.Special:
-                    switch (config.Name)
-                    {
-                        case SpecialSymbols.MainSymbol:
-                            res = mainSymbol;
-                            break;
-                    }
-                    break;
-                default:
-                    res = metadata.Symbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
-                    break;
+                switch (config.Origin)
+                {
+                    case SymbolOrigin.Special:
+                        switch (config.Name)
+                        {
+                            case SpecialSymbols.MainSymbol:
+                                res = mainSymbol;
+                                break;
+                        }
+                        break;
+                    default:
+                        res = metadata.Symbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
+                        break;
+                }
             }
             return res ?? context.DefaultSymbol;
         }

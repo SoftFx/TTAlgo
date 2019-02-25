@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,10 +23,19 @@ namespace TickTrader.BotTerminal
             Style = type.ToString();
         }
 
+        public BacktesterStatChartViewModel AddBarSeries(OhlcDataSeries<DateTime, double> data, ReportSeriesStyles style)
+        {
+            var series = new OhlcRenderableSeriesViewModel();
+            series.StyleKey = style + "Style";
+            series.DataSeries = data;
+            _seriesList.Add(series);
+
+            return this;
+        }
+
         public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<decimal> data, ReportSeriesStyles style)
         {
             var dataModel = new XyDataSeries<int, double>(data.Count);
-
 
             for (int i = 0; i < data.Count; i++)
             {
@@ -64,6 +74,6 @@ namespace TickTrader.BotTerminal
         public IEnumerable<IRenderableSeriesViewModel> SeriesList => _seriesList;
     }
 
-    public enum ReportDiagramTypes { CategoryHistogram }
-    public enum ReportSeriesStyles { ProfitColumns, LossColumns }
+    public enum ReportDiagramTypes { CategoryHistogram, CategoryDatetime }
+    public enum ReportSeriesStyles { ProfitColumns, LossColumns, Equity, Margin }
 }

@@ -61,6 +61,11 @@ namespace TickTrader.Algo.Core
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
 
+        public BacktesterStreamingModes ChartDataMode { get; set; } = BacktesterStreamingModes.Snapshot;
+        public BacktesterStreamingModes MarginDataMode { get; set; } = BacktesterStreamingModes.Snapshot;
+        public BacktesterStreamingModes EquityDataMode { get; set; } = BacktesterStreamingModes.Snapshot;
+        public BacktesterStreamingModes OutputDataMode { get; set; } = BacktesterStreamingModes.Disabled;
+
         public void Run(CancellationToken cToken)
         {
             cToken.Register(() => _control.CancelEmulation());

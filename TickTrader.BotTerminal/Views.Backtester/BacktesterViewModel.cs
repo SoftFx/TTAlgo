@@ -389,18 +389,22 @@ namespace TickTrader.BotTerminal
 
             timeFrame = AdjustTimeframe(timeFrame, count, out count);
 
-            observer.SetMessage("Loading feed chart data ...");
-            var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
+            //observer.SetMessage("Loading feed chart data ...");
+            //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
 
             observer.SetMessage("Loading equity chart data...");
             var equityChartData = await LoadBarSeriesAsync(tester.GetEquityHistory(timeFrame), observer, timeFrame, count);
 
+            ResultsPage.AddEquityChart(equityChartData);
+
             observer.SetMessage("Loading margin chart data...");
             var marginChartData = await LoadBarSeriesAsync(tester.GetMarginHistory(timeFrame), observer, timeFrame, count);
 
-            ChartPage.SetFeedSeries(feedChartData);
-            ChartPage.SetEquitySeries(equityChartData);
-            ChartPage.SetMarginSeries(marginChartData);
+            ResultsPage.AddMarginChart(marginChartData);
+
+            //ChartPage.SetFeedSeries(feedChartData);
+            //ChartPage.SetEquitySeries(equityChartData);
+            //ChartPage.SetMarginSeries(marginChartData);
         }
 
         private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarEntity> src, IActionObserver observer, TimeFrames timeFrame, int totalCount)
@@ -526,7 +530,7 @@ namespace TickTrader.BotTerminal
 
         private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)
         {
-            const int maxGraphSize = 1000;
+            const int maxGraphSize = 500;
 
             for (var i = currentFrame; i > TimeFrames.MN; i--)
             {
