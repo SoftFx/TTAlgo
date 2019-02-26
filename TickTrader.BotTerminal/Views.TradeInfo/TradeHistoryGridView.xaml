@@ -56,7 +56,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Close Time" Width="130">
+                    <DataGridTextColumn Header="Close Time" Width="130" SortMemberPath="CloseTime">
                         <DataGridTextColumn.Binding>
                             <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
                                 <Binding Path="CloseTime"/>
