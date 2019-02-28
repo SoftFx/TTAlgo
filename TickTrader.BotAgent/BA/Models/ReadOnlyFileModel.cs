@@ -57,7 +57,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public Stream OpenRead()
         {
-            return File.OpenRead(_fullName);
+            return File.Open(_fullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
     }
 }

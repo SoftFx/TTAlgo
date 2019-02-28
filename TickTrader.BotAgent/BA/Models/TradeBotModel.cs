@@ -148,6 +148,8 @@ namespace TickTrader.BotAgent.BA.Models
             if (!IsStopped())
                 throw new InvalidStateException("Trade bot has been already started!");
 
+            _algoData.EnsureDirectoryCreated();
+
             UpdatePackage();
 
             if (State == PluginStates.Broken)

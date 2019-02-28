@@ -1127,7 +1127,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.Package.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = File.Open(_botAgent.GetPackageReadPath(request.Package.Key.Convert()), FileMode.Open, FileAccess.Read))
+                using (var stream = File.Open(_botAgent.GetPackageReadPath(request.Package.Key.Convert()), FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     stream.Seek((long)chunkSize * request.Package.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
@@ -1287,7 +1287,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 var chunkSize = request.File.ChunkSettings.Size;
                 var buffer = new byte[chunkSize];
-                using (var stream = File.Open(_botAgent.GetBotFileReadPath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName), FileMode.Open, FileAccess.Read))
+                using (var stream = File.Open(_botAgent.GetBotFileReadPath(request.File.BotId, request.File.FolderId.Convert(), request.File.FileName), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     stream.Seek((long)chunkSize * request.File.ChunkSettings.Offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))

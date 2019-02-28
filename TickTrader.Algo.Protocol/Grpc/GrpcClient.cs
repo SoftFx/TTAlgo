@@ -705,7 +705,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var buffer = new byte[chunkSize];
             try
             {
-                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read))
+                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     stream.Seek((long)chunkSize * offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
@@ -913,7 +913,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             var buffer = new byte[chunkSize];
             try
             {
-                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read))
+                using (var stream = File.Open(srcPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     stream.Seek((long)chunkSize * offset, SeekOrigin.Begin);
                     for (var cnt = stream.Read(buffer, 0, chunkSize); cnt > 0; cnt = stream.Read(buffer, 0, chunkSize))
