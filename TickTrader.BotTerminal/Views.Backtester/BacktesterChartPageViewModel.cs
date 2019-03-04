@@ -58,18 +58,13 @@ namespace TickTrader.BotTerminal
             _mainSeriesCollection.Add(mainSeries);
         }
 
-        public void SetEquitySeries(OhlcDataSeries<DateTime, double> chartData)
-        {
-            var equitySeries = new OhlcRenderableSeriesViewModel();
-            equitySeries.DataSeries = chartData;
-            equitySeries.StyleKey = "EquityChart_OhlcStyle";
-            _panes.Add(new BacktesterChartPaneModel(this, equitySeries));
-        }
-
-        public void SetMarginSeries(OhlcDataSeries<DateTime, double> chartData)
-        {
-            
-        }
+        //public void SetEquitySeries(OhlcDataSeries<DateTime, double> chartData)
+        //{
+        //    var equitySeries = new OhlcRenderableSeriesViewModel();
+        //    equitySeries.DataSeries = chartData;
+        //    equitySeries.StyleKey = "EquityChart_OhlcStyle";
+        //    _panes.Add(new BacktesterChartPaneModel(this, equitySeries));
+        //}
     }
 
     internal class BacktesterChartPaneModel

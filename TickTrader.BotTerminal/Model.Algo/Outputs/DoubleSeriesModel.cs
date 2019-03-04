@@ -17,7 +17,7 @@ namespace TickTrader.BotTerminal
         public override IXyDataSeries SeriesData => _seriesData;
         protected override double NanValue => double.NaN;
 
-        public DoubleSeriesModel(PluginModel plugin, IAlgoPluginHost outputHost, IOutputCollector collector, ColoredLineOutputSetupModel setup)
+        public DoubleSeriesModel(IPluginModel plugin, IPluginDataChartModel outputHost, IOutputCollector collector, ColoredLineOutputSetupModel setup)
             : base(collector, outputHost, setup.IsEnabled)
         {
             _seriesData = new XyDataSeries<DateTime, double>();

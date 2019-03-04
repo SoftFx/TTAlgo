@@ -536,6 +536,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginBuilder GetBuilder() => builder;
+        internal PluginDescriptor GetDescriptor() => descriptor.Descriptor;
         internal IExecutorFixture GetTradeFixute() => accFixture;
 
         internal void EmulateStop()

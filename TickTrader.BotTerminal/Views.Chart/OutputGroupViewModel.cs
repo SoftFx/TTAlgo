@@ -13,16 +13,16 @@ namespace TickTrader.BotTerminal
 {
     internal class OutputGroupViewModel
     {
-        private ChartModelBase _chart;
+        private IPluginDataChartModel _chart;
         private List<OutputSeriesModel> _outputModels;
         private SymbolModel _symbol;
         private VarList<OutputSeriesModel> _overlayOutputs;
         private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
 
-        public PluginModel Model { get; }
+        public IPluginModel Model { get; }
 
-        public string DisplayName => Model.InstanceId;
+        //public string DisplayName => Model.InstanceId;
 
         public string ChartWindowId { get; }
 
@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public event System.Action PrecisionUpdated;
 
-        public OutputGroupViewModel(PluginModel plugin, string windowId, ChartModelBase chart, SymbolModel symbol)
+        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, SymbolModel symbol)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private IEnumerable<OutputSeriesModel> CreateOutputModels(PluginModel plugin)
+        private IEnumerable<OutputSeriesModel> CreateOutputModels(IPluginModel plugin)
         {
             foreach (var outputCollector in plugin.Outputs.Values)
             {

@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
 
         public abstract IXyDataSeries SeriesData { get; }
 
-        protected void Init(PluginModel plugin, OutputSetupModel setup)
+        protected void Init(IPluginModel plugin, OutputSetupModel setup)
         {
             Id = setup.Metadata.Id;
             DisplayName = setup.Metadata.DisplayName;
@@ -39,11 +39,11 @@ namespace TickTrader.BotTerminal
 
     internal abstract class OutputSeriesModel<T> : OutputSeriesModel
     {
-        private IAlgoPluginHost _host;
+        private IPluginDataChartModel _host;
         private OutputCollector<T> _collector;
         private OutputSynchronizer<T> _synchronizer;
 
-        public OutputSeriesModel(IOutputCollector collector, IAlgoPluginHost host, bool isEnabled)
+        public OutputSeriesModel(IOutputCollector collector, IPluginDataChartModel host, bool isEnabled)
         {
             _collector = (OutputCollector<T>)collector;
             _host = host;

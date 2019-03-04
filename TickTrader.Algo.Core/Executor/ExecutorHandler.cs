@@ -51,6 +51,11 @@ namespace TickTrader.Algo.Core
 
         public event Action<BotLogRecord> LogUpdated;
         public event Action<TradeReportEntity> TradeHistoryUpdated;
+        public event Action<BarEntity, string, SeriesUpdateActions> SymbolBarUpdated;
+        public event Action<BarEntity, string, SeriesUpdateActions> StreamBarUpdated;
+        public event Action<BarEntity, SeriesUpdateActions> EquityUpdated;
+        public event Action<BarEntity, SeriesUpdateActions> MarginUpdated;
+        public event Action<IDataSeriesUpdate> OutputUpdate;
 
         private void StartCollection()
         {
@@ -104,7 +109,25 @@ namespace TickTrader.Algo.Core
                 LogUpdated?.Invoke((BotLogRecord)update);
             else if (update is TradeReportEntity)
                 TradeHistoryUpdated?.Invoke((TradeReportEntity)update);
-
+            else if (update is IDataSeriesUpdate)
+            {
+                var seriesUpdate = (IDataSeriesUpdate)update;
+                if (seriesUpdate.SeriesType == DataSeriesTypes.SymbolRate)
+                {
+                    var barUpdate = (DataSeriesUpdate<BarEntity>)update;
+                    SymbolBarUpdated?.Invoke(barUpdate.Value, barUpdate.SeriesId, barUpdate.Action);
+                }
+                else if (seriesUpdate.SeriesType == DataSeriesTypes.NamedStream)
+                {
+                    var barUpdate = (DataSeriesUpdate<BarEntity>)update;
+                    if (barUpdate.SeriesId == BacktesterCollector.EquityStreamName)
+                        EquityUpdated?.Invoke(barUpdate.Value, barUpdate.Action);
+                    else if (barUpdate.SeriesId == BacktesterCollector.MarginStreamName)
+                        EquityUpdated?.Invoke(barUpdate.Value, barUpdate.Action);
+                }
+                else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
+                    OutputUpdate?.Invoke(seriesUpdate);
+            }
         }
     }
 }

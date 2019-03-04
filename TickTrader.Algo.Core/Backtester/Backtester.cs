@@ -61,10 +61,10 @@ namespace TickTrader.Algo.Core
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
 
-        public BacktesterStreamingModes ChartDataMode { get; set; } = BacktesterStreamingModes.Snapshot;
-        public BacktesterStreamingModes MarginDataMode { get; set; } = BacktesterStreamingModes.Snapshot;
-        public BacktesterStreamingModes EquityDataMode { get; set; } = BacktesterStreamingModes.Snapshot;
-        public BacktesterStreamingModes OutputDataMode { get; set; } = BacktesterStreamingModes.Disabled;
+        public TestDataSeriesFlags ChartDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags MarginDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags EquityDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags OutputDataMode { get; set; } = TestDataSeriesFlags.Disabled;
 
         public void Run(CancellationToken cToken)
         {
@@ -126,9 +126,9 @@ namespace TickTrader.Algo.Core
             _control.Collector.InitOutputCollection<T>(id);
         }
 
-        public List<T> GetOutputBuffer<T>(string id)
+        public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
-            return _control.Collector.GetOutputBuffer<T>(id);
+            return _control.Collector.GetOutputData<T>(id);
         }
 
         public override void Dispose()

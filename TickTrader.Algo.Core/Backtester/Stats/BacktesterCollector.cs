@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core
 {
@@ -16,7 +17,7 @@ namespace TickTrader.Algo.Core
     internal class BacktesterCollector : CrossDomainObject, IPluginLogger
     {
         private PluginExecutor _executor;
-        private Dictionary<string, object> _outputBuffers = new Dictionary<string, object>();
+        private Dictionary<string, IOutputCollector> _outputCollectors = new Dictionary<string, IOutputCollector>();
         private BarSequenceBuilder _mainBarVector;
         private BarSequenceBuilder _equityBuilder;
         private BarSequenceBuilder _marginBuilder;
@@ -28,6 +29,9 @@ namespace TickTrader.Algo.Core
         private TimeFrames _mainTimeframe;
         private string _lastStatus;
         private TimeKeyGenerator _logKeyGen = new TimeKeyGenerator();
+
+        public const string EquityStreamName = "Equity";
+        public const string MarginStreamName = "Margin";
 
         public BacktesterCollector(PluginExecutor executor)
         {
@@ -60,44 +64,8 @@ namespace TickTrader.Algo.Core
 
             _lastStatus = null;
 
-            _mainBarVector = BarSequenceBuilder.Create(_mainTimeframe);
-            _mainBarVector.BarOpened += (b) => _mainSymbolHistory.Add(b);
-
-            _equityBuilder = BarSequenceBuilder.Create(_mainBarVector);
-            _equityBuilder.BarOpened += (b) => _equityHistory.Add(b);
-
-            _marginBuilder = BarSequenceBuilder.Create(_mainBarVector);
-            _marginBuilder.BarOpened += (b) => _marginHistory.Add(b);
-
-            if (settings.ChartDataMode == BacktesterStreamingModes.Snapshot)
-                _mainBarVector.BarOpened += (b) => _mainSymbolHistory.Add(b);
-            else if(settings.ChartDataMode == BacktesterStreamingModes.BarCompletion)
-                _mainBarVector.BarClosed += (b) => SendUpdate(b, ChartDataType.MainRate);
-            else if(settings.ChartDataMode == BacktesterStreamingModes.Realtime)
-            {
-                _mainBarVector.BarUpdated += (b) => SendUpdate(b, ChartDataType.MainRate);
-                _mainBarVector.BarOpened += (b) => SendUpdate(b, ChartDataType.MainRate);
-            }
-
-            if (settings.EquityDataMode == BacktesterStreamingModes.Snapshot)
-                _equityBuilder.BarOpened += (b) => _equityHistory.Add(b);
-            else if (settings.ChartDataMode == BacktesterStreamingModes.BarCompletion)
-                _equityBuilder.BarClosed += (b) => SendUpdate(b, ChartDataType.Equity);
-            else if (settings.ChartDataMode == BacktesterStreamingModes.Realtime)
-            {
-                _equityBuilder.BarUpdated += (b) => SendUpdate(b, ChartDataType.Equity);
-                _equityBuilder.BarOpened += (b) => SendUpdate(b, ChartDataType.Equity);
-            }
-
-            if (settings.MarginDataMode == BacktesterStreamingModes.Snapshot)
-                _marginBuilder.BarOpened += (b) => _marginHistory.Add(b);
-            else if (settings.ChartDataMode == BacktesterStreamingModes.BarCompletion)
-                _marginBuilder.BarClosed += (b) => SendUpdate(b, ChartDataType.Margin);
-            else if (settings.ChartDataMode == BacktesterStreamingModes.Realtime)
-            {
-                _marginBuilder.BarUpdated += (b) => SendUpdate(b, ChartDataType.Margin);
-                _marginBuilder.BarOpened += (b) => SendUpdate(b, ChartDataType.Margin);
-            }
+            InitChartDataCollection(settings);
+            InitOutputCollection(settings);
         }
 
         public void OnStop(IBacktesterSettings settings, AccountAccessor acc)
@@ -131,9 +99,62 @@ namespace TickTrader.Algo.Core
             base.Dispose();
         }
 
-        private void SendUpdate(BarEntity bar, ChartDataType type)
+        private void InitChartDataCollection(IBacktesterSettings settings)
         {
-            _executor.OnUpdate(new ChartDataUpdate(type, bar));
+            _mainBarVector = BarSequenceBuilder.Create(_mainTimeframe);
+            _equityBuilder = BarSequenceBuilder.Create(_mainBarVector);
+            _marginBuilder = BarSequenceBuilder.Create(_mainBarVector);
+
+            InitSeriesCollection(settings.ChartDataMode, _mainBarVector, DataSeriesTypes.SymbolRate, settings.MainSymbol, _mainSymbolHistory);
+            InitSeriesCollection(settings.EquityDataMode, _equityBuilder, DataSeriesTypes.NamedStream, EquityStreamName, _equityHistory);
+            InitSeriesCollection(settings.MarginDataMode, _marginBuilder, DataSeriesTypes.NamedStream, MarginStreamName, _marginHistory);
+        }
+
+        private void InitSeriesCollection(TestDataSeriesFlags seriesFlags, BarSequenceBuilder builder, DataSeriesTypes dataType, string seriesId, List<BarEntity> snapshot)
+        {
+            if (seriesFlags.HasFlag(TestDataSeriesFlags.Snapshot))
+                builder.BarOpened += (b) => snapshot.Add(b);
+            if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
+            {
+                if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
+                    builder.BarClosed += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
+                else
+                {
+                    builder.BarUpdated += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Update);
+                    builder.BarOpened += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
+                }
+            }
+        }
+
+        private void InitOutputCollection(IBacktesterSettings settings)
+        {
+            var pDescriptor = _executor.GetDescriptor();
+
+            foreach (var outputDescripot in pDescriptor.Outputs)
+                SetupOutput(outputDescripot, settings.OutputDataMode);
+        }
+
+        private void SetupOutput(OutputDescriptor descriptor, TestDataSeriesFlags flags)
+        {
+            switch (descriptor.DataSeriesBaseTypeFullName)
+            {
+                case "System.Double": SetupOutput<double>(descriptor, flags); break;
+                case "TickTrader.Algo.Api.Marker": SetupOutput<Marker>(descriptor, flags); break;
+                default: throw new NotImplementedException("Type " + descriptor.DataSeriesBaseTypeFullName + " is not supported as series base type!");
+            }
+        }
+
+        private void SetupOutput<T>(OutputDescriptor descriptor, TestDataSeriesFlags flags)
+        {
+            var fixture = _executor.GetOutput<T>(descriptor.Id);
+            var collector = new OutputCollector<T>(fixture, _executor.OnUpdate, flags);
+            _outputCollectors.Add(descriptor.Id, collector);
+        }
+
+        private void SendUpdate(BarEntity bar, DataSeriesTypes type, string streamId, SeriesUpdateActions action)
+        {
+            var update = new DataSeriesUpdate<BarEntity>(type, streamId, action, bar);
+            _executor.OnUpdate(update);
         }
 
         #region Journal
@@ -191,6 +212,8 @@ namespace TickTrader.Algo.Core
             AddEvent(LogSeverities.TradeFail, message);
         }
 
+        #endregion
+
         public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
         {
             return MarshalBars(_mainSymbolHistory, timeFrame);
@@ -216,7 +239,12 @@ namespace TickTrader.Algo.Core
                 return barCollection.Transform(targeTimeframe).GetCrossDomainEnumerator(pageSize);
         }
 
-        #endregion
+        private IPagedEnumerator<T> MarshalLongCollection<T>(IEnumerable<T> collection)
+        {
+            const int pageSize = 4000;
+
+            return collection.GetCrossDomainEnumerator(pageSize);
+        }
 
         #region Output collection
 
@@ -231,9 +259,11 @@ namespace TickTrader.Algo.Core
             };
         }
 
-        public List<T> GetOutputBuffer<T>(string id)
+        public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
-            return (List<T>)_outputBuffers[id];
+            var collector = _outputCollectors[id];
+            var data = ((OutputCollector<T>)collector).Snapshot;
+            return MarshalLongCollection(data);
         }
 
         #endregion

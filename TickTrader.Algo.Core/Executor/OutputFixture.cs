@@ -35,6 +35,7 @@ namespace TickTrader.Algo.Core
                 OnAllUpdated();
             };
             buffer.Truncated = OnTruncate;
+            buffer.Truncating = OnTruncating;
         }
 
         private void OnAppend(int index, T data)
@@ -75,6 +76,11 @@ namespace TickTrader.Algo.Core
             Truncated?.Invoke(truncateSize);
         }
 
+        private void OnTruncating(int truncateSize)
+        {
+            Truncating?.Invoke(truncateSize);
+        }
+
         internal override void Unbind()
         {
             if (buffer != null)
@@ -84,6 +90,7 @@ namespace TickTrader.Algo.Core
                 buffer.BeginBatchBuild = null;
                 buffer.EndBatchBuild = null;
                 buffer.Truncated = null;
+                buffer.Truncating = null;
                 buffer = null;
             }
         }
@@ -93,9 +100,14 @@ namespace TickTrader.Algo.Core
             BindTo((OutputBuffer<T>)buffer, timeRef);
         }
 
+        internal int Count => buffer.Count;
+        internal Point this[int index] => new Point(timeRef[index], index, buffer[index]);
+        internal OutputBuffer<T> Buffer => buffer;
+
         public event Action<Point[]> AllUpdated = delegate { };
         public event Action<Point> Updated = delegate { };
         public event Action<Point> Appended = delegate { };
+        public event Action<int> Truncating;
         public event Action<int> Truncated;
 
         [Serializable]
@@ -108,9 +120,14 @@ namespace TickTrader.Algo.Core
                 this.Value = val;
             }
 
-            public DateTime? TimeCoordinate { get; private set; }
-            public T Value { get; private set; }
-            public int Index { get; private set; }
+            public DateTime? TimeCoordinate { get; }
+            public T Value { get; }
+            public int Index { get; }
+
+            public Point ChangeIndex(int newIndex)
+            {
+                return new Point(TimeCoordinate, newIndex, Value);
+            }
         }
     }
 }

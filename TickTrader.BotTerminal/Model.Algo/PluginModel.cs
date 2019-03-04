@@ -13,7 +13,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginModel : CrossDomainObject
+    internal class PluginModel : CrossDomainObject, IPluginModel
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 

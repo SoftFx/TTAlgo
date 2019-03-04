@@ -23,13 +23,13 @@ namespace TickTrader.BotTerminal
         private SymbolModel _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
-        public PluginModel Model { get; }
+        public IPluginModel Model { get; }
 
         public string DisplayName => Model.InstanceId;
 
         public string ChartWindowId { get; }
 
-        public ChartModelBase Chart { get; }
+        public IPluginDataChartModel Chart { get; }
 
         public AxisBase TimeAxis { get; private set; }
 
@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         public string YAxisLabelFormat { get; private set; }
 
-        public OutputPaneViewModel(PluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, ChartModelBase chart, SymbolModel symbol, OutputTargets target)
+        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart, SymbolModel symbol, OutputTargets target)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -59,8 +59,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateAxis()
         {
-            TimeAxis = Chart.Navigator.CreateAxis();
-            Chart.CreateXAxisBinging(TimeAxis);
+            TimeAxis = Chart.CreateXAxis();
             TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
             NotifyOfPropertyChange(nameof(TimeAxis));
         }

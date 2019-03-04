@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using NLog;
+using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
@@ -523,7 +524,8 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoPluginHost
 
-        ITimeVectorRef IAlgoPluginHost.TimeSyncRef => null;
+        ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
+        AxisBase IPluginDataChartModel.CreateXAxis() => null;
 
         void IAlgoPluginHost.Lock()
         {
@@ -572,7 +574,7 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        bool IAlgoPluginHost.IsStarted => false;
+        bool IExecStateObservable.IsStarted => false;
 
         public event Action ParamsChanged = delegate { };
         public event Action StartEvent = delegate { };
