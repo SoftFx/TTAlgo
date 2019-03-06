@@ -10,13 +10,33 @@ namespace TickTrader.BotTerminal
     public class FileParamSetupViewModel : ParameterSetupViewModel
     {
         private string _filePath;
-
+        private string _fileName;
 
         public string DefaultFile { get; private set; }
 
-        public string FileName { get; private set; }
-
         public string Filter { get; private set; }
+
+        public string FileName
+        {
+            get { return _fileName; }
+            set
+            {
+                _fileName = value;
+                CheckFileName();
+                NotifyOfPropertyChange(nameof(FileName));
+
+                try
+                {
+                    if (FilePath != null)
+                    {
+                        var oldFile = System.IO.Path.GetFileName(FilePath);
+                        _filePath = _filePath.Replace(oldFile, _fileName);
+                        NotifyOfPropertyChange(nameof(FilePath));
+                    }
+                }
+                catch (ArgumentException) { }
+            }
+        }
 
         public string FilePath
         {
@@ -25,20 +45,18 @@ namespace TickTrader.BotTerminal
             {
                 _filePath = value;
                 NotifyOfPropertyChange(nameof(FilePath));
-                var fileName = "";
                 try
                 {
                     if (FilePath != null)
-                        fileName = System.IO.Path.GetFileName(FilePath);
+                    {
+                        _fileName = System.IO.Path.GetFileName(FilePath);
+                        CheckFileName();
+                        NotifyOfPropertyChange(nameof(FileName));
+                    }
                 }
                 catch (ArgumentException) { }
-                FileName = fileName;
-                NotifyOfPropertyChange(nameof(FileName));
-
-                if (IsRequired && string.IsNullOrWhiteSpace(FileName))
-                    Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
-                else
-                    Error = null;
+                //FileName = fileName;
+                //NotifyOfPropertyChange(nameof(FileName));
             }
         }
 
@@ -84,6 +102,14 @@ namespace TickTrader.BotTerminal
         public override Property Save()
         {
             return new FileParameter() { Id = Id, FileName = FilePath };
+        }
+
+        private void CheckFileName()
+        {
+            if (IsRequired && string.IsNullOrWhiteSpace(FileName))
+                Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
+            else
+                Error = null;
         }
     }
 }

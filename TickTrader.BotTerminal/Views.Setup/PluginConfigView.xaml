@@ -233,7 +233,7 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBox Name="input" Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+            <TextBox Name="input" Text="{Binding FileName, Mode=TwoWay}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                                Foreground="{DynamicResource Shell_PrimaryForeground}" ToolTip="{Binding FilePath}" />
             <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
                 <i:Interaction.Behaviors>

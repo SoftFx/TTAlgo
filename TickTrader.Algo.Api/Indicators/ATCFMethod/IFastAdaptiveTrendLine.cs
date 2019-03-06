@@ -10,7 +10,6 @@
 
         int LastPositionChanged { get; }
 
-
         bool HasEnoughBars(int barsCount);
     }
 }
