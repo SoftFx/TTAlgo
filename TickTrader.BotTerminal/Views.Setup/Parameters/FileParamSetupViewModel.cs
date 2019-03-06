@@ -25,12 +25,13 @@ namespace TickTrader.BotTerminal
                 CheckFileName();
                 NotifyOfPropertyChange(nameof(FileName));
 
+                var fileName = string.Empty;
+
                 try
                 {
                     if (FilePath != null)
                     {
-                        var oldFile = System.IO.Path.GetFileName(FilePath);
-                        _filePath = _filePath.Replace(oldFile, _fileName);
+                        _filePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FilePath), _fileName);
                         NotifyOfPropertyChange(nameof(FilePath));
                     }
                 }
@@ -55,8 +56,6 @@ namespace TickTrader.BotTerminal
                     }
                 }
                 catch (ArgumentException) { }
-                //FileName = fileName;
-                //NotifyOfPropertyChange(nameof(FileName));
             }
         }
 
@@ -106,7 +105,11 @@ namespace TickTrader.BotTerminal
 
         private void CheckFileName()
         {
-            if (IsRequired && string.IsNullOrWhiteSpace(FileName))
+            var incorrectSymbols = System.IO.Path.GetInvalidFileNameChars();
+
+            bool ok = FileName.All(s => !incorrectSymbols.Contains(s));
+
+            if (string.IsNullOrWhiteSpace(FileName) || !ok)
                 Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
             else
                 Error = null;
