@@ -24,13 +24,14 @@ namespace TickTrader.Algo.Core
         public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext updateSync, DateTime? from, DateTime? to)
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
+            PluginInfo = pluginRef.Metadata.Descriptor;
             _executor = new ExecutorHandler(pluginRef, updateSync);
             _executor.Core.Metadata = this;
 
             EmulationPeriodStart = from;
             EmulationPeriodEnd = to;
 
-            _control = _executor.Core.InitEmulation(this);
+            _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
             _executor.Core.InitBarStrategy(_feed, Api.BarPriceType.Bid);
 
@@ -41,6 +42,7 @@ namespace TickTrader.Algo.Core
         }
 
         public ExecutorHandler Executor => _executor;
+        public PluginDescriptor PluginInfo { get; }
         public string MainSymbol { get; set; }
         public AccountTypes AccountType { get; set; }
         public string BalanceCurrency { get; set; }
@@ -61,6 +63,18 @@ namespace TickTrader.Algo.Core
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
 
+        public event Action<BarEntity, string, SeriesUpdateActions> OnChartUpdate
+        {
+            add { Executor.ChartBarUpdated += value; }
+            remove { Executor.ChartBarUpdated -= value; }
+        }
+
+        public event Action<IDataSeriesUpdate> OnOutputUpdate
+        {
+            add { Executor.OutputUpdate += value; }
+            remove { Executor.OutputUpdate -= value; }
+        }
+
         public TestDataSeriesFlags ChartDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
         public TestDataSeriesFlags MarginDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
         public TestDataSeriesFlags EquityDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
@@ -77,11 +91,16 @@ namespace TickTrader.Algo.Core
             _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            _control.OnStart();
+            if (!_control.OnStart())
+                return;
+
             _executor.Start();
 
-            if (!_control.WarmUp(WarmupSize, WarmupUnits))
-                return;
+            if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
+            {
+                if (!_control.WarmUp(WarmupSize, WarmupUnits))
+                    return;
+            }
 
             _executor.Core.Start();
 

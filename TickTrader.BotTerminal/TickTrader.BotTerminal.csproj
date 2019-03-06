@@ -326,6 +326,7 @@
     <Compile Include="Model.Algo\Outputs\OutputCollector.cs" />
     <Compile Include="Model.Algo\Outputs\OutputSynchronizer.cs" />
     <Compile Include="Model.Algo\Outputs\OutputSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\TesterOutputCollector.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Algo\PluginStateHelper.cs" />
@@ -354,6 +355,7 @@
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
+    <Compile Include="Model\BacktesterAdapter.cs" />
     <Compile Include="Model\BacktesterSettings.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
@@ -459,6 +461,7 @@
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
     <Compile Include="Views.Chart\AlgoChartViewModel.cs" />
+    <Compile Include="Views.Chart\BotListOverlayViewModel.cs" />
     <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -1014,6 +1017,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Chart\AlgoChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\BotListOverlayView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

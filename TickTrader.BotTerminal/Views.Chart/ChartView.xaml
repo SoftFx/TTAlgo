@@ -120,27 +120,6 @@
 
     </ContextMenu>
 
-    <DataTemplate DataType="{x:Type UIElement}">
-        <ContentControl Content="{Binding}" />
-    </DataTemplate>
-
-    <DataTemplate DataType="{x:Type l:OutputPaneViewModel}">
-        <ContentControl cal:View.Model="{Binding}" />
-    </DataTemplate>
-
-    <Style x:Key="BotPanelStyle" TargetType="ItemsControl">
-        <Setter Property="Margin" Value="5 5 5 25"/>
-        <Setter Property="VerticalAlignment" Value="Bottom" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="ItemTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <ContentControl cal:View.Model="{Binding}" Margin="0 2 0 0" />
-                </DataTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <ControlTemplate x:Key="ChartView" x:Shared="False">
         <Grid Margin="4" ContextMenu="{StaticResource MainChartPanelContextMenu}">
             <Grid.RowDefinitions>

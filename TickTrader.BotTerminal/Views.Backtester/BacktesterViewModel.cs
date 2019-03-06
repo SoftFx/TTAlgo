@@ -243,7 +243,7 @@ namespace TickTrader.BotTerminal
                 ChartPage.Clear();
                 ResultsPage.Clear();
                 JournalPage.Clear();
-                TradesPage.Clear(_settings.AccType);
+                TradesPage.OnTesterStart(_settings.AccType);
                 _hasDataToSave.Clear();
 
                 CheckDuplicateSymbols();
@@ -337,6 +337,8 @@ namespace TickTrader.BotTerminal
 
                         _settings.Apply(tester);
 
+                        FireOnStart(chartSymbol, pluginSetupModel, tester);
+
                         _hasDataToSave.Set();
 
                         await Task.Run(() => tester.Run(cToken));
@@ -362,6 +364,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void FireOnStart(SymbolData mainSymbol, PluginSetupModel setup, Backtester tester)
+        {
+            ChartPage.OnStart(mainSymbol.InfoEntity, setup, tester);
+        }
+
         private BotLogRecord CreateInfoRecord(uint no, string message)
         {
             return new BotLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
@@ -379,7 +386,8 @@ namespace TickTrader.BotTerminal
         {
             observer.SetMessage("Loading testing result data...");
 
-            ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
+            var statProperties = await Task.Factory.StartNew(() => tester.GetStats());
+            ResultsPage.ShowReport(statProperties, tester.PluginInfo);
         }
 
         private async Task LoadChartData(Backtester tester, IActionObserver observer, Backtester backtester)
@@ -392,15 +400,18 @@ namespace TickTrader.BotTerminal
             //observer.SetMessage("Loading feed chart data ...");
             //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
 
-            observer.SetMessage("Loading equity chart data...");
-            var equityChartData = await LoadBarSeriesAsync(tester.GetEquityHistory(timeFrame), observer, timeFrame, count);
+            if (backtester.PluginInfo.Type == AlgoTypes.Robot)
+            {
+                observer.SetMessage("Loading equity chart data...");
+                var equityChartData = await LoadBarSeriesAsync(tester.GetEquityHistory(timeFrame), observer, timeFrame, count);
 
-            ResultsPage.AddEquityChart(equityChartData);
+                ResultsPage.AddEquityChart(equityChartData);
 
-            observer.SetMessage("Loading margin chart data...");
-            var marginChartData = await LoadBarSeriesAsync(tester.GetMarginHistory(timeFrame), observer, timeFrame, count);
+                observer.SetMessage("Loading margin chart data...");
+                var marginChartData = await LoadBarSeriesAsync(tester.GetMarginHistory(timeFrame), observer, timeFrame, count);
 
-            ResultsPage.AddMarginChart(marginChartData);
+                ResultsPage.AddMarginChart(marginChartData);
+            }
 
             //ChartPage.SetFeedSeries(feedChartData);
             //ChartPage.SetEquitySeries(equityChartData);

@@ -98,19 +98,6 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void EmulateEventsWithFeed()
-        {
-            try
-            {
-                StartFeedRead();
-                EmulateEvents();
-            }
-            finally
-            {
-                StopFeedRead();
-            }
-        }
-
         public void EmulateEvents()
         {
             _canceled = false;
@@ -246,12 +233,16 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void StartFeedRead()
+        public bool StartFeedRead()
         {
             lock (_sync)
             {
                 if (_feedReader == null)
                     _feedReader = new FeedReader(_feed);
+                if (_feedReader.IsCompeted)
+                    return false;
+                UpdateVirtualTimepoint(_feedReader.NextOccurrance.Date);
+                return true;
             }
         }
 
@@ -268,7 +259,7 @@ namespace TickTrader.Algo.Core
             return true;
         }
 
-        private void StopFeedRead()
+        public void StopFeedRead()
         {
             if (_feedReader != null)
             {

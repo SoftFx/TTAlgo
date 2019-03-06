@@ -13,14 +13,16 @@ namespace TickTrader.Algo.Core
 
     internal class OutputCollector<T> : IOutputCollector
     {
+        private string _outputId;
         private OutputFixture<T> _fixture;
         private TestDataSeriesFlags _flags;
         private Action<object> _onRealtimeUpdate;
         private Action<object> _onTruncateUpdate;
         private int _indexShift;
 
-        public OutputCollector(OutputFixture<T> fixture, Action<object> onUpdate, TestDataSeriesFlags flags)
+        public OutputCollector(string outputId, OutputFixture<T> fixture, Action<object> onUpdate, TestDataSeriesFlags flags)
         {
+            _outputId = outputId;
             _fixture = fixture;
             _flags = flags;
 
@@ -74,8 +76,13 @@ namespace TickTrader.Algo.Core
             if (streamEnabled && !isRealtimeStream)
             {
                 // copy all data from buffer to update
-                for (int i = 0; i < buffer.Count; i++)
-                    _onTruncateUpdate(_fixture[i]);
+                for (int i = 0; i < _fixture.Count; i++)
+                {
+                    var point = _fixture[i].ChangeIndex(-1);
+                    //System.Diagnostics.Debug.WriteLine("OUTPUT - " + point.TimeCoordinate);
+                    var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
+                    _onTruncateUpdate(update);
+                }
             }
         }
 
@@ -92,7 +99,9 @@ namespace TickTrader.Algo.Core
             for (int i = 0; i < size; i++)
             {
                 var point = _fixture[i].ChangeIndex(-1);
-                _onTruncateUpdate?.Invoke(point);
+                //System.Diagnostics.Debug.WriteLine("OUTPUT - " + point.TimeCoordinate);
+                var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
+                _onTruncateUpdate?.Invoke(update);
                 Snapshot?.Add(point.Value);
             }
 

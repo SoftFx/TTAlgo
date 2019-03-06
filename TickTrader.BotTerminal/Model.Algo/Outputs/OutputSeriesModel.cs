@@ -40,12 +40,12 @@ namespace TickTrader.BotTerminal
     internal abstract class OutputSeriesModel<T> : OutputSeriesModel
     {
         private IPluginDataChartModel _host;
-        private OutputCollector<T> _collector;
+        private IOutputCollector<T> _collector;
         private OutputSynchronizer<T> _synchronizer;
 
         public OutputSeriesModel(IOutputCollector collector, IPluginDataChartModel host, bool isEnabled)
         {
-            _collector = (OutputCollector<T>)collector;
+            _collector = (IOutputCollector<T>)collector;
             _host = host;
 
             if (!isEnabled)

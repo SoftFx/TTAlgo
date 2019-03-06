@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
 
         public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
 
-        public object OverlayModel { get; set; }
+        public object Overlay { get; set; }
 
         public BoolProperty IsCrosshairEnabled { get; } = new BoolProperty();
         public Var<double?> CurrentAsk => _askProp.Var;

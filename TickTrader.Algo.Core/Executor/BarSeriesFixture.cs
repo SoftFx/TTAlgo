@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Core
         public int LastIndex { get { return Buffer.Count - 1; } }
         public DateTime this[int index] { get { return Buffer[index].OpenTime; } }
         public bool IsLoaded { get; private set; }
+        public DateTime OpenTime => Buffer[0].OpenTime;
         public event Action Appended;
 
         protected BarEntity LastBar
@@ -223,6 +224,7 @@ namespace TickTrader.Algo.Core
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
+            data.Reverse();
             AppendSnapshot(data);
         }
 
@@ -230,6 +232,12 @@ namespace TickTrader.Algo.Core
         {
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, size, Context.TimeFrame);
             AppendSnapshot(data);
+        }
+
+        public void LoadFeedFrom(DateTime from)
+        {
+            var to = DateTime.UtcNow + TimeSpan.FromDays(2);
+            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
         }
     }
 }

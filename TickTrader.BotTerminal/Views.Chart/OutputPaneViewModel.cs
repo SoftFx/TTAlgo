@@ -15,12 +15,13 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
     internal class OutputPaneViewModel : PropertyChangedBase
     {
-        private SymbolModel _symbol;
+        private SymbolEntity _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
         public IPluginModel Model { get; }
@@ -41,7 +42,7 @@ namespace TickTrader.BotTerminal
 
         public string YAxisLabelFormat { get; private set; }
 
-        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart, SymbolModel symbol, OutputTargets target)
+        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart, SymbolEntity symbol, OutputTargets target)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -69,7 +70,7 @@ namespace TickTrader.BotTerminal
             Precision = 0;
             foreach (var output in _outputs.Values)
             {
-                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Descriptor.Precision : output.Descriptor.Precision);
+                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Precision : output.Descriptor.Precision);
             }
             UpdateLabelFormat();
         }

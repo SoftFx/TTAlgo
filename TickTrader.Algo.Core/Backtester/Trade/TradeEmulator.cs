@@ -30,7 +30,8 @@ namespace TickTrader.Algo.Core
         //private RateUpdate _lastRate;
         private TradeHistoryEmulator _history;
 
-        public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector, TradeHistoryEmulator history)
+        public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector,
+            TradeHistoryEmulator history, AlgoTypes pluginType)
         {
             _context = context;
             _calcFixture = calc;
@@ -39,8 +40,11 @@ namespace TickTrader.Algo.Core
             _settings = settings;
             _history = history;
 
-            if (_settings.AccountType == AccountTypes.Net || _settings.AccountType == AccountTypes.Gross)
-                _scheduler.Scheduler.AddDailyJob(b => Rollover(), 0, 0);
+            if (pluginType == AlgoTypes.Robot)
+            {
+                if (_settings.AccountType == AccountTypes.Net || _settings.AccountType == AccountTypes.Gross)
+                    _scheduler.Scheduler.AddDailyJob(b => Rollover(), 0, 0);
+            }
 
             VirtualServerPing = settings.ServerPing;
             _scheduler.RateUpdated += r =>

@@ -108,10 +108,18 @@ namespace TickTrader.Algo.Core
         void Restart();
     }
 
+    internal class NullExecFixture : IExecutorFixture
+    {
+        public void Dispose() { }
+        public void Restart() { }
+        public void Start() { }
+        public void Stop() { }
+    }
+
     //internal interface IFeedFixtureContext
     //{
     //    IFixtureContext ExecContext { get; }
-        
+
     //    //void Add(IRateSubscription subscriber);
     //    //void Remove(IRateSubscription subscriber);
     //}

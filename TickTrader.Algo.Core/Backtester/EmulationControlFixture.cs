@@ -29,9 +29,11 @@ namespace TickTrader.Algo.Core
             Executor = executor;
         }
 
-        public void OnStart()
+        public bool OnStart()
         {
             Collector.OnStart(Settings);
+
+            return InvokeEmulator.StartFeedRead();
         }
 
         public bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
@@ -62,17 +64,20 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                InvokeEmulator.EmulateEventsWithFeed();
+                InvokeEmulator.EmulateEvents();
                 EmulateStop();
+                InvokeEmulator.StopFeedRead();
             }
             catch (OperationCanceledException)
             {
                 Collector.AddEvent(LogSeverities.Error, "Testing canceled!");
+                InvokeEmulator.StopFeedRead();
                 EmulateStop();
                 throw;
             }
             catch (Exception ex)
             {
+                InvokeEmulator.StopFeedRead();
                 EmulateStop();
                 throw WrapException(ex);
             }

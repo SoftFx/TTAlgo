@@ -399,7 +399,7 @@ namespace TickTrader.Algo.Core
                 statusFixture.Stop();
                 _timerFixture.Stop();
 
-                builder.PluginProxy.Coordinator.Clear();
+                //builder.PluginProxy.Coordinator.Clear();
                 builder.PluginProxy.Dispose();
                 accFixture.Dispose();
                 fStrategy.Dispose();
@@ -525,11 +525,11 @@ namespace TickTrader.Algo.Core
 
         #region Emulator Support
 
-        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings)
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType)
         {
             var fixture = new EmulationControlFixture(settings, this, calcFixture);
             InvokeStrategy = fixture.InvokeEmulator;
-            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory);
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             return fixture;

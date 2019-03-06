@@ -59,6 +59,7 @@
                 <ResourceDictionary Source="Views.Chart/AlgoChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
+                <ResourceDictionary Source="Views.Chart/BotListOverlayView.xaml" />
 
                 <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
                 <ResourceDictionary Source="Views.Setup/LocalPluginSetupView.xaml" />

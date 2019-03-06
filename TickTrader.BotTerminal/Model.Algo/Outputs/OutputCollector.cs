@@ -16,7 +16,17 @@ namespace TickTrader.BotTerminal
         OutputSetupModel OutputConfig { get; }
     }
 
-    internal class OutputCollector<T> : IOutputListener<T>, IOutputCollector, IDisposable
+    internal interface IOutputCollector<T> : IOutputCollector
+    {
+        IList<OutputFixture<T>.Point> Cache { get; }
+
+        event Action<OutputFixture<T>.Point> Appended;
+        event Action<OutputFixture<T>.Point> Updated;
+        event Action<OutputFixture<T>.Point[]> SnapshotAppended;
+        event Action<int> Truncated;
+    }
+
+    internal class OutputCollector<T> : IOutputListener<T>, IOutputCollector<T>, IDisposable
     {
         private OutputAdapter<T> _adapter;
 

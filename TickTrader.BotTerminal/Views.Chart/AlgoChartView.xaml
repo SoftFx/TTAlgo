@@ -113,7 +113,7 @@
                             </s:SciChartSurface.Resources>
 
                         </s:SciChartSurface>
-                        <ItemsControl ItemsSource="{Binding Bots}" Style="{StaticResource BotPanelStyle}"/>
+                        <ContentControl cal:View.Model="{Binding Overlay}"/>
                     </Grid>
                     <CollectionContainer Collection="{Binding Source={StaticResource outputPanesViewSrc}}"/>
                 </CompositeCollection>

@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public TradeHistoryGridViewModel GridView { get; }
 
-        public void Clear(AccountTypes newAccType)
+        public void OnTesterStart(AccountTypes newAccType)
         {
             _reports.Clear();
             GridView.AccType.Value = newAccType;

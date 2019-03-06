@@ -79,6 +79,12 @@ namespace TickTrader.Algo.Core
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
 
+            StopOutputCollectors();
+
+            _mainBarVector.CloseSequence();
+            _equityBuilder.CloseSequence();
+            _marginBuilder.CloseSequence();
+
             //if (!string.IsNullOrWhiteSpace(_lastStatus))
             //    AddEvent(LogSeverities.Custom, _lastStatus);
         }
@@ -147,12 +153,20 @@ namespace TickTrader.Algo.Core
         private void SetupOutput<T>(OutputDescriptor descriptor, TestDataSeriesFlags flags)
         {
             var fixture = _executor.GetOutput<T>(descriptor.Id);
-            var collector = new OutputCollector<T>(fixture, _executor.OnUpdate, flags);
+            var collector = new OutputCollector<T>(descriptor.Id, fixture, _executor.OnUpdate, flags);
             _outputCollectors.Add(descriptor.Id, collector);
+        }
+
+        private void StopOutputCollectors()
+        {
+            foreach (var collector in _outputCollectors.Values)
+                collector.Stop();
         }
 
         private void SendUpdate(BarEntity bar, DataSeriesTypes type, string streamId, SeriesUpdateActions action)
         {
+            //System.Diagnostics.Debug.WriteLine("BAR - " + bar.OpenTime);
+
             var update = new DataSeriesUpdate<BarEntity>(type, streamId, action, bar);
             _executor.OnUpdate(update);
         }

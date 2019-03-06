@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
     {
         private IPluginDataChartModel _chart;
         private List<OutputSeriesModel> _outputModels;
-        private SymbolModel _symbol;
+        private SymbolEntity _symbol;
         private VarList<OutputSeriesModel> _overlayOutputs;
         private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
@@ -36,7 +36,7 @@ namespace TickTrader.BotTerminal
 
         public event System.Action PrecisionUpdated;
 
-        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, SymbolModel symbol)
+        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, SymbolEntity symbol)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal
             Precision = 0;
             foreach (var output in _overlayOutputs.Values)
             {
-                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Descriptor.Precision : output.Descriptor.Precision);
+                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Precision : output.Descriptor.Precision);
             }
             PrecisionUpdated?.Invoke();
         }

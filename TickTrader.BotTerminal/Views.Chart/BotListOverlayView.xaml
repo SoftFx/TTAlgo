@@ -1,0 +1,26 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:local="clr-namespace:TickTrader.BotTerminal.Views.Chart">
+
+    <ControlTemplate x:Key="BotListOverlayTemplate.Classic">
+        <ItemsControl ItemsSource="{Binding Bots}"
+                      Margin="{TemplateBinding Margin}"
+                      VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                      HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ContentControl cal:View.Model="{Binding}" Margin="0 2 0 0" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ControlTemplate>
+
+    <Style x:Key="BotListOverlayViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource BotListOverlayTemplate.Classic}"/>
+        <Setter Property="Margin" Value="5 5 5 25"/>
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+
+</ResourceDictionary>

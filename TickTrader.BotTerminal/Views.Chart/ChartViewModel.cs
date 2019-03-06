@@ -100,6 +100,8 @@ namespace TickTrader.BotTerminal
             SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
 
             CloseCommand = new GenericCommand(o => TryClose());
+
+            ChartControl.Overlay = new BotListOverlayViewModel(Bots);
         }
 
         #region Bindable Properties
@@ -322,13 +324,13 @@ namespace TickTrader.BotTerminal
 
             if (args.Action == DLinqAction.Insert)
             {
-                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb));
+                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor));
             }
             else if (args.Action == DLinqAction.Replace)
             {
                 var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem));
                 allOutputs[index].Dispose();
-                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb);
+                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor);
             }
             else if (args.Action == DLinqAction.Remove)
             {
@@ -345,13 +347,13 @@ namespace TickTrader.BotTerminal
 
             if (args.Action == DLinqAction.Insert)
             {
-                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb));
+                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor));
             }
             else if (args.Action == DLinqAction.Replace)
             {
                 var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem.Model));
                 allOutputs[index].Dispose();
-                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb);
+                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor);
             }
             else if (args.Action == DLinqAction.Remove)
             {
