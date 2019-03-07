@@ -258,6 +258,8 @@ namespace ActorSharp
                 }
 
                 _isClosed = true;
+                if (ex != null)
+                    _writePage1.Error = ExceptionDispatchInfo.Capture(ex);
 
                 if (_writePage1.Count == 0 && _writePage2.Count == 0)
                     SendNextPage(); // send empty page 
@@ -276,6 +278,7 @@ namespace ActorSharp
             private bool _isClosed;
             private Action _callback;
             private BlockingChannel<T> _src;
+            private ExceptionDispatchInfo _fault;
 
             public Reader(BlockingChannel<T> src)
             {
@@ -299,17 +302,24 @@ namespace ActorSharp
             public bool GetResult()
             {
                 if (_isClosed)
+                {
+                    if (_fault != null)
+                        _fault.Throw();
                     return false;
+                }
 
                 Current = _rxPage[_pageIndex++];
                 if (_pageIndex == _rxPage.Count)
                 {
                     if (_rxPage.Last)
                     {
+                        _fault = _rxPage.Error;
                         _isClosed = true;
                         _rxPage = null;
                         _pageIndex = 0;
                         _src.OnReaderClosed();
+                        if (_fault != null)
+                            _fault.Throw();
                     }
                     else
                     {
@@ -334,6 +344,7 @@ namespace ActorSharp
                 _rxPage = (LocalPage<T>)message;
                 if (_rxPage.Count == 0 && _rxPage.Last)
                 {
+                    _fault = _rxPage.Error;
                     _rxPage = null;
                     _isClosed = true;
                     _src.OnReaderClosed();
