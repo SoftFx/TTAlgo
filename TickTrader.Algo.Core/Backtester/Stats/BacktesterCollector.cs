@@ -18,13 +18,10 @@ namespace TickTrader.Algo.Core
     {
         private PluginExecutor _executor;
         private Dictionary<string, IOutputCollector> _outputCollectors = new Dictionary<string, IOutputCollector>();
-        private BarSequenceBuilder _mainBarVector;
-        private BarSequenceBuilder _equityBuilder;
-        private BarSequenceBuilder _marginBuilder;
+        private ChartDataCollector _mainSymbolCollector;
+        private ChartDataCollector _equityCollector;
+        private ChartDataCollector _marginCollector;
         private DateTime _startTime;
-        private List<BarEntity> _mainSymbolHistory;
-        private List<BarEntity> _equityHistory;
-        private List<BarEntity> _marginHistory;
         private string _mainSymbol;
         private TimeFrames _mainTimeframe;
         private string _lastStatus;
@@ -47,14 +44,10 @@ namespace TickTrader.Algo.Core
         private DateTime VirtualTimepoint => InvokeEmulator.SafeVirtualTimePoint;
 
         //public int EventsCount => _events.Count;
-        public int BarCount => _mainSymbolHistory.Count;
+        public int BarCount => _mainSymbolCollector.Count;
 
         public void OnStart(IBacktesterSettings settings)
         {
-            _mainSymbolHistory = new List<BarEntity>();
-            _equityHistory = new List<BarEntity>();
-            _marginHistory = new List<BarEntity>();
-
             Stats = new TestingStatistics();
             _startTime = DateTime.UtcNow;
             _mainSymbol = settings.MainSymbol;
@@ -81,9 +74,9 @@ namespace TickTrader.Algo.Core
 
             StopOutputCollectors();
 
-            _mainBarVector.CloseSequence();
-            _equityBuilder.CloseSequence();
-            _marginBuilder.CloseSequence();
+            _mainSymbolCollector.Dispose();
+            _equityCollector.Dispose();
+            _marginCollector.Dispose();
 
             //if (!string.IsNullOrWhiteSpace(_lastStatus))
             //    AddEvent(LogSeverities.Custom, _lastStatus);
@@ -93,13 +86,9 @@ namespace TickTrader.Algo.Core
         {
             Stats = null;
 
-            _mainSymbolHistory = null;
-            _equityHistory = null;
-            _marginHistory = null;
-
-            _mainBarVector = null;
-            _equityBuilder = null;
-            _marginBuilder = null;
+            _mainSymbolCollector = null;
+            _equityCollector = null;
+            _marginCollector = null;
             //_events = null;
 
             base.Dispose();
@@ -107,29 +96,9 @@ namespace TickTrader.Algo.Core
 
         private void InitChartDataCollection(IBacktesterSettings settings)
         {
-            _mainBarVector = BarSequenceBuilder.Create(_mainTimeframe);
-            _equityBuilder = BarSequenceBuilder.Create(_mainBarVector);
-            _marginBuilder = BarSequenceBuilder.Create(_mainBarVector);
-
-            InitSeriesCollection(settings.ChartDataMode, _mainBarVector, DataSeriesTypes.SymbolRate, settings.MainSymbol, _mainSymbolHistory);
-            InitSeriesCollection(settings.EquityDataMode, _equityBuilder, DataSeriesTypes.NamedStream, EquityStreamName, _equityHistory);
-            InitSeriesCollection(settings.MarginDataMode, _marginBuilder, DataSeriesTypes.NamedStream, MarginStreamName, _marginHistory);
-        }
-
-        private void InitSeriesCollection(TestDataSeriesFlags seriesFlags, BarSequenceBuilder builder, DataSeriesTypes dataType, string seriesId, List<BarEntity> snapshot)
-        {
-            if (seriesFlags.HasFlag(TestDataSeriesFlags.Snapshot))
-                builder.BarOpened += (b) => snapshot.Add(b);
-            if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
-            {
-                if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
-                    builder.BarClosed += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
-                else
-                {
-                    builder.BarUpdated += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Update);
-                    builder.BarOpened += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
-                }
-            }
+            _mainSymbolCollector = new ChartDataCollector(settings.ChartDataMode, DataSeriesTypes.SymbolRate, settings.MainSymbol, _executor.OnUpdate, _mainTimeframe);
+            _equityCollector = new ChartDataCollector(settings.EquityDataMode, DataSeriesTypes.NamedStream, EquityStreamName, _executor.OnUpdate, _mainSymbolCollector.Ref);
+            _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesTypes.NamedStream, MarginStreamName, _executor.OnUpdate, _mainSymbolCollector.Ref); 
         }
 
         private void InitOutputCollection(IBacktesterSettings settings)
@@ -163,13 +132,6 @@ namespace TickTrader.Algo.Core
                 collector.Stop();
         }
 
-        private void SendUpdate(BarEntity bar, DataSeriesTypes type, string streamId, SeriesUpdateActions action)
-        {
-            //System.Diagnostics.Debug.WriteLine("BAR - " + bar.OpenTime);
-
-            var update = new DataSeriesUpdate<BarEntity>(type, streamId, action, bar);
-            _executor.OnUpdate(update);
-        }
 
         #region Journal
 
@@ -230,17 +192,17 @@ namespace TickTrader.Algo.Core
 
         public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
         {
-            return MarshalBars(_mainSymbolHistory, timeFrame);
+            return MarshalBars(_mainSymbolCollector.Snapshot, timeFrame);
         }
 
         public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
         {
-            return MarshalBars(_equityHistory, timeFrame);
+            return MarshalBars(_equityCollector.Snapshot, timeFrame);
         }
 
         public IPagedEnumerator<BarEntity> GetMarginHistory(TimeFrames timeFrame)
         {
-            return MarshalBars(_marginHistory, timeFrame);
+            return MarshalBars(_marginCollector.Snapshot, timeFrame);
         }
 
         private IPagedEnumerator<BarEntity> MarshalBars(IEnumerable<BarEntity> barCollection, TimeFrames targeTimeframe)
@@ -338,13 +300,13 @@ namespace TickTrader.Algo.Core
             Stats.TicksCount += update.NumberOfQuotes;
 
             if (update.Symbol == _mainSymbol)
-                _mainBarVector.AppendBarPart(update.Time, update.BidOpen, update.BidHigh, update.BidLow, update.Bid, 0);
+                _mainSymbolCollector.AppendBarPart(update.Time, update.BidOpen, update.BidHigh, update.BidLow, update.Bid, 0);
         }
 
         public void RegisterEquity(DateTime timepoint, double equity, double margin)
         {
-            _equityBuilder.AppendQuote(timepoint, equity, 0);
-            _marginBuilder.AppendQuote(timepoint, margin, 0);
+            _equityCollector.AppendQuote(timepoint, equity, 0);
+            _marginCollector.AppendQuote(timepoint, margin, 0);
         }
 
         #endregion

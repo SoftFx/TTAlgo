@@ -75,7 +75,7 @@
     <Compile Include="Backtester\DelayedEventsQueue.cs" />
     <Compile Include="Backtester\Feed\FeedReader.cs" />
     <Compile Include="Backtester\ScheduleEmulator.cs" />
-    <Compile Include="Backtester\Stats\ChartDatatUpdate.cs" />
+    <Compile Include="Backtester\Stats\ChartDataCollector.cs" />
     <Compile Include="Backtester\Stats\OutputCollector.cs" />
     <Compile Include="Backtester\TimeEvent.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />

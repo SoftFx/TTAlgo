@@ -159,6 +159,7 @@ namespace TickTrader.Algo.Core
                 }
 
                 UpdateVirtualTimepoint(nextTick.Time);
+                _collector.OnRateUpdate(nextTick);
 
                 if (tickCount == 1)
                 {

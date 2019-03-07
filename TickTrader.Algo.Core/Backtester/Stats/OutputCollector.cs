@@ -108,13 +108,4 @@ namespace TickTrader.Algo.Core
             _indexShift += size;
         }
     }
-
-
-    //[Serializable]
-    //public class OutputUpdate<T>
-    //{
-    //    public T Value { get; }
-    //    public 
-    //}
-
 }
