@@ -16,7 +16,9 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Position.Id}"/> 
                 <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Position.Symbol}" />
+                <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Position.Modified}"/>
                 <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Position.Side}" />
                 <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Position.Amount}" />
                 <DataGridTextColumn Header="Price" Width="*">
@@ -35,6 +37,8 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
+                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" />
+                <DataGridTextColumn Header="Margin" Width="*" Binding="{Binding Position.Margin}"/>
                 <DataGridTextColumn Header="P/L" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
@@ -49,7 +53,6 @@
                         </MultiBinding>
                     </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" />
                 <DataGridTextColumn Header="Net P/L" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >

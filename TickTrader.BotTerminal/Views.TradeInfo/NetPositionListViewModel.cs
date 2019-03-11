@@ -22,6 +22,8 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
+
+            var pos = Positions.FirstOrDefault(); // for test 
         }
 
         protected override bool SupportsAccount(AccountTypes accType)

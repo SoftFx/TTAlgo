@@ -35,6 +35,7 @@ namespace TickTrader.Algo.Common.Model
             if (position.Symbol != Symbol)
                 return;
 
+            Id = position.Id;
             AgentCommission = (decimal)position.AgentCommission;
             Commission = (decimal)position.Commission;
             SettlementPrice = position.SettlementPrice;
@@ -69,6 +70,8 @@ namespace TickTrader.Algo.Common.Model
         }
 
         #region Properties
+
+        public string Id { get; private set; }
 
         public decimal Commission
         {

@@ -879,6 +879,7 @@ namespace TickTrader.Algo.Common.Model
 
             return new PositionEntity()
             {
+                Id = p.PosId,
                 Side = side,
                 Volume = amount,
                 Price = price,
@@ -886,6 +887,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
+                Modified = p.Modified,
             };
         }
 

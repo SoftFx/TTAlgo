@@ -134,13 +134,15 @@ namespace TickTrader.Algo.Common.Model
 
             return new PositionEntity()
             {
+                Id = p.PosID,
                 Side = side,
                 Volume = amount,
                 Price = price,
                 Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
-                Swap = p.Swap
+                Swap = p.Swap,
+                Modified = p.PosModified,
             };
         }
 

@@ -38,6 +38,7 @@ namespace TickTrader.Algo.Core
             SettlementPrice = src.Price;
             Side = src.Side;
             Swap = src.Swap;
+            Modified = src.Modified;
         }
 
         public PositionEntity Clone()
@@ -45,6 +46,7 @@ namespace TickTrader.Algo.Core
             return new PositionEntity(this);
         }
 
+        public string Id { get; set; }
         public double AgentCommission { get; set; }
         public double Volume { get; set; }
         public double Commission { get; set; }
