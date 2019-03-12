@@ -27,6 +27,8 @@ namespace TickTrader.BotTerminal
 
             AutoSizeColumns = true;
             ConvertTimeToLocal = true;
+
+            var pos = Items.Value;
         }
 
         public Property<ICollectionView> Items { get; }
