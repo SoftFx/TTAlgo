@@ -52,6 +52,7 @@ namespace TickTrader.Algo.Core
     public interface ISynchronizationContext
     {
         void Invoke(Action action);
+        void Send(Action action);
     }
 
     public interface ILinkOutput<T> : IDisposable

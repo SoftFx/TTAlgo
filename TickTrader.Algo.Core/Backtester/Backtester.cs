@@ -14,6 +14,7 @@ namespace TickTrader.Algo.Core
     {
         private static int IdSeed;
 
+        private ISynchronizationContext _sync;
         private readonly FeedEmulator _feed;
         private readonly ExecutorHandler _executor;
         private EmulationControlFixture _control;
@@ -21,11 +22,12 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
         private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
 
-        public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext updateSync, DateTime? from, DateTime? to)
+        public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext syncObj, DateTime? from, DateTime? to)
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
             PluginInfo = pluginRef.Metadata.Descriptor;
-            _executor = new ExecutorHandler(pluginRef, updateSync);
+            _sync = syncObj;
+            _executor = new ExecutorHandler(pluginRef, syncObj);
             _executor.Core.Metadata = this;
 
             EmulationPeriodStart = from;
@@ -39,6 +41,12 @@ namespace TickTrader.Algo.Core
             InitialBalance = 10000;
             BalanceCurrency = "USD";
             AccountType = AccountTypes.Gross;
+
+            _control.StateUpdated += s => _sync.Send(() =>
+            {
+                State = s;
+                StateChanged?.Invoke(s);
+            });
         }
 
         public ExecutorHandler Executor => _executor;
@@ -62,6 +70,8 @@ namespace TickTrader.Algo.Core
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
+        public EmulatorStates State { get; private set; }
+        public event Action<EmulatorStates> StateChanged;
 
         public event Action<BarEntity, string, SeriesUpdateActions> OnChartUpdate
         {
@@ -80,10 +90,15 @@ namespace TickTrader.Algo.Core
         public TestDataSeriesFlags EquityDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
         public TestDataSeriesFlags OutputDataMode { get; set; } = TestDataSeriesFlags.Disabled;
 
-        public void Run(CancellationToken cToken)
+        public async Task Run(CancellationToken cToken)
         {
             cToken.Register(() => _control.CancelEmulation());
 
+            await Task.Factory.StartNew(SetupAndRun);
+        }
+
+        private void SetupAndRun()
+        {
             _executor.Core.InitSlidingBuffering(4000);
 
             _executor.Core.MainSymbolCode = MainSymbol;
@@ -96,23 +111,36 @@ namespace TickTrader.Algo.Core
 
             _executor.Start();
 
-            if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
-            {
-                if (!_control.WarmUp(WarmupSize, WarmupUnits))
-                    return;
-            }
+            //if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
+            //{
+            //    if (!_control.WarmUp(WarmupSize, WarmupUnits))
+            //        return;
+            //}
 
-            _executor.Core.Start();
+            //_executor.Core.Start();
 
             try
             {
-                _control.EmulateExecution();
+                if (PluginInfo.Type == AlgoTypes.Robot)
+                    _control.EmulateExecution(WarmupSize, WarmupUnits);
+                else // no warm-up for indicators
+                    _control.EmulateExecution(0, WarmupUnitTypes.Bars);
             }
             finally
             {
                 _control.OnStop();
                 _executor.Stop();
             }
+        }
+
+        public void Pause()
+        {
+            _control.Pause();
+        }
+
+        public void Resume()
+        {
+            _control.Resume();
         }
 
         public void CancelTesting()

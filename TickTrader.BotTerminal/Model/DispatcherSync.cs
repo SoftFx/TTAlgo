@@ -39,6 +39,10 @@ namespace TickTrader.BotTerminal
             return App.Current.Dispatcher.Invoke<TOut>(() => syncFunc(args));
         }
 
+        public void Send(Action asyncAction)
+        {
+            App.Current.Dispatcher.BeginInvoke(asyncAction);
+        }
 
         private bool CheckAccess()
         {

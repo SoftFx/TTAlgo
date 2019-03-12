@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Core
         public TestingStatistics Stats { get; private set; }
         public InvokeEmulator InvokeEmulator { get; internal set; }
 
-        private DateTime VirtualTimepoint => InvokeEmulator.SafeVirtualTimePoint;
+        private DateTime VirtualTimepoint => InvokeEmulator.UnsafeVirtualTimePoint;
 
         //public int EventsCount => _events.Count;
         public int BarCount => _mainSymbolCollector.Count;

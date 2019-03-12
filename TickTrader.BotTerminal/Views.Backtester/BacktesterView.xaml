@@ -126,13 +126,16 @@
         <l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">
             <Grid Background="{TemplateBinding Background}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>  <!-- 0 - toolbar -->
+                    <RowDefinition/>                <!-- 1 - body -->
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
                     <Button Content="{DynamicResource StartToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
+                    <Button Content="Pause" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="PauseEmulation" IsEnabled="{Binding CanPause.Value}"/>
+                    <Button Content="Resume" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="ResumeEmulation" IsEnabled="{Binding CanResume.Value}"/>
+                    <Button Content="Cancel" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="Cancel" IsEnabled="{Binding CanCanel.Value}"/>
                 </ToolBar>
 
                 <TabControl Name="tabBody" Grid.Row="1" Margin="5">
@@ -152,6 +155,8 @@
                         <ContentControl cal:View.Model="{Binding ResultsPage}"/>
                     </TabItem>
                 </TabControl>
+
+                <ContentControl Name="progressMonitor" Grid.Row="2" cal:View.Model="{Binding ProgressMonitor}" Visibility="Collapsed"/>
 
                 <!--<Border Name="progressPopup" Grid.Row="1" Padding="8"
                     VerticalAlignment="Center" Margin="15"
@@ -174,6 +179,24 @@
 
             </Grid>
         </l:OverlayPanel>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">
+                <Setter TargetName="progressMonitor" Property="Visibility" Value="Visible"/>
+                <!--<Setter TargetName="tabBody" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="toolBar" Property="IsEnabled" Value="False"/>
+                <Setter TargetName="tabBody" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter TargetName="toolBar" Property="Effect">
+                    <Setter.Value>
+                        <BlurEffect Radius="3"/>
+                    </Setter.Value>
+                </Setter>-->
+            </DataTrigger>
+        </ControlTemplate.Triggers>
 
         <!--<ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">

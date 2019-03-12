@@ -150,5 +150,10 @@ namespace TickTrader.Algo.Core
         {
             action();
         }
+
+        public void Send(Action action)
+        {
+            action();
+        }
     }
 }

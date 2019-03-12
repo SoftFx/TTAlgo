@@ -10,6 +10,8 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
+    public enum EmulatorStates { WarmingUp, Running, Paused, Stopping, Stopped }
+
     internal class InvokeEmulator : InvokeStartegy
     {
         private object _sync = new object();
@@ -24,27 +26,37 @@ namespace TickTrader.Algo.Core
         private DateTime _timePoint;
         private long _safeTimePoint;
         private FeedReader _feedReader;
-        private volatile bool _canceled;
+        private volatile bool _checkStateFlag;
         private BacktesterCollector _collector;
-        private bool _stopFlag;
+        private bool _normalStopFlag;
+        private bool _canelRequested;
+        private bool _pauseRequested;
         private Exception _fatalError;
+        private Action _exStartAction;
+        private Action _extStopAction;
 
-        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed)
+        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, Action exStartAction, Action extStopAction)
         {
             _settings = settings;
             _collector = collector;
             _collector.InvokeEmulator = this;
             _feed = feed;
+            _exStartAction = exStartAction;
+            _extStopAction = extStopAction;
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
         public DateTime SafeVirtualTimePoint { get { lock (_sync) return _timePoint; } }
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
-        public bool IsStopPhase { get; private set; }
+        internal bool IsStopPhase => State == EmulatorStates.Stopping;
         public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
+        public EmulatorStates State { get; private set; }
 
         public event Action<RateUpdate> RateUpdated;
+        public event Action<EmulatorStates> StateUpdated;
+
+        #region InvokeStartegy implementation
 
         protected override void OnInit()
         {
@@ -87,7 +99,7 @@ namespace TickTrader.Algo.Core
 
         public override void Start()
         {
-            IsStopPhase = false;
+            //IsStopPhase = false;
             _eventAggr.Add(_delayedQueue);
             _eventAggr.Add(_feedReader);
 
@@ -98,44 +110,197 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void EmulateEvents()
+        #endregion
+
+        #region State Control
+
+        public void Cancel()
         {
-            _canceled = false;
-
-            while (!_stopFlag)
+            lock (_sync)
             {
-                if (_canceled)
-                    throw new OperationCanceledException("Canceled.");
+                if (State == EmulatorStates.Stopped) // can be canceled prior to execution due to CancellationToken
+                    _canelRequested = true;
 
-                if (_fatalError != null)
-                    throw _fatalError;
-
-                var nextItem = DequeueNext();
-
-                if (nextItem == null)
-                    return;
-
-                ExecItem(nextItem);
+                if (State == EmulatorStates.Running || State == EmulatorStates.Paused)
+                {
+                    _canelRequested = true;
+                    _pauseRequested = false;
+                    _checkStateFlag = true;
+                    Monitor.Pulse(_sync);
+                }
             }
         }
 
-        public void EnableStopPhase()
+        public void Pause()
         {
-            _fatalError = null;
-            IsStopPhase = true;
+            lock (_sync)
+            {
+                if (State != EmulatorStates.Running || _canelRequested)
+                    return;
+                _pauseRequested = true;
+                _checkStateFlag = true;
+            }
         }
 
-        public bool WarmupByBars(int barCount)
+        public void Resume()
+        {
+            lock (_sync)
+            {
+                _pauseRequested = false;
+                _checkStateFlag = false;
+                Monitor.Pulse(_sync);
+            }
+        }
+
+        private void ChangeState(EmulatorStates newState)
+        {
+            if (State != newState)
+            {
+                State = newState;
+                StateUpdated?.Invoke(newState);
+            }
+        }
+
+        #endregion
+
+        public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
+        {
+            try
+            {
+                if (!WarmUp(warmupValue, warmupUnits))
+                {
+                    _collector.AddEvent(LogSeverities.Error, "No data for requested period!");
+                    return;
+                }
+                _exStartAction();
+                EmulateEvents();
+                EmulateStop();
+                StopFeedRead();
+            }
+            catch (OperationCanceledException)
+            {
+                _collector.AddEvent(LogSeverities.Error, "Testing canceled!");
+                StopFeedRead();
+                EmulateStop();
+                throw;
+            }
+            catch (Exception ex)
+            {
+                StopFeedRead();
+                EmulateStop();
+                throw WrapException(ex);
+            }
+        }
+
+        private void EmulateStop()
+        {
+            _extStopAction();
+            //EmulateStop();
+            //EnableStopPhase();
+            EmulateEvents();
+        }
+
+        private void EmulateEvents()
+        {
+            lock (_sync)
+            {
+                _checkStateFlag = false;
+
+                if (_canelRequested)
+                {
+                    _canelRequested = false;
+                    ChangeState(EmulatorStates.Stopped);
+                    throw new OperationCanceledException("Canceled.");
+                }
+
+                if (State == EmulatorStates.Stopped || State == EmulatorStates.WarmingUp)
+                    ChangeState(EmulatorStates.Running);
+            }
+
+            try
+            {
+                while (!_normalStopFlag)
+                {
+                    if (_checkStateFlag)
+                    {
+                        lock (_sync)
+                        {
+                            if (_pauseRequested)
+                            {
+                                ChangeState(EmulatorStates.Paused);
+                                while (_pauseRequested)
+                                    Monitor.Wait(_sync);
+                                if (!_canelRequested)
+                                    ChangeState(EmulatorStates.Running);
+                            }
+
+                            if (_canelRequested)
+                                throw new OperationCanceledException("Canceled.");
+                        }
+                    }
+
+                    if (_fatalError != null)
+                        throw _fatalError;
+
+                    var nextItem = DequeueNext();
+
+                    if (nextItem == null)
+                        return;
+
+                    ExecItem(nextItem);
+                }
+            }
+            catch (Exception)
+            {
+                lock (_sync)
+                {
+                    if (State == EmulatorStates.Stopping)
+                        ChangeState(EmulatorStates.Stopping);
+                    else
+                        ChangeState(EmulatorStates.Stopped);
+                }
+                throw;
+            }
+        }
+
+        //public void EnableStopPhase()
+        //{
+        //    _fatalError = null;
+        //    IsStopPhase = true;
+        //}
+
+        #region Warm-Up
+
+        private bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
+        {
+            if (warmupValue <= 0)
+                return true;
+
+            lock (_sync) ChangeState(EmulatorStates.WarmingUp);
+
+            if (warmupUnits == WarmupUnitTypes.Days)
+                return WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
+            else if (warmupUnits == WarmupUnitTypes.Hours)
+                return WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
+            else if (warmupUnits == WarmupUnitTypes.Bars)
+                return WarmupByBars(warmupValue);
+            else if (warmupUnits == WarmupUnitTypes.Ticks)
+                return WarmupByQuotes(warmupValue);
+            else
+                throw new Exception("Unsupported warmup units: " + warmupUnits);
+        }
+
+        private bool WarmupByBars(int barCount)
         {
             return Warmup((q, b, f, t) => b < barCount);
         }
 
-        public bool WarmupByTimePeriod(TimeSpan period)
+        private bool WarmupByTimePeriod(TimeSpan period)
         {
             return Warmup((q, b, f, t) => t <= f + period);
         }
 
-        public bool WarmupByQuotes(int quoteCount)
+        private bool WarmupByQuotes(int quoteCount)
         {
             return Warmup((q, b, f, t) => q < quoteCount);
         }
@@ -194,6 +359,8 @@ namespace TickTrader.Algo.Core
             _collector.AddEvent(LogSeverities.Info, string.Format("Warmup completed. Loaded {0} bars ({1} quotes) during warmup.", barCount, tickCount));
         }
 
+        #endregion
+
         private void ExecItem(object item)
         {
             var action = item as Action<PluginBuilder>;
@@ -201,11 +368,6 @@ namespace TickTrader.Algo.Core
                 action(Builder);
             else
                 EmulateRateUpdate((RateUpdate)item);
-        }
-
-        public void Cancel()
-        {
-            _canceled = true;
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
@@ -303,7 +465,7 @@ namespace TickTrader.Algo.Core
             _eventQueue.Enqueue(b =>
             {
                 b.InvokeOnStop();
-                _stopFlag = true;
+                _normalStopFlag = true;
                 stopEvent.SetResult(this);
             });
 
@@ -365,6 +527,14 @@ namespace TickTrader.Algo.Core
             UpdateVirtualTimepoint(next.Time);
             isTrade = next.IsTrade;
             return next.Content;
+        }
+
+        private Exception WrapException(Exception ex)
+        {
+            if (ex is AlgoException)
+                return ex;
+
+            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }
 }

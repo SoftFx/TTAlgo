@@ -45,6 +45,10 @@ namespace TickTrader.BotTerminal
         private BoolProperty _allSymbolsValid;
         private BoolProperty _hasDataToSave;
         private BoolProperty _isRunning;
+        private Backtester _backtester;
+        private Property<EmulatorStates> _stateProp;
+        private BoolProperty _pauseRequestedProp;
+        private BoolProperty _resumeRequestedProp;
 
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
@@ -61,7 +65,7 @@ namespace TickTrader.BotTerminal
 
             _localWnd = new WindowManager(this);
 
-            ActionOverlay = new Property<ActionOverlayViewModel>();
+            //ActionOverlay = new Property<ActionOverlayViewModel>();
             AdditionalSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
 
             DateRange = new DateRangeSelectionViewModel(false);
@@ -144,10 +148,12 @@ namespace TickTrader.BotTerminal
                 MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
             };
 
+            InitExecControl();
             UpdateTradeSummary();
         }
 
-        public Property<ActionOverlayViewModel> ActionOverlay { get; private set; }
+        //public Property<ActionOverlayViewModel> ActionOverlay { get; private set; }
+        public ActionViewModel ProgressMonitor { get; } = new ActionViewModel();
         public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
         public Property<List<TimeFrames>> AvailableModels { get; private set; }
         public Property<TimeFrames> SelectedModel { get; private set; }
@@ -162,7 +168,10 @@ namespace TickTrader.BotTerminal
         //public BoolVar IsStopping { get; }
         public BoolVar CanSetup { get; }
         public BoolVar CanStart { get; }
-        //public BoolVar CanStop { get; }
+        public BoolVar CanPause { get; private set; }
+        public BoolVar CanResume { get; private set; }
+        public BoolVar CanStop { get; private set; }
+        public BoolVar CanCanel { get; private set; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
@@ -195,28 +204,6 @@ namespace TickTrader.BotTerminal
                 UpdateTradeSummary();
             }
         }
-
-        public async void StartEmulation()
-        {
-            //ProgressMonitor.Start(DoEmulation);
-            //var actionObserver = new ActionViewModel();
-            ///yield return OverlayPanel.ShowDialog(null);
-            ///
-            
-            var observer = new ActionOverlayViewModel(DoEmulation);
-
-            ActionOverlay.Value = observer;
-            IsRunning.Set();
-            await observer.Completed;
-
-            IsRunning.Unset();
-            ActionOverlay.Value = null;
-        }
-
-        //public void Stop()
-        //{
-        //    ActionOverlay.Cancel();
-        //}
 
         [Conditional("DEBUG")]
         public void PrintCacheData()
@@ -299,68 +286,77 @@ namespace TickTrader.BotTerminal
             //packageRef.IncrementRef();
             //packageRef.DecrementRef();
 
-            using (var tester = new Backtester(pluginRef, new DispatcherSync(), _emulteFrom, _emulateTo))
+            using (_backtester = new Backtester(pluginRef, new DispatcherSync(), _emulteFrom, _emulateTo))
             {
-                pluginSetupModel.Apply(tester);
+                OnStartTesting();
 
-                foreach (var outputSetup in pluginSetupModel.Outputs)
+                try
                 {
-                    if (outputSetup is ColoredLineOutputSetupModel)
-                        tester.InitOutputCollection<double>(outputSetup.Id);
-                    else if (outputSetup is MarkerSeriesOutputSetupModel)
-                        tester.InitOutputCollection<Marker>(outputSetup.Id);
+                    pluginSetupModel.Apply(_backtester);
+
+                    foreach (var outputSetup in pluginSetupModel.Outputs)
+                    {
+                        if (outputSetup is ColoredLineOutputSetupModel)
+                            _backtester.InitOutputCollection<double>(outputSetup.Id);
+                        else if (outputSetup is MarkerSeriesOutputSetupModel)
+                            _backtester.InitOutputCollection<Marker>(outputSetup.Id);
+                    }
+
+                    _backtester.Executor.LogUpdated += JournalPage.Append;
+                    _backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
+
+                    Exception execError = null;
+
+                    System.Action updateProgressAction = () => observer.SetProgress(_backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
+
+                    using (new UiUpdateTimer(updateProgressAction))
+                    {
+                        try
+                        {
+                            MainSymbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, SelectedModel.Value);
+
+                            foreach (var symbolSetup in AdditionalSymbols)
+                                symbolSetup.Apply(_backtester, _emulteFrom, _emulateTo);
+
+                            _backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+
+                            foreach (var rec in _client.Currencies.Snapshot)
+                                _backtester.Currencies.Add(rec.Key, rec.Value);
+
+                            //foreach (var rec in _client.Symbols.Snapshot)
+                            //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
+
+                            _settings.Apply(_backtester);
+
+                            FireOnStart(chartSymbol, pluginSetupModel, _backtester);
+
+                            _hasDataToSave.Set();
+
+                            await Task.Run(() => _backtester.Run(cToken));
+
+                            observer.SetProgress(DateRange.To.GetAbsoluteDay());
+                        }
+                        catch (Exception ex)
+                        {
+                            execError = ex;
+                        }
+                    }
+
+                    await LoadStats(observer, _backtester);
+                    await LoadChartData(_backtester, observer, _backtester);
+
+                    if (SaveResultsToFile.Value)
+                        await SaveResults(pluginSetupModel, observer);
+
+                    if (execError != null)
+                        throw execError; //observer.SetMessage(execError.Message);
+                    else
+                        observer.SetMessage("Done.");
                 }
-
-                tester.Executor.LogUpdated += JournalPage.Append;
-                tester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
-
-                Exception execError = null;
-
-                System.Action updateProgressAction = () => observer.SetProgress(tester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
-
-                using (new UiUpdateTimer(updateProgressAction))
+                finally
                 {
-                    try
-                    {
-                        MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
-
-                        foreach (var symbolSetup in AdditionalSymbols)
-                            symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
-
-                        tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
-
-                        foreach (var rec in _client.Currencies.Snapshot)
-                            tester.Currencies.Add(rec.Key, rec.Value);
-
-                        //foreach (var rec in _client.Symbols.Snapshot)
-                        //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
-
-                        _settings.Apply(tester);
-
-                        FireOnStart(chartSymbol, pluginSetupModel, tester);
-
-                        _hasDataToSave.Set();
-
-                        await Task.Run(() => tester.Run(cToken));
-
-                        observer.SetProgress(DateRange.To.GetAbsoluteDay());
-                    }
-                    catch (Exception ex)
-                    {
-                        execError = ex;
-                    }
+                    OnStopTesting();
                 }
-
-                await LoadStats(observer, tester);
-                await LoadChartData(tester, observer, tester);
-
-                if (SaveResultsToFile.Value)
-                    await SaveResults(pluginSetupModel, observer);
-
-                if (execError != null)
-                    throw execError; //observer.SetMessage(execError.Message);
-                else
-                    observer.SetMessage("Done.");
             }
         }
 
@@ -437,6 +433,76 @@ namespace TickTrader.BotTerminal
                 }
             });
         }
+
+        #region Execution control
+
+        public async void StartEmulation()
+        {
+            //var actionObserver = new ActionViewModel();
+            ///yield return OverlayPanel.ShowDialog(null);
+            ///
+
+            //var observer = new ActionOverlayViewModel(DoEmulation);
+
+            //ActionOverlay.Value = observer;
+            IsRunning.Set();
+            ProgressMonitor.Start(DoEmulation);
+            await ProgressMonitor.Completion;
+
+            IsRunning.Unset();
+            //ActionOverlay.Value = null;
+        }
+
+        public void Cancel()
+        {
+            ProgressMonitor.Cancel();
+        }
+
+        public void PauseEmulation()
+        {
+            _backtester?.Pause();
+        }
+
+        public void ResumeEmulation()
+        {
+            _pauseRequestedProp.Set();
+            _backtester?.Resume();
+        }
+
+        private void InitExecControl()
+        {
+            _stateProp = _var.AddProperty<EmulatorStates>();
+            _resumeRequestedProp = _var.AddBoolProperty();
+            _pauseRequestedProp = _var.AddBoolProperty();
+
+            CanPause = _stateProp.Var == EmulatorStates.Running & !_pauseRequestedProp.Var;
+            CanResume = _stateProp.Var == EmulatorStates.Paused & !_pauseRequestedProp.Var;
+            CanCanel = ProgressMonitor.CanCancel;
+
+            _var.TriggerOnChange(_stateProp, a =>
+            {
+                _pauseRequestedProp.Clear();
+                _resumeRequestedProp.Clear();
+            });
+        }
+
+        private void OnStartTesting()
+        {
+            _backtester.StateChanged += _backtester_StateChanged;
+        }
+
+        private void OnStopTesting()
+        {
+            _backtester.StateChanged -= _backtester_StateChanged;
+            _stateProp.Value = EmulatorStates.Stopped;
+        }
+
+        private void _backtester_StateChanged(EmulatorStates state)
+        {
+            _stateProp.Value = state;
+        }
+
+        #endregion
 
         #region Results saving
 
