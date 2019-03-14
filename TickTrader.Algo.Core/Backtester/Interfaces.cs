@@ -32,6 +32,20 @@ namespace TickTrader.Algo.Core
         DateTime? EmulationPeriodStart { get; }
         DateTime? EmulationPeriodEnd { get; }
         JournalOptions JournalFlags { get; }
+
+        TestDataSeriesFlags ChartDataMode { get; }
+        TestDataSeriesFlags MarginDataMode { get; }
+        TestDataSeriesFlags EquityDataMode { get; }
+        TestDataSeriesFlags OutputDataMode { get; }
+    }
+
+    [Flags]
+    public enum TestDataSeriesFlags
+    {
+        Disabled        = 0,  // no data is collected
+        Snapshot        = 1,  // collect data as a snashot, snapshot is available at the end of testing
+        Stream          = 2,  // stream data out during the testing process
+        Realtime        = 4   // real-time streaming (works only if Stream flag is set)
     }
 
     public enum WarmupUnitTypes { Bars, Ticks, Days, Hours }

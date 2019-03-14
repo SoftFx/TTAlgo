@@ -86,7 +86,12 @@ namespace TickTrader.BotTerminal
 
         public string AsText()
         {
-            return SelectedSymbol.Value.Name + " " + SelectedTimeframe.Value;
+            var smb = SelectedSymbol.Value.InfoEntity;
+            var swapLong = smb.SwapEnabled ? smb.SwapSizeLong : 0;
+            var swapShort = smb.SwapEnabled ? smb.SwapSizeShort : 0;
+
+            return string.Format("{0} {1}, commission={2} {3}, swapLong={4} swapShort={5} ",
+                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.CommissionType, swapLong, swapShort);
         }
 
         public async void UpdateAvailableRange(TimeFrames timeFrame)

@@ -92,6 +92,10 @@ namespace TickTrader.Algo.CoreUsageSample
         {
         }
 
+        public void Send(Action action)
+        {
+        }
+
         private class SymbolDataModel
         {
             private List<BarEntity> data = new List<BarEntity>();

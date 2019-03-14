@@ -14,33 +14,43 @@ namespace TickTrader.Algo.Core
     {
         private static int IdSeed;
 
-        //private AlgoPluginRef _pluginRef;
+        private ISynchronizationContext _sync;
         private readonly FeedEmulator _feed;
-        private readonly PluginExecutor _executor;
+        private readonly ExecutorHandler _executor;
         private EmulationControlFixture _control;
         private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
         private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
         private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
 
-        public Backtester(AlgoPluginRef pluginRef, DateTime? from, DateTime? to)
+        public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext syncObj, DateTime? from, DateTime? to)
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
-            _executor = pluginRef.CreateExecutor();
-            _executor.Metadata = this;
+            PluginInfo = pluginRef.Metadata.Descriptor;
+            _sync = syncObj;
+            _executor = new ExecutorHandler(pluginRef, syncObj);
+            _executor.Core.Metadata = this;
 
             EmulationPeriodStart = from;
             EmulationPeriodEnd = to;
 
-            _control = _executor.InitEmulation(this);
+            _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
-            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
+            _executor.Core.InitBarStrategy(_feed, Api.BarPriceType.Bid);
 
             Leverage = 100;
             InitialBalance = 10000;
             BalanceCurrency = "USD";
             AccountType = AccountTypes.Gross;
+
+            _control.StateUpdated += s => _sync.Send(() =>
+            {
+                State = s;
+                StateChanged?.Invoke(s);
+            });
         }
 
+        public ExecutorHandler Executor => _executor;
+        public PluginDescriptor PluginInfo { get; }
         public string MainSymbol { get; set; }
         public AccountTypes AccountType { get; set; }
         public string BalanceCurrency { get; set; }
@@ -52,7 +62,6 @@ namespace TickTrader.Algo.Core
         public TimeFrames MainTimeframe { get; set; }
         public DateTime? EmulationPeriodStart { get; }
         public DateTime? EmulationPeriodEnd { get; }
-        public int EventsCount => _control.Collector.EventsCount;
         public int TradesCount => _control.TradeHistory.Count;
         public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
@@ -61,43 +70,82 @@ namespace TickTrader.Algo.Core
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
+        public EmulatorStates State { get; private set; }
+        public event Action<EmulatorStates> StateChanged;
 
-        public void Run(CancellationToken cToken)
+        public event Action<BarEntity, string, SeriesUpdateActions> OnChartUpdate
+        {
+            add { Executor.ChartBarUpdated += value; }
+            remove { Executor.ChartBarUpdated -= value; }
+        }
+
+        public event Action<IDataSeriesUpdate> OnOutputUpdate
+        {
+            add { Executor.OutputUpdate += value; }
+            remove { Executor.OutputUpdate -= value; }
+        }
+
+        public TestDataSeriesFlags ChartDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags MarginDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags EquityDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags OutputDataMode { get; set; } = TestDataSeriesFlags.Disabled;
+
+        public async Task Run(CancellationToken cToken)
         {
             cToken.Register(() => _control.CancelEmulation());
 
-            _executor.InitSlidingBuffering(4000);
+            await Task.Factory.StartNew(SetupAndRun);
+        }
 
-            _executor.MainSymbolCode = MainSymbol;
-            _executor.TimeFrame = MainTimeframe;
-            _executor.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
-            _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
+        private void SetupAndRun()
+        {
+            _executor.Core.InitSlidingBuffering(4000);
 
-            _control.OnStart();
+            _executor.Core.MainSymbolCode = MainSymbol;
+            _executor.Core.TimeFrame = MainTimeframe;
+            _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
+            _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            if (!_control.WarmUp(WarmupSize, WarmupUnits))
+            if (!_control.OnStart())
                 return;
 
             _executor.Start();
 
+            //if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
+            //{
+            //    if (!_control.WarmUp(WarmupSize, WarmupUnits))
+            //        return;
+            //}
+
+            //_executor.Core.Start();
+
             try
             {
-                _control.EmulateExecution();
+                if (PluginInfo.Type == AlgoTypes.Robot)
+                    _control.EmulateExecution(WarmupSize, WarmupUnits);
+                else // no warm-up for indicators
+                    _control.EmulateExecution(0, WarmupUnitTypes.Bars);
             }
             finally
             {
                 _control.OnStop();
+                _executor.Stop();
             }
+        }
+
+        public void Pause()
+        {
+            _control.Pause();
+        }
+
+        public void Resume()
+        {
+            _control.Resume();
         }
 
         public void CancelTesting()
         {
             _control.CancelEmulation();
-        }
-
-        public IPagedEnumerator<BotLogRecord> GetEvents()
-        {
-            return _control.Collector.GetEvents();
         }
 
         public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
@@ -125,9 +173,9 @@ namespace TickTrader.Algo.Core
             _control.Collector.InitOutputCollection<T>(id);
         }
 
-        public List<T> GetOutputBuffer<T>(string id)
+        public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
-            return _control.Collector.GetOutputBuffer<T>(id);
+            return _control.Collector.GetOutputData<T>(id);
         }
 
         public override void Dispose()
@@ -148,17 +196,17 @@ namespace TickTrader.Algo.Core
 
         void IPluginSetupTarget.SetParameter(string id, object value)
         {
-            _executor.SetParameter(id, value);
+            _executor.Core.SetParameter(id, value);
         }
 
         T IPluginSetupTarget.GetFeedStrategy<T>()
         {
-            return _executor.GetFeedStrategy<T>();
+            return _executor.Core.GetFeedStrategy<T>();
         }
 
         void IPluginSetupTarget.MapInput(string inputName, string symbolCode, Mapping mapping)
         {
-            _executor.MapInput(inputName, symbolCode, mapping);
+            _executor.Core.MapInput(inputName, symbolCode, mapping);
         }
 
         #endregion

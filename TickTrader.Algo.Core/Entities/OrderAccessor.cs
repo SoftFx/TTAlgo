@@ -129,6 +129,12 @@ namespace TickTrader.Algo.Core
         public decimal? ClosePrice { get; set; }
         internal DateTime PositionCreated { get; set; }
 
+        internal void SetSwap(decimal swap)
+        {
+            Entity.Swap = (double)swap;
+            FireChanged();
+        }
+
         internal void FireChanged()
         {
             EssentialParametersChanged?.Invoke(this);

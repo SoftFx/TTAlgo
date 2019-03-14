@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<BarEntity> BarOpened;
         public event Action<BarEntity> BarClosed;
+        public event Action<BarEntity> BarUpdated;
         public BarSampler Sampler => _sampler;
         public TimeFrames TimeFrame => _timeframe;
         public DateTime? TimeEdge => _currentBar?.OpenTime;
@@ -61,6 +62,7 @@ namespace TickTrader.Algo.Core
             {
                 // append last bar
                 _currentBar.AppendNanProof(price, volume);
+                BarUpdated?.Invoke(_currentBar);
             }
             else
             {
@@ -82,6 +84,7 @@ namespace TickTrader.Algo.Core
             {
                 // join
                 _currentBar = UpdateBar(_currentBar, open, high, low, close, volume);
+                BarUpdated?.Invoke(_currentBar);
             }
             else
             {

@@ -45,21 +45,33 @@ namespace TickTrader.Algo.Core.Repository
 
         public Mapping GetBarToBarMappingOrDefault(MappingKey mappingKey)
         {
+            if (mappingKey == null)
+                return new BidBarMapping();
+
             return BarToBarMappings.ContainsKey(mappingKey) ? BarToBarMappings[mappingKey] : new BidBarMapping();
         }
 
         public Mapping GetBarToDoubleMappingOrDefault(MappingKey mappingKey)
         {
+            if (mappingKey == null)
+                return new BidBarToDoubleMapping();
+
             return BarToDoubleMappings.ContainsKey(mappingKey) ? BarToDoubleMappings[mappingKey] : new BidBarToDoubleMapping();
         }
 
         public Mapping GetQuoteToBarMappingOrDefault(MappingKey mappingKey)
         {
+            if (mappingKey == null)
+                return new QuoteToBarMapping();
+
             return QuoteToBarMappings.ContainsKey(mappingKey) ? QuoteToBarMappings[mappingKey] : new QuoteToBarMapping();
         }
 
         public Mapping GetQuoteToDoubleMappingOrDefault(MappingKey mappingKey)
         {
+            if (mappingKey == null)
+                return new QuoteToDoubleMapping();
+
             return QuoteToDoubleMappings.ContainsKey(mappingKey) ? QuoteToDoubleMappings[mappingKey] : new QuoteToDoubleMapping();
         }
 

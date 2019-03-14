@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    public class DispatcherSync : ISyncContext
+    public class DispatcherSync : ISyncContext, ISynchronizationContext
     {
         public void Invoke(Action syncAction)
         {
@@ -38,6 +39,10 @@ namespace TickTrader.BotTerminal
             return App.Current.Dispatcher.Invoke<TOut>(() => syncFunc(args));
         }
 
+        public void Send(Action asyncAction)
+        {
+            App.Current.Dispatcher.BeginInvoke(asyncAction);
+        }
 
         private bool CheckAccess()
         {

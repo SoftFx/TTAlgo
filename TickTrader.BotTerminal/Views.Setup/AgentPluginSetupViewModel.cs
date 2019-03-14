@@ -168,7 +168,6 @@ namespace TickTrader.BotTerminal
 
         public ProgressViewModel FileProgress { get; }
 
-
         private AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext, PluginSetupMode mode)
         {
             _algoEnv = algoEnv;
@@ -203,7 +202,6 @@ namespace TickTrader.BotTerminal
 
             DisplayName = $"Settings - {bot.InstanceId}";
         }
-
 
         public void Reset()
         {
@@ -258,7 +256,6 @@ namespace TickTrader.BotTerminal
             res.Key = SelectedPlugin.Key;
             return res;
         }
-
 
         private void BotStateChanged(ITradeBot bot)
         {

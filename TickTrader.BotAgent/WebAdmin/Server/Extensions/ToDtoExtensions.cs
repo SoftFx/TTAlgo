@@ -84,7 +84,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             var config = new TradeBotConfigDto()
             {
                 Symbol = bot.Config.MainSymbol.Name,
-                Parameters = bot.Config.Properties.Select(p =>
+                Parameters = bot.Config.Properties.Where(p => p as Parameter != null).Select(p =>
                      new ParameterDto()
                      {
                          Id = p.Id,

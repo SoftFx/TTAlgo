@@ -6,10 +6,28 @@ using System.Linq;
 namespace Machinarium.UnitTest
 {
     [TestClass]
-    public class DynamicDictionaryTests
+    public class DictionaryTests
     {
         [TestMethod]
-        public void DictionaryOrderByTest()
+        public void Dictionary_Order_AddRemove()
+        {
+            var set = new VarDictionary<string, string>();
+            var list = set.OrderBy((k, v) => k);
+
+            set.Add("1", "one");
+            set.Add("2", "two");
+            set.Remove("1");
+            set.Add("3", "three");
+            set.Remove("3");
+            set.Add("4", "four");
+
+            Assert.AreEqual(2, list.Snapshot.Count);
+            Assert.AreEqual("two", list.Snapshot[0]);
+            Assert.AreEqual("four", list.Snapshot[1]);
+        }
+
+        [TestMethod]
+        public void Dictionary_OrderBy()
         {
             var src = new VarDictionary<string, int>();
 
@@ -45,14 +63,8 @@ namespace Machinarium.UnitTest
             AssertEqual(srotedByKey.Snapshot);
         }
 
-        //[TestMethod]
-        public void DictionarySelectAndFilterTest()
-        {
-            // It was empty before moving
-        }
-
         [TestMethod]
-        public void DictionaryStaticCompositionTest()
+        public void Dictionary_Composition_AddRemove()
         {
             var src1 = new VarDictionary<string, int>();
             var src2 = new VarDictionary<string, int>();

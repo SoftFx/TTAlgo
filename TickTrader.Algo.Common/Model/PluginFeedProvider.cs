@@ -136,6 +136,11 @@ namespace TickTrader.Algo.Common.Model
             _sync.Invoke(action);
         }
 
+        public void Send(Action action)
+        {
+            _sync.Send(action);
+        }
+
         public IEnumerable<QuoteEntity> GetSnapshot()
         {
             return symbols.Snapshot

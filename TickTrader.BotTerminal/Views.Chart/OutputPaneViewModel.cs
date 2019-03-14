@@ -15,21 +15,22 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
     internal class OutputPaneViewModel : PropertyChangedBase
     {
-        private SymbolModel _symbol;
+        private SymbolEntity _symbol;
         private VarList<OutputSeriesModel> _outputs;
 
-        public PluginModel Model { get; }
+        public IPluginModel Model { get; }
 
         public string DisplayName => Model.InstanceId;
 
         public string ChartWindowId { get; }
 
-        public ChartModelBase Chart { get; }
+        public IPluginDataChartModel Chart { get; }
 
         public AxisBase TimeAxis { get; private set; }
 
@@ -41,8 +42,7 @@ namespace TickTrader.BotTerminal
 
         public string YAxisLabelFormat { get; private set; }
 
-
-        public OutputPaneViewModel(PluginModel plugin, string windowId, ChartModelBase chart, SymbolModel symbol, OutputTargets target)
+        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart, SymbolEntity symbol, OutputTargets target)
         {
             Model = plugin;
             ChartWindowId = windowId;
@@ -52,17 +52,15 @@ namespace TickTrader.BotTerminal
             _outputs = new VarList<OutputSeriesModel>();
             Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();
 
-            Model.Outputs.Values.Where(o => o.Descriptor.Target == target).Foreach(_outputs.Add);
+            ouputModels.Where(o => o.Descriptor.Target == target).Foreach(_outputs.Add);
 
             UpdateAxis();
             UpdatePrecision();
         }
 
-
         private void UpdateAxis()
         {
-            TimeAxis = Chart.Navigator.CreateAxis();
-            Chart.CreateXAxisBinging(TimeAxis);
+            TimeAxis = Chart.CreateXAxis();
             TimeAxis.Visibility = System.Windows.Visibility.Collapsed;
             NotifyOfPropertyChange(nameof(TimeAxis));
         }
@@ -72,7 +70,7 @@ namespace TickTrader.BotTerminal
             Precision = 0;
             foreach (var output in _outputs.Values)
             {
-                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Descriptor.Precision : output.Descriptor.Precision);
+                Precision = Math.Max(Precision, output.Descriptor.Precision == -1 ? _symbol.Precision : output.Descriptor.Precision);
             }
             UpdateLabelFormat();
         }

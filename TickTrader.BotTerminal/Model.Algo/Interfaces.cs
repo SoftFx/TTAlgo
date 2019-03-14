@@ -9,6 +9,8 @@ using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Protocol;
 using TickTrader.Algo.Core.Repository;
+using System.Collections.Generic;
+using SciChart.Charting.Visuals.Axes;
 
 namespace TickTrader.BotTerminal
 {
@@ -81,13 +83,26 @@ namespace TickTrader.BotTerminal
         Task UploadBotFile(string botId, BotFolderId folderId, string fileName, string srcPath, IFileProgressListener progressListener);
     }
 
+    internal interface IExecStateObservable
+    {
+        bool IsStarted { get; }
 
-    internal interface IAlgoPluginHost
+        event Action StartEvent;
+        event AsyncEventHandler StopEvent;
+    }
+
+    internal interface IPluginDataChartModel : IExecStateObservable
+    {
+        ITimeVectorRef TimeSyncRef { get; }
+
+        AxisBase CreateXAxis();
+    }
+
+    internal interface IAlgoPluginHost : IPluginDataChartModel
     {
         void Lock();
         void Unlock();
 
-        bool IsStarted { get; }
         void InitializePlugin(PluginExecutor plugin);
         void UpdatePlugin(PluginExecutor plugin);
 
@@ -98,10 +113,17 @@ namespace TickTrader.BotTerminal
         event Action ParamsChanged;
         event Action Connected;
         event Action Disconnected;
-        event Action StartEvent;
-        event AsyncEventHandler StopEvent;
 
         //event Action<PluginCatalogItem> PluginBeingReplaced; // fired on background thread!
         //event Action<PluginCatalogItem> PluginBeingRemoved; // fired on background thread!
+    }
+
+    internal interface IPluginModel
+    {
+        string InstanceId { get; }
+
+        IDictionary<string, IOutputCollector> Outputs { get; }
+
+        event Action OutputsChanged;
     }
 }

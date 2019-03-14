@@ -17,20 +17,20 @@ namespace TickTrader.Algo.Core.UnitTest
             var b4 = sampler.GetBar(DateTime.Parse("2017-01-14 12:23"));
             var b5 = sampler.GetBar(DateTime.Parse("2017-01-09 18:11"));
 
-            Assert.AreEqual(DateTime.Parse("2017-01-23 00:00"), b1.Open);
-            Assert.AreEqual(DateTime.Parse("2017-01-30 00:00"), b1.Close);
+            Assert.AreEqual(DateTime.Parse("2017-01-22 00:00"), b1.Open);
+            Assert.AreEqual(DateTime.Parse("2017-01-29 00:00"), b1.Close);
 
-            Assert.AreEqual(DateTime.Parse("2016-12-26 00:00"), b2.Open);
-            Assert.AreEqual(DateTime.Parse("2017-01-02 00:00"), b2.Close);
+            Assert.AreEqual(DateTime.Parse("2016-12-25 00:00"), b2.Open);
+            Assert.AreEqual(DateTime.Parse("2017-01-01 00:00"), b2.Close);
 
-            Assert.AreEqual(DateTime.Parse("2017-01-09 00:00"), b3.Open);
-            Assert.AreEqual(DateTime.Parse("2017-01-16 00:00"), b3.Close);
+            Assert.AreEqual(DateTime.Parse("2017-01-15 00:00"), b3.Open);
+            Assert.AreEqual(DateTime.Parse("2017-01-22 00:00"), b3.Close);
 
-            Assert.AreEqual(DateTime.Parse("2017-01-09 00:00"), b4.Open);
-            Assert.AreEqual(DateTime.Parse("2017-01-16 00:00"), b4.Close);
+            Assert.AreEqual(DateTime.Parse("2017-01-08 00:00"), b4.Open);
+            Assert.AreEqual(DateTime.Parse("2017-01-15 00:00"), b4.Close);
 
-            Assert.AreEqual(DateTime.Parse("2017-01-09 00:00"), b5.Open);
-            Assert.AreEqual(DateTime.Parse("2017-01-16 00:00"), b5.Close);
+            Assert.AreEqual(DateTime.Parse("2017-01-08 00:00"), b5.Open);
+            Assert.AreEqual(DateTime.Parse("2017-01-15 00:00"), b5.Close);
         }
 
         [TestMethod]

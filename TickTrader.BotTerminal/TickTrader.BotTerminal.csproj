@@ -239,6 +239,7 @@
     <Compile Include="Controls\CustomDockManager.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
+    <Compile Include="Controls\DropDownMenuButton.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
     <Compile Include="Controls\KeyValueLabel.cs" />
@@ -303,6 +304,7 @@
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
+    <Compile Include="Infrustructure\VmActions.cs" />
     <Compile Include="Infrustructure\WindowStorageModel.cs" />
     <Compile Include="Infrustructure\WindowManager.cs" />
     <Compile Include="Interfaces.cs" />
@@ -313,12 +315,18 @@
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
+    <Compile Include="Lib\ChartBarVector.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Lib\UiUpdateTimer.cs" />
-    <Compile Include="Model.Algo\OutputModels.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
+    <Compile Include="Model.Algo\Outputs\DoubleSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\MarkerSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\OutputCollector.cs" />
+    <Compile Include="Model.Algo\Outputs\OutputSynchronizer.cs" />
+    <Compile Include="Model.Algo\Outputs\OutputSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\TesterOutputCollector.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Algo\PluginStateHelper.cs" />
@@ -347,10 +355,12 @@
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
+    <Compile Include="Model\BacktesterAdapter.cs" />
     <Compile Include="Model\BacktesterSettings.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
+    <Compile Include="Model\FileHistory.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\ModelExtentions.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
@@ -358,7 +368,6 @@
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
-    <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
     <Compile Include="Model.Charts\BarVector.cs" />
@@ -443,6 +452,7 @@
     <Compile Include="Views.ActionDisplay\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.ActionDisplay\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterJournalViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
@@ -450,6 +460,8 @@
     <Compile Include="Views.Backtester\BacktesterTradeGridViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
+    <Compile Include="Views.Chart\AlgoChartViewModel.cs" />
+    <Compile Include="Views.Chart\BotListOverlayViewModel.cs" />
     <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -685,6 +697,10 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
     <Page Include="Controls.Chart\MarkerAnnotation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\DropDownMenuButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -968,6 +984,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Backtester\BacktesterJournalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Backtester\BacktesterPluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -993,6 +1013,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\AlgoChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\BotListOverlayView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

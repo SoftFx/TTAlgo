@@ -116,6 +116,15 @@ namespace TickTrader.Algo.Core
             PrintCharges(charges);
         }
 
+        public void AddCancelAction(OrderAccessor order)
+        {
+            StartNewAction();
+
+            _builder.Append("Canceled order ");
+            PrintOrderDescription(order);
+            PrintAmountAndPrice(order);
+        }
+
         public void AddStopLimitActivationAction(OrderAccessor order, decimal price)
         {
             StartNewAction();

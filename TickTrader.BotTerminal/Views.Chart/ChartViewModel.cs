@@ -33,8 +33,7 @@ namespace TickTrader.BotTerminal
 {
     public enum ChartPeriods { MN1, W1, D1, H4, H1, M30, M15, M5, M1, S10, S1, Ticks };
 
-
-    class ChartViewModel : Screen, IDropHandler
+    internal class ChartViewModel : Screen, IDropHandler
     {
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ChartModelBase activeChart;
@@ -44,9 +43,7 @@ namespace TickTrader.BotTerminal
         private readonly AlgoEnvironment _algoEnv;
         private readonly VarList<ChartModelBase> charts = new VarList<ChartModelBase>();
         private readonly SymbolModel smb;
-        private VarDictionary<string, AlgoBotViewModel> _chartBots;
-        private VarList<OutputGroupViewModel> _allOutputs;
-
+        private VarDictionary<string, AlgoBotViewModel> _chartBots = new VarDictionary<string, AlgoBotViewModel>();
 
         public ChartViewModel(string chartId, string symbol, ChartPeriods period, AlgoEnvironment algoEnv)
         {
@@ -59,14 +56,10 @@ namespace TickTrader.BotTerminal
             _shell = _algoEnv.Shell;
             smb = _algoEnv.LocalAgent.ClientModel.Symbols.GetOrDefault(symbol);
 
-            Precision = smb.Descriptor.Precision;
-            UpdateLabelFormat();
-
             this.barChart = new BarChartModel(smb, _algoEnv);
             this.tickChart = new TickChartModel(smb, _algoEnv);
             this.UiLock = new UiLock();
 
-            _chartBots = new VarDictionary<string, AlgoBotViewModel>();
             var allIndicators = charts.SelectMany(c => c.Indicators);
             var allBots = _chartBots.OrderBy((id, bot) => id);
 
@@ -74,26 +67,22 @@ namespace TickTrader.BotTerminal
             Bots = allBots.AsObservable();
 
             var dataSeries = charts.SelectMany(c => c.DataSeriesCollection);
+
+            ChartControl = new AlgoChartViewModel(dataSeries);
+            ChartControl.SymbolInfo.Value = smb.Descriptor;
+            ChartControl.ChartWindowId.Value = ChartWindowId;
+
             // index from VarCollection.CombineChained doesn't work properly when first collection changes size
             //_indicatorOutputs = new VarList<OutputGroupViewModel>();
             //_botOutputs = new VarList<OutputGroupViewModel>();
             //var allOutputs = VarCollection.CombineChained(_indicatorOutputs, _botOutputs);
-            _allOutputs = new VarList<OutputGroupViewModel>();
-            var overlaySeries = _allOutputs.Chain().SelectMany(i => i.OverlaySeries);
-            var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
-            var allPanes = _allOutputs.Chain().SelectMany(i => i.Panes);
-
-            Series = allSeries.AsObservable();
-            Panes = allPanes.AsObservable();
 
             FilterChartBots();
             _algoEnv.LocalAgent.BotUpdated += BotOnUpdated;
             _algoEnv.LocalAgentVM.Bots.Updated += BotsOnUpdated;
 
-            UpdatePrecision();
             allIndicators.Updated += AllIndicators_Updated;
             allBots.Updated += AllBots_Updated;
-            _allOutputs.Updated += AllOutputs_Updated;
 
             periodActivatos.Add(ChartPeriods.MN1, () => ActivateBarChart(TimeFrames.MN, "MMMM yyyy"));
             periodActivatos.Add(ChartPeriods.W1, () => ActivateBarChart(TimeFrames.W, "d MMMM yyyy"));
@@ -111,6 +100,8 @@ namespace TickTrader.BotTerminal
             SelectedPeriod = periodActivatos.ContainsKey(period) ? periodActivatos.FirstOrDefault(p => p.Key == period) : periodActivatos.ElementAt(8);
 
             CloseCommand = new GenericCommand(o => TryClose());
+
+            ChartControl.Overlay = new BotListOverlayViewModel(Bots);
         }
 
         #region Bindable Properties
@@ -135,6 +126,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public AlgoChartViewModel ChartControl { get; }
+
         public KeyValuePair<ChartPeriods, System.Action> SelectedPeriod
         {
             get { return selectedPeriod; }
@@ -147,16 +140,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IReadOnlyList<IRenderableSeriesViewModel> Series { get; private set; }
         public IReadOnlyList<IndicatorViewModel> Indicators { get; private set; }
         public IReadOnlyList<AlgoBotViewModel> Bots { get; private set; }
-        public IReadOnlyList<OutputPaneViewModel> Panes { get; private set; }
         public GenericCommand CloseCommand { get; private set; }
 
         public bool HasIndicators { get { return Indicators.Count > 0; } }
-
-        public int Precision { get; private set; }
-        public string YAxisLabelFormat { get; private set; }
 
         #endregion
 
@@ -174,6 +162,7 @@ namespace TickTrader.BotTerminal
 
             _shell.ToolWndManager.CloseWindowByKey(this);
 
+            ChartControl.Dispose();
             barChart.Dispose();
             tickChart.Dispose();
         }
@@ -319,6 +308,11 @@ namespace TickTrader.BotTerminal
             UiLock.Release();
         }
 
+        private void TimeAxis_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
+        }
+
         private void Indicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
             NotifyOfPropertyChange(nameof(HasIndicators));
@@ -326,68 +320,47 @@ namespace TickTrader.BotTerminal
 
         private void AllIndicators_Updated(ListUpdateArgs<IndicatorModel> args)
         {
+            var allOutputs = ChartControl.OutputGroups;
+
             if (args.Action == DLinqAction.Insert)
             {
-                _allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb));
+                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor));
             }
             else if (args.Action == DLinqAction.Replace)
             {
-                var index = _allOutputs.IndexOf(_allOutputs.Values.First(o => o.Model == args.OldItem));
-                _allOutputs[index].Dispose();
-                _allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb);
+                var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem));
+                allOutputs[index].Dispose();
+                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor);
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                var output = _allOutputs.Values.First(o => o.Model == args.OldItem);
+                var output = allOutputs.Values.First(o => o.Model == args.OldItem);
                 output.Dispose();
-                _allOutputs.Remove(output);
+                allOutputs.Remove(output);
             }
             NotifyOfPropertyChange(nameof(HasIndicators));
         }
 
         private void AllBots_Updated(ListUpdateArgs<AlgoBotViewModel> args)
         {
+            var allOutputs = ChartControl.OutputGroups;
+
             if (args.Action == DLinqAction.Insert)
             {
-                _allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb));
+                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor));
             }
             else if (args.Action == DLinqAction.Replace)
             {
-                var index = _allOutputs.IndexOf(_allOutputs.Values.First(o => o.Model == args.OldItem.Model));
-                _allOutputs[index].Dispose();
-                _allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb);
+                var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem.Model));
+                allOutputs[index].Dispose();
+                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor);
             }
             else if (args.Action == DLinqAction.Remove)
             {
-                var output = _allOutputs.Values.First(o => o.Model == args.OldItem.Model);
+                var output = allOutputs.Values.First(o => o.Model == args.OldItem.Model);
                 output.Dispose();
-                _allOutputs.Remove(output);
+                allOutputs.Remove(output);
             }
-        }
-
-        private void AllOutputs_Updated(ListUpdateArgs<OutputGroupViewModel> args)
-        {
-            if (args.Action == DLinqAction.Insert || args.Action == DLinqAction.Replace)
-            {
-                if (args.NewItem != null)
-                    args.NewItem.PrecisionUpdated += UpdatePrecision;
-            }
-            if (args.Action == DLinqAction.Replace || args.Action == DLinqAction.Remove)
-            {
-                if (args.OldItem != null)
-                    args.OldItem.PrecisionUpdated -= UpdatePrecision;
-            }
-            UpdatePrecision();
-        }
-
-        private void UpdatePrecision()
-        {
-            Precision = smb.Descriptor.Precision;
-            foreach (var o in _allOutputs.Values)
-            {
-                Precision = Math.Max(Precision, o.Precision);
-            }
-            UpdateLabelFormat();
         }
 
         private void InitChart()
@@ -395,6 +368,11 @@ namespace TickTrader.BotTerminal
             charts.Clear();
             charts.Add(Chart);
 
+            //ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
+            ChartControl.BindAxis(Chart.TimeAxis);
+            ChartControl.BindCurrentRate(Chart.CurrentRate);
+
+            Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;
             Chart.Indicators.Updated += Indicators_Updated;
@@ -402,6 +380,7 @@ namespace TickTrader.BotTerminal
 
         private void DeinitChart()
         {
+            //Chart.TimeAxis.PropertyChanged -= TimeAxis_PropertyChanged;
             Chart.ParamsLocked -= Chart_ParamsLocked;
             Chart.ParamsUnlocked -= Chart_ParamsUnlocked;
             Chart.Indicators.Updated -= Indicators_Updated;
@@ -415,12 +394,6 @@ namespace TickTrader.BotTerminal
                 return true;
             }
             return false;
-        }
-
-        private void UpdateLabelFormat()
-        {
-            YAxisLabelFormat = $"n{Precision}";
-            NotifyOfPropertyChange(nameof(YAxisLabelFormat));
         }
 
         private void FilterChartBots()
