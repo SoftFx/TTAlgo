@@ -5,7 +5,6 @@ using TickTrader.BotAgent.BA.Models;
 using System;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
-using Microsoft.Extensions.Logging;
 using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
@@ -13,7 +12,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
     public static class BotAgentApplicationBuilderExtensions
     {
         private static IServiceProvider _services;
-        private static ILogger _logger;
 
         private static Microsoft.AspNetCore.SignalR.IHubContext Hub
         {
@@ -29,27 +27,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         public static IApplicationBuilder UseWardenOverBots(this IApplicationBuilder app)
         {
             _services = app.ApplicationServices;
-            var _botAgent = _services.GetService<IBotAgent>();
-            _logger = _services.GetService<ILoggerFactory>().CreateLogger("BotsWarden");
+            var botAgent = _services.GetService<IBotAgent>();
 
-            //_botAgent.BotStateChanged += WatchTheStop;
+            var warden = new BotsWarden(botAgent);
 
             return app;
         }
-
-        //private static async void WatchTheStop(TradeBotInfo bot)
-        //{
-        //    if (bot.State != BotStates.Stopping)
-        //        return;
-
-        //    await Task.Delay(TimeSpan.FromSeconds(5));
-
-        //    if (bot.State == BotStates.Stopping)
-        //    {
-        //        bot.Abort();
-        //        _logger.LogDebug($"Bot '{bot.Id}' was aborted");
-        //    }
-        //}
 
         /// <summary>
         /// Use SignalR Hubs to notify clients about server changes
