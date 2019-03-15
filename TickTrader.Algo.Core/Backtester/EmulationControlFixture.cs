@@ -72,6 +72,11 @@ namespace TickTrader.Algo.Core
             InvokeEmulator.Resume();
         }
 
+        public void SetExecDelay(int delayMs)
+        {
+            InvokeEmulator.SetExecDelay(delayMs);
+        }
+
         public override void Dispose()
         {
             Feed.Dispose();

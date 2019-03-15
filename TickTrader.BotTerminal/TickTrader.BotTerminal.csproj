@@ -227,7 +227,9 @@
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
     <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
-    <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
+    <Compile Include="Controls.Chart\XDragModifier.cs" />
+    <Compile Include="Controls.Chart\ViewportManager.cs" />
+    <Compile Include="Controls.Chart\ZoomControl.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
     <Compile Include="Controls\AutoColumnsGrid.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />

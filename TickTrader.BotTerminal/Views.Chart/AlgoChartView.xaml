@@ -74,8 +74,10 @@
 
                             <s:SciChartSurface.ChartModifier>
                                 <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId.Value}">
-                                    <s:YAxisDragModifier/>
-                                    <s:XAxisDragModifier/>
+                                    <s:YAxisDragModifier IsEnabled="False"/>
+                                    <l:XDragModifier/>
+                                    <l:ZoomControl MinZoomScale="{Binding MinZoom}" MaxZoomScale="{Binding MaxZoom}"
+                                                   ZoomScale="{Binding Zoom.Value, Mode=TwoWay}" />
                                     <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
                                     <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
                                     <s:TooltipModifier ShowTooltipOn="Always"/>
@@ -87,7 +89,7 @@
                             </s:SciChartSurface.ChartModifier>
 
                             <s:SciChartSurface.ViewportManager>
-                                <l:CustomViewPortManager/>
+                                <l:ViewportManager/>
                             </s:SciChartSurface.ViewportManager>
 
                             <s:SciChartSurface.YAxis>

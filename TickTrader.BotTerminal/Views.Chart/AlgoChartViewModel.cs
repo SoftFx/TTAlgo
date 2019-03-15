@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Visuals.Axes;
@@ -11,8 +12,9 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlgoChartViewModel : EntityBase
+    internal class AlgoChartViewModel : PropertyChangedBase, IDisposable
     {
+        private VarContext _var = new VarContext();
         private IntProperty _precisionProp = new IntProperty();
         private Property<QuoteEntity> _currentRateProp = new Property<QuoteEntity>();
         private Property<double?> _askProp = new Property<double?>();
@@ -32,13 +34,15 @@ namespace TickTrader.BotTerminal
 
             OutputGroups.Updated += AllOutputs_Updated;
 
-            TriggerOnChange(SymbolInfo, a => UpdatePrecision());
+            _var.TriggerOnChange(SymbolInfo, a => UpdatePrecision());
 
-            TriggerOnChange(_currentRateProp, a =>
+            _var.TriggerOnChange(_currentRateProp, a =>
             {
                 _askProp.Value = a.New?.GetNullableAsk();
                 _bidProp.Value = a.New?.GetNullableBid();
             });
+
+            InitZoom();
         }
 
         public IReadOnlyList<OutputPaneViewModel> Panes { get; }
@@ -48,6 +52,7 @@ namespace TickTrader.BotTerminal
         //public VarList<IRenderableSeriesViewModel> DataSeries { get; } = new VarList<IRenderableSeriesViewModel>();
 
         public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
+        public ViewportManager ViewportManager { get; } = new ViewportManager();
 
         public object Overlay { get; set; }
 
@@ -61,14 +66,84 @@ namespace TickTrader.BotTerminal
         public void BindCurrentRate(Var<QuoteEntity> rateSrc)
         {
             _currentRateBind?.Dispose();
-            _currentRateBind = TriggerOnChange(rateSrc, a => _currentRateProp.Value = a.New);
+            _currentRateBind = _var.TriggerOnChange(rateSrc, a => _currentRateProp.Value = a.New);
         }
 
         public void BindAxis(Var<AxisBase> axis)
         {
             _axisBind?.Dispose();
-            _axisBind = TriggerOnChange(axis, a => TimeAxis.Value = a.New);
+            _axisBind = _var.TriggerOnChange(axis, a => TimeAxis.Value = a.New);
         }
+
+        public void Dispose()
+        {
+            _var.Dispose();
+        }
+
+        #region Zoom control
+
+        private static readonly double[] _zooms = new double[] { 1, 1.5, 3, 5, 8, 10 };
+
+        public DoubleProperty Zoom { get; private set; }
+        public double MaxZoom => _zooms.Last();
+        public double MinZoom => _zooms.First();
+        public bool CanZoomIn { get; private set; }
+        public bool CanZoomOut{ get; private set; }
+
+        private void InitZoom()
+        {
+            Zoom = _var.AddDoubleProperty();
+
+            _var.TriggerOnChange(Zoom, a =>
+            {
+                CanZoomIn = Zoom.Value > MinZoom;
+                NotifyOfPropertyChange(nameof(CanZoomIn));
+                CanZoomOut = Zoom.Value < MaxZoom;
+                NotifyOfPropertyChange(nameof(CanZoomOut));
+            });
+        }
+
+        public void ZoomIn()
+        {
+            var index = GetNearestZoomIndex(Zoom.Value);
+
+            if (index > 0)
+                Zoom.Value = _zooms[index - 1];
+        }
+
+        public void ZoomOut()
+        {
+            var index = GetNearestZoomIndex(Zoom.Value);
+
+            if (index < _zooms.Length - 1)
+                Zoom.Value = _zooms[index + 1];
+        }
+
+        private int GetNearestZoomIndex(double currentZoom)
+        {
+            if (currentZoom < _zooms[0])
+                return 0;
+
+            for (int i = 0; i < _zooms.Length; i++)
+            {
+                var z1 = _zooms[i];
+
+                if (currentZoom < z1)
+                {
+                    var z0 = _zooms[i - 1];
+                    var rate = (currentZoom - z0) / (z1 - z0);
+
+                    if (rate <= 0.5)
+                        return i - 1;
+                    else
+                        return i;
+                }
+            }
+
+            return _zooms.Length - 1;
+        }
+
+        #endregion
 
         private void UpdatePrecision()
         {
