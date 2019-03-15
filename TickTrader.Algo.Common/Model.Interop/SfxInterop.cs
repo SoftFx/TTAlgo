@@ -467,14 +467,20 @@ namespace TickTrader.Algo.Common.Model
                 var result = await operationDef(request);
                 return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
             }
-            catch (ExecutionException eex)
+            catch (ExecutionException eeex)
             {
-                var reason = Convert(eex.Report.RejectReason, eex.Message);
-                return new OrderInteropResult(reason, ConvertToEr(eex.Report, operationId));
+                var reason = Convert(eeex.Report.RejectReason, eeex.Message);
+                return new OrderInteropResult(reason, ConvertToEr(eeex.Report, operationId));
             }
             catch (DisconnectException)
             {
                 return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
+            }
+            catch (InteropException eex)
+            {
+                if (eex.Reason.StartsWith("Price precision"))
+                    return new OrderInteropResult(OrderCmdResultCodes.IncorrectPricePrecision);
+                throw;
             }
             catch (Exception ex)
             {

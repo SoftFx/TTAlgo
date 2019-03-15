@@ -7,6 +7,8 @@ namespace TickTrader.Algo.Common.Model.Interop
     [Serializable]
     public class InteropException : Exception, ISerializable
     {
+        public string Reason { get; private set; } = string.Empty;
+
         public InteropException()
         {
             ErrorCode = ConnectionErrorCodes.Unknown;
@@ -20,6 +22,7 @@ namespace TickTrader.Algo.Common.Model.Interop
 
         public InteropException(string message, ConnectionErrorCodes errorCode)
         {
+            Reason = message;
             ErrorCode = errorCode;
         }
 
