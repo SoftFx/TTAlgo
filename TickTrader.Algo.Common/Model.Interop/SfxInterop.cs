@@ -467,25 +467,24 @@ namespace TickTrader.Algo.Common.Model
                 var result = await operationDef(request);
                 return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
             }
-            catch (ExecutionException eeex)
+            catch (ExecutionException ex)
             {
-                var reason = Convert(eeex.Report.RejectReason, eeex.Message);
-                return new OrderInteropResult(reason, ConvertToEr(eeex.Report, operationId));
+                var reason = Convert(ex.Report.RejectReason, ex.Message);
+                return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId));
             }
             catch (DisconnectException)
             {
                 return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
             }
-            catch (InteropException eex)
+            catch (InteropException ex) when (ex.Reason.StartsWith("Price precision"))
             {
-                if (eex.Reason.StartsWith("Price precision"))
-                    return new OrderInteropResult(OrderCmdResultCodes.IncorrectPricePrecision);
-                throw;
+                return new OrderInteropResult(OrderCmdResultCodes.IncorrectPricePrecision);
             }
             catch (Exception ex)
             {
                 if (ex.Message.StartsWith("Session is not active"))
                     return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
+
                 logger.Error(ex);
                 return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
             }
