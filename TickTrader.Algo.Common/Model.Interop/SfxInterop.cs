@@ -476,7 +476,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
             }
-            catch (InteropException ex) when (ex.Reason.StartsWith("Price precision"))
+            catch (InteropException ex) when (ex.Message.StartsWith("Price precision"))
             {
                 return new OrderInteropResult(OrderCmdResultCodes.IncorrectPricePrecision);
             }
