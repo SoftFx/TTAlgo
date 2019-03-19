@@ -110,7 +110,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Used Margine" Width="*" Binding="{Binding Order.Margin}"/>
+                    <DataGridTextColumn Header="Used Margin" Width="*" Binding="{Binding Order.Margin}"/>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
                 </DataGrid.Columns>
             </DataGrid>

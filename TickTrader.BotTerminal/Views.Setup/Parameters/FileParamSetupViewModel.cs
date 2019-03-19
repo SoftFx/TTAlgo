@@ -21,6 +21,9 @@ namespace TickTrader.BotTerminal
             get { return _fileName; }
             set
             {
+                if (FileName == value)
+                    return;
+
                 _fileName = value;
                 CheckFileName();
                 NotifyOfPropertyChange(nameof(FileName));
@@ -44,6 +47,9 @@ namespace TickTrader.BotTerminal
             get { return _filePath; }
             set
             {
+                if (FilePath == value)
+                    return;
+
                 _filePath = value;
                 NotifyOfPropertyChange(nameof(FilePath));
                 try
@@ -105,12 +111,18 @@ namespace TickTrader.BotTerminal
 
         private void CheckFileName()
         {
+            if (string.IsNullOrEmpty(FileName))
+            {
+                Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
+                return;
+            }
+
             var incorrectSymbols = System.IO.Path.GetInvalidFileNameChars();
 
             bool ok = FileName.All(s => !incorrectSymbols.Contains(s));
 
-            if (string.IsNullOrWhiteSpace(FileName) || !ok)
-                Error = new ErrorMsgModel(ErrorMsgCodes.RequiredButNotSet);
+            if (!ok)
+                Error = new ErrorMsgModel(ErrorMsgCodes.InvalidCharacters);
             else
                 Error = null;
         }
