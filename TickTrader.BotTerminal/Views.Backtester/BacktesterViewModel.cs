@@ -313,7 +313,8 @@ namespace TickTrader.BotTerminal
 
                     if (IsVisualizationEnabled.Value)
                     {
-                        _backtester.SetExecDelay(100);
+                        var delay = SpeedToDelayMap[SelectedSpeed.Value];
+                        _backtester.SetExecDelay(delay);
                     }
 
                     Exception execError = null;
@@ -493,8 +494,11 @@ namespace TickTrader.BotTerminal
             SelectedSpeed = _var.AddIntProperty();
             _var.TriggerOnChange(SelectedSpeed, a =>
             {
-                var delay = SpeedToDelayMap[a.New];
-                _backtester?.SetExecDelay(delay);
+                if (IsVisualizationEnabled.Value)
+                {
+                    var delay = SpeedToDelayMap[a.New];
+                    _backtester?.SetExecDelay(delay);
+                }
             });
 
             _var.TriggerOnChange(_stateProp, a =>
