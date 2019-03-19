@@ -476,9 +476,10 @@ namespace TickTrader.Algo.Common.Model
             {
                 return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
             }
-            catch (InteropException ex) when (ex.Message.StartsWith("Price precision"))
+            catch (InteropException ex) when (ex.ErrorCode == ConnectionErrorCodes.RejectedByServer)
             {
-                return new OrderInteropResult(OrderCmdResultCodes.IncorrectPricePrecision);
+                // workaround for inconsistent server logic
+                return new OrderInteropResult(Convert(RejectReason.Other, ex.Message));
             }
             catch (Exception ex)
             {
@@ -851,13 +852,15 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.OrderLocked;
                         else if (message != null && message.Contains("Invalid expiration"))
                             return Api.OrderCmdResultCodes.IncorrectExpiration;
+                        else if (message != null && message.StartsWith("Price precision"))
+                            return Api.OrderCmdResultCodes.IncorrectPricePrecision;
                         break;
                     }
                 case RejectReason.None:
                     {
                         if (message != null && message.StartsWith("Order Not Found"))
                             return Api.OrderCmdResultCodes.OrderNotFound;
-                        return OrderCmdResultCodes.Ok;
+                        return Api.OrderCmdResultCodes.Ok;
                     }
             }
             return Api.OrderCmdResultCodes.UnknownError;
