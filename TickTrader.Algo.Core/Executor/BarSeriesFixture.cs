@@ -227,7 +227,6 @@ namespace TickTrader.Algo.Core
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
-            data.Reverse();
             AppendSnapshot(data);
         }
 
