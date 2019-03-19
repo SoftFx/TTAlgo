@@ -232,8 +232,6 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());
                 setupModel.Load(Config);
-                setupModel.SetWorkingFolder(AlgoData.Folder);
-                setupModel.Apply(executor);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.InitBarStrategy(feedAdapter, Algo.Api.BarPriceType.Bid);
@@ -251,6 +249,9 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
                 _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
+
+                setupModel.SetWorkingFolder(AlgoData.Folder);
+                setupModel.Apply(executor);
 
                 executor.Start();
                 _botListener.Start();
