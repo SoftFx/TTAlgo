@@ -135,16 +135,24 @@
                 </Grid.RowDefinitions>
 
                 <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
-                    <Button Name="startBtn" Content="{DynamicResource StartToolBarIcon}" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
-                    <Button Content="Stop" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="Cancel" IsEnabled="{Binding CanCanel.Value}"/>
+                    <Button Name="startBtn" Content="{DynamicResource PlayToolIcon}" ToolTip="Start" l:Icon.Fill="Green"
+                            Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
+                    <Button Content="{DynamicResource StopToolIcon}" ToolTip="Stop" l:Icon.Fill="Red"
+                            Margin="3,0,0,0" Focusable="False" cal:Message.Attach="Cancel" IsEnabled="{Binding CanCanel.Value}"/>
                     <Separator/>
-                    <Button Content="Pause" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="PauseEmulation" IsEnabled="{Binding CanPause.Value}"/>
+                    <Button Content="{DynamicResource PauseToolIcon}" ToolTip="Pause" l:Icon.Fill="Green"
+                            Margin="3,0,0,0" Focusable="False" cal:Message.Attach="PauseEmulation" IsEnabled="{Binding CanPause.Value}"/>
                     <!--<Button Content="Resume" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="ResumeEmulation" IsEnabled="{Binding CanResume.Value}"/>-->
                     <Slider Margin="6,0,3,0" Maximum="9" Minimum="0" Value="{Binding SelectedSpeed.Value}" VerticalAlignment="Center" Width="150"
                             IsEnabled="{Binding CanControlSpeed.Value}"/>
                     <Separator/>
-                    <Button Content="Z+" cal:Message.Attach="ZoomIn" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}" />
-                    <Button Content="Z-" cal:Message.Attach="ZoomOut" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}"/>
+                    <Button Content="{DynamicResource ZoomInToolIcon}" ToolTip="Zoom Chart In" l:Icon.Fill="Black"
+                            Margin="3,0,0,0" cal:Message.Attach="ZoomIn" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}" />
+                    <Button Content="{DynamicResource ZoomOutToolIcon}" ToolTip="Zoom Chart Out" l:Icon.Fill="Black"
+                            Margin="3,0,0,0" cal:Message.Attach="ZoomOut" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}"/>
+                    <Separator/>
+                    <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
+                                  Margin="3,0,0,0" IsChecked="{Binding ChartPage.ChartControlModel.IsCrosshairEnabled.Value}"/>
                 </ToolBar>
 
                 <TabControl Name="tabBody" Grid.Row="1" Margin="5">
@@ -192,7 +200,7 @@
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">
                 <Setter TargetName="progressMonitor" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="startBtn" Property="Content" Value="Resume"/>
+                <Setter TargetName="startBtn" Property="ToolTip" Value="Resume"/>
                 <Setter TargetName="startBtn" Property="cal:Message.Attach" Value="ResumeEmulation"/>
                 <Setter TargetName="startBtn" Property="IsEnabled" Value="{Binding CanResume.Value}"/>
                 <!--<Setter TargetName="tabBody" Property="IsEnabled" Value="False"/>

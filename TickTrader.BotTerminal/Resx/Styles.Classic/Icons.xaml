@@ -3,21 +3,36 @@
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <Style x:Key="ToolBarIconStyle" TargetType="Path">
-        <Setter Property="Width" Value="15"/>
-        <Setter Property="Height" Value="15"/>
+        <Setter Property="Width" Value="18"/>
+        <Setter Property="Height" Value="18"/>
         <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <!--<Setter Property="SnapsToDevicePixels" Value="True"/>-->
+        <Setter Property="Fill" Value="{Binding RelativeSource={RelativeSource Mode=Self}, Path=(l:Icon.Fill), Mode=OneWay }"/>
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5"/>
+                <Setter Property="Fill">
+                    <Setter.Value>
+                        <SolidColorBrush Color="Gray"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="ListItemIconStyle" TargetType="Path">
         <Setter Property="Width" Value="13"/>
         <Setter Property="Height" Value="13"/>
         <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="UseLayoutRounding" Value="True"/>
     </Style>
 
     <Style x:Key="LargeIconStyle" TargetType="Path">
         <Setter Property="Width" Value="22"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="UseLayoutRounding" Value="True"/>
     </Style>
 
     <StackPanel x:Key="AddToolBarIcon" Orientation="Horizontal" x:Shared="false">
@@ -35,10 +50,17 @@
         <TextBlock Text="Download" Margin="4,0,0,0"/>
     </StackPanel>
 
-    <StackPanel x:Key="StartToolBarIcon" Orientation="Horizontal" x:Shared="false">
+    <!--<StackPanel x:Key="StartToolBarIcon" Orientation="Horizontal" x:Shared="false">
         <Path Style="{StaticResource ToolBarIconStyle}" Fill="Green" Data="{DynamicResource RightArrow}"/>
         <TextBlock Text="Start" Margin="4,0,0,0"/>
-    </StackPanel>
+    </StackPanel>-->
+
+    <Path x:Key="PlayToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource PlayIconPath}"/>
+    <Path x:Key="PauseToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource PauseIconPath}"/>
+    <Path x:Key="StopToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource StopIconPath}" />
+    <Path x:Key="ZoomInToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ZoomInIconPath}"/>
+    <Path x:Key="ZoomOutToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ZoomOutIconPath}" />
+    <Path x:Key="CrosshairsToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource CrosshairsIconPath}" />
 
     <StackPanel x:Key="SaveToolBarIcon" Orientation="Horizontal" x:Shared="false">
         <Path Style="{StaticResource ToolBarIconStyle}" Fill="Black" Data="{DynamicResource InboxPath}"/>

@@ -82,7 +82,7 @@ namespace TickTrader.BotTerminal
 
         #region Zoom control
 
-        private static readonly double[] _zooms = new double[] { 1, 1.5, 3, 5, 8, 10 };
+        private static readonly double[] _zooms = new double[] { 1, 1.5, 3, 5, 8, 14 };
 
         public DoubleProperty Zoom { get; private set; }
         public double MaxZoom => _zooms.Last();
@@ -93,12 +93,13 @@ namespace TickTrader.BotTerminal
         private void InitZoom()
         {
             Zoom = _var.AddDoubleProperty();
+            Zoom.Value = _zooms[3];
 
             _var.TriggerOnChange(Zoom, a =>
             {
-                CanZoomIn = Zoom.Value > MinZoom;
+                CanZoomIn = Zoom.Value < MaxZoom;
                 NotifyOfPropertyChange(nameof(CanZoomIn));
-                CanZoomOut = Zoom.Value < MaxZoom;
+                CanZoomOut = Zoom.Value > MinZoom; 
                 NotifyOfPropertyChange(nameof(CanZoomOut));
             });
         }
@@ -107,16 +108,16 @@ namespace TickTrader.BotTerminal
         {
             var index = GetNearestZoomIndex(Zoom.Value);
 
-            if (index > 0)
-                Zoom.Value = _zooms[index - 1];
+            if (index < _zooms.Length - 1)
+                Zoom.Value = _zooms[index + 1];
         }
 
         public void ZoomOut()
         {
             var index = GetNearestZoomIndex(Zoom.Value);
 
-            if (index < _zooms.Length - 1)
-                Zoom.Value = _zooms[index + 1];
+            if (index > 0)
+                Zoom.Value = _zooms[index - 1];
         }
 
         private int GetNearestZoomIndex(double currentZoom)

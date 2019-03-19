@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
             var visRange = (IndexRange)xAxis.VisibleRange;
             var viewWidth = xAxis.Width;
 
-            if (viewWidth != 0)
+            if (viewWidth != 0 && dataRange != null && visRange != null)
             {
                 if (XDragModifier?.IsDragging == true)
                 {
@@ -53,7 +53,8 @@ namespace TickTrader.BotTerminal
                     ZoomScaleChanged?.Invoke();
                 }
 
-                return RecalculateRange(viewWidth, dataRange, visRange);
+                if (_selectedZoom != 0)
+                    return RecalculateRange(viewWidth, dataRange, visRange);
             }
 
             return base.OnCalculateNewXRange(xAxis);
@@ -66,12 +67,18 @@ namespace TickTrader.BotTerminal
 
             if (targetDataWidth <= viewWidth)
                 return new IndexRange(dataRange.Min, dataRange.Min + targetVisDiff);
-            else if (dataRange.Min > visRange.Min)
-                return new IndexRange(dataRange.Min, dataRange.Min + targetVisDiff);
-            else if (dataRange.Max < visRange.Max)
-                return new IndexRange(dataRange.Max - targetVisDiff, dataRange.Max);
             else
-                return new IndexRange(visRange.Max - targetVisDiff, visRange.Max);
+            {
+                var newVisMin = visRange.Max - targetVisDiff;
+                var newVisMax = visRange.Max;
+
+                if (newVisMin < dataRange.Min)
+                    return new IndexRange(dataRange.Min, dataRange.Min + targetVisDiff);
+                else if (newVisMax > dataRange.Max)
+                    return new IndexRange(dataRange.Max - targetVisDiff, dataRange.Max);
+
+                return new IndexRange(newVisMin, newVisMax);
+            }
         }
 
         private double LimitZoom(double currentZoom)
