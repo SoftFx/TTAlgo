@@ -28,6 +28,7 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using Machinarium.Var;
 using SM = Machinarium.State;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {

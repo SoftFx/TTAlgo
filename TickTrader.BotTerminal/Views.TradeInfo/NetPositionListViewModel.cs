@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
-        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, ConnectionModel.Handler connection)
+        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
             : base(model, connection)
         {
             Positions = model.Positions

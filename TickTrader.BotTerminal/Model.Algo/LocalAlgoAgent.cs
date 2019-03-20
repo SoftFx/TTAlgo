@@ -10,6 +10,7 @@ using NLog;
 using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;

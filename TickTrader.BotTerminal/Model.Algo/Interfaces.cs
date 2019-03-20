@@ -11,6 +11,7 @@ using TickTrader.Algo.Protocol;
 using TickTrader.Algo.Core.Repository;
 using System.Collections.Generic;
 using SciChart.Charting.Visuals.Axes;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {
