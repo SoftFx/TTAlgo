@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Core
 
                 int resultSize = Math.Min(index + 1, -size);
 
-                for (int i = index; i > index - resultSize; i--)
+                for (int i = index - resultSize + 1; i <= index; i++)
                     yield return vector[i];
             }
         }

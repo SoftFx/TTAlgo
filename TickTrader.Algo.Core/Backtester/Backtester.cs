@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
         {
             cToken.Register(() => _control.CancelEmulation());
 
-            await Task.Factory.StartNew(SetupAndRun);
+            await Task.Factory.StartNew(SetupAndRun, TaskCreationOptions.LongRunning);
         }
 
         private void SetupAndRun()
@@ -146,6 +146,11 @@ namespace TickTrader.Algo.Core
         public void CancelTesting()
         {
             _control.CancelEmulation();
+        }
+
+        public void SetExecDelay(int delayMs)
+        {
+            _control.SetExecDelay(delayMs);
         }
 
         public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)

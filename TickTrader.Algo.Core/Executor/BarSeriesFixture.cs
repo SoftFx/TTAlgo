@@ -80,6 +80,9 @@ namespace TickTrader.Algo.Core
             if (!Context.BufferingStrategy.InBoundaries(barOpenTime))
                 return new BufferUpdateResult();
 
+            if (double.IsNaN(price))
+                return new BufferUpdateResult();
+
             if (Count > 0)
             {
                 var lastBar = LastBar;
@@ -89,7 +92,7 @@ namespace TickTrader.Algo.Core
                     return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    lastBar.Append(price, 1);
+                    lastBar.AppendNanProof(price, 1);
                     return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
@@ -224,7 +227,6 @@ namespace TickTrader.Algo.Core
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
-            data.Reverse();
             AppendSnapshot(data);
         }
 

@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Core
         private long _safeTimePoint;
         private FeedReader _feedReader;
         private volatile bool _checkStateFlag;
+        private volatile int _execDelay;
         private BacktesterCollector _collector;
         private bool _normalStopFlag;
         private bool _canelRequested;
@@ -152,6 +153,11 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        public void SetExecDelay(int delay)
+        {
+            _execDelay = delay;
+        }
+
         private void ChangeState(EmulatorStates newState)
         {
             if (State != newState)
@@ -268,6 +274,16 @@ namespace TickTrader.Algo.Core
         //    _fatalError = null;
         //    IsStopPhase = true;
         //}
+
+        private void DelayExecution()
+        {
+            var delay = _execDelay;
+
+            if (delay <= 0)
+                return;
+
+            Thread.Sleep(delay);
+        }
 
         #region Warm-Up
 
@@ -446,6 +462,8 @@ namespace TickTrader.Algo.Core
 
         private void EmulateRateUpdate(RateUpdate rate)
         {
+            DelayExecution();
+
             var bufferUpdate = OnFeedUpdate(rate);
             RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);

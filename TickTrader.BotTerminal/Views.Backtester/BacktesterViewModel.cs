@@ -50,6 +50,8 @@ namespace TickTrader.BotTerminal
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
 
+        private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
+
         public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
         {
             DisplayName = "Backtester";
@@ -96,6 +98,7 @@ namespace TickTrader.BotTerminal
             CanSetup = !IsRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
+            IsVisualizationEnabled = _var.AddBoolProperty();
 
             Plugins = env.LocalAgentVM.PluginList;
 
@@ -161,6 +164,7 @@ namespace TickTrader.BotTerminal
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
+        public BoolProperty IsVisualizationEnabled { get; }
         public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
@@ -172,6 +176,8 @@ namespace TickTrader.BotTerminal
         public BoolVar CanResume { get; private set; }
         public BoolVar CanStop { get; private set; }
         public BoolVar CanCanel { get; private set; }
+        public BoolVar CanControlSpeed { get; private set; }
+        public IntProperty SelectedSpeed { get; private set; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
         public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
@@ -304,6 +310,12 @@ namespace TickTrader.BotTerminal
 
                     _backtester.Executor.LogUpdated += JournalPage.Append;
                     _backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
+
+                    if (IsVisualizationEnabled.Value)
+                    {
+                        var delay = SpeedToDelayMap[SelectedSpeed.Value];
+                        _backtester.SetExecDelay(delay);
+                    }
 
                     Exception execError = null;
 
@@ -475,9 +487,19 @@ namespace TickTrader.BotTerminal
             _resumeRequestedProp = _var.AddBoolProperty();
             _pauseRequestedProp = _var.AddBoolProperty();
 
-            CanPause = _stateProp.Var == EmulatorStates.Running & !_pauseRequestedProp.Var;
+            CanPause = IsVisualizationEnabled.Var & _stateProp.Var == EmulatorStates.Running & !_pauseRequestedProp.Var;
             CanResume = _stateProp.Var == EmulatorStates.Paused & !_pauseRequestedProp.Var;
             CanCanel = ProgressMonitor.CanCancel;
+            CanControlSpeed = IsVisualizationEnabled.Var;
+            SelectedSpeed = _var.AddIntProperty();
+            _var.TriggerOnChange(SelectedSpeed, a =>
+            {
+                if (IsVisualizationEnabled.Value)
+                {
+                    var delay = SpeedToDelayMap[a.New];
+                    _backtester?.SetExecDelay(delay);
+                }
+            });
 
             _var.TriggerOnChange(_stateProp, a =>
             {

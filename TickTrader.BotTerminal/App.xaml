@@ -16,7 +16,7 @@
                 <ResourceDictionary Source="Resx/Converters.xaml"/>
 
                 <!-- Images -->
-                <ResourceDictionary Source="Resx/Images/Images.xaml"/>
+                <ResourceDictionary Source="Resx/Images/Paths.xaml"/>
 
                 <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
                 <ResourceDictionary Source="Controls/DropDownMenuButton.xaml"/>
