@@ -93,7 +93,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintAccountInfo()
         {
-            Status.WriteLine("Account: {0} {1}", Account.Id, Account.Type);
+            Status.WriteLine("Account Id: {0}", Account.Id);
+            Status.WriteLine("Account Type: {0}", Account.Type);
         }
 
         private void PrintPendingOrders()

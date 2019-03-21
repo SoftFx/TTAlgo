@@ -48,7 +48,6 @@ namespace TickTrader.Algo.Common.Model
         public double Balance { get; private set; }
         public string BalanceCurrency { get; private set; }
         public int BalanceDigits { get; private set; }
-        public string Account { get; private set; }
         public int Leverage { get; private set; }
         public AccountCalculatorModel Calc { get; private set; }
 
@@ -112,7 +111,7 @@ namespace TickTrader.Algo.Common.Model
             orders.Clear();
             assets.Clear();
 
-            Account = "";
+            Id = "";
             Type = null;
             Balance = 0;
             BalanceCurrency = null;
@@ -430,7 +429,7 @@ namespace TickTrader.Algo.Common.Model
 
                 var balanceCurrencyInfo = acc._currencies.Read(_accInfo.BalanceCurrency);
 
-                acc.Account = _accInfo.Id;
+                acc.Id = _accInfo.Id;
                 acc.Type = _accInfo.Type;
                 acc.Balance = _accInfo.Balance;
                 acc.BalanceCurrency = _accInfo.BalanceCurrency;

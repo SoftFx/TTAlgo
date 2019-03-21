@@ -135,7 +135,6 @@ namespace TickTrader.BotTerminal
             {
                 _logsTimer.Dispose();
                 _logsTimer = null;
-                ResetJournal();
             }
         }
 
