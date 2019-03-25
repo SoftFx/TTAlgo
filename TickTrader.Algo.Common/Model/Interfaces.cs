@@ -51,4 +51,11 @@ namespace TickTrader.Algo.Common.Model
         event AsyncEventHandler Deinitializing;
         event Action Disconnected;
     }
+
+    public interface IMarketDataProvider
+    {
+        IVarSet<string, SymbolModel> Symbols { get; }
+        IVarSet<string, CurrencyEntity> Currencies { get; }
+        QuoteDistributor Distributor { get; }
+    }
 }

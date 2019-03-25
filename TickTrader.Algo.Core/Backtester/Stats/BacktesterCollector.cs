@@ -18,7 +18,8 @@ namespace TickTrader.Algo.Core
     {
         private PluginExecutor _executor;
         private Dictionary<string, IOutputCollector> _outputCollectors = new Dictionary<string, IOutputCollector>();
-        private ChartDataCollector _mainSymbolCollector;
+        private Dictionary<string, FeedSeriesCollector> _symbolDataCollectors = new Dictionary<string, FeedSeriesCollector>();
+        //private ChartDataCollector _mainSymbolCollector;
         private ChartDataCollector _equityCollector;
         private ChartDataCollector _marginCollector;
         private DateTime _startTime;
@@ -43,10 +44,7 @@ namespace TickTrader.Algo.Core
 
         private DateTime VirtualTimepoint => InvokeEmulator.UnsafeVirtualTimePoint;
 
-        //public int EventsCount => _events.Count;
-        public int BarCount => _mainSymbolCollector.Count;
-
-        public void OnStart(IBacktesterSettings settings)
+        public void OnStart(IBacktesterSettings settings, FeedEmulator feed)
         {
             Stats = new TestingStatistics();
             _startTime = DateTime.UtcNow;
@@ -57,13 +55,13 @@ namespace TickTrader.Algo.Core
 
             _lastStatus = null;
 
-            InitChartDataCollection(settings);
+            InitChartDataCollection(settings, feed);
             InitOutputCollection(settings);
         }
 
         public void OnStop(IBacktesterSettings settings, AccountAccessor acc)
         {
-            if (acc.IsMarginType)
+            if (acc != null && acc.IsMarginType)
             {
                 Stats.InitialBalance = (decimal)settings.InitialBalance;
                 Stats.FinalBalance = (decimal)acc.Balance;
@@ -74,7 +72,9 @@ namespace TickTrader.Algo.Core
 
             StopOutputCollectors();
 
-            _mainSymbolCollector.Dispose();
+            foreach (var sCollector in _symbolDataCollectors)
+                sCollector.Value.Dispose();
+
             _equityCollector.Dispose();
             _marginCollector.Dispose();
 
@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core
         {
             Stats = null;
 
-            _mainSymbolCollector = null;
+            _symbolDataCollectors.Clear();
             _equityCollector = null;
             _marginCollector = null;
             //_events = null;
@@ -94,11 +94,27 @@ namespace TickTrader.Algo.Core
             base.Dispose();
         }
 
-        private void InitChartDataCollection(IBacktesterSettings settings)
+        public int GetSymbolHistoryBarCount(string symbol)
         {
-            _mainSymbolCollector = new ChartDataCollector(settings.ChartDataMode, DataSeriesTypes.SymbolRate, settings.MainSymbol, _executor.OnUpdate, _mainTimeframe);
-            _equityCollector = new ChartDataCollector(settings.EquityDataMode, DataSeriesTypes.NamedStream, EquityStreamName, _executor.OnUpdate, _mainSymbolCollector.Ref);
-            _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesTypes.NamedStream, MarginStreamName, _executor.OnUpdate, _mainSymbolCollector.Ref); 
+            var collector = _symbolDataCollectors.GetOrDefault(symbol);
+            if (collector != null)
+                return collector.BarCount;
+            return 0;
+        }
+
+        private void InitChartDataCollection(IBacktesterSettings settings, FeedEmulator feed)
+        {
+            var mainVector = feed.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);
+
+            foreach (var record in settings.SymbolDataConfig)
+            {
+                var symbol = record.Key;
+                var collector = new FeedSeriesCollector(feed, record.Value, symbol, _mainTimeframe, _executor.OnUpdate);
+                _symbolDataCollectors.Add(symbol, collector);
+            }
+
+            _equityCollector = new ChartDataCollector(settings.EquityDataMode, DataSeriesTypes.NamedStream, EquityStreamName, _executor.OnUpdate, mainVector.Ref);
+            _marginCollector = new ChartDataCollector(settings.MarginDataMode, DataSeriesTypes.NamedStream, MarginStreamName, _executor.OnUpdate, mainVector.Ref);
         }
 
         private void InitOutputCollection(IBacktesterSettings settings)
@@ -131,7 +147,6 @@ namespace TickTrader.Algo.Core
             foreach (var collector in _outputCollectors.Values)
                 collector.Stop();
         }
-
 
         #region Journal
 
@@ -190,9 +205,12 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
+        public IPagedEnumerator<BarEntity> GetSymbolHistory(string symbol, TimeFrames timeFrame)
         {
-            return MarshalBars(_mainSymbolCollector.Snapshot, timeFrame);
+            var collector = _symbolDataCollectors.GetOrDefault(symbol);
+            if (collector != null)
+                return MarshalBars(collector.Snapshot, timeFrame);
+            return null;
         }
 
         public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
@@ -298,9 +316,6 @@ namespace TickTrader.Algo.Core
         public void OnRateUpdate(RateUpdate update)
         {
             Stats.TicksCount += update.NumberOfQuotes;
-
-            if (update.Symbol == _mainSymbol)
-                _mainSymbolCollector.AppendBarPart(update.Time, update.BidOpen, update.BidHigh, update.BidLow, update.Bid, 0);
         }
 
         public void RegisterEquity(DateTime timepoint, double equity, double margin)

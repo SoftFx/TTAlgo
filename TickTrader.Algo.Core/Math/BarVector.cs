@@ -55,6 +55,8 @@ namespace TickTrader.Algo.Core
 
         public BarEntity this[int index] => _list[index];
 
+        public event Action<BarEntity> BarClosed { add { _builder.BarClosed += value; } remove { _builder.BarClosed -= value; } }
+
         public void AppendQuote(DateTime time, double price, double volume)
         {
             _builder.AppendQuote(time, price, volume);

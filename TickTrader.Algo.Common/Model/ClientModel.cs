@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public class Data : Handler<ClientModel>, IQuoteDistributorSource
+        public class Data : Handler<ClientModel>, IQuoteDistributorSource, IMarketDataProvider
         {
             public Data(Ref<ClientModel> actorRef) : base(actorRef)
             {
@@ -184,6 +184,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 Cache.Account.StartCalculator(this);
             }
+
+            public IFeedSubscription SubscribeAll() => Distributor.SubscribeAll();
 
             public void ClearCache()
             {

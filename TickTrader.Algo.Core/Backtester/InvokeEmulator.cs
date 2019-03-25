@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
 
     internal class InvokeEmulator : InvokeStartegy
     {
-        private object _sync = new object();
+        private object _syncState = new object();
         private FeedQueue _feedQueue;
         private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
-        public DateTime SafeVirtualTimePoint { get { lock (_sync) return _timePoint; } }
+        public DateTime SafeVirtualTimePoint => _timePoint;
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
         internal bool IsStopPhase => State == EmulatorStates.Stopping;
@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Core
 
         public void Cancel()
         {
-            lock (_sync)
+            lock (_syncState)
             {
                 if (State == EmulatorStates.Stopped) // can be canceled prior to execution due to CancellationToken
                     _canelRequested = true;
@@ -127,14 +127,14 @@ namespace TickTrader.Algo.Core
                     _canelRequested = true;
                     _pauseRequested = false;
                     _checkStateFlag = true;
-                    Monitor.Pulse(_sync);
+                    Monitor.Pulse(_syncState);
                 }
             }
         }
 
         public void Pause()
         {
-            lock (_sync)
+            lock (_syncState)
             {
                 if (State != EmulatorStates.Running || _canelRequested)
                     return;
@@ -145,11 +145,11 @@ namespace TickTrader.Algo.Core
 
         public void Resume()
         {
-            lock (_sync)
+            lock (_syncState)
             {
                 _pauseRequested = false;
                 _checkStateFlag = false;
-                Monitor.Pulse(_sync);
+                Monitor.Pulse(_syncState);
             }
         }
 
@@ -208,7 +208,7 @@ namespace TickTrader.Algo.Core
 
         private void EmulateEvents()
         {
-            lock (_sync)
+            lock (_syncState)
             {
                 _checkStateFlag = false;
 
@@ -229,13 +229,13 @@ namespace TickTrader.Algo.Core
                 {
                     if (_checkStateFlag)
                     {
-                        lock (_sync)
+                        lock (_syncState)
                         {
                             if (_pauseRequested)
                             {
                                 ChangeState(EmulatorStates.Paused);
                                 while (_pauseRequested)
-                                    Monitor.Wait(_sync);
+                                    Monitor.Wait(_syncState);
                                 if (!_canelRequested)
                                     ChangeState(EmulatorStates.Running);
                             }
@@ -258,7 +258,7 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception)
             {
-                lock (_sync)
+                lock (_syncState)
                 {
                     if (State == EmulatorStates.Stopping)
                         ChangeState(EmulatorStates.Stopping);
@@ -292,7 +292,7 @@ namespace TickTrader.Algo.Core
             if (warmupValue <= 0)
                 return true;
 
-            lock (_sync) ChangeState(EmulatorStates.WarmingUp);
+            lock (_syncState) ChangeState(EmulatorStates.WarmingUp);
 
             if (warmupUnits == WarmupUnitTypes.Days)
                 return WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
@@ -405,24 +405,18 @@ namespace TickTrader.Algo.Core
 
         public void SetFatalError(Exception error)
         {
-            lock (_sync)
-            {
-                if (_fatalError != error)
-                    _fatalError = error;
-            }
+            if (_fatalError != error)
+                _fatalError = error;
         }
 
         public bool StartFeedRead()
         {
-            lock (_sync)
-            {
-                if (_feedReader == null)
-                    _feedReader = new FeedReader(_feed);
-                if (_feedReader.IsCompeted)
-                    return false;
-                UpdateVirtualTimepoint(_feedReader.NextOccurrance.Date);
-                return true;
-            }
+            if (_feedReader == null)
+                _feedReader = new FeedReader(_feed);
+            if (_feedReader.IsCompeted)
+                return false;
+            UpdateVirtualTimepoint(_feedReader.NextOccurrance.Date);
+            return true;
         }
 
         private bool ReadNextFeed(out RateUpdate update)
@@ -492,45 +486,39 @@ namespace TickTrader.Algo.Core
 
         private object DequeueNextTrade()
         {
-            lock (_sync)
+            while (true)
             {
-                while (true)
-                {
-                    if (_tradeQueue.Count > 0)
-                        return _tradeQueue.Dequeue();
+                if (_tradeQueue.Count > 0)
+                    return _tradeQueue.Dequeue();
 
-                    bool isTrade;
-                    var next = DequeueUpcoming(out isTrade);
+                bool isTrade;
+                var next = DequeueUpcoming(out isTrade);
 
-                    if (next == null)
-                        return null;
+                if (next == null)
+                    return null;
 
-                    if (isTrade)
-                        return next;
+                if (isTrade)
+                    return next;
 
-                    // if next item is not trade update just queue it
+                // if next item is not trade update just queue it
 
-                    if (next is Action<PluginBuilder>)
-                        _eventQueue.Enqueue((Action<PluginBuilder>)next);
-                    else
-                        _feedQueue.Enqueue((RateUpdate)next);
-                }
+                if (next is Action<PluginBuilder>)
+                    _eventQueue.Enqueue((Action<PluginBuilder>)next);
+                else
+                    _feedQueue.Enqueue((RateUpdate)next);
             }
         }
 
         private object DequeueNext()
         {
-            lock (_sync)
-            {
-                if (_eventQueue.Count > 0)
-                    return _eventQueue.Dequeue();
-                else if (_tradeQueue.Count > 0)
-                    return _tradeQueue.Dequeue();
-                else if (_feedQueue.Count > 0)
-                    return _feedQueue.Dequeue();
-                else
-                    return DequeueUpcoming(out _);
-            }
+            if (_eventQueue.Count > 0)
+                return _eventQueue.Dequeue();
+            else if (_tradeQueue.Count > 0)
+                return _tradeQueue.Dequeue();
+            else if (_feedQueue.Count > 0)
+                return _feedQueue.Dequeue();
+            else
+                return DequeueUpcoming(out _);
         }
 
         private object DequeueUpcoming(out bool isTrade)

@@ -373,7 +373,6 @@
     <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
-    <Compile Include="Model.Charts\BarVector.cs" />
     <Compile Include="Model\TradeReportCsvSerializer.cs" />
     <Compile Include="Model\TradeReportKey.cs" />
     <Compile Include="Model\TradeTransactionModel.cs" />
@@ -454,6 +453,7 @@
     <Compile Include="Views.ActionDisplay\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.ActionDisplay\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterCurrentTradesViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterJournalViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
@@ -983,6 +983,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterChartPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterCurrentTradesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

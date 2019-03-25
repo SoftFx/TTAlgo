@@ -58,7 +58,7 @@ namespace TickTrader.BotTerminal
         private string dateAxisLabelFormat;
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
-        private Property<QuoteEntity> _currentRateProp = new Property<QuoteEntity>();
+        private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
 
         public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
         {
@@ -115,7 +115,7 @@ namespace TickTrader.BotTerminal
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
-        public Var<QuoteEntity> CurrentRate => _currentRateProp.Var;
+        public Var<Api.RateUpdate> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
 
         protected void Activate()

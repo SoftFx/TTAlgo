@@ -470,7 +470,7 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private void Update(OrderEntity record)
+        internal void Update(OrderEntity record)
         {
             this.Amount = (decimal)record.InitialVolume;
             this.RemainingAmount = (decimal)record.Volume;

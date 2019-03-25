@@ -76,10 +76,12 @@
     <Compile Include="Backtester\Feed\FeedReader.cs" />
     <Compile Include="Backtester\ScheduleEmulator.cs" />
     <Compile Include="Backtester\Stats\ChartDataCollector.cs" />
+    <Compile Include="Backtester\Stats\FeedSeriesCollector.cs" />
     <Compile Include="Backtester\Stats\OutputCollector.cs" />
     <Compile Include="Backtester\TimeEvent.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />
     <Compile Include="Backtester\Trade\OrderExpirationEmulator.cs" />
+    <Compile Include="Backtester\Trade\TesterTradeUpdate.cs" />
     <Compile Include="Backtester\Trade\TradeHistoryEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationIndex.cs" />

@@ -29,6 +29,7 @@ namespace TickTrader.Algo.Core
         private double _stopOutLevel = 30;
         //private RateUpdate _lastRate;
         private TradeHistoryEmulator _history;
+        private bool _sendReports;
 
         public TradeEmulator(IFixtureContext context, IBacktesterSettings settings, CalculatorFixture calc, InvokeEmulator scheduler, BacktesterCollector collector,
             TradeHistoryEmulator history, AlgoTypes pluginType)
@@ -39,6 +40,8 @@ namespace TickTrader.Algo.Core
             _collector = collector;
             _settings = settings;
             _history = history;
+
+            _sendReports = settings.StreamExecReports;
 
             if (pluginType == AlgoTypes.Robot)
             {
@@ -566,6 +569,12 @@ namespace TickTrader.Algo.Core
             // fire API event
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
 
+            // execution report
+            if (_sendReports)
+                _context.SendExtUpdate(TesterTradeTransaction.OnOpenOrder(order, fillInfo, _acc.Balance));
+
+            // summary
+
             bool isFakeOrder = options.HasFlag(OpenOrderOptions.FakeOrder);
             if (!isFakeOrder)
                 _opSummary.AddOpenAction(order, fillInfo.NetPos?.Charges);
@@ -864,6 +873,11 @@ namespace TickTrader.Algo.Core
 
             RecalculateAccount();
 
+            // execution report
+            if (_sendReports)
+                _context.SendExtUpdate(TesterTradeTransaction.OnReplaceOrder(order));
+
+            // summary
             if (_collector.WriteOrderModifications)
                 _opSummary.AddModificationAction(oldOrderCopy, order);
 
@@ -1070,6 +1084,11 @@ namespace TickTrader.Algo.Core
 
             _history.Add(report);
 
+            // execution report
+            if (_sendReports)
+                _context.SendExtUpdate(TesterTradeTransaction.OnCancelOrder(order));
+
+            // summary
             _opSummary.AddCancelAction(order);
 
             return order;
@@ -1454,7 +1473,6 @@ namespace TickTrader.Algo.Core
                 // Check margin of the activated pending order
                 try
                 {
-                    //if (record.Order.Type != OrderType.StopLimit)
                     //    account.ValidateOrderActivation(record.Order, record.ActivationPrice, record.Order.RemainingAmount, ref lockedActivateMargin);
                 }
                 catch (ServerFaultException<NotEnoughMoneyFault>)
@@ -1499,11 +1517,23 @@ namespace TickTrader.Algo.Core
                 if (record.Order.Type == OrderType.StopLimit)
                 {
                     ActivateStopLimitOrder(record.Order, TradeTransReasons.PndOrdAct);
+
+                    // execution report
+                    if (_sendReports)
+                        _context.SendExtUpdate(TesterTradeTransaction.OnActivateStopLimit(record.Order));
+
+                    // summary
                     _opSummary.AddStopLimitActivationAction(record.Order, record.ActivationPrice);
                 }
                 else
                 {
                     fillInfo = FillOrder(record.Order, record.ActivationPrice, record.Order.RemainingAmount, TradeTransReasons.PndOrdAct);
+
+                    // execution report
+                    if (_sendReports)
+                        _context.SendExtUpdate(TesterTradeTransaction.OnFill(record.Order, fillInfo, _acc.Balance));
+
+                    // summary
                     _opSummary.AddFillAction(record.Order, fillInfo);
                     if (fillInfo.NetPos != null)
                     {
@@ -1735,6 +1765,11 @@ namespace TickTrader.Algo.Core
             // increase reported action number
             position.ActionNo++;
 
+            // execution report
+            if (_sendReports)
+                _context.SendExtUpdate(TesterTradeTransaction.OnClosePosition(remove, position, _acc.Balance));
+
+            // summary
             _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, (CurrencyEntity)_acc.BalanceCurrencyInfo);
             _collector.OnPositionClosed(_scheduler.SafeVirtualTimePoint, profit, charges.Commission, charges.Swap);
 
@@ -1915,7 +1950,11 @@ namespace TickTrader.Algo.Core
                             order.SetSwap((order.Swap ?? 0) + roundedSwap);
                             //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={order.Symbol} side={order.Side} volume={order.RemainingAmount:G29} charged={swap:G29} total={order.Swap:G29} currency={acc.BalanceCurrency}",
                             //    JournalEntrySeverities.Info, TransactDetails.Create(order.OrderId, null), acc.SkipLogging);
-                            //SendExecutionReport(order.Clone(), smbInfo, OrderExecutionEvents.Modified, acc, null);
+
+                            // execution report
+                            if (_sendReports)
+                                _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(order));
+
                             swapUpdated = true;
                         }
 
@@ -1960,11 +1999,12 @@ namespace TickTrader.Algo.Core
 
                         totalSwap += roundedSwap;
 
-                        //var netPos = pos.ToBusinessObject();
                         //LogTransactionDetails(() => $"Swap charged: account={acc.AccountLogin} symbol={smbInfo.Name} side={netPos.Side} volume={netPos.Amount:G29} charged={roundedSwap:G29} total={netPos.Swap:G29} currency={acc.BalanceCurrency}",
                         //    JournalEntrySeverities.Info, TransactDetails.Create(netPos.Id, null), acc.SkipLogging);
 
-                        //SendPositionReport(acc, CreatePositionReport(acc, PositionReportType.Rollover, smbInfo));
+                        // execution report
+                        if (_sendReports)
+                            _context.SendExtUpdate(TesterTradeTransaction.OnRolloverUpdate(pos));
 
                         return true;
                     }
@@ -2327,6 +2367,21 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
+
+        //private void SendTradeUpdate(OrderEntity order, decimal balance, PositionEntity pos = null, AssetEntity asset1 = null, AssetEntity asset2 = null)
+        //{
+        //    if (_sendReports)
+        //    {
+        //        var update = new TesterTradeTransaction();
+        //        update.OrderUpdate1 = order;
+        //        update.Balance = balance;
+        //        update.NetPositionUpdate = pos;
+        //        update.AssetUpdate1 = asset1;
+        //        update.AssetUpdate2 = asset2;
+
+        //        _context.SendExtUpdate(order);
+        //    }
+        //}
     }
 
     [Flags]

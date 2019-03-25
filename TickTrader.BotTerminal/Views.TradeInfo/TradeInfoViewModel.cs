@@ -13,18 +13,18 @@ namespace TickTrader.BotTerminal
     class TradeInfoViewModel: PropertyChangedBase
     {
         public TradeInfoViewModel(TraderClientModel clientModel, ConnectionManager cManager)
-            : this(clientModel.Account, clientModel.Symbols, clientModel.Currencies.Snapshot, clientModel)
+            : this(clientModel.Account, clientModel.Symbols, clientModel.Currencies, clientModel)
         {
         }
 
         public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolModel> symbols,
-            IReadOnlyDictionary<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo)
+            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo)
         {
             var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo);
             var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo);
             Positions = new PositionListViewModel(netPositions, grossPositions);
             Orders = new OrderListViewModel(accModel, symbols, connectionInfo);
-            Assets = new AssetsViewModel(accModel, currencies, connectionInfo);
+            Assets = new AssetsViewModel(accModel, currencies.Snapshot, connectionInfo);
             AccountStats = new AccountStatsViewModel(accModel, connectionInfo);
         }
 

@@ -33,10 +33,12 @@ namespace TickTrader.Algo.Core
         DateTime? EmulationPeriodEnd { get; }
         JournalOptions JournalFlags { get; }
 
-        TestDataSeriesFlags ChartDataMode { get; }
+        //TestDataSeriesFlags ChartDataMode { get; }
+        Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; }
         TestDataSeriesFlags MarginDataMode { get; }
         TestDataSeriesFlags EquityDataMode { get; }
         TestDataSeriesFlags OutputDataMode { get; }
+        bool StreamExecReports { get; }
     }
 
     [Flags]

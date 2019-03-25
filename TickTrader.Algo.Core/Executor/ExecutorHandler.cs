@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 
@@ -50,7 +51,9 @@ namespace TickTrader.Algo.Core
         public bool IsIsolated { get; }
 
         public event Action<BotLogRecord> LogUpdated;
+        public event Action<TesterTradeTransaction> TradesUpdated;
         public event Action<TradeReportEntity> TradeHistoryUpdated;
+        public event Action<RateUpdate> SymbolRateUpdated;
         public event Action<BarEntity, string, SeriesUpdateActions> ChartBarUpdated;
         public event Action<BarEntity, SeriesUpdateActions> EquityUpdated;
         public event Action<BarEntity, SeriesUpdateActions> MarginUpdated;
@@ -92,13 +95,15 @@ namespace TickTrader.Algo.Core
 
         private void MarshalUpdates(object[] updates)
         {
-            try
+            foreach (var update in updates)
             {
-                foreach (var update in updates)
+                try
+                {
                     MarshalUpdate(update);
-            }
-            catch (Exception ex)
-            {
+                }
+                catch (Exception ex)
+                {
+                }
             }
         }
 
@@ -108,6 +113,10 @@ namespace TickTrader.Algo.Core
                 LogUpdated?.Invoke((BotLogRecord)update);
             else if (update is TradeReportEntity)
                 TradeHistoryUpdated?.Invoke((TradeReportEntity)update);
+            else if (update is TesterTradeTransaction)
+                TradesUpdated?.Invoke((TesterTradeTransaction)update);
+            else if (update is RateUpdate)
+                SymbolRateUpdated?.Invoke((RateUpdate)update);
             else if (update is IDataSeriesUpdate)
             {
                 var seriesUpdate = (IDataSeriesUpdate)update;

@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
         private ISynchronizationContext _sync;
         private readonly FeedEmulator _feed;
         private readonly ExecutorHandler _executor;
-        private EmulationControlFixture _control;
+        private readonly EmulationControlFixture _control;
         private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
         private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
         private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
@@ -63,7 +63,6 @@ namespace TickTrader.Algo.Core
         public DateTime? EmulationPeriodStart { get; }
         public DateTime? EmulationPeriodEnd { get; }
         public int TradesCount => _control.TradeHistory.Count;
-        public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
         public TimeSpan ServerPing { get; set; }
         public int WarmupSize { get; set; } = 10;
@@ -85,10 +84,11 @@ namespace TickTrader.Algo.Core
             remove { Executor.OutputUpdate -= value; }
         }
 
-        public TestDataSeriesFlags ChartDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; } = new Dictionary<string, TestDataSeriesFlags>();
         public TestDataSeriesFlags MarginDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
         public TestDataSeriesFlags EquityDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
         public TestDataSeriesFlags OutputDataMode { get; set; } = TestDataSeriesFlags.Disabled;
+        public bool StreamExecReports { get; set; }
 
         public async Task Run(CancellationToken cToken)
         {
@@ -106,10 +106,13 @@ namespace TickTrader.Algo.Core
             _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            if (!_control.OnStart())
-                return;
-
             _executor.Start();
+
+            if (!_control.OnStart())
+            {
+                _executor.Stop();
+                return;
+            }
 
             //if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
             //{
@@ -153,9 +156,14 @@ namespace TickTrader.Algo.Core
             _control.SetExecDelay(delayMs);
         }
 
-        public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
+        public int GetSymbolHistoryBarCount(string symbol)
         {
-            return _control.Collector.GetMainSymbolHistory(timeFrame);
+            return _control.Collector.GetSymbolHistoryBarCount(symbol);
+        }
+
+        public IPagedEnumerator<BarEntity> GetSymbolHistory(string symbol, TimeFrames timeFrame)
+        {
+            return _control.Collector.GetSymbolHistory(symbol, timeFrame);
         }
 
         public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
@@ -188,8 +196,7 @@ namespace TickTrader.Algo.Core
             base.Dispose();
 
             _executor?.Dispose();
-            _control?.Dispose();
-            _control = null;
+            _control.Dispose();
         }
 
         public TestingStatistics GetStats()
