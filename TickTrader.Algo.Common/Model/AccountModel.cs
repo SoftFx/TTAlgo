@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Common.Model
             //_client.PositionReportReceived += OnReport;
         }
 
-        internal void StartCalculator(ClientModel.Data marketData)
+        internal void StartCalculator(IMarketDataProvider marketData)
         {
             if (!_isCalcStarted)
             {
@@ -76,6 +76,32 @@ namespace TickTrader.Algo.Common.Model
                 Calc = AccountCalculatorModel.Create(this, marketData);
                 Calc.Recalculate();
             }
+        }
+
+        internal void Init(AccountEntity accInfo, IEnumerable<OrderEntity> orders,
+            IEnumerable<PositionEntity> positions, IEnumerable<AssetEntity> assets)
+        {
+            this.positions.Clear();
+            this.orders.Clear();
+            this.assets.Clear();
+
+            var balanceCurrencyInfo = _currencies.Read(accInfo.BalanceCurrency);
+
+            Id = accInfo.Id;
+            Type = accInfo.Type;
+            Balance = accInfo.Balance;
+            BalanceCurrency = accInfo.BalanceCurrency;
+            Leverage = accInfo.Leverage;
+            BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
+
+            foreach (var fdkPosition in positions)
+                this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
+
+            foreach (var fdkOrder in orders)
+                this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, this));
+
+            foreach (var fdkAsset in assets)
+                this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
         }
 
         public void Deinit()
@@ -164,6 +190,25 @@ namespace TickTrader.Algo.Common.Model
                 assets[assetInfo.Currency] = new AssetModel(assetInfo, _currencies);
         }
 
+        public void UpdateBalance(double newBalance, string currency = null)
+        {
+            if (Type == AccountTypes.Gross || Type == AccountTypes.Net)
+            {
+                Balance = newBalance;
+                OnBalanceChanged();
+            }
+            else if (Type == AccountTypes.Cash)
+            {
+                if (newBalance != 0)
+                    assets[currency] = new AssetModel(newBalance, currency, _currencies);
+                else
+                {
+                    if (assets.ContainsKey(currency))
+                        assets.Remove(currency);
+                }
+            }
+        }
+
         #endregion
 
         #region Postion management
@@ -200,19 +245,19 @@ namespace TickTrader.Algo.Common.Model
             return update;
         }
 
-        private void OnPositionUpdated(PositionEntity position)
+        public void UpdatePosition(PositionEntity position)
         {
             var model = UpsertPosition(position);
             PositionUpdate?.Invoke(model, OrderExecAction.Modified);
         }
 
-        private void OnPositionAdded(PositionEntity position)
+        public void OnPositionAdded(PositionEntity position)
         {
             var model = UpsertPosition(position);
             PositionUpdate?.Invoke(model, OrderExecAction.Opened);
         }
 
-        private void OnPositionRemoved(PositionEntity position)
+        public void RemovePosition(PositionEntity position)
         {
             PositionModel model;
 
@@ -234,6 +279,70 @@ namespace TickTrader.Algo.Common.Model
         #endregion
 
         #region Order management
+
+        public void UpdateOrder(OrderExecAction execAction, OrderEntityAction entityAction, ExecutionReport report, PositionEntity netPosUpdate)
+        {
+            OrderModel order = null;
+
+            if (entityAction == OrderEntityAction.Added)
+            {
+                order = new OrderModel(report, this);
+                orders[order.Id] = order;
+            }
+            else if (entityAction == OrderEntityAction.Removed)
+            {
+                order = Orders.GetOrDefault(report.OrderId);
+                orders.Remove(report.OrderId);
+                order?.Update(report);
+            }
+            else if (entityAction == OrderEntityAction.Updated)
+            {
+                order = Orders.GetOrDefault(report.OrderId);
+
+                bool typeChanged = order.OrderType != report.OrderType;
+
+                order.Update(report);
+
+                // workaround: dynamic collection filter can't react on field change
+                if (typeChanged)
+                    orders[order.Id] = order;
+            }
+            else
+                order = new OrderModel(report, this);
+
+            OrderUpdate?.Invoke(new OrderUpdateInfo(report, execAction, entityAction, order, netPosUpdate));
+        }
+
+        public void UpdateOrder(OrderExecAction execAction, OrderEntityAction entityAction, OrderEntity report)
+        {
+            OrderModel order = null;
+
+            if (entityAction == OrderEntityAction.Added)
+            {
+                order = new OrderModel(report, this);
+                orders[order.Id] = order;
+            }
+            else if (entityAction == OrderEntityAction.Removed)
+            {
+                order = Orders.GetOrDefault(report.OrderId);
+                orders.Remove(report.OrderId);
+                order?.Update(report);
+            }
+            else if (entityAction == OrderEntityAction.Updated)
+            {
+                order = Orders.GetOrDefault(report.OrderId);
+
+                bool typeChanged = order.OrderType != report.Type;
+
+                order.Update(report);
+
+                // workaround: dynamic collection filter can't react on field change
+                if (typeChanged)
+                    orders[order.Id] = order;
+            }
+            else
+                order = new OrderModel(report, this);
+        }
 
         internal EntityCacheUpdate GetOrderUpdate(ExecutionReport report)
         {
@@ -421,29 +530,7 @@ namespace TickTrader.Algo.Common.Model
 
             public void Apply(EntityCache cache)
             {
-                var acc = cache.Account;
-
-                acc.positions.Clear();
-                acc.orders.Clear();
-                acc.assets.Clear();
-
-                var balanceCurrencyInfo = acc._currencies.Read(_accInfo.BalanceCurrency);
-
-                acc.Id = _accInfo.Id;
-                acc.Type = _accInfo.Type;
-                acc.Balance = _accInfo.Balance;
-                acc.BalanceCurrency = _accInfo.BalanceCurrency;
-                acc.Leverage = _accInfo.Leverage;
-                acc.BalanceDigits = balanceCurrencyInfo?.Digits ?? 2;
-
-                foreach (var fdkPosition in _positions)
-                    acc.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, acc));
-
-                foreach (var fdkOrder in _orders)
-                    acc.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, acc));
-
-                foreach (var fdkAsset in _assets)
-                    acc.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, acc._currencies));
+                cache.Account.Init(_accInfo, _orders, _positions, _assets);
             }
         }
 
@@ -496,36 +583,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 _netPositionUpdate?.Apply(cache);
                 _grossPositionUpdate?.Apply(cache);
-
-                OrderModel order = null;
-
-                if (_entityAction == OrderEntityAction.Added)
-                {
-                    order = new OrderModel(_report, cache.Account);
-                    cache.Account.orders[order.Id] = order;
-                }
-                else if (_entityAction == OrderEntityAction.Removed)
-                {
-                    order = cache.Account.Orders.GetOrDefault(_report.OrderId);
-                    cache.Account.orders.Remove(_report.OrderId);
-                    order?.Update(_report);
-                }
-                else if (_entityAction == OrderEntityAction.Updated)
-                {
-                    order = cache.Account.Orders.GetOrDefault(_report.OrderId);
-
-                    bool typeChanged = order.OrderType != _report.OrderType;
-
-                    order.Update(_report);
-
-                    // workaround: dynamic collection filter can't react on fild change
-                    if (typeChanged)
-                        cache.Account.orders[order.Id] = order;
-                }
-                else
-                    order = new OrderModel(_report, cache.Account);
-
-                cache.Account.OrderUpdate?.Invoke(new OrderUpdateInfo(_report, _execAction, _entityAction, order, _netPositionUpdate?.Postion));
+                cache.Account.UpdateOrder(_execAction, _entityAction, _report, _netPositionUpdate?.Postion);
                 cache.Account.UpdateBalance(_report);
             }
         }
@@ -543,23 +601,7 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 var acc = cache.Account;
-
-                if (acc.Type == AccountTypes.Gross || acc.Type == AccountTypes.Net)
-                {
-                    acc.Balance = _report.Balance;
-                    acc.OnBalanceChanged();
-                }
-                else if (acc.Type == AccountTypes.Cash)
-                {
-                    if (_report.Balance > 0)
-                        acc.assets[_report.CurrencyCode] = new AssetModel(_report.Balance, _report.CurrencyCode, acc._currencies);
-                    else
-                    {
-                        if (acc.assets.ContainsKey(_report.CurrencyCode))
-                            acc.assets.Remove(_report.CurrencyCode);
-                    }
-                }
-
+                acc.UpdateBalance(_report.Balance, _report.CurrencyCode);
                 acc.BalanceUpdate?.Invoke(_report);
             }
         }
@@ -583,9 +625,9 @@ namespace TickTrader.Algo.Common.Model
                 if (_entityAction == OrderEntityAction.Added)
                     cache.Account.OnPositionAdded(_report);
                 else if (_entityAction == OrderEntityAction.Updated)
-                    cache.Account.OnPositionUpdated(_report);
+                    cache.Account.UpdatePosition(_report);
                 else if (_entityAction == OrderEntityAction.Removed)
-                    cache.Account.OnPositionRemoved(_report);
+                    cache.Account.RemovePosition(_report);
             }
         }
     }

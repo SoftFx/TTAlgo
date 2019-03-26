@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core
             buffer.EndBatchBuild = () =>
             {
                 isBatch = false;
-                OnAllUpdated();
+                OnRangeAppend();
             };
             buffer.Truncated = OnTruncate;
             buffer.Truncating = OnTruncating;
@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void OnAllUpdated()
+        private void OnRangeAppend()
         {
             var count = buffer.Count;
 
@@ -68,7 +68,7 @@ namespace TickTrader.Algo.Core
                 list[i] = new Point(timeCoordinate, i, buffer[i]);
             }
 
-            AllUpdated(list);
+            RangeAppended(list);
         }
 
         private void OnTruncate(int truncateSize)
@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Core
         internal Point this[int index] => new Point(timeRef[index], index, buffer[index]);
         internal OutputBuffer<T> Buffer => buffer;
 
-        public event Action<Point[]> AllUpdated = delegate { };
+        public event Action<Point[]> RangeAppended = delegate { };
         public event Action<Point> Updated = delegate { };
         public event Action<Point> Appended = delegate { };
         public event Action<int> Truncating;

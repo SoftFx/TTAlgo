@@ -16,53 +16,53 @@ namespace TickTrader.BotTerminal
         private string currencyFormatStr;
         private string precentFormatStr = "{0:F2}%";
 
-        public AccountStatsViewModel(TraderClientModel client, ConnectionManager cManager)
+        public AccountStatsViewModel(AccountModel acc, IConnectionStatusInfo cManager)
         {
-            this.account = client.Account;
+            this.account = acc;
 
-            client.Connected += () =>
+            cManager.Connected += () =>
             {
-                account.Calc.Updated += Calc_Updated;
+                if (account.Calc != null)
+                    account.Calc.Updated += Calc_Updated;
                 currencyFormatStr = NumberFormat.GetCurrencyFormatString(account.BalanceDigits, account.BalanceCurrency);
                 IsStatsVisible = account.Type != AccountTypes.Cash;
                 NotifyOfPropertyChange(nameof(IsStatsVisible));
                 Calc_Updated(account.Calc);
             };
 
-            cManager.LoggedOut += () =>
-            {
-                IsStatsVisible = false;
-                NotifyOfPropertyChange(nameof(IsStatsVisible));
-            };
-
-            client.Disconnected += () =>
+            cManager.Disconnected += () =>
             {
                 if (account.Calc != null)
                     account.Calc.Updated -= Calc_Updated;
+
+                //IsStatsVisible = false;
+                //NotifyOfPropertyChange(nameof(IsStatsVisible));
             };
         }
 
         private void Calc_Updated(AccountCalculatorModel calc)
         {
             Balance = FormatNumber(FloorNumber(account.Balance, account.BalanceDigits));
-            Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
-            Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
-            Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
-            Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
-            MarginLevel = FormatPrecent(FloorNumber(calc.MarginLevel, 2));
-            FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
-            Swap = FormatNumber(calc.Swap);
-            IsFloatingLoss = calc.Floating < 0;
-
             NotifyOfPropertyChange(nameof(Balance));
-            NotifyOfPropertyChange(nameof(Equity));
-            NotifyOfPropertyChange(nameof(Margin));
-            NotifyOfPropertyChange(nameof(Profit));
-            NotifyOfPropertyChange(nameof(Swap));
-            NotifyOfPropertyChange(nameof(Floating));
-            NotifyOfPropertyChange(nameof(FreeMargin));
-            NotifyOfPropertyChange(nameof(MarginLevel));
-            NotifyOfPropertyChange(nameof(IsFloatingLoss));
+
+            if (calc != null)
+            {
+                Equity = FormatNumber(FloorNumber(calc.Equity, account.BalanceDigits));
+                Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
+                Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
+                Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
+                MarginLevel = FormatPrecent(FloorNumber(calc.MarginLevel, 2));
+                FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
+                IsFloatingLoss = calc.Floating < 0;
+
+                NotifyOfPropertyChange(nameof(Equity));
+                NotifyOfPropertyChange(nameof(Margin));
+                NotifyOfPropertyChange(nameof(Profit));
+                NotifyOfPropertyChange(nameof(Floating));
+                NotifyOfPropertyChange(nameof(FreeMargin));
+                NotifyOfPropertyChange(nameof(MarginLevel));
+                NotifyOfPropertyChange(nameof(IsFloatingLoss));
+            }
         }
 
         private string FormatNumber(double number)

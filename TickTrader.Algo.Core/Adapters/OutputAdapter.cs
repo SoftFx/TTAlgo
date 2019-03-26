@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core
 
             _fixture.Appended += OnAppend;
             _fixture.Updated += OnUpdate;
-            _fixture.AllUpdated += OnCopyAll;
+            _fixture.RangeAppended += OnCopyAll;
             _fixture.Truncated += OnTruncate;
         }
 
@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Core
         {
             _fixture.Appended -= OnAppend;
             _fixture.Updated -= OnUpdate;
-            _fixture.AllUpdated -= OnCopyAll;
+            _fixture.RangeAppended -= OnCopyAll;
             _fixture.Truncated -= OnTruncate;
 
             base.Dispose();

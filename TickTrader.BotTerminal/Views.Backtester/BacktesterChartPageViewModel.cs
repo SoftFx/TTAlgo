@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
@@ -17,16 +18,16 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterChartPageViewModel : ObservableObject, IPluginDataChartModel
     {
-        private OhlcDataSeries<DateTime, double> _chartData = new OhlcDataSeries<DateTime, double>();
+        private ChartBarVector _barVector;
+        private OhlcRenderableSeriesViewModel _mainSeries;
         private VarList<IRenderableSeriesViewModel> _mainSeriesCollection = new VarList<IRenderableSeriesViewModel>();
         private ChartNavigator _navigator = new UniformChartNavigator();
 
         public BacktesterChartPageViewModel()
         {
-            var mainSeries = new OhlcRenderableSeriesViewModel();
-            mainSeries.StyleKey = "BarChart_OhlcStyle";
-            mainSeries.DataSeries = _chartData;
-            _mainSeriesCollection.Add(mainSeries);
+            _mainSeries = new OhlcRenderableSeriesViewModel();
+            _mainSeries.StyleKey = "BarChart_OhlcStyle";
+            _mainSeriesCollection.Add(_mainSeries);
 
             ChartControlModel = new AlgoChartViewModel(_mainSeriesCollection);
             ChartControlModel.TimeAxis.Value = _navigator.CreateAxis();
@@ -35,32 +36,67 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(SymbolEntity mainSymbol, PluginSetupModel setup, Backtester backtester)
+        public void OnStart(bool visualizing, SymbolEntity mainSymbol, PluginSetupModel setup, Backtester backtester)
         {
             Clear();
 
-            backtester.OutputDataMode = TestDataSeriesFlags.Stream;
-            backtester.ChartDataMode = TestDataSeriesFlags.Stream;
+            _barVector = new ChartBarVector(backtester.MainTimeframe);
+            _mainSeries.DataSeries = _barVector.SciChartdata;
 
-            backtester.OnChartUpdate += Backtester_OnChartUpdate;
+            if (visualizing)
+            {
+                backtester.SymbolDataConfig.Add(mainSymbol.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
+                backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
 
+                backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
+            }
+            else
+            {
+                backtester.SymbolDataConfig.Add(mainSymbol.Name, TestDataSeriesFlags.Stream);
+                backtester.OutputDataMode = TestDataSeriesFlags.Stream;
+                
+                backtester.OnChartUpdate += Backtester_OnChartUpdate;
+            }
+            
             var adapter = new BacktesterAdapter(setup, backtester);
             var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol);
             ChartControlModel.OutputGroups.Add(outputGroup);
         }
 
+        public void OnStop(Backtester backtester)
+        {
+            backtester.OnChartUpdate -= Backtester_OnChartUpdate;
+            backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
+        }
+
         private void Backtester_OnChartUpdate(BarEntity bar, string symbol, SeriesUpdateActions action)
         {
             if (action == SeriesUpdateActions.Append)
-                _chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+        }
+
+        private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
+        {
+            ChartControlModel.SetCurrentRate(update);
+
+            if (update is QuoteEntity)
+            {
+                var q = (QuoteEntity)update;
+                _barVector.AppendQuote(q.CreatingTime, q.Bid, 1);
+            }
+            else if (update is BarRateUpdate)
+            {
+                var bar = ((BarRateUpdate)update).BidBar;
+                if (bar != null)
+                    _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+            }
         }
 
         public void Clear()
         {
-            _chartData.Clear();
+            _barVector = null;
+            _mainSeries.DataSeries = null;
             ChartControlModel.OutputGroups.Clear();
-            //_mainSeriesCollection.Clear();
-            //_panes.Clear();
         }
 
         public void SetFeedSeries(OhlcDataSeries<DateTime, double> chartData)

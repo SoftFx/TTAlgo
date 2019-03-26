@@ -56,16 +56,13 @@ namespace TickTrader.Algo.Core
                 _builder.BarOpened += (b) => _snapshot.Add(b);
             if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
             {
-                if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
+                if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
                 {
-                    if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
-                    {
-                        _builder.BarUpdated += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Update);
-                        _builder.BarOpened += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
-                    }
-                    else
-                        _builder.BarClosed += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
+                    _builder.BarUpdated += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Update);
+                    _builder.BarOpened += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
                 }
+                else
+                    _builder.BarClosed += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
             }
         }
 

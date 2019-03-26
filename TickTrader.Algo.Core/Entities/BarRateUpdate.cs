@@ -7,7 +7,8 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class BarRateUpdate : RateUpdate
+    [Serializable]
+    public class BarRateUpdate : RateUpdate
     {
         private QuoteEntity _lastQuote;
         private int _quoteCount;

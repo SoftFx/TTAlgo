@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
 {
     class OrderListViewModel : AccountBasedViewModel
     {
-        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, ConnectionModel.Handler connection)
+        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
             : base(model, connection)
         {
             Orders = model.Orders

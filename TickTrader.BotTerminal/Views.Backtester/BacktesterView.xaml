@@ -126,7 +126,7 @@
     </ControlTemplate>
 
     <ControlTemplate x:Key="BacktesterViewTemplate.Classic">
-        <l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">
+        <!--<l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">-->
             <Grid Background="{TemplateBinding Background}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>  <!-- 0 - toolbar -->
@@ -162,8 +162,11 @@
                     <TabItem Header="Journal">
                         <UserControl cal:View.Model="{Binding JournalPage}"/>
                     </TabItem>
-                    <TabItem Header="Trades">
+                    <TabItem Header="Trades" Visibility="{Binding IsVisualizing.Value, Converter={StaticResource BoolToVis}}">
                         <ContentControl cal:View.Model="{Binding TradesPage}"/>
+                    </TabItem>
+                    <TabItem Header="Trade History">
+                        <ContentControl cal:View.Model="{Binding TradeHistoryPage}"/>
                     </TabItem>
                     <TabItem Header="Graph">
                         <ContentControl cal:View.Model="{Binding ChartPage}"/>
@@ -195,9 +198,12 @@
             </Border>-->
 
             </Grid>
-        </l:OverlayPanel>
+        <!--</l:OverlayPanel>-->
 
         <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ProgressMonitor.WasFaultedOrCancelled.Value}" Value="True">
+                <Setter TargetName="progressMonitor" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
             <DataTrigger Binding="{Binding IsRunning.Value}" Value="True">
                 <Setter TargetName="progressMonitor" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="startBtn" Property="ToolTip" Value="Resume"/>

@@ -11,14 +11,14 @@ namespace TickTrader.BotTerminal
 {
     internal abstract class AccountBasedViewModel : PropertyChangedBase
     {
-        private ConnectionModel.Handler _connection;
+        private IConnectionStatusInfo _connection;
 
-        public AccountBasedViewModel(AccountModel model, ConnectionModel.Handler connection)
+        public AccountBasedViewModel(AccountModel model, IConnectionStatusInfo connection)
         {
             Account = model;
             _connection = connection;
 
-            connection.StateChanged += StateChanged;
+            connection.IsConnectingChanged += UpdateState;
             model.AccountTypeChanged += AccountTypeChanged;
         }
 
@@ -48,11 +48,6 @@ namespace TickTrader.BotTerminal
             IsBusy = _connection.IsConnecting;
             if (oldIsBusy != IsBusy)
                 NotifyOfPropertyChange(nameof(IsBusy));
-        }
-
-        private void StateChanged(ConnectionModel.States from, ConnectionModel.States to)
-        {
-            UpdateState();
         }
     }
 }

@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         {
             SeriesType = seriesType;
             SeriesId = seriesId;
+            Action = action;
             Value = data;
         }
 

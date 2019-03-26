@@ -37,7 +37,7 @@ namespace TickTrader.Algo.Core
 
         public bool OnStart()
         {
-            Collector.OnStart(Settings);
+            Collector.OnStart(Settings, Feed);
 
             return InvokeEmulator.StartFeedRead();
         }
@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core
 
             //tradeEmulator.Stop();
 
-            Collector.OnStop(Settings, builder.Account);
+            Collector.OnStop(Settings, builder?.Account);
         }
 
         public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)

@@ -12,10 +12,10 @@ namespace TickTrader.BotTerminal
 {
     class ActionViewModel : ViewAware, IDisposable
     {
-        private VarContext _context = new VarContext();
-        private Property<CancellationTokenSource> _cancelSrc;
-        private BoolProperty _isRunning;
-        private BoolProperty _isCanceled;
+        private readonly VarContext _context = new VarContext();
+        private readonly Property<CancellationTokenSource> _cancelSrc;
+        private readonly BoolProperty _isRunning;
+        private readonly BoolProperty _isCanceled;
 
         public ActionViewModel()
         {
@@ -30,8 +30,9 @@ namespace TickTrader.BotTerminal
 
         public BoolVar IsRunning => _isRunning.Var;
         public BoolVar IsCancelling => _isCanceled.Var;
+        public BoolVar WasFaultedOrCancelled => Progress.IsError.Var;
         public BoolVar CanCancel { get; }
-        public ProgressViewModel Progress { get; private set; }
+        public ProgressViewModel Progress { get; }
         public Task Completion { get; private set; }
 
         public Task Start(System.Action action)

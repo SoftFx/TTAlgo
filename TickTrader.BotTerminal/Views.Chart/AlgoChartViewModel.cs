@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
@@ -16,7 +17,7 @@ namespace TickTrader.BotTerminal
     {
         private VarContext _var = new VarContext();
         private IntProperty _precisionProp = new IntProperty();
-        private Property<QuoteEntity> _currentRateProp = new Property<QuoteEntity>();
+        private Property<RateUpdate> _currentRateProp = new Property<RateUpdate>();
         private Property<double?> _askProp = new Property<double?>();
         private Property<double?> _bidProp = new Property<double?>();
         private IDisposable _axisBind;
@@ -38,8 +39,8 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(_currentRateProp, a =>
             {
-                _askProp.Value = a.New?.GetNullableAsk();
-                _bidProp.Value = a.New?.GetNullableBid();
+                _askProp.Value = a.New?.DoubleNullableAsk();
+                _bidProp.Value = a.New?.DoubleNullableBid();
             });
 
             InitZoom();
@@ -63,10 +64,15 @@ namespace TickTrader.BotTerminal
         public int Precision { get; private set; }
         public Property<string> YAxisLabelFormat { get; } = new Property<string>();
 
-        public void BindCurrentRate(Var<QuoteEntity> rateSrc)
+        public void BindCurrentRate(Var<RateUpdate> rateSrc)
         {
             _currentRateBind?.Dispose();
             _currentRateBind = _var.TriggerOnChange(rateSrc, a => _currentRateProp.Value = a.New);
+        }
+
+        public void SetCurrentRate(RateUpdate rate)
+        {
+            _currentRateProp.Value = rate;
         }
 
         public void BindAxis(Var<AxisBase> axis)

@@ -45,6 +45,7 @@ namespace TickTrader.Algo.Core
 
                         fixture.Appended += Fixture_Appended;
                         fixture.Updated += Fixture_Updated;
+                        fixture.RangeAppended += Fixture_AllUpdated;
                     }
                     else
                     {
@@ -88,10 +89,22 @@ namespace TickTrader.Algo.Core
 
         private void Fixture_Updated(OutputFixture<T>.Point point)
         {
+            var adjustedPoint = point.ChangeIndex(point.Index + _indexShift);
+            var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Update, adjustedPoint);
+            _onRealtimeUpdate(update);
         }
 
         private void Fixture_Appended(OutputFixture<T>.Point point)
         {
+            var adjustedPoint = point.ChangeIndex(point.Index + _indexShift);
+            var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, adjustedPoint);
+            _onRealtimeUpdate(update);
+        }
+
+        private void Fixture_AllUpdated(OutputFixture<T>.Point[] snapshot)
+        {
+            foreach (var point in snapshot)
+                Fixture_Appended(point);
         }
 
         private void OnTruncate(int size)
