@@ -53,11 +53,13 @@ namespace TickTrader.BotTerminal
                 Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
                 MarginLevel = FormatPrecent(FloorNumber(calc.MarginLevel, 2));
                 FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
+                Swap = FormatNumber(calc.Swap);
                 IsFloatingLoss = calc.Floating < 0;
 
                 NotifyOfPropertyChange(nameof(Equity));
                 NotifyOfPropertyChange(nameof(Margin));
                 NotifyOfPropertyChange(nameof(Profit));
+                NotifyOfPropertyChange(nameof(Swap));
                 NotifyOfPropertyChange(nameof(Floating));
                 NotifyOfPropertyChange(nameof(FreeMargin));
                 NotifyOfPropertyChange(nameof(MarginLevel));
