@@ -20,10 +20,10 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="ToolTip">
+                    <Style TargetType="DataGridRow" >
+                        <Setter Property="ToolTip" >
                             <Setter.Value>
-                                <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Vertical" Visibility="{Binding Data.IsNetAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Limit Price: " VerticalAlignment="Center" />
                                         <TextBlock VerticalAlignment="Center" >
@@ -110,7 +110,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Used Margin" Width="*" Binding="{Binding Order.Margin}"/>
+                    <DataGridTextColumn Header="Used Margin" Width="*" Binding="{Binding Order.Margin}" Visibility="{Binding Data.IsNetAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
                 </DataGrid.Columns>
             </DataGrid>
