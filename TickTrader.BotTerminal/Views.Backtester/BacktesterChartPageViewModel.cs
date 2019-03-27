@@ -8,26 +8,47 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Entities;
 using TickTrader.BotTerminal.Lib;
+using static TickTrader.BotTerminal.TransactionReport;
 
 namespace TickTrader.BotTerminal
 {
     internal class BacktesterChartPageViewModel : ObservableObject, IPluginDataChartModel
     {
-        private ChartBarVector _barVector;
+        private ChartBarVectorWithMarkers _barVector;
         private OhlcRenderableSeriesViewModel _mainSeries;
+        private LineRenderableSeriesViewModel _markerSeries;
         private VarList<IRenderableSeriesViewModel> _mainSeriesCollection = new VarList<IRenderableSeriesViewModel>();
         private ChartNavigator _navigator = new UniformChartNavigator();
+        private bool _visualizing;
+        private AccountTypes _acctype;
+        private string _mainSymbol;
+        private Dictionary<string, SymbolEntity> _symbolMap;
 
         public BacktesterChartPageViewModel()
         {
             _mainSeries = new OhlcRenderableSeriesViewModel();
             _mainSeries.StyleKey = "BarChart_OhlcStyle";
+            
+            _markerSeries = new LineRenderableSeriesViewModel();
+            _markerSeries.StyleKey = "OverlayMarkerSeries_Style";
+            _markerSeries.StrokeThickness = 0;
+            _markerSeries.PointMarker = new PositionMarker()
+            {
+                Stroke = System.Windows.Media.Colors.Black,
+                StrokeThickness = 1,
+                Width = 8,
+                Height = 16
+            };
+
             _mainSeriesCollection.Add(_mainSeries);
+            _mainSeriesCollection.Add(_markerSeries);
 
             ChartControlModel = new AlgoChartViewModel(_mainSeriesCollection);
             ChartControlModel.TimeAxis.Value = _navigator.CreateAxis();
@@ -36,12 +57,18 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControlModel { get; }
 
-        public void OnStart(bool visualizing, SymbolEntity mainSymbol, PluginSetupModel setup, Backtester backtester)
+        public void OnStart(bool visualizing, SymbolEntity mainSymbol, PluginSetupModel setup, Backtester backtester, IEnumerable<SymbolEntity> symbols)
         {
+            _visualizing = visualizing;
+            _acctype = backtester.AccountType;
+            _mainSymbol = backtester.MainSymbol;
+            _symbolMap = symbols.ToDictionary(s => s.Name);
+
             Clear();
 
-            _barVector = new ChartBarVector(backtester.MainTimeframe);
+            _barVector = new ChartBarVectorWithMarkers(backtester.MainTimeframe);
             _mainSeries.DataSeries = _barVector.SciChartdata;
+            _markerSeries.DataSeries = _barVector.MarkersData;
 
             if (visualizing)
             {
@@ -49,6 +76,7 @@ namespace TickTrader.BotTerminal
                 backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
 
                 backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
+                backtester.Executor.TradesUpdated += Executor_TradesUpdated;
             }
             else
             {
@@ -67,6 +95,7 @@ namespace TickTrader.BotTerminal
         {
             backtester.OnChartUpdate -= Backtester_OnChartUpdate;
             backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
+            backtester.Executor.TradesUpdated -= Executor_TradesUpdated;
         }
 
         private void Backtester_OnChartUpdate(BarEntity bar, string symbol, SeriesUpdateActions action)
@@ -99,8 +128,124 @@ namespace TickTrader.BotTerminal
             ChartControlModel.OutputGroups.Clear();
         }
 
-        public void SetFeedSeries(OhlcDataSeries<DateTime, double> chartData)
-        {   
+        public void Append(Algo.Api.AccountTypes acctype, string orderId, TransactionReport trRep)
+        {
+            if (_visualizing || trRep.Symbol != _mainSymbol)
+                return;
+
+            if (acctype == AccountTypes.Gross)
+            {
+                if (trRep.ActionType == TradeExecActions.PositionClosed)
+                {
+                    var digits = trRep.PriceDigits;
+                    var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);
+                    var closePrice = NumberFormat.FormatPrice(trRep.ClosePrice, digits);
+                    var openDescription = $"#{orderId} {trRep.Side} (open) {trRep.OpenQuantity} at price {openPrice}";
+                    var closeDescription = $"#{orderId} {Revert(trRep.Side)} (close) {trRep.CloseQuantity} at price {closePrice}";
+
+                    AddMarker(trRep.OrderId, trRep.OpenTime, trRep.Side == TransactionSide.Buy, openDescription);
+                    AddMarker(trRep.OrderId, trRep.CloseTime, trRep.Side == TransactionSide.Sell, closeDescription);
+                }
+            }
+            else if (acctype == AccountTypes.Net)
+            {
+                if (trRep.ActionType == TradeExecActions.OrderFilled)
+                {
+                    var digits = trRep.PriceDigits;
+                    var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);
+                    var description = $"#{orderId} {trRep.Side} {trRep.OpenQuantity} at price {openPrice}";
+                    AddMarker(trRep.OrderId, trRep.OpenTime, trRep.Side == TransactionSide.Buy, description);
+                }
+            }
+        }
+
+        private void Executor_TradesUpdated(TesterTradeTransaction tt)
+        {
+            if (_acctype == AccountTypes.Gross)
+            {
+                if (tt.OrderExecAction == OrderExecAction.Filled
+                    || (tt.OrderExecAction == OrderExecAction.Opened && tt.OrderUpdate.Type == OrderType.Position))
+                {
+                    if (tt.PositionEntityAction == OrderEntityAction.Added)
+                    {
+                        // partial fill
+                        var order = tt.PositionUpdate;
+                        var symbol = _symbolMap.GetOrDefault(order.Symbol);
+                        var lotSize = symbol?.LotSize ?? 1;
+                        var digits = symbol?.Digits ?? 5;
+                        var openPrice = NumberFormat.FormatPrice(order.Price, digits);
+                        var openDescription = $"#{order.OrderId} {order.Side} (open) {order.RequestedVolume/lotSize} {order.Symbol} at price {openPrice}";
+
+                        AddMarker(order.OrderId, order.Created.Value, order.Side == OrderSide.Buy, openDescription);
+                    }
+                    else
+                    {
+                        // full fill or open
+                        var order = tt.OrderUpdate;
+                        var symbol = _symbolMap.GetOrDefault(order.Symbol);
+                        var lotSize = symbol?.LotSize ?? 1;
+                        var digits = symbol?.Digits ?? 5;
+                        var openPrice = NumberFormat.FormatPrice(order.Price, digits);
+                        var openDescription = $"#{order.OrderId} {order.Side} (open) {order.RequestedVolume/lotSize} {order.Symbol} at price {openPrice}";
+
+                        AddMarker(order.OrderId, order.Created.Value, order.Side == OrderSide.Buy, openDescription);
+                    }
+                }
+
+                if (tt.PositionExecAction == OrderExecAction.Closed)
+                {
+                    var order = tt.PositionUpdate;
+                    var symbol = _symbolMap.GetOrDefault(order.Symbol);
+                    var lotSize = symbol?.LotSize ?? 1;
+                    var digits = symbol?.Digits ?? 5;
+                    var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
+                    var closeDescription = $"#{order.OrderId} {order.Side.Revert()} (close) {order.LastFillVolume/lotSize} {order.Symbol} at price {closePrice}";
+
+                    AddMarker(order.OrderId, order.Modified.Value, order.Side == OrderSide.Sell, closeDescription);
+                }
+            }
+            else if (_acctype == AccountTypes.Net)
+            {
+                if (tt.OrderExecAction == OrderExecAction.Filled)
+                {
+                    var order = tt.OrderUpdate;
+                    var symbol = _symbolMap.GetOrDefault(order.Symbol);
+                    var digits = symbol?.Digits ?? 5;
+                    var lotSize = symbol?.LotSize ?? 1;
+                    var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
+                    var description = $"#{order.OrderId} {order.Side} {order.LastFillVolume/lotSize} at price {openPrice}";
+                    AddMarker(order.OrderId, order.Modified.Value, order.Side == OrderSide.Buy, description);
+                }
+            }
+        }
+
+        private TransactionSide Revert(TransactionSide side)
+        {
+            switch (side)
+            {
+                case TransactionSide.Buy: return TransactionSide.Sell;
+                case TransactionSide.Sell: return TransactionSide.Buy;
+                default: return TransactionSide.None;
+            }
+        }
+
+        private void AddMarker(string orderId, DateTime pointTime, bool isBuy, string description)
+        {
+            var index = _barVector.Ref.BinarySearch(pointTime, BinarySearchTypes.NearestLower);
+            if (index > 0)
+            {
+                var bar = _barVector[index];
+
+                var existingMeta = _barVector.SciChartdata.Metadata[index] as PositionMarkerMetadatda;
+
+                if (existingMeta != null)
+                {
+                    if (!existingMeta.HasRecordFor(orderId))
+                        existingMeta.AddRecord(orderId, description, isBuy);
+                }
+                else
+                    _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(orderId, description, isBuy);
+            }
         }
 
         #region IPluginDataChartModel

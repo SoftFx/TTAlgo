@@ -21,6 +21,6 @@ namespace TickTrader.Algo.Core
         public DateTime TransactionTime {get; set;}
     }
 
-    public enum OrderExecAction { Opened, Modified, Canceled, Closed, Filled, Expired, Rejected, Activated, DepositWithdraw }
+    public enum OrderExecAction {None, Opened, Modified, Canceled, Closed, Filled, Expired, Rejected, Activated, DepositWithdraw }
     public enum OrderEntityAction { None, Added, Removed, Updated }
 }

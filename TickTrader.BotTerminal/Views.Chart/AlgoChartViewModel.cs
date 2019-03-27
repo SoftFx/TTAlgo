@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using SciChart.Charting.Model.ChartSeries;
+using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,7 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; }
         public VarList<OutputGroupViewModel> OutputGroups { get; } = new VarList<OutputGroupViewModel>();
         public Property<string> ChartWindowId { get; } = new Property<string>();
+        public AnnotationCollection Annotations { get; } = new AnnotationCollection();
         //public VarList<IRenderableSeriesViewModel> DataSeries { get; } = new VarList<IRenderableSeriesViewModel>();
 
         public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();

@@ -387,13 +387,12 @@ namespace TickTrader.BotTerminal
 
         private void FireOnStart(SymbolData mainSymbol, PluginSetupModel setup, Backtester tester)
         {
-            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester);
+            var symbols = GetAllSymbols().Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
+            var currecnies = _client.Currencies.Snapshot.Values.ToList();
+
+            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester, symbols);
             if (IsVisualizing.Value)
-            {
-                var symbols = GetAllSymbols().Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
-                var currecnies = _client.Currencies.Snapshot.Values.ToList();
                 TradesPage.Start(tester, currecnies, symbols);
-            }
         }
 
         private void FireOnStop(Backtester tester)
@@ -414,6 +413,7 @@ namespace TickTrader.BotTerminal
             var accType = _settings.AccType;
             var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
+            ChartPage.Append(accType, record.OrderId, trRep);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)

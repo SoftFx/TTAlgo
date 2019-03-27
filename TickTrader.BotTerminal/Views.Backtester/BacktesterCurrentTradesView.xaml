@@ -4,7 +4,17 @@
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
     <ControlTemplate x:Key="CurrentTradesView.Classic">
-        <ContentControl cal:View.Model="{Binding Trades}"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="15" Width="180"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ContentControl Grid.Column="0" cal:View.Model="{Binding Rates}"/>
+            <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" Width="5" ResizeBehavior="PreviousAndNext"
+                          Background="Transparent"/>
+            <ContentControl Grid.Column="2" cal:View.Model="{Binding Trades}"/>
+        </Grid>
     </ControlTemplate>
 
     <!-- View Style -->

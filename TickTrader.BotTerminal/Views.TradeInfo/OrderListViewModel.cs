@@ -30,6 +30,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<OrderViewModel> Orders { get; private set; }
         public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
+        public bool AutoSizeColumns { get; set; }
 
         private void OrdersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

@@ -942,6 +942,8 @@ namespace TickTrader.Algo.Core
             //order.AverageFillPrice = order.AggrFillPrice / (order.Amount - order.RemainingAmount);
             //order.Entity.Filled = OperationContext.ExecutionTime;
             order.Entity.Modified = _scheduler.SafeVirtualTimePoint;
+            order.Entity.LastFillPrice = (double)fillPrice;
+            order.Entity.LastFillVolume = (double)fillAmount;
 
             if ((_acc.AccountingType == AccountingTypes.Net) || (_acc.AccountingType == AccountingTypes.Cash))
             {
@@ -1367,6 +1369,7 @@ namespace TickTrader.Algo.Core
 
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, fromOrder.MarginRateCurrent);
+            tradeReport.Entity.PositionOpened = _scheduler.SafeVirtualTimePoint;
             tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
@@ -1416,8 +1419,8 @@ namespace TickTrader.Algo.Core
                 report.Entity.TransactionAmount += (double)balanceMovement;
                 report.Entity.PositionClosed = ExecutionTime;
                 report.Entity.PosOpenPrice = (double)openPrice;
-                report.Entity.PositionClosePrice = (double)closePrice;
-                report.Entity.PositionLastQuantity = (double)oneSideClosingAmount;
+                report.Entity.ClosePrice = (double)closePrice;
+                report.Entity.CloseQuantity = (double)oneSideClosingAmount;
                 report.Entity.Swap += (double)closeSwap;
                 report.Entity.CloseConversionRate = (double)profitRate;
 
@@ -1622,6 +1625,8 @@ namespace TickTrader.Algo.Core
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
 
             position.ClosePrice = closePrice;
+            position.Entity.LastFillPrice = (double)closePrice;
+            position.Entity.LastFillVolume = (double)actualCloseAmount;
 
             //if (managerComment != null)
             //    position.ManagerComment = managerComment;

@@ -58,13 +58,20 @@ namespace TickTrader.Algo.Core
         {
             var update = new TesterTradeTransaction();
 
-            if (order.RemainingAmount == 0)
-                update.OnOrderRemoved(OrderExecAction.Filled, order);
+            if (fillInfo.Position != null && fillInfo.Position.OrderId == order.OrderId) // order was transformed into position
+            {
+                update.OnOrderReplaced(OrderExecAction.Filled, order);
+            }
             else
-                update.OnOrderAdded(OrderExecAction.Filled, order);
+            {
+                if (order.RemainingAmount == 0)
+                    update.OnOrderRemoved(OrderExecAction.Filled, order);
+                else
+                    update.OnOrderAdded(OrderExecAction.Filled, order);
 
-            if (fillInfo.Position != null)
-                update.OnPositionAdded(OrderExecAction.Filled, fillInfo.Position);
+                if (fillInfo.Position != null)
+                    update.OnPositionAdded(OrderExecAction.Filled, fillInfo.Position);
+            }
 
             if (fillInfo.WasNetPositionClosed)
             {

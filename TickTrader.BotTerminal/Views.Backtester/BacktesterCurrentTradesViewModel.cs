@@ -19,10 +19,12 @@ namespace TickTrader.BotTerminal
         public BacktesterCurrentTradesViewModel()
         {
             _client = new MockClient();
-            Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection);
+            Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false);
+            Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor);
         }
 
         public TradeInfoViewModel Trades { get; }
+        public SymbolListViewModel Rates { get; }
 
         public void Clear()
         {

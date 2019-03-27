@@ -66,6 +66,7 @@
                     <Grid>
                         <s:SciChartSurface x:Name="MainChartControl"
                                            RenderableSeries="{s:SeriesBinding Series}"
+                                           Annotations="{Binding Annotations}"
                                            Background="{TemplateBinding Background}"
                                            Style="{DynamicResource MainChartStyle}"
                                            l:SciChartBehavior.XAxis="{Binding TimeAxis.Value}"
@@ -99,7 +100,7 @@
                                 </s:NumericAxis>
                             </s:SciChartSurface.YAxis>
 
-                            <s:SciChartSurface.Annotations>
+                            <!--<s:SciChartSurface.Annotations>
                                 <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
                                                             Stroke="{DynamicResource RateUpColor}" Y1="{Binding CurrentAsk.Value}"/>
                                 <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
@@ -108,7 +109,7 @@
                                                         Background="{DynamicResource RateUpColor}" Y1="{Binding CurrentAsk.Value}"/>
                                 <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
                                                         Background="{DynamicResource RateDownColor}" Y1="{Binding CurrentBid.Value}"/>
-                            </s:SciChartSurface.Annotations>
+                            </s:SciChartSurface.Annotations>-->
 
                             <s:SciChartSurface.Resources>
                                 <ResourceDictionary Source="SeriesView.xaml"/>

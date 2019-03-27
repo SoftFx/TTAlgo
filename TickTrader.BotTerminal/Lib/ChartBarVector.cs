@@ -12,9 +12,11 @@ namespace TickTrader.BotTerminal.Lib
     internal class ChartBarVector : BarVectorBase2
     {
         private readonly List<BarEntity> _cache = new List<BarEntity>();
+        private bool _autoFillMetadata;
 
-        public ChartBarVector(TimeFrames timeframe) : base(timeframe)
+        public ChartBarVector(TimeFrames timeframe, bool autoFillMeatdata = false) : base(timeframe)
         {
+            _autoFillMetadata = autoFillMeatdata;
         }
 
         public override BarEntity this[int index] => _cache[index];
@@ -28,6 +30,8 @@ namespace TickTrader.BotTerminal.Lib
         {
             _cache.Add(bar);
             SciChartdata.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+            if (_autoFillMetadata)
+                SciChartdata.Metadata.Add(null);
         }
 
         protected override void OnBarUpdated(int barIndex, BarEntity bar)
