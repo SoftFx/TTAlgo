@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using SciChart.Charting.Model.ChartData;
 using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;
@@ -42,12 +43,16 @@ namespace TickTrader.BotTerminal
 
         public string YAxisLabelFormat { get; private set; }
 
-        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart, SymbolEntity symbol, OutputTargets target)
+        public BoolVar IsCrosshairEnabled { get; }
+
+        public OutputPaneViewModel(IPluginModel plugin, IEnumerable<OutputSeriesModel> ouputModels, string windowId, IPluginDataChartModel chart,
+            SymbolEntity symbol, OutputTargets target, BoolVar isCrosshairEnabled)
         {
             Model = plugin;
             ChartWindowId = windowId;
             Chart = chart;
             _symbol = symbol;
+            IsCrosshairEnabled = isCrosshairEnabled;
 
             _outputs = new VarList<OutputSeriesModel>();
             Series = _outputs.Select(SeriesViewModel.FromOutputSeries).AsObservable();

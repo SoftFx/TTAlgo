@@ -54,7 +54,6 @@ namespace TickTrader.BotTerminal
         private ChartNavigator navigator;
         private long indicatorNextId = 1;
         private Property<AxisBase> _timeAxis = new Property<AxisBase>();
-        private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
@@ -178,16 +177,6 @@ namespace TickTrader.BotTerminal
                 UpdateSeries();
                 ChartTypeChanged();
                 NotifyOfPropertyChange(nameof(SelectedChartType));
-            }
-        }
-
-        public bool IsCrosshairEnabled
-        {
-            get { return isCrosshairEnabled; }
-            set
-            {
-                this.isCrosshairEnabled = value;
-                NotifyOfPropertyChange("IsCrosshairEnabled");
             }
         }
 

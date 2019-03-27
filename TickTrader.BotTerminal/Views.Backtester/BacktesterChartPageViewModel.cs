@@ -87,7 +87,8 @@ namespace TickTrader.BotTerminal
             }
             
             var adapter = new BacktesterAdapter(setup, backtester);
-            var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol);
+            var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
+                ChartControlModel.IsCrosshairEnabled.Var);
             ChartControlModel.OutputGroups.Add(outputGroup);
         }
 
