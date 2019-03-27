@@ -212,10 +212,10 @@ namespace TickTrader.Algo.Core
             {
                 _checkStateFlag = false;
 
-                if (_canelRequested)
+                if (State != EmulatorStates.Stopping && _canelRequested)
                 {
                     _canelRequested = false;
-                    ChangeState(EmulatorStates.Stopped);
+                    ChangeState(EmulatorStates.Stopping);
                     throw new OperationCanceledException("Canceled.");
                 }
 
@@ -261,9 +261,9 @@ namespace TickTrader.Algo.Core
                 lock (_syncState)
                 {
                     if (State == EmulatorStates.Stopping)
-                        ChangeState(EmulatorStates.Stopping);
-                    else
                         ChangeState(EmulatorStates.Stopped);
+                    else
+                        ChangeState(EmulatorStates.Stopping);
                 }
                 throw;
             }
