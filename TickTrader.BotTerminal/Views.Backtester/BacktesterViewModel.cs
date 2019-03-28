@@ -757,7 +757,8 @@ namespace TickTrader.BotTerminal
         private void UpdateTradeSummary()
         {
             if (_settings.AccType == AccountTypes.Gross || _settings.AccType == AccountTypes.Net)
-                TradeSettingsSummary.Value = string.Format("{0} {1} {2} l:{3}", _settings.AccType, _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage);
+                TradeSettingsSummary.Value = string.Format("{0} {1} {2} L={3}, D={4}, {5}ms", _settings.AccType,
+                    _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage, "Default", _settings.ServerPingMs );
         }
 
         #region IAlgoSetupMetadata
