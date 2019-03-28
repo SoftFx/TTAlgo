@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core
         private ISynchronizationContext _syncContext;
         private BufferBlock<object> _updateBuffer;
         private ActionBlock<object[]> _updateSender;
-        private CancellationTokenSource _stopSrc;
+        private Task _batchLinkTask;
 
         public ExecutorHandler(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
@@ -64,11 +64,10 @@ namespace TickTrader.Algo.Core
             var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
             var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
 
-            _stopSrc = new CancellationTokenSource();
             _updateBuffer = new BufferBlock<object>(bufferOptions);
             _updateSender = new ActionBlock<object[]>(msgList => _syncContext.Invoke(() => MarshalUpdates(msgList)), senderOptions);
 
-            _updateBuffer.BatchLinkTo(_updateSender, 30);
+            _batchLinkTask = _updateBuffer.BatchLinkTo(_updateSender, 30);
         }
 
         private async Task StopCollection()
@@ -77,8 +76,7 @@ namespace TickTrader.Algo.Core
             {
                 _updateBuffer.Complete();
                 await _updateBuffer.Completion;
-                //await Task.Delay(100);
-                _stopSrc.Cancel();
+                await _batchLinkTask;
                 _updateSender.Complete();
                 await _updateSender.Completion;
             }
