@@ -335,10 +335,10 @@ namespace TickTrader.BotTerminal
                     {
                         try
                         {
-                            MainSymbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, SelectedModel.Value);
+                            MainSymbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, SelectedModel.Value, _isVisualizing.Value);
 
                             foreach (var symbolSetup in AdditionalSymbols)
-                                symbolSetup.Apply(_backtester, _emulteFrom, _emulateTo);
+                                symbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
 
                             _backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 

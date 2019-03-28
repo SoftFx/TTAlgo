@@ -72,7 +72,6 @@ namespace TickTrader.BotTerminal
 
             if (visualizing)
             {
-                backtester.SymbolDataConfig.Add(mainSymbol.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
                 backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
 
                 backtester.Executor.SymbolRateUpdated += Executor_SymbolRateUpdated;
@@ -80,7 +79,6 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                backtester.SymbolDataConfig.Add(mainSymbol.Name, TestDataSeriesFlags.Stream);
                 backtester.OutputDataMode = TestDataSeriesFlags.Stream;
                 
                 backtester.OnChartUpdate += Backtester_OnChartUpdate;
@@ -107,18 +105,21 @@ namespace TickTrader.BotTerminal
 
         private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
         {
-            ChartControlModel.SetCurrentRate(update);
+            if (update.Symbol == _mainSymbol)
+            {
+                ChartControlModel.SetCurrentRate(update);
 
-            if (update is QuoteEntity)
-            {
-                var q = (QuoteEntity)update;
-                _barVector.AppendQuote(q.CreatingTime, q.Bid, 1);
-            }
-            else if (update is BarRateUpdate)
-            {
-                var bar = ((BarRateUpdate)update).BidBar;
-                if (bar != null)
-                    _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                if (update is QuoteEntity)
+                {
+                    var q = (QuoteEntity)update;
+                    _barVector.AppendQuote(q.CreatingTime, q.Bid, 1);
+                }
+                else if (update is BarRateUpdate)
+                {
+                    var bar = ((BarRateUpdate)update).BidBar;
+                    if (bar != null)
+                        _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                }
             }
         }
 

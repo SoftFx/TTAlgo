@@ -51,9 +51,6 @@ namespace TickTrader.BotTerminal
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; }
         public VarList<OutputGroupViewModel> OutputGroups { get; } = new VarList<OutputGroupViewModel>();
         public Property<string> ChartWindowId { get; } = new Property<string>();
-        public AnnotationCollection Annotations { get; } = new AnnotationCollection();
-        //public VarList<IRenderableSeriesViewModel> DataSeries { get; } = new VarList<IRenderableSeriesViewModel>();
-
         public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
         public ViewportManager ViewportManager { get; } = new ViewportManager();
 
