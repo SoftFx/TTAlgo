@@ -210,6 +210,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
+    <Compile Include="Behaviors\DataGridColumnHide.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />

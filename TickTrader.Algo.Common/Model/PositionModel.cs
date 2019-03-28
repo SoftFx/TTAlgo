@@ -21,12 +21,11 @@ namespace TickTrader.Algo.Common.Model
         private double price;
         private double amount;
         private DateTime? modified;
-        private SymbolModel _symbolModel;
 
         public PositionModel(PositionEntity position, IOrderDependenciesResolver resolver)
         {
             Symbol = position.Symbol;
-            _symbolModel = resolver.GetSymbolOrNull(position.Symbol);
+            SymbolModel = resolver.GetSymbolOrNull(position.Symbol);
             Update(position);
         }
 
@@ -56,6 +55,11 @@ namespace TickTrader.Algo.Common.Model
             Short.ProfitUpdated = OnProfitUpdated;
             Long.MarginUpdated = OnMarginUpdated;
             Short.MarginUpdated = OnMarginUpdated;
+
+            if (Side == OrderSide.Buy)
+                SymbolModel.AskUpdate = OnDeviationPriceUpdate;
+            else
+                SymbolModel.BidUpdate = OnDeviationPriceUpdate;
         }
 
         private void OnProfitUpdated()
@@ -69,9 +73,15 @@ namespace TickTrader.Algo.Common.Model
             NotifyOfPropertyChange(nameof(Margin));
         }
 
+        private void OnDeviationPriceUpdate()
+        {
+            NotifyOfPropertyChange(nameof(DeviationPrice));
+        }
         #region Properties
 
         public string Id { get; private set; }
+
+        public SymbolModel SymbolModel { get; private set; }
 
         public decimal Commission
         {
@@ -134,7 +144,7 @@ namespace TickTrader.Algo.Common.Model
             get { return price; }
             private set
             {
-                if(price != value)
+                if (price != value)
                 {
                     price = value;
                     NotifyOfPropertyChange(nameof(Price));
@@ -144,7 +154,7 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderSide Side
         {
-            get { return side;  }
+            get { return side; }
             private set
             {
                 if (side != value)
@@ -194,9 +204,17 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        public double DeviationPrice
+        {
+            get
+            {
+                double sPrice = (Side == OrderSide.Buy ? SymbolModel.CurrentAsk : SymbolModel.CurrentBid) ?? 0;
+                return Side == OrderSide.Buy ? sPrice - Price : Price - sPrice;
+            }
+        }
+
         public decimal Profit { get { return Long.Profit + Short.Profit; } }
         public decimal? NetProfit => Profit + Commission + Swap;
-                    
         public decimal Margin { get { return Long.Margin + Short.Margin; } }
         public OrderCalculator Calculator { get; set; }
         public PositionSide Long { get; private set; }
@@ -208,10 +226,10 @@ namespace TickTrader.Algo.Common.Model
 
         private double AmountToLots(double volume)
         {
-            if (_symbolModel == null)
+            if (SymbolModel == null)
                 return double.NaN;
 
-            return volume / _symbolModel.LotSize;
+            return volume / SymbolModel.LotSize;
         }
 
         public class PositionSide : IPositionSide
@@ -234,7 +252,7 @@ namespace TickTrader.Algo.Common.Model
                     }
                 }
             }
-            
+
             public decimal Profit
             {
                 get { return profit; }

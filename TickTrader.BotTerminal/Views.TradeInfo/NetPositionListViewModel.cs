@@ -18,12 +18,10 @@ namespace TickTrader.BotTerminal
         {
             Positions = model.Positions
                 .OrderBy((id, p) => id)
-                .Select(p => new PositionViewModel(p, symbols.GetOrDefault(p.Symbol)))
+                .Select(p => new PositionViewModel(p))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
-
-            var pos = Positions.FirstOrDefault(); // for test 
         }
 
         protected override bool SupportsAccount(AccountTypes accType)

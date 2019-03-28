@@ -96,8 +96,14 @@ namespace TickTrader.Algo.Common.Model
             BidTracker.Rate = CurrentBid;
             AskTracker.Rate = CurrentAsk;
 
+            BidUpdate?.Invoke();
+            AskUpdate?.Invoke();
+
             RateUpdated(this);
         }
+
+        public Action BidUpdate;
+        public Action AskUpdate;
 
         public bool ValidateAmmount(decimal amount, decimal minVolume, decimal maxVolume, decimal step)
         {
