@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Common.Model
                     }
                 });
 
-            rxBuffer.BatchLinkTo(txBlock, 30);
+            rxBuffer.BatchLinkTo(txBlock, 30).Forget();
         }
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
