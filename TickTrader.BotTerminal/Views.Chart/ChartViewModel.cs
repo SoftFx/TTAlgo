@@ -311,6 +311,11 @@ namespace TickTrader.BotTerminal
             UiLock.Release();
         }
 
+        private void Chart_TimeframeChanged()
+        {
+            ChartControl.SetTimeframe(Chart.TimeFrame);
+        }
+
         private void TimeAxis_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
@@ -374,7 +379,9 @@ namespace TickTrader.BotTerminal
             //ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
             ChartControl.BindAxis(Chart.TimeAxis);
             ChartControl.BindCurrentRate(Chart.CurrentRate);
+            ChartControl.SetTimeframe(Chart.TimeFrame);
 
+            Chart.TimeframeChanged += Chart_TimeframeChanged;
             Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;
@@ -384,6 +391,7 @@ namespace TickTrader.BotTerminal
         private void DeinitChart()
         {
             //Chart.TimeAxis.PropertyChanged -= TimeAxis_PropertyChanged;
+            Chart.TimeframeChanged -= Chart_TimeframeChanged;
             Chart.ParamsLocked -= Chart_ParamsLocked;
             Chart.ParamsUnlocked -= Chart_ParamsUnlocked;
             Chart.Indicators.Updated -= Indicators_Updated;

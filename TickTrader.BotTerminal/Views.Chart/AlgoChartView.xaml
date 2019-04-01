@@ -74,10 +74,12 @@
 
                             <s:SciChartSurface.ChartModifier>
                                 <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId.Value}">
-                                    <s:YAxisDragModifier IsEnabled="False"/>
+                                    <!--<s:YAxisDragModifier IsEnabled="False"/>-->
                                     <l:XDragModifier/>
                                     <l:ZoomControl MinZoomScale="{Binding MinZoom}" MaxZoomScale="{Binding MaxZoom}"
                                                    ZoomScale="{Binding Zoom.Value, Mode=TwoWay}" />
+                                    <l:StockLabelModifier Timeframe="{Binding Timeframe.Value}"/>
+                                    <l:PixelTickModifier MinDelta="75"/>
                                     <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
                                     <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
                                     <s:TooltipModifier ShowTooltipOn="Always"/>
@@ -94,8 +96,9 @@
 
                             <s:SciChartSurface.YAxis>
                                 <s:NumericAxis Style="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
-                                                   TextFormatting="{Binding YAxisLabelFormat.Value}" CursorTextFormatting="{Binding YAxisLabelFormat.Value}"
-                                                   AutoRange="Always">
+                                               TextFormatting="{Binding YAxisLabelFormat.Value}" CursorTextFormatting="{Binding YAxisLabelFormat.Value}"
+                                               FontSize="10"
+                                               AutoRange="Always">
                                 </s:NumericAxis>
                             </s:SciChartSurface.YAxis>
 

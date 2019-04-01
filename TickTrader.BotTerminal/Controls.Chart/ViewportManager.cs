@@ -15,7 +15,7 @@ namespace TickTrader.BotTerminal
 {
     class ViewportManager : DefaultViewportManager
     {
-        private double _selectedZoom;
+        private double _selectedZoom = 1;
 
         public XDragModifier XDragModifier { get; internal set; }
 
@@ -36,12 +36,15 @@ namespace TickTrader.BotTerminal
         public double MaxZoom { get; set; }
 
         public event Action ZoomScaleChanged;
+        public event Action<ViewportManager, IAxis> AxisRangeUpdated;
 
         protected override IRange OnCalculateNewXRange(IAxis xAxis)
         {
             var dataRange = (IndexRange)xAxis.DataRange;
             var visRange = (IndexRange)xAxis.VisibleRange;
             var viewWidth = xAxis.Width;
+
+            IRange result = null;
 
             if (viewWidth != 0 && dataRange != null && visRange != null)
             {
@@ -54,10 +57,15 @@ namespace TickTrader.BotTerminal
                 }
 
                 if (_selectedZoom != 0)
-                    return RecalculateRange(viewWidth, dataRange, visRange);
+                    result = RecalculateRange(viewWidth, dataRange, visRange);
             }
 
-            return base.OnCalculateNewXRange(xAxis);
+            if (result == null)
+                result = base.OnCalculateNewXRange(xAxis);
+
+            AxisRangeUpdated?.Invoke(this, xAxis);
+
+            return result;
         }
 
         private IndexRange RecalculateRange(double viewWidth, IndexRange dataRange, IndexRange visRange)

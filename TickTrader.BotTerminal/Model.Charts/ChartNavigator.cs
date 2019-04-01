@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
 
         protected override AxisBase CreateAxisInternal()
         {
-            return new CategoryDateTimeAxis() { AutoRange = AutoRange.Never};
+            return new CategoryDateTimeAxis() { AutoRange = AutoRange.Never, FontSize = 10, AutoTicks=false, MajorDelta=2, MinorDelta=1, IsLabelCullingEnabled = false };
         }
 
         public override void Init(int itemsCount, DateTime start, DateTime end)
@@ -164,72 +164,6 @@ namespace TickTrader.BotTerminal
                     VisibleRange = new DateRange(pageStart, end);
                 }
             }
-        }
-    }
-
-    public class DynamicLableProvider : TradeChartAxisLabelProvider
-    {
-        private DateTime _previousValue;
-        private bool _isFirstValue = true;
-        private const string _annualTemplate = "d MMM yyyy";
-        private const string _monthlyTemplate = "d MMM";
-        private const string _dailyTemplate = "d MMM HH:mm";
-        private const string _subDailyTemplate = "HH:mm";
-
-        public override void OnBeginAxisDraw()
-        {
-            base.OnBeginAxisDraw();
-            _previousValue = DateTime.MinValue;
-            _isFirstValue = true;
-        }
-
-
-        public override string FormatLabel(IComparable dataValue)
-        {
-            var currentValue = (DateTime)dataValue;
-            var range = ParentAxis.VisibleRange;
-            var template = "";
-
-            if (_isFirstValue)
-            {
-                template = _annualTemplate;
-                _isFirstValue = false;
-            }
-            else
-            {
-                if (DifferentYears(currentValue, _previousValue))
-                {
-                    template = _annualTemplate;
-                }
-                else if (DifferentMonths(currentValue, _previousValue) || DifferentDays(currentValue, _previousValue))
-                {
-                    template = IsBeginningOfDay(currentValue) ? _monthlyTemplate : _dailyTemplate;
-                }
-                else
-                {
-                    template = _subDailyTemplate;
-                }
-            }
-
-            _previousValue = (DateTime)dataValue;
-            return currentValue.ToString(template);
-        }
-
-        private bool DifferentDays(DateTime date1, DateTime date2)
-        {
-            return date1.DayOfYear != date2.DayOfYear;
-        }
-        private bool DifferentMonths(DateTime date1, DateTime date2)
-        {
-            return date1.Month != date2.Month;
-        }
-        private bool DifferentYears(DateTime date1, DateTime date2)
-        {
-            return date1.Year - date2.Year != 0;
-        }
-        private bool IsBeginningOfDay(DateTime dt)
-        {
-            return dt.TimeOfDay == TimeSpan.FromHours(0);
         }
     }
 }

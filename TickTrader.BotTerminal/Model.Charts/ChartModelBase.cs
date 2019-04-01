@@ -58,6 +58,7 @@ namespace TickTrader.BotTerminal
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
         private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
+        private Api.TimeFrames _timeframe;
 
         public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
         {
@@ -104,7 +105,19 @@ namespace TickTrader.BotTerminal
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
-        public abstract Api.TimeFrames TimeFrame { get; }
+        public Api.TimeFrames TimeFrame
+        {
+            get => _timeframe;
+            set
+            {
+                if (_timeframe != value)
+                {
+                    _timeframe = value;
+                    TimeframeChanged?.Invoke();
+                }
+            }
+        }
+
         public abstract ITimeVectorRef TimeSyncRef { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
@@ -116,6 +129,8 @@ namespace TickTrader.BotTerminal
         public string SymbolCode { get { return Model.Name; } }
         public Var<Api.RateUpdate> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
+
+        public event System.Action TimeframeChanged;
 
         protected void Activate()
         {

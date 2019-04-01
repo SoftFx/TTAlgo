@@ -70,6 +70,8 @@ namespace TickTrader.BotTerminal
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
 
+            ChartControlModel.SetTimeframe(backtester.MainTimeframe);
+
             if (visualizing)
             {
                 backtester.OutputDataMode = TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime;
