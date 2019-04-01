@@ -15,11 +15,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
-using NLog.Extensions.Logging;
-using NLog.Web;
 using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
@@ -67,16 +66,31 @@ namespace TickTrader.BotAgent.WebAdmin
 
             services.AddSwaggerGen();
             services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(jwtOptions =>
+            {
+                jwtOptions.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-            loggerFactory.AddNLog();
-            app.AddNLogWeb();
+            appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
 
-            appLifeTime.ApplicationStopping.Register(() => Shutdown(services, loggerFactory));
-
-            LogUnhandledExceptions(loggerFactory);
+            LogUnhandledExceptions(services);
 
             if (env.IsDevelopment())
             {
@@ -95,26 +109,14 @@ namespace TickTrader.BotAgent.WebAdmin
             }
 
             app.UseStaticFiles();
+            app.UseHttpsRedirection();
 
             app.UseJwtAuthentication();
 
             app.ObserveBotAgent();
             app.UseWardenOverBots();
 
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }
-            });
+            app.UseAuthentication();
 
             app.UseSignalR();
 
@@ -130,10 +132,11 @@ namespace TickTrader.BotAgent.WebAdmin
             });
         }
 
-        private void Shutdown(IServiceProvider services, ILoggerFactory loggerFactory)
+        private void Shutdown(IServiceProvider services)
         {
             var server = services.GetRequiredService<IBotAgent>();
             var protocolServer = services.GetRequiredService<ProtocolServer>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
             protocolServer.Stop();
             server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
@@ -142,8 +145,9 @@ namespace TickTrader.BotAgent.WebAdmin
             logger.LogInformation("Web host stopped");
         }
 
-        private void LogUnhandledExceptions(ILoggerFactory loggerFactory)
+        private void LogUnhandledExceptions(IServiceProvider services)
         {
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("AppDomain.UnhandledException");
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {

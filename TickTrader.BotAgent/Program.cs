@@ -15,6 +15,8 @@ using NLog;
 using System.Globalization;
 using ActorSharp;
 using TickTrader.BotAgent.WebAdmin.Server.Protocol;
+using NLog.Web;
+using NLog.Extensions.Logging;
 
 namespace TickTrader.BotAgent
 {
@@ -62,10 +64,18 @@ namespace TickTrader.BotAgent
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
-                    .UseKestrel(options => options.UseHttps(cert))
+                    .UseKestrel()
+                    .ConfigureKestrel((context, options) =>
+                        options.ConfigureHttpsDefaults(httpsOptions =>
+                        {
+                            httpsOptions.ServerCertificate = cert;
+                            httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls;
+                        }))
                     .UseContentRoot(pathToContentRoot)
                     .UseWebRoot(pathToWebRoot)
                     .UseStartup<Startup>()
+                    .UseNLog()
+                    .ConfigureLogging(logging => logging.AddNLog())
                     .AddBotAgent(agent)
                     .AddProtocolServer(protocolServer)
                     .Build();
