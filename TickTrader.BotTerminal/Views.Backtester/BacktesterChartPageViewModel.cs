@@ -71,6 +71,7 @@ namespace TickTrader.BotTerminal
             _markerSeries.DataSeries = _barVector.MarkersData;
 
             ChartControlModel.SetTimeframe(backtester.MainTimeframe);
+            ChartControlModel.SymbolInfo.Value = mainSymbol;
 
             if (visualizing)
             {

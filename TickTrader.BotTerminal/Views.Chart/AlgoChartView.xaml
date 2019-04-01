@@ -25,12 +25,16 @@
         <Setter Property="StrokeThickness" Value="0.6"/>
         <Setter Property="LabelPlacement" Value="Axis"/>
         <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="10"/>
     </Style>
 
     <Style x:Key="AskBidAxisMarkerStyle" TargetType="s:AxisMarkerAnnotation">
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="White"/>
+        <Setter Property="MarkerPointWidth" Value="4"/>
+        <Setter Property="IsEditable" Value="False"/>
     </Style>
 
     <DataTemplate DataType="{x:Type UIElement}">
