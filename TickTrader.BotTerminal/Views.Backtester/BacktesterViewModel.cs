@@ -413,7 +413,7 @@ namespace TickTrader.BotTerminal
             var accType = _settings.AccType;
             var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
-            ChartPage.Append(accType, record.OrderId, trRep);
+            ChartPage.Append(accType, trRep);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)

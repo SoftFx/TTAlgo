@@ -109,10 +109,18 @@ namespace TickTrader.BotTerminal
                     new Point(left, center.Y),
                 };
 
+            var diamondPoints = new[]
+               {
+                    new Point(center.X, top),
+                    new Point(right, center.Y),
+                    new Point(center.X, bottom),
+                    new Point(left, center.Y),
+                    new Point(center.X, top),
+                };
+
+            context.DrawLines(stroke, diamondPoints);
             context.FillPolygon(fillUp, upTriangelPoints);
-            context.FillPolygon(fillUp, downTrianglePoints);
-            context.DrawLines(stroke, upTriangelPoints);
-            context.DrawLines(stroke, downTrianglePoints);
+            context.FillPolygon(fillDown, downTrianglePoints);
         }
 
         private void DrawUpArrow(IRenderContext2D context, Point center, double width, double height, IPen2D stroke, IBrush2D fill)
@@ -179,14 +187,14 @@ namespace TickTrader.BotTerminal
 
     internal class PositionMarkerMetadatda : IPointMetadata
     {
-        private Dictionary<string, string> _ordeEntires = new Dictionary<string, string>();
+        private SortedDictionary<long, string> _ordeEntires = new SortedDictionary<long, string>();
 
-        public PositionMarkerMetadatda(string orderId, string description, bool isBuy)
+        public PositionMarkerMetadatda(long orderId, string description, bool isBuy)
         {
             AddRecord(orderId, description, isBuy);
         }
 
-        public void AddRecord(string orderId, string description, bool isBuy)
+        public void AddRecord(long orderId, string description, bool isBuy)
         {
             if (isBuy)
                 HasBuySide = true;
@@ -196,7 +204,7 @@ namespace TickTrader.BotTerminal
             _ordeEntires.Add(orderId, description);
         }
 
-        public bool HasRecordFor(string orderId)
+        public bool HasRecordFor(long orderId)
         {
             return _ordeEntires.ContainsKey(orderId);
         }
