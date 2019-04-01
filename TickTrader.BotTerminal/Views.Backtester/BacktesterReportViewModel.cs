@@ -105,12 +105,12 @@ namespace TickTrader.BotTerminal
             if (pluginType == AlgoTypes.Robot)
             {
                 SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
-                .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns)
-                .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns));
+                    .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns, false)
+                    .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns, false));
 
                 SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
-                    .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns)
-                    .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns));
+                    .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns, true)
+                    .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns, true));
             }
         }
 

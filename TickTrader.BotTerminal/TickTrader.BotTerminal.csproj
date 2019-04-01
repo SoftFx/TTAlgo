@@ -228,6 +228,7 @@
     <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
     <Compile Include="Controls.Chart\AxisModifierBase.cs" />
+    <Compile Include="Controls.Chart\DayNameLabelProvider.cs" />
     <Compile Include="Controls.Chart\PixelTickModifier.cs" />
     <Compile Include="Controls.Chart\PositionMarker.cs" />
     <Compile Include="Controls.Chart\StockLabelProvider.cs" />
