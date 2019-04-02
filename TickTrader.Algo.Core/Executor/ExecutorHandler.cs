@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core
         private ISynchronizationContext _syncContext;
         private BufferBlock<object> _updateBuffer;
         private ActionBlock<object[]> _updateSender;
-        private CancellationTokenSource _stopSrc;
+        private Task _batchJob;
 
         public ExecutorHandler(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
@@ -30,15 +30,15 @@ namespace TickTrader.Algo.Core
             Core.OnUpdate = EnqueueUpdate;
         }
 
-        public void Start()
-        {
-            StartCollection();
-        }
+        //public void Start()
+        //{
+        //    StartCollection();
+        //}
 
-        public void Stop()
-        {
-            StopCollection().Wait();
-        }
+        //public void Stop()
+        //{
+        //    StopCollection().Wait();
+        //}
 
         //public async Task Stop()
         //{
@@ -58,33 +58,32 @@ namespace TickTrader.Algo.Core
         public event Action<BarEntity, SeriesUpdateActions> EquityUpdated;
         public event Action<BarEntity, SeriesUpdateActions> MarginUpdated;
         public event Action<IDataSeriesUpdate> OutputUpdate;
+        public event Action<Exception> ErrorOccurred;
 
-        private void StartCollection()
+        internal void StartCollection()
         {
             var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
-            var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
+            var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30, SingleProducerConstrained = true };
 
-            _stopSrc = new CancellationTokenSource();
             _updateBuffer = new BufferBlock<object>(bufferOptions);
             _updateSender = new ActionBlock<object[]>(msgList => _syncContext.Invoke(() => MarshalUpdates(msgList)), senderOptions);
 
-            _updateBuffer.BatchLinkTo(_updateSender, 30);
+            _batchJob = _updateBuffer.BatchLinkTo(_updateSender, 30);
         }
 
-        private async Task StopCollection()
+        internal async Task StopCollection()
         {
             try
             {
                 _updateBuffer.Complete();
                 await _updateBuffer.Completion;
-                //await Task.Delay(100);
-                _stopSrc.Cancel();
+                await _batchJob;
                 _updateSender.Complete();
                 await _updateSender.Completion;
             }
             catch (Exception ex)
             {
-                //_context.OnInternalException(ex);
+                ErrorOccurred?.Invoke(ex);
             }
         }
 
@@ -103,6 +102,7 @@ namespace TickTrader.Algo.Core
                 }
                 catch (Exception ex)
                 {
+                    ErrorOccurred?.Invoke(ex);
                 }
             }
         }

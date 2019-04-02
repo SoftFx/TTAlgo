@@ -99,7 +99,7 @@
                     <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="1" Grid.Row="2" IsReadOnly="True"/>
 
                     <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="2" Grid.Row="2" cal:Message.Attach="OpenTradeSetup"
-                            IsEnabled="{Binding IsTradeBotSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
+                            Style="{StaticResource SideButtonStyle}"/>
 
                     <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="3" Grid.ColumnSpan="3"/>
 

@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core.Lib
 {
     public static class Dataflow
     {
-        public static async void BatchLinkTo<T>(this IReceivableSourceBlock<T> input, ITargetBlock<T[]> output, int batchSize)
+        public static async Task BatchLinkTo<T>(this IReceivableSourceBlock<T> input, ITargetBlock<T[]> output, int batchSize)
         {
             CancellationTokenSource cancelReceiveSrc = new CancellationTokenSource();
 
@@ -41,6 +41,9 @@ namespace TickTrader.Algo.Core.Lib
 
                     buffer.Clear();
                 }
+
+                if (buffer.Count > 0)
+                    await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
             }
             catch (InvalidOperationException) { /* normal exit */ }
             catch (OperationCanceledException) { /* normal exit */ }
