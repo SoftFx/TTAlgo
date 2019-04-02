@@ -430,6 +430,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Order_OpenPrice##.
+        /// </summary>
+        internal static string Order_OpenPrice {
+            get {
+                return ResourceManager.GetString("Order_OpenPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Order type##.
         /// </summary>
         internal static string Order_OrderType {

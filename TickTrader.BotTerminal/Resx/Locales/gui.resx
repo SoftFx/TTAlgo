@@ -360,4 +360,7 @@
   <data name="PluginError_None" xml:space="preserve">
     <value />
   </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>##Order_OpenPrice##</value>
+  </data>
 </root>

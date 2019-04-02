@@ -333,4 +333,7 @@
   <data name="Tab_Bots" xml:space="preserve">
     <value>Бот-экземпляры</value>
   </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>Open Price</value>
+  </data>
 </root>
