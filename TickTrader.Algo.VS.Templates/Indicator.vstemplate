@@ -2,12 +2,13 @@
 <VSTemplate Version="3.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:sdk="http://schemas.microsoft.com/developer/vstemplate-sdkextension/2010">
   <TemplateData>
     <Name>Indicator</Name>
-    <Description>Creates custom indicator</Description>
+    <Description>Creates custom indicator (ttalgo stub for vs2019 search)</Description>
     <Icon>softfx.ico</Icon>
     <ProjectType>CSharp</ProjectType>
     <RequiredFrameworkVersion>4.5</RequiredFrameworkVersion>
     <SortOrder>1000</SortOrder>
-    <TemplateID>a1128134-65b6-4960-af5a-6470cec3633f</TemplateID>
+    <TemplateID>33e47661-8d13-4022-9fd2-7e453d75cda3</TemplateID>
+    <TemplateGroupID>a1128134-65b6-4960-af5a-6470cec3633f</TemplateGroupID>
     <CreateNewFolder>true</CreateNewFolder>
     <DefaultName>Indicator</DefaultName>
     <ProvideDefaultName>true</ProvideDefaultName>
@@ -25,7 +26,7 @@
   </WizardExtension>
   <WizardData>
     <packages repository="extension" repositoryId="TickTrader.Algo.VS.Package.Company.9322a68f-8411-42e8-8caf-41d5557e5af1">
-      <package id="TickTrader.Algo.Api" version="1.0.16" />
+      <package id="TickTrader.Algo.Api" version="1.0.36" />
     </packages>
   </WizardData>
 </VSTemplate>
