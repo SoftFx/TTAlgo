@@ -64,6 +64,12 @@ namespace TickTrader.BotAgent
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
+                    .ConfigureAppConfiguration(configBuilder =>
+                    {
+                        configBuilder.SetBasePath(pathToContentRoot);
+                        configBuilder.AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true);
+                        configBuilder.AddEnvironmentVariables();
+                    })
                     .UseKestrel()
                     .ConfigureKestrel((context, options) =>
                         options.ConfigureHttpsDefaults(httpsOptions =>

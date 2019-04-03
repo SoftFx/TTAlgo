@@ -24,16 +24,12 @@ namespace TickTrader.BotAgent.WebAdmin
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; private set; }
+        public IConfiguration Configuration { get; private set; }
         private string JwtKey => Configuration.GetJwtKey();
 
         public void ConfigureServices(IServiceCollection services)
