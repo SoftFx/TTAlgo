@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             CloseTime = GetCloseTime(transaction);
             CloseQuantity = GetCloseQuantity(transaction);
             ClosePrice = GetClosePrice(transaction);
-            RemainingQuantity = GetRemainingQuntity(transaction);
+            RemainingQuantity = GetRemainingQuantity(transaction);
             Swap = GetSwap(transaction);
             Commission = GetCommission(transaction);
             CommissionCurrency = GetCommissionCurrency(transaction);
@@ -127,14 +127,6 @@ namespace TickTrader.BotTerminal
             return IsBalanceTransaction ? transaction.TransactionCurrency : transaction.Symbol;
         }
 
-        protected virtual DateTime? CheckIsNull(DateTime dateTime)
-        {
-            if (dateTime.Year == 1970 && dateTime.Month == 1 && dateTime.Day == 1)
-                return null;
-
-            return dateTime;
-        }
-
         protected virtual TransactionSide GetTransactionSide(TradeReportEntity transaction)
         {
             switch (transaction.TradeRecordSide)
@@ -172,7 +164,7 @@ namespace TickTrader.BotTerminal
             return transaction.TransactionCurrency;
         }
 
-        protected virtual double? GetRemainingQuntity(TradeReportEntity transaction)
+        protected virtual double? GetRemainingQuantity(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? (double?)null : (transaction.LeavesQuantity / LotSize);
         }
@@ -273,7 +265,7 @@ namespace TickTrader.BotTerminal
                 IsPosition ? transaction.PosOpenPrice : transaction.Price;
         }
 
-        protected override double? GetRemainingQuntity(TradeReportEntity transaction)
+        protected override double? GetRemainingQuantity(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? (double?)null : IsPosition ? (transaction.PositionLeavesQuantity / LotSize) : (transaction.LeavesQuantity / LotSize);
         }
