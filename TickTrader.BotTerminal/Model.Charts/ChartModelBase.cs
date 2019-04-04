@@ -278,13 +278,14 @@ namespace TickTrader.BotTerminal
         {
             TimelineStart = startDate;
             TimelineEnd = endDate;
-            Navigator.Init(count, startDate, endDate);
+            //Navigator.Init(count, startDate, endDate);
+            Navigator.OnDataLoaded(count, startDate, endDate);
         }
 
         protected void ExtendBoundaries(int count, DateTime endDate)
         {
             TimelineEnd = endDate;
-            Navigator.Extend(count, endDate);
+            //Navigator.Extend(count, endDate);
         }
 
         private void Connection_Disconnected()

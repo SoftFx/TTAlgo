@@ -67,103 +67,124 @@ namespace TickTrader.BotTerminal
             return axis;
         }
 
-        public abstract void Init(int itemsCount, DateTime start, DateTime end);
-        public abstract void Extend(int newCount, DateTime newEnd);
+        //public abstract void Init(int itemsCount, DateTime start, DateTime end);
+        //public abstract void Extend(int newCount, DateTime newEnd);
+        public abstract void OnDataLoaded(int itemsCount, DateTime start, DateTime end);
 
         protected abstract AxisBase CreateAxisInternal();
     }
 
     internal class UniformChartNavigator : ChartNavigator
     {
-        private int defPageSize = 100;
-        private int itemsCount;
+        //private int defPageSize = 100;
+        //private int itemsCount;
 
         protected override AxisBase CreateAxisInternal()
         {
-            return new CategoryDateTimeAxis() { AutoRange = AutoRange.Never, FontSize = 10, AutoTicks=false, MajorDelta=2, MinorDelta=1, IsLabelCullingEnabled = false };
-        }
-
-        public override void Init(int itemsCount, DateTime start, DateTime end)
-        {
-            this.itemsCount = itemsCount;
-
-            if (itemsCount < defPageSize)
-                this.VisibleRange = new IndexRange(0, itemsCount - 1);
-            else
+            return new CategoryDateTimeAxis()
             {
-                int pageStart = itemsCount - defPageSize - 1;
-
-                //if (pageStart < 0)
-                //    VisibleRangeLimit = new IndexRange(pageStart, itemsCount - 1);
-                //else
-                //    VisibleRangeLimit = new IndexRange(0, itemsCount - 1);
-
-                this.VisibleRange = new IndexRange(pageStart, itemsCount - 1);
-            }
+                AutoRange = AutoRange.Never,
+                FontSize = 10,
+                AutoTicks = false,
+                MajorDelta = 2,
+                MinorDelta = 1,
+                IsLabelCullingEnabled = false
+            };
         }
 
-        public override void Extend(int newCount, DateTime newEnd)
+        public override void OnDataLoaded(int itemsCount, DateTime start, DateTime end)
         {
-            //var rangeLimit = VisibleRangeLimit as IndexRange;
-            //if (rangeLimit != null)
-            //    VisibleRangeLimit = new IndexRange(rangeLimit.Min, newCount - 1);
+            //VisibleRange = null;
 
-            var range = VisibleRange as IndexRange;
-            if (range != null)
-            {
-                bool watchingEnd = itemsCount == 0 || range.Max == this.itemsCount - 1;
-
-                this.itemsCount = newCount;
-
-                if (watchingEnd)
-                {
-                    int min = itemsCount - range.Diff - 1;
-                    int max = itemsCount - 1;
-                    if (range.Min != min || range.Max != max)
-                        VisibleRange = new IndexRange(min, itemsCount - 1);
-                }
-            }
+            if (itemsCount > 0)
+                VisibleRange = new IndexRange(0, itemsCount + 500);
         }
+
+        //public override void Init(int itemsCount, DateTime start, DateTime end)
+        //{
+        //    this.itemsCount = itemsCount;
+
+        //    if (itemsCount < defPageSize)
+        //        this.VisibleRange = new IndexRange(0, itemsCount - 1);
+        //    else
+        //    {
+        //        int pageStart = itemsCount - defPageSize - 1;
+
+        //        //if (pageStart < 0)
+        //        //    VisibleRangeLimit = new IndexRange(pageStart, itemsCount - 1);
+        //        //else
+        //        //    VisibleRangeLimit = new IndexRange(0, itemsCount - 1);
+
+        //        this.VisibleRange = new IndexRange(pageStart, itemsCount - 1);
+        //    }
+        //}
+
+        //public override void Extend(int newCount, DateTime newEnd)
+        //{
+        //    //var rangeLimit = VisibleRangeLimit as IndexRange;
+        //    //if (rangeLimit != null)
+        //    //    VisibleRangeLimit = new IndexRange(rangeLimit.Min, newCount - 1);
+
+        //    var range = VisibleRange as IndexRange;
+        //    if (range != null)
+        //    {
+        //        bool watchingEnd = itemsCount == 0 || range.Max == this.itemsCount - 1;
+
+        //        this.itemsCount = newCount;
+
+        //        if (watchingEnd)
+        //        {
+        //            int min = itemsCount - range.Diff - 1;
+        //            int max = itemsCount - 1;
+        //            if (range.Min != min || range.Max != max)
+        //                VisibleRange = new IndexRange(min, itemsCount - 1);
+        //        }
+        //    }
+        //}
     }
 
     internal class RealTimeChartNavigator : ChartNavigator
     {
-        private TimeSpan defPageSize = TimeSpan.FromMinutes(2);
-        private DateTime start;
-        private DateTime end;
+        //private TimeSpan defPageSize = TimeSpan.FromMinutes(2);
+        //private DateTime start;
+        //private DateTime end;
 
         protected override AxisBase CreateAxisInternal()
         {
             return new DateTimeAxis();
         }
 
-        public override void Init(int itemsCount, DateTime start, DateTime end)
+        public override void OnDataLoaded(int itemsCount, DateTime start, DateTime end)
         {
-            this.start = start;
-            this.end = end;
-            var pageStart = end - defPageSize;
-            this.VisibleRange = new DateRange(pageStart, end);
         }
 
-        public override void Extend(int newCount, DateTime newEnd)
-        {
-            if (newEnd <= end)
-                return;
+        //public override void Init(int itemsCount, DateTime start, DateTime end)
+        //{
+        //    this.start = start;
+        //    this.end = end;
+        //    var pageStart = end - defPageSize;
+        //    this.VisibleRange = new DateRange(pageStart, end);
+        //}
 
-            var range = VisibleRange as DateRange;
-            if (range != null)
-            {
-                bool watchingEnd = range.Max >= end;
+        //public override void Extend(int newCount, DateTime newEnd)
+        //{
+        //    if (newEnd <= end)
+        //        return;
 
-                this.end = newEnd;
+        //    var range = VisibleRange as DateRange;
+        //    if (range != null)
+        //    {
+        //        bool watchingEnd = range.Max >= end;
 
-                if (watchingEnd)
-                {
-                    var diff = range.Max - range.Min;
-                    var pageStart = end - diff;
-                    VisibleRange = new DateRange(pageStart, end);
-                }
-            }
-        }
+        //        this.end = newEnd;
+
+        //        if (watchingEnd)
+        //        {
+        //            var diff = range.Max - range.Min;
+        //            var pageStart = end - diff;
+        //            VisibleRange = new DateRange(pageStart, end);
+        //        }
+        //    }
+        //}
     }
 }

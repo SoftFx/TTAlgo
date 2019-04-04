@@ -53,6 +53,7 @@ namespace TickTrader.BotTerminal
             ChartControlModel = new AlgoChartViewModel(_mainSeriesCollection);
             ChartControlModel.TimeAxis.Value = _navigator.CreateAxis();
             ChartControlModel.ChartWindowId.Value = Guid.NewGuid().ToString();
+            ChartControlModel.ShowScrollbar = true;
         }
 
         public AlgoChartViewModel ChartControlModel { get; }

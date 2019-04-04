@@ -48,6 +48,7 @@
         <Separator/>
 
         <MenuItem Header="Crosshair" IsCheckable="True" IsChecked="{Binding ChartControl.IsCrosshairEnabled.Value}"/>
+        <MenuItem Header="AutoScroll" IsCheckable="True" IsChecked="{Binding ChartControl.AutoScroll.Value}"/>
 
         <Separator/>
 

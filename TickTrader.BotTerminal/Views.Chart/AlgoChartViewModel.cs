@@ -32,6 +32,7 @@ namespace TickTrader.BotTerminal
             var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
             var allPanes = OutputGroups.Chain().SelectMany(i => i.Panes);
 
+            DataSeries = dataSeries.AsObservable();
             Series = allSeries.AsObservable();
             Panes = allPanes.AsObservable();
 
@@ -47,14 +48,15 @@ namespace TickTrader.BotTerminal
 
             InitZoom();
         }
-
+        
+        public IReadOnlyList<IRenderableSeriesViewModel> DataSeries { get; }
         public IReadOnlyList<OutputPaneViewModel> Panes { get; }
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; }
         public VarList<OutputGroupViewModel> OutputGroups { get; } = new VarList<OutputGroupViewModel>();
         public Property<string> ChartWindowId { get; } = new Property<string>();
+        public BoolProperty AutoScroll { get; } = new BoolProperty();
         public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
-        public ViewportManager ViewportManager { get; } = new ViewportManager();
-
+        public bool ShowScrollbar { get; set; }
         public object Overlay { get; set; }
 
         public BoolProperty IsCrosshairEnabled { get; } = new BoolProperty();

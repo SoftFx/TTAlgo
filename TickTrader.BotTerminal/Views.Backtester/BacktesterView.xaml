@@ -153,7 +153,9 @@
                     <Separator/>
                     <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
                                   Margin="3,0,0,0" IsChecked="{Binding ChartPage.ChartControlModel.IsCrosshairEnabled.Value}"/>
-                </ToolBar>
+                    <ToggleButton Content="{DynamicResource AutoScrollToolIcon}" ToolTip="Auto-scroll to new data" IsChecked="{Binding ChartPage.ChartControlModel.AutoScroll.Value, Mode=TwoWay}"
+                                  Margin="3,0,0,0" l:Icon.Fill="Black"/>
+                    </ToolBar>
 
                 <TabControl Name="tabBody" Grid.Row="1" Margin="5">
                     <TabItem Header="Setup">
