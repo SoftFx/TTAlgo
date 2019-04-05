@@ -17,6 +17,7 @@ using ActorSharp;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using TickTrader.Algo.Common.Info;
+using TradeTransactionReason = TickTrader.FDK.Common.TradeTransactionReason;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -943,6 +944,35 @@ namespace TickTrader.Algo.Common.Model
             return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
         }
 
+        public static Core.TradeTransactionReason Convert(TradeTransactionReason reason)
+        {
+            switch (reason)
+            {
+                case TradeTransactionReason.ClientRequest:
+                    return Core.TradeTransactionReason.ClientRequest;
+                case TradeTransactionReason.DealerDecision:
+                    return Core.TradeTransactionReason.DealerDecision;
+                case TradeTransactionReason.DeleteAccount:
+                    return Core.TradeTransactionReason.DeleteAccount;
+                case TradeTransactionReason.Expired:
+                    return Core.TradeTransactionReason.Expired;
+                case TradeTransactionReason.PendingOrderActivation:
+                    return Core.TradeTransactionReason.PendingOrderActivation;
+                case TradeTransactionReason.Rollover:
+                    return Core.TradeTransactionReason.Rollover;
+                case TradeTransactionReason.StopLossActivation:
+                    return Core.TradeTransactionReason.StopLossActivation;
+                case TradeTransactionReason.StopOut:
+                    return Core.TradeTransactionReason.StopOut;
+                case TradeTransactionReason.TakeProfitActivation:
+                    return Core.TradeTransactionReason.TakeProfitActivation;
+                case TradeTransactionReason.TransferMoney:
+                    return Core.TradeTransactionReason.TransferMoney;
+                default:
+                    return Core.TradeTransactionReason.None;
+            }
+        }
+
         public static TradeReportEntity Convert(TradeTransactionReport report)
         {
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
@@ -1032,6 +1062,8 @@ namespace TickTrader.Algo.Common.Model
                 UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
                 UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
+                ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
+                TradeTransactionReason = Convert(report.TradeTransactionReason),
             };
         }
 

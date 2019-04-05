@@ -11,10 +11,17 @@ namespace TickTrader.BotTerminal
 {
     abstract class TransactionReport
     {
-        public enum AggregatedTransactionType { Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit }
+        public enum AggregatedTransactionType { Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit, SellStopLimitCanceled,
+            SellStopCanceled, SellLimitCanceled, BuyStopLimitCanceled, BuyStopCanceled, BuyLimitCanceled }
+
         public enum TransactionSide { None = -1, Buy, Sell }
 
+        public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
+
+        public enum OrderExecutionOptions { None = -1, IoC, MarketWithSlippage, HiddenIceberg}
+
         public TransactionReport() { }
+
         public TransactionReport(TradeReportEntity transaction, SymbolModel symbol)
         {
             PriceDigits = symbol?.PriceDigits ?? 5;
@@ -53,6 +60,10 @@ namespace TickTrader.BotTerminal
             Volume = GetVolume(transaction);
             ReqQauntity = GetReqQuantity(transaction);
             PosRemainingPrice = GetPosRemainingPrice(transaction);
+            OrderExecutionOption = GetOrderExecutionOption(transaction);
+            InitialType = GetInitialOrderType(transaction);
+            Reason = GetReason(transaction);
+            Slippage = GetSlippage(transaction);
             // should be last (it's based on other fields)
             UniqueId = GetUniqueId(transaction);
         }
@@ -107,6 +118,9 @@ namespace TickTrader.BotTerminal
         public double? Slippage { get; protected set; }
         public double? ReqQauntity { get; protected set; }
         public double? PosRemainingPrice { get; protected set; }
+        public OrderExecutionOptions? OrderExecutionOption { get; protected set; }
+        public OrderType? InitialType { get; protected set; }
+        public Reasons? Reason { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -240,19 +254,93 @@ namespace TickTrader.BotTerminal
             return IsBalanceTransaction ? (double?)null : (transaction.PositionQuantity / LotSize);
         }
 
-        //protected virtual double? GetSlippage(TradeReportEntity transaction)
-        //{
-        //    return IsBalanceTransaction ? (double?)null : transaction.Sli
-        //}
+        protected virtual double? GetSlippage(TradeReportEntity transaction)
+        {
+            if (IsBalanceTransaction)
+                return null;
+
+            return GetTransactionSide(transaction) == TransactionSide.Buy ? OpenPrice - transaction.PosRemainingPrice : transaction.PosRemainingPrice - OpenPrice;
+        }
 
         protected virtual double? GetReqQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? (double?)null : (transaction.ReqOpenQuantity / LotSize);
+            return IsBalanceTransaction ? null : (transaction.ReqOpenQuantity / LotSize);
         }
 
         protected virtual double? GetPosRemainingPrice(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? (double?)null : transaction.PosRemainingPrice;
+            return IsBalanceTransaction ? null : transaction.PosRemainingPrice;
+        }
+
+        protected virtual OrderExecutionOptions? GetOrderExecutionOption(TradeReportEntity transaction)
+        {
+            if (transaction.ImmediateOrCancel)
+                return OrderExecutionOptions.IoC;
+
+            if (transaction.MarketWithSlippage)
+                return OrderExecutionOptions.MarketWithSlippage;
+
+            if (transaction.MaxVisibleQuantity == 0)
+                return OrderExecutionOptions.HiddenIceberg;
+
+            return null;
+        }
+
+        protected virtual OrderType? GetInitialOrderType(TradeReportEntity transaction)
+        {
+            return IsBalanceTransaction ? null : (OrderType?)transaction.ReqOrderType;
+        }
+
+        protected virtual Reasons? GetReason(TradeReportEntity transaction)
+        {
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision)
+                return Reasons.DealerDecision;
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
+                return Reasons.StopOut;
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
+                transaction.TradeRecordType == OrderType.StopLimit)
+                return Reasons.Activated;
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.ClientRequest)
+                Type = GetCanceledType(transaction);
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision)
+            {
+                Type = GetCanceledType(transaction);
+                return Reasons.CanceledByDealer;
+            }
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
+            {
+                Type = GetCanceledType(transaction);
+                return Reasons.StopOut;
+            }
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderExpired && transaction.TradeTransactionReason == TradeTransactionReason.Expired)
+            {
+                Type = GetCanceledType(transaction);
+                return Reasons.Expired;
+            }
+
+            return null;
+        }
+
+        protected AggregatedTransactionType GetCanceledType(TradeReportEntity transaction)
+        {
+            switch (transaction.TradeRecordType)
+            {
+                case OrderType.Market:
+                case OrderType.Position:
+                case OrderType.Limit:
+                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
+                case OrderType.StopLimit:
+                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopLimitCanceled : AggregatedTransactionType.SellStopLimitCanceled;
+                case OrderType.Stop:
+                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopCanceled : AggregatedTransactionType.SellStopCanceled;
+                default: return AggregatedTransactionType.Unknown;
+            }
         }
     }
 
@@ -351,7 +439,7 @@ namespace TickTrader.BotTerminal
 
         protected override double? GetCloseQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? (double?) null : transaction.OrderLastFillAmount;
+            return IsBalanceTransaction ? (double?)null : transaction.OrderLastFillAmount;
         }
     }
 }
