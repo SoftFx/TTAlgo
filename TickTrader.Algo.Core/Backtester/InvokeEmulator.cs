@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Core
         private bool _normalStopFlag;
         private bool _canelRequested;
         private bool _pauseRequested;
+        private bool _stopPhase;
         private Exception _fatalError;
         private Action _exStartAction;
         private Action _extStopAction;
@@ -203,6 +204,7 @@ namespace TickTrader.Algo.Core
             _extStopAction();
             //EmulateStop();
             //EnableStopPhase();
+            _stopPhase = true;
             EmulateEvents();
         }
 
@@ -523,10 +525,13 @@ namespace TickTrader.Algo.Core
 
         private object DequeueUpcoming(out bool isTrade)
         {
-            if (_feedReader.IsCompeted && _delayedQueue.IsEmpty)
+            if (_feedReader.IsCompeted)
             {
-                isTrade = false;
-                return null;
+                if (!_stopPhase || _delayedQueue.IsEmpty)
+                {
+                    isTrade = false;
+                    return null;
+                }
             }
 
             var next = _eventAggr.Dequeue();
