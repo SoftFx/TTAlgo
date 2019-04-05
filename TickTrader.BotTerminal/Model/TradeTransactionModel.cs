@@ -50,7 +50,9 @@ namespace TickTrader.BotTerminal
             StopLoss = GetStopLoss(transaction);
             TakeProfit = GetTakeProfit(transaction);
             MaxVisibleVolume = GetMaxVisibleVolume(transaction);
-
+            Volume = GetVolume(transaction);
+            ReqQauntity = GetReqQuantity(transaction);
+            PosRemainingPrice = GetPosRemainingPrice(transaction);
             // should be last (it's based on other fields)
             UniqueId = GetUniqueId(transaction);
         }
@@ -101,6 +103,10 @@ namespace TickTrader.BotTerminal
         public bool IsBalanceTransaction { get; protected set; }
         public double? MaxVisibleVolume { get; protected set; }
         public double LotSize { get; }
+        public double? Volume { get; protected set; }
+        public double? Slippage { get; protected set; }
+        public double? ReqQauntity { get; protected set; }
+        public double? PosRemainingPrice { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -227,6 +233,26 @@ namespace TickTrader.BotTerminal
         protected virtual double? GetTakeProfit(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? (double?)null : transaction.TakeProfit;
+        }
+
+        protected virtual double? GetVolume(TradeReportEntity transaction)
+        {
+            return IsBalanceTransaction ? (double?)null : (transaction.PositionQuantity / LotSize);
+        }
+
+        //protected virtual double? GetSlippage(TradeReportEntity transaction)
+        //{
+        //    return IsBalanceTransaction ? (double?)null : transaction.Sli
+        //}
+
+        protected virtual double? GetReqQuantity(TradeReportEntity transaction)
+        {
+            return IsBalanceTransaction ? (double?)null : (transaction.ReqOpenQuantity / LotSize);
+        }
+
+        protected virtual double? GetPosRemainingPrice(TradeReportEntity transaction)
+        {
+            return IsBalanceTransaction ? (double?)null : transaction.PosRemainingPrice;
         }
     }
 

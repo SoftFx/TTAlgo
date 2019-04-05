@@ -514,6 +514,7 @@ namespace TickTrader.Algo.Common.Model
                 UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
                 UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
+  
             };
         }
 

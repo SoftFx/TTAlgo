@@ -109,7 +109,7 @@ namespace TickTrader.Algo.Core
         public bool ImmediateOrCancel { get; set; }
         public bool IsReducedOpenCommission { get; set; }
         public double? MinCommissionConversionRate { get; set; }
-
+        public double? Slippage { get; set; }
         #endregion
     }
 }
