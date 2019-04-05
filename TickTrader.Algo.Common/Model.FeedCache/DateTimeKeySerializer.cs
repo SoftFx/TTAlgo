@@ -13,12 +13,12 @@ namespace TickTrader.Algo.Common.Model
 
         public DateTime Deserialize(IKeyReader reader)
         {
-            return new DateTime(reader.ReadBeLong());
+            return new DateTime(reader.ReadBeLong(), DateTimeKind.Utc);
         }
 
         public void Serialize(DateTime key, IKeyBuilder builder)
         {
-            builder.WriteBe(key.Ticks);
+            builder.WriteBe(TimeSlicer.ToUtc(key).Ticks);
         }
     }
 }

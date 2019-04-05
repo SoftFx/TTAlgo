@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Common.Model
             var reader = new LightObjectReader(bytes);
             return reader.ReadFixedSizeArray((r) =>
             {
-                var time = r.ReadDateTime();
+                var time = r.ReadDateTime(DateTimeKind.Utc);
                 var open = r.ReadDouble();
                 var high = r.ReadDouble();
                 var low = r.ReadDouble();

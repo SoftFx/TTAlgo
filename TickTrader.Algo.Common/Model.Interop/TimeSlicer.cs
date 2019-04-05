@@ -12,12 +12,22 @@ namespace TickTrader.Algo.Common.Model
     {
         public static TimeSlicer<BarEntity> GetBarSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<BarEntity>(pageSize, from, to, b => b.OpenTime, b => b.CloseTime);
+            return new TimeSlicer<BarEntity>(pageSize, from, to, b => b.OpenTime, b => ToUtc(b.CloseTime));
         }
 
         public static TimeSlicer<QuoteEntity> GetQuoteSlicer(int pageSize, DateTime? from = null, DateTime? to = null)
         {
-            return new TimeSlicer<QuoteEntity>(pageSize, from, to, b => b.Time);
+            return new TimeSlicer<QuoteEntity>(pageSize, from, to, b => ToUtc(b.Time));
+        }
+
+        public static DateTime ToUtc(DateTime dateTime)
+        {
+            if (dateTime.Kind == DateTimeKind.Utc)
+                return dateTime;
+            else if (dateTime.Kind == DateTimeKind.Unspecified)
+                return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            else
+                return dateTime.ToUniversalTime();
         }
     }
 
