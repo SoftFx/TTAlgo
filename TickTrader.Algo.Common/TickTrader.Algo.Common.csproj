@@ -191,6 +191,7 @@
     <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientModel.cs" />
+    <Compile Include="Model\TimeFrameModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

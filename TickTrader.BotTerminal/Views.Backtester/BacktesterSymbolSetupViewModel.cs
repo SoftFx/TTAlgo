@@ -29,9 +29,9 @@ namespace TickTrader.BotTerminal
             AvailableSymbols = symbols;
 
             if (type == SymbolSetupType.Main)
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>().Where(t => !t.IsTicks());
+                AvailableTimeFrames = TimeFrameModel.BarTimeFrames;
             else
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>();
+                AvailableTimeFrames = TimeFrameModel.AllTimeFrames;
 
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
