@@ -9,7 +9,7 @@
     <Grid>
         <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
             <DataGrid.Resources>
-                <l:DataGridColumnHide x:Key="NPCurrectPriceShow" IsShown="False"/>
+                <l:DataGridColumnHide x:Key="NPCurrectPriceShow" IsShown="False" ColumnKey="CurrentPrice"/>
                 <l:DataGridColumnHide x:Key="NPSwapShow" IsShown="False"/>
             </DataGrid.Resources>
             <DataGrid.ContextMenu>
