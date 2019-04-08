@@ -2,39 +2,35 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
+    <DataTemplate x:Key="SeverityMarkerTemplate">
+        <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10"
+                Background="{Binding Severity, Converter={StaticResource LogSeverityConverter}}"
+                BorderBrush="Black" BorderThickness="1">
+            <Border CornerRadius="5">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0.5,0.5" EndPoint="0,0">
+                        <GradientStop Color="#00FFFFFF" Offset="0.0" />
+                        <GradientStop Color="#AAFFFFFF" Offset="0.5" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+        </Border>
+    </DataTemplate>
+
     <ControlTemplate x:Key="JournalPage.Classic">
         <DataGrid Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding JournalRecords}" IsReadOnly="True"
                   AutoGenerateColumns="False" SelectionMode="Single" CanUserReorderColumns="False" CanUserSortColumns="False"
-                  BorderThickness="0">
+                  BorderThickness="0" HorizontalScrollBarVisibility="Hidden">
             <DataGrid.Columns>
+
+                <DataGridTemplateColumn Header="S" CellTemplate="{StaticResource SeverityMarkerTemplate}" MaxWidth="18" MinWidth="18"/>
 
                 <DataGridTextColumn SortMemberPath="Time" 
                                     Binding="{Binding Time.Timestamp, Converter={StaticResource UtcDateTimeFormat}}"
                                     SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
 
-                <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="3*" ClipboardContentBinding="{Binding Message}">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" CornerRadius="5" Width="10" Height="10" Background="{Binding Severity, Converter={StaticResource LogSeverityConverter}}" BorderBrush="Black" BorderThickness="1">
-                                    <Border CornerRadius="5">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0.5,0.5" EndPoint="0,0">
-                                                <GradientStop Color="#00FFFFFF" Offset="0.0" />
-                                                <GradientStop Color="#AAFFFFFF" Offset="0.5" />
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                    </Border>
-                                </Border>
-                                <TextBlock Grid.Column="1" Text="{Binding Message}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn Binding="{Binding Message}" Header="{l:Resx Journal_Message}" Width="3*"/>
+                
             </DataGrid.Columns>
         </DataGrid>
     </ControlTemplate>
