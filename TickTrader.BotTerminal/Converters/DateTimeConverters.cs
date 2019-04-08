@@ -25,9 +25,9 @@ namespace TickTrader.BotTerminal
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (ConvertToLocal)
-                return ((DateTime?)value)?.ToLocalTime().ToString(Format);
+                return ((DateTime?)value)?.ToLocalTime().ToString("G");
             else
-                return ((DateTime?)value)?.ToString(Format);
+                return ((DateTime?)value)?.ToString("G");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

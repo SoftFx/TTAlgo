@@ -27,7 +27,7 @@
 
                 <DataGridTextColumn SortMemberPath="Time" 
                                     Binding="{Binding Time.Timestamp, Converter={StaticResource UtcDateTimeFormat}}"
-                                    SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="Auto"/>
+                                    SortDirection="Ascending" Header="{l:Resx Journal_Time}" Width="120"/>
 
                 <DataGridTextColumn Binding="{Binding Message}" Header="{l:Resx Journal_Message}" Width="3*"/>
                 
