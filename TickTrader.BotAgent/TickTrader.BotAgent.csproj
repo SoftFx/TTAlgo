@@ -10,6 +10,7 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <PostBuildEvent></PostBuildEvent>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
@@ -94,10 +95,6 @@
       <ContentWithTargetPath Include="@(WebpackGeneratedContent)" TargetPath="%(Identity)" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="bot-agent.pfx" />

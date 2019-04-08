@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent
 
             CoreLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
 
-            var logger = LogManager.GetLogger(nameof(Startup));
+            var logger = LogManager.GetLogger(nameof(Program));
 
             SetupGlobalExceptionLogging(logger);
 
@@ -52,10 +52,17 @@ namespace TickTrader.BotAgent
                     pathToContentRoot = Path.GetDirectoryName(pathToExe);
                 }
 
-                var pathToWebRoot = Path.Combine(pathToContentRoot, "WebAdmin","wwwroot");
+                var pathToWebRoot = Path.Combine(pathToContentRoot, "WebAdmin", "wwwroot");
                 var pathToAppSettings = Path.Combine(pathToContentRoot, "WebAdmin", "appsettings.json");
+                EnsureDefaultConfiguration(pathToAppSettings);
 
-                var config = EnsureDefaultConfiguration(pathToAppSettings);
+                var configBuilder = new ConfigurationBuilder();
+                configBuilder.SetBasePath(Path.Combine(pathToContentRoot, "WebAdmin"));
+                configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                configBuilder.AddEnvironmentVariables();
+                configBuilder.AddCommandLine(args);
+
+                var config = configBuilder.Build();
 
                 var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(), new JwtProvider(config.GetJwtKey()));
                 protocolServer.Start();
@@ -64,12 +71,6 @@ namespace TickTrader.BotAgent
 
                 var host = new WebHostBuilder()
                     .UseConfiguration(config)
-                    .ConfigureAppConfiguration(configBuilder =>
-                    {
-                        configBuilder.SetBasePath(pathToContentRoot);
-                        configBuilder.AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true);
-                        configBuilder.AddEnvironmentVariables();
-                    })
                     .UseKestrel()
                     .ConfigureKestrel((context, options) =>
                         options.ConfigureHttpsDefaults(httpsOptions =>
@@ -102,9 +103,9 @@ namespace TickTrader.BotAgent
         }
 
 
-        private static IConfiguration EnsureDefaultConfiguration(string configFile)
+        private static void EnsureDefaultConfiguration(string configFile)
         {
-            if (!System.IO.File.Exists(configFile))
+            if (!File.Exists(configFile))
             {
                 CreateDefaultConfig(configFile);
             }
@@ -112,12 +113,6 @@ namespace TickTrader.BotAgent
             {
                 MigrateConfig(configFile);
             }
-
-            var builder = new ConfigurationBuilder()
-              .AddJsonFile(configFile, optional: false)
-              .AddEnvironmentVariables();
-
-            return builder.Build();
         }
 
         private static void CreateDefaultConfig(string configFile)
@@ -128,7 +123,7 @@ namespace TickTrader.BotAgent
 
         private static void MigrateConfig(string configFile)
         {
-            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(System.IO.File.ReadAllText(configFile));
+            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(configFile));
 
             var anyChanges = false;
 
@@ -154,7 +149,7 @@ namespace TickTrader.BotAgent
 
         private static void SaveConfig(string configFile, AppSettings appSettings)
         {
-            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
+            File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
         }
 
         //private static void RunConsole()

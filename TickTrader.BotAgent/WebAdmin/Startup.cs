@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
@@ -54,11 +55,13 @@ namespace TickTrader.BotAgent.WebAdmin
             services.AddSingleton(manager);
 
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
-            services.AddMvc().AddJsonOptions(options =>
+            services.AddMvc()
+            .AddJsonOptions(options =>
             {
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
                 options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-            });
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen();
             services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
