@@ -41,4 +41,13 @@ namespace TickTrader.BotTerminal
             return res;
         }
     }
+
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "ColumnState")]
+    internal class ColumnStateStorageEntry : PluginStorageEntry<TradeBotStorageEntry>
+    {
+        [DataMember]
+        public string Key { get; set; }
+        [DataMember]
+        public bool State { get; set; }
+    }
 }

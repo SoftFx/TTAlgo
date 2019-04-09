@@ -9,15 +9,15 @@
     <Grid>
         <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
             <DataGrid.Resources>
-                <l:DataGridColumnHide x:Key="NPCurrectPriceShow" IsShown="False" ColumnKey="CurrentPrice"/>
-                <l:DataGridColumnHide x:Key="NPSwapShow" IsShown="False"/>
+                <l:DataGridColumnHide x:Key="CurrectPriceShow" Provider="{Binding StateProvider}" ColumnKey="CurrentPrice"/>
+                <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
             </DataGrid.Resources>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
                     <Separator/>
-                    <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource NPCurrectPriceShow}}"/>
-                    <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource NPSwapShow}}"/>
+                    <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrectPriceShow}}"/>
+                    <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
@@ -34,7 +34,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate" Visibility="{Binding Visibility, Source={StaticResource NPCurrectPriceShow}}">
+                <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate" Visibility="{Binding Visibility, Source={StaticResource CurrectPriceShow}}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="CurrentPrice.Rate"/>
@@ -50,7 +50,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" Visibility="{Binding Visibility, Source={StaticResource NPSwapShow}}"/>
+                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}"/>
                 <DataGridTextColumn Header="Net P/L" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}">

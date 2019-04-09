@@ -13,7 +13,9 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
-        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
+        private ProfileManager _profileManager;
+
+        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile)
             : base(model, connection)
         {
             Positions = model.Positions
@@ -21,8 +23,17 @@ namespace TickTrader.BotTerminal
                 .Select(p => new PositionViewModel(p))
                 .AsObservable();
 
+            _profileManager = profile;
             Positions.CollectionChanged += PositionsCollectionChanged;
+
+            if (_profileManager != null)
+            {
+                UpdateProvider();
+                _profileManager.ProfileUpdated += UpdateProvider;
+            }
         }
+
+        public ProviderColumnsState StateProvider { get; private set; }
 
         protected override bool SupportsAccount(AccountTypes accType)
         {
@@ -30,6 +41,15 @@ namespace TickTrader.BotTerminal
         }
 
         public IObservableList<PositionViewModel> Positions { get; private set; }
+
+        private void UpdateProvider()
+        {
+            if (_profileManager.CurrentProfile.ColumnsShow != null)
+            {
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, nameof(NetPositionListViewModel));
+                NotifyOfPropertyChange(nameof(StateProvider));
+            }
+        }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

@@ -15,19 +15,19 @@
 
             <DataGrid Name="Orders" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
                 <DataGrid.Resources>
-                    <l:DataGridColumnHide x:Key="OrderTimeShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="OrderCurrentPriceShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="OrderTagShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="OrderCommentShow" IsShown="False"/>
+                    <l:DataGridColumnHide x:Key="TimeShow" Provider="{Binding StateProvider}" ColumnKey="Time"/>
+                    <l:DataGridColumnHide x:Key="CurrentPriceShow" Provider="{Binding StateProvider}" ColumnKey="CurrentPrice"/>
+                    <l:DataGridColumnHide x:Key="TagShow" Provider="{Binding StateProvider}" ColumnKey="Tag"/>
+                    <l:DataGridColumnHide x:Key="CommentShow" Provider="{Binding StateProvider}" ColumnKey="Comment"/>
                 </DataGrid.Resources>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
                         <Separator/>
-                        <MenuItem Header="Show Time" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource OrderTimeShow}}"/>
-                        <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource OrderCurrentPriceShow}}"/>
-                        <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource OrderTagShow}}"/>
-                        <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource OrderCommentShow}}"/>
+                        <MenuItem Header="Show Time" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TimeShow}}"/>
+                        <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrentPriceShow}}"/>
+                        <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TagShow}}"/>
+                        <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommentShow}}"/>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
@@ -77,7 +77,7 @@
                         </DataGridTextColumn.CellStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
-                    <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource OrderTimeShow}}"/>
+                    <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
                     <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
                     <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
@@ -99,7 +99,7 @@
 
                     <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
                     <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
-                    <DataGridTextColumn Header="Current price" Width="*" SortMemberPath="CurrentPrice.Rate"  Visibility="{Binding Visibility, Source={StaticResource OrderCurrentPriceShow}}">
+                    <DataGridTextColumn Header="Current price" Width="*" SortMemberPath="CurrentPrice.Rate"  Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="CurrentPrice.Rate"/>
@@ -115,8 +115,8 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" Visibility="{Binding Visibility, Source={StaticResource OrderTagShow}}"/>
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" Visibility="{Binding Visibility, Source={StaticResource OrderCommentShow}}"/>
+                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

@@ -20,10 +20,12 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public string Layout { get; set; }
 
+        [DataMember]
+        public List<ColumnStateStorageEntry> ColumnsShow { get; set; }
+        //public Dictionary<string, bool> ColumnsShow { get; set; }
 
         public ProfileStorageModel()
-        {
-        }
+        {}
 
 
         public override ProfileStorageModel Clone()
@@ -33,6 +35,7 @@ namespace TickTrader.BotTerminal
                 SelectedChart = SelectedChart,
                 Charts = Charts != null ? new List<ChartStorageEntry>(Charts.Select(c => c.Clone())) : null,
                 Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
+                ColumnsShow = ColumnsShow != null ? new List<ColumnStateStorageEntry>(ColumnsShow) : new List<ColumnStateStorageEntry>(),
                 Layout = Layout,
             };
         }

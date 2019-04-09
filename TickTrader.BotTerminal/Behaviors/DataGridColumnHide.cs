@@ -16,7 +16,10 @@ namespace TickTrader.BotTerminal
     typeof(DataGridColumnHide), new PropertyMetadata(Visibility.Collapsed));
 
         public static readonly DependencyProperty ColumnKeyProperty = DependencyProperty.Register("ColumnKey", typeof(string),
-    typeof(DataGridColumnHide), new PropertyMetadata("Unknown", new PropertyChangedCallback(ColumnKeyPropertyChanged)));
+    typeof(DataGridColumnHide), new PropertyMetadata("Unknown"));
+
+        public static readonly DependencyProperty ProviderProperty = DependencyProperty.Register("Provider", typeof(ProviderColumnsState),
+            typeof(DataGridColumnHide), new PropertyMetadata(null, new PropertyChangedCallback(ProviderPropertyChanged)));
 
         public bool IsShown
         {
@@ -36,6 +39,12 @@ namespace TickTrader.BotTerminal
             set { SetValue(ColumnKeyProperty, value); }
         }
 
+        internal ProviderColumnsState Provider
+        {
+            get { return (ProviderColumnsState)GetValue(ProviderProperty); }
+            set { SetValue(ProviderProperty, value); }
+        }
+
         private static void IsShownPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)
         {
             var stateObj = (DataGridColumnHide)d;
@@ -44,13 +53,20 @@ namespace TickTrader.BotTerminal
                 stateObj.Visibility = Visibility.Visible;
             else
                 stateObj.Visibility = Visibility.Collapsed;
+
+            if (stateObj.Provider != null)
+
+                stateObj.Provider[stateObj.ColumnKey] = stateObj.IsShown;
         }
 
-        private static void ColumnKeyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)
+        private static void ProviderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)
         {
             var stateObj = (DataGridColumnHide)d;
 
-            var key = a.NewValue.ToString();
+            var key = stateObj.ColumnKey;
+
+            if (stateObj.Provider?.ContainsKey(key) == true)
+                stateObj.IsShown = (bool)stateObj.Provider[key];
         }
 
         protected override Freezable CreateInstanceCore()

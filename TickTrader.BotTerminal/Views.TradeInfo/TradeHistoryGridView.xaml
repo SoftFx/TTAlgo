@@ -11,27 +11,27 @@
                        SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
                        Visibility="{Binding Data.IsNetAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                 <DataGrid.Resources>
-                    <l:DataGridColumnHide x:Key="ColumnSlippageShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnReqVolumeShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnPosClosePriceShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnPosCloseVolumeShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnCommissionShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnSwapShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnTagShow" IsShown="False"/>
-                    <l:DataGridColumnHide x:Key="ColumnCommentShow" IsShown="False"/>
+                    <l:DataGridColumnHide x:Key="SlippageShow" Provider="{Binding StateProvider}" ColumnKey="Slippage"/>
+                    <l:DataGridColumnHide x:Key="ReqVolumeShow" Provider="{Binding StateProvider}" ColumnKey="ReqVolume"/>
+                    <l:DataGridColumnHide x:Key="PosClosePriceShow" Provider="{Binding StateProvider}" ColumnKey="PosClosePrice"/>
+                    <l:DataGridColumnHide x:Key="PosCloseVolumeShow" Provider="{Binding StateProvider}" ColumnKey="PosCloseVolume"/>
+                    <l:DataGridColumnHide x:Key="CommissionShow" Provider="{Binding StateProvider}" ColumnKey="Commission"/>
+                    <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
+                    <l:DataGridColumnHide x:Key="TagShow" Provider="{Binding StateProvider}" ColumnKey="Tag"/>
+                    <l:DataGridColumnHide x:Key="CommentShow" Provider="{Binding StateProvider}" ColumnKey="Comment"/>
                 </DataGrid.Resources>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
                         <Separator/>
-                        <MenuItem Header="Show Slippage" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnSlippageShow}}"/>
-                        <MenuItem Header="Show Req Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnReqVolumeShow}}"/>
-                        <MenuItem Header="Show Close Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnPosClosePriceShow}}"/>
-                        <MenuItem Header="Show Close Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnPosCloseVolumeShow}}"/>
-                        <MenuItem Header="Show Commision" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnCommissionShow}}"/>
-                        <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnSwapShow}}"/>
-                        <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnTagShow}}"/>
-                        <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ColumnCommentShow}}"/>
+                        <MenuItem Header="Show Slippage" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SlippageShow}}"/>
+                        <MenuItem Header="Show Req Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqVolumeShow}}"/>
+                        <MenuItem Header="Show Close Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource PosClosePriceShow}}"/>
+                        <MenuItem Header="Show Close Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource PosCloseVolumeShow}}"/>
+                        <MenuItem Header="Show Commision" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommissionShow}}"/>
+                        <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
+                        <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TagShow}}"/>
+                        <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommentShow}}"/>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
@@ -106,7 +106,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Slippage" Width="100" Visibility="{Binding Visibility, Source={StaticResource ColumnSlippageShow}}">
+                    <DataGridTextColumn Header="Slippage" Width="*" Visibility="{Binding Visibility, Source={StaticResource SlippageShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="Slippage"/>
@@ -115,9 +115,9 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Req Volume" Width="100" Binding="{Binding ReqQauntity}" Visibility="{Binding Visibility, Source={StaticResource ColumnReqVolumeShow}}"/>
+                    <DataGridTextColumn Header="Req Volume" Width="*" Binding="{Binding ReqQauntity}" Visibility="{Binding Visibility, Source={StaticResource ReqVolumeShow}}"/>
 
-                    <DataGridTextColumn Header="Pos Close Price" Width="100" SortMemberPath="ClosePrice" Visibility="{Binding Visibility, Source={StaticResource ColumnPosClosePriceShow}}">
+                    <DataGridTextColumn Header="Pos Close Price" Width="*" SortMemberPath="ClosePrice" Visibility="{Binding Visibility, Source={StaticResource PosClosePriceShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="ClosePrice"/>
@@ -126,9 +126,9 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Pos Close Volume" Width="100" Binding="{Binding CloseQuantity}" Visibility="{Binding Visibility, Source={StaticResource ColumnPosCloseVolumeShow}}"/>
+                    <DataGridTextColumn Header="Pos Close Volume" Width="*" Binding="{Binding CloseQuantity}" Visibility="{Binding Visibility, Source={StaticResource PosCloseVolumeShow}}"/>
 
-                    <DataGridTextColumn Header="Commission" Width="100" SortMemberPath="Commission" Visibility="{Binding Visibility, Source={StaticResource ColumnCommissionShow}}">
+                    <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission" Visibility="{Binding Visibility, Source={StaticResource CommissionShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Commission"/>
@@ -143,7 +143,7 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Swap" Width="100" SortMemberPath="Swap" Visibility="{Binding Visibility, Source={StaticResource ColumnSwapShow}}">
+                    <DataGridTextColumn Header="Swap" Width="*" SortMemberPath="Swap" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Swap"/>
@@ -173,9 +173,9 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Tag" Width="100" Visibility="{Binding Visibility, Source={StaticResource ColumnTagShow}}"/>
+                    <DataGridTextColumn Header="Tag" Width="*" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
 
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource ColumnCommentShow}}"/>
+                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
             </DataGrid>
             <DataGrid Name="grossGrid"  ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}"
