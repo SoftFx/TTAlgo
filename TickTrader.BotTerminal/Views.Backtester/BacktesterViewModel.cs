@@ -494,7 +494,10 @@ namespace TickTrader.BotTerminal
                     var chartData = new OhlcDataSeries<DateTime, double>();
 
                     foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
-                        chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    {
+                        if (!double.IsNaN(bar.Open))
+                            chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    }
 
                     observer.SetProgress(totalCount);
 
@@ -615,6 +618,14 @@ namespace TickTrader.BotTerminal
                     var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
                     using (var entryStream = setupEntry.Open())
                         await Task.Run(() => SaveTestSetupAsText(pluginSetup, entryStream));
+
+                    var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
+                    using (var entryStream = equityEntry.Open())
+                        await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
+
+                    var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
+                    using (var entryStream = marginEntry.Open())
+                        await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
                 }
             }
         }
