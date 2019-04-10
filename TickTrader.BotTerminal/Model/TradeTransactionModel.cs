@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
             IsBalanceTransaction = transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
 
             OrderId = GetId(transaction);
+            ActionId = transaction.ActionId;
             OpenTime = GetOpenTime(transaction);
             Type = GetTransactionType(transaction);
             Side = GetTransactionSide(transaction);
@@ -75,6 +76,7 @@ namespace TickTrader.BotTerminal
 
         public TradeReportKey UniqueId { get; protected set; }
         public string OrderId { get; protected set; }
+        public int ActionId { get; }
         public long OrderNum { get; }
         public DateTime OpenTime { get; protected set; }
         public AggregatedTransactionType Type { get; protected set; }

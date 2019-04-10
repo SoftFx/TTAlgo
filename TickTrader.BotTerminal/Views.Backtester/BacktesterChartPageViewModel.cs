@@ -92,6 +92,8 @@ namespace TickTrader.BotTerminal
             var outputGroup = new OutputGroupViewModel(adapter, ChartControlModel.ChartWindowId.Value, this, mainSymbol,
                 ChartControlModel.IsCrosshairEnabled.Var);
             ChartControlModel.OutputGroups.Add(outputGroup);
+
+            _actionIdSeed = 0;
         }
 
         public void OnStop(Backtester backtester)
@@ -152,8 +154,8 @@ namespace TickTrader.BotTerminal
                     var openDescription = $"#{orderId} {trRep.Side} (open) {trRep.OpenQuantity} at price {openPrice}";
                     var closeDescription = $"#{orderId} {Revert(trRep.Side)} (close) {trRep.CloseQuantity} at price {closePrice}";
 
-                    AddMarker(orderId, trRep.OpenTime, trRep.Side == TransactionSide.Buy, openDescription);
-                    AddMarker(orderId, trRep.CloseTime, trRep.Side == TransactionSide.Sell, closeDescription);
+                    AddMarker(new PosMarkerKey(orderId, "a"), trRep.OpenTime, trRep.Side == TransactionSide.Buy, openDescription);
+                    AddMarker(new PosMarkerKey(orderId, "b" + trRep.ActionId), trRep.CloseTime, trRep.Side == TransactionSide.Sell, closeDescription);
                 }
             }
             else if (acctype == AccountTypes.Net)
@@ -163,13 +165,17 @@ namespace TickTrader.BotTerminal
                     var digits = trRep.PriceDigits;
                     var openPrice = NumberFormat.FormatPrice(trRep.OpenPrice, digits);
                     var description = $"#{orderId} {trRep.Side} {trRep.OpenQuantity} at price {openPrice}";
-                    AddMarker(orderId, trRep.OpenTime, trRep.Side == TransactionSide.Buy, description);
+                    AddMarker(new PosMarkerKey(orderId, "f" + trRep.ActionId), trRep.OpenTime, trRep.Side == TransactionSide.Buy, description);
                 }
             }
         }
 
+        private static int _actionIdSeed;
+
         private void Executor_TradesUpdated(TesterTradeTransaction tt)
         {
+            _actionIdSeed++;
+
             if (_acctype == AccountTypes.Gross)
             {
                 if (tt.OrderExecAction == OrderExecAction.Filled
@@ -185,7 +191,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.OrderId} {order.Side} (open) {order.RequestedVolume/lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(order.OrderNum, order.Created.Value, order.Side == OrderSide.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.OrderNum, "a" + _actionIdSeed), order.Created.Value, order.Side == OrderSide.Buy, openDescription);
                     }
                     else
                     {
@@ -197,7 +203,7 @@ namespace TickTrader.BotTerminal
                         var openPrice = NumberFormat.FormatPrice(order.Price, digits);
                         var openDescription = $"#{order.OrderId} {order.Side} (open) {order.RequestedVolume/lotSize} {order.Symbol} at price {openPrice}";
 
-                        AddMarker(order.OrderNum, order.Created.Value, order.Side == OrderSide.Buy, openDescription);
+                        AddMarker(new PosMarkerKey(order.OrderNum, "b" + _actionIdSeed), order.Created.Value, order.Side == OrderSide.Buy, openDescription);
                     }
                 }
 
@@ -210,7 +216,7 @@ namespace TickTrader.BotTerminal
                     var closePrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var closeDescription = $"#{order.OrderId} {order.Side.Revert()} (close) {order.LastFillVolume/lotSize} {order.Symbol} at price {closePrice}";
 
-                    AddMarker(order.OrderNum, order.Modified.Value, order.Side == OrderSide.Sell, closeDescription);
+                    AddMarker(new PosMarkerKey(order.OrderNum, "c" + _actionIdSeed), order.Modified.Value, order.Side == OrderSide.Sell, closeDescription);
                 }
             }
             else if (_acctype == AccountTypes.Net)
@@ -224,7 +230,7 @@ namespace TickTrader.BotTerminal
                     var lotSize = symbol?.LotSize ?? 1;
                     var openPrice = NumberFormat.FormatPrice(order.LastFillPrice, digits);
                     var description = $"#{order.OrderId} {order.Side} {order.LastFillVolume/lotSize} at price {openPrice}";
-                    AddMarker(order.OrderNum, order.Modified.Value, order.Side == OrderSide.Buy, description);
+                    AddMarker(new PosMarkerKey(order.OrderNum, "f" + _actionIdSeed), order.Modified.Value, order.Side == OrderSide.Buy, description);
                 }
             }
         }
@@ -239,7 +245,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void AddMarker(long orderId, DateTime pointTime, bool isBuy, string description)
+        private void AddMarker(PosMarkerKey key, DateTime pointTime, bool isBuy, string description)
         {
             var index = _barVector.Ref.BinarySearch(pointTime, BinarySearchTypes.NearestLower);
             if (index > 0)
@@ -250,11 +256,11 @@ namespace TickTrader.BotTerminal
 
                 if (existingMeta != null)
                 {
-                    if (!existingMeta.HasRecordFor(orderId))
-                        existingMeta.AddRecord(orderId, description, isBuy);
+                    if (!existingMeta.HasRecordFor(key))
+                        existingMeta.AddRecord(key, description, isBuy);
                 }
                 else
-                    _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(orderId, description, isBuy);
+                    _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(key, description, isBuy);
             }
         }
 

@@ -187,26 +187,26 @@ namespace TickTrader.BotTerminal
 
     internal class PositionMarkerMetadatda : IPointMetadata
     {
-        private SortedDictionary<long, string> _ordeEntires = new SortedDictionary<long, string>();
+        private SortedDictionary<PosMarkerKey, string> _ordeEntires = new SortedDictionary<PosMarkerKey, string>();
 
-        public PositionMarkerMetadatda(long orderId, string description, bool isBuy)
+        public PositionMarkerMetadatda(PosMarkerKey id, string description, bool isBuy)
         {
-            AddRecord(orderId, description, isBuy);
+            AddRecord(id, description, isBuy);
         }
 
-        public void AddRecord(long orderId, string description, bool isBuy)
+        public void AddRecord(PosMarkerKey id,  string description, bool isBuy)
         {
             if (isBuy)
                 HasBuySide = true;
             else
                 HasSellSide = true;
 
-            _ordeEntires.Add(orderId, description);
+            _ordeEntires.Add(id, description);
         }
 
-        public bool HasRecordFor(long orderId)
+        public bool HasRecordFor(PosMarkerKey id)
         {
-            return _ordeEntires.ContainsKey(orderId);
+            return _ordeEntires.ContainsKey(id);
         }
 
         public bool HasSellSide { get; private set; }
@@ -221,5 +221,25 @@ namespace TickTrader.BotTerminal
 
         #pragma warning disable 67
         public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    internal class PosMarkerKey : IComparable<PosMarkerKey>
+    {
+        public PosMarkerKey(long orderId, string actionId = null)
+        {
+            OrderId = orderId;
+            ActionId = actionId;
+        }
+
+        public long OrderId { get; }
+        public string ActionId { get; }
+
+        int IComparable<PosMarkerKey>.CompareTo(PosMarkerKey other)
+        {
+            var idCompare = OrderId.CompareTo(other.OrderId);
+            if (idCompare != 0)
+                return idCompare;
+            return string.Compare(ActionId, other.ActionId);
+        }
     }
 }
