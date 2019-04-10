@@ -1,19 +1,18 @@
 ﻿using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.AspNetCore.Hosting;
-using TickTrader.BotAgent.BA;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace TickTrader.BotAgent
+namespace TickTrader.BotAgent.Hosting
 {
-    public class BAHostService : WebHostService
+    public class WindowsServiceHost : WebHostService
     {
-        private IBotAgent _server;
-        private ILogger<BAHostService> _logger;
-        public BAHostService(IWebHost host) : base(host)
+        private ILogger<WindowsServiceHost> _logger;
+
+
+        public WindowsServiceHost(IWebHost host) : base(host)
         {
-            _server = host.Services.GetRequiredService<IBotAgent>();
-            _logger = host.Services.GetRequiredService<ILogger<BAHostService>>();
+            _logger = host.Services.GetRequiredService<ILogger<WindowsServiceHost>>();
         }
 
         protected override void OnStarting(string[] args)
