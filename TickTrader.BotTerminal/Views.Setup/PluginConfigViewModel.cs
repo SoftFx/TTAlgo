@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
         private List<InputSetupViewModel> _tickBasedInputs;
         private List<OutputSetupViewModel> _outputs;
         private TimeFrames _selectedTimeFrame;
-        private SymbolInfo _mainSymbol;
+        private ISymbolInfo _mainSymbol;
         private MappingInfo _selectedMapping;
         private string _instanceId;
         private IPluginIdProvider _idProvider;
@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
 
         public IReadOnlyList<SymbolInfo> AvailableSymbols { get; private set; }
 
-        public SymbolInfo MainSymbol
+        public ISymbolInfo MainSymbol
         {
             get { return _mainSymbol; }
             set
@@ -174,6 +174,8 @@ namespace TickTrader.BotTerminal
 
         public event System.Action ValidityChanged = delegate { };
 
+        public event System.Action<PluginConfigViewModel> ConfigLoaded;
+
         public PluginConfigViewModel(PluginInfo plugin, SetupMetadata setupMetadata, IPluginIdProvider idProvider, PluginSetupMode mode)
         {
             Plugin = plugin;
@@ -189,33 +191,35 @@ namespace TickTrader.BotTerminal
 
         public void Load(PluginConfig cfg)
         {
-            if (!IsFixedFeed)
+            SelectedTimeFrame = cfg.TimeFrame;
+            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
+                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+
+            if (!IsEmulation)
             {
-                SelectedTimeFrame = cfg.TimeFrame;
-                MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
-                    ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
                 SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
+
+                InstanceId = cfg.InstanceId;
+                AllowTrade = cfg.Permissions.TradeAllowed;
+                Isolated = cfg.Permissions.Isolated;
             }
-            InstanceId = cfg.InstanceId;
-            AllowTrade = cfg.Permissions.TradeAllowed;
-            Isolated = cfg.Permissions.Isolated;
+
             foreach (var scrProperty in cfg.Properties)
             {
                 var thisProperty = _allProperties.FirstOrDefault(p => p.Id == scrProperty.Id);
                 if (thisProperty != null)
                     thisProperty.Load(scrProperty);
             }
+
+            ConfigLoaded?.Invoke(this);
         }
 
         public PluginConfig Save()
         {
             var cfg = new PluginConfig();
-            if (!IsFixedFeed)
-            {
-                cfg.TimeFrame = SelectedTimeFrame;
-                cfg.MainSymbol = MainSymbol.ToConfig();
-                cfg.SelectedMapping = SelectedMapping.Key;
-            }
+            cfg.TimeFrame = SelectedTimeFrame;
+            cfg.MainSymbol = MainSymbol.ToConfig();
+            cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = new PluginPermissions();
             cfg.Permissions.TradeAllowed = _allowTrade;
