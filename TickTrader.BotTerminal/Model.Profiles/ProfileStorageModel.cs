@@ -22,7 +22,6 @@ namespace TickTrader.BotTerminal
 
         [DataMember]
         public List<ColumnStateStorageEntry> ColumnsShow { get; set; }
-        //public Dictionary<string, bool> ColumnsShow { get; set; }
 
         public ProfileStorageModel()
         {}

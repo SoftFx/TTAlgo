@@ -233,6 +233,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             res.Target = output.Target.Convert();
             res.Precision = output.Precision;
             res.ZeroLine = output.ZeroLine;
+            res.Visibility = output.Visibility;
             return res;
         }
 

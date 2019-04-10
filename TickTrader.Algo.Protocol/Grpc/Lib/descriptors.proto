@@ -124,6 +124,7 @@ message OutputDescriptor
 	ApiDescriptor.OutputTarget target = 7;
 	int32 precision = 8;
 	double zero_line = 9;
+    bool visibility = 10;
 }
 
 message PluginDescriptor
