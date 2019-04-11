@@ -3,8 +3,6 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <l:FullDateTimeConverter x:Key="UtcDateTimeFormat" ConvertToLocal="False" />
-
     <DataTemplate x:Key="CaliburnViewTemplate">
         <ContentControl cal:View.Model="{Binding}" />
     </DataTemplate>

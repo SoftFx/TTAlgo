@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 
@@ -52,10 +53,10 @@ namespace TickTrader.BotTerminal
                             var record = records[i];
                             var sevString = TxtFormat(record.Severity);
 
-                            writer.Write(record.Time.Timestamp.ToString(FullDateTimeConverter.Format));
+                            writer.Write(record.Time.Timestamp.ToString(InvariantFormat.DateFormat));
                             writer.Write(" [{0}] ", sevString);
 
-                            var nextLineSpaceSize = FullDateTimeConverter.FormatFixedLength + 4 + sevString.Length;
+                            var nextLineSpaceSize = InvariantFormat.DateFormatFixedLength + 4 + sevString.Length;
                             var msgLines = SplitIntoLines(record.Message);
                             writer.WriteLine(msgLines[0]);
                             for (int j = 1; j < msgLines.Length; j++)
