@@ -100,7 +100,6 @@ namespace TickTrader.BotTerminal
 
         public void Truncate(int truncateSize)
         {
-            _size -= truncateSize;
         }
 
         private void FillEmptySpace(int targetSize)
