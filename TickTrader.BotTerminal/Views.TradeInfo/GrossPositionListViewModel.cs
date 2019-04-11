@@ -13,7 +13,7 @@ namespace TickTrader.BotTerminal
 {
     class GrossPositionListViewModel : AccountBasedViewModel
     {
-        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, ConnectionModel.Handler connection)
+        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
             : base(model, connection)
         {
             Positions = model.Orders

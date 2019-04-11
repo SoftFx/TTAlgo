@@ -72,8 +72,16 @@
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
     <Compile Include="Adapters\TradeReportAdapter.cs" />
+    <Compile Include="Backtester\DelayedEventsQueue.cs" />
+    <Compile Include="Backtester\Feed\FeedReader.cs" />
+    <Compile Include="Backtester\ScheduleEmulator.cs" />
+    <Compile Include="Backtester\Stats\ChartDataCollector.cs" />
+    <Compile Include="Backtester\Stats\FeedSeriesCollector.cs" />
+    <Compile Include="Backtester\Stats\OutputCollector.cs" />
+    <Compile Include="Backtester\TimeEvent.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />
     <Compile Include="Backtester\Trade\OrderExpirationEmulator.cs" />
+    <Compile Include="Backtester\Trade\TesterTradeUpdate.cs" />
     <Compile Include="Backtester\Trade\TradeHistoryEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationIndex.cs" />
@@ -120,6 +128,7 @@
     <Compile Include="Entities\CompositeTag.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
     <Compile Include="Entities\CurrencyEntity.cs" />
+    <Compile Include="Entities\DataSeriesUpdate.cs" />
     <Compile Include="Entities\Dealer\CancelOrderDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ClosePositionDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ModifyOrderDealerRequest.cs" />
@@ -147,6 +156,7 @@
     <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\ExecutorHandler.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
@@ -181,10 +191,10 @@
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />
     <Compile Include="Math\BarVector.cs" />
+    <Compile Include="Math\BarVector2.cs" />
     <Compile Include="Math\BarVectorBase.cs" />
     <Compile Include="Math\MathExt.cs" />
     <Compile Include="Math\Rounding.cs" />
-    <Compile Include="Math\SyncBarVector.cs" />
     <Compile Include="Metadata\AlgoAssemblyInspector.cs" />
     <Compile Include="Metadata\Descriptors\InputDescriptor.cs" />
     <Compile Include="Metadata\Descriptors\OutputDescriptor.cs" />
@@ -237,6 +247,7 @@
     <Compile Include="Repository\ReductionCollection.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
+    <Compile Include="Math\TimeVectorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

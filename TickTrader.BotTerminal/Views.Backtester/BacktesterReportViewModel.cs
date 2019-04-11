@@ -1,50 +1,44 @@
 ﻿using Machinarium.Var;
+using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
     internal class BacktesterReportViewModel : EntityBase
     {
-        private TestingStatistics _stats;
         private Property<Dictionary<string, string>> _statProperties;
-        private Property<List<BacktesterStatChartViewModel>> _charts;
         private IntProperty _depositDigits;
+        private OhlcDataSeries<DateTime, double> _equityData;
+        private OhlcDataSeries<DateTime, double> _marginData;
 
         public BacktesterReportViewModel()
         {
             _statProperties = AddProperty<Dictionary<string, string>>();
-            _charts = AddProperty<List<BacktesterStatChartViewModel>>();
             _depositDigits = AddIntProperty(2);
-            RebuildReport(new TestingStatistics());
         }
 
         public Var<Dictionary<string, string>> StatProperties => _statProperties.Var;
-        public Var<List<BacktesterStatChartViewModel>> Charts => _charts.Var;
+        public ObservableCollection<BacktesterStatChartViewModel> SmallCharts { get; } = new ObservableCollection<BacktesterStatChartViewModel>();
+        public ObservableCollection<BacktesterStatChartViewModel> LargeCharts { get; } = new ObservableCollection<BacktesterStatChartViewModel>();
         public Var<int> DepositDigits => _depositDigits.Var;
-
-        public TestingStatistics Stats
-        {
-            get => _stats;
-            set
-            {
-                if (_stats != value)
-                {
-                    _stats = value;
-                    RebuildReport(value ?? new TestingStatistics());
-                }
-            }
-        }
 
         public void Clear()
         {
-            Stats = null;
+            _statProperties.Value = null;
+            SmallCharts.Clear();
+            LargeCharts.Clear();
+            _equityData = null;
+            _marginData = null;
         }
 
         public void SaveAsText(Stream file)
@@ -60,20 +54,50 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void RebuildReport(TestingStatistics newStats)
+        public Task SaveMarginCsv(Stream entryStream, IActionObserver observer)
+        {
+            return SaveCsv(entryStream, observer, "margin", _marginData);
+        }
+
+        public Task SaveEquityCsv(Stream entryStream, IActionObserver observer)
+        {
+            return SaveCsv(entryStream, observer, "equity", _equityData);
+        }
+
+        private Task SaveCsv(Stream entryStream, IActionObserver observer, string dataName, OhlcDataSeries<DateTime, double> data)
+        {
+            observer.SetMessage("Saving " + dataName + "...");
+
+            return Task.Factory.StartNew(() =>
+            {
+                using (var writer = new StreamWriter(entryStream))
+                {
+                    for (int i = 0; i < data.Count; i++)
+                        writer.WriteLine("{0:G},{1},{2},{3},{4}", data.XValues[i],  data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
+                }
+            });
+        }
+
+        public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor)
         {
             var newPropertis = new Dictionary<string, string>();
             var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(newStats.AccBalanceDigits);
 
+            var pluginType = descriptor.Type;
+
             newPropertis.Add("Bars", newStats.BarsCount.ToString());
             newPropertis.Add("Ticks", newStats.TicksCount.ToString());
-            newPropertis.Add("Initial deposit", newStats.InitialBalance.FormatPlain(balanceNumbersFormat));
-            newPropertis.Add("Final equity", newStats.FinalBalance.FormatPlain(balanceNumbersFormat));
-            newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).FormatPlain(balanceNumbersFormat));
-            newPropertis.Add("Gross profit", newStats.GrossProfit.FormatPlain(balanceNumbersFormat));
-            newPropertis.Add("Gross loss", newStats.GrossLoss.FormatPlain(balanceNumbersFormat));
-            newPropertis.Add("Commission", newStats.TotalComission.FormatPlain(balanceNumbersFormat));
-            newPropertis.Add("Swap", newStats.TotalSwap.FormatPlain(balanceNumbersFormat));
+
+            if (pluginType == AlgoTypes.Robot)
+            {
+                newPropertis.Add("Initial deposit", newStats.InitialBalance.FormatPlain(balanceNumbersFormat));
+                newPropertis.Add("Final equity", newStats.FinalBalance.FormatPlain(balanceNumbersFormat));
+                newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).FormatPlain(balanceNumbersFormat));
+                newPropertis.Add("Gross profit", newStats.GrossProfit.FormatPlain(balanceNumbersFormat));
+                newPropertis.Add("Gross loss", newStats.GrossLoss.FormatPlain(balanceNumbersFormat));
+                newPropertis.Add("Commission", newStats.TotalComission.FormatPlain(balanceNumbersFormat));
+                newPropertis.Add("Swap", newStats.TotalSwap.FormatPlain(balanceNumbersFormat));
+            }
 
             newPropertis.Add("Testing time", Format(newStats.Elapsed));
 
@@ -83,23 +107,42 @@ namespace TickTrader.BotTerminal
 
             newPropertis.Add("Testing speed (tps)", tickPerSecond);
 
-            newPropertis.Add("Orders opened", newStats.OrdersOpened.ToString());
-            newPropertis.Add("Orders rejected", newStats.OrdersRejected.ToString());
-            newPropertis.Add("Order modifications", newStats.OrderModifications.ToString());
-            newPropertis.Add("Order modifications rejected", newStats.OrderModificationRejected.ToString());
+            if (pluginType == AlgoTypes.Robot)
+            {
+                newPropertis.Add("Orders opened", newStats.OrdersOpened.ToString());
+                newPropertis.Add("Orders rejected", newStats.OrdersRejected.ToString());
+                newPropertis.Add("Order modifications", newStats.OrderModifications.ToString());
+                newPropertis.Add("Order modifications rejected", newStats.OrderModificationRejected.ToString());
+            }
 
-            var newCharts = new List<BacktesterStatChartViewModel>();
-
-            newCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
-                .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns)
-                .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns));
-
-            newCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
-                .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns)
-                .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns));
-
-            _charts.Value = newCharts;
             _statProperties.Value = newPropertis;
+
+            if (pluginType == AlgoTypes.Robot)
+            {
+                SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
+                    .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns, false)
+                    .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns, false));
+
+                SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
+                    .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns, true)
+                    .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns, true));
+            }
+        }
+
+        public void AddEquityChart(OhlcDataSeries<DateTime, double> bars)
+        {
+            _equityData = bars;
+            var chart = new BacktesterStatChartViewModel("Equity", ReportDiagramTypes.CategoryDatetime);
+            chart.AddBarSeries(bars, ReportSeriesStyles.Equity);
+            LargeCharts.Add(chart);
+        }
+
+        public void AddMarginChart(OhlcDataSeries<DateTime, double> bars)
+        {
+            _marginData = bars;
+            var chart = new BacktesterStatChartViewModel("Margin", ReportDiagramTypes.CategoryDatetime);
+            chart.AddBarSeries(bars, ReportSeriesStyles.Margin);
+            LargeCharts.Add(chart);
         }
 
         private static string Format(TimeSpan timeSpan)

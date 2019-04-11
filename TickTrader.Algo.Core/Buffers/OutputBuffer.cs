@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Core
         public int VirtualPos { get { return coordinator.VirtualPos; } }
         public Action<int, T> Appended { get; set; }
         public Action<int, T> Updated { get; set; }
+        public Action<int> Truncating { get; set; }
         public Action<int> Truncated { get; set; }
         public Action Cleared { get; set; }
         //public event Action Cleared;
@@ -84,6 +85,7 @@ namespace TickTrader.Algo.Core
 
         void IBuffer.Truncate(int size)
         {
+            Truncating?.Invoke(size);
             data.TruncateStart(size);
             Truncated?.Invoke(size);
         }

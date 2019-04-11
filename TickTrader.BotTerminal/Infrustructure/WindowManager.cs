@@ -62,11 +62,7 @@ namespace TickTrader.BotTerminal
         {
             IScreen existing = GetWindowModel(wndKey);
             if (existing != null)
-            {
-                _adapter.SetWindowTopmost(existing, true);
-                existing.Activate();
-                _adapter.SetWindowTopmost(existing, false);
-            }
+                _adapter.ActivateWindow(existing);
             else
                 OpenMdiWindow(wndKey, wndModelfactory());
         }
@@ -129,6 +125,12 @@ namespace TickTrader.BotTerminal
 
             public CaliburnAdapter()
             {
+            }
+
+            public void ActivateWindow(object rootModel)
+            {
+                var wnd = _windows.GetOrDefault(rootModel);
+                wnd.Activate();
             }
 
             public void SetWindowTopmost(object rootModel, bool state)

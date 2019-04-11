@@ -223,6 +223,9 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        internal bool IsGlobalmarshalingenabled { get; set; }
+        internal Action<object> OnUpdate { get; set; }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
@@ -396,7 +399,7 @@ namespace TickTrader.Algo.Core
                 statusFixture.Stop();
                 _timerFixture.Stop();
 
-                builder.PluginProxy.Coordinator.Clear();
+                //builder.PluginProxy.Coordinator.Clear();
                 builder.PluginProxy.Dispose();
                 accFixture.Dispose();
                 fStrategy.Dispose();
@@ -522,17 +525,18 @@ namespace TickTrader.Algo.Core
 
         #region Emulator Support
 
-        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings)
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType)
         {
             var fixture = new EmulationControlFixture(settings, this, calcFixture);
             InvokeStrategy = fixture.InvokeEmulator;
-            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory);
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             return fixture;
         }
 
         internal PluginBuilder GetBuilder() => builder;
+        internal PluginDescriptor GetDescriptor() => descriptor.Descriptor;
         internal IExecutorFixture GetTradeFixute() => accFixture;
 
         internal void EmulateStop()
@@ -671,6 +675,7 @@ namespace TickTrader.Algo.Core
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
         PluginLoggerAdapter IFixtureContext.Logger => builder.LogAdapter;
+        bool IFixtureContext.IsGlobalUpdateMarshalingEnabled => IsGlobalmarshalingenabled;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
@@ -706,6 +711,8 @@ namespace TickTrader.Algo.Core
         {
             OnInternalException(ex);
         }
+
+        void IFixtureContext.SendExtUpdate(object update) => OnUpdate(update);
 
         #endregion
 

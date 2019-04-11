@@ -351,7 +351,7 @@ namespace TickTrader.BotTerminal
         {
             DateTime datetime;
 
-            if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
+            if (!DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
                 //if (!DateTime.TryParse(value, out datetime))
                     return null;
 

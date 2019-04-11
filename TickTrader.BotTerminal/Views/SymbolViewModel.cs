@@ -40,8 +40,11 @@ namespace TickTrader.BotTerminal
 
             Color = model.Descriptor.Color;
 
-            this.DetailsPanel.OnBuyClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
-            this.DetailsPanel.OnSellClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
+            if (_shell != null)
+            {
+                this.DetailsPanel.OnBuyClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
+                this.DetailsPanel.OnSellClick = () => _shell.OrderCommands.OpenMarkerOrder(model.Name);
+            }
         }
 
         public string SymbolName { get { return _model.Name; } }

@@ -29,9 +29,9 @@ namespace TickTrader.BotTerminal
             AvailableSymbols = symbols;
 
             if (type == SymbolSetupType.Main)
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>().Where(t => !t.IsTicks());
+                AvailableTimeFrames = TimeFrameModel.BarTimeFrames;
             else
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>();
+                AvailableTimeFrames = TimeFrameModel.AllTimeFrames;
 
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
@@ -86,7 +86,12 @@ namespace TickTrader.BotTerminal
 
         public string AsText()
         {
-            return SelectedSymbol.Value.Name + " " + SelectedTimeframe.Value;
+            var smb = SelectedSymbol.Value.InfoEntity;
+            var swapLong = smb.SwapEnabled ? smb.SwapSizeLong : 0;
+            var swapShort = smb.SwapEnabled ? smb.SwapSizeShort : 0;
+
+            return string.Format("{0} {1}, commission={2} {3}, swapLong={4} swapShort={5} ",
+                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.CommissionType, swapLong, swapShort);
         }
 
         public async void UpdateAvailableRange(TimeFrames timeFrame)
@@ -152,12 +157,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit)
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
         {
-            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value);
+            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value, isVisualizing);
         }
 
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame, bool isVisualizing)
         {
             var smbData = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
@@ -195,6 +200,18 @@ namespace TickTrader.BotTerminal
 
                 tester.Feed.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
             }
+
+            SetupDataOutput(tester, isVisualizing);
+        }
+
+        private void SetupDataOutput(Backtester tester, bool isVisualizing)
+        {
+            var smbData = SelectedSymbol.Value;
+
+            if (isVisualizing)
+                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
+            else if (SetupType == SymbolSetupType.Main)
+                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream);
         }
 
         public void Reset()

@@ -16,7 +16,10 @@
                 <ResourceDictionary Source="Resx/Converters.xaml"/>
 
                 <!-- Images -->
-                <ResourceDictionary Source="Resx/Images/Images.xaml"/>
+                <ResourceDictionary Source="Resx/Images/Paths.xaml"/>
+
+                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
+                <ResourceDictionary Source="Controls/DropDownMenuButton.xaml"/>
 
                 <!-- Themes -->
                 <l:ThemeSelector>
@@ -31,7 +34,6 @@
                     </l:Theme>-->
                 </l:ThemeSelector>
 
-                <ResourceDictionary Source="Controls/OverlayPanel.xaml"/>
                 <!--<l:AutoDictionary Source="Controls/*.xaml"/>-->
 
                 <!-- Views (temp!) -->
@@ -54,8 +56,10 @@
                 <ResourceDictionary Source="Views.Algo/BotFolderView.xaml" />
                 <ResourceDictionary Source="Views.Algo/CopyBotInstanceView.xaml" />
 
+                <ResourceDictionary Source="Views.Chart/AlgoChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/ChartView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
+                <ResourceDictionary Source="Views.Chart/BotListOverlayView.xaml" />
 
                 <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
                 <ResourceDictionary Source="Views.Setup/LocalPluginSetupView.xaml" />
@@ -72,6 +76,8 @@
                 <ResourceDictionary Source="Views.Backtester/BacktesterStatChartView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterPluginSetupView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterTradeGridView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterJournalView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/BacktesterCurrentTradesView.xaml" />
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

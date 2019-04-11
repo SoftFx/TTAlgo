@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Markup;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -20,12 +21,16 @@ namespace TickTrader.BotTerminal
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
+        public static CultureInfo CultureCache { get; private set; }
+
         private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
         private SimpleContainer _container = new SimpleContainer();
         private ShellViewModel _shell;
 
         public AppBootstrapper()
         {
+            CultureCache = CultureInfo.CurrentCulture;
+
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 

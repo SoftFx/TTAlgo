@@ -21,6 +21,13 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public abstract string ValueAsText { get; }
 
+        public string GetQuotedValue()
+        {
+            var str = ValueAsText;
+            if (str != null && str.Contains(" "))
+                return '"' + ValueAsText + '"';
+            return str;
+        }
 
         public ParameterSetupModel(ParameterMetadata descriptor)
         {

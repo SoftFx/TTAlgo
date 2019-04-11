@@ -15,12 +15,18 @@ namespace TickTrader.Algo.Core
 
         public TradeReportAdapter Create(DateTime time, SymbolAccessor smb, TradeExecActions action, Bo.TradeTransReasons reason)
         {
-            var report =  TradeReportAdapter.Create(_idGenerator.NextKey(time), smb, action, reason);
+            return TradeReportAdapter.Create(_idGenerator.NextKey(time), smb, action, reason);
+        }
+
+        public void Add(TradeReportAdapter report)
+        {
             _history.Add(report);
-            return report;
+            OnReportAdded?.Invoke(report);
         }
 
         public int Count => _history.Count;
+
+        public event Action<TradeReportAdapter> OnReportAdded;
 
         public void Reset()
         {

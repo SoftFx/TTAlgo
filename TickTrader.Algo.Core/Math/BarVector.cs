@@ -49,10 +49,13 @@ namespace TickTrader.Algo.Core
         }
 
         public ITimeSequenceRef Ref => _builder;
+        public TimeFrames TimeFrame => _builder.TimeFrame;
 
         public int Count => _list.Count;
 
         public BarEntity this[int index] => _list[index];
+
+        public event Action<BarEntity> BarClosed { add { _builder.BarClosed += value; } remove { _builder.BarClosed -= value; } }
 
         public void AppendQuote(DateTime time, double price, double volume)
         {

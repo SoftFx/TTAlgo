@@ -33,12 +33,13 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
 
-            Navigator = new RealTimeChartNavigator();
+            TimeFrame = TimeFrames.Ticks;
 
+            Navigator = new RealTimeChartNavigator();
             SelectedChartType = SelectableChartTypes.Scatter;
         }
 
-        public override TimeFrames TimeFrame { get { return TimeFrames.Ticks; } }
+        public override ITimeVectorRef TimeSyncRef => null;
 
         public new void Activate()
         {

@@ -9,14 +9,26 @@ namespace TickTrader.Algo.Core
 {
     internal abstract class FeedSeriesEmulator
     {
+        private RateUpdate _current;
+
         protected readonly Dictionary<TimeFrames, BarVector> _bidBars = new Dictionary<TimeFrames, BarVector>();
         protected readonly Dictionary<TimeFrames, BarVector> _askBars = new Dictionary<TimeFrames, BarVector>();
 
-        public RateUpdate Current { get; protected set; }
+        public RateUpdate Current
+        {
+            get => _current;
+            set
+            {
+                _current = value;
+                RateUpdated?.Invoke(value);
+            }
+        }
 
         public abstract void Start();
         public abstract void Stop();
         public abstract bool MoveNext();
+
+        public event Action<RateUpdate> RateUpdated;
 
         public IEnumerable<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
@@ -66,7 +78,7 @@ namespace TickTrader.Algo.Core
 
                 int resultSize = Math.Min(index + 1, -size);
 
-                for (int i = index; i > index - resultSize; i--)
+                for (int i = index - resultSize + 1; i <= index; i++)
                     yield return vector[i];
             }
         }

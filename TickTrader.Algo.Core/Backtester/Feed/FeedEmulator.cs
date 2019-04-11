@@ -63,6 +63,11 @@ namespace TickTrader.Algo.Core
             return stream.InitSeries(timeframe, price);
         }
 
+        internal FeedSeriesEmulator GetFeedSymbolFixture(string symbol, TimeFrames timeframe)
+        {
+            return GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
+        }
+
         public void AddBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
         {
             var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
@@ -147,6 +152,11 @@ namespace TickTrader.Algo.Core
         #endregion
 
         public void Invoke(Action action)
+        {
+            action();
+        }
+
+        public void Send(Action action)
         {
             action();
         }

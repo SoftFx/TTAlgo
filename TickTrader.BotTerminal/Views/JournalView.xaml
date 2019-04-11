@@ -53,7 +53,7 @@
                   SelectionMode="Single">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="{l:Resx Journal_Time}" Width="Auto"
-                                        Binding="{Binding TimeKey.Timestamp, Converter={StaticResource FullDateTimeFormat}}"
+                                        Binding="{Binding TimeKey.Timestamp, Converter={StaticResource ExtDateTimeFormat}}"
                                         CellStyle="{DynamicResource DataGridCellStyle_RightAligned}"
                                         SortMemberPath="TimeKey" SortDirection="Descending" />
                     <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="*"

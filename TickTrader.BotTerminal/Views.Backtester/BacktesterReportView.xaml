@@ -29,12 +29,27 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!--  Charts  -->
+                <!--  Small Charts  -->
 
-                <ItemsControl ItemsSource="{Binding Charts.Value}">
+                <ItemsControl ItemsSource="{Binding SmallCharts}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <l:AutoColumnsGrid VerticalAlignment="Top" MaxColumns="4" MinColumnWidth="220"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ContentControl cal:View.Model="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Large Charts  -->
+
+                <ItemsControl ItemsSource="{Binding LargeCharts}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <l:AutoColumnsGrid VerticalAlignment="Top" MaxColumns="1" MinColumnWidth="220"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>

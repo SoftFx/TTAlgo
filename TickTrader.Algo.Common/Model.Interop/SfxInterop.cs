@@ -429,7 +429,7 @@ namespace TickTrader.Algo.Common.Model
                 var clientOrderId = Guid.NewGuid().ToString();
 
                 return _tradeProxy.NewOrderAsync(clientOrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc);
+                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, null);
             });
         }
 
@@ -443,7 +443,7 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options)));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
         }
 
         public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
@@ -988,10 +988,8 @@ namespace TickTrader.Algo.Common.Model
                 OrderModified = report.OrderModified,
                 PositionById = report.PositionById,
                 PositionClosed = report.PositionClosed,
-                PositionClosePrice = report.PositionClosePrice,
                 PositionCloseRequestedPrice = report.PositionCloseRequestedPrice,
                 PositionId = report.PositionId,
-                PositionLastQuantity = report.PositionLastQuantity,
                 PositionLeavesQuantity = report.PositionLeavesQuantity,
                 PositionModified = report.PositionModified,
                 PositionOpened = report.PositionOpened,

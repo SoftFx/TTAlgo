@@ -150,6 +150,20 @@ namespace TickTrader.Algo.Core
             return (price1 * amount1 + price2 * amount2) / (amount1 + amount2);
         }
 
+        internal PositionEntity GetEntityCopy()
+        {
+            return new PositionEntity()
+            {
+                Volume = VolumeUnits,
+                Price = Price,
+                Side = Side,
+                Swap = (double)Swap,
+                Commission = Commission,
+                Modified = Modified,
+                Symbol = Symbol,
+            };
+        }
+
         #endregion
 
         public class SideProxy : BL.IPositionSide

@@ -19,7 +19,9 @@ namespace TickTrader.BotTerminal
 
         public static SymbolInfo GetSymbolOrDefault(this IReadOnlyList<SymbolInfo> availableSymbols, SymbolConfig config)
         {
-            return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
+            if (config != null)
+                return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
+            return null;
         }
 
         public static SymbolInfo GetSymbolOrAny(this IReadOnlyList<SymbolInfo> availableSymbols, SymbolInfo info)

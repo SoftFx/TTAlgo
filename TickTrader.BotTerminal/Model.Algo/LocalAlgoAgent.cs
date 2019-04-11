@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using NLog;
+using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
@@ -36,7 +38,6 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, TradeBotModel> _bots;
         private PreferencesStorageModel _preferences;
 
-
         public string Name => "Local";
 
         public bool IsRemote => false;
@@ -57,8 +58,6 @@ namespace TickTrader.BotTerminal
 
         public AccessManager AccessManager { get; }
 
-
-
         public PluginIdProvider IdProvider { get; }
 
         public MappingCollection Mappings { get; }
@@ -72,7 +71,6 @@ namespace TickTrader.BotTerminal
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !PluginStateHelper.IsStopped(b.State));
 
         public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !PluginStateHelper.IsStopped(b.State));
-
 
         public event Action<PackageInfo> PackageStateChanged;
 
@@ -527,6 +525,9 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoPluginHost
 
+        ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
+        AxisBase IPluginDataChartModel.CreateXAxis() => null;
+
         void IAlgoPluginHost.Lock()
         {
             Shell.ConnectionLock.Lock();
@@ -574,7 +575,7 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        bool IAlgoPluginHost.IsStarted => false;
+        bool IExecStateObservable.IsStarted => false;
 
         public event Action ParamsChanged = delegate { };
         public event Action StartEvent = delegate { };

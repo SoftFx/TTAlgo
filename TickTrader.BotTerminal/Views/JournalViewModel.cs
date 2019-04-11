@@ -88,7 +88,7 @@ namespace TickTrader.BotTerminal
             if (data != null)
             {
                 if (!string.IsNullOrEmpty(filterString))
-                    return data.TimeKey.Timestamp.ToString(FullDateTimeConverter.Format).IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
+                    return data.TimeKey.Timestamp.ToString("G").IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
                         || data.Message.IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0;
                 return true;
             }

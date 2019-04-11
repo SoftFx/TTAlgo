@@ -43,6 +43,18 @@ namespace TickTrader.BotTerminal
             return value.ToString("F" + precision);
         }
 
+        public static string FormatPrice(double value, int precision)
+        {
+            return value.ToString("F" + precision);
+        }
+
+        public static string FormatPrice(double? value, int precision)
+        {
+            if (value == null)
+                return "NaN";
+            return value.Value.ToString("F" + precision);
+        }
+
         public static string FormatPrecente(decimal value, int precision)
         {
             return value.ToString("P" + precision, AmountNumberInfo);

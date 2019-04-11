@@ -26,6 +26,9 @@ using System.Collections.Specialized;
 using TickTrader.Algo.Common.Model.Interop;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
+using Machinarium.Var;
+using SM = Machinarium.State;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {
@@ -38,7 +41,7 @@ namespace TickTrader.BotTerminal
         private enum States { Idle, LoadingData, Online, Stopping, Closed, Faulted }
         private enum Events { Loaded, LoadFailed, Stopped }
 
-        private StateMachine<States> stateController = new StateMachine<States>(new DispatcherStateMachineSync());
+        private SM.StateMachine<States> stateController = new SM.StateMachine<States>(new DispatcherStateMachineSync());
         private VarList<IRenderableSeriesViewModel> seriesCollection = new VarList<IRenderableSeriesViewModel>();
         private VarList<IndicatorModel> indicators = new VarList<IndicatorModel>();
         private SelectableChartTypes chartType;
@@ -50,11 +53,12 @@ namespace TickTrader.BotTerminal
         private readonly List<SelectableChartTypes> supportedChartTypes = new List<SelectableChartTypes>();
         private ChartNavigator navigator;
         private long indicatorNextId = 1;
-        private AxisBase timeAxis;
-        private bool isCrosshairEnabled;
+        private Property<AxisBase> _timeAxis = new Property<AxisBase>();
         private string dateAxisLabelFormat;
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
+        private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
+        private Api.TimeFrames _timeframe;
 
         public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
         {
@@ -76,8 +80,7 @@ namespace TickTrader.BotTerminal
             subscription = ClientModel.Distributor.Subscribe(symbol.Name);
             subscription.NewQuote += OnRateUpdate;
 
-            CurrentAsk = symbol.CurrentAsk;
-            CurrentBid = symbol.CurrentBid;
+            _currentRateProp.Value = symbol.LastQuote;
 
             stateController.AddTransition(States.Idle, () => isConnected && !_isDisposed, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
@@ -102,7 +105,20 @@ namespace TickTrader.BotTerminal
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
-        public abstract Api.TimeFrames TimeFrame { get; }
+        public Api.TimeFrames TimeFrame
+        {
+            get => _timeframe;
+            set
+            {
+                if (_timeframe != value)
+                {
+                    _timeframe = value;
+                    TimeframeChanged?.Invoke();
+                }
+            }
+        }
+
+        public abstract ITimeVectorRef TimeSyncRef { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
         public bool HasAvailableIndicators => AvailableIndicators.Count() > 0;
@@ -111,8 +127,10 @@ namespace TickTrader.BotTerminal
         public IVarList<IndicatorModel> Indicators { get { return indicators; } }
         public IEnumerable<SelectableChartTypes> ChartTypes { get { return supportedChartTypes; } }
         public string SymbolCode { get { return Model.Name; } }
-        public double? CurrentAsk { get; private set; }
-        public double? CurrentBid { get; private set; }
+        public Var<Api.RateUpdate> CurrentRate => _currentRateProp.Var;
+        public bool IsIndicatorsOnline => isIndicatorsOnline;
+
+        public event System.Action TimeframeChanged;
 
         protected void Activate()
         {
@@ -150,8 +168,8 @@ namespace TickTrader.BotTerminal
             protected set
             {
                 navigator = value;
-                TimeAxis = value.CreateAxis();
-                CreateXAxisBinging(TimeAxis);
+                _timeAxis.Value = value.CreateAxis();
+                CreateXAxisBinging(TimeAxis.Value);
             }
         }
 
@@ -163,15 +181,7 @@ namespace TickTrader.BotTerminal
             timeAxis.SetBinding(AxisBase.CursorTextFormattingProperty, cursorTextFormatBinding);
         }
 
-        public AxisBase TimeAxis
-        {
-            get { return timeAxis; }
-            set
-            {
-                timeAxis = value;
-                NotifyOfPropertyChange("TimeAxis");
-            }
-        }
+        public Var<AxisBase> TimeAxis => _timeAxis.Var;
 
         public SelectableChartTypes SelectedChartType
         {
@@ -182,16 +192,6 @@ namespace TickTrader.BotTerminal
                 UpdateSeries();
                 ChartTypeChanged();
                 NotifyOfPropertyChange(nameof(SelectedChartType));
-            }
-        }
-
-        public bool IsCrosshairEnabled
-        {
-            get { return isCrosshairEnabled; }
-            set
-            {
-                this.isCrosshairEnabled = value;
-                NotifyOfPropertyChange("IsCrosshairEnabled");
             }
         }
 
@@ -258,7 +258,6 @@ namespace TickTrader.BotTerminal
                 await StopEvent.InvokeAsync(this);
                 await LoadData(cToken);
                 ApplyQueue();
-                StartEvent();
                 stateController.PushEvent(Events.Loaded);
             }
             catch (Exception ex)
@@ -279,13 +278,14 @@ namespace TickTrader.BotTerminal
         {
             TimelineStart = startDate;
             TimelineEnd = endDate;
-            Navigator.Init(count, startDate, endDate);
+            //Navigator.Init(count, startDate, endDate);
+            Navigator.OnDataLoaded(count, startDate, endDate);
         }
 
         protected void ExtendBoundaries(int count, DateTime endDate)
         {
             TimelineEnd = endDate;
-            Navigator.Extend(count, endDate);
+            //Navigator.Extend(count, endDate);
         }
 
         private void Connection_Disconnected()
@@ -344,10 +344,7 @@ namespace TickTrader.BotTerminal
             else if (stateController.Current == States.Online)
                 ApplyUpdate(tick);
 
-            this.CurrentAsk = tick.GetNullableAsk();
-            this.CurrentBid = tick.GetNullableBid();
-            NotifyOfPropertyChange(nameof(CurrentAsk));
-            NotifyOfPropertyChange(nameof(CurrentBid));
+            _currentRateProp.Value = tick;
         }
 
         private void ApplyQueue()
@@ -370,6 +367,13 @@ namespace TickTrader.BotTerminal
         }
 
         #region IAlgoPluginHost
+
+        AxisBase IPluginDataChartModel.CreateXAxis()
+        {
+            var axis =  Navigator.CreateAxis();
+            CreateXAxisBinging(axis);
+            return axis;
+        }
 
         void IAlgoPluginHost.Lock()
         {
@@ -409,7 +413,7 @@ namespace TickTrader.BotTerminal
             plugin.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
-        bool IAlgoPluginHost.IsStarted { get { return isIndicatorsOnline; } }
+        bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }
 
         public event System.Action ParamsChanged = delegate { };
         public event System.Action StartEvent = delegate { };

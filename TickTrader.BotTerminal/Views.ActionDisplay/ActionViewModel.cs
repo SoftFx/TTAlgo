@@ -12,10 +12,10 @@ namespace TickTrader.BotTerminal
 {
     class ActionViewModel : ViewAware, IDisposable
     {
-        private VarContext _context = new VarContext();
-        private Property<CancellationTokenSource> _cancelSrc;
-        private BoolProperty _isRunning;
-        private BoolProperty _isCanceled;
+        private readonly VarContext _context = new VarContext();
+        private readonly Property<CancellationTokenSource> _cancelSrc;
+        private readonly BoolProperty _isRunning;
+        private readonly BoolProperty _isCanceled;
 
         public ActionViewModel()
         {
@@ -30,35 +30,37 @@ namespace TickTrader.BotTerminal
 
         public BoolVar IsRunning => _isRunning.Var;
         public BoolVar IsCancelling => _isCanceled.Var;
+        public BoolVar WasFaultedOrCancelled => Progress.IsError.Var;
         public BoolVar CanCancel { get; }
-        public ProgressViewModel Progress { get; private set; }
+        public ProgressViewModel Progress { get; }
+        public Task Completion { get; private set; }
 
         public Task Start(System.Action action)
         {
             return Handle(() => Task.Factory.StartNew(action));
         }
 
-        public Task Start(Action<CancellationToken> action)
+        public void Start(Action<CancellationToken> action)
         {
             _cancelSrc.Value = new CancellationTokenSource();
-            return Handle(() => Task.Factory.StartNew(() => action(_cancelSrc.Value.Token)));
+            Completion = Handle(() => Task.Factory.StartNew(() => action(_cancelSrc.Value.Token)));
         }
 
-        public Task Start(Action<IActionObserver> action)
+        public void Start(Action<IActionObserver> action)
         {
-            return Handle(() => Task.Factory.StartNew(() => action(Progress)));
+            Completion = Handle(() => Task.Factory.StartNew(() => action(Progress)));
         }
 
-        public Task Start(Action<IActionObserver, CancellationToken> action)
-        {
-            _cancelSrc.Value = new CancellationTokenSource();
-            return Handle(() => Task.Factory.StartNew(() => action(Progress, _cancelSrc.Value.Token)));
-        }
-
-        public Task Start(Func<IActionObserver, CancellationToken, Task> asyncAction)
+        public void Start(Action<IActionObserver, CancellationToken> action)
         {
             _cancelSrc.Value = new CancellationTokenSource();
-            return Handle(() => asyncAction(Progress, _cancelSrc.Value.Token));
+            Completion = Handle(() => Task.Factory.StartNew(() => action(Progress, _cancelSrc.Value.Token)));
+        }
+
+        public void Start(Func<IActionObserver, CancellationToken, Task> asyncAction)
+        {
+            _cancelSrc.Value = new CancellationTokenSource();
+            Completion = Handle(() => asyncAction(Progress, _cancelSrc.Value.Token));
         }
 
         private async Task Handle(Func<Task> workerTaskFactory)

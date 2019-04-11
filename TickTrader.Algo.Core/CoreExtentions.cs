@@ -20,6 +20,16 @@ namespace TickTrader.Algo.Core
             return rate.Bid.NanAwareToDecimal();
         }
 
+        public static double? DoubleNullableAsk(this RateUpdate rate)
+        {
+            return rate.Ask.GetNanAware();
+        }
+
+        public static double? DoubleNullableBid(this RateUpdate rate)
+        {
+            return rate.Bid.GetNanAware();
+        }
+
         public static double? AsNullable(this double value)
         {
             return double.IsNaN(value) ? null : (double?)value;
@@ -28,6 +38,11 @@ namespace TickTrader.Algo.Core
         public static decimal? NanAwareToDecimal(this double value)
         {
             return double.IsNaN(value) ? null : (decimal?)value;
+        }
+
+        public static double? GetNanAware(this double value)
+        {
+            return double.IsNaN(value) ? null : (double?)value;
         }
 
         public static decimal? NanAwareToDecimal(this double? value)
@@ -58,6 +73,12 @@ namespace TickTrader.Algo.Core
         public static OrderSide Revert(this OrderSide side)
         {
             return side == OrderSide.Sell ? OrderSide.Buy : OrderSide.Sell;
+        }
+
+        public static DateTime StartOfWeek(this DateTime dt, DayOfWeek startOfWeek)
+        {
+            int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
+            return dt.AddDays(-1 * diff).Date;
         }
     }
 }

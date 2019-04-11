@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -22,10 +23,19 @@ namespace TickTrader.BotTerminal
             Style = type.ToString();
         }
 
-        public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<decimal> data, ReportSeriesStyles style)
+        public BacktesterStatChartViewModel AddBarSeries(OhlcDataSeries<DateTime, double> data, ReportSeriesStyles style)
+        {
+            var series = new OhlcRenderableSeriesViewModel();
+            series.StyleKey = style + "Style";
+            series.DataSeries = data;
+            _seriesList.Add(series);
+
+            return this;
+        }
+
+        public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<decimal> data, ReportSeriesStyles style, bool xAxisDayNames)
         {
             var dataModel = new XyDataSeries<int, double>(data.Count);
-
 
             for (int i = 0; i < data.Count; i++)
             {
@@ -34,7 +44,7 @@ namespace TickTrader.BotTerminal
                 if (yVal == 0)
                     yVal = -1;
 
-                dataModel.Append(i + 1, yVal);
+                dataModel.Append(i, yVal);
 
                 if (yVal > _maxColumnValue)
                     _maxColumnValue = yVal;
@@ -53,17 +63,20 @@ namespace TickTrader.BotTerminal
                 YRange = new DoubleRange(0, 1);
             NotifyOfPropertyChange(nameof(YRange));
 
+            XAxisDayNames = xAxisDayNames;
+            NotifyOfPropertyChange(nameof(XAxisDayNames));
+
             return this;
         }
 
         public DoubleRange YRange { get; set; }
-
+        public bool XAxisDayNames { get; private set; }
         public string Title { get; }
         public string Style { get; }
 
         public IEnumerable<IRenderableSeriesViewModel> SeriesList => _seriesList;
     }
 
-    public enum ReportDiagramTypes { CategoryHistogram }
-    public enum ReportSeriesStyles { ProfitColumns, LossColumns }
+    public enum ReportDiagramTypes { CategoryHistogram, CategoryDatetime }
+    public enum ReportSeriesStyles { ProfitColumns, LossColumns, Equity, Margin }
 }

@@ -18,70 +18,28 @@ namespace TickTrader.Algo.Core
         public TradeHistoryEmulator TradeHistory { get; }
         public IBacktesterSettings Settings { get; }
 
+        public event Action<EmulatorStates> StateUpdated
+        {
+            add => InvokeEmulator.StateUpdated += value;
+            remove => InvokeEmulator.StateUpdated -= value;
+        }
+
         public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
         {
             Settings = settings;
             Feed = new FeedEmulator();
             Collector = new BacktesterCollector(executor);
-            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed);
+            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, executor.Start, executor.EmulateStop);
             TradeHistory = new TradeHistoryEmulator();
+            TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
             Executor = executor;
         }
 
-        public void OnStart()
+        public bool OnStart()
         {
-            Collector.OnStart(Settings);
-        }
+            Collector.OnStart(Settings, Feed);
 
-        public bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
-        {
-            if (warmupValue <= 0)
-                return true;
-
-            try
-            {
-                if (warmupUnits == WarmupUnitTypes.Days)
-                    return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
-                else if (warmupUnits == WarmupUnitTypes.Hours)
-                    return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
-                else if (warmupUnits == WarmupUnitTypes.Bars)
-                    return InvokeEmulator.WarmupByBars(warmupValue);
-                else if (warmupUnits == WarmupUnitTypes.Ticks)
-                    return InvokeEmulator.WarmupByQuotes(warmupValue);
-                else
-                    return false;
-            }
-            catch (Exception ex)
-            {
-                throw WrapException(ex);
-            }
-        }
-
-        public void EmulateExecution()
-        {
-            try
-            {
-                InvokeEmulator.EmulateEventsWithFeed();
-                EmulateStop();
-            }
-            catch (OperationCanceledException)
-            {
-                Collector.AddEvent(LogSeverities.Error, "Testing canceled!");
-                EmulateStop();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                EmulateStop();
-                throw WrapException(ex);
-            }
-        }
-
-        private void EmulateStop()
-        {
-            Executor.EmulateStop();
-            InvokeEmulator.EnableStopPhase();
-            InvokeEmulator.EmulateEvents();
+            return InvokeEmulator.StartFeedRead();
         }
 
         public void OnStop()
@@ -91,12 +49,32 @@ namespace TickTrader.Algo.Core
 
             //tradeEmulator.Stop();
 
-            Collector.OnStop(Settings, builder.Account);
+            Collector.OnStop(Settings, builder?.Account);
+        }
+
+        public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
+        {
+            InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
         }
 
         public void CancelEmulation()
         {
             InvokeEmulator.Cancel();
+        }
+
+        public void Pause()
+        {
+            InvokeEmulator.Pause();
+        }
+
+        public void Resume()
+        {
+            InvokeEmulator.Resume();
+        }
+
+        public void SetExecDelay(int delayMs)
+        {
+            InvokeEmulator.SetExecDelay(delayMs);
         }
 
         public override void Dispose()
@@ -107,12 +85,9 @@ namespace TickTrader.Algo.Core
             base.Dispose();
         }
 
-        private Exception WrapException(Exception ex)
+        private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
         {
-            if (ex is AlgoException)
-                return ex;
-
-            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
+            Executor.OnUpdate(rep.Entity);
         }
     }
 }

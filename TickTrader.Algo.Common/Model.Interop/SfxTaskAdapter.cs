@@ -288,10 +288,10 @@ namespace TickTrader.Algo.Common.Model
 
         public static Task<List<FDK2.ExecutionReport>> NewOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string symbol, OrderType type, OrderSide side,
             double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel)
+            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage)
         {
             var taskSrc = new OrderResultSource();
-            client.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel);
+            client.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
             return taskSrc.Task;
         }
 
@@ -304,10 +304,10 @@ namespace TickTrader.Algo.Common.Model
 
         public static Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
             OrderSide side, double newQty, double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel)
+            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage)
         {
             var taskSrc = new OrderResultSource();
-            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, false, qty, comment, tag, magic, immediateOrCancel);
+            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, false, qty, comment, tag, magic, immediateOrCancel, slippage);
             return taskSrc.Task;
         }
 
