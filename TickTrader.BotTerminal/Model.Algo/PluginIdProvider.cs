@@ -12,14 +12,14 @@ namespace TickTrader.BotTerminal
 {
     internal class PluginIdProvider : IPluginIdProvider
     {
-        private BotIdHelper _botIdHelper;
-        private Dictionary<string, int> _bots;
+        private BotIdHelper _pluginsIdHelper;
+        private Dictionary<string, int> _plugins;
 
 
         public PluginIdProvider()
         {
-            _bots = new Dictionary<string, int>();
-            _botIdHelper = new BotIdHelper();
+            _plugins = new Dictionary<string, int>();
+            _pluginsIdHelper = new BotIdHelper();
         }
 
 
@@ -28,9 +28,8 @@ namespace TickTrader.BotTerminal
             switch (descriptor.Type)
             {
                 case AlgoTypes.Indicator:
-                    return GenerateIndicatorId(descriptor.DisplayName);
                 case AlgoTypes.Robot:
-                    return GenerateBotId(descriptor.DisplayName);
+                    return GeneratePluginId(descriptor.DisplayName);
                 default:
                     return GenerateId(descriptor.DisplayName);
             }
@@ -38,20 +37,17 @@ namespace TickTrader.BotTerminal
 
         public bool IsValidPluginId(AlgoTypes pluginType, string pluginId)
         {
-            if (!_botIdHelper.Validate(pluginId))
+            if (!_pluginsIdHelper.Validate(pluginId))
             {
                 return false;
             }
 
-            switch (pluginType)
-            {
-                case AlgoTypes.Indicator:
-                    return true;
-                case AlgoTypes.Robot:
-                    return !_bots.ContainsKey(pluginId);
-                default:
-                    return true;
-            }
+            return pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot ? !_plugins.ContainsKey(pluginId) : true;
+        }
+
+        public void RegisterPlugin(string pluginId)
+        {
+            _plugins.Add(pluginId, 1);
         }
 
         public void RegisterIndicator(IndicatorModel indicator)
@@ -60,47 +56,37 @@ namespace TickTrader.BotTerminal
 
         public void RegisterBot(TradeBotModel bot)
         {
-            _bots.Add(bot.InstanceId, 1);
-        }
-
-        public void RegisterBot(string instanceId)
-        {
-            _bots.Add(instanceId, 1);
+            _plugins.Add(bot.InstanceId, 1);
         }
 
         public void UnregisterPlugin(string pluginId)
         {
-            if (_bots.ContainsKey(pluginId))
+            if (_plugins.ContainsKey(pluginId))
             {
-                _bots.Remove(pluginId);
+                _plugins.Remove(pluginId);
             }
         }
 
         public void Reset()
         {
-            _bots.Clear();
+            _plugins.Clear();
         }
 
 
         private string GenerateId(string pluginName, string suffix = "")
         {
-            return _botIdHelper.BuildId(pluginName, suffix);
+            return _pluginsIdHelper.BuildId(pluginName, suffix);
         }
 
-        private string GenerateIndicatorId(string indicatorName)
-        {
-            return GenerateId(indicatorName);
-        }
-
-        private string GenerateBotId(string botName)
+        private string GeneratePluginId(string pluginName)
         {
             var seed = 1;
 
             while (true)
             {
-                var botId = GenerateId(botName, $"{seed}");
-                if (!_bots.ContainsKey(botId))
-                    return botId;
+                var pluginId = GenerateId(pluginName, $"{seed}");
+                if (!_plugins.ContainsKey(pluginId))
+                    return pluginId;
 
                 seed++;
             }

@@ -261,7 +261,7 @@ namespace TickTrader.BotTerminal
                 _idProvider.Reset();
                 foreach (var bot in bots)
                 {
-                    _idProvider.RegisterBot(bot.InstanceId);
+                    _idProvider.RegisterPlugin(bot.InstanceId);
                     _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                 }
             });
@@ -317,7 +317,7 @@ namespace TickTrader.BotTerminal
                 switch (update.Type)
                 {
                     case UpdateType.Added:
-                        _idProvider.RegisterBot(bot.InstanceId);
+                        _idProvider.RegisterPlugin(bot.InstanceId);
                         _bots.Add(bot.InstanceId, new RemoteTradeBot(bot, this));
                         break;
                     case UpdateType.Replaced:
