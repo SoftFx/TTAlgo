@@ -24,7 +24,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
       },
     },
-    "Stage": {
+    "Stg": {
       "commandName": "Project",
       "launchBrowser": false,
       "applicationUrl": "http://localhost:7000/;https://localhost:7001",

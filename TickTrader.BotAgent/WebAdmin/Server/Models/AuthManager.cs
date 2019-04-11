@@ -10,10 +10,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
     public class AuthManager : IAuthManager
     {
-        public AuthManager(ITokenOptions tokenOptions, IOptions<ServerCredentials> credentials)
+        public AuthManager(ITokenOptions tokenOptions, IOptionsMonitor<ServerCredentials> credentials)
         {
             TokenOptions = tokenOptions;
-            Credentials = credentials.Value;
+            Credentials = credentials.CurrentValue;
         }
 
         public ITokenOptions TokenOptions { get; set; }

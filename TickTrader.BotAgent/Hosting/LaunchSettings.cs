@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Hosting
@@ -11,8 +12,7 @@ namespace TickTrader.BotAgent.Hosting
 
     public class LaunchSettings
     {
-        public const string EnvironmentKey = "environment";
-        public const string EnvVarEnvironmentKey = "aspnetcore_environment";
+        public const string EnvironmentVariablesPrefix = "aspnetcore_";
         public const string ConsoleKey = "console";
 
 
@@ -23,7 +23,7 @@ namespace TickTrader.BotAgent.Hosting
 
         public override string ToString()
         {
-            return $"Launch {Mode} in {Environment} env";
+            return $"Launch {Environment} in {Mode}";
         }
 
 
@@ -32,11 +32,11 @@ namespace TickTrader.BotAgent.Hosting
             var res = new LaunchSettings { Mode = LaunchMode.WindowsService };
 
             var configBuilder = new ConfigurationBuilder();
-            configBuilder.AddEnvironmentVariables();
+            configBuilder.AddEnvironmentVariables(EnvironmentVariablesPrefix);
             configBuilder.AddCommandLine(args, switchMappings);
 
             var config = configBuilder.Build();
-            res.Environment = EnvironmentAliases.ResolveEnvironemntAlias(config[EnvironmentKey] ?? config[EnvVarEnvironmentKey]);
+            res.Environment = EnvironmentAliases.ResolveEnvironemntAlias(config[WebHostDefaults.EnvironmentKey]);
 
             if (EnvironmentAliases.IsDevelopment(res.Environment) || EnvironmentAliases.IsStaging(res.Environment) || config[ConsoleKey] != null)
                 res.Mode = LaunchMode.Console;
@@ -47,7 +47,7 @@ namespace TickTrader.BotAgent.Hosting
 
         public Dictionary<string, string> GenerateEnvironmentOverride()
         {
-            return new Dictionary<string, string> { { EnvironmentKey, Environment } };
+            return new Dictionary<string, string> { { WebHostDefaults.EnvironmentKey, Environment } };
         }
     }
 }

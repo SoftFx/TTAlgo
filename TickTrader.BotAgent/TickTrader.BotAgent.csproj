@@ -105,7 +105,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Hosting\BAHostService.cs">
+    <Compile Update="Hosting\WindowsServiceHost.cs">
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>

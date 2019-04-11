@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent
         public static readonly Dictionary<string, string> SwitchMappings =
             new Dictionary<string, string>
             {
-                {"-e", LaunchSettings.EnvironmentKey},
+                {"-e", WebHostDefaults.EnvironmentKey},
                 {"-c", LaunchSettings.ConsoleKey },
             };
 
@@ -86,15 +86,17 @@ namespace TickTrader.BotAgent
             var pathToWebAdmin = Path.Combine(pathToContentRoot, "WebAdmin");
             var pathToWebRoot = Path.Combine(pathToWebAdmin, "wwwroot");
             var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
+
             EnsureDefaultConfiguration(pathToAppSettings);
 
             var configBuilder = new ConfigurationBuilder();
-            configBuilder.SetBasePath(pathToWebAdmin);
-            configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            configBuilder.AddJsonFile($"appsettings.{launchSettings.Environment}.json", optional: true, reloadOnChange: true);
-            configBuilder.AddEnvironmentVariables();
-            configBuilder.AddCommandLine(args);
-            configBuilder.AddInMemoryCollection(launchSettings.GenerateEnvironmentOverride());
+            configBuilder
+                .SetBasePath(pathToWebAdmin)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{launchSettings.Environment}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables(LaunchSettings.EnvironmentVariablesPrefix)
+                .AddCommandLine(args)
+                .AddInMemoryCollection(launchSettings.GenerateEnvironmentOverride());
 
             var config = configBuilder.Build();
 
@@ -102,6 +104,13 @@ namespace TickTrader.BotAgent
 
             return new WebHostBuilder()
                 .UseConfiguration(config)
+                .ConfigureAppConfiguration((context, builder) => 
+                {
+                    // Thanks Microsoft for not doing this in UseConfiguration
+                    // I enjoy spending hours in framework sources
+                    builder.Sources.Clear();
+                    builder.AddConfiguration(config);
+                })
                 .UseKestrel()
                 .ConfigureKestrel((context, options) =>
                     options.ConfigureHttpsDefaults(httpsOptions =>

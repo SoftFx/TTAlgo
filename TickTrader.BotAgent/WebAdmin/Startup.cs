@@ -73,6 +73,8 @@ namespace TickTrader.BotAgent.WebAdmin
             })
             .AddJwtBearer(jwtOptions =>
             {
+                jwtOptions.SecurityTokenValidators.Clear();
+                jwtOptions.SecurityTokenValidators.Add(new JwtTokenValidator(Configuration));
                 jwtOptions.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
