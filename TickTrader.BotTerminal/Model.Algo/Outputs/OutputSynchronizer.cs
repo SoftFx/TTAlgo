@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
                             _size++;
                             break; // take next point
                         }
-                        else if (pointTime > baseTime)
+                        else if (pointTime < baseTime)
                         {
                             // miss => base vector does not have this point -> skip point
                             break; // take next point
@@ -82,7 +82,7 @@ namespace TickTrader.BotTerminal
 
             if (index >= 0)
             {
-                FillEmptySpace(index);
+                FillEmptySpace(index - 1);
                 DoAppend?.Invoke(pointTime, point.Value);
                 _size++;
             }
@@ -95,7 +95,10 @@ namespace TickTrader.BotTerminal
             var pointTime = point.TimeCoordinate.Value;
             var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
             if (index >= 0)
+            {
+                FillEmptySpace(index);
                 DoUpdate?.Invoke(index, pointTime, point.Value);
+            }
         }
 
         public void Truncate(int truncateSize)
@@ -104,7 +107,7 @@ namespace TickTrader.BotTerminal
 
         private void FillEmptySpace(int targetSize)
         {
-            while (_size < targetSize)
+            while (_size <= targetSize)
             {
                 var pointTime = _baseVector[_size];
                 DoAppend?.Invoke(pointTime, _emptyValue);
