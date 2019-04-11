@@ -45,7 +45,7 @@ namespace TickTrader.BotTerminal
             return pluginType == AlgoTypes.Indicator || pluginType == AlgoTypes.Robot ? !_plugins.ContainsKey(pluginId) : true;
         }
 
-        public void RegisterPlugin(string pluginId)
+        public void RegisterPluginId(string pluginId)
         {
             _plugins.Add(pluginId, 1);
         }

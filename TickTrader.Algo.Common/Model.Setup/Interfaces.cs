@@ -42,6 +42,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         bool IsValidPluginId(AlgoTypes pluginType, string pluginId);
 
-        void RegisterPlugin(string pluginId);
+        void RegisterPluginId(string pluginId);
     }
 }

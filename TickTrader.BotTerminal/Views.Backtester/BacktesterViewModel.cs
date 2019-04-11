@@ -782,7 +782,7 @@ namespace TickTrader.BotTerminal
             return true;
         }
 
-        void IPluginIdProvider.RegisterPlugin(string pluginId)
+        void IPluginIdProvider.RegisterPluginId(string pluginId)
         {
             return;
         }
