@@ -50,15 +50,6 @@ namespace TickTrader.BotTerminal
             _plugins.Add(pluginId, 1);
         }
 
-        public void RegisterIndicator(IndicatorModel indicator)
-        {
-        }
-
-        public void RegisterBot(TradeBotModel bot)
-        {
-            _plugins.Add(bot.InstanceId, 1);
-        }
-
         public void UnregisterPlugin(string pluginId)
         {
             if (_plugins.ContainsKey(pluginId))

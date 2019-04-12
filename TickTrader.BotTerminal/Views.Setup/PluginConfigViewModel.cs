@@ -217,7 +217,6 @@ namespace TickTrader.BotTerminal
                 cfg.SelectedMapping = SelectedMapping.Key;
             }
             cfg.InstanceId = InstanceId;
-            _idProvider.RegisterPluginId(InstanceId);
             cfg.Permissions = new PluginPermissions();
             cfg.Permissions.TradeAllowed = _allowTrade;
             cfg.Permissions.Isolated = _isolate;

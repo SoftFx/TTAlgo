@@ -152,7 +152,7 @@ namespace TickTrader.BotTerminal
         public Task AddBot(AccountKey account, PluginConfig config)
         {
             var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
-            IdProvider.RegisterBot(bot);
+            IdProvider.RegisterPluginId(bot.InstanceId);
             _bots.Add(bot.InstanceId, bot);
             bot.StateChanged += OnBotStateChanged;
             bot.Updated += OnBotUpdated;
