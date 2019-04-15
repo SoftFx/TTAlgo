@@ -22,7 +22,6 @@ namespace TickTrader.BotTerminal
             _pluginsIdHelper = new BotIdHelper();
         }
 
-
         public string GeneratePluginId(PluginDescriptor descriptor)
         {
             switch (descriptor.Type)
@@ -62,7 +61,6 @@ namespace TickTrader.BotTerminal
         {
             _plugins.Clear();
         }
-
 
         private string GenerateId(string pluginName, string suffix = "")
         {
