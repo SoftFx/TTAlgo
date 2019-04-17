@@ -123,7 +123,7 @@ namespace TickTrader.Algo.Core
                 if (State == EmulatorStates.Stopped) // can be canceled prior to execution due to CancellationToken
                     _canelRequested = true;
 
-                if (State == EmulatorStates.Running || State == EmulatorStates.Paused)
+                if (State == EmulatorStates.Running || State == EmulatorStates.WarmingUp || State == EmulatorStates.Paused)
                 {
                     _canelRequested = true;
                     _pauseRequested = false;
