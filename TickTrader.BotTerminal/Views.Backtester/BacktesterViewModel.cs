@@ -619,13 +619,16 @@ namespace TickTrader.BotTerminal
                     using (var entryStream = setupEntry.Open())
                         await Task.Run(() => SaveTestSetupAsText(pluginSetup, entryStream));
 
-                    var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
-                    using (var entryStream = equityEntry.Open())
-                        await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
+                    if (pluginSetup.Metadata.Descriptor.Type == AlgoTypes.Robot)
+                    {
+                        var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
+                        using (var entryStream = equityEntry.Open())
+                            await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
 
-                    var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
-                    using (var entryStream = marginEntry.Open())
-                        await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
+                        var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
+                        using (var entryStream = marginEntry.Open())
+                            await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
+                    }
                 }
             }
         }
