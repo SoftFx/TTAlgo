@@ -23,7 +23,7 @@
                   BorderThickness="0" HorizontalScrollBarVisibility="Hidden">
             <DataGrid.Columns>
 
-                <DataGridTemplateColumn Header="S" CellTemplate="{StaticResource SeverityMarkerTemplate}" MaxWidth="18" MinWidth="18"/>
+                <DataGridTemplateColumn Header="" CellTemplate="{StaticResource SeverityMarkerTemplate}" MaxWidth="18" MinWidth="18"/>
 
                 <DataGridTextColumn SortMemberPath="Time" 
                                     Binding="{Binding Time.Timestamp, Converter={StaticResource UtcExtDateTimeFormat}}"
