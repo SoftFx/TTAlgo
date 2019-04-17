@@ -317,7 +317,7 @@ namespace TickTrader.BotTerminal
 
         private string GetFormattedDateTimeString(DateTime? value, string format)
         {
-            return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : null;
+            return value.HasValue ? value.Value.ToString(format, AppBootstrapper.CultureCache) : null;
         }
 
         private DateTime SmartUpdateDateTime(int direction)

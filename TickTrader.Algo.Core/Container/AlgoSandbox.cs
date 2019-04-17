@@ -23,8 +23,8 @@ namespace TickTrader.Algo.Core.Container
 
             try
             {
-                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+                //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+                //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                 src.Init();

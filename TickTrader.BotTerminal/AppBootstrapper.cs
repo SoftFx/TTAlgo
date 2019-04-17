@@ -31,8 +31,8 @@ namespace TickTrader.BotTerminal
         {
             CultureCache = CultureInfo.CurrentCulture;
 
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             LocaleSelector.Instance.ActivateDefault();
 
