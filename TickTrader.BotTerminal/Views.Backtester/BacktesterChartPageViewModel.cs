@@ -37,8 +37,7 @@ namespace TickTrader.BotTerminal
             _mainSeries.StyleKey = "BarChart_OhlcStyle";
             
             _markerSeries = new LineRenderableSeriesViewModel();
-            _markerSeries.StyleKey = "OverlayMarkerSeries_Style";
-            _markerSeries.StrokeThickness = 0;
+            _markerSeries.StyleKey = "HiddenOverlayMarkerSeries_Style";
             _markerSeries.PointMarker = new PositionMarker()
             {
                 Stroke = System.Windows.Media.Colors.Black,

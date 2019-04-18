@@ -37,7 +37,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             BestBid[0] = quote.Bid;
             BestAsk[0] = quote.Bid + Symbol.Point * Spread;
-            Status.WriteLine($"Best Bid - {BestBid.Count}");
+            Status.WriteLine($"Best Bid - {BestBid[0]}");
             Status.WriteLine($"Best Ask - {BestAsk[0]}");
             Status.Flush();
         }
