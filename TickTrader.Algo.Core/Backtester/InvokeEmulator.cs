@@ -494,7 +494,7 @@ namespace TickTrader.Algo.Core
                     return _tradeQueue.Dequeue();
 
                 bool isTrade;
-                var next = DequeueUpcoming(out isTrade);
+                var next = DequeueUpcoming(out isTrade, true);
 
                 if (next == null)
                     return null;
@@ -520,14 +520,14 @@ namespace TickTrader.Algo.Core
             else if (_feedQueue.Count > 0)
                 return _feedQueue.Dequeue();
             else
-                return DequeueUpcoming(out _);
+                return DequeueUpcoming(out _, false);
         }
 
-        private object DequeueUpcoming(out bool isTrade)
+        private object DequeueUpcoming(out bool isTrade, bool syncOp)
         {
             if (_feedReader.IsCompeted)
             {
-                if (!_stopPhase || _delayedQueue.IsEmpty)
+                if ((!_stopPhase && !syncOp) || _delayedQueue.IsEmpty)
                 {
                     isTrade = false;
                     return null;
