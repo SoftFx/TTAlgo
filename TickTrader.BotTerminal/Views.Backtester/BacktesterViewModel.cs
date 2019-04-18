@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using Microsoft.Win32;
+using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,8 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterViewModel : Screen, IWindowModel, IAlgoSetupMetadata, IPluginIdProvider, IAlgoSetupContext
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _env;
         private IShell _shell;
         private SymbolCatalog _catalog;
@@ -573,17 +576,24 @@ namespace TickTrader.BotTerminal
         private void OnStartTesting()
         {
             _backtester.StateChanged += _backtester_StateChanged;
+            _backtester.Executor.ErrorOccurred += Executor_ErrorOccurred;
         }
 
         private void OnStopTesting()
         {
             _backtester.StateChanged -= _backtester_StateChanged;
+            _backtester.Executor.ErrorOccurred -= Executor_ErrorOccurred;
             _stateProp.Value = EmulatorStates.Stopped;
         }
 
         private void _backtester_StateChanged(EmulatorStates state)
         {
             _stateProp.Value = state;
+        }
+
+        private void Executor_ErrorOccurred(Exception ex)
+        {
+            _logger.Error(ex, "Error occurred in backtester!");
         }
 
         #endregion
