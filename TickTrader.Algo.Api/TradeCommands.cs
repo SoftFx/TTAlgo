@@ -55,5 +55,6 @@ namespace TickTrader.Algo.Api
         Misconfiguration    = 116,
         OrderLocked         = 117,
         IncorrectPricePrecision = 118,
+        CloseOnlyTrading = 119,
     }
 }

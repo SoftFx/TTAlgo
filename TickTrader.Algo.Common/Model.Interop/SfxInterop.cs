@@ -839,6 +839,7 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
                 case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
+                case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
                 case RejectReason.Other:
                     {
                         if (message == "Trade Not Allowed")
