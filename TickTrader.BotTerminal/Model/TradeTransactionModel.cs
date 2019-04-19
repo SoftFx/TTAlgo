@@ -181,7 +181,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual string GetCommissionCurrency(TradeReportEntity transaction)
         {
-            return transaction.TransactionCurrency;
+            return transaction.CommCurrency ?? transaction.TransactionCurrency;
         }
 
         protected virtual double? GetRemainingQuantity(TradeReportEntity transaction)
@@ -426,7 +426,7 @@ namespace TickTrader.BotTerminal
             {
                 case TransactionSide.Sell:
                 case TransactionSide.Buy:
-                    return transaction.DstAssetCurrency;
+                    return transaction.CommCurrency ?? transaction.DstAssetCurrency;
                 case TransactionSide.None: return "";
                 default: throw new NotSupportedException(GetTransactionSide(transaction).ToString());
             }
