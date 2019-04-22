@@ -336,6 +336,18 @@
   <data name="Order_OpenPrice" xml:space="preserve">
     <value>Open Price</value>
   </data>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>Доступный объём</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>Заблокированный объём</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>Объём</value>
+  </data>
   <data name="Copy" xml:space="preserve">
     <value>Копировать</value>
   </data>

@@ -61,6 +61,42 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##AvailableVolume##.
+        /// </summary>
+        internal static string Assets_AvailableVolume {
+            get {
+                return ResourceManager.GetString("Assets_AvailableVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Currency##.
+        /// </summary>
+        internal static string Assets_Currency {
+            get {
+                return ResourceManager.GetString("Assets_Currency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##LockedVolume##.
+        /// </summary>
+        internal static string Assets_LockedVolume {
+            get {
+                return ResourceManager.GetString("Assets_LockedVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Volume##.
+        /// </summary>
+        internal static string Assets_Volume {
+            get {
+                return ResourceManager.GetString("Assets_Volume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Candle##.
         /// </summary>
         internal static string ChartType_Candle {

@@ -363,6 +363,18 @@
   <data name="Order_OpenPrice" xml:space="preserve">
     <value>##Order_OpenPrice##</value>
   </data>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>##AvailableVolume##</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>##Currency##</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>##LockedVolume##</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>##Volume##</value>
+  </data>
   <data name="Copy" xml:space="preserve">
     <value>##Copy##</value>
   </data>
