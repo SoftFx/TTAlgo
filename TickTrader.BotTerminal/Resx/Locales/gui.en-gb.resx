@@ -414,4 +414,73 @@
   <data name="Order_OpenPrice" xml:space="preserve">
     <value>Open Price</value>
   </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Order_Comment" xml:space="preserve">
+    <value>Comment</value>
+  </data>
+  <data name="Order_Commission" xml:space="preserve">
+    <value>Commission</value>
+  </data>
+  <data name="Order_CurrentPrice" xml:space="preserve">
+    <value>Current Price</value>
+  </data>
+  <data name="Order_ExecutionTime" xml:space="preserve">
+    <value>Exec Time</value>
+  </data>
+  <data name="Order_Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Order_InstanceId" xml:space="preserve">
+    <value>Instance Id</value>
+  </data>
+  <data name="Order_Net_P_L" xml:space="preserve">
+    <value>Net P/L</value>
+  </data>
+  <data name="Order_P_L" xml:space="preserve">
+    <value>P/L</value>
+  </data>
+  <data name="Order_Swap" xml:space="preserve">
+    <value>Swap</value>
+  </data>
+  <data name="Order_S_L" xml:space="preserve">
+    <value>S/L</value>
+  </data>
+  <data name="Order_Tag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="Order_T_P" xml:space="preserve">
+    <value>T/P</value>
+  </data>
+  <data name="Position_CurrentPrice" xml:space="preserve">
+    <value>Current Price</value>
+  </data>
+  <data name="Position_Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Position_ModifiedTime" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="Position_Net_P_L" xml:space="preserve">
+    <value>Net P/L</value>
+  </data>
+  <data name="Position_OpenPrice" xml:space="preserve">
+    <value>OpenPrice</value>
+  </data>
+  <data name="Position_PriceDeviation" xml:space="preserve">
+    <value>Price Deviation</value>
+  </data>
+  <data name="Position_Swap" xml:space="preserve">
+    <value>Swap</value>
+  </data>
+  <data name="Position_Volume" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="ShowCurrentPrice" xml:space="preserve">
+    <value>Show Current Price</value>
+  </data>
+  <data name="ShowSwap" xml:space="preserve">
+    <value>Show Swap</value>
+  </data>
 </root>

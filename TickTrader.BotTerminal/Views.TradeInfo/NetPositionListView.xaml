@@ -14,19 +14,19 @@
             </DataGrid.Resources>
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    <MenuItem Header="{l:Resx Copy}" Command="ApplicationCommands.Copy"></MenuItem>
                     <Separator/>
-                    <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrectPriceShow}}"/>
-                    <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
+                    <MenuItem Header="{l:Resx ShowCurrentPrice}" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrectPriceShow}}"/>
+                    <MenuItem Header="{l:Resx ShowSwap}" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Position.Id}"/>
+                <DataGridTextColumn Header="{l:Resx Position_Id}" Width="*" Binding="{Binding Position.Id}"/>
                 <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Position.Symbol}"/>
-                <DataGridTextColumn Header="Modified" Width="*" Binding="{Binding Position.Modified, Converter={StaticResource FullDateTimeFormat}}"/>
+                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="*" Binding="{Binding Position.Modified, Converter={StaticResource FullDateTimeFormat}}"/>
                 <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Position.Side}"/>
-                <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Position.Amount}"/>
-                <DataGridTextColumn Header="Open Price" Width="*">
+                <DataGridTextColumn Header="{l:Resx Position_Volume}" Width="*" Binding="{Binding Position.Amount}"/>
+                <DataGridTextColumn Header="{l:Resx Position_OpenPrice}" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}">
                             <Binding Path="Position.Price"/>
@@ -34,7 +34,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate" Visibility="{Binding Visibility, Source={StaticResource CurrectPriceShow}}">
+                <DataGridTextColumn Header="{l:Resx Position_CurrentPrice}" Width="*" SortMemberPath="CurrentPrice.Rate" Visibility="{Binding Visibility, Source={StaticResource CurrectPriceShow}}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="CurrentPrice.Rate"/>
@@ -42,7 +42,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Price Deviation" Width="*">
+                <DataGridTextColumn Header="{l:Resx Position_PriceDeviation}" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}">
                             <Binding Path="Position.DeviationPrice"/>
@@ -50,8 +50,8 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Position.Swap}" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}"/>
-                <DataGridTextColumn Header="Net P/L" Width="*">
+                <DataGridTextColumn Header="{l:Resx Position_Swap}" Width="*" Binding="{Binding Position.Swap}" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}"/>
+                <DataGridTextColumn Header="{l:Resx Position_Net_P_L}" Width="*">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}">
                             <Binding Path="Position.NetProfit"/>
