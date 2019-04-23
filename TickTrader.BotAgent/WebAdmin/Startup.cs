@@ -25,13 +25,14 @@ namespace TickTrader.BotAgent.WebAdmin
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; private set; }
+
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; private set; }
-        private string JwtKey => Configuration.GetJwtKey();
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -40,12 +41,10 @@ namespace TickTrader.BotAgent.WebAdmin
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
-            services.AddTransient<ITokenOptions>(x => new TokenOptions
-            {
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
-                    SecurityAlgorithms.HmacSha256)
-            });
-            services.AddTransient<IAuthManager, AuthManager>();
+
+            var tokenProvider = new JwtSecurityTokenProvider(Configuration);
+            services.AddSingleton<ISecurityTokenProvider, JwtSecurityTokenProvider>(s => tokenProvider);
+            services.AddSingleton<IAuthManager, AuthManager>();
 
             // .NET Core SDK 2.1.4 has broken core-1.1 apps compatibility with net4xx targets
             // This workaround should avoid problematic code paths
@@ -74,16 +73,8 @@ namespace TickTrader.BotAgent.WebAdmin
             .AddJwtBearer(jwtOptions =>
             {
                 jwtOptions.SecurityTokenValidators.Clear();
-                jwtOptions.SecurityTokenValidators.Add(new JwtTokenValidator(Configuration));
-                jwtOptions.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
+                jwtOptions.SecurityTokenValidators.Add(tokenProvider);
+                jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
             });
         }
 

@@ -48,10 +48,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 _tokenHandler.ValidateToken(token, _validationParams, out var securityToken);
 
                 var jwtToken = (JwtSecurityToken)securityToken;
-                var username = jwtToken.Claims.Last(c => c.Type == JwtRegisteredClaimNames.Sub);
-                var sessionId = jwtToken.Claims.Last(c => c.Type == JwtRegisteredClaimNames.Jti);
-                var minorVersion = jwtToken.Claims.Last(c => c.Type == MinorVersionClaim);
-                var accessLevel = jwtToken.Claims.Last(c => c.Type == AccessLevelClaim);
+                var username = jwtToken.Claims.LastOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+                var sessionId = jwtToken.Claims.LastOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
+                var minorVersion = jwtToken.Claims.LastOrDefault(c => c.Type == MinorVersionClaim);
+                var accessLevel = jwtToken.Claims.LastOrDefault(c => c.Type == AccessLevelClaim);
 
                 if (username == null)
                     throw new ArgumentException($"Missing claim '{nameof(username)}'");
