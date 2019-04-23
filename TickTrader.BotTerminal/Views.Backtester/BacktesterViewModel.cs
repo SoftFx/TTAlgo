@@ -237,6 +237,7 @@ namespace TickTrader.BotTerminal
                     : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginConfig);
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
+                _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;
                 _openedPluginSetup.Closed += PluginSetupClosed;
                 _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
                 return _openedPluginSetup;
