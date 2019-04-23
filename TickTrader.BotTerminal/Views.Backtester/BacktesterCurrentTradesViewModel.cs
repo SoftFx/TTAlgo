@@ -54,6 +54,7 @@ namespace TickTrader.BotTerminal
             backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
 
             _connection.EmulateDisconnect();
+            _client.Deinit();
         }
 
         private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
