@@ -109,6 +109,8 @@
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\DictionarySyncrhonizer.cs" />
     <Compile Include="Lib\EnumerableExt.cs" />
+    <Compile Include="Lib\HashCode.cs" />
+    <Compile Include="Lib\InvariantFormat.cs" />
     <Compile Include="Lib\PathEscaper.cs" />
     <Compile Include="Lib\SetSynchronizer.cs" />
     <Compile Include="Lib\TaskExt.cs" />
@@ -191,6 +193,7 @@
     <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientModel.cs" />
+    <Compile Include="Model\TimeFrameModel.cs" />
     <Compile Include="Model\TradeHistoryProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

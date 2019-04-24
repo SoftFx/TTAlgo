@@ -317,7 +317,7 @@ namespace TickTrader.BotTerminal
 
         private string GetFormattedDateTimeString(DateTime? value, string format)
         {
-            return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : null;
+            return value.HasValue ? value.Value.ToString(format, AppBootstrapper.CultureCache) : null;
         }
 
         private DateTime SmartUpdateDateTime(int direction)
@@ -351,7 +351,7 @@ namespace TickTrader.BotTerminal
         {
             DateTime datetime;
 
-            if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
+            if (!DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
                 //if (!DateTime.TryParse(value, out datetime))
                     return null;
 

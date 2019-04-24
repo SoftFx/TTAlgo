@@ -74,7 +74,7 @@ namespace TickTrader.Algo.Core
                     Snapshot.Add(buffer[i]);
             }
 
-            if (streamEnabled && !isRealtimeStream)
+            if (streamEnabled && !isRealtimeStream && _fixture.Buffer != null)
             {
                 // copy all data from buffer to update
                 for (int i = 0; i < _fixture.Count; i++)

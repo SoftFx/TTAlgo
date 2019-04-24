@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Core
         public double? SrcAssetMovement { get; set; }
         public double? SrcAssetAmount { get; set; }
         public DateTime PositionClosed { get; set; }
-        public double PositionClosePrice { get; set; }
+        public double PositionClosePrice => ClosePrice;
         public double PositionCloseRequestedPrice { get; set; }
         public double PositionLeavesQuantity { get; set; }
         public OrderSide TradeRecordSide { get; set; }
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Core
         public string MinCommissionCurrency { get; set; }
         public int? Magic { get; set; }
         public bool IsReducedCloseCommission { get; set; }
-        public double PositionLastQuantity { get; set; }
+        public double PositionLastQuantity => CloseQuantity;
         public double PositionQuantity { get; set; }
         public double PosOpenPrice { get; set; }
         public double PosOpenReqPrice { get; set; }

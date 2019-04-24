@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
@@ -15,9 +16,10 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterReportViewModel : EntityBase
     {
-        private TestingStatistics _stats;
         private Property<Dictionary<string, string>> _statProperties;
         private IntProperty _depositDigits;
+        private OhlcDataSeries<DateTime, double> _equityData;
+        private OhlcDataSeries<DateTime, double> _marginData;
 
         public BacktesterReportViewModel()
         {
@@ -30,24 +32,13 @@ namespace TickTrader.BotTerminal
         public ObservableCollection<BacktesterStatChartViewModel> LargeCharts { get; } = new ObservableCollection<BacktesterStatChartViewModel>();
         public Var<int> DepositDigits => _depositDigits.Var;
 
-        //public TestingStatistics Stats
-        //{
-        //    get => _stats;
-        //    set
-        //    {
-        //        if (_stats != value)
-        //        {
-        //            _stats = value;
-        //            RebuildReport(value ?? new TestingStatistics());
-        //        }
-        //    }
-        //}
-
         public void Clear()
         {
             _statProperties.Value = null;
             SmallCharts.Clear();
             LargeCharts.Clear();
+            _equityData = null;
+            _marginData = null;
         }
 
         public void SaveAsText(Stream file)
@@ -61,6 +52,30 @@ namespace TickTrader.BotTerminal
                     writer.WriteLine(prop.Value);
                 }
             }
+        }
+
+        public Task SaveMarginCsv(Stream entryStream, IActionObserver observer)
+        {
+            return SaveCsv(entryStream, observer, "margin", _marginData);
+        }
+
+        public Task SaveEquityCsv(Stream entryStream, IActionObserver observer)
+        {
+            return SaveCsv(entryStream, observer, "equity", _equityData);
+        }
+
+        private Task SaveCsv(Stream entryStream, IActionObserver observer, string dataName, OhlcDataSeries<DateTime, double> data)
+        {
+            observer.SetMessage("Saving " + dataName + "...");
+
+            return Task.Factory.StartNew(() =>
+            {
+                using (var writer = new StreamWriter(entryStream))
+                {
+                    for (int i = 0; i < data.Count; i++)
+                        writer.WriteLine("{0:G},{1},{2},{3},{4}", data.XValues[i],  data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
+                }
+            });
         }
 
         public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor)
@@ -105,17 +120,18 @@ namespace TickTrader.BotTerminal
             if (pluginType == AlgoTypes.Robot)
             {
                 SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by hours", ReportDiagramTypes.CategoryHistogram)
-                .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns)
-                .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns));
+                    .AddStackedColumns(newStats.ProfitByHours, ReportSeriesStyles.ProfitColumns, false)
+                    .AddStackedColumns(newStats.LossByHours, ReportSeriesStyles.LossColumns, false));
 
                 SmallCharts.Add(new BacktesterStatChartViewModel("Profits and losses by weekdays", ReportDiagramTypes.CategoryHistogram)
-                    .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns)
-                    .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns));
+                    .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns, true)
+                    .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns, true));
             }
         }
 
         public void AddEquityChart(OhlcDataSeries<DateTime, double> bars)
         {
+            _equityData = bars;
             var chart = new BacktesterStatChartViewModel("Equity", ReportDiagramTypes.CategoryDatetime);
             chart.AddBarSeries(bars, ReportSeriesStyles.Equity);
             LargeCharts.Add(chart);
@@ -123,6 +139,7 @@ namespace TickTrader.BotTerminal
 
         public void AddMarginChart(OhlcDataSeries<DateTime, double> bars)
         {
+            _marginData = bars;
             var chart = new BacktesterStatChartViewModel("Margin", ReportDiagramTypes.CategoryDatetime);
             chart.AddBarSeries(bars, ReportSeriesStyles.Margin);
             LargeCharts.Add(chart);

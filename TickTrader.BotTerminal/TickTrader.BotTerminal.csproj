@@ -228,6 +228,14 @@
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
     <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
+    <Compile Include="Controls.Chart\AutoScrollModifier.cs" />
+    <Compile Include="Controls.Chart\AxisModifierBase.cs" />
+    <Compile Include="Controls.Chart\DayNameLabelProvider.cs" />
+    <Compile Include="Controls.Chart\PixelTickModifier.cs" />
+    <Compile Include="Controls.Chart\PositionMarker.cs" />
+    <Compile Include="Controls.Chart\ScrollBindingModifier.cs" />
+    <Compile Include="Controls.Chart\StockLabelProvider.cs" />
+    <Compile Include="Controls.Chart\StockLabelModifier.cs" />
     <Compile Include="Controls.Chart\XDragModifier.cs" />
     <Compile Include="Controls.Chart\ViewportManager.cs" />
     <Compile Include="Controls.Chart\ZoomControl.cs" />
@@ -312,6 +320,7 @@
     <Compile Include="Infrustructure\WindowStorageModel.cs" />
     <Compile Include="Infrustructure\WindowManager.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="Lib\ChartBarVectorWithMarkers.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />

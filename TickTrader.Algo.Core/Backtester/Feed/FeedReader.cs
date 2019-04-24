@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core
             MoveNext();
         }
 
-        public DateTime NextOccurrance => _nextRate.Time;
+        public DateTime NextOccurrance { get; private set; }
         public bool IsCompeted { get; private set; }
 
         public RateUpdate Take()
@@ -38,7 +38,13 @@ namespace TickTrader.Algo.Core
         private void MoveNext()
         {
             IsCompeted = !_e.MoveNext();
-            _nextRate = _e.Current;
+            if (IsCompeted)
+                NextOccurrance = DateTime.MaxValue;
+            else
+            {
+                _nextRate = _e.Current;
+                NextOccurrance = _nextRate.Time;
+            }
         }
 
         public void Dispose()

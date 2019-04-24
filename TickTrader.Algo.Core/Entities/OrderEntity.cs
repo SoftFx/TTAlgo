@@ -79,6 +79,8 @@ namespace TickTrader.Algo.Core
         public double Volume => RemainingVolume;
         public double? InitialVolume => RequestedVolume;
         #endregion
+
+        public long OrderNum => long.Parse(OrderId);
     }
 
     [Serializable]

@@ -36,6 +36,7 @@ namespace TickTrader.BotTerminal
             IsBalanceTransaction = transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
 
             OrderId = GetId(transaction);
+            ActionId = transaction.ActionId;
             OpenTime = GetOpenTime(transaction);
             Type = GetTransactionType(transaction);
             Side = GetTransactionSide(transaction);
@@ -65,7 +66,9 @@ namespace TickTrader.BotTerminal
             Reason = GetReason(transaction);
             Slippage = GetSlippage(transaction);
             // should be last (it's based on other fields)
-            UniqueId = GetUniqueId(transaction);
+            long orderNum;
+            UniqueId = GetUniqueId(transaction, out orderNum);
+            OrderNum = orderNum;
         }
 
         public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, SymbolModel symbol = null)
@@ -86,6 +89,8 @@ namespace TickTrader.BotTerminal
 
         public TradeReportKey UniqueId { get; protected set; }
         public string OrderId { get; protected set; }
+        public int ActionId { get; }
+        public long OrderNum { get; }
         public DateTime OpenTime { get; protected set; }
         public AggregatedTransactionType Type { get; protected set; }
         public TransactionSide Side { get; protected set; }
@@ -157,16 +162,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected virtual TradeReportKey GetUniqueId(TradeReportEntity transaction)
+        protected virtual TradeReportKey GetUniqueId(TradeReportEntity transaction, out long orderNum)
         {
             bool hasMultipleRecords = transaction.ActionId > 1 || RemainingQuantity > 0;
 
-            var numericOrderId = long.Parse(transaction.OrderId);
+            orderNum = long.Parse(transaction.OrderId);
 
             if (hasMultipleRecords)
-                return new TradeReportKey(numericOrderId, transaction.ActionId);
+                return new TradeReportKey(orderNum, transaction.ActionId);
             else
-                return new TradeReportKey(numericOrderId, null);
+                return new TradeReportKey(orderNum, null);
 
             //if (hasMultipleRecords)
             //    return $"{transaction.OrderId}-{transaction.ActionId}";

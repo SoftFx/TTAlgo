@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Pre-download symbol";
         }
 
-        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
+        public IEnumerable<TimeFrames> AvailableTimeFrames => TimeFrameModel.AllTimeFrames;
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
         public IObservableList<SymbolData> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }

@@ -9,6 +9,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DefaultValue = -1)]
         public int SetBuffLength { get; set; }
 
+        [Parameter(DefaultValue = 50)]
+        public int Spread { get; set; }
+
         [Output(DisplayName = "Best Bid", Target = OutputTargets.Overlay, DefaultColor = Colors.Blue)]
         public DataSeries BestBid { get; set; }
 
@@ -23,19 +26,19 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void OnStart()
         {
-            for (var i = Bars.Count - 1; i >= 0; i--)
+            for (int i = 0; i < Bars.Count; i++)
             {
-                BestBid[i] = Symbol.Bid;
-                BestAsk[i] = Symbol.Ask;
+                BestBid[i] = Bars[i].Close;
+                BestAsk[i] = Bars[i].Close + Symbol.Point * Spread;
             }
         }
 
         protected override void OnQuote(Quote quote)
         {
             BestBid[0] = quote.Bid;
-            BestAsk[0] = quote.Ask;
-            Status.WriteLine($"Best Ask - {BestAsk.Count}");
-            Status.WriteLine($"Best Bid - {BestBid.Count}");
+            BestAsk[0] = quote.Bid + Symbol.Point * Spread;
+            Status.WriteLine($"Best Bid - {BestBid[0]}");
+            Status.WriteLine($"Best Ask - {BestAsk[0]}");
             Status.Flush();
         }
     }

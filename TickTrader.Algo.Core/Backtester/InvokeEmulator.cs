@@ -32,6 +32,7 @@ namespace TickTrader.Algo.Core
         private bool _normalStopFlag;
         private bool _canelRequested;
         private bool _pauseRequested;
+        private bool _stopPhase;
         private Exception _fatalError;
         private Action _exStartAction;
         private Action _extStopAction;
@@ -122,7 +123,7 @@ namespace TickTrader.Algo.Core
                 if (State == EmulatorStates.Stopped) // can be canceled prior to execution due to CancellationToken
                     _canelRequested = true;
 
-                if (State == EmulatorStates.Running || State == EmulatorStates.Paused)
+                if (State == EmulatorStates.Running || State == EmulatorStates.WarmingUp || State == EmulatorStates.Paused)
                 {
                     _canelRequested = true;
                     _pauseRequested = false;
@@ -203,6 +204,7 @@ namespace TickTrader.Algo.Core
             _extStopAction();
             //EmulateStop();
             //EnableStopPhase();
+            _stopPhase = true;
             EmulateEvents();
         }
 
@@ -212,10 +214,10 @@ namespace TickTrader.Algo.Core
             {
                 _checkStateFlag = false;
 
-                if (_canelRequested)
+                if (State != EmulatorStates.Stopping && _canelRequested)
                 {
                     _canelRequested = false;
-                    ChangeState(EmulatorStates.Stopped);
+                    ChangeState(EmulatorStates.Stopping);
                     throw new OperationCanceledException("Canceled.");
                 }
 
@@ -261,9 +263,9 @@ namespace TickTrader.Algo.Core
                 lock (_syncState)
                 {
                     if (State == EmulatorStates.Stopping)
-                        ChangeState(EmulatorStates.Stopping);
-                    else
                         ChangeState(EmulatorStates.Stopped);
+                    else
+                        ChangeState(EmulatorStates.Stopping);
                 }
                 throw;
             }
@@ -492,7 +494,7 @@ namespace TickTrader.Algo.Core
                     return _tradeQueue.Dequeue();
 
                 bool isTrade;
-                var next = DequeueUpcoming(out isTrade);
+                var next = DequeueUpcoming(out isTrade, true);
 
                 if (next == null)
                     return null;
@@ -518,15 +520,18 @@ namespace TickTrader.Algo.Core
             else if (_feedQueue.Count > 0)
                 return _feedQueue.Dequeue();
             else
-                return DequeueUpcoming(out _);
+                return DequeueUpcoming(out _, false);
         }
 
-        private object DequeueUpcoming(out bool isTrade)
+        private object DequeueUpcoming(out bool isTrade, bool syncOp)
         {
-            if (_feedReader.IsCompeted && _delayedQueue.IsEmpty)
+            if (_feedReader.IsCompeted)
             {
-                isTrade = false;
-                return null;
+                if ((!_stopPhase && !syncOp) || _delayedQueue.IsEmpty)
+                {
+                    isTrade = false;
+                    return null;
+                }
             }
 
             var next = _eventAggr.Dequeue();

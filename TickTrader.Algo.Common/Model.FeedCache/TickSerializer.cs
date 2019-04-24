@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model
 
             return reader.ReadFixedSizeArray(r =>
             {
-                var time = reader.ReadDateTime();
+                var time = reader.ReadDateTime(DateTimeKind.Utc);
 
                 var bids = r.ReadFixedSizeArray(r1 =>
                 {

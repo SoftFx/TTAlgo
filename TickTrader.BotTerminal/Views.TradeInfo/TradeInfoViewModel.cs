@@ -13,12 +13,12 @@ namespace TickTrader.BotTerminal
     class TradeInfoViewModel: PropertyChangedBase
     {
         public TradeInfoViewModel(TraderClientModel clientModel, ConnectionManager cManager, ProfileManager _profileStorageModel = null)
-            : this(clientModel.Account, clientModel.Symbols, clientModel.Currencies, clientModel, _profileStorageModel)
+            : this(clientModel.Account, clientModel.Symbols, clientModel.Currencies, clientModel, true, _profileStorageModel)
         {
         }
 
         public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolModel> symbols,
-            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, ProfileManager _profileStorageModel = null)
+            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager _profileStorageModel = null)
         {
             var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo, _profileStorageModel);
             var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo);
@@ -26,6 +26,8 @@ namespace TickTrader.BotTerminal
             Orders = new OrderListViewModel(accModel, symbols, connectionInfo, _profileStorageModel);
             Assets = new AssetsViewModel(accModel, currencies.Snapshot, connectionInfo);
             AccountStats = new AccountStatsViewModel(accModel, connectionInfo);
+
+            Orders.AutoSizeColumns = autoSizeColumns;
         }
 
         public OrderListViewModel Orders { get; }

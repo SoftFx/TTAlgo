@@ -85,7 +85,7 @@
                 </s:SciChartSurface.YAxis>
 
                 <s:SciChartSurface.XAxis>
-                    <s:NumericAxis Style="{StaticResource AxisBaseStyle}" AutoRange="Always"
+                    <s:NumericAxis Name="xAxis" Style="{StaticResource AxisBaseStyle}" AutoRange="Always"
                                    MinorDelta="1" MajorDelta="1" AutoTicks="False"/>
                 </s:SciChartSurface.XAxis>
 
@@ -99,6 +99,16 @@
             </s:SciChartSurface>
             
         </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding XAxisDayNames}" Value="True">
+                <Setter TargetName="xAxis" Property="LabelProvider">
+                    <Setter.Value>
+                        <l:DayNameLabelProvider/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
 
     </ControlTemplate>
 

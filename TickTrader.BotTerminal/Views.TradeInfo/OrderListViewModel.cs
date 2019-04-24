@@ -38,6 +38,7 @@ namespace TickTrader.BotTerminal
         public ProviderColumnsState StateProvider { get; private set; }
         public IObservableList<OrderViewModel> Orders { get; private set; }
         public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
+        public bool AutoSizeColumns { get; set; }
 
         private void UpdateProvider()
         {

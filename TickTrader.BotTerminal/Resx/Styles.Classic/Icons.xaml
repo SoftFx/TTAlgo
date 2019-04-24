@@ -61,6 +61,7 @@
     <Path x:Key="ZoomInToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ZoomInIconPath}"/>
     <Path x:Key="ZoomOutToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource ZoomOutIconPath}" />
     <Path x:Key="CrosshairsToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource CrosshairsIconPath}" />
+    <Path x:Key="AutoScrollToolIcon" x:Shared="false" Style="{StaticResource ToolBarIconStyle}" Data="{DynamicResource AutoScrollIconPath}" />
 
     <StackPanel x:Key="SaveToolBarIcon" Orientation="Horizontal" x:Shared="false">
         <Path Style="{StaticResource ToolBarIconStyle}" Fill="Black" Data="{DynamicResource InboxPath}"/>

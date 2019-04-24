@@ -54,7 +54,7 @@
                   SelectionMode="Single">
                 <DataGrid.Columns>
                     <DataGridTextColumn SortMemberPath="TimeKey" 
-                                    Binding="{Binding TimeKey.Timestamp, Converter={StaticResource FullDateTimeFormat}}"
+                                    Binding="{Binding TimeKey.Timestamp, Converter={StaticResource ExtDateTimeFormat}}"
                                     SortDirection="Descending" Header="{l:Resx Journal_Time}" Width="Auto"/>
                     <DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="*" ClipboardContentBinding="{Binding Message}"
                                             CellTemplate="{StaticResource BotMessageCellTemplate}"/>

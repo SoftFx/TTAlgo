@@ -25,12 +25,23 @@
         <Setter Property="StrokeThickness" Value="0.6"/>
         <Setter Property="LabelPlacement" Value="Axis"/>
         <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="10"/>
     </Style>
 
     <Style x:Key="AskBidAxisMarkerStyle" TargetType="s:AxisMarkerAnnotation">
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Foreground" Value="White"/>
+        <Setter Property="MarkerPointWidth" Value="4"/>
+        <Setter Property="IsEditable" Value="False"/>
+    </Style>
+
+    <Style x:Key="ShiftMarkerStyle" TargetType="s:AxisMarkerAnnotation">
+        <Setter Property="MarkerPointWidth" Value="4"/>
+        <Setter Property="IsEditable" Value="True"/>
+        <Setter Property="Background" Value="Gray"/>
+        <Setter Property="Y1" Value="50"/>
     </Style>
 
     <DataTemplate DataType="{x:Type UIElement}">
@@ -54,78 +65,168 @@
         </Setter>
     </Style>
 
+    <!-- Overview Axis Style -->
+
+    <!--<Style x:Key="OverviewAxisStyle" TargetType="s:AxisBase">
+        <Setter Property="DrawLabels" Value="False"/>
+        <Setter Property="DrawMajorBands" Value="False"/>
+        <Setter Property="DrawMajorGridLines" Value="False"/>
+        <Setter Property="DrawMajorTicks" Value="False"/>
+        <Setter Property="DrawMinorGridLines" Value="False"/>
+        <Setter Property="DrawMinorTicks" Value="False"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>-->
+    
+    <!-- Overview Scrollbar Style -->
+
+    <!--<Style x:Key="OverviewScrollbarStyle" TargetType="s:SciChartScrollbar">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="GripsLength" Value="25" />
+        <Setter Property="GripsThickness" Value="5" />
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="ViewportStyle">
+            <Setter.Value>
+                <Style TargetType="Control">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="Gray"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="GripsStyle">
+            <Setter.Value>
+                <Style TargetType="Control">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Background" Value="LightGray"/>
+                    <Setter Property="Foreground" Value="Gray"/>
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="NonSelectedAreaStyle">
+            <Setter.Value>
+                <Style TargetType="Path">
+                    <Setter Property="Fill" Value="Transparent" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>-->
+
     <l:BindingProxy x:Key="GridLinesColorProxy" Data="{DynamicResource ChartGridLinesColor}" />
 
+    <!-- ControlTemplate -->
+
     <ControlTemplate x:Key="AlgoChartControl" x:Shared="False">
-        <ItemsControl>
-            <ItemsControl.Resources>
-                <CollectionViewSource x:Key="outputPanesViewSrc" Source="{Binding Panes}"/>
-            </ItemsControl.Resources>
-            <ItemsControl.ItemsSource>
-                <CompositeCollection>
-                    <Grid>
-                        <s:SciChartSurface x:Name="MainChartControl"
-                                           RenderableSeries="{s:SeriesBinding Series}"
-                                           Background="{TemplateBinding Background}"
-                                           Style="{DynamicResource MainChartStyle}"
-                                           l:SciChartBehavior.XAxis="{Binding TimeAxis.Value}"
-                                           l:SciChartBehavior.XAxisStyle="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
-                                           s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId.Value}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <ItemsControl Grid.Row="0">
+                <ItemsControl.Resources>
+                    <CollectionViewSource x:Key="outputPanesViewSrc" Source="{Binding Panes}"/>
+                </ItemsControl.Resources>
+                <ItemsControl.ItemsSource>
+                    <CompositeCollection>
+                        <Grid>
+                            <s:SciChartSurface x:Name="MainChartControl"
+                                               RenderableSeries="{s:SeriesBinding Series}"
+                                               Background="{TemplateBinding Background}"
+                                               Style="{DynamicResource MainChartStyle}"
+                                               l:SciChartBehavior.XAxis="{Binding TimeAxis.Value}"
+                                               l:SciChartBehavior.XAxisStyle="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
+                                               s:SciChartGroup.VerticalChartGroup="{Binding ChartWindowId.Value}">
 
-                            <s:SciChartSurface.ChartModifier>
-                                <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId.Value}">
-                                    <s:YAxisDragModifier IsEnabled="False"/>
-                                    <l:XDragModifier/>
-                                    <l:ZoomControl MinZoomScale="{Binding MinZoom}" MaxZoomScale="{Binding MaxZoom}"
+                                <s:SciChartSurface.ChartModifier>
+                                    <s:ModifierGroup s:MouseManager.MouseEventGroup="{Binding ChartWindowId.Value}">
+                                        <!--<s:YAxisDragModifier IsEnabled="False"/>-->
+                                        <l:XDragModifier/>
+                                        <l:ZoomControl MinZoomScale="{Binding MinZoom}" MaxZoomScale="{Binding MaxZoom}"
                                                    ZoomScale="{Binding Zoom.Value, Mode=TwoWay}" />
-                                    <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
-                                    <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
-                                    <s:TooltipModifier ShowTooltipOn="Always"/>
-                                    <s:CursorModifier ShowTooltipOn="Always"
-                                          ShowTooltip="True"
-                                          TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
-                                          IsEnabled="{Binding IsCrosshairEnabled.Value}"/>
-                                </s:ModifierGroup>
-                            </s:SciChartSurface.ChartModifier>
+                                        <l:StockLabelModifier Timeframe="{Binding Timeframe.Value}"/>
+                                        <l:PixelTickModifier MinDelta="75"/>
+                                        <l:AutoScrollModifier IsEnabled="{Binding AutoScroll.Value, Mode=TwoWay}"/>
+                                        <l:ScrollBindingModifier x:Name="scrollBindProxy"/>
+                                        <s:MouseWheelZoomModifier ActionType="Pan" XyDirection="XDirection"/>
+                                        <s:ZoomPanModifier ClipModeX="ClipAtExtents"/>
+                                        <s:TooltipModifier ShowTooltipOn="Always"/>
+                                        <s:CursorModifier ShowTooltipOn="Always"
+                                                          ShowTooltip="True"
+                                                          TooltipContainerStyle="{StaticResource SymbolChartCursorTooltip_Style}"
+                                                          IsEnabled="{Binding IsCrosshairEnabled.Value}"/>
+                                    </s:ModifierGroup>
+                                </s:SciChartSurface.ChartModifier>
 
-                            <s:SciChartSurface.ViewportManager>
-                                <l:ViewportManager/>
-                            </s:SciChartSurface.ViewportManager>
+                                <s:SciChartSurface.ViewportManager>
+                                    <l:ViewportManager/>
+                                </s:SciChartSurface.ViewportManager>
 
-                            <s:SciChartSurface.YAxis>
-                                <s:NumericAxis Style="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
+                                <s:SciChartSurface.YAxis>
+                                    <s:NumericAxis Style="{TemplateBinding l:SciChartBehavior.XAxisStyle}"
                                                    TextFormatting="{Binding YAxisLabelFormat.Value}" CursorTextFormatting="{Binding YAxisLabelFormat.Value}"
+                                                   FontSize="10"
                                                    AutoRange="Always">
-                                </s:NumericAxis>
-                            </s:SciChartSurface.YAxis>
+                                    </s:NumericAxis>
+                                </s:SciChartSurface.YAxis>
 
-                            <s:SciChartSurface.Annotations>
-                                <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
-                                                            Stroke="{DynamicResource RateUpColor}" Y1="{Binding CurrentAsk.Value}"/>
-                                <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
-                                                            Stroke="{DynamicResource RateDownColor}" Y1="{Binding CurrentBid.Value}"/>
-                                <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
-                                                        Background="{DynamicResource RateUpColor}" Y1="{Binding CurrentAsk.Value}"/>
-                                <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
-                                                        Background="{DynamicResource RateDownColor}" Y1="{Binding CurrentBid.Value}"/>
-                            </s:SciChartSurface.Annotations>
+                                <s:SciChartSurface.Annotations>
+                                    <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                                Stroke="{DynamicResource RateUpColor}" Y1="{Binding CurrentAsk.Value}"/>
+                                    <s:HorizontalLineAnnotation Style="{StaticResource AskBidLineStyle}"
+                                                                Stroke="{DynamicResource RateDownColor}" Y1="{Binding CurrentBid.Value}"/>
+                                    <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                            Background="{DynamicResource RateUpColor}" Y1="{Binding CurrentAsk.Value}"/>
+                                    <s:AxisMarkerAnnotation Style="{StaticResource AskBidAxisMarkerStyle}"
+                                                            Background="{DynamicResource RateDownColor}" Y1="{Binding CurrentBid.Value}"/>
+                                    <s:AxisMarkerAnnotation Style="{StaticResource ShiftMarkerStyle}"/>
+                                </s:SciChartSurface.Annotations>
 
-                            <s:SciChartSurface.Resources>
-                                <ResourceDictionary Source="SeriesView.xaml"/>
-                            </s:SciChartSurface.Resources>
+                                <s:SciChartSurface.Resources>
+                                    <ResourceDictionary Source="SeriesView.xaml"/>  
+                                </s:SciChartSurface.Resources>
 
-                        </s:SciChartSurface>
-                        <ContentControl cal:View.Model="{Binding Overlay}"/>
-                    </Grid>
-                    <CollectionContainer Collection="{Binding Source={StaticResource outputPanesViewSrc}}"/>
-                </CompositeCollection>
-            </ItemsControl.ItemsSource>
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <l:SplitterPanel NewElementSizeRatio="0.2" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
+                            </s:SciChartSurface>
+                            <ContentControl cal:View.Model="{Binding Overlay}"/>
+                        </Grid>
+                        <CollectionContainer Collection="{Binding Source={StaticResource outputPanesViewSrc}}"/>
+                    </CompositeCollection>
+                </ItemsControl.ItemsSource>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <l:SplitterPanel NewElementSizeRatio="0.2" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+            <ScrollBar Name="ChartScrollBar" Grid.Row="1" Orientation="Horizontal" IsEnabled="True" Visibility="Collapsed"
+                       DataContext="{Binding ElementName=scrollBindProxy}"
+                       ViewportSize="{Binding ViewportSize.Value}" Value="{Binding Position.Value}"
+                       Minimum="{Binding Minimum.Value}" Maximum="{Binding Maximum.Value}"/>
+
+            <!--<s:SciChartSurface x:Name="OverviewSurface" Margin="0" Grid.Row="1"
+                               Background="{TemplateBinding Background}"
+                               RenderableSeries="{s:SeriesBinding DataSeries}">
+
+                <s:SciChartSurface.XAxis>
+                    <s:CategoryDateTimeAxis Style="{StaticResource OverviewAxisStyle}" AutoRange="Always" />
+                </s:SciChartSurface.XAxis>
+
+                <s:SciChartSurface.YAxis>
+                    <s:NumericAxis Style="{StaticResource OverviewAxisStyle}" AutoRange="Always"/>
+                </s:SciChartSurface.YAxis>
+
+            </s:SciChartSurface>
+
+            <s:SciChartScrollbar Grid.Row="1" Style="{StaticResource OverviewScrollbarStyle}" Margin="0"
+                                 Axis="{Binding Path=XAxis, ElementName=MainChartControl}"
+                                 Height="40"/>-->
+        </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding ShowScrollbar}" Value="True">
+                <Setter TargetName="ChartScrollBar" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
 
     </ControlTemplate>
 

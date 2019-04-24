@@ -1,4 +1,5 @@
 ﻿using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model.Setup
 {
@@ -18,7 +19,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public string Id { get; set; }
 
-
         public SymbolToken(string name)
             : this(name, SymbolOrigin.Online, name)
         {
@@ -36,6 +36,18 @@ namespace TickTrader.Algo.Common.Model.Setup
             Name = name;
             Origin = origin;
             Id = id;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var otherInfo = obj as ISymbolInfo;
+            return otherInfo != null && otherInfo.Origin == Origin
+                && otherInfo.Name == Name && otherInfo.Id == Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name.GetHashCode(), Origin.GetHashCode());
         }
     }
 }

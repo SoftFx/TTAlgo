@@ -305,7 +305,7 @@
                     <DataGridTextColumn Header="Max Visible Volume" Width="70" Binding="{Binding MaxVisibleVolume}"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <DataGrid Name="cashGrid" ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False"
+            <DataGrid Name="cashGrid" ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" HorizontalAlignment="Stretch"
                   Visibility="{Binding Data.IsCachAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"
                   Style="{DynamicResource DataGrid_Style}"
                   ClipboardCopyMode="IncludeHeader"
@@ -455,13 +455,13 @@
             </DataGrid>
         </Grid>
         <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding AutoSizeColumns}" Value="False">
+            <!--<DataTrigger Binding="{Binding AutoSizeColumns}" Value="False">
                 <Setter TargetName="netGrid" Property="HorizontalAlignment" Value="Left"/>
-                <!--<Setter TargetName="netGrid" Property="Width" Value="Auto"/>-->
+                --><!--<Setter TargetName="netGrid" Property="Width" Value="Auto"/>--><!--
                 <Setter TargetName="grossGrid" Property="HorizontalAlignment" Value="Left"/>
                 <Setter TargetName="grossGrid" Property="Width" Value="Auto"/>
                 <Setter TargetName="cashGrid" Property="HorizontalAlignment" Value="Left"/>
-            </DataTrigger>
+            </DataTrigger>-->
         </ControlTemplate.Triggers>
     </ControlTemplate>
 

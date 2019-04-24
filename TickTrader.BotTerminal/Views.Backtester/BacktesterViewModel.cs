@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using Microsoft.Win32;
+using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,8 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterViewModel : Screen, IWindowModel, IAlgoSetupMetadata, IPluginIdProvider, IAlgoSetupContext
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _env;
         private IShell _shell;
         private SymbolCatalog _catalog;
@@ -50,6 +53,7 @@ namespace TickTrader.BotTerminal
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
+        private BacktesterPluginSetupViewModel _openedPluginSetup;
 
         private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
 
@@ -133,6 +137,9 @@ namespace TickTrader.BotTerminal
             {
                 AvailableModels.Value = EnumHelper.AllValues<TimeFrames>().Where(t => t >= a.New).ToList();
 
+                if (_openedPluginSetup != null)
+                    _openedPluginSetup.Setup.SelectedTimeFrame = a.New;
+
                 if (SelectedModel.Value < a.New)
                     SelectedModel.Value = a.New;
             });
@@ -144,6 +151,11 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedSymbol, a =>
             {
+                _mainSymbolToken.Id = a.New.Name;
+
+                if (_openedPluginSetup != null)
+                    _openedPluginSetup.Setup.MainSymbol = a.New.ToSymbolToken();
+
                 MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
             });
 
@@ -193,21 +205,11 @@ namespace TickTrader.BotTerminal
         public BacktesterTradeGridViewModel TradeHistoryPage { get; }
         public BacktesterCurrentTradesViewModel TradesPage { get; } = new BacktesterCurrentTradesViewModel();
 
-        public void OpenPluginSetup()
-        {
-            var setup = PluginConfig == null
-                ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo())
-                : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginConfig);
-            _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
-            setup.Closed += PluginSetupClosed;
-            //_shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", setup);
-        }
-
         public async void OpenTradeSetup()
         {
             var setup = new BacktesterTradeSetupViewModel(_settings, _client.SortedCurrenciesNames);
 
-            _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
+            _localWnd.OpenMdiWindow(SetupWndKey, setup);
 
             if (await setup.Result)
             {
@@ -222,8 +224,29 @@ namespace TickTrader.BotTerminal
             MainSymbolSetup.PrintCacheData(SelectedModel.Value);
         }
 
-        public void SaveResults()
+        #region Plugin Setup
+
+        private const string SetupWndKey = "SetupAuxWnd";
+
+        public void OpenPluginSetup()
         {
+            _localWnd.OpenOrActivateWindow(SetupWndKey, () =>
+            {
+                _openedPluginSetup = PluginConfig == null
+                    ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo())
+                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginConfig);
+                //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
+                _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
+                _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;
+                _openedPluginSetup.Closed += PluginSetupClosed;
+                _openedPluginSetup.Setup.ConfigLoaded += Setup_ConfigLoaded;
+                return _openedPluginSetup;
+            });
+        }
+
+        private void CloseSetupDialog()
+        {
+            _localWnd.CloseWindowByKey(SetupWndKey);
         }
 
         private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
@@ -232,7 +255,18 @@ namespace TickTrader.BotTerminal
                 PluginConfig = setup.GetConfig();
 
             setup.Closed -= PluginSetupClosed;
+            setup.Setup.ConfigLoaded -= Setup_ConfigLoaded;
+
+            _openedPluginSetup = null;
         }
+
+        private void Setup_ConfigLoaded(PluginConfigViewModel config)
+        {
+            MainSymbolSetup.SelectedSymbol.Value = _catalog.GetSymbol(config.MainSymbol);
+            MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame;
+        }
+
+        #endregion
 
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
@@ -335,10 +369,10 @@ namespace TickTrader.BotTerminal
                     {
                         try
                         {
-                            MainSymbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, SelectedModel.Value);
+                            MainSymbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, SelectedModel.Value, _isVisualizing.Value);
 
                             foreach (var symbolSetup in AdditionalSymbols)
-                                symbolSetup.Apply(_backtester, _emulteFrom, _emulateTo);
+                                symbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
 
                             _backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 
@@ -387,13 +421,12 @@ namespace TickTrader.BotTerminal
 
         private void FireOnStart(SymbolData mainSymbol, PluginSetupModel setup, Backtester tester)
         {
-            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester);
+            var symbols = GetAllSymbols().Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
+            var currecnies = _client.Currencies.Snapshot.Values.ToList();
+
+            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester, symbols);
             if (IsVisualizing.Value)
-            {
-                var symbols = GetAllSymbols().Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
-                var currecnies = _client.Currencies.Snapshot.Values.ToList();
                 TradesPage.Start(tester, currecnies, symbols);
-            }
         }
 
         private void FireOnStop(Backtester tester)
@@ -414,6 +447,7 @@ namespace TickTrader.BotTerminal
             var accType = _settings.AccType;
             var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
+            ChartPage.Append(accType, trRep);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)
@@ -464,7 +498,10 @@ namespace TickTrader.BotTerminal
                     var chartData = new OhlcDataSeries<DateTime, double>();
 
                     foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
-                        chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    {
+                        if (!double.IsNaN(bar.Open))
+                            chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    }
 
                     observer.SetProgress(totalCount);
 
@@ -482,6 +519,8 @@ namespace TickTrader.BotTerminal
             ///
 
             //var observer = new ActionOverlayViewModel(DoEmulation);
+
+            CloseSetupDialog();
 
             //ActionOverlay.Value = observer;
             IsRunning.Set();
@@ -538,17 +577,24 @@ namespace TickTrader.BotTerminal
         private void OnStartTesting()
         {
             _backtester.StateChanged += _backtester_StateChanged;
+            _backtester.Executor.ErrorOccurred += Executor_ErrorOccurred;
         }
 
         private void OnStopTesting()
         {
             _backtester.StateChanged -= _backtester_StateChanged;
+            _backtester.Executor.ErrorOccurred -= Executor_ErrorOccurred;
             _stateProp.Value = EmulatorStates.Stopped;
         }
 
         private void _backtester_StateChanged(EmulatorStates state)
         {
             _stateProp.Value = state;
+        }
+
+        private void Executor_ErrorOccurred(Exception ex)
+        {
+            _logger.Error(ex, "Error occurred in backtester!");
         }
 
         #endregion
@@ -583,6 +629,17 @@ namespace TickTrader.BotTerminal
                     var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
                     using (var entryStream = setupEntry.Open())
                         await Task.Run(() => SaveTestSetupAsText(pluginSetup, entryStream));
+
+                    if (pluginSetup.Metadata.Descriptor.Type == AlgoTypes.Robot)
+                    {
+                        var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
+                        using (var entryStream = equityEntry.Open())
+                            await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
+
+                        var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
+                        using (var entryStream = marginEntry.Open())
+                            await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
+                    }
                 }
             }
         }
@@ -757,7 +814,8 @@ namespace TickTrader.BotTerminal
         private void UpdateTradeSummary()
         {
             if (_settings.AccType == AccountTypes.Gross || _settings.AccType == AccountTypes.Net)
-                TradeSettingsSummary.Value = string.Format("{0} {1} {2} l:{3}", _settings.AccType, _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage);
+                TradeSettingsSummary.Value = string.Format("{0} {1} {2} L={3}, D={4}, {5}ms", _settings.AccType,
+                    _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage, "Default", _settings.ServerPingMs );
         }
 
         #region IAlgoSetupMetadata
