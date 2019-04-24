@@ -38,6 +38,9 @@ namespace TickTrader.Algo.Core
                     LoadAuxBuffer(buff);
             }
 
+            foreach (var buff in _auxBuffers)
+                buff.SyncByTime();
+
             _auxBuffers.Clear();
 
             IsStarted = true;
@@ -67,6 +70,8 @@ namespace TickTrader.Algo.Core
         void LoadFeed(DateTime from, DateTime to);
         void LoadFeed(int size);
         void LoadFeed(DateTime from, int size);
+
+        void SyncByTime();
     }
 
     public interface IFeedBuffer : ILoadableFeedBuffer, ITimeRef

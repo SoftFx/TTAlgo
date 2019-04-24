@@ -29,10 +29,7 @@ namespace TickTrader.Algo.Core
             sampler = BarSampler.Get(context.TimeFrame);
 
             if (refTimeline != null)
-            {
                 futureBarCache = new List<BarEntity>();
-                refTimeline.Appended += RefTimeline_Appended;
-            }
 
             var key = BarStrategy.GetKey(SymbolCode, priceType);
             Buffer = context.Builder.GetBarBuffer(key);
@@ -121,6 +118,7 @@ namespace TickTrader.Algo.Core
                 return new BufferUpdateResult();
 
             if (Count > 0)
+
             {
                 var lastBar = LastBar;
 
@@ -136,6 +134,17 @@ namespace TickTrader.Algo.Core
 
             AppendBar(bar);
             return new BufferUpdateResult() { ExtendedBy = 1 };
+        }
+
+        public void SyncByTime()
+        {
+            for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
+            {
+                var timeCoordinate = refTimeline[i];
+                Buffer.Append(CreateFillingBar(timeCoordinate)); // fill empty spaces
+            }
+
+            refTimeline.Appended += RefTimeline_Appended;
         }
 
         private void RefTimeline_Appended()
@@ -206,7 +215,8 @@ namespace TickTrader.Algo.Core
             {
                 if (data.Count > 0)
                     defaultBarValue = data[0].Open;
-                data.ForEach(AppendBar);
+                foreach (var bar in data)
+                    AppendBar(bar);
             }
 
             if (refTimeline != null)
@@ -240,6 +250,7 @@ namespace TickTrader.Algo.Core
         {
             var to = DateTime.UtcNow + TimeSpan.FromDays(2);
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
+            AppendSnapshot(data);
         }
     }
 }
