@@ -19,7 +19,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public int LineThickness { get; protected set; }
 
-
         public OutputSetupModel(OutputMetadata metadata)
         {
             Metadata = metadata;
@@ -30,7 +29,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override void Reset()
         {
-            IsEnabled = !HasError;
+            IsEnabled = !HasError && Metadata.Descriptor.Visibility;
             InitColor();
             InitThickness();
         }
@@ -66,7 +65,6 @@ namespace TickTrader.Algo.Common.Model.Setup
                 intThikness = 5;
             LineThickness = intThikness;
         }
-
 
         public class Invalid : OutputSetupModel
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
-using TickTrader.BotAgent.Extensions;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotAgent.BA.Models
 {

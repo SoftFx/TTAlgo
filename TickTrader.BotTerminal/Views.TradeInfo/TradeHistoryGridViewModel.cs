@@ -1,4 +1,5 @@
-﻿using Machinarium.Var;
+﻿using Caliburn.Micro;
+using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,9 +12,11 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeHistoryGridViewModel
+    internal class TradeHistoryGridViewModel : PropertyChangedBase
     {
-        public TradeHistoryGridViewModel(ICollection<TransactionReport> src)
+        private ProfileManager _profileManager;
+
+        public TradeHistoryGridViewModel(ICollection<TransactionReport> src, ProfileManager profile = null)
         {
             Items = new Property<ICollectionView>();
             Items.Value = CollectionViewSource.GetDefaultView(src);
@@ -27,6 +30,10 @@ namespace TickTrader.BotTerminal
 
             AutoSizeColumns = true;
             ConvertTimeToLocal = true;
+
+            _profileManager = profile;
+            if (_profileManager != null)
+                _profileManager.ProfileUpdated += UpdateProvider;
         }
 
         public Property<ICollectionView> Items { get; }
@@ -43,8 +50,9 @@ namespace TickTrader.BotTerminal
         public bool ConvertTimeToLocal { get; set; }
 
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;
+        public ProviderColumnsState StateProvider { get; private set; }
 
-        public void Refresh()
+        public override void Refresh()
         {
             Items.Value.Refresh();
         }
@@ -55,6 +63,15 @@ namespace TickTrader.BotTerminal
 
             Items.Value = CollectionViewSource.GetDefaultView(src);
             Items.Value.Filter = filterCopy;
+        }
+
+        private void UpdateProvider()
+        {
+            if (_profileManager.CurrentProfile.ColumnsShow != null)
+            {
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, nameof(TradeHistoryGridViewModel));
+                NotifyOfPropertyChange(nameof(StateProvider));
+            }
         }
     }
 }

@@ -14,8 +14,8 @@ namespace TickTrader.Algo.Core
         private BufferBlock<BotLogRecord> _logBuffer;
         private ActionBlock<BotLogRecord[]> _logSender;
         private IFixtureContext _context;
-        private CancellationTokenSource _stopSrc;
         private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
+        private Task _batchLinkTask;
 
         internal LogFixture(IFixtureContext context)
         {
@@ -31,7 +31,6 @@ namespace TickTrader.Algo.Core
                 var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
                 var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30 };
 
-                _stopSrc = new CancellationTokenSource();
                 _logBuffer = new BufferBlock<BotLogRecord>(bufferOptions);
                 _logSender = new ActionBlock<BotLogRecord[]>(msgList =>
                 {
@@ -45,7 +44,7 @@ namespace TickTrader.Algo.Core
                     }
                 }, senderOptions);
 
-                _logBuffer.BatchLinkTo(_logSender, 30);
+                _batchLinkTask = _logBuffer.BatchLinkTo(_logSender, 30);
             }
         }
 
@@ -57,8 +56,7 @@ namespace TickTrader.Algo.Core
                 {
                     _logBuffer.Complete();
                     await _logBuffer.Completion;
-                    await Task.Delay(100);
-                    _stopSrc.Cancel();
+                    await _batchLinkTask;
                     _logSender.Complete();
                     await _logSender.Completion;
                 }

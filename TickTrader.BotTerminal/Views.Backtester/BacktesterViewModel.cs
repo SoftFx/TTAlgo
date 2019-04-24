@@ -840,6 +840,11 @@ namespace TickTrader.BotTerminal
             return true;
         }
 
+        void IPluginIdProvider.RegisterPluginId(string pluginId)
+        {
+            return;
+        }
+
         #endregion IPluginIdProvider
 
         #region IAlgoSetupContext

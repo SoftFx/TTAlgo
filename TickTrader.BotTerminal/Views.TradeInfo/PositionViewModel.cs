@@ -12,21 +12,18 @@ namespace TickTrader.BotTerminal
 {
     class PositionViewModel : PropertyChangedBase, IDisposable
     {
-        public PositionViewModel(PositionModel position, SymbolModel symbol = null)
+        public PositionViewModel(PositionModel position)
         {
-            Symbol = symbol;
             Position = position;
 
-            PriceDigits = symbol?.PriceDigits ?? 5;
-            ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
+            PriceDigits = position?.SymbolModel?.PriceDigits ?? 5;
+            ProfitDigits = position?.SymbolModel?.QuoteCurrencyDigits ?? 2;
         }
 
         public int PriceDigits { get; private set; }
         public int ProfitDigits { get; private set; }
         public PositionModel Position { get; private set; }
-        public SymbolModel Symbol { get; private set; }
-
-        public RateDirectionTracker CurrentPrice => Position.Side == OrderSide.Buy ? Symbol?.BidTracker : Symbol?.AskTracker;
+        public RateDirectionTracker CurrentPrice => Position.Side == OrderSide.Buy ? Position?.SymbolModel?.BidTracker : Position?.SymbolModel?.AskTracker;
 
         public void Dispose()
         {

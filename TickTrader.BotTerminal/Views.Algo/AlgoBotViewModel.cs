@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

@@ -17,6 +17,7 @@ using ActorSharp;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using TickTrader.Algo.Common.Info;
+using TradeTransactionReason = TickTrader.FDK.Common.TradeTransactionReason;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -467,19 +468,25 @@ namespace TickTrader.Algo.Common.Model
                 var result = await operationDef(request);
                 return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
             }
-            catch (ExecutionException eex)
+            catch (ExecutionException ex)
             {
-                var reason = Convert(eex.Report.RejectReason, eex.Message);
-                return new OrderInteropResult(reason, ConvertToEr(eex.Report, operationId));
+                var reason = Convert(ex.Report.RejectReason, ex.Message);
+                return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId));
             }
             catch (DisconnectException)
             {
                 return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
             }
+            catch (InteropException ex) when (ex.ErrorCode == ConnectionErrorCodes.RejectedByServer)
+            {
+                // workaround for inconsistent server logic
+                return new OrderInteropResult(Convert(RejectReason.Other, ex.Message));
+            }
             catch (Exception ex)
             {
                 if (ex.Message.StartsWith("Session is not active"))
                     return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
+
                 logger.Error(ex);
                 return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
             }
@@ -832,6 +839,7 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
                 case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
+                case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
                 case RejectReason.Other:
                     {
                         if (message == "Trade Not Allowed")
@@ -846,13 +854,15 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.OrderLocked;
                         else if (message != null && message.Contains("Invalid expiration"))
                             return Api.OrderCmdResultCodes.IncorrectExpiration;
+                        else if (message != null && message.StartsWith("Price precision"))
+                            return Api.OrderCmdResultCodes.IncorrectPricePrecision;
                         break;
                     }
                 case RejectReason.None:
                     {
                         if (message != null && message.StartsWith("Order Not Found"))
                             return Api.OrderCmdResultCodes.OrderNotFound;
-                        return OrderCmdResultCodes.Ok;
+                        return Api.OrderCmdResultCodes.Ok;
                     }
             }
             return Api.OrderCmdResultCodes.UnknownError;
@@ -879,6 +889,7 @@ namespace TickTrader.Algo.Common.Model
 
             return new PositionEntity()
             {
+                Id = p.PosId,
                 Side = side,
                 Volume = amount,
                 Price = price,
@@ -886,6 +897,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
+                Modified = p.Modified,
             };
         }
 
@@ -931,6 +943,35 @@ namespace TickTrader.Algo.Common.Model
         private static QuoteEntity Convert(SFX.Quote fdkTick)
         {
             return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
+        }
+
+        public static Core.TradeTransactionReason Convert(TradeTransactionReason reason)
+        {
+            switch (reason)
+            {
+                case TradeTransactionReason.ClientRequest:
+                    return Core.TradeTransactionReason.ClientRequest;
+                case TradeTransactionReason.DealerDecision:
+                    return Core.TradeTransactionReason.DealerDecision;
+                case TradeTransactionReason.DeleteAccount:
+                    return Core.TradeTransactionReason.DeleteAccount;
+                case TradeTransactionReason.Expired:
+                    return Core.TradeTransactionReason.Expired;
+                case TradeTransactionReason.PendingOrderActivation:
+                    return Core.TradeTransactionReason.PendingOrderActivation;
+                case TradeTransactionReason.Rollover:
+                    return Core.TradeTransactionReason.Rollover;
+                case TradeTransactionReason.StopLossActivation:
+                    return Core.TradeTransactionReason.StopLossActivation;
+                case TradeTransactionReason.StopOut:
+                    return Core.TradeTransactionReason.StopOut;
+                case TradeTransactionReason.TakeProfitActivation:
+                    return Core.TradeTransactionReason.TakeProfitActivation;
+                case TradeTransactionReason.TransferMoney:
+                    return Core.TradeTransactionReason.TransferMoney;
+                default:
+                    return Core.TradeTransactionReason.None;
+            }
         }
 
         public static TradeReportEntity Convert(TradeTransactionReport report)
@@ -1020,6 +1061,8 @@ namespace TickTrader.Algo.Common.Model
                 UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
                 UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
+                ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
+                TradeTransactionReason = Convert(report.TradeTransactionReason),
             };
         }
 

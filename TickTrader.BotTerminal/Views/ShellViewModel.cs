@@ -63,17 +63,17 @@ namespace TickTrader.BotTerminal
             AlgoList = new AlgoListViewModel(algoEnv);
             SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
 
-            Trade = new TradeInfoViewModel(clientModel, cManager);
+            ProfileManager = new ProfileManagerViewModel(this, storage);
+
+            Trade = new TradeInfoViewModel(clientModel, cManager, ProfileManager.CurrentProfile);
 
             _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
-            TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
+            TradeHistory = new TradeHistoryViewModel(clientModel, cManager, ProfileManager.CurrentProfile);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
-
-            ProfileManager = new ProfileManagerViewModel(this, storage);
 
             BotList = new BotListViewModel(algoEnv);
 

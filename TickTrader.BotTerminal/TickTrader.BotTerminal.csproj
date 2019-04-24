@@ -210,6 +210,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
+    <Compile Include="Behaviors\DataGridColumnHide.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
@@ -328,7 +329,6 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\ChartBarVector.cs" />
-    <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Lib\UiUpdateTimer.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />

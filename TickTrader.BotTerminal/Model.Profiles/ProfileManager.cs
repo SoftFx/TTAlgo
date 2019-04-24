@@ -17,7 +17,6 @@ namespace TickTrader.BotTerminal
         private ObjectPersistController<ProfileStorageModel> _storageController;
         private bool _isSaving;
 
-
         public string Server { get; private set; }
 
         public string Login { get; private set; }

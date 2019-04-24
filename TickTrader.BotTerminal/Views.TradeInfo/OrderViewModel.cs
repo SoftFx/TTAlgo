@@ -26,6 +26,8 @@ namespace TickTrader.BotTerminal
             {
                 NotifyOfPropertyChange(nameof(Price));
             };
+
+            this.symbol.RateUpdated += UpdateDeviationPrice;
         }
 
         public OrderModel Order { get; private set; }
@@ -37,8 +39,22 @@ namespace TickTrader.BotTerminal
                                                     Order.Side == OrderSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
                                                     Order.Side == OrderSide.Buy ? symbol?.BidTracker : symbol?.AskTracker;
 
+        public decimal? DeviationPrice
+        {
+            get
+            {
+                double sPrice = (Order.Side == OrderSide.Buy ? symbol.CurrentAsk : symbol.CurrentBid) ?? 0;
+                return Order.Side == OrderSide.Buy ? (decimal)sPrice - Price : Price - (decimal)sPrice;
+            }
+        }
+
         public void Dispose()
         {
+        }
+
+        private void UpdateDeviationPrice(SymbolModel model)
+        {
+            NotifyOfPropertyChange(nameof(DeviationPrice));
         }
     }
 }

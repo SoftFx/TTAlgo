@@ -77,7 +77,9 @@ namespace TickTrader.Algo.Core
             {
                 _updateBuffer.Complete();
                 await _updateBuffer.Completion;
+
                 await _batchJob;
+
                 _updateSender.Complete();
                 await _updateSender.Completion;
             }
