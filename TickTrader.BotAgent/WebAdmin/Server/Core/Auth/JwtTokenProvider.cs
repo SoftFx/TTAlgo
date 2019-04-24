@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Text;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
-using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
 {
@@ -169,7 +168,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Core.Auth
             if (credsHash == null)
                 throw new SecurityTokenValidationException($"Missing claim '{JwtClaimNames.CredsHashClaim}'");
 
-            var creds = _config.GetSection("").Get<ServerCredentials>();
             var validCreds = credsHash.Value == GetCredsHash(username.Value);
 
             if (!validCreds)

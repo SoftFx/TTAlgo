@@ -77,6 +77,10 @@ namespace TickTrader.Algo.Protocol.Grpc
             _botAgent.AccountStateUpdated += OnAccountStateUpdate;
             _botAgent.BotUpdated += OnBotUpdate;
             _botAgent.BotStateUpdated += OnBotStateUpdate;
+
+            _botAgent.AdminCredsChanged += OnAdminCredsChanged;
+            _botAgent.DealerCredsChanged += OnDealerCredsChanged;
+            _botAgent.ViewerCredsChanged += OnViewerCredsChanged;
         }
 
 
@@ -308,6 +312,39 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #endregion Grpc request handlers overrides
+
+
+        #region Credentials handlers
+
+        private void DisconnectAllClients(AccessLevels accessLevel)
+        {
+            lock (_sessions)
+            {
+                var sessionsToRemove = _sessions.Values.Where(s => s.AccessManager.Level == accessLevel).ToList();
+                foreach (var session in sessionsToRemove)
+                {
+                    session.CancelUpdateStream();
+                    _sessions.Remove(session.SessionId);
+                }
+            }
+        }
+
+        private void OnAdminCredsChanged()
+        {
+            DisconnectAllClients(AccessLevels.Admin);
+        }
+
+        private void OnDealerCredsChanged()
+        {
+            DisconnectAllClients(AccessLevels.Dealer);
+        }
+
+        private void OnViewerCredsChanged()
+        {
+            DisconnectAllClients(AccessLevels.Viewer);
+        }
+
+        #endregion
 
 
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(

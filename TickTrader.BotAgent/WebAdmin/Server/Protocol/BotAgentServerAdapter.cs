@@ -23,6 +23,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         private readonly IAuthManager _authManager;
 
 
+        public event Action AdminCredsChanged = delegate { };
+        public event Action DealerCredsChanged = delegate { };
+        public event Action ViewerCredsChanged = delegate { };
+
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
         public event Action<UpdateInfo<AccountModelInfo>> AccountUpdated = delegate { };
         public event Action<UpdateInfo<BotModelInfo>> BotUpdated = delegate { };
@@ -42,6 +46,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.BotStateChanged += OnBotStateChanged;
             _botAgent.AccountStateChanged += OnAccountStateChanged;
             _botAgent.PackageStateChanged += OnPackageStateChanged;
+
+            _authManager.AdminCredsChanged += OnAdminCredsChanged;
+            _authManager.DealerCredsChanged += OnDealerCredsChanged;
+            _authManager.ViewerCredsChanged += OnViewerCredsChanged;
         }
 
 
@@ -351,6 +359,21 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             {
                 _logger.Error($"Failed to send update: {ex.Message}", ex);
             }
+        }
+
+        private void OnAdminCredsChanged()
+        {
+            AdminCredsChanged?.Invoke();
+        }
+
+        private void OnDealerCredsChanged()
+        {
+            DealerCredsChanged?.Invoke();
+        }
+
+        private void OnViewerCredsChanged()
+        {
+            ViewerCredsChanged?.Invoke();
         }
 
         #endregion Event handlers

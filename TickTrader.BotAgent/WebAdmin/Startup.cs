@@ -43,13 +43,6 @@ namespace TickTrader.BotAgent.WebAdmin
             services.AddSingleton<ISecurityTokenProvider, JwtSecurityTokenProvider>(s => tokenProvider);
             services.AddSingleton<IAuthManager, AuthManager>();
 
-            // .NET Core SDK 2.1.4 has broken core-1.1 apps compatibility with net4xx targets
-            // This workaround should avoid problematic code paths
-            // Upgrading to core-2.1 should resolve issue completely
-            //var manager = new ApplicationPartManager();
-            //manager.ApplicationParts.Add(new AssemblyPart(typeof(Startup).Assembly));
-            //services.AddSingleton(manager);
-
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
             services.AddMvc()
             .AddJsonOptions(options =>
@@ -77,8 +70,6 @@ namespace TickTrader.BotAgent.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-            //appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -117,19 +108,6 @@ namespace TickTrader.BotAgent.WebAdmin
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
-        }
-
-        private void Shutdown(IServiceProvider services)
-        {
-            var server = services.GetRequiredService<IBotAgent>();
-            var protocolServer = services.GetRequiredService<ProtocolServer>();
-            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-
-            protocolServer.Stop();
-            server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
-
-            var logger = loggerFactory.CreateLogger(nameof(Startup));
-            logger.LogInformation("Web host stopped");
         }
     }
 }
