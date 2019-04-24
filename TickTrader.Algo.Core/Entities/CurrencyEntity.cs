@@ -44,6 +44,8 @@ namespace TickTrader.Algo.Core
 
         public int Precision => Digits;
 
+        public BO.CurrencyType Type => BO.CurrencyType.Default;
+
         #endregion
 
         public override string ToString() { return $"{Name} (Digits = {Digits})"; }

@@ -64,6 +64,7 @@ namespace TickTrader.Algo.Core
         decimal ISymbolRate.Bid => (decimal)Bid;
         decimal? ISymbolRate.NullableAsk => double.IsNaN(Ask) ? null : (decimal?)Ask;
         decimal? ISymbolRate.NullableBid => double.IsNaN(Bid) ? null : (decimal?)Bid;
+        bool ISymbolRate.IndicativeTick => throw new NotImplementedException();
 
         #region RateUpdate
 

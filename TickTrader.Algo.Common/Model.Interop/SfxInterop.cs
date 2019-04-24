@@ -41,6 +41,8 @@ namespace TickTrader.Algo.Common.Model
         private FDK.Client.OrderEntry _tradeProxy;
         private FDK.Client.TradeCapture _tradeHistoryProxy;
 
+        private AppType _appType;
+
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
         public SfxInterop(ConnectionOptions options)
@@ -89,6 +91,8 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
             _feedHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
+
+            _appType = options.Type;
         }
 
         public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
@@ -130,7 +134,8 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed: Connecting...");
             await _feedProxy.ConnectAsync(address);
             logger.Debug("Feed: Connected.");
-            await _feedProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+
+            await _feedProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed: Logged in.");
         }
 
@@ -139,7 +144,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade: Connecting...");
             await _tradeProxy.ConnectAsync(address);
             logger.Debug("Trade: Connected.");
-            await _tradeProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _tradeProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade logged in.");
         }
 
@@ -148,7 +153,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed.History: Connecting...");
             await _feedHistoryProxy.ConnectAsync(address);
             logger.Debug("Feed.History: Connected.");
-            await _feedHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _feedHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed.History: Logged in.");
         }
 
@@ -157,7 +162,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Connecting...");
             await _tradeHistoryProxy.ConnectAsync(address);
             logger.Debug("Trade.History: Connected.");
-            await _tradeHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _tradeHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxy.SubscribeTradesAsync(false);
             logger.Debug("Trade.History: Subscribed.");
