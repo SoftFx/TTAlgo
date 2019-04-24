@@ -7,6 +7,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
     public interface IAuthManager
     {
         ClaimsIdentity Login(string login, string password);
+
+        bool ValidAdminCreds(string login, string password);
+
+        bool ValidDealerCreds(string login, string password);
+
+        bool ValidViewerCreds(string login, string password);
     }
 
 
@@ -29,6 +35,21 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             return login == Credentials.AdminLogin && password == Credentials.AdminPassword ?
                 new ClaimsIdentity(new GenericIdentity(login, "LoginToken")) :
                 default(ClaimsIdentity);
+        }
+
+        public bool ValidAdminCreds(string login, string password)
+        {
+            return login == Credentials.AdminLogin && password == Credentials.AdminPassword;
+        }
+
+        public bool ValidDealerCreds(string login, string password)
+        {
+            return login == Credentials.DealerLogin && password == Credentials.DealerPassword;
+        }
+
+        public bool ValidViewerCreds(string login, string password)
+        {
+            return login == Credentials.ViewerLogin && password == Credentials.ViewerPassword;
         }
     }
 }

@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
@@ -12,19 +9,18 @@ using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.BA.Models;
-using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 {
-    public class BotAgentServer : IBotAgentServer
+    public class BotAgentServerAdapter : IBotAgentServer
     {
-        private static IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<BotAgentServer>();
+        private static IAlgoCoreLogger _logger = CoreLoggerFactory.GetLogger<BotAgentServerAdapter>();
         private static readonly SetupContext _agentContext = new SetupContext();
 
 
-        private IBotAgent _botAgent;
-        private ServerCredentials _serverCreds;
+        private readonly IBotAgent _botAgent;
+        private readonly IAuthManager _authManager;
 
 
         public event Action<UpdateInfo<PackageInfo>> PackageUpdated = delegate { };
@@ -35,13 +31,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
         public event Action<AccountModelInfo> AccountStateUpdated = delegate { };
 
 
-        public BotAgentServer(IBotAgent botAgent, IConfiguration serverConfig)
+        public BotAgentServerAdapter(IBotAgent botAgent, IAuthManager authManager)
         {
             _botAgent = botAgent;
-            _serverCreds = serverConfig.GetCredentials();
-
-            if (_serverCreds == null)
-                throw new Exception("Server credentials not found");
+            _authManager = authManager;
 
             _botAgent.AccountChanged += OnAccountChanged;
             _botAgent.BotChanged += OnBotChanged;
@@ -54,11 +47,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
 
         public AccessLevels ValidateCreds(string login, string password)
         {
-            if (_serverCreds.ViewerLogin == login && _serverCreds.ViewerPassword == password)
+            if (_authManager.ValidViewerCreds(login, password))
                 return AccessLevels.Viewer;
-            if (_serverCreds.DealerLogin == login && _serverCreds.DealerPassword == password)
+            if (_authManager.ValidDealerCreds(login, password))
                 return AccessLevels.Dealer;
-            if (_serverCreds.AdminLogin == login && _serverCreds.AdminPassword == password)
+            if (_authManager.ValidAdminCreds(login, password))
                 return AccessLevels.Admin;
 
             return AccessLevels.Anonymous;

@@ -66,6 +66,8 @@ namespace TickTrader.BotAgent.BA
 
         // TO DO : server start and stop should not be managed from WebAdmin
 
+        Task InitAsync();
+
         Task ShutdownAsync();
     }
 

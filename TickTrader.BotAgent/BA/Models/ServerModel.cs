@@ -39,7 +39,7 @@ namespace TickTrader.BotAgent.BA.Models
             return Path.Combine(Environment.AlgoWorkingFolder, botId.Escape());
         }
 
-        private async Task Init()
+        private async Task InitAsync()
         {
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
@@ -159,6 +159,8 @@ namespace TickTrader.BotAgent.BA.Models
             }
 
             #endregion
+
+            public Task InitAsync() => CallActorFlattenAsync(a => a.InitAsync());
 
             public Task ShutdownAsync() => CallActorFlattenAsync(a => a.ShutdownAsync());
         }
@@ -419,9 +421,7 @@ namespace TickTrader.BotAgent.BA.Models
                 instance = new ServerModel();
             }
 
-            var actorRef = Actor.SpawnLocal(instance, null, "ServerModel");
-            actorRef.Call(a => a.Init());
-            return actorRef;
+            return Actor.SpawnLocal(instance, null, "ServerModel");
         }
 
         #endregion

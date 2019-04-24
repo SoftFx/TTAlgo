@@ -11,13 +11,10 @@ using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
 using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,9 +46,9 @@ namespace TickTrader.BotAgent.WebAdmin
             // .NET Core SDK 2.1.4 has broken core-1.1 apps compatibility with net4xx targets
             // This workaround should avoid problematic code paths
             // Upgrading to core-2.1 should resolve issue completely
-            var manager = new ApplicationPartManager();
-            manager.ApplicationParts.Add(new AssemblyPart(typeof(Startup).Assembly));
-            services.AddSingleton(manager);
+            //var manager = new ApplicationPartManager();
+            //manager.ApplicationParts.Add(new AssemblyPart(typeof(Startup).Assembly));
+            //services.AddSingleton(manager);
 
             services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
             services.AddMvc()
@@ -80,7 +77,7 @@ namespace TickTrader.BotAgent.WebAdmin
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-            appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
+            //appLifeTime.ApplicationStopping.Register(() => Shutdown(services));
 
             if (env.IsDevelopment())
             {

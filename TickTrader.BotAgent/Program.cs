@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using TickTrader.BotAgent.WebAdmin;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TickTrader.BotAgent.BA.Models;
 using System;
-using System.Linq;
 using TickTrader.BotAgent.BA;
 using TickTrader.Algo.Core;
 using System.Diagnostics;
@@ -15,7 +13,6 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using NLog;
 using System.Globalization;
 using ActorSharp;
-using TickTrader.BotAgent.WebAdmin.Server.Protocol;
 using NLog.Web;
 using NLog.Extensions.Logging;
 using System.Collections.Generic;
@@ -46,21 +43,14 @@ namespace TickTrader.BotAgent
 
             SetupGlobalExceptionLogging(logger);
 
-            var agent = new ServerModel.Handler(ServerModel.Load());
-
             try
             {
                 var hostBuilder = CreateWebHostBuilder(args);
 
-                //var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(), new JwtProvider(config.GetJwtKey()));
-                //protocolServer.Start();
-
                 var host = hostBuilder
-                    .AddBotAgent(agent)
-                    //.AddProtocolServer(protocolServer)
+                    .AddBotAgent()
+                    .AddProtocolServer()
                     .Build();
-
-                //Console.WriteLine($"Web root path: {pathToWebRoot}");
 
                 logger.Info("Starting web host");
 
