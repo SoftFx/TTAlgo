@@ -35,40 +35,4 @@ namespace TickTrader.BotTerminal
         public PositionListViewModel Positions { get; }
         public AccountStatsViewModel AccountStats { get; }
     }
-
-    internal class ProviderColumnsState : ISettings
-    {
-        private List<ColumnStateStorageEntry> _source;
-        private Dictionary<string, bool> _dict;
-        private string _prefix;
-
-        public object this[string key]
-        {
-            get => _dict[$"{key}{_prefix}"];
-            set
-            {
-                var fullKey = $"{key}{_prefix}";
-                _dict[fullKey] = (bool)value;
-                var item = _source.FirstOrDefault(i => i.Key == fullKey);
-
-                if (item == null)
-                    _source.Add(new ColumnStateStorageEntry() { Key = fullKey, State = (bool)value, });
-                else
-                    item.State = (bool)value;
-            }
-        }
-
-        public ProviderColumnsState(List<ColumnStateStorageEntry> source, string prefix = "")
-        {
-            _source = source;
-            _prefix = prefix;
-
-            _dict = _source?.ToDictionary(i => i.Key, i => i.State);
-        }
-
-        public bool ContainsKey(string key)
-        {
-            return _dict.ContainsKey($"{key}{_prefix}");
-        }
-    }
 }

@@ -19,12 +19,10 @@ namespace TickTrader.BotTerminal
         private CancellationTokenSource _cancelLoadSrc;
         private ProfileRepository _profileRepo;
         private VarDictionary<string, string> _profiles;
+        private ProfileManager _currentProfile;
         private bool _canLoadProfile;
 
-
         public IObservableList<string> Profiles { get; }
-
-        public ProfileManager CurrentProfile { get; }
 
         public bool CanLoadProfile
         {
@@ -42,7 +40,7 @@ namespace TickTrader.BotTerminal
             _logger = NLog.LogManager.GetCurrentClassLogger();
             _profileLoader = shell.ProfileLoader;
             _wndManager = shell.ToolWndManager;
-            CurrentProfile = storage.ProfileManager;
+            _currentProfile = storage.ProfileManager;
             _profiles = new VarDictionary<string, string>();
             Profiles = _profiles.OrderBy((k, v) => v).Chain().AsObservable();
 
@@ -59,7 +57,7 @@ namespace TickTrader.BotTerminal
             dialog.InitialDirectory = EnvService.Instance.UserProfilesFolder;
             if (dialog.ShowDialog() == true)
             {
-                CurrentProfile.SaveUserProfile(dialog.FileName);
+                _currentProfile.SaveUserProfile(dialog.FileName);
             }
         }
 
@@ -94,14 +92,14 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                if (!await CurrentProfile.StopCurrentProfile(server, login))
+                if (!await _currentProfile.StopCurrentProfile(server, login))
                 {
                     return;
                 }
 
                 token.ThrowIfCancellationRequested();
 
-                CurrentProfile.LoadCachedProfile(server, login);
+                _currentProfile.LoadCachedProfile(server, login);
 
                 token.ThrowIfCancellationRequested();
 
@@ -109,7 +107,7 @@ namespace TickTrader.BotTerminal
 
                 token.ThrowIfCancellationRequested();
 
-                CurrentProfile.StartCurrentProfile();
+                _currentProfile.StartCurrentProfile();
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }
@@ -123,11 +121,11 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                await CurrentProfile.StopCurrentProfile();
+                await _currentProfile.StopCurrentProfile();
 
                 token.ThrowIfCancellationRequested();
 
-                CurrentProfile.LoadUserProfile(name);
+                _currentProfile.LoadUserProfile(name);
 
                 token.ThrowIfCancellationRequested();
 
@@ -135,7 +133,7 @@ namespace TickTrader.BotTerminal
 
                 token.ThrowIfCancellationRequested();
 
-                CurrentProfile.StartCurrentProfile();
+                _currentProfile.StartCurrentProfile();
             }
             catch (TaskCanceledException) { }
             catch (OperationCanceledException) { }

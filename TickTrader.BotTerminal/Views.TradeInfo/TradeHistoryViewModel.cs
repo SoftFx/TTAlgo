@@ -383,7 +383,7 @@ namespace TickTrader.BotTerminal
 
         private void RefreshCollection()
         {
-            GridView?.Refresh();
+            GridView?.RefreshItems();
         }
 
         private bool FilterTradesList(object o)

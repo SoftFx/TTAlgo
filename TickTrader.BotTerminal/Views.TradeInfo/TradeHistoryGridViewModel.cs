@@ -55,7 +55,7 @@ namespace TickTrader.BotTerminal
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;
         public ProviderColumnsState StateProvider { get; private set; }
 
-        public override void Refresh()
+        public void RefreshItems()
         {
             Items.Value.Refresh();
         }
@@ -72,12 +72,12 @@ namespace TickTrader.BotTerminal
         {
             if (_profileManager.CurrentProfile.ColumnsShow != null)
             {
-                var prefix = nameof(TradeHistoryGridViewModel);
+                var postfix = nameof(TradeHistoryGridViewModel);
 
                 if (_profileManager.OpenBacktester)
-                    prefix += "_backtester";
+                    postfix += "_backtester";
 
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, prefix);
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);
                 NotifyOfPropertyChange(nameof(StateProvider));
             }
         }

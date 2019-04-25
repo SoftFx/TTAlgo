@@ -47,12 +47,12 @@ namespace TickTrader.BotTerminal
         {
             if (_profileManager.CurrentProfile.ColumnsShow != null)
             {
-                var prefix = nameof(OrderListViewModel);
+                var postfix = nameof(OrderListViewModel);
 
                 if (_profileManager.OpenBacktester)
-                    prefix += "_backtester";
+                    postfix += "_backtester";
 
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, prefix);
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);
                 NotifyOfPropertyChange(nameof(StateProvider));
             }
         }

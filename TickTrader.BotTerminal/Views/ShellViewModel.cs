@@ -65,11 +65,11 @@ namespace TickTrader.BotTerminal
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
-            Trade = new TradeInfoViewModel(clientModel, cManager, ProfileManager.CurrentProfile);
+            Trade = new TradeInfoViewModel(clientModel, cManager, storage.ProfileManager);
 
             _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
-            TradeHistory = new TradeHistoryViewModel(clientModel, cManager, ProfileManager.CurrentProfile);
+            TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
@@ -397,7 +397,7 @@ namespace TickTrader.BotTerminal
         public void OpenBacktester()
         {
             if (Backtester == null)
-                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this, ProfileManager.CurrentProfile);
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this, storage.ProfileManager);
 
             wndManager.OpenMdiWindow(Backtester);
         }
