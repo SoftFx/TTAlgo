@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
     {
         private ProfileManager _profileManager;
         private bool _isBacktester;
+
         public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
