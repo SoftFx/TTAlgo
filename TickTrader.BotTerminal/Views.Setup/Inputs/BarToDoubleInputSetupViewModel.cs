@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
 
         public override void Load(Property srcProperty)
         {
-            var input = srcProperty as BarToBarInput;
+            var input = srcProperty as BarToDoubleInput;
             if (input != null)
             {
                 LoadConfig(input);
