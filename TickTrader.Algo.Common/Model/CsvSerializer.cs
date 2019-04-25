@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -224,7 +225,7 @@ namespace TickTrader.Algo.Common.Model
 
             public string ToString(DateTime val)
             {
-                return val.ToString("yyyy-dd-MM HH:mm:ss.fff", CultureInfo.InvariantCulture);
+                return InvariantFormat.CsvFormat(val);
             }
         }
     }
