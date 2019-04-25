@@ -16,8 +16,9 @@ namespace TickTrader.BotTerminal
     class OrderListViewModel : AccountBasedViewModel
     {
         private ProfileManager _profileManager;
+        private bool _isBacktester;
 
-        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile)
+        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Orders = model.Orders
@@ -27,6 +28,7 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
 
             _profileManager = profile;
+            _isBacktester = isBacktester;
 
             Orders.CollectionChanged += OrdersCollectionChanged;
             Account.AccountTypeChanged += () => NotifyOfPropertyChange(nameof(IsGrossAccount));
@@ -49,7 +51,7 @@ namespace TickTrader.BotTerminal
             {
                 var postfix = nameof(OrderListViewModel);
 
-                if (_profileManager.OpenBacktester)
+                if (_isBacktester)
                     postfix += "_backtester";
 
                 StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);

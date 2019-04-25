@@ -15,8 +15,9 @@ namespace TickTrader.BotTerminal
     internal class TradeHistoryGridViewModel : PropertyChangedBase
     {
         private ProfileManager _profileManager;
+        private bool _isBacktester;
 
-        public TradeHistoryGridViewModel(ICollection<TransactionReport> src, ProfileManager profile = null)
+        public TradeHistoryGridViewModel(ICollection<TransactionReport> src, ProfileManager profile = null, bool isBacktester = false)
         {
             Items = new Property<ICollectionView>();
             Items.Value = CollectionViewSource.GetDefaultView(src);
@@ -32,6 +33,7 @@ namespace TickTrader.BotTerminal
             ConvertTimeToLocal = true;
 
             _profileManager = profile;
+            _isBacktester = isBacktester;
             if (_profileManager != null)
             {
                 _profileManager.ProfileUpdated += UpdateProvider;
@@ -74,7 +76,7 @@ namespace TickTrader.BotTerminal
             {
                 var postfix = nameof(TradeHistoryGridViewModel);
 
-                if (_profileManager.OpenBacktester)
+                if (_isBacktester)
                     postfix += "_backtester";
 
                 StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);

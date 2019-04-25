@@ -18,12 +18,12 @@ namespace TickTrader.BotTerminal
         }
 
         public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolModel> symbols,
-            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager _profileStorageModel = null)
+            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profileStorageModel = null, bool isBacktester = false)
         {
-            var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo, _profileStorageModel);
+            var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo, profileStorageModel, isBacktester);
             var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo);
             Positions = new PositionListViewModel(netPositions, grossPositions);
-            Orders = new OrderListViewModel(accModel, symbols, connectionInfo, _profileStorageModel);
+            Orders = new OrderListViewModel(accModel, symbols, connectionInfo, profileStorageModel, isBacktester);
             Assets = new AssetsViewModel(accModel, currencies.Snapshot, connectionInfo);
             AccountStats = new AccountStatsViewModel(accModel, connectionInfo);
 

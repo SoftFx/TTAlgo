@@ -66,8 +66,6 @@ namespace TickTrader.BotTerminal
             _shell = shell ?? throw new ArgumentNullException("shell");
             _client = client;
 
-            profile.OpenBacktester = true;
-
             _allSymbolsValid = _var.AddBoolProperty();
             _hasDataToSave = _var.AddBoolProperty();
             _isRunning = _var.AddBoolProperty();

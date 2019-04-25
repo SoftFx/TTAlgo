@@ -14,8 +14,8 @@ namespace TickTrader.BotTerminal
     class NetPositionListViewModel : AccountBasedViewModel
     {
         private ProfileManager _profileManager;
-
-        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile)
+        private bool _isBacktester;
+        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Positions = model.Positions
@@ -24,6 +24,7 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
 
             _profileManager = profile;
+            _isBacktester = isBacktester;
             Positions.CollectionChanged += PositionsCollectionChanged;
 
             if (_profileManager != null)
@@ -48,7 +49,7 @@ namespace TickTrader.BotTerminal
             {
                 var postfix = nameof(NetPositionListViewModel);
 
-                if (_profileManager.OpenBacktester)
+                if (_isBacktester)
                     postfix += "_backtester";
 
                 StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);
