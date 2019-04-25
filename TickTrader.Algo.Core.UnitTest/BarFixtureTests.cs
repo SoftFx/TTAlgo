@@ -58,6 +58,7 @@ namespace TickTrader.Algo.Core.UnitTest
             var context = CreateBarBasedContext();
             BarSeriesFixture mainFixture = new BarSeriesFixture("EURUSD", context, eurusdBars);
             BarSeriesFixture secondFixture = new BarSeriesFixture("EURCAD", context, eurcadBars, mainFixture);
+            secondFixture.SyncByTime();
 
             Assert.AreEqual(4, mainFixture.Count);
 
@@ -86,6 +87,7 @@ namespace TickTrader.Algo.Core.UnitTest
             var context = CreateBarBasedContext();
             BarSeriesFixture mainFixture = new BarSeriesFixture("EURUSD", context, eurusdBars);
             BarSeriesFixture secondFixture = new BarSeriesFixture("EURCAD", context, eurcadBars, mainFixture);
+            secondFixture.SyncByTime();
 
             mainFixture.UpdateRate("2017-01-16 18:30:44", 1.144);
             
@@ -103,6 +105,7 @@ namespace TickTrader.Algo.Core.UnitTest
             var context = CreateBarBasedContext();
             BarSeriesFixture mainFixture = new BarSeriesFixture("EURUSD", context, eurusdBars);
             BarSeriesFixture secondFixture = new BarSeriesFixture("EURCAD", context, eurcadBars, mainFixture);
+            secondFixture.SyncByTime();
 
             secondFixture.UpdateRate("2017-01-16 18:30:11", 1.078);
             secondFixture.UpdateRate("2017-01-16 18:30:14", 1.079);

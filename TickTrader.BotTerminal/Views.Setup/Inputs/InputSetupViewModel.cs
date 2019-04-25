@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual void LoadConfig(Input input)
         {
-            _selectedSymbol = AvailableSymbols.GetSymbolOrDefault(input.SelectedSymbol)
+            SelectedSymbol = AvailableSymbols.GetSymbolOrDefault(input.SelectedSymbol)
                 ?? AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
