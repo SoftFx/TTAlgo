@@ -548,7 +548,7 @@
                 <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
                     <TextBlock TextWrapping="Wrap" Text="{Binding Descriptor.Description}" Margin="3"/>
                 </GroupBox>
-                <GroupBox Name="GeneralGroup" Header="General" Margin="4" Visibility="Collapsed">
+                <GroupBox Name="GeneralGroup" Header="General" Margin="4" Visibility="Visible">
                     <Control Template="{StaticResource GeneralSettings}" />
                 </GroupBox>
                 <GroupBox Name="MainSymbolGroup" Header="Main Symbol" Margin="4" Visibility="Collapsed">
@@ -607,9 +607,6 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding HasDescription}" Value="False">
                 <Setter TargetName="DescriptionGroup" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Descriptor.Type}" Value="Robot">
-                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding EnableFeedSetup}" Value="True">
                 <Setter TargetName="MainSymbolGroup" Property="Visibility" Value="Visible"/>
