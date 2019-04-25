@@ -40,7 +40,6 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
             Period = period;
             Shift = shift;
             Deviations = deviations;
-
             InitializeIndicator();
         }
 

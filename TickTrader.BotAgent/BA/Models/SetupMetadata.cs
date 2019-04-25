@@ -20,6 +20,11 @@ namespace TickTrader.BotAgent.BA.Models
         {
             return true;
         }
+
+        public void RegisterPluginId(string pluginId)
+        {
+            return;
+        }
     }
 
 

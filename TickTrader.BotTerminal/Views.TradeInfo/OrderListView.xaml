@@ -14,16 +14,31 @@
             </Grid.Resources>
 
             <DataGrid Name="Orders" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+                <DataGrid.Resources>
+                    <l:DataGridColumnHide x:Key="TimeShow" Provider="{Binding StateProvider}" ColumnKey="Time"/>
+                    <l:DataGridColumnHide x:Key="CurrentPriceShow" Provider="{Binding StateProvider}" ColumnKey="CurrentPrice"/>
+                    <l:DataGridColumnHide x:Key="TagShow" Provider="{Binding StateProvider}" ColumnKey="Tag"/>
+                    <l:DataGridColumnHide x:Key="CommentShow" Provider="{Binding StateProvider}" ColumnKey="Comment"/>
+                </DataGrid.Resources>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Show Time" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TimeShow}}"/>
+                        <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrentPriceShow}}"/>
+                        <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TagShow}}"/>
+                        <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommentShow}}"/>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="ToolTip">
+                    <Style TargetType="DataGridRow" >
+                        <Setter Property="ToolTip" >
                             <Setter.Value>
                                 <StackPanel Orientation="Vertical">
+                                    <StackPanel Orientation="Horizontal" >
+                                        <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Limit Price: " VerticalAlignment="Center" />
                                         <TextBlock VerticalAlignment="Center" >
@@ -34,25 +49,6 @@
                                                 </MultiBinding>
                                             </TextBlock.Text>
                                         </TextBlock>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Stop Price: " VerticalAlignment="Center" />
-                                        <TextBlock VerticalAlignment="Center" >
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                    <Binding Path="Order.StopPrice"/>
-                                                    <Binding Path="PriceDigits"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Tag: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.Tag}" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
-                                        <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" >
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
@@ -80,8 +76,9 @@
                             </Style>
                         </DataGridTextColumn.CellStyle>
                     </DataGridTextColumn>
-
-                    <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
+                    <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
+                    <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
                     <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
                         <DataGridTextColumn.Binding>
@@ -91,8 +88,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
-                    <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
+                    <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="Price"/>
@@ -100,10 +96,10 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                   
+
                     <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
                     <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
-                    <DataGridTextColumn Header="Current Price" Width="*" SortMemberPath="CurrentPrice.Rate">
+                    <DataGridTextColumn Header="Current price" Width="*" SortMemberPath="CurrentPrice.Rate"  Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="CurrentPrice.Rate"/>
@@ -111,7 +107,16 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
+                    <DataGridTextColumn Header="Price Deviation" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PriceConverter}">
+                                <Binding Path="DeviationPrice"/>
+                                <Binding Path="PriceDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

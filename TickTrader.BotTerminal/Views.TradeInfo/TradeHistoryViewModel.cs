@@ -48,14 +48,14 @@ namespace TickTrader.BotTerminal
         private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
 
-        public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager)
+        public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager, ProfileManager profileManager = null)
         {
             _period = TimePeriod.LastHour;
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
 
             _tradesList = new ObservableCollection<TransactionReport>();
-            GridView = new TradeHistoryGridViewModel(_tradesList);
+            GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
             GridView.Filter = new Predicate<object>(FilterTradesList);
 
             _tradeClient = tradeClient;
@@ -383,7 +383,7 @@ namespace TickTrader.BotTerminal
 
         private void RefreshCollection()
         {
-            GridView?.Refresh();
+            GridView?.RefreshItems();
         }
 
         private bool FilterTradesList(object o)

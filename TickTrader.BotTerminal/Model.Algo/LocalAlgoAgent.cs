@@ -15,6 +15,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotTerminal.Lib;
@@ -151,7 +152,7 @@ namespace TickTrader.BotTerminal
         public Task AddBot(AccountKey account, PluginConfig config)
         {
             var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
-            IdProvider.RegisterBot(bot);
+            IdProvider.RegisterPluginId(bot.InstanceId);
             _bots.Add(bot.InstanceId, bot);
             bot.StateChanged += OnBotStateChanged;
             bot.Updated += OnBotUpdated;

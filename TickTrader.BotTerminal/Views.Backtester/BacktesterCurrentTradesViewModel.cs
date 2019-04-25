@@ -16,10 +16,10 @@ namespace TickTrader.BotTerminal
         private MockClient _client;
         private MockConnection _connection = new MockConnection();
 
-        public BacktesterCurrentTradesViewModel()
+        public BacktesterCurrentTradesViewModel(ProfileManager profile = null)
         {
             _client = new MockClient();
-            Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false);
+            Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false, profile, true);
             Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor, null, false);
         }
 

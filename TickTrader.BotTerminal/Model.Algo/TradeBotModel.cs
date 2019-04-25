@@ -67,7 +67,7 @@ namespace TickTrader.BotTerminal
             : base(config, agent, host, setupContext)
         {
             Account = account;
-            Journal = new BotJournal(InstanceId);
+            Journal = new BotJournal(InstanceId, true);
             host.Connected += Host_Connected;
             host.Disconnected += Host_Disconnected;
         }

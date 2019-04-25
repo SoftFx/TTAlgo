@@ -360,4 +360,88 @@
   <data name="PluginError_None" xml:space="preserve">
     <value />
   </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>##Order_OpenPrice##</value>
+  </data>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>##AvailableVolume##</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>##Currency##</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>##LockedVolume##</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>##Volume##</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>##Copy##</value>
+  </data>
+  <data name="Order_Comment" xml:space="preserve">
+    <value>##Comment##</value>
+  </data>
+  <data name="Order_Commission" xml:space="preserve">
+    <value>##Commission##</value>
+  </data>
+  <data name="Order_CurrentPrice" xml:space="preserve">
+    <value>##CurrentPrice##</value>
+  </data>
+  <data name="Order_ExecutionTime" xml:space="preserve">
+    <value>##ExecTime##</value>
+  </data>
+  <data name="Order_Id" xml:space="preserve">
+    <value>##Id##</value>
+  </data>
+  <data name="Order_InstanceId" xml:space="preserve">
+    <value>##InstanceId##</value>
+  </data>
+  <data name="Order_Net_P_L" xml:space="preserve">
+    <value>##NetP/L##</value>
+  </data>
+  <data name="Order_P_L" xml:space="preserve">
+    <value>##P/L##</value>
+  </data>
+  <data name="Order_Swap" xml:space="preserve">
+    <value>##Swap##</value>
+  </data>
+  <data name="Order_S_L" xml:space="preserve">
+    <value>##S/L##</value>
+  </data>
+  <data name="Order_Tag" xml:space="preserve">
+    <value>##Tag##</value>
+  </data>
+  <data name="Order_T_P" xml:space="preserve">
+    <value>##T/P##</value>
+  </data>
+  <data name="Position_CurrentPrice" xml:space="preserve">
+    <value>##CurrentPrice##</value>
+  </data>
+  <data name="Position_Id" xml:space="preserve">
+    <value>##Id##</value>
+  </data>
+  <data name="Position_ModifiedTime" xml:space="preserve">
+    <value>##ModifiedTime##</value>
+  </data>
+  <data name="Position_Net_P_L" xml:space="preserve">
+    <value>##NetP/L##</value>
+  </data>
+  <data name="Position_OpenPrPosition_OpenPrice" xml:space="preserve">
+    <value>##OpenPrice##</value>
+  </data>
+  <data name="Position_PriceDeviation" xml:space="preserve">
+    <value>##PriceDeviation##</value>
+  </data>
+  <data name="Position_Swap" xml:space="preserve">
+    <value>##Swap##</value>
+  </data>
+  <data name="Position_Volume" xml:space="preserve">
+    <value>##Volume##</value>
+  </data>
+  <data name="ShowCurrentPrice" xml:space="preserve">
+    <value>##ShowCurrentPrice##</value>
+  </data>
+  <data name="ShowSwap" xml:space="preserve">
+    <value>##ShowSwap##</value>
+  </data>
 </root>

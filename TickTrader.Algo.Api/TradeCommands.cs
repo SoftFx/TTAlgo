@@ -54,5 +54,7 @@ namespace TickTrader.Algo.Api
         DealingTimeout      = 115,
         Misconfiguration    = 116,
         OrderLocked         = 117,
+        IncorrectPricePrecision = 118,
+        CloseOnlyTrading = 119,
     }
 }

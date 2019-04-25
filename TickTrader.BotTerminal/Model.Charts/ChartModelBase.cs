@@ -218,7 +218,7 @@ namespace TickTrader.BotTerminal
         {
             var indicator = CreateIndicator(config);
             indicators.Add(indicator);
-            Agent.IdProvider.RegisterIndicator(indicator);
+            Agent.IdProvider.RegisterPluginId(indicator.InstanceId);
         }
 
         public void RemoveIndicator(IndicatorModel i)

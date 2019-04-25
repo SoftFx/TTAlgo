@@ -416,6 +416,7 @@ namespace TickTrader.Algo.Common.Model
         public BL.OrderCalculator Calculator { get; set; }
         bool BL.IOrderModel.IsCalculated { get { return CalculationError == null; } }
         decimal? BL.IOrderModel.MarginRateCurrent { get; set; }
+        
 
         BO.OrderTypes BL.ICommonOrder.Type
         {
@@ -434,7 +435,7 @@ namespace TickTrader.Algo.Common.Model
         bool BL.ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
         string BL.ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
         string BL.ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
-
+        decimal? BL.ICommonOrder.MaxVisibleAmount => MaxVisibleVolume;
         public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
 
         #endregion

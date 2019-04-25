@@ -16,6 +16,8 @@ namespace TickTrader.Algo.Api
         double Commission { get; }
         double Swap { get; }
         double Price { get; }
+        string Id { get; }
+        DateTime? Modified { get; }
     }
 
     public interface NetPositionList : IEnumerable<NetPosition>

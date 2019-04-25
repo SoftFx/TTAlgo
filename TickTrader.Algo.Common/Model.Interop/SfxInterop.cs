@@ -40,6 +40,8 @@ namespace TickTrader.Algo.Common.Model
         private FDK.Client.OrderEntry _tradeProxy;
         private FDK.Client.TradeCapture _tradeHistoryProxy;
 
+        private AppType _appType;
+
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
         public SfxInterop(ConnectionOptions options)
@@ -88,6 +90,8 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
             _feedHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
+
+            _appType = options.Type;
         }
 
         public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
@@ -129,7 +133,8 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed: Connecting...");
             await _feedProxy.ConnectAsync(address);
             logger.Debug("Feed: Connected.");
-            await _feedProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+
+            await _feedProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed: Logged in.");
         }
 
@@ -138,7 +143,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade: Connecting...");
             await _tradeProxy.ConnectAsync(address);
             logger.Debug("Trade: Connected.");
-            await _tradeProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _tradeProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade logged in.");
         }
 
@@ -147,7 +152,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed.History: Connecting...");
             await _feedHistoryProxy.ConnectAsync(address);
             logger.Debug("Feed.History: Connected.");
-            await _feedHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _feedHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed.History: Logged in.");
         }
 
@@ -156,7 +161,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Connecting...");
             await _tradeHistoryProxy.ConnectAsync(address);
             logger.Debug("Trade.History: Connected.");
-            await _tradeHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _tradeHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxy.SubscribeTradesAsync(false);
             logger.Debug("Trade.History: Subscribed.");
@@ -472,19 +477,25 @@ namespace TickTrader.Algo.Common.Model
                 var result = await operationDef(request);
                 return new OrderInteropResult(OrderCmdResultCodes.Ok, ConvertToEr(result, operationId));
             }
-            catch (ExecutionException eex)
+            catch (ExecutionException ex)
             {
-                var reason = Convert(eex.Report.RejectReason, eex.Message);
-                return new OrderInteropResult(reason, ConvertToEr(eex.Report, operationId));
+                var reason = Convert(ex.Report.RejectReason, ex.Message);
+                return new OrderInteropResult(reason, ConvertToEr(ex.Report, operationId));
             }
             catch (DisconnectException)
             {
                 return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
             }
+            catch (InteropException ex) when (ex.ErrorCode == ConnectionErrorCodes.RejectedByServer)
+            {
+                // workaround for inconsistent server logic
+                return new OrderInteropResult(Convert(RejectReason.Other, ex.Message));
+            }
             catch (Exception ex)
             {
                 if (ex.Message.StartsWith("Session is not active"))
                     return new OrderInteropResult(OrderCmdResultCodes.ConnectionError);
+
                 logger.Error(ex);
                 return new OrderInteropResult(OrderCmdResultCodes.UnknownError);
             }
@@ -837,6 +848,7 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
                 case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
+                case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
                 case RejectReason.Other:
                     {
                         if (message == "Trade Not Allowed")
@@ -851,13 +863,15 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.OrderLocked;
                         else if (message != null && message.Contains("Invalid expiration"))
                             return Api.OrderCmdResultCodes.IncorrectExpiration;
+                        else if (message != null && message.StartsWith("Price precision"))
+                            return Api.OrderCmdResultCodes.IncorrectPricePrecision;
                         break;
                     }
                 case RejectReason.None:
                     {
                         if (message != null && message.StartsWith("Order Not Found"))
                             return Api.OrderCmdResultCodes.OrderNotFound;
-                        return OrderCmdResultCodes.Ok;
+                        return Api.OrderCmdResultCodes.Ok;
                     }
             }
             return Api.OrderCmdResultCodes.UnknownError;
@@ -884,6 +898,7 @@ namespace TickTrader.Algo.Common.Model
 
             return new PositionEntity()
             {
+                Id = p.PosId,
                 Side = side,
                 Volume = amount,
                 Price = price,
@@ -891,6 +906,7 @@ namespace TickTrader.Algo.Common.Model
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
+                Modified = p.Modified,
             };
         }
 
@@ -936,6 +952,35 @@ namespace TickTrader.Algo.Common.Model
         private static QuoteEntity Convert(SFX.Quote fdkTick)
         {
             return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
+        }
+
+        public static Core.TradeTransactionReason Convert(SFX.TradeTransactionReason reason)
+        {
+            switch (reason)
+            {
+                case SFX.TradeTransactionReason.ClientRequest:
+                    return Core.TradeTransactionReason.ClientRequest;
+                case SFX.TradeTransactionReason.DealerDecision:
+                    return Core.TradeTransactionReason.DealerDecision;
+                case SFX.TradeTransactionReason.DeleteAccount:
+                    return Core.TradeTransactionReason.DeleteAccount;
+                case SFX.TradeTransactionReason.Expired:
+                    return Core.TradeTransactionReason.Expired;
+                case SFX.TradeTransactionReason.PendingOrderActivation:
+                    return Core.TradeTransactionReason.PendingOrderActivation;
+                case SFX.TradeTransactionReason.Rollover:
+                    return Core.TradeTransactionReason.Rollover;
+                case SFX.TradeTransactionReason.StopLossActivation:
+                    return Core.TradeTransactionReason.StopLossActivation;
+                case SFX.TradeTransactionReason.StopOut:
+                    return Core.TradeTransactionReason.StopOut;
+                case SFX.TradeTransactionReason.TakeProfitActivation:
+                    return Core.TradeTransactionReason.TakeProfitActivation;
+                case SFX.TradeTransactionReason.TransferMoney:
+                    return Core.TradeTransactionReason.TransferMoney;
+                default:
+                    return Core.TradeTransactionReason.None;
+            }
         }
 
         public static TradeReportEntity Convert(TradeTransactionReport report)
@@ -1025,6 +1070,8 @@ namespace TickTrader.Algo.Common.Model
                 UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
                 UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
+                ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
+                TradeTransactionReason = Convert(report.TradeTransactionReason),
             };
         }
 

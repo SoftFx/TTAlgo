@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Common.Model
         public decimal Profit { get; protected set; }
         public decimal Floating { get; protected set; }
         public decimal MarginLevel { get; protected set; }
+        public decimal Swap { get; protected set; }
 
         public event Action<AccountCalculatorModel> Updated;
 
@@ -129,6 +130,7 @@ namespace TickTrader.Algo.Common.Model
             public string Name { get; private set; }
             public int Precision { get; private set; }
             public int SortOrder { get; private set; }
+            public CurrencyType Type => CurrencyType.Default;
         }
 
         protected class AccountAdapter : IMarginAccountInfo, ICashAccountInfo
@@ -259,6 +261,7 @@ namespace TickTrader.Algo.Common.Model
                     Profit = calc.Profit;
                     Floating = calc.Profit + calc.Commission + calc.Swap;
                     MarginLevel = calc.MarginLevel;
+                    Swap = calc.Swap;
                     OnUpdate();
                 };
             }
@@ -289,6 +292,7 @@ namespace TickTrader.Algo.Common.Model
                 Profit = -1;
                 Floating = -1;
                 MarginLevel = -1;
+                Swap = -1;
             }
 
             public override void Dispose() { }

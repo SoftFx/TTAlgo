@@ -333,4 +333,88 @@
   <data name="Tab_Bots" xml:space="preserve">
     <value>Бот-экземпляры</value>
   </data>
+  <data name="Order_OpenPrice" xml:space="preserve">
+    <value>Open Price</value>
+  </data>
+  <data name="Assets_AvailableVolume" xml:space="preserve">
+    <value>Доступный объём</value>
+  </data>
+  <data name="Assets_Currency" xml:space="preserve">
+    <value>Валюта</value>
+  </data>
+  <data name="Assets_LockedVolume" xml:space="preserve">
+    <value>Заблокированный объём</value>
+  </data>
+  <data name="Assets_Volume" xml:space="preserve">
+    <value>Объём</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="Order_Comment" xml:space="preserve">
+    <value>Комментарий</value>
+  </data>
+  <data name="Order_Commission" xml:space="preserve">
+    <value>Комиссия</value>
+  </data>
+  <data name="Order_CurrentPrice" xml:space="preserve">
+    <value>Текущая цена</value>
+  </data>
+  <data name="Order_ExecutionTime" xml:space="preserve">
+    <value>Время исполнения</value>
+  </data>
+  <data name="Order_Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Order_InstanceId" xml:space="preserve">
+    <value>Id экземпляра</value>
+  </data>
+  <data name="Order_Net_P_L" xml:space="preserve">
+    <value>Net P/L</value>
+  </data>
+  <data name="Order_P_L" xml:space="preserve">
+    <value>P/L</value>
+  </data>
+  <data name="Order_Swap" xml:space="preserve">
+    <value>Swap</value>
+  </data>
+  <data name="Order_S_L" xml:space="preserve">
+    <value>S/L</value>
+  </data>
+  <data name="Order_Tag" xml:space="preserve">
+    <value>Тег</value>
+  </data>
+  <data name="Order_T_P" xml:space="preserve">
+    <value>T/P</value>
+  </data>
+  <data name="Position_CurrentPrice" xml:space="preserve">
+    <value>Текущая цена</value>
+  </data>
+  <data name="Position_Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Position_ModifiedTime" xml:space="preserve">
+    <value>Время модификации</value>
+  </data>
+  <data name="Position_Net_P_L" xml:space="preserve">
+    <value>Net P/L</value>
+  </data>
+  <data name="Position_OpenPrice" xml:space="preserve">
+    <value>Цена открытия</value>
+  </data>
+  <data name="Position_PriceDeviation" xml:space="preserve">
+    <value>Отклонение цены</value>
+  </data>
+  <data name="Position_Swap" xml:space="preserve">
+    <value>Swap</value>
+  </data>
+  <data name="Position_Volume" xml:space="preserve">
+    <value>Объём</value>
+  </data>
+  <data name="ShowCurrentPrice" xml:space="preserve">
+    <value>Показать Current Price</value>
+  </data>
+  <data name="ShowSwap" xml:space="preserve">
+    <value>Показать Swap</value>
+  </data>
 </root>

@@ -25,12 +25,12 @@
         <DataGrid Name="Assets" Style="{StaticResource DataGrid_Style}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    <MenuItem Header="{l:Resx Copy}" Command="ApplicationCommands.Copy"></MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Currency" Width="*" Binding="{Binding Asset.Currency}" />
-                <DataGridTextColumn Header="Volume" Width="*" SortMemberPath="Asset.Amount">
+                <DataGridTextColumn Header="{l:Resx Assets_Currency}" Width="*" Binding="{Binding Asset.Currency}" />
+                <DataGridTextColumn Header="{l:Resx Assets_Volume}" Width="*" SortMemberPath="Asset.Amount">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Asset.Amount"/>
@@ -44,7 +44,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Locked Volume" Width="*" SortMemberPath="Asset.LockedAmount">
+                <DataGridTextColumn Header="{l:Resx Assets_LockedVolume}" Width="*" SortMemberPath="Asset.LockedAmount">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Asset.LockedAmount"/>
@@ -58,7 +58,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Available Volume" Width="*" SortMemberPath="Asset.FreeAmount">
+                <DataGridTextColumn Header="{l:Resx Assets_AvailableVolume}" Width="*" SortMemberPath="Asset.FreeAmount">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Asset.FreeAmount"/>

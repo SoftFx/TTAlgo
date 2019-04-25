@@ -16,12 +16,11 @@ namespace TickTrader.BotTerminal
         private Logger _logger;
         private IProfileLoader _profileLoader;
         private WindowManager _wndManager;
-        private ProfileManager _profileManager;
         private CancellationTokenSource _cancelLoadSrc;
         private ProfileRepository _profileRepo;
         private VarDictionary<string, string> _profiles;
+        private ProfileManager _profileManager;
         private bool _canLoadProfile;
-
 
         public IObservableList<string> Profiles { get; }
 
@@ -42,7 +41,6 @@ namespace TickTrader.BotTerminal
             _profileLoader = shell.ProfileLoader;
             _wndManager = shell.ToolWndManager;
             _profileManager = storage.ProfileManager;
-
             _profiles = new VarDictionary<string, string>();
             Profiles = _profiles.OrderBy((k, v) => v).Chain().AsObservable();
 

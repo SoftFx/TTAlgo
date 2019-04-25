@@ -61,6 +61,42 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##AvailableVolume##.
+        /// </summary>
+        internal static string Assets_AvailableVolume {
+            get {
+                return ResourceManager.GetString("Assets_AvailableVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Currency##.
+        /// </summary>
+        internal static string Assets_Currency {
+            get {
+                return ResourceManager.GetString("Assets_Currency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##LockedVolume##.
+        /// </summary>
+        internal static string Assets_LockedVolume {
+            get {
+                return ResourceManager.GetString("Assets_LockedVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Volume##.
+        /// </summary>
+        internal static string Assets_Volume {
+            get {
+                return ResourceManager.GetString("Assets_Volume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Candle##.
         /// </summary>
         internal static string ChartType_Candle {
@@ -259,6 +295,15 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Copy##.
+        /// </summary>
+        internal static string Copy {
+            get {
+                return ResourceManager.GetString("Copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##DownloadingTradeHistoryError##.
         /// </summary>
         internal static string DownloadingTradeHistoryError {
@@ -430,6 +475,78 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Comment##.
+        /// </summary>
+        internal static string Order_Comment {
+            get {
+                return ResourceManager.GetString("Order_Comment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Commission##.
+        /// </summary>
+        internal static string Order_Commission {
+            get {
+                return ResourceManager.GetString("Order_Commission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##CurrentPrice##.
+        /// </summary>
+        internal static string Order_CurrentPrice {
+            get {
+                return ResourceManager.GetString("Order_CurrentPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##ExecTime##.
+        /// </summary>
+        internal static string Order_ExecutionTime {
+            get {
+                return ResourceManager.GetString("Order_ExecutionTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Id##.
+        /// </summary>
+        internal static string Order_Id {
+            get {
+                return ResourceManager.GetString("Order_Id", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##InstanceId##.
+        /// </summary>
+        internal static string Order_InstanceId {
+            get {
+                return ResourceManager.GetString("Order_InstanceId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##NetP/L##.
+        /// </summary>
+        internal static string Order_Net_P_L {
+            get {
+                return ResourceManager.GetString("Order_Net_P_L", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Order_OpenPrice##.
+        /// </summary>
+        internal static string Order_OpenPrice {
+            get {
+                return ResourceManager.GetString("Order_OpenPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Order type##.
         /// </summary>
         internal static string Order_OrderType {
@@ -439,11 +556,29 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##P/L##.
+        /// </summary>
+        internal static string Order_P_L {
+            get {
+                return ResourceManager.GetString("Order_P_L", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Price##.
         /// </summary>
         internal static string Order_Price {
             get {
                 return ResourceManager.GetString("Order_Price", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##S/L##.
+        /// </summary>
+        internal static string Order_S_L {
+            get {
+                return ResourceManager.GetString("Order_S_L", resourceCulture);
             }
         }
         
@@ -466,11 +601,38 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Swap##.
+        /// </summary>
+        internal static string Order_Swap {
+            get {
+                return ResourceManager.GetString("Order_Swap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Symbol##.
         /// </summary>
         internal static string Order_Symbol {
             get {
                 return ResourceManager.GetString("Order_Symbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##T/P##.
+        /// </summary>
+        internal static string Order_T_P {
+            get {
+                return ResourceManager.GetString("Order_T_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Tag##.
+        /// </summary>
+        internal static string Order_Tag {
+            get {
+                return ResourceManager.GetString("Order_Tag", resourceCulture);
             }
         }
         
@@ -511,6 +673,60 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##CurrentPrice##.
+        /// </summary>
+        internal static string Position_CurrentPrice {
+            get {
+                return ResourceManager.GetString("Position_CurrentPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Id##.
+        /// </summary>
+        internal static string Position_Id {
+            get {
+                return ResourceManager.GetString("Position_Id", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##ModifiedTime##.
+        /// </summary>
+        internal static string Position_ModifiedTime {
+            get {
+                return ResourceManager.GetString("Position_ModifiedTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##NetP/L##.
+        /// </summary>
+        internal static string Position_Net_P_L {
+            get {
+                return ResourceManager.GetString("Position_Net_P_L", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##OpenPrice##.
+        /// </summary>
+        internal static string Position_OpenPrPosition_OpenPrice {
+            get {
+                return ResourceManager.GetString("Position_OpenPrPosition_OpenPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##PriceDeviation##.
+        /// </summary>
+        internal static string Position_PriceDeviation {
+            get {
+                return ResourceManager.GetString("Position_PriceDeviation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Side##.
         /// </summary>
         internal static string Position_Side {
@@ -520,11 +736,47 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##Swap##.
+        /// </summary>
+        internal static string Position_Swap {
+            get {
+                return ResourceManager.GetString("Position_Swap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Symbol##.
         /// </summary>
         internal static string Position_Symbol {
             get {
                 return ResourceManager.GetString("Position_Symbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##Volume##.
+        /// </summary>
+        internal static string Position_Volume {
+            get {
+                return ResourceManager.GetString("Position_Volume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##ShowCurrentPrice##.
+        /// </summary>
+        internal static string ShowCurrentPrice {
+            get {
+                return ResourceManager.GetString("ShowCurrentPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##ShowSwap##.
+        /// </summary>
+        internal static string ShowSwap {
+            get {
+                return ResourceManager.GetString("ShowSwap", resourceCulture);
             }
         }
         

@@ -13,16 +13,29 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
-        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
+        private ProfileManager _profileManager;
+        private bool _isBacktester;
+
+        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Positions = model.Positions
                 .OrderBy((id, p) => id)
-                .Select(p => new PositionViewModel(p, symbols.GetOrDefault(p.Symbol)))
+                .Select(p => new PositionViewModel(p))
                 .AsObservable();
 
+            _profileManager = profile;
+            _isBacktester = isBacktester;
             Positions.CollectionChanged += PositionsCollectionChanged;
+
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
+
+        public ProviderColumnsState StateProvider { get; private set; }
 
         protected override bool SupportsAccount(AccountTypes accType)
         {
@@ -30,6 +43,20 @@ namespace TickTrader.BotTerminal
         }
 
         public IObservableList<PositionViewModel> Positions { get; private set; }
+
+        private void UpdateProvider()
+        {
+            if (_profileManager.CurrentProfile.ColumnsShow != null)
+            {
+                var postfix = nameof(NetPositionListViewModel);
+
+                if (_isBacktester)
+                    postfix += "_backtester";
+
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);
+                NotifyOfPropertyChange(nameof(StateProvider));
+            }
+        }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

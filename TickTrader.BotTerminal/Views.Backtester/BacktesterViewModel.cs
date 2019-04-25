@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
         private AlgoEnvironment _env;
         private IShell _shell;
         private SymbolCatalog _catalog;
-        
+
         private SymbolToken _mainSymbolToken;
         private IVarList<ISymbolInfo> _symbolTokens;
         private IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
@@ -57,7 +57,7 @@ namespace TickTrader.BotTerminal
 
         private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
 
-        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
+        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell, ProfileManager profile)
         {
             DisplayName = "Backtester";
 
@@ -80,7 +80,8 @@ namespace TickTrader.BotTerminal
             IsUpdatingRange = new BoolProperty();
             MainTimeFrame = new Property<TimeFrames>();
 
-            TradeHistoryPage = new BacktesterTradeGridViewModel();
+            TradesPage = new BacktesterCurrentTradesViewModel(profile);
+            TradeHistoryPage = new BacktesterTradeGridViewModel(profile);
 
             MainTimeFrame.Value = TimeFrames.M1;
 
@@ -203,7 +204,7 @@ namespace TickTrader.BotTerminal
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
         public BacktesterTradeGridViewModel TradeHistoryPage { get; }
-        public BacktesterCurrentTradesViewModel TradesPage { get; } = new BacktesterCurrentTradesViewModel();
+        public BacktesterCurrentTradesViewModel TradesPage { get; private set; }
 
         public async void OpenTradeSetup()
         {
@@ -815,7 +816,7 @@ namespace TickTrader.BotTerminal
         {
             if (_settings.AccType == AccountTypes.Gross || _settings.AccType == AccountTypes.Net)
                 TradeSettingsSummary.Value = string.Format("{0} {1} {2} L={3}, D={4}, {5}ms", _settings.AccType,
-                    _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage, "Default", _settings.ServerPingMs );
+                    _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage, "Default", _settings.ServerPingMs);
         }
 
         #region IAlgoSetupMetadata
@@ -838,6 +839,11 @@ namespace TickTrader.BotTerminal
         bool IPluginIdProvider.IsValidPluginId(AlgoTypes pluginType, string pluginId)
         {
             return true;
+        }
+
+        void IPluginIdProvider.RegisterPluginId(string pluginId)
+        {
+            return;
         }
 
         #endregion IPluginIdProvider
