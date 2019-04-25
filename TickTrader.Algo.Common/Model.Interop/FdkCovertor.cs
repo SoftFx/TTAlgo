@@ -8,7 +8,7 @@ using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using BO = TickTrader.BusinessObjects;
 using SoftFX.Extended.Reports;
-using TradeTransactionReason = SoftFX.Extended.Reports.TradeTransactionReason;
+using FIX = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -396,29 +396,29 @@ namespace TickTrader.Algo.Common.Model
             return Api.OrderCmdResultCodes.UnknownError;
         }
 
-        public static Core.TradeTransactionReason Convert(TradeTransactionReason reason)
+        public static Core.TradeTransactionReason Convert(FIX.Reports.TradeTransactionReason reason)
         {
             switch(reason)
             {
-                case TradeTransactionReason.ClientRequest:
+                case FIX.Reports.TradeTransactionReason.ClientRequest:
                     return Core.TradeTransactionReason.ClientRequest;
-                case TradeTransactionReason.DealerDecision:
+                case FIX.Reports.TradeTransactionReason.DealerDecision:
                     return Core.TradeTransactionReason.DealerDecision;
-                case TradeTransactionReason.DeleteAccount:
+                case FIX.Reports.TradeTransactionReason.DeleteAccount:
                     return Core.TradeTransactionReason.DeleteAccount;
-                case TradeTransactionReason.Expired:
+                case FIX.Reports.TradeTransactionReason.Expired:
                     return Core.TradeTransactionReason.Expired;
-                case TradeTransactionReason.PendingOrderActivation:
+                case FIX.Reports.TradeTransactionReason.PendingOrderActivation:
                     return Core.TradeTransactionReason.PendingOrderActivation;
-                case TradeTransactionReason.Rollover:
+                case FIX.Reports.TradeTransactionReason.Rollover:
                     return Core.TradeTransactionReason.Rollover;
-                case TradeTransactionReason.StopLossActivation:
+                case FIX.Reports.TradeTransactionReason.StopLossActivation:
                     return Core.TradeTransactionReason.StopLossActivation;
-                case TradeTransactionReason.StopOut:
+                case FIX.Reports.TradeTransactionReason.StopOut:
                     return Core.TradeTransactionReason.StopOut;
-                case TradeTransactionReason.TakeProfitActivation:
+                case FIX.Reports.TradeTransactionReason.TakeProfitActivation:
                     return Core.TradeTransactionReason.TakeProfitActivation;
-                case TradeTransactionReason.TransferMoney:
+                case FIX.Reports.TradeTransactionReason.TransferMoney:
                     return Core.TradeTransactionReason.TransferMoney;
                 default:
                     return Core.TradeTransactionReason.None;

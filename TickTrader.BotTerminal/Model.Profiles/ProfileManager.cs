@@ -27,6 +27,7 @@ namespace TickTrader.BotTerminal
 
         public ProfileStorageModel CurrentProfile => _storageController.Value;
 
+        public bool OpenBacktester { get; set; } = false;
 
         public event Action ProfileUpdated;
         public Action<ProfileStorageModel> SaveProfileSnapshot = delegate { };

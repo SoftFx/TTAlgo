@@ -33,7 +33,10 @@ namespace TickTrader.BotTerminal
 
             _profileManager = profile;
             if (_profileManager != null)
+            {
                 _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
 
         public Property<ICollectionView> Items { get; }
@@ -69,7 +72,12 @@ namespace TickTrader.BotTerminal
         {
             if (_profileManager.CurrentProfile.ColumnsShow != null)
             {
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, nameof(TradeHistoryGridViewModel));
+                var prefix = nameof(TradeHistoryGridViewModel);
+
+                if (_profileManager.OpenBacktester)
+                    prefix += "_backtester";
+
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, prefix);
                 NotifyOfPropertyChange(nameof(StateProvider));
             }
         }

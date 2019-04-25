@@ -28,8 +28,8 @@ namespace TickTrader.BotTerminal
 
             if (_profileManager != null)
             {
-                UpdateProvider();
                 _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
             }
         }
 
@@ -46,7 +46,12 @@ namespace TickTrader.BotTerminal
         {
             if (_profileManager.CurrentProfile.ColumnsShow != null)
             {
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, nameof(NetPositionListViewModel));
+                var prefix = nameof(NetPositionListViewModel);
+
+                if (_profileManager.OpenBacktester)
+                    prefix += "_backtester";
+
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, prefix);
                 NotifyOfPropertyChange(nameof(StateProvider));
             }
         }

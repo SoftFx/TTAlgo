@@ -32,7 +32,10 @@ namespace TickTrader.BotTerminal
             Account.AccountTypeChanged += () => NotifyOfPropertyChange(nameof(IsGrossAccount));
 
             if (_profileManager != null)
+            {
                 _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
 
         public ProviderColumnsState StateProvider { get; private set; }
@@ -44,7 +47,12 @@ namespace TickTrader.BotTerminal
         {
             if (_profileManager.CurrentProfile.ColumnsShow != null)
             {
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, nameof(OrderListViewModel));
+                var prefix = nameof(OrderListViewModel);
+
+                if (_profileManager.OpenBacktester)
+                    prefix += "_backtester";
+
+                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, prefix);
                 NotifyOfPropertyChange(nameof(StateProvider));
             }
         }

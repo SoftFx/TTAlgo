@@ -17,7 +17,6 @@ using ActorSharp;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using TickTrader.Algo.Common.Info;
-using TradeTransactionReason = TickTrader.FDK.Common.TradeTransactionReason;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -950,29 +949,29 @@ namespace TickTrader.Algo.Common.Model
             return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
         }
 
-        public static Core.TradeTransactionReason Convert(TradeTransactionReason reason)
+        public static Core.TradeTransactionReason Convert(SFX.TradeTransactionReason reason)
         {
             switch (reason)
             {
-                case TradeTransactionReason.ClientRequest:
+                case SFX.TradeTransactionReason.ClientRequest:
                     return Core.TradeTransactionReason.ClientRequest;
-                case TradeTransactionReason.DealerDecision:
+                case SFX.TradeTransactionReason.DealerDecision:
                     return Core.TradeTransactionReason.DealerDecision;
-                case TradeTransactionReason.DeleteAccount:
+                case SFX.TradeTransactionReason.DeleteAccount:
                     return Core.TradeTransactionReason.DeleteAccount;
-                case TradeTransactionReason.Expired:
+                case SFX.TradeTransactionReason.Expired:
                     return Core.TradeTransactionReason.Expired;
-                case TradeTransactionReason.PendingOrderActivation:
+                case SFX.TradeTransactionReason.PendingOrderActivation:
                     return Core.TradeTransactionReason.PendingOrderActivation;
-                case TradeTransactionReason.Rollover:
+                case SFX.TradeTransactionReason.Rollover:
                     return Core.TradeTransactionReason.Rollover;
-                case TradeTransactionReason.StopLossActivation:
+                case SFX.TradeTransactionReason.StopLossActivation:
                     return Core.TradeTransactionReason.StopLossActivation;
-                case TradeTransactionReason.StopOut:
+                case SFX.TradeTransactionReason.StopOut:
                     return Core.TradeTransactionReason.StopOut;
-                case TradeTransactionReason.TakeProfitActivation:
+                case SFX.TradeTransactionReason.TakeProfitActivation:
                     return Core.TradeTransactionReason.TakeProfitActivation;
-                case TradeTransactionReason.TransferMoney:
+                case SFX.TradeTransactionReason.TransferMoney:
                     return Core.TradeTransactionReason.TransferMoney;
                 default:
                     return Core.TradeTransactionReason.None;
