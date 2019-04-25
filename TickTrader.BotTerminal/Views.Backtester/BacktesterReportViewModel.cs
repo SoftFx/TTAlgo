@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
@@ -72,8 +73,13 @@ namespace TickTrader.BotTerminal
             {
                 using (var writer = new StreamWriter(entryStream))
                 {
+                    writer.Write("DateTime,Open,High,Low,Close");
+
                     for (int i = 0; i < data.Count; i++)
-                        writer.WriteLine("{0:G},{1},{2},{3},{4}", data.XValues[i],  data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
+                    {
+                        writer.WriteLine();
+                        writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(data.XValues[i]), data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
+                    }
                 }
             });
         }
