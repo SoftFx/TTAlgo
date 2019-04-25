@@ -285,7 +285,7 @@ namespace TickTrader.Algo.Common.Model
                 try
                 {
                     var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
-                    var timeEdge = from;
+                    DateTime? timeEdge = null;
 
                     while (true)
                     {
@@ -293,7 +293,12 @@ namespace TickTrader.Algo.Common.Model
 
                         if (bar != null)
                         {
-                            if (bar.From <= timeEdge)
+                            if (timeEdge == null)
+                            {
+                                if (bar.From < from)
+                                    continue;
+                            }
+                            else if (bar.From <= timeEdge.Value)
                                 continue;
 
                             timeEdge = bar.From;

@@ -464,9 +464,6 @@ namespace TickTrader.Algo.Core
             RateUpdated?.Invoke(rate);
             _collector.OnRateUpdate(rate);
 
-            if (bufferUpdate.ExtendedBy > 0)
-                _collector.OnBufferExtended(bufferUpdate.ExtendedBy);
-
             var acc = Builder.Account;
             if (acc.IsMarginType)
                 _collector.RegisterEquity(SafeVirtualTimePoint, acc.Equity, acc.Margin);
