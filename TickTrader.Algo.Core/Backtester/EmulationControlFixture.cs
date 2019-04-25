@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Core
 
             //tradeEmulator.Stop();
 
-            Collector.OnStop(Settings, builder?.Account);
+            Collector.OnStop(Settings, builder?.Account, Feed);
         }
 
         public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)

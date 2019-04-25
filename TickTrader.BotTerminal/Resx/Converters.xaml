@@ -15,6 +15,7 @@
     <l:DateTimeConverter x:Key="UtcFullDateTimeFormat" Format="G" ConvertToLocal="False" />
     <l:DateTimeConverter x:Key="UtcShortDateTimeFormat" Format="g" ConvertToLocal="False" />
     <l:KindAwareDateTimeConverter x:Key="KindAwareFullDateTime"/>
+    <l:KindAwareDateTimeConverter x:Key="KindAwareTime" Format="HH:mm:ss.fff"/>
     <l:FullTimeConverter x:Key="FullTimeFormat" />
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
     <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
