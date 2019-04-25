@@ -104,7 +104,7 @@ namespace TickTrader.Algo.Core
         bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
         string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
         string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.MaxVisibleAmount => (decimal)_entity.MaxVisibleVolume;
+        decimal? BL.ICommonOrder.MaxVisibleAmount => (decimal?)_entity.MaxVisibleVolume;
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 
