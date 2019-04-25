@@ -22,10 +22,11 @@ namespace TickTrader.BotTerminal
         private DateTime _quoteTime;
         private IFeedSubscription subscription;
 
-        public SymbolViewModel(SymbolModel model, QuoteDistributor distributor, IShell shell)
+        public SymbolViewModel(SymbolModel model, QuoteDistributor distributor, IShell shell, bool showLocalTime)
         {
             _model = model;
             _shell = shell;
+            ShowLocalTime = showLocalTime;
             subscription = distributor.Subscribe(model.Name);
             subscription.NewQuote += OnRateUpdate;
 
@@ -50,6 +51,7 @@ namespace TickTrader.BotTerminal
         public string SymbolName { get { return _model.Name; } }
         public string Group { get { return "Forex"; } }
         public int Color { get; private set; }
+        public bool ShowLocalTime { get; }
 
         public RateDirectionTracker Bid { get; private set; }
         public RateDirectionTracker Ask { get; private set; }

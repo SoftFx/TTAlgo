@@ -121,7 +121,14 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding QuoteTime, Converter={StaticResource FullTimeFormat}}" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False" />
+                <DataGridTextColumn x:Name="timeCol" Header="Time" Width="Auto" ElementStyle="{StaticResource DataGridCell.Text.Classic}" CanUserResize="False">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource KindAwareTime}">
+                            <Binding Path="QuoteTime"/>
+                            <Binding Path="ShowLocalTime"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
     </ControlTemplate>
