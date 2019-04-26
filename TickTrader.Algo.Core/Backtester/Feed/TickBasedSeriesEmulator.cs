@@ -49,10 +49,17 @@ namespace TickTrader.Algo.Core
 
         private void UpdateBars(QuoteEntity quote)
         {
-            foreach (var rec in _bidBars.Values)
-                rec.AppendQuote(quote.CreatingTime, quote.Bid, 1);
-            foreach (var rec in _askBars.Values)
-                rec.AppendQuote(quote.CreatingTime, quote.Ask, 1);
+            if (!double.IsNaN(quote.Bid))
+            {
+                foreach (var rec in _bidBars.Values)
+                    rec.AppendQuote(quote.CreatingTime, quote.Bid, 1);
+            }
+
+            if (!double.IsNaN(quote.Ask))
+            {
+                foreach (var rec in _askBars.Values)
+                    rec.AppendQuote(quote.CreatingTime, quote.Ask, 1);
+            }
         }
     }
 }
