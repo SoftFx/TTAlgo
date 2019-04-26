@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using TickTrader.BotAgent.WebAdmin.Server.Dto;
 
@@ -11,7 +12,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Hubs
 
     public interface IBAFeed
     {
-        Task AddPackage(PackageDto package);
+        Task AddOrUpdatePackage(PackageDto package);
         Task DeletePackage(string name);
 
         Task AddAccount(AccountDto account);

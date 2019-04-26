@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNet.SignalR.Infrastructure;
-using Newtonsoft.Json.Serialization;
+﻿using Newtonsoft.Json.Serialization;
 using System;
 using System.Reflection;
 
@@ -15,7 +14,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Core
         {
             _defaultContractSerializer = new DefaultContractResolver();
             _camelCaseContractResolver = new CamelCasePropertyNamesContractResolver();
-            _assembly = typeof(Connection).GetTypeInfo().Assembly;
+            //_assembly = typeof(Connection).GetTypeInfo().Assembly;
         }
 
         public JsonContract ResolveContract(Type type)

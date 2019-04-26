@@ -1,18 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Hubs;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
+using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
 {
     public abstract class HubController<T>: Controller where T: Hub
     {
-        private readonly IHubContext _hub;
-        public IHubConnectionContext<dynamic> Clients { get; private set; }
+        private readonly IHubContext<BAFeed, IBAFeed> _hub;
+
+
+        public IHubClients<IBAFeed> Clients { get; private set; }
         public IGroupManager Groups { get; private set; }
-        protected HubController(IConnectionManager signalRConnectionManager)
+
+
+        protected HubController(IHubContext<BAFeed, IBAFeed> hub)
         {
-            var _hub = signalRConnectionManager.GetHubContext<T>();
+            _hub = hub;
+
             Clients = _hub.Clients;
             Groups = _hub.Groups;
         }

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
@@ -43,14 +44,16 @@ namespace TickTrader.BotAgent.WebAdmin
             services.AddSingleton<ISecurityTokenProvider, JwtSecurityTokenProvider>(s => tokenProvider);
             services.AddSingleton<IAuthManager, AuthManager>();
 
-            services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
+            services.AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddJsonProtocol(o => o.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver());
+
             services.AddMvc()
-            .AddJsonOptions(options =>
-            {
-                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                })
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen();
             services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
@@ -79,7 +82,7 @@ namespace TickTrader.BotAgent.WebAdmin
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
                 app.UseSwagger();
-                app.UseSwaggerUi();
+                app.UseSwaggerUI();
             }
             else
             {
@@ -96,7 +99,7 @@ namespace TickTrader.BotAgent.WebAdmin
 
             app.UseAuthentication();
 
-            app.UseSignalR();
+            app.UseSignalR(route => route.MapHub<BAFeed>("/signalr"));
 
             app.UseMvc(routes =>
             {

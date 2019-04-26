@@ -15,7 +15,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                     if (context.Request.QueryString.HasValue)
                     {
                         var token = context.Request.QueryString.Value
-                            .Split('&').SingleOrDefault(x => x.Contains("authorization-token"))?.Split('=')[1];
+                            .Split('&').SingleOrDefault(x => x.Contains("access_token"))?.Split('=')[1];
 
                         if (!string.IsNullOrWhiteSpace(token))
                         {
