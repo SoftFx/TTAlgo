@@ -106,11 +106,10 @@ namespace TickTrader.BotAgent
                     options.ConfigureHttpsDefaults(httpsOptions =>
                     {
                         httpsOptions.ServerCertificate = cert;
-                        httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls;
+                        httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
                     }))
                 .UseContentRoot(pathToContentRoot)
                 .UseWebRoot(pathToWebRoot)
-                .UseNLog()
                 .ConfigureLogging(logging => logging.AddNLog())
                 .ConfigureServices(services =>
                     services.Configure<LaunchSettings>(options =>

@@ -55,7 +55,7 @@ namespace TickTrader.BotAgent.WebAdmin
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "BotAgent WebAPI", Version = "v1" }));
             services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
 
             services.AddAuthentication(options =>
@@ -79,10 +79,11 @@ namespace TickTrader.BotAgent.WebAdmin
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
                 {
                     HotModuleReplacement = true,
+                    HotModuleReplacementEndpoint = "/dist/__webpack_hmr",
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BotAgent WebAPI v1"));
             }
             else
             {

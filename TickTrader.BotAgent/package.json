@@ -1,6 +1,7 @@
 {
-  "name": "Angular2Spa",
-  "version": "0.0.1",
+  "name": "BotAgent-WebSpa",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
     "postinstall": "typings install",
     "typings": "typings",
