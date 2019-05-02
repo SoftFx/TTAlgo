@@ -9,7 +9,7 @@
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
     <l:DateTimeConverter x:Key="ExtDateTimeFormat" Format="GExt" ConvertToLocal="True"/>
-    <l:DateTimeConverter x:Key="FullDateTimeFormat" Format="G" ConvertToLocal="True"/>
+    <l:DateTimeConverter x:Key="FullDateTimeFormat" Format="G" ConvertToLocal="False"/>
     <l:DateTimeConverter x:Key="ShortDateTimeFormat" Format="g" ConvertToLocal="True"/>
     <l:DateTimeConverter x:Key="UtcExtDateTimeFormat" Format="GExt" ConvertToLocal="False" />
     <l:DateTimeConverter x:Key="UtcFullDateTimeFormat" Format="G" ConvertToLocal="False" />

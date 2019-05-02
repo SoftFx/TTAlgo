@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
             IsAccTypeSet = AccType.Var.IsNotNull();
 
             AutoSizeColumns = true;
-            ConvertTimeToLocal = true;
+            ConvertTimeToLocal = false;
 
             _profileManager = profile;
             _isBacktester = isBacktester;
