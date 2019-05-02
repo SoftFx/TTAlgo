@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Common.Model
         private double? execAmount;
         private double? lastFillPrice;
         private double? lastFillAmount;
+        private DateTime? modified;
 
         public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
         {
@@ -332,7 +333,18 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public DateTime? Modified { get; private set; }
+        public DateTime? Modified
+        {
+            get { return modified; }
+            private set
+            {
+                if (modified != value)
+                {
+                    modified = value;
+                    NotifyOfPropertyChange(nameof(Modified));
+                }
+            }
+        }
 
         public double? ExecPrice
         {
