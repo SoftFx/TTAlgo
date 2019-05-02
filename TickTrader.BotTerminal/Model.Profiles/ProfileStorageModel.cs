@@ -23,6 +23,12 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public List<ColumnStateStorageEntry> ColumnsShow { get; set; }
 
+        [DataMember]
+        public bool HistoryViewSkipCancel { get; set; } = true;
+
+        [DataMember]
+        public string HistoryViewPeriod { get; set; }
+
         public ProfileStorageModel()
         {}
 
@@ -36,6 +42,8 @@ namespace TickTrader.BotTerminal
                 Bots = Bots != null ? new List<TradeBotStorageEntry>(Bots.Select(c => c.Clone())) : null,
                 ColumnsShow = ColumnsShow != null ? new List<ColumnStateStorageEntry>(ColumnsShow) : new List<ColumnStateStorageEntry>(),
                 Layout = Layout,
+                HistoryViewSkipCancel = HistoryViewSkipCancel,
+                HistoryViewPeriod = HistoryViewPeriod
             };
         }
     }

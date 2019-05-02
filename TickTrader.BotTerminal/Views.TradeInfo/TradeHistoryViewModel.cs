@@ -47,12 +47,14 @@ namespace TickTrader.BotTerminal
         private bool _skipCancel;
         private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
+        private ProfileManager _profileManager;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager, ProfileManager profileManager = null)
         {
             _period = TimePeriod.LastHour;
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
+            _profileManager = profileManager;
 
             _tradesList = new ObservableCollection<TransactionReport>();
             GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
@@ -72,6 +74,12 @@ namespace TickTrader.BotTerminal
 
             RefreshHistory();
             CleanupLoop();
+
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
 
         #region Properties
@@ -98,6 +106,10 @@ namespace TickTrader.BotTerminal
                 if (_period != value)
                 {
                     _period = value;
+
+                    if (_profileManager != null)
+                        _profileManager.CurrentProfile.HistoryViewPeriod = value.ToString();
+
                     NotifyOfPropertyChange(nameof(Period));
                     NotifyOfPropertyChange(nameof(CanEditPeriod));
                     RefreshHistory();
@@ -142,6 +154,10 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _skipCancel = value;
+
+                if (_profileManager != null)
+                    _profileManager.CurrentProfile.HistoryViewSkipCancel = value;
+
                 NotifyOfPropertyChange(nameof(SkipCancel));
                 RefreshHistory();
             }
@@ -444,6 +460,12 @@ namespace TickTrader.BotTerminal
 
                 await Task.Delay(CleanUpDelay);
             }
+        }
+
+        private void UpdateProvider()
+        {
+            _skipCancel = _profileManager.CurrentProfile.HistoryViewSkipCancel;
+            _period = !string.IsNullOrEmpty(_profileManager.CurrentProfile.HistoryViewPeriod) ? (TimePeriod)Enum.Parse(typeof(TimePeriod), _profileManager.CurrentProfile.HistoryViewPeriod) : TimePeriod.LastHour;
         }
     }
 }
