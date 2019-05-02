@@ -80,27 +80,23 @@ namespace TickTrader.Algo.Core
             record.LastNotifyTime = null;
         }
 
-        public IEnumerable<ActivationRecord> CheckPendingOrders(RateUpdate smbInfo)
+        public void CheckPendingOrders(RateUpdate smbInfo, List<ActivationRecord> result)
         {
-            List<decimal> affectedPrices = new List<decimal>();
-            List<ActivationRecord> result = new List<ActivationRecord>();
-
             decimal currentRate = aggrPriceSelector(smbInfo);
 
             foreach (decimal price in Keys)
             {
                 if (!priceCompareFunc(price, currentRate))
                     break;
-                affectedPrices.Add(price);
+
+                var records = this[price];
+
+                foreach (var rec in records)
+                {
+                    rec.ActivationPrice = currentRate;
+                    result.Add(rec);
+                }
             }
-
-            foreach (decimal affectedPrice in affectedPrices)
-                result.AddRange(this[affectedPrice]);
-
-            foreach (ActivationRecord record in result)
-                record.ActivationPrice = currentRate;
-
-            return result;
         }
     }
 }

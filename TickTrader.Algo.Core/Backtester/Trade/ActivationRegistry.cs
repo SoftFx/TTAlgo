@@ -27,8 +27,11 @@ namespace TickTrader.Algo.Core
             sellStopLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidLow.ToDecimal());
         }
 
+        public int Count { get; private set; }
+
         public ActivationRecord AddOrder(OrderAccessor order, RateUpdate currentRate)
         {
+            bool added = false;
             ActivationRecord instantActivation = null;
 
             if (order.Type == OrderType.Limit || order.Type == OrderType.Stop || order.Type == OrderType.StopLimit)
@@ -37,6 +40,7 @@ namespace TickTrader.Algo.Core
                 ActivationIndex index = GetPendingIndex(order.Type, order.Side);
                 if (index.AddRecord(record, currentRate))
                     instantActivation = record;
+                added = true;
             }
             else if (order.Type == OrderType.Position)
             {
@@ -46,17 +50,23 @@ namespace TickTrader.Algo.Core
                     ActivationIndex index = GetPositionIndex(order.Side, ActivationTypes.TakeProfit);
                     if (index.AddRecord(record, currentRate))
                         instantActivation = record;
+                    added = true;
                 }
+
                 if (order.Entity.StopLoss != null)
                 {
                     ActivationRecord record = new ActivationRecord(order, ActivationTypes.StopLoss);
                     ActivationIndex index = GetPositionIndex(order.Side, ActivationTypes.StopLoss);
                     if (index.AddRecord(record, currentRate))
                         instantActivation = record;
+                    added = true;
                 }
             }
             else
                 throw new Exception("Invalid order type:" + order.Type);
+
+            if (added)
+                Count++;
 
             return instantActivation;
         }
@@ -133,6 +143,9 @@ namespace TickTrader.Algo.Core
             else if (order.Type != OrderType.Market)
                 throw new Exception("Invalid order type:" + order.Type);
 
+            if (result)
+                Count--;
+
             return result;
         }
 
@@ -158,22 +171,24 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public List<ActivationRecord> CheckPendingOrders(RateUpdate rate)
+        public void CheckPendingOrders(RateUpdate rate, List<ActivationRecord> result)
         {
-            List<ActivationRecord> result = new List<ActivationRecord>();
-            if (!double.IsNaN(rate.Ask))
+            if (Count > 0)
             {
-                result.AddRange(buyLimitIndex.CheckPendingOrders(rate));
-                result.AddRange(buyStopIndex.CheckPendingOrders(rate));
-                result.AddRange(buyStopLimitIndex.CheckPendingOrders(rate));
+                if (!double.IsNaN(rate.Ask))
+                {
+                    buyLimitIndex.CheckPendingOrders(rate, result);
+                    buyStopIndex.CheckPendingOrders(rate, result);
+                    buyStopLimitIndex.CheckPendingOrders(rate, result);
+                }
+
+                if (!double.IsNaN(rate.Bid))
+                {
+                    sellLimitIndex.CheckPendingOrders(rate, result);
+                    sellStopIndex.CheckPendingOrders(rate, result);
+                    sellStopLimitIndex.CheckPendingOrders(rate, result);
+                }
             }
-            if (!double.IsNaN(rate.Bid))
-            {
-                result.AddRange(sellLimitIndex.CheckPendingOrders(rate));
-                result.AddRange(sellStopIndex.CheckPendingOrders(rate));
-                result.AddRange(sellStopLimitIndex.CheckPendingOrders(rate));
-            }
-            return result;
         }
 
         private class AscendingPriceComparer : IComparer<decimal>

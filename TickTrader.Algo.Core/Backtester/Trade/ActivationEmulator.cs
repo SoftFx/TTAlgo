@@ -9,9 +9,11 @@ namespace TickTrader.Algo.Core
 {
     internal class ActivationEmulator
     {
-        private static IEnumerable<ActivationRecord> NoActivatons = Enumerable.Empty<ActivationRecord>();
+        //private static List<ActivationRecord> NoActivatons = Enumerable.Empty<ActivationRecord>();
 
         private Dictionary<string, ActivationRegistry> indexes = new Dictionary<string, ActivationRegistry>();
+
+        private List<ActivationRecord> _result = new List<ActivationRecord>();
 
         /// <summary>
         /// Register limit order or position for activation monitoring
@@ -39,14 +41,14 @@ namespace TickTrader.Algo.Core
             return index.RemoveOrder(order);
         }
 
-        public void ResetOrderActivation(OrderAccessor order)
-        {
-            ActivationRegistry index;
-            if (!indexes.TryGetValue(order.Symbol, out index))
-                return;
+        //public void ResetOrderActivation(OrderAccessor order)
+        //{
+        //    ActivationRegistry index;
+        //    if (!indexes.TryGetValue(order.Symbol, out index))
+        //        return;
 
-            index.ResetOrderActivation(order);
-        }
+        //    index.ResetOrderActivation(order);
+        //}
 
         /// <summary>
         /// Checks all pending orders against specified symbol rate.
@@ -54,13 +56,15 @@ namespace TickTrader.Algo.Core
         /// </summary>
         /// <param name="rate"></param>
         /// <returns></returns>
-        public IEnumerable<ActivationRecord> CheckPendingOrders(RateUpdate rate)
+        public List<ActivationRecord> CheckPendingOrders(RateUpdate rate)
         {
+            _result.Clear();
+
             ActivationRegistry index;
             if (indexes.TryGetValue(rate.Symbol, out index))
-                return index.CheckPendingOrders(rate);
+                index.CheckPendingOrders(rate, _result);
 
-            return NoActivatons;
+            return _result;
         }
     }
 }

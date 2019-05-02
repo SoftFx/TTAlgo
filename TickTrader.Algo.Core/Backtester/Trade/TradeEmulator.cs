@@ -928,8 +928,8 @@ namespace TickTrader.Algo.Core
                 order.RemainingAmount -= fillAmount;
                 _calcFixture.CalculateOrder(order);
 
-                if (order.IsPending)
-                    ResetOrderActivation(order);
+                //if (order.IsPending)
+                //    ResetOrderActivation(order);
             }
             else
             {
@@ -1252,10 +1252,10 @@ namespace TickTrader.Algo.Core
             RegisterForExpirationCheck(order);
         }
 
-        private void ResetOrderActivation(OrderAccessor order)
-        {
-            _activator.ResetOrderActivation(order);
-        }
+        //private void ResetOrderActivation(OrderAccessor order)
+        //{
+        //    _activator.ResetOrderActivation(order);
+        //}
 
         private void UnregisterOrder(OrderAccessor order)
         {
@@ -1687,8 +1687,8 @@ namespace TickTrader.Algo.Core
                 _acc.Orders.Remove(position.Id);
                 UnregisterOrder(position);
             }
-            else
-                ResetOrderActivation(position);
+            //else
+            //    ResetOrderActivation(position);
 
             // Reopen position with remaining amount.
             if (partialClose && reopenRemaining)
