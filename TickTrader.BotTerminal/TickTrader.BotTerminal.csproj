@@ -292,6 +292,7 @@
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\DoubleCmpConverter.cs" />
     <Compile Include="Converters\NotNullConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />

@@ -4,6 +4,7 @@
 
     <l:BooleanToVisibilityConverter x:Key="BoolToVis"/>
     <l:BooleanToVisibilityConverter x:Key="LeastOneBoolToVisible" ConversionMode="LeastOne"/>
+    <l:NullToVisibilityConverter x:Key="NullOrEmptyToVis"/>
     <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
     <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />

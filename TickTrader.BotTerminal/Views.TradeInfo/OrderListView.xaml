@@ -50,11 +50,15 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.StopPrice, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Stop Price: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.StopPrice}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Expiration, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.Expiration}" VerticalAlignment="Center" />
                                     </StackPanel>
