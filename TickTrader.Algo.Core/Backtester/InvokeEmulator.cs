@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core
         private long _feedCount;
         private DateTime _timePoint;
         private long _safeTimePoint;
-        private FeedReader _feedReader;
+        private FeedEventSeries _feedReader;
         private volatile bool _checkStateFlag;
         private volatile int _execDelay;
         private BacktesterCollector _collector;
@@ -180,6 +180,7 @@ namespace TickTrader.Algo.Core
                     return;
                 }
                 _exStartAction();
+                ((SimplifiedBuilder)Builder).InitContext();
                 EmulateEvents();
                 EmulateStop();
                 StopFeedRead();
@@ -196,6 +197,10 @@ namespace TickTrader.Algo.Core
                 StopFeedRead();
                 EmulateStop();
                 throw WrapException(ex);
+            }
+            finally
+            {
+                ((SimplifiedBuilder)Builder)?.DeinitContext();
             }
         }
 
@@ -414,7 +419,7 @@ namespace TickTrader.Algo.Core
         public bool StartFeedRead()
         {
             if (_feedReader == null)
-                _feedReader = new FeedReader(_feed);
+                _feedReader = new FeedEventSeries(_feed);
             if (_feedReader.IsCompeted)
                 return false;
             UpdateVirtualTimepoint(_feedReader.NextOccurrance.Date);

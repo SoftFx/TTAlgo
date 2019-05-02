@@ -28,23 +28,15 @@ namespace TickTrader.Algo.Common.Model
 
                 var bids = r.ReadFixedSizeArray(r1 =>
                 {
-                    return new BookEntryEntity
-                    {
-                        Price = r1.ReadDouble(),
-                        Volume = r.ReadDouble()
-                    };
+                    return new Api.BookEntry(r1.ReadDouble(), r.ReadDouble());
                 });
 
                 var asks = r.ReadFixedSizeArray(r1 =>
                 {
-                    return new BookEntryEntity
-                    {
-                        Price = r1.ReadDouble(),
-                        Volume = r.ReadDouble()
-                    };
+                    return new Api.BookEntry(r1.ReadDouble(), r.ReadDouble());
                 });
 
-                return new QuoteEntity(_symbol, time, bids, asks);
+                return QuoteEntity.CreatePrepared(_symbol, time, bids, asks);
             });
         }
 

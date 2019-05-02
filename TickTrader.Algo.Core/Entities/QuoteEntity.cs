@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
         public QuoteEntity(string symbol, DateTime time, double bid, double ask)
-            : this(symbol, time, new BookEntryEntity(bid), new BookEntryEntity(ask))
+            : this(symbol, time, new BookEntry(bid, 0), new BookEntry(ask, 0))
         {
         }
 
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
         }
 
         public QuoteEntity(string symbol, DateTime time, double? bid, double? ask)
-            : this(symbol, time, bid == null ? null : new BookEntry[] { new BookEntryEntity(bid.Value) }, ask == null ? null : new BookEntry[] { new BookEntryEntity(ask.Value) })
+            : this(symbol, time, bid == null ? null : new BookEntry[] { new BookEntry(bid.Value, 0) }, ask == null ? null : new BookEntry[] { new BookEntry(ask.Value, 0) })
         {
         }
 
@@ -32,21 +32,51 @@ namespace TickTrader.Algo.Core
         {
             Symbol = symbol;
             Time = time;
-            BidList = bids;
-            AskList = asks;
-
+            
             bids = bids ?? new BookEntry[0];
             asks = asks ?? new BookEntry[0];
 
+            Array.Sort(bids, (x, y) => y.Price.CompareTo(x.Price));
+            Array.Sort(asks, (x, y) => x.Price.CompareTo(y.Price));
+
+            BidList = bids;
+            AskList = asks;
+
             if (bids.Length > 0)
-                Bid = bids.Max(b => b.Price);
+                Bid = bids[0].Price;
             else
                 Bid = double.NaN;
 
             if (asks.Length > 0)
-                Ask = asks.Min(a => a.Price);
+                Ask = asks[0].Price;
             else
                 Ask = double.NaN;
+        }
+
+        private QuoteEntity()
+        {
+        }
+
+        public static QuoteEntity CreatePrepared(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks)
+        {
+            var entity = new QuoteEntity();
+
+            entity.BidList = bids;
+            entity.AskList = asks;
+            entity.Time = time;
+            entity.Symbol = symbol;
+
+            if (bids.Length > 0)
+                entity.Bid = bids[0].Price;
+            else
+                entity.Bid = double.NaN;
+
+            if (asks.Length > 0)
+                entity.Ask = asks[0].Price;
+            else
+                entity.Ask = double.NaN;
+
+            return entity;
         }
 
         public string Symbol { get; set; }
@@ -54,8 +84,8 @@ namespace TickTrader.Algo.Core
         public double Ask { get; set; }
         public double Bid { get; set; }
 
-        public BookEntry[] BidList { get; set; }
-        public BookEntry[] AskList { get; set; }
+        public BookEntry[] BidList { get; private set; }
+        public BookEntry[] AskList { get; private set; }
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
@@ -105,20 +135,20 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    [Serializable]
-    public class BookEntryEntity : Api.BookEntry
-    {
-        public BookEntryEntity()
-        {
-        }
+    //[Serializable]
+    //public class BookEntryEntity : Api.BookEntry
+    //{
+    //    public BookEntryEntity()
+    //    {
+    //    }
 
-        public BookEntryEntity(double price, double volume = 0)
-        {
-            Price = price;
-            Volume = volume;
-        }
+    //    public BookEntryEntity(double price, double volume = 0)
+    //    {
+    //        Price = price;
+    //        Volume = volume;
+    //    }
 
-        public double Price { get; set; }
-        public double Volume { get; set; }
-    }
+    //    public double Price { get; set; }
+    //    public double Volume { get; set; }
+    //}
 }

@@ -73,7 +73,9 @@
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
     <Compile Include="Adapters\TradeReportAdapter.cs" />
     <Compile Include="Backtester\DelayedEventsQueue.cs" />
+    <Compile Include="Backtester\Feed\FeedEventSeries.cs" />
     <Compile Include="Backtester\Feed\FeedReader.cs" />
+    <Compile Include="Backtester\Feed\SeriesReader.cs" />
     <Compile Include="Backtester\ScheduleEmulator.cs" />
     <Compile Include="Backtester\Stats\ChartDataCollector.cs" />
     <Compile Include="Backtester\Stats\FeedSeriesCollector.cs" />
@@ -88,7 +90,7 @@
     <Compile Include="Backtester\Trade\ActivationRecord.cs" />
     <Compile Include="Backtester\Trade\ActivationRegistry.cs" />
     <Compile Include="Backtester\Stats\BacktesterCollector.cs" />
-    <Compile Include="Backtester\Feed\BarBasedSeriesEmulator.cs" />
+    <Compile Include="Backtester\Feed\BarSeriesReader.cs" />
     <Compile Include="Backtester\Trade\CommisionEmulator.cs" />
     <Compile Include="Backtester\Trade\DefaultDealer.cs" />
     <Compile Include="Backtester\EmulationControlFixture.cs" />
@@ -96,8 +98,9 @@
     <Compile Include="Backtester\Interfaces.cs" />
     <Compile Include="Backtester\Stats\TestingStatistics.cs" />
     <Compile Include="Backtester\Trade\TradeEmulator.cs" />
-    <Compile Include="Backtester\Feed\TickBasedSeriesEmulator.cs" />
+    <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
+    <Compile Include="Builder\SimplifiedBuilder.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
@@ -182,6 +185,7 @@
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainEnumerator.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />
+    <Compile Include="Lib\FlipGate.cs" />
     <Compile Include="Lib\FormatExtentions.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />

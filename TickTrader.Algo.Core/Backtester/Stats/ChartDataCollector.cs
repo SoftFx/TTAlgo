@@ -9,68 +9,104 @@ namespace TickTrader.Algo.Core
 {
     internal class ChartDataCollector : IDisposable
     {
-        private BarSequenceBuilder _builder;
-        private List<BarEntity> _snapshot = new List<BarEntity>();
+        private ITimeSequenceRef _timeRef;
+        private List<BarEntity> _snapshot;
         private Action<object> _sendUpdateAction;
-
-        public ChartDataCollector(TestDataSeriesFlags seriesFlags, DataSeriesTypes type, string seriesName, Action<object> sendUpdateAction, TimeFrames timeFrame)
-        {
-            _builder = BarSequenceBuilder.Create(timeFrame);
-            _sendUpdateAction = sendUpdateAction;
-            Init(seriesFlags, type, seriesName);
-        }
+        private BarEntity _currentBar;
+        private bool _sendOnUpdate;
+        private bool _sendOnClose;
+        private DataSeriesTypes _type;
+        private string _streamId;
 
         public ChartDataCollector(TestDataSeriesFlags seriesFlags, DataSeriesTypes type, string seriesName, Action<object> sendUpdateAction, ITimeSequenceRef timeRef)
         {
-            _builder = BarSequenceBuilder.Create(timeRef);
+            _timeRef = timeRef;
             _sendUpdateAction = sendUpdateAction;
             Init(seriesFlags, type, seriesName);
         }
 
         public int Count => _snapshot.Count;
-        public ITimeSequenceRef Ref => _builder;
         public List<BarEntity> Snapshot => _snapshot;
 
-        public void AppendQuote(DateTime time, double price, double volume)
+        public void AppendQuote(double price)
         {
-            _builder.AppendQuote(time, price, volume);
-        }
+            if (_currentBar.Volume < 0)
+            {
+                _currentBar.Open = price;
+                _currentBar.Close = price;
+                _currentBar.High = price;
+                _currentBar.Low = price;
+                _currentBar.Volume = 1;
 
-        public BarEntity AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
-        {
-            return _builder.AppendBarPart(time, open, high, low, close, volume);
+                if (_sendOnUpdate)
+                    SendUpdate(_currentBar.Clone(), SeriesUpdateActions.Append);
+            }
+            else
+            {
+                _currentBar.Append(price, 1);
+
+                if (_sendOnUpdate)
+                    SendUpdate(_currentBar.Clone(), SeriesUpdateActions.Update);
+            }
         }
 
         public void OnStop()
         {
-            _builder.CloseSequence();
+            if (_currentBar != null && _currentBar.Volume > 0)
+            {
+                _snapshot?.Add(_currentBar);
+
+                if (_sendOnClose)
+                    SendUpdate(_currentBar, SeriesUpdateActions.Append);
+            }
         }
 
         public void Dispose()
         {
+            _timeRef.BarOpened -= _timeRef_BarOpened;
+            _timeRef.BarClosed -= _timeRef_BarClosed;
         }
 
         private void Init(TestDataSeriesFlags seriesFlags, DataSeriesTypes dataType, string seriesId)
         {
+            _timeRef.BarOpened += _timeRef_BarOpened;
+            _timeRef.BarClosed += _timeRef_BarClosed;
+
+            _type = dataType;
+            _streamId = seriesId;
+
             if (seriesFlags.HasFlag(TestDataSeriesFlags.Snapshot))
-                _builder.BarOpened += (b) => _snapshot.Add(b);
+                _snapshot = new List<BarEntity>();
+
             if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
             {
                 if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
-                {
-                    _builder.BarUpdated += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Update);
-                    _builder.BarOpened += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
-                }
+                    _sendOnUpdate = true;
                 else
-                    _builder.BarClosed += (b) => SendUpdate(b, dataType, seriesId, SeriesUpdateActions.Append);
+                    _sendOnClose = true;
             }
         }
 
-        private void SendUpdate(BarEntity bar, DataSeriesTypes type, string streamId, SeriesUpdateActions action)
+        private void _timeRef_BarOpened(BarEntity bar)
+        {
+            _currentBar = new BarEntity();
+            _currentBar.OpenTime = bar.OpenTime;
+            _currentBar.CloseTime = bar.CloseTime;
+            _currentBar.Volume = -1;
+        }
+
+        private void _timeRef_BarClosed(BarEntity bar)
+        {
+            _snapshot?.Add(_currentBar);
+            if (_sendOnClose)
+                SendUpdate(_currentBar, SeriesUpdateActions.Append);
+        }
+
+        private void SendUpdate(BarEntity bar, SeriesUpdateActions action)
         {
             //System.Diagnostics.Debug.WriteLine("BAR - " + bar.OpenTime);
 
-            var update = new DataSeriesUpdate<BarEntity>(type, streamId, action, bar);
+            var update = new DataSeriesUpdate<BarEntity>(_type, _streamId, action, bar);
             _sendUpdateAction(update);
         }
     }

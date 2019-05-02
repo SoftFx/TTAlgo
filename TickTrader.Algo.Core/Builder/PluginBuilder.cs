@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
         private volatile bool isStopped;
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
-        private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
+        internal SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
         private TradeApiAdapter _tradeApater;
         private TradeCommands _commands;
         private bool _isolated;
@@ -336,11 +336,11 @@ namespace TickTrader.Algo.Core
 
         #region Invoke
 
-        private void OnBeforeInvoke()
+        protected void OnBeforeInvoke()
         {
         }
 
-        private void OnAfterInvoke()
+        protected void OnAfterInvoke()
         {
             statusApi.Apply();
         }
@@ -352,7 +352,7 @@ namespace TickTrader.Algo.Core
                 OnPluginException(ex, initMethod);
         }
 
-        private Exception InvokeMethod(Action invokeAction)
+        protected virtual Exception InvokeMethod(Action invokeAction)
         {
             Exception pluginException = null;
 
@@ -482,7 +482,7 @@ namespace TickTrader.Algo.Core
 
         BookEntry IHelperApi.CreateBookEntry(double price, double volume)
         {
-            return new BookEntryEntity() { Price = price, Volume = volume };
+            return new BookEntry(price, volume);
         }
 
         IEnumerable<BookEntry> IHelperApi.CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
@@ -490,7 +490,7 @@ namespace TickTrader.Algo.Core
             if (prices == null || volumes == null)
                 return new BookEntry[0];
 
-            return prices.Zip(volumes, (p, v) => new BookEntryEntity() { Price = p, Volume = v });
+            return prices.Zip(volumes, (p, v) => new BookEntry(p,v));
         }
 
         double IHelperApi.RoundVolumeDown(double volume, Symbol symbolInfo)

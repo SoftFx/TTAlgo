@@ -318,8 +318,8 @@ namespace TickTrader.Algo.Core
 
         public void RegisterEquity(DateTime timepoint, double equity, double margin)
         {
-            _equityCollector.AppendQuote(timepoint, equity, 0);
-            _marginCollector.AppendQuote(timepoint, margin, 0);
+            _equityCollector.AppendQuote(equity);
+            _marginCollector.AppendQuote(margin);
         }
 
         #endregion

@@ -33,6 +33,8 @@ namespace TickTrader.Algo.Core
 
     internal class TimeSeriesAggregator
     {
+        private static readonly Comparer<DateTime> comparer = Comparer<DateTime>.Default;
+
         private List<ITimeEventSeries> _seriesList = new List<ITimeEventSeries>();
 
         public void Add(ITimeEventSeries series)
@@ -42,7 +44,7 @@ namespace TickTrader.Algo.Core
 
         public TimeEvent Dequeue()
         {
-            var nextSeries = _seriesList.MinBy(s => s.NextOccurrance);
+            var nextSeries = _seriesList.MinBy(s => s.NextOccurrance, comparer);
             return nextSeries.Take();
         }
 

@@ -7,26 +7,12 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal abstract class FeedSeriesEmulator
+    internal class FeedSeriesEmulator
     {
-        private RateUpdate _current;
-
         protected readonly Dictionary<TimeFrames, BarVector> _bidBars = new Dictionary<TimeFrames, BarVector>();
         protected readonly Dictionary<TimeFrames, BarVector> _askBars = new Dictionary<TimeFrames, BarVector>();
 
-        public RateUpdate Current
-        {
-            get => _current;
-            set
-            {
-                _current = value;
-                RateUpdated?.Invoke(value);
-            }
-        }
-
-        public abstract void Start();
-        public abstract void Stop();
-        public abstract bool MoveNext();
+        public RateUpdate Current { get; private set; }
 
         public event Action<RateUpdate> RateUpdated;
 
@@ -103,6 +89,17 @@ namespace TickTrader.Algo.Core
             return GetOrAddBuilder(price, timeframe);
         }
 
+        public void Update(RateUpdate rate)
+        {
+            if (rate is BarRateUpdate)
+                UpdateBars((BarRateUpdate)rate);
+            else
+                UpdateBars(rate);
+
+            Current = rate;
+            RateUpdated?.Invoke(rate);
+        }
+
         protected BarVector GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
         {
             // TO DO : build-up series data basing on data from other time frames
@@ -122,6 +119,35 @@ namespace TickTrader.Algo.Core
                 collection.Add(timeframe, builder);
             }
             return builder;
+        }
+
+        private void UpdateBars(BarRateUpdate barUpdate)
+        {
+            if (barUpdate.BidBar.Volume != 0) // skip filler
+                UpdateBars(_bidBars.Values, barUpdate.BidBar);
+            if (barUpdate.AskBar.Volume != 0) // skip filler
+                UpdateBars(_askBars.Values, barUpdate.AskBar);
+        }
+
+        private void UpdateBars(IEnumerable<BarVector> collection, BarEntity bar)
+        {
+            foreach (var rec in collection)
+                rec.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+        }
+
+        private void UpdateBars(RateUpdate quote)
+        {
+            if (!double.IsNaN(quote.Bid))
+            {
+                foreach (var rec in _bidBars.Values)
+                    rec.AppendQuote(quote.Time, quote.Bid, 1);
+            }
+
+            if (!double.IsNaN(quote.Ask))
+            {
+                foreach (var rec in _askBars.Values)
+                    rec.AppendQuote(quote.Time, quote.Ask, 1);
+            }
         }
     }
 }

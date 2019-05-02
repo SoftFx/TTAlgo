@@ -46,14 +46,17 @@ namespace TickTrader.Algo.Core
 
         public static TElement MinBy<TElement, TProperty>(this IEnumerable<TElement> source, Func<TElement, TProperty> selector)
         {
+            return MinBy(source, selector, Comparer<TProperty>.Default);
+        }
+
+        public static TElement MinBy<TElement, TProperty>(this IEnumerable<TElement> source, Func<TElement, TProperty> selector, Comparer<TProperty> comparer)
+        {
             if (source == null)
                 throw new ArgumentNullException("source");
 
             bool first = true;
             TElement minElement = default(TElement);
             TProperty minPropertyVal = default(TProperty);
-
-            var comparer = Comparer<TProperty>.Default;
 
             foreach (var item in source)
             {

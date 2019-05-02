@@ -46,16 +46,7 @@ namespace TickTrader.Algo.Core
         public DateTime OpenTime => Buffer[0].OpenTime;
         public event Action Appended;
 
-        protected BarEntity LastBar
-        {
-            get
-            {
-                if (futureBarCache != null && futureBarCache.Count > 0)
-                    return futureBarCache.Last();
-                else
-                    return Buffer.Last;
-            }
-        }
+        protected BarEntity LastBar { get; private set; }
 
         public BufferUpdateResult Update(RateUpdate update)
         {
@@ -89,7 +80,7 @@ namespace TickTrader.Algo.Core
                     return new BufferUpdateResult();
                 else if (barOpenTime == lastBar.OpenTime)
                 {
-                    lastBar.AppendNanProof(price, 1);
+                    lastBar.Append(price, 1);
                     return new BufferUpdateResult() { IsLastUpdated = true };
                 }
             }
@@ -141,7 +132,10 @@ namespace TickTrader.Algo.Core
             for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
             {
                 var timeCoordinate = refTimeline[i];
-                Buffer.Append(CreateFillingBar(timeCoordinate)); // fill empty spaces
+                // fill empty spaces
+                var fillBar = CreateFillingBar(timeCoordinate);
+                Buffer.Append(fillBar);
+                LastBar = fillBar;
             }
 
             refTimeline.Appended += RefTimeline_Appended;
@@ -165,7 +159,9 @@ namespace TickTrader.Algo.Core
                     break;
             }
 
-            Buffer.Append(CreateFillingBar(timeCoordinate));
+            var fillingBar = CreateFillingBar(timeCoordinate);
+            Buffer.Append(fillingBar);
+            LastBar = fillingBar;
         }
 
         private void AppendBar(BarEntity bar)
@@ -178,19 +174,25 @@ namespace TickTrader.Algo.Core
                     if (timeCoordinate == bar.OpenTime) // found right place
                     {
                         Buffer.Append(bar);
+                        LastBar = bar;
                         return;
                     }
                     else if (timeCoordinate > bar.OpenTime) // place not found - throw out
                         return;
 
-                    Buffer.Append(CreateFillingBar(timeCoordinate)); // fill empty spaces
+                    // fill empty spaces
+                    var fillBar = CreateFillingBar(timeCoordinate);
+                    Buffer.Append(fillBar); 
+                    LastBar = fillBar;
                 }
 
                 futureBarCache.Add(bar); // place not found - add to future cache
+                LastBar = bar;
             }
             else
             {
                 Buffer.Append(bar);
+                LastBar = bar;
                 Appended?.Invoke();
             }
         }
@@ -210,7 +212,7 @@ namespace TickTrader.Algo.Core
         {
             IsLoaded = true;
 
-            defaultBarValue = double.NaN;
+            defaultBarValue = 0;
             if (data != null)
             {
                 if (data.Count > 0)
@@ -223,7 +225,11 @@ namespace TickTrader.Algo.Core
             {
                 // fill end of buffer
                 for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
-                    Buffer.Append(CreateFillingBar(refTimeline[i]));
+                {
+                    var fillBar = CreateFillingBar(refTimeline[i]);
+                    Buffer.Append(fillBar);
+                    LastBar = fillBar;
+                }
             }
         }
 

@@ -1,59 +1,98 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class FeedReader : ITimeEventSeries, IDisposable
+    internal class FeedReader : IEnumerable<RateUpdate>, IDisposable
     {
-        private IEnumerator<RateUpdate> _e;
-        private RateUpdate _nextRate;
+        private Task _worker;
+        private FlipGate<RateUpdate> _gate = new FlipGate<RateUpdate>(300);
 
-        public FeedReader(FeedEmulator emulator)
+        public FeedReader(IEnumerable<SeriesReader> sources)
         {
-            _e = emulator.GetFeedStream().GetEnumerator();
-            MoveNext();
+            _worker = Task.Factory.StartNew(() => ReadLoop(sources), TaskCreationOptions.LongRunning);
         }
 
-        public DateTime NextOccurrance { get; private set; }
-        public bool IsCompeted { get; private set; }
-
-        public RateUpdate Take()
+        public IEnumerator<RateUpdate> GetEnumerator()
         {
-            var item = _nextRate;
-            MoveNext();
-            return item;
+            return _gate.GetEnumerator();
         }
 
-        TimeEvent ITimeEventSeries.Take()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            var item = _nextRate;
-            MoveNext();
-            return new TimeEvent(item.Time, false, item);
+            return GetEnumerator();
         }
 
-        private void MoveNext()
+        private void ReadLoop(IEnumerable<SeriesReader> sources)
         {
-            IsCompeted = !_e.MoveNext();
-            if (IsCompeted)
-                NextOccurrance = DateTime.MaxValue;
-            else
+            var streams = sources.ToList();
+
+            try
             {
-                _nextRate = _e.Current;
-                NextOccurrance = _nextRate.Time;
+                foreach (var e in streams.ToList())
+                {
+                    e.Start();
+
+                    if (!e.MoveNext())
+                    {
+                        streams.Remove(e);
+                        e.Stop();
+                    }
+                }
+
+                while (streams.Count > 0)
+                {
+                    var min = streams.MinBy(e => e.Current.Time);
+                    var nextQuote = min.Current;
+
+                    if (!min.MoveNext())
+                    {
+                        streams.Remove(min);
+                        min.Stop();
+                    }
+
+                    if (!_gate.Write(nextQuote))
+                        return;
+                }
             }
+            finally
+            {
+                foreach (var src in streams)
+                    src.Stop();
+            }
+
+            _gate.CompleteWrite();
+
+            //var srcCopy = sources.Select(s => s.GetEnumerator()).ToList();
+
+            //while (srcCopy.Count > 0)
+            //{
+            //    var min = srcCopy.MinBy(e => e.Current.Time);
+            //    var nextQuote = min.Current;
+
+            //    if (!min.MoveNext())
+            //    {
+            //        srcCopy.Remove(min);
+            //        min.Dispose();
+            //    }
+
+            //    if (!_gate.Write(nextQuote))
+            //        return;
+            //}
+
+            //_gate.CompleteWrite();
         }
 
         public void Dispose()
         {
-            if (_e != null)
-            {
-                _e.Dispose();
-                _e = null;
-            }
+            _gate.Close();
+            _worker.Wait();
         }
     }
 }

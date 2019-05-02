@@ -1138,13 +1138,9 @@ namespace TickTrader.Algo.Common.Model
                 return book.Select(b => Convert(b)).ToArray();
         }
 
-        public static BookEntryEntity Convert(QuoteEntry fdkEntry)
+        public static BookEntry Convert(QuoteEntry fdkEntry)
         {
-            return new BookEntryEntity()
-            {
-                Price = fdkEntry.Price,
-                Volume = fdkEntry.Volume
-            };
+            return new BookEntry(fdkEntry.Price, fdkEntry.Volume);
         }
 
         public static BalanceOperationReport Convert(SFX.BalanceOperation op)

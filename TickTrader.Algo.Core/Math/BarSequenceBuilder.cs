@@ -53,24 +53,27 @@ namespace TickTrader.Algo.Core
 
         public BarEntity AppendQuote(DateTime time, double price, double volume)
         {
+            //if (_currentBar != null && _currentBar.OpenTime > time)
+            //    throw new ArgumentException("Invalid time sequnce!");
+
+            if (_currentBar != null)
+            {
+                if (time < _currentBar.OpenTime)
+                    throw new ArgumentException("Invalid time sequnce!");
+
+                if (time < _currentBar.CloseTime)
+                {
+                    // append last bar
+                    _currentBar.Append(price, volume);
+                    BarUpdated?.Invoke(_currentBar);
+                    return null; ;
+                }
+            }
+
+            // add new bar
             var boundaries = _sampler.GetBar(time);
-
-            if (_currentBar != null && _currentBar.OpenTime > boundaries.Open)
-                throw new ArgumentException("Invalid time sequnce!");
-
-            if (_currentBar != null && _currentBar.OpenTime == boundaries.Open)
-            {
-                // append last bar
-                _currentBar.AppendNanProof(price, volume);
-                BarUpdated?.Invoke(_currentBar);
-            }
-            else
-            {
-                // add new bar
-                var newBar = new BarEntity(boundaries.Open, boundaries.Close, price, volume);
-                return Append(newBar);
-            }
-            return null;
+            var newBar = new BarEntity(boundaries.Open, boundaries.Close, price, volume);
+            return Append(newBar);
         }
 
         public BarEntity AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)

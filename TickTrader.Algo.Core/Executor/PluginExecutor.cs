@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
         private IAccountInfoProvider _externalAccData;
         private ITradeExecutor _externalTradeApi;
         private string mainSymbol;
+        private Func<PluginMetadata, PluginBuilder> _builderFactory = m => new PluginBuilder(m);
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
@@ -245,7 +246,7 @@ namespace TickTrader.Algo.Core
 
                     // Setup builder
 
-                    builder = new PluginBuilder(descriptor);
+                    builder = _builderFactory(descriptor);
                     builder.MainSymbol = MainSymbolCode;
                     builder.TimeFrame = TimeFrame;
                     InitMetadata();
@@ -532,6 +533,7 @@ namespace TickTrader.Algo.Core
             _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
+            _builderFactory = m => new SimplifiedBuilder(m);
             return fixture;
         }
 
