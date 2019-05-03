@@ -43,11 +43,27 @@ namespace TickTrader.BotTerminal
     }
 
     [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "ColumnState")]
-    internal class ColumnStateStorageEntry : PluginStorageEntry<TradeBotStorageEntry>
+    internal class ColumnStateStorageEntry
     {
         [DataMember]
         public string Key { get; set; }
         [DataMember]
         public bool State { get; set; }
+    }
+
+    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "ColumnState")]
+    internal class ViewModelSettings
+    {
+        [DataMember]
+        public bool HistoryViewSkipCancel { get; set; } = true;
+
+        [DataMember]
+        public string HistoryViewPeriod { get; set; }
+
+        [DataMember]
+        public string HistoryViewTo { get; set; }
+
+        [DataMember]
+        public string HistoryViewFrom { get; set; }
     }
 }

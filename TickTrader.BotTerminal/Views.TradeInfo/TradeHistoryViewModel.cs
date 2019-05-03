@@ -48,6 +48,7 @@ namespace TickTrader.BotTerminal
         private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
         private ProfileManager _profileManager;
+        private ViewModelSettings _viewStorageSettings;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager, ProfileManager profileManager = null)
         {
@@ -55,6 +56,7 @@ namespace TickTrader.BotTerminal
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
             _profileManager = profileManager;
+            _viewStorageSettings = profileManager?.CurrentProfile?.ViewModel;
 
             _tradesList = new ObservableCollection<TransactionReport>();
             GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
@@ -72,14 +74,14 @@ namespace TickTrader.BotTerminal
 
             cManager.LoggedOut += ClearHistory;
 
-            RefreshHistory();
-            CleanupLoop();
-
             if (_profileManager != null)
             {
                 _profileManager.ProfileUpdated += UpdateProvider;
                 UpdateProvider();
             }
+
+            RefreshHistory();
+            CleanupLoop();
         }
 
         #region Properties
@@ -108,7 +110,7 @@ namespace TickTrader.BotTerminal
                     _period = value;
 
                     if (_profileManager != null)
-                        _profileManager.CurrentProfile.HistoryViewPeriod = value.ToString();
+                        _viewStorageSettings.HistoryViewPeriod = value.ToString();
 
                     NotifyOfPropertyChange(nameof(Period));
                     NotifyOfPropertyChange(nameof(CanEditPeriod));
@@ -156,7 +158,7 @@ namespace TickTrader.BotTerminal
                 _skipCancel = value;
 
                 if (_profileManager != null)
-                    _profileManager.CurrentProfile.HistoryViewSkipCancel = value;
+                    _viewStorageSettings.HistoryViewSkipCancel = value;
 
                 NotifyOfPropertyChange(nameof(SkipCancel));
                 RefreshHistory();
@@ -464,8 +466,17 @@ namespace TickTrader.BotTerminal
 
         private void UpdateProvider()
         {
-            _skipCancel = _profileManager.CurrentProfile.HistoryViewSkipCancel;
-            _period = !string.IsNullOrEmpty(_profileManager.CurrentProfile.HistoryViewPeriod) ? (TimePeriod)Enum.Parse(typeof(TimePeriod), _profileManager.CurrentProfile.HistoryViewPeriod) : TimePeriod.LastHour;
+            if (_viewStorageSettings != null)
+            {
+                _skipCancel = _viewStorageSettings.HistoryViewSkipCancel;
+                _period = !string.IsNullOrEmpty(_viewStorageSettings.HistoryViewPeriod) ? (TimePeriod)Enum.Parse(typeof(TimePeriod), _viewStorageSettings.HistoryViewPeriod) : TimePeriod.LastHour;
+                //if (!string.IsNullOrEmpty(_viewStorageSettings.HistoryViewFrom))
+                //    From = DateTime.ParseExact(_viewStorageSettings.HistoryViewFrom)
+
+                NotifyOfPropertyChange(nameof(SkipCancel));
+                NotifyOfPropertyChange(nameof(Period));
+                NotifyOfPropertyChange(nameof(CanEditPeriod));
+            }
         }
     }
 }

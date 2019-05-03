@@ -70,7 +70,7 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Expiration, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding RemainingQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Pos Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding RemainingQuantity}" VerticalAlignment="Center"/>
                                     </StackPanel>

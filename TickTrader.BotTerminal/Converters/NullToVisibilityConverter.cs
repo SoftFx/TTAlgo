@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string)
-                return string.IsNullOrEmpty(value.ToString()) ? Visibility.Collapsed : Visibility.Visible;
+                return string.IsNullOrEmpty(value as string) ? Visibility.Collapsed : Visibility.Visible;
             else
                 return value == null ? Visibility.Collapsed : Visibility.Visible;
         }
