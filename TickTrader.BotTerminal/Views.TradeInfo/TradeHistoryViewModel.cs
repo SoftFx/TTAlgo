@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -48,7 +49,7 @@ namespace TickTrader.BotTerminal
         private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
         private ProfileManager _profileManager;
-        private ViewModelSettings _viewStorageSettings;
+        private ViewModelPropertiesStorageEntry _viewPropertyStorage;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager, ProfileManager profileManager = null)
         {
@@ -56,7 +57,6 @@ namespace TickTrader.BotTerminal
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
             _profileManager = profileManager;
-            _viewStorageSettings = profileManager?.CurrentProfile?.ViewModel;
 
             _tradesList = new ObservableCollection<TransactionReport>();
             GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
@@ -110,7 +110,7 @@ namespace TickTrader.BotTerminal
                     _period = value;
 
                     if (_profileManager != null)
-                        _viewStorageSettings.HistoryViewPeriod = value.ToString();
+                        _viewPropertyStorage.ChangeProperty(nameof(Period), value.ToString());
 
                     NotifyOfPropertyChange(nameof(Period));
                     NotifyOfPropertyChange(nameof(CanEditPeriod));
@@ -128,6 +128,10 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _from = value;
+
+                if (_profileManager != null)
+                    _viewPropertyStorage.ChangeProperty(nameof(From), value.ToString("dd-MM-yyyy HH:mm:ss"));
+
                 NotifyOfPropertyChange(nameof(From));
                 RefreshHistory();
             }
@@ -142,6 +146,10 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _to = value;
+
+                if (_profileManager != null)
+                    _viewPropertyStorage.ChangeProperty(nameof(To), value.ToString("dd-MM-yyyy HH:mm:ss"));
+
                 NotifyOfPropertyChange(nameof(To));
                 RefreshHistory();
             }
@@ -158,7 +166,7 @@ namespace TickTrader.BotTerminal
                 _skipCancel = value;
 
                 if (_profileManager != null)
-                    _viewStorageSettings.HistoryViewSkipCancel = value;
+                    _viewPropertyStorage.ChangeProperty(nameof(SkipCancel), value.ToString());
 
                 NotifyOfPropertyChange(nameof(SkipCancel));
                 RefreshHistory();
@@ -466,17 +474,27 @@ namespace TickTrader.BotTerminal
 
         private void UpdateProvider()
         {
-            if (_viewStorageSettings != null)
-            {
-                _skipCancel = _viewStorageSettings.HistoryViewSkipCancel;
-                _period = !string.IsNullOrEmpty(_viewStorageSettings.HistoryViewPeriod) ? (TimePeriod)Enum.Parse(typeof(TimePeriod), _viewStorageSettings.HistoryViewPeriod) : TimePeriod.LastHour;
-                //if (!string.IsNullOrEmpty(_viewStorageSettings.HistoryViewFrom))
-                //    From = DateTime.ParseExact(_viewStorageSettings.HistoryViewFrom)
+            _viewPropertyStorage = _profileManager?.CurrentProfile?.HistoryStorage;
 
-                NotifyOfPropertyChange(nameof(SkipCancel));
-                NotifyOfPropertyChange(nameof(Period));
-                NotifyOfPropertyChange(nameof(CanEditPeriod));
-            }
+            var skipProp = _viewPropertyStorage.GetProperty(nameof(SkipCancel));
+            _skipCancel = skipProp == null ? true : System.Convert.ToBoolean(skipProp.State);
+
+            var periodProp = _viewPropertyStorage.GetProperty(nameof(Period));
+            _period = periodProp == null ? TimePeriod.LastHour : (TimePeriod)Enum.Parse(typeof(TimePeriod), periodProp.State);
+
+            var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
+            if (fromProp != null)
+                _from = DateTime.ParseExact(fromProp.State, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
+            var toProp = _viewPropertyStorage.GetProperty(nameof(To));
+            if (toProp != null)
+                _to = DateTime.ParseExact(toProp.State, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
+            NotifyOfPropertyChange(nameof(SkipCancel));
+            NotifyOfPropertyChange(nameof(Period));
+            NotifyOfPropertyChange(nameof(CanEditPeriod));
+            NotifyOfPropertyChange(nameof(From));
+            NotifyOfPropertyChange(nameof(To));
         }
     }
 }

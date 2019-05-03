@@ -34,6 +34,7 @@ namespace TickTrader.BotTerminal
 
             _profileManager = profile;
             _isBacktester = isBacktester;
+
             if (_profileManager != null)
             {
                 _profileManager.ProfileUpdated += UpdateProvider;
@@ -55,7 +56,7 @@ namespace TickTrader.BotTerminal
         public bool ConvertTimeToLocal { get; set; }
 
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;
-        public ProviderColumnsState StateProvider { get; private set; }
+        public ViewModelPropertiesStorageEntry StateProvider { get; private set; }
 
         public void RefreshItems()
         {
@@ -72,16 +73,8 @@ namespace TickTrader.BotTerminal
 
         private void UpdateProvider()
         {
-            if (_profileManager.CurrentProfile.ColumnsShow != null)
-            {
-                var postfix = nameof(TradeHistoryGridViewModel);
-
-                if (_isBacktester)
-                    postfix += "_backtester";
-
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);
-                NotifyOfPropertyChange(nameof(StateProvider));
-            }
+            StateProvider = _isBacktester ? _profileManager.CurrentProfile.HistoryBacktesterStorage : _profileManager.CurrentProfile.HistoryStorage;
+            NotifyOfPropertyChange(nameof(StateProvider));
         }
     }
 }

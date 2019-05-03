@@ -40,23 +40,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ProviderColumnsState StateProvider { get; private set; }
+        public ViewModelPropertiesStorageEntry StateProvider { get; private set; }
         public IObservableList<OrderViewModel> Orders { get; private set; }
         public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
         public bool AutoSizeColumns { get; set; }
 
         private void UpdateProvider()
         {
-            if (_profileManager.CurrentProfile.ColumnsShow != null)
-            {
-                var postfix = nameof(OrderListViewModel);
-
-                if (_isBacktester)
-                    postfix += "_backtester";
-
-                StateProvider = new ProviderColumnsState(_profileManager.CurrentProfile.ColumnsShow, postfix);
-                NotifyOfPropertyChange(nameof(StateProvider));
-            }
+            StateProvider = _isBacktester ? _profileManager.CurrentProfile.OrdersBacktesterStorage : _profileManager.CurrentProfile.OrdersStorage;
+            NotifyOfPropertyChange(nameof(StateProvider));
         }
 
         private void OrdersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
