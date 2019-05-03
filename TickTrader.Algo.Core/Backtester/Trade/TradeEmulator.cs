@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core
         private InvokeEmulator _scheduler;
         private BacktesterCollector _collector;
         private IBacktesterSettings _settings;
+        private int _leverage;
         private long _orderIdSeed;
         private double _stopOutLevel = 30;
         //private RateUpdate _lastRate;
@@ -39,6 +40,7 @@ namespace TickTrader.Algo.Core
             _scheduler = scheduler;
             _collector = collector;
             _settings = settings;
+            _leverage = settings.Leverage;
             _history = history;
 
             _sendReports = settings.StreamExecReports;
@@ -149,6 +151,7 @@ namespace TickTrader.Algo.Core
 
                     using (JournalScope())
                     {
+                        VerifyAmout(volume, smbMetadata);
                         ValidateOrderTypeForAccount(orderType, calc.SymbolInfo);
                         ValidateTypeAndPrice(orderType, price, stopPrice, sl, tp, maxVisibleVolume, options, calc.SymbolInfo);
 
@@ -494,7 +497,7 @@ namespace TickTrader.Algo.Core
             if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
                 orderEntity.StopPrice = stopPrice;
 
-            var order = new OrderAccessor(orderEntity, (SymbolAccessor)symbolInfo);
+            var order = new OrderAccessor(orderEntity, (SymbolAccessor)symbolInfo, _leverage);
 
             _calcFixture.ValidateNewOrder(order, orderCalc);
 
@@ -1126,7 +1129,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                position = new OrderAccessor(new OrderEntity(NewOrderId()), smb);
+                position = new OrderAccessor(new OrderEntity(NewOrderId()), smb, _leverage);
                 //position.ClientOrderId = Guid.NewGuid().ToString("D");
                 position.Entity.Side = side;
                 position.Entity.Created = _scheduler.UnsafeVirtualTimePoint;
@@ -2292,6 +2295,24 @@ namespace TickTrader.Algo.Core
 
             if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private void VerifyAmout(double amount, Symbol smbInfo)
+        {
+            if (double.IsNaN(amount))
+                throw new OrderValidationError("Invalid Amount", OrderCmdResultCodes.IncorrectVolume);
+
+            double minTradeAmount = smbInfo.MinTradeVolume * smbInfo.ContractSize;
+            double maxTradeAmount = smbInfo.MaxTradeVolume * smbInfo.ContractSize;
+            if (amount < minTradeAmount || amount > maxTradeAmount || !CheckAmountBase(amount, smbInfo))
+                throw new OrderValidationError("Invalid Amount", OrderCmdResultCodes.IncorrectVolume);
+        }
+
+        private bool CheckAmountBase(double amount, Symbol smbInfo)
+        {
+            double minAmountStep = smbInfo.TradeVolumeStep * smbInfo.ContractSize;
+            double div = amount / minAmountStep;
+            return div == Math.Truncate(div);
         }
 
         private void EnsureOrderIsPosition(OrderAccessor order)

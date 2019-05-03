@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Core
             builder.Account.Update(_dataProvider.AccountInfo, currencies);
 
             foreach (var order in _dataProvider.GetOrders())
-                builder.Account.Orders.Add(order);
+                builder.Account.Orders.Add(order, _account);
             foreach (var position in _dataProvider.GetPositions())
                 builder.Account.NetPositions.UpdatePosition(position.PositionInfo);
         }
@@ -117,13 +117,13 @@ namespace TickTrader.Algo.Core
             }
 
             if (eReport.Action == OrderEntityAction.Added)
-                return collection.Add(eReport.OrderCopy);
+                return collection.Add(eReport.OrderCopy, _account);
             if (eReport.Action == OrderEntityAction.Removed)
                 return collection.UpdateAndRemove(eReport.OrderCopy);
             if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
 
-            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, accProxy.Leverage);
         }
 
         private void DataProvider_BalanceUpdated(BalanceOperationReport report)
@@ -276,7 +276,7 @@ namespace TickTrader.Algo.Core
                 if (eReport.OrderCopy.Type == OrderType.Market)
                 {
                     // market orders are never added to orders collection. Cash account has actually limit IoC
-                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);
                     if (clone != null)
                     {
                         var isOwnOrder = CallListener(eReport);
@@ -300,7 +300,7 @@ namespace TickTrader.Algo.Core
                     }
                     else
                     {
-                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);
                         if (clone != null)
                         {
                             if (!IsInvisible(clone))

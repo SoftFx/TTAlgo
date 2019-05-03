@@ -11,28 +11,31 @@ namespace TickTrader.Algo.Core
         private OrderEntity _entity;
         private SymbolAccessor _symbol;
         private double _lotSize;
-        private decimal? _profit;
-        private decimal? _margin;
+        private int _leverage;
+        private decimal? _modelProf;
+        private decimal? _modelMargin;
 
-        internal OrderAccessor(OrderEntity entity, Func<string, SymbolAccessor> symbolProvider)
-            : this(entity, symbolProvider(entity.Symbol))
+        internal OrderAccessor(OrderEntity entity, Func<string, SymbolAccessor> symbolProvider, int leverage)
+            : this(entity, symbolProvider(entity.Symbol), leverage)
         {
+            
         }
 
-        internal OrderAccessor(OrderEntity entity, SymbolAccessor symbol)
+        internal OrderAccessor(OrderEntity entity, SymbolAccessor symbol, int leverage)
         {
             _entity = entity ?? throw new ArgumentNullException("entity");
 
             _symbol = symbol;
             _lotSize = symbol?.ContractSize ?? 1;
+            _leverage = leverage;
         }
 
-        internal static Order GetAccessor(OrderEntity entity, SymbolAccessor symbol)
+        internal static Order GetAccessor(OrderEntity entity, SymbolAccessor symbol, int leverage)
         {
             if (entity == null)
                 return Null.Order;
 
-            return new OrderAccessor(entity, symbol);
+            return new OrderAccessor(entity, symbol, leverage);
         }
 
         internal void Update(OrderEntity entity)
@@ -45,7 +48,7 @@ namespace TickTrader.Algo.Core
 
         public OrderAccessor Clone()
         {
-            return new OrderAccessor(new OrderEntity(_entity), _symbol);
+            return new OrderAccessor(new OrderEntity(_entity), _symbol, _leverage);
         }
 
         #region API Order
@@ -72,8 +75,42 @@ namespace TickTrader.Algo.Core
         public double ExecVolume => _entity.ExecVolume / _lotSize ?? double.NaN;
         public double LastFillPrice => _entity.LastFillPrice ?? double.NaN;
         public double LastFillVolume => _entity.LastFillVolume / _lotSize ?? double.NaN;
-        public double Margin => (double)(_margin ?? 0);
-        public double Profit => (double)(_profit ?? 0);
+        public double Margin
+        {
+            get
+            {
+                var calc = Calculator;
+                if (calc != null)
+                {
+                    try
+                    {
+                        var margin = calc.CalculateMargin(RemainingAmount, _leverage, _entity.GetBlOrderType(), _entity.GetBlOrderSide(), false);
+                        return (double)margin;
+                    }
+                    catch (TickTrader.BusinessLogic.BusinessLogicException) { }
+                }
+                return double.NaN;
+            }
+        }
+        public double Profit
+        {
+            get
+            {
+                var calc = Calculator;
+                if (calc != null)
+                {
+                    try
+                    {
+                        var prof = calc.CalculateProfit(this);
+                        if (prof == null)
+                            return double.NaN;
+                        return (double)prof.Value;
+                    }
+                    catch (TickTrader.BusinessLogic.BusinessLogicException) { }
+                }
+                return double.NaN;
+            }
+        }
         public OrderExecOptions Options => _entity.Options;
 
         public bool IsPending => Type == OrderType.Limit || Type == OrderType.StopLimit || Type == OrderType.Stop;
@@ -94,8 +131,8 @@ namespace TickTrader.Algo.Core
         public long OrderId => long.Parse(Id);
         public decimal Amount { get => (decimal)_entity.RequestedVolume; set => _entity.RequestedVolume = (double)value; }
         public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => _entity.RemainingVolume = (double)value; }
-        decimal? BL.IOrderModel.Profit { get => _profit; set => _profit = value; }
-        decimal? BL.IOrderModel.Margin { get => (decimal)Margin; set => _margin = value; }
+        decimal? BL.IOrderModel.Profit { get => _modelProf; set => _modelProf = value; }
+        decimal? BL.IOrderModel.Margin { get => _modelMargin; set => _modelMargin = value; }
         BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
         BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
         decimal? BL.ICommonOrder.Price { get => (decimal?)_entity.Price; set => throw new NotImplementedException(); }
@@ -141,6 +178,11 @@ namespace TickTrader.Algo.Core
             EssentialParametersChanged?.Invoke(this);
         }
 
+        internal decimal? GetBoMargin()
+        {
+            return _modelMargin;
+        }
+
         #endregion
 
         #region TickTrader.BusinessObjects.IOrder
@@ -168,8 +210,8 @@ namespace TickTrader.Algo.Core
         DateTime? BO.IOrder.PositionCreated => throw new NotImplementedException();
         decimal? BO.IOrder.StopLoss => (decimal?)Entity.StopLoss;
         decimal? BO.IOrder.TakeProfit => (decimal?)Entity.TakeProfit;
-        decimal? BO.IOrder.Profit => _profit;
-        decimal? BO.IOrder.Margin => _margin;
+        decimal? BO.IOrder.Profit => _modelProf;
+        decimal? BO.IOrder.Margin => _modelMargin;
         decimal BO.IOrder.AggrFillPrice => throw new NotImplementedException();
         decimal BO.IOrder.AverageFillPrice => throw new NotImplementedException();
         decimal? BO.IOrder.TransferringCoefficient => throw new NotImplementedException();

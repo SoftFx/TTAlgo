@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, account.Leverage), orderResp.TransactionTime);
             }
             catch (OrderValidationError ex)
             {
@@ -206,7 +206,7 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed");
-                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
+                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, account.Leverage), result.TransactionTime);
                 }
                 else
                 {
@@ -361,7 +361,7 @@ namespace TickTrader.Algo.Core
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
+                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, account.Leverage), result.TransactionTime);
                 }
                 else
                 {

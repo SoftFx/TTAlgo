@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
         {
             _lastRates.Clear();
 
-            _state = new BL.MarketState(BL.NettingCalculationTypes.OneByOne);
+            _state = new BL.MarketState(BL.NettingCalculationTypes.Optimized);
             _state.Set(_context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name));
             _state.Set(_context.Builder.Currencies);
 
@@ -152,7 +152,7 @@ namespace TickTrader.Algo.Core
                     // Check for margin
                     decimal oldMargin;
                     decimal newMargin;
-                    if (!marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.Margin.NanAwareToDecimal(), out oldMargin, out newMargin))
+                    if (!marginCalc.HasSufficientMarginToOpenOrder(newOrder, newOrder.GetBoMargin(), out oldMargin, out newMargin))
                         throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
                 }
                 catch (BL.MarketConfigurationException e)
@@ -345,9 +345,8 @@ namespace TickTrader.Algo.Core
             {
                 if (marginCalc != null)
                 {
-                    var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
-                    calc.UpdateMargin(newOrder, acc);
-                    return newOrder.Margin;
+                    var calc = _state.GetCalculator(symbol.Name, acc.BalanceCurrency);
+                    return (double)calc.CalculateMargin(newOrder, acc);
                 }
                 if (cashCalc != null)
                 {
@@ -366,7 +365,7 @@ namespace TickTrader.Algo.Core
         {
             ApplyHiddenServerLogic(orderEntity, symbol);
 
-            return new OrderAccessor(orderEntity, symbol);
+            return new OrderAccessor(orderEntity, symbol, acc.Leverage);
         }
 
         private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)

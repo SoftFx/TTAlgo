@@ -29,9 +29,9 @@ namespace TickTrader.Algo.Core
             Added?.Invoke(order);
         }
 
-        public OrderAccessor Add(OrderEntity entity)
+        public OrderAccessor Add(OrderEntity entity, AccountAccessor acc)
         {
-            var result = fixture.Add(entity);
+            var result = fixture.Add(entity, acc);
             Added?.Invoke(result);
             return result;
         }
@@ -159,9 +159,9 @@ namespace TickTrader.Algo.Core
                 Added?.Invoke(order);
             }
 
-            public OrderAccessor Add(OrderEntity entity)
+            public OrderAccessor Add(OrderEntity entity, AccountAccessor acc)
             {
-                var accessor = new OrderAccessor(entity, _symbols.GetOrDefault);
+                var accessor = new OrderAccessor(entity, _symbols.GetOrDefault, acc.Leverage);
                 if (!orders.TryAdd(entity.Id, accessor))
                     throw new ArgumentException("Order #" + entity.Id + " already exist!");
 
