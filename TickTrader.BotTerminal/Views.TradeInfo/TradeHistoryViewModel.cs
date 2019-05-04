@@ -26,6 +26,8 @@ namespace TickTrader.BotTerminal
     internal class TradeHistoryViewModel : PropertyChangedBase
     {
         private const int CleanUpDelay = 2000;
+        private const string StorageDateTimeFormat = "dd-MM-yyyy HH:mm:ss";
+        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeLocal;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -49,7 +51,7 @@ namespace TickTrader.BotTerminal
         private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
         private ProfileManager _profileManager;
-        private ViewModelPropertiesStorageEntry _viewPropertyStorage;
+        private ViewModelStorageEntry _viewPropertyStorage;
 
         public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager, ProfileManager profileManager = null)
         {
@@ -130,7 +132,7 @@ namespace TickTrader.BotTerminal
                 _from = value;
 
                 if (_profileManager != null)
-                    _viewPropertyStorage.ChangeProperty(nameof(From), value.ToString("dd-MM-yyyy HH:mm:ss"));
+                    _viewPropertyStorage.ChangeProperty(nameof(From), value.ToString(StorageDateTimeFormat));
 
                 NotifyOfPropertyChange(nameof(From));
                 RefreshHistory();
@@ -148,7 +150,7 @@ namespace TickTrader.BotTerminal
                 _to = value;
 
                 if (_profileManager != null)
-                    _viewPropertyStorage.ChangeProperty(nameof(To), value.ToString("dd-MM-yyyy HH:mm:ss"));
+                    _viewPropertyStorage.ChangeProperty(nameof(To), value.ToString(StorageDateTimeFormat));
 
                 NotifyOfPropertyChange(nameof(To));
                 RefreshHistory();
@@ -474,21 +476,23 @@ namespace TickTrader.BotTerminal
 
         private void UpdateProvider()
         {
-            _viewPropertyStorage = _profileManager?.CurrentProfile?.HistoryStorage;
+            _viewPropertyStorage = _profileManager?.CurrentProfile?.GetViewModelStorage(ViewModelStorageKeys.History);
 
             var skipProp = _viewPropertyStorage.GetProperty(nameof(SkipCancel));
-            _skipCancel = skipProp == null ? true : System.Convert.ToBoolean(skipProp.State);
+            if (!bool.TryParse(skipProp?.State, out _skipCancel))
+                _skipCancel = true;
 
             var periodProp = _viewPropertyStorage.GetProperty(nameof(Period));
-            _period = periodProp == null ? TimePeriod.LastHour : (TimePeriod)Enum.Parse(typeof(TimePeriod), periodProp.State);
+            if (!Enum.TryParse(periodProp?.State, out _period))
+                _period = TimePeriod.LastHour;
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
-            if (fromProp != null)
-                _from = DateTime.ParseExact(fromProp.State, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+            if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _from))
+                _from = DateTime.Now.Date;
 
             var toProp = _viewPropertyStorage.GetProperty(nameof(To));
-            if (toProp != null)
-                _to = DateTime.ParseExact(toProp.State, "dd-MM-yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+            if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
+                _to = DateTime.Now.Date.AddDays(1);
 
             NotifyOfPropertyChange(nameof(SkipCancel));
             NotifyOfPropertyChange(nameof(Period));

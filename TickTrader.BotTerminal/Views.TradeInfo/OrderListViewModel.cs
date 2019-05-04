@@ -40,14 +40,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ViewModelPropertiesStorageEntry StateProvider { get; private set; }
+        public ViewModelStorageEntry StateProvider { get; private set; }
         public IObservableList<OrderViewModel> Orders { get; private set; }
         public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
         public bool AutoSizeColumns { get; set; }
 
         private void UpdateProvider()
         {
-            StateProvider = _isBacktester ? _profileManager.CurrentProfile.OrdersBacktesterStorage : _profileManager.CurrentProfile.OrdersStorage;
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.OrdersBacktester : ViewModelStorageKeys.Orders);
             NotifyOfPropertyChange(nameof(StateProvider));
         }
 

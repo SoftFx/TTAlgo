@@ -56,7 +56,7 @@ namespace TickTrader.BotTerminal
         public bool ConvertTimeToLocal { get; set; }
 
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;
-        public ViewModelPropertiesStorageEntry StateProvider { get; private set; }
+        public ViewModelStorageEntry StateProvider { get; private set; }
 
         public void RefreshItems()
         {
@@ -73,7 +73,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateProvider()
         {
-            StateProvider = _isBacktester ? _profileManager.CurrentProfile.HistoryBacktesterStorage : _profileManager.CurrentProfile.HistoryStorage;
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.HistoryBacktester : ViewModelStorageKeys.History);
             NotifyOfPropertyChange(nameof(StateProvider));
         }
     }

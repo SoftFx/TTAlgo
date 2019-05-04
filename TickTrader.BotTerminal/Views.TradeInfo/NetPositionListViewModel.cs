@@ -13,6 +13,10 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
+        private const string StorageKey = "NetPositions";
+        private const string BacktesterStorageKey = "NetPositionsBacktester";
+
+
         private ProfileManager _profileManager;
         private bool _isBacktester;
 
@@ -35,7 +39,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ViewModelPropertiesStorageEntry StateProvider { get; private set; }
+        public ViewModelStorageEntry StateProvider { get; private set; }
 
         protected override bool SupportsAccount(AccountTypes accType)
         {
@@ -46,7 +50,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateProvider()
         {
-            StateProvider = _isBacktester ? _profileManager.CurrentProfile.NetPositionsBacktesterStorage : _profileManager.CurrentProfile.NetPositionsStorage;
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.NetPositionsBacktester : ViewModelStorageKeys.NetPositions);
             NotifyOfPropertyChange(nameof(StateProvider));
         }
 
