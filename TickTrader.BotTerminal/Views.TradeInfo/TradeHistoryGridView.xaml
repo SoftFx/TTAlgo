@@ -39,27 +39,27 @@
                         <Setter Property="ToolTip">
                             <Setter.Value>
                                 <StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Reason, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Reason: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Reason}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OpenQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Initial Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding OpenQuantity}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding InitialType, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Initial Type: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding InitialType}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding MaxVisibleVolume}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOption, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Order Execution Option: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding OrderExecutionOption}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding PosRemainingPrice, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Pos Price: " VerticalAlignment="Center" />
                                         <TextBlock VerticalAlignment="Center">
                                             <TextBlock.Text>
@@ -70,7 +70,7 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding RemainingQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Pos Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding RemainingQuantity}" VerticalAlignment="Center"/>
                                     </StackPanel>

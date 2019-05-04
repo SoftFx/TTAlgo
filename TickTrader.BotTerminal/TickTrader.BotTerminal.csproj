@@ -292,6 +292,7 @@
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\DoubleCmpConverter.cs" />
     <Compile Include="Converters\NotNullConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
@@ -314,7 +315,6 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
-    <Compile Include="Infrustructure\ProviderColumnsState.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
     <Compile Include="Infrustructure\VmActions.cs" />
@@ -348,6 +348,7 @@
     <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
     <Compile Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
     <Compile Include="Model.Profiles\Version1\ProfileResolver.cs" />
+    <Compile Include="Model.Profiles\ViewModelStorageEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
     <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />

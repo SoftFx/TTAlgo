@@ -865,6 +865,8 @@ namespace TickTrader.Algo.Common.Model
                             return Api.OrderCmdResultCodes.IncorrectExpiration;
                         else if (message != null && message.StartsWith("Price precision"))
                             return Api.OrderCmdResultCodes.IncorrectPricePrecision;
+                        else if (message != null && message.EndsWith("because close-only mode on"))
+                            return Api.OrderCmdResultCodes.CloseOnlyTrading;
                         break;
                     }
                 case RejectReason.None:
