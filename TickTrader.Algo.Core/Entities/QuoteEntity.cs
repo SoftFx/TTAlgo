@@ -13,6 +13,9 @@ namespace TickTrader.Algo.Core
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
+        private double? _ask;
+        private double? _bid;
+
         public QuoteEntity(string symbol, DateTime time, double bid, double ask)
             : this(symbol, time, new BookEntry(bid, 0), new BookEntry(ask, 0))
         {
@@ -43,14 +46,14 @@ namespace TickTrader.Algo.Core
             AskList = asks;
 
             if (bids.Length > 0)
-                Bid = bids[0].Price;
+                _bid = bids[0].Price;
             else
-                Bid = double.NaN;
+                _bid = null;
 
             if (asks.Length > 0)
-                Ask = asks[0].Price;
+                _ask = asks[0].Price;
             else
-                Ask = double.NaN;
+                _ask = null;
         }
 
         private QuoteEntity()
@@ -67,22 +70,22 @@ namespace TickTrader.Algo.Core
             entity.Symbol = symbol;
 
             if (bids.Length > 0)
-                entity.Bid = bids[0].Price;
+                entity._bid = bids[0].Price;
             else
-                entity.Bid = double.NaN;
+                entity._bid = null;
 
             if (asks.Length > 0)
-                entity.Ask = asks[0].Price;
+                entity._ask = asks[0].Price;
             else
-                entity.Ask = double.NaN;
+                entity._ask = null;
 
             return entity;
         }
 
         public string Symbol { get; set; }
         public DateTime Time { get; set; }
-        public double Ask { get; set; }
-        public double Bid { get; set; }
+        public double Ask => _ask ?? double.NaN;
+        public double Bid => _bid ?? double.NaN;
 
         public BookEntry[] BidList { get; private set; }
         public BookEntry[] AskList { get; private set; }
@@ -92,8 +95,8 @@ namespace TickTrader.Algo.Core
 
         decimal ISymbolRate.Ask => (decimal)Ask;
         decimal ISymbolRate.Bid => (decimal)Bid;
-        decimal? ISymbolRate.NullableAsk => double.IsNaN(Ask) ? null : (decimal?)Ask;
-        decimal? ISymbolRate.NullableBid => double.IsNaN(Bid) ? null : (decimal?)Bid;
+        public decimal? NullableAsk => (decimal?)_ask;
+        public decimal? NullableBid => (decimal?)_bid;
         bool ISymbolRate.IndicativeTick => throw new NotImplementedException();
 
         #region RateUpdate

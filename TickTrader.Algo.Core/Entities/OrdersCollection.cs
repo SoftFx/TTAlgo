@@ -2,9 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
@@ -38,10 +35,7 @@ namespace TickTrader.Algo.Core
 
         public OrderAccessor Replace(OrderEntity entity)
         {
-            var order = fixture.Replace(entity, IsEnabled);
-            if (order != null)
-                Replaced?.Invoke(order);
-            return order;
+            return fixture.Update(entity, IsEnabled);
         }
 
         public OrderAccessor GetOrderOrThrow(string id)
@@ -126,7 +120,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<OrderAccessor> Added;
         public event Action<OrderAccessor> Removed;
-        public event Action<OrderAccessor> Replaced;
+        //public event Action<OrderAccessor> Replaced;
 
         internal class OrdersAdapter : OrderList, IEnumerable<OrderAccessor>
         {
@@ -170,7 +164,7 @@ namespace TickTrader.Algo.Core
                 return accessor;
             }
 
-            public OrderAccessor Replace(OrderEntity entity, bool fireEvent)
+            public OrderAccessor Update(OrderEntity entity, bool fireEvent)
             {
                 OrderAccessor order;
 
@@ -179,7 +173,7 @@ namespace TickTrader.Algo.Core
                     if (order.Modified <= entity.Modified)
                     {
                         order.Update(entity);
-                        Replaced?.Invoke(order);
+                        Updated?.Invoke(order);
                     }
                 }
 
@@ -253,7 +247,7 @@ namespace TickTrader.Algo.Core
             public event Action<OrderActivatedEventArgs> Activated = delegate { };
             public event Action<Order> Added;
             public event Action<Order> Removed;
-            public event Action<Order> Replaced;
+            public event Action<Order> Updated;
             public event Action Cleared;
 
             public IEnumerator<OrderAccessor> GetTypedEnumerator()

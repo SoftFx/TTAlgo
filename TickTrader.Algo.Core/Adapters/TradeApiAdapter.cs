@@ -572,24 +572,26 @@ namespace TickTrader.Algo.Core
 
         private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
         {
-            var orderEntity = new OrderEntity("-1")
-            {
-                Symbol = request.Symbol,
-                InitialType = request.Type,
-                Type = request.Type,
-                Side = request.Side,
-                Price = request.Price,
-                StopPrice = request.StopPrice,
-                RequestedVolume = request.Volume,
-                RemainingVolume = request.Volume,
-                MaxVisibleVolume = request.MaxVisibleVolume,
-                StopLoss = request.StopLoss,
-                TakeProfit = request.TakeProfit,
-                Expiration = request.Expiration,
-                Options = request.Options,
-            };
+            //var orderEntity = new OrderEntity("-1")
+            //{
+            //    Symbol = request.Symbol,
+            //    InitialType = request.Type,
+            //    Type = request.Type,
+            //    Side = request.Side,
+            //    Price = request.Price,
+            //    StopPrice = request.StopPrice,
+            //    RequestedVolume = request.Volume,
+            //    RemainingVolume = request.Volume,
+            //    MaxVisibleVolume = request.MaxVisibleVolume,
+            //    StopLoss = request.StopLoss,
+            //    TakeProfit = request.TakeProfit,
+            //    Expiration = request.Expiration,
+            //    Options = request.Options,
+            //};
 
-            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(orderEntity, symbol))
+            var isHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
+
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol.Name, request.Volume, request.Type, request.Side, isHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -597,23 +599,25 @@ namespace TickTrader.Algo.Core
         {
             var oldOrder = account.Orders.GetOrderOrNull(request.OrderId);
 
-            var orderEntity = new OrderEntity(request.OrderId)
-            {
-                Symbol = request.Symbol,
-                Type = request.Type,
-                Side = request.Side,
-                Price = request.Price ?? oldOrder.Price,
-                StopPrice = request.StopPrice ?? oldOrder.StopPrice,
-                RequestedVolume = request.NewVolume ?? request.CurrentVolume,
-                RemainingVolume = request.NewVolume ?? request.CurrentVolume,
-                MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
-                StopLoss = request.StopLoss ?? oldOrder.StopLoss,
-                TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
-                Expiration = request.Expiration ?? oldOrder.Expiration,
-                Options = request.Options ?? oldOrder.Entity.Options,
-            };
+            //var orderEntity = new OrderEntity(request.OrderId)
+            //{
+            //    Symbol = request.Symbol,
+            //    Type = request.Type,
+            //    Side = request.Side,
+            //    Price = request.Price ?? oldOrder.Price,
+            //    StopPrice = request.StopPrice ?? oldOrder.StopPrice,
+            //    RequestedVolume = request.NewVolume ?? request.CurrentVolume,
+            //    RemainingVolume = request.NewVolume ?? request.CurrentVolume,
+            //    MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
+            //    StopLoss = request.StopLoss ?? oldOrder.StopLoss,
+            //    TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
+            //    Expiration = request.Expiration ?? oldOrder.Expiration,
+            //    Options = request.Options ?? oldOrder.Entity.Options,
+            //};
 
-            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
+            var newIsHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
+
+            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder.Entity, request.NewVolume.Value, newIsHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 

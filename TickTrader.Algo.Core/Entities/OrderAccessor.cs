@@ -3,17 +3,18 @@ using TickTrader.Algo.Api;
 using BO = TickTrader.BusinessObjects;
 using BL = TickTrader.BusinessLogic;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrderAccessor : Order, BL.IOrderModel, BO.IOrder
+    public class OrderAccessor : Order, IOrderModel2, BO.IOrder
     {
         private OrderEntity _entity;
         private SymbolAccessor _symbol;
         private double _lotSize;
         private int _leverage;
-        private decimal? _modelProf;
-        private decimal? _modelMargin;
+        //private decimal? _modelProf;
+        //private decimal? _modelMargin;
 
         internal OrderAccessor(OrderEntity entity, Func<string, SymbolAccessor> symbolProvider, int leverage)
             : this(entity, symbolProvider(entity.Symbol), leverage)
@@ -40,8 +41,12 @@ namespace TickTrader.Algo.Core
 
         internal void Update(OrderEntity entity)
         {
+            var oldPrice = (decimal?)_entity.Price;
+            var oldVol = (decimal)_entity.RemainingVolume;
+            var oldType = _entity.GetBlOrderType();
+            var oldIsHidden = _entity.IsHidden;
             _entity = entity;
-            EssentialParametersChanged?.Invoke(this);
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldVol, oldPrice, oldType, oldIsHidden));
         }
 
         public OrderEntity Entity => _entity;
@@ -130,20 +135,24 @@ namespace TickTrader.Algo.Core
         public decimal? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
         public decimal Amount { get => (decimal)_entity.RequestedVolume; set => _entity.RequestedVolume = (double)value; }
-        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; set => _entity.RemainingVolume = (double)value; }
-        decimal? BL.IOrderModel.Profit { get => _modelProf; set => _modelProf = value; }
-        decimal? BL.IOrderModel.Margin { get => _modelMargin; set => _modelMargin = value; }
-        BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
-        BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.Price { get => (decimal?)_entity.Price; set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.StopPrice { get => (decimal?)_entity.StopPrice; set => throw new NotImplementedException(); }
-        bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
-        bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
-        string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
-        string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
-        decimal? BL.ICommonOrder.MaxVisibleAmount => (decimal?)_entity.MaxVisibleVolume;
+        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; }
+        //decimal? BL.IOrderModel.Profit { get => _modelProf; set => _modelProf = value; }
+        //decimal? BL.IOrderModel.Margin { get => _modelMargin; set => _modelMargin = value; }
+        //BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
+        //BO.OrderSides BL.ICommonOrder.Side { get => _entity.GetBlOrderSide(); set => throw new NotImplementedException(); }
+        //decimal? BL.ICommonOrder.Price { get => (decimal?)_entity.Price; set => throw new NotImplementedException(); }
+        //decimal? BL.ICommonOrder.StopPrice { get => (decimal?)_entity.StopPrice; set => throw new NotImplementedException(); }
+        //bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
+        bool IOrderModel2.IsHidden => Entity.IsHidden;
+        //bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
+        //string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
+        //string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
+        //decimal? BL.ICommonOrder.MaxVisibleAmount => (decimal?)_entity.MaxVisibleVolume;
 
-        public event Action<BL.IOrderModel> EssentialParametersChanged;
+        //public event Action<BL.IOrderModel> EssentialParametersChanged;
+        public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
+        public event Action<OrderPropArgs<decimal>> SwapChanged;
+        public event Action<OrderPropArgs<decimal>> CommissionChanged;
 
         #endregion
 
@@ -169,19 +178,47 @@ namespace TickTrader.Algo.Core
 
         internal void SetSwap(decimal swap)
         {
+            var oldSwap = (decimal)Entity.Swap;
             Entity.Swap = (double)swap;
-            FireChanged();
+            SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, swap));
         }
 
-        internal void FireChanged()
+        internal void ChangeCommission(decimal newCommision)
         {
-            EssentialParametersChanged?.Invoke(this);
+            var oldCom = (decimal)Entity.Commission;
+            Entity.Commission = (double)newCommision;
+            CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCom, newCommision));
         }
 
-        internal decimal? GetBoMargin()
+        internal void ChangeRemAmount(decimal newAmount)
         {
-            return _modelMargin;
+            var oldAmount = (decimal)Entity.RemainingVolume;
+            Entity.RemainingVolume = (double)newAmount;
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, (decimal?)Entity.Price, Entity.GetBlOrderType(), false));
         }
+
+        internal void ChangeEssentials(OrderType newType, decimal newAmount, decimal? newPrice)
+        {
+            var oldPrice = (decimal?)Entity.Price;
+            var oldType = Entity.GetBlOrderType();
+            var oldAmount = (decimal)Entity.RemainingVolume;
+
+            Entity.Type = newType;
+            Entity.RemainingVolume = (double)newAmount;
+            Entity.Price = (double?)newPrice;
+
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldType, false));
+        }
+
+        //internal void FireChanged()
+        //{
+        //    EssentialParametersChanged?.Invoke(this);
+        //}
+
+        //internal decimal? GetBoMargin()
+        //{
+        //    return _modelMargin;
+        //}
 
         #endregion
 
@@ -210,8 +247,8 @@ namespace TickTrader.Algo.Core
         DateTime? BO.IOrder.PositionCreated => throw new NotImplementedException();
         decimal? BO.IOrder.StopLoss => (decimal?)Entity.StopLoss;
         decimal? BO.IOrder.TakeProfit => (decimal?)Entity.TakeProfit;
-        decimal? BO.IOrder.Profit => _modelProf;
-        decimal? BO.IOrder.Margin => _modelMargin;
+        decimal? BO.IOrder.Profit => (decimal)Profit;
+        decimal? BO.IOrder.Margin => (decimal)Margin;
         decimal BO.IOrder.AggrFillPrice => throw new NotImplementedException();
         decimal BO.IOrder.AverageFillPrice => throw new NotImplementedException();
         decimal? BO.IOrder.TransferringCoefficient => throw new NotImplementedException();

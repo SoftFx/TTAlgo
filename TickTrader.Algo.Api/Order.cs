@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Api
         event Action<OrderActivatedEventArgs> Activated;
         event Action<Order> Added;
         event Action<Order> Removed;
-        event Action<Order> Replaced;
+        event Action<Order> Updated;
     }
 
     public interface OrderActivatedEventArgs

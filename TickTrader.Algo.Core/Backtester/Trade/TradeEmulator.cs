@@ -78,9 +78,6 @@ namespace TickTrader.Algo.Core
             _acc.Balance = 0;
             _acc.ResetCurrency();
             _acc.Leverage = 0;
-            _acc.Profit = 0;
-            _acc.MarginLevel = 0;
-            _acc.Margin = 0;
 
             _acc.Type = _settings.AccountType;
 
@@ -138,9 +135,9 @@ namespace TickTrader.Algo.Core
                 try
                 {
                     volumeLots = RoundVolume(volumeLots, smbMetadata);
-                    maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
+                    //maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
                     double volume = ConvertVolume(volumeLots, smbMetadata);
-                    double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
+                    double? maxVisibleVolume = null; //ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
                     price = RoundPrice(price, smbMetadata, side);
                     stopPrice = RoundPrice(stopPrice, smbMetadata, side);
                     sl = RoundPrice(sl, smbMetadata, side);
@@ -763,7 +760,7 @@ namespace TickTrader.Algo.Core
                 decimal filledVolume = order.Amount - order.RemainingAmount;
 
                 order.Amount = newVolume;
-                order.RemainingAmount = newVolume - filledVolume;
+                order.ChangeRemAmount(newVolume - filledVolume);
 
                 // Recalculate commission if necessary.
                 //var mAcc = acc as MarginAccountModel;
@@ -871,7 +868,7 @@ namespace TickTrader.Algo.Core
                 RegisterOrder(order, currentRate);
 
             //_acc.CalculateOrder(order, infrustructure);
-            order.FireChanged();
+            //order.FireChanged();
 
             // fire API event
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrderCopy, order)));
@@ -928,8 +925,8 @@ namespace TickTrader.Algo.Core
             if (partialFill)
             {
                 //order.Status = OrderStatuses.Calculated;
-                order.RemainingAmount -= fillAmount;
-                _calcFixture.CalculateOrder(order);
+                order.ChangeRemAmount(order.RemainingAmount - fillAmount);
+                //_calcFixture.CalculateOrder(order);
 
                 //if (order.IsPending)
                 //    ResetOrderActivation(order);
@@ -937,7 +934,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 //order.Status = OrderStatuses.Filled;
-                order.RemainingAmount = 0;
+                order.ChangeRemAmount(0);
 
                 if (order.IsPending)
                     UnregisterOrder(order);
@@ -1014,7 +1011,7 @@ namespace TickTrader.Algo.Core
 
             //_acc.AfterFillOrder(order, this, fillPrice, fillAmount, partialFill, tradeReport, execReport, fillReport);
 
-            order.FireChanged();
+            //order.FireChanged();
 
             _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(copy, order)));
 
@@ -1164,9 +1161,11 @@ namespace TickTrader.Algo.Core
             //position.ParentOrderId = (parentOrder != null) ? parentOrder.OrderId : position.OrderId;
             position.InitialType = (parentOrder != null) ? parentOrder.InitialType : OrderType.Market;
 
-            position.Entity.Type = OrderType.Position;
+            //position.Entity.Type = OrderType.Position;
             //position.Status = OrderStatuses.Calculated;
-            position.Entity.Price = (double)openPrice; // position open price
+            //position.Entity.Price = (double)openPrice; // position open price
+
+            position.ChangeEssentials(OrderType.Position, posAmount, openPrice);
 
             // stop price for stops
             //if ((parentOrder != null) && (parentOrder.InitialType == OrderTypes.StopLimit || parentOrder.InitialType == OrderTypes.Stop))
@@ -1175,7 +1174,7 @@ namespace TickTrader.Algo.Core
             //    position.Entity.StopPrice = null;
 
             position.Amount = posAmount;
-            position.RemainingAmount = posAmount;
+            //position.RemainingAmount = posAmount;
             position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
             position.Entity.Expiration = null;
 
@@ -1197,8 +1196,8 @@ namespace TickTrader.Algo.Core
                 _acc.Orders.Add(position);
 
             // calculate margin & profit
-            fCalc.UpdateMargin(position, _acc);
-            fCalc.UpdateProfit(position);
+            //fCalc.UpdateMargin(position, _acc);
+            //fCalc.UpdateProfit(position);
 
             // Update order initial margin rate.
             position.OpenConversionRate = position.MarginRateCurrent;
@@ -1215,7 +1214,7 @@ namespace TickTrader.Algo.Core
             // register order
             RegisterOrder(position, (RateUpdate)fCalc.CurrentRate);
 
-            position.FireChanged();
+            //position.FireChanged();
 
             // journal
             //LogTransactionDetails(() => "Created Position #" + position.OrderId + " price=" + position.Price + " amount=" + position.Amount
@@ -1647,7 +1646,7 @@ namespace TickTrader.Algo.Core
                 decimal newRemainingAmount = position.RemainingAmount - actualCloseAmount;
                 decimal k = newRemainingAmount / position.RemainingAmount;
 
-                position.RemainingAmount = newRemainingAmount;
+                position.ChangeRemAmount(newRemainingAmount);
                 //position.Status = OrderStatuses.Calculated;
 
                 if (position.Swap != null)
@@ -1661,7 +1660,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 charges.Swap = position.Swap ?? 0;
-                position.RemainingAmount = 0;
+                position.ChangeRemAmount(0);
             }
 
             //if (trReason == TradeTransReasons.Rollover)
@@ -1677,7 +1676,7 @@ namespace TickTrader.Algo.Core
                 //charges.AgentCommission = 0;
                 //charges.MinCommissionCurrency = null;
                 //charges.MinCommissionConversionRate = null;
-                position.Entity.Commission = 0;
+                position.ChangeCommission(0);
                 //position.AgentCommision = null;
             }
 
@@ -1746,8 +1745,8 @@ namespace TickTrader.Algo.Core
             //    JournalEntrySeverities.Info, orderCopy);
             //LogTransactionDetails(() => "Final position " + orderCopy, JournalEntrySeverities.Info, orderCopy);
 
-            if (!remove)
-                position.FireChanged();
+            //if (!remove)
+            //    position.FireChanged();
 
             // Recalculate account if it is not disabled.
             if ((options & ClosePositionOptions.NoRecalculate) == 0)
@@ -1946,7 +1945,7 @@ namespace TickTrader.Algo.Core
 
             if (smbInfo.SwapEnabled)
             {
-                var positions = _calcFixture.GetGrossPositions(smbInfo.Name)?.ToList(); // Perf. warning: .ToList()
+                var positions = _acc.Orders.Where(o => o.Type == OrderType.Position && o.Symbol == smbInfo.Name).ToList(); // Perf. warning: .ToList()
 
                 if (positions != null)
                 {
@@ -2312,7 +2311,7 @@ namespace TickTrader.Algo.Core
         {
             double minAmountStep = smbInfo.TradeVolumeStep * smbInfo.ContractSize;
             double div = amount / minAmountStep;
-            return div == Math.Truncate(div);
+            return div.E(Math.Truncate(div));
         }
 
         private void EnsureOrderIsPosition(OrderAccessor order)

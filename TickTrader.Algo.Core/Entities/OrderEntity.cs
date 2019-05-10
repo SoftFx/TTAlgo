@@ -1,5 +1,6 @@
 ﻿using System;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.Core
 {
@@ -69,6 +70,7 @@ namespace TickTrader.Algo.Core
         public double? MaxVisibleVolume { get; set; }
         public OrderExecOptions Options { get; set; }
         public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
+        public bool IsHidden => IsHiddenOrder(MaxVisibleVolume);
 
         static OrderEntity() { Null = new NullOrder(); }
 
@@ -81,6 +83,16 @@ namespace TickTrader.Algo.Core
         #endregion
 
         public long OrderNum => long.Parse(OrderId);
+
+        public static bool IsHiddenOrder(double? maxVisibleVolume)
+        {
+            return maxVisibleVolume != null && maxVisibleVolume.Value.E(0);
+        }
+
+        //public static bool IsHiddenOrder(double maxVisibleVolume)
+        //{
+        //    return !double.IsNaN(maxVisibleVolume) && maxVisibleVolume.E(0);
+        //}
     }
 
     [Serializable]

@@ -55,12 +55,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.BusinessLogic">
-      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
-    </Reference>
-    <Reference Include="TickTrader.BusinessObjects">
-      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\BotAdapter.cs" />
@@ -101,6 +95,11 @@
     <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Builder\SimplifiedBuilder.cs" />
+    <Compile Include="Calc\MarginAccountCalc.cs" />
+    <Compile Include="Calc\Interfaces.cs" />
+    <Compile Include="Calc\OrderNetting.cs" />
+    <Compile Include="Calc\SideCalc.cs" />
+    <Compile Include="Calc\SymbolCalc.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
@@ -255,6 +254,14 @@
     <Compile Include="Math\TimeVectorBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\platform.server.2\src\TickTrader.BusinessLogic\TickTrader.BusinessLogic.csproj">
+      <Project>{06dd18c3-80c1-48d2-8cdd-932b2e3ac6fe}</Project>
+      <Name>TickTrader.BusinessLogic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\platform.server.2\src\TickTrader.BusinessObjects\TickTrader.BusinessObjects.csproj">
+      <Project>{2f663d56-a7b1-4d99-a934-2d3983b4d30f}</Project>
+      <Name>TickTrader.BusinessObjects</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">
       <Project>{df05b4cc-200a-436b-91cc-bebe7d89b8ad}</Project>
       <Name>Machinarium</Name>

@@ -175,7 +175,7 @@ namespace TickTrader.Algo.Core
             }
 
             Entity.PosOpenPrice = (double)openPrice;
-            Entity.OpenConversionRate = (double)openConversionRate;
+            Entity.OpenConversionRate = (double?)openConversionRate;
 
             return this;
         }
