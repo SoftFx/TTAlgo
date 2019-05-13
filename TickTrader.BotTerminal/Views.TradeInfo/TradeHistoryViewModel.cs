@@ -129,7 +129,7 @@ namespace TickTrader.BotTerminal
                 if (_from == value)
                     return;
 
-                _from = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                _from = value;
 
                 if (_profileManager != null)
                     _viewPropertyStorage.ChangeProperty(nameof(From), value.ToString(StorageDateTimeFormat));
@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
                 if (_to == value)
                     return;
 
-                _to = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                _to = value;
 
                 if (_profileManager != null)
                     _viewPropertyStorage.ChangeProperty(nameof(To), value.ToString(StorageDateTimeFormat));
@@ -361,7 +361,7 @@ namespace TickTrader.BotTerminal
 
         private void CalculateTimeBoundaries(out DateTime? from, out DateTime? to)
         {
-            var now = DateTime.Now; // fix time point
+            var now = DateTime.UtcNow; // fix time point
 
             switch (Period)
             {
@@ -378,12 +378,12 @@ namespace TickTrader.BotTerminal
                     to = null;
                     break;
                 case TimePeriod.CurrentMonth:
-                    from = new DateTime(now.Year, now.Month, 1);
+                    from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     to = null;
                     break;
                 case TimePeriod.PreviousMonth:
-                    from = new DateTime(now.Year, now.Month, 1).AddMonths(-1);
-                    to = new DateTime(now.Year, now.Month, 1);
+                    from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
+                    to = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     break;
                 case TimePeriod.Today:
                     from = now.Date;
@@ -488,11 +488,11 @@ namespace TickTrader.BotTerminal
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
             if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _from))
-                _from = DateTime.Now.Date;
+                _from = DateTime.UtcNow.Date;
 
             var toProp = _viewPropertyStorage.GetProperty(nameof(To));
             if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
-                _to = DateTime.Now.Date.AddDays(1);
+                _to = DateTime.UtcNow.Date.AddDays(1);
 
             NotifyOfPropertyChange(nameof(SkipCancel));
             NotifyOfPropertyChange(nameof(Period));

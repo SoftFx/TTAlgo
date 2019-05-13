@@ -351,11 +351,11 @@ namespace TickTrader.BotTerminal
         {
             DateTime datetime;
 
-            if (!DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
+            if (!DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out datetime))
                 //if (!DateTime.TryParse(value, out datetime))
                 return null;
 
-            return DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
+            return datetime;
         }
 
         private bool IsDateInExpectedFormat(string date)
