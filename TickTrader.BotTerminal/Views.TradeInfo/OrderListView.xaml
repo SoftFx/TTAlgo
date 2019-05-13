@@ -35,11 +35,11 @@
                         <Setter Property="ToolTip" >
                             <Setter.Value>
                                 <StackPanel Orientation="Vertical">
-                                    <StackPanel Orientation="Horizontal" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.InstanceId, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.LimitPrice, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Limit Price: " VerticalAlignment="Center" />
                                         <TextBlock VerticalAlignment="Center" >
                                             <TextBlock.Text>
