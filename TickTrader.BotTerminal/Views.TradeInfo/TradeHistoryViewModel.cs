@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
     {
         private const int CleanUpDelay = 2000;
         private const string StorageDateTimeFormat = "dd-MM-yyyy HH:mm:ss";
-        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeLocal;
+        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
         }
 
         #region Properties
-        
+
         public TradeDirection TradeDirectionFilter
         {
             get { return _tradeDirectionFilter; }
@@ -129,7 +129,7 @@ namespace TickTrader.BotTerminal
                 if (_from == value)
                     return;
 
-                _from = value;
+                _from = DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
                 if (_profileManager != null)
                     _viewPropertyStorage.ChangeProperty(nameof(From), value.ToString(StorageDateTimeFormat));
@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
                 if (_to == value)
                     return;
 
-                _to = value;
+                _to = DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
                 if (_profileManager != null)
                     _viewPropertyStorage.ChangeProperty(nameof(To), value.ToString(StorageDateTimeFormat));
@@ -449,7 +449,7 @@ namespace TickTrader.BotTerminal
         {
             int count = 0;
 
-            while(_tradesList.Count > 0)
+            while (_tradesList.Count > 0)
             {
                 if (++count % 400 == 0)
                     await Dispatcher.Yield(DispatcherPriority.DataBind);
