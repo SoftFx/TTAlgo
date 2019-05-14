@@ -28,5 +28,6 @@
     <l:DoubleCmpConverter x:Key="CmpGe" Mode="LessOrEqual"/>
     <l:LogSeverityToBrushConverter x:Key="LogSeverityConverter" />
     <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
+    <l:SplitStringConverter x:Key="SplitString"/>
 
 </ResourceDictionary>

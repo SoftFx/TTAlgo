@@ -91,7 +91,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type}"/>
+                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type, Converter={StaticResource SplitString}}"/>
 
                     <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
 
