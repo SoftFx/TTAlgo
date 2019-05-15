@@ -173,7 +173,7 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Tag" Width="*" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
 
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
