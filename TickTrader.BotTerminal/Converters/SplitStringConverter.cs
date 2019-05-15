@@ -12,14 +12,12 @@ namespace TickTrader.BotTerminal
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var str = value.ToString();
-
-            if (string.IsNullOrEmpty(str))
+            if (value == null || string.IsNullOrEmpty(value.ToString()))
                 return null;
 
             string ans = string.Empty;
 
-            foreach(var c in str)
+            foreach(var c in value.ToString())
             {
                 if (char.IsUpper(c))
                     ans += " ";

@@ -36,12 +36,25 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Setter Property="ToolTipService.IsEnabled">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource NullOrEmptyToVis}" >
+                                    <Binding Path="Reason"/>
+                                    <Binding Path="OpenQuantity"/>
+                                    <Binding Path="InitialType"/>
+                                    <Binding Path="MaxVisibleVolume"/>
+                                    <Binding Path="OrderExecutionOption"/>
+                                    <Binding Path="PosRemainingPrice"/>
+                                    <Binding Path="RemainingQuantity"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
                         <Setter Property="ToolTip">
                             <Setter.Value>
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Reason, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Reason: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Reason}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Reason, Converter={StaticResource SplitString}}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OpenQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Initial Volume: " VerticalAlignment="Center" />

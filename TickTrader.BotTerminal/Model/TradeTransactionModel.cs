@@ -265,7 +265,7 @@ namespace TickTrader.BotTerminal
             if (IsBalanceTransaction)
                 return null;
 
-            return GetTransactionSide(transaction) == TransactionSide.Buy ? OpenPrice - transaction.PosRemainingPrice : transaction.PosRemainingPrice - OpenPrice;
+            return GetTransactionSide(transaction) == TransactionSide.Buy ? transaction.Price - transaction.ReqOpenPrice : transaction.ReqOpenPrice - transaction.Price;
         }
 
         protected virtual double? GetReqQuantity(TradeReportEntity transaction)
@@ -291,7 +291,7 @@ namespace TickTrader.BotTerminal
             if (transaction.MarketWithSlippage)
                 options.Add(OrderExecutionOptions.MarketWithSlippage.ToString());
 
-            if (transaction.MaxVisibleQuantity == 0)
+            if (transaction.MaxVisibleQuantity >= 0)
                 options.Add(OrderExecutionOptions.HiddenIceberg.ToString());
 
             return string.Join(",", options);
