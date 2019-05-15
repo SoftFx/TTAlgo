@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
 {
@@ -673,6 +674,22 @@ namespace TickTrader.Algo.Core
         }
 
         public OrderCmdResultCodes ErrorCode { get; }
+    }
+
+    internal static class TradeApiExtentions
+    {
+        public static OrderCmdResultCodes ToOrderError(this CalcErrorCodes error)
+        {
+            switch (error)
+            {
+                case CalcErrorCodes.None: return OrderCmdResultCodes.Ok;
+                case CalcErrorCodes.NoCrossSymbol: return OrderCmdResultCodes.Misconfiguration;
+                case CalcErrorCodes.OffCrossQuote: return OrderCmdResultCodes.OffQuotes;
+                case CalcErrorCodes.OffQuote: return OrderCmdResultCodes.OffQuotes;
+            }
+
+            throw new Exception("Unknown code: " + error);
+        }
     }
 
 }

@@ -8,13 +8,13 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    internal class SymbolCalc
+    internal class SymbolCalc : IDisposable
     {
         private MarketState _market;
         private OrderCalculator _calc;
-        private decimal _hedgeFormulPart;
-        private decimal _netPosSwap;
-        private decimal _netPosComm;
+        private double _hedgeFormulPart;
+        private double _netPosSwap;
+        private double _netPosComm;
 
         public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketState market)
         {
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public SideCalc Buy { get; }
         public SideCalc Sell { get; }
-        public decimal Margin { get; private set; }
+        public double Margin { get; private set; }
         public OrderCalculator Calc => _calc;
 
         public event Action<StatsChange> StatsChanged;
@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Core.Calc
             //RemoveOrder(order, GetSideCalc(order));
         }
 
-        public void UpdatePosition(IPositionModel pos, out decimal swapDelta, out decimal commDelta)
+        public void UpdatePosition(IPositionModel2 pos, out double swapDelta, out double commDelta)
         {
             pos.Calculator = Calc;
 
@@ -91,6 +91,12 @@ namespace TickTrader.Algo.Core.Calc
 
             Buy.UpdatePosition(pos.Long);
             Sell.UpdatePosition(pos.Short);
+        }
+
+        public void Dispose()
+        {
+            _calc?.RemoveUsage();
+            _calc = null;
         }
 
         private SideCalc GetSideCalc(IOrderModel2 order)
@@ -148,9 +154,11 @@ namespace TickTrader.Algo.Core.Calc
 
         private void CreateCalculator()
         {
+            _calc?.RemoveUsage();
             _calc = _market.GetCalculator(Symbol, AccInfo.BalanceCurrency);
+            _calc.AddUsage();
 
-            var hedge = _calc.SymbolInfo != null ? (decimal)_calc.SymbolInfo.MarginHedged : 0.5M;
+            var hedge = _calc.SymbolInfo != null ? _calc.SymbolInfo.MarginHedged : 0.5;
             _hedgeFormulPart = (2 * hedge - 1);
 
             Buy.SetCalculator(_calc);

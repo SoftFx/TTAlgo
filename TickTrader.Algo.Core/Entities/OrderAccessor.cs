@@ -7,7 +7,7 @@ using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
 {
-    public class OrderAccessor : Order, IOrderModel2, BO.IOrder
+    public class OrderAccessor : Order, IOrderModel2 // BO.IOrder
     {
         private OrderEntity _entity;
         private SymbolAccessor _symbol;
@@ -41,8 +41,8 @@ namespace TickTrader.Algo.Core
 
         internal void Update(OrderEntity entity)
         {
-            var oldPrice = (decimal?)_entity.Price;
-            var oldVol = (decimal)_entity.RemainingVolume;
+            var oldPrice = _entity.Price;
+            var oldVol = _entity.RemainingVolume;
             var oldType = _entity.GetBlOrderType();
             var oldIsHidden = _entity.IsHidden;
             _entity = entity;
@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Core
 
         public string Id => _entity.Id;
         public string Symbol => _entity.Symbol;
-        public double RequestedVolume => _entity.RequestedVolume / _lotSize ?? double.NaN;
+        public double RequestedVolume => _entity.RequestedVolume / _lotSize;
         public double RemainingVolume => _entity.RemainingVolume / _lotSize;
         public double MaxVisibleVolume => _entity.MaxVisibleVolume / _lotSize ?? double.NaN;
         public OrderType Type => _entity.Type;
@@ -87,12 +87,14 @@ namespace TickTrader.Algo.Core
                 var calc = Calculator;
                 if (calc != null)
                 {
-                    try
-                    {
-                        var margin = calc.CalculateMargin(RemainingAmount, _leverage, _entity.GetBlOrderType(), _entity.GetBlOrderSide(), false);
-                        return (double)margin;
-                    }
-                    catch (TickTrader.BusinessLogic.BusinessLogicException) { }
+                    //try
+                    //{
+                        var margin = calc.CalculateMargin(this, _leverage, out var error);
+                        if (error != CalcErrorCodes.None)
+                            return double.NaN;
+                        return margin;
+                    //}
+                    //catch (TickTrader.BusinessLogic.BusinessLogicException) { }
                 }
                 return double.NaN;
             }
@@ -104,14 +106,14 @@ namespace TickTrader.Algo.Core
                 var calc = Calculator;
                 if (calc != null)
                 {
-                    try
-                    {
-                        var prof = calc.CalculateProfit(this);
-                        if (prof == null)
+                    //try
+                    //{
+                        var prof = calc.CalculateProfit(this, out var error);
+                        if (error != CalcErrorCodes.None)
                             return double.NaN;
-                        return (double)prof.Value;
-                    }
-                    catch (TickTrader.BusinessLogic.BusinessLogicException) { }
+                        return prof;
+                    //}
+                    //catch (TickTrader.BusinessLogic.BusinessLogicException) { }
                 }
                 return double.NaN;
             }
@@ -122,20 +124,30 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
+        #region IOrderModel2
+
+        public double RemainingAmount => _entity.RemainingVolume;
+        bool IOrderCalcInfo.IsHidden => Entity.IsHidden;
+        double? IOrderCalcInfo.Price => Entity.Price;
+        BO.OrderSides IOrderCalcInfo.Side => Entity.GetBlOrderSide();
+        BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
+
+        #endregion
+
         #region BL IOrderModel
 
         public decimal? AgentCommision => 0;
 
         public BL.OrderError CalculationError { get; set; }
-        public BL.OrderCalculator Calculator { get; set; }
+        public OrderCalculator Calculator { get; set; }
         public bool IsCalculated => CalculationError == null;
-        public decimal? MarginRateCurrent { get; set; }
-        public decimal? Swap => (decimal)_entity.Swap;
-        public decimal? Commission => (decimal)_entity.Commission;
-        public decimal? CurrentPrice { get; set; }
+        public double? MarginRateCurrent { get; set; }
+        public double? Swap => _entity.Swap;
+        public double? Commission => _entity.Commission;
+        public double? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
-        public decimal Amount { get => (decimal)_entity.RequestedVolume; set => _entity.RequestedVolume = (double)value; }
-        public decimal RemainingAmount { get => (decimal)_entity.RemainingVolume; }
+        public double Amount { get => _entity.RequestedVolume; set => _entity.RequestedVolume = value; }
+        //decimal BO.IOrder.RemainingAmount { get => (decimal)_entity.RemainingVolume; }
         //decimal? BL.IOrderModel.Profit { get => _modelProf; set => _modelProf = value; }
         //decimal? BL.IOrderModel.Margin { get => _modelMargin; set => _modelMargin = value; }
         //BO.OrderTypes BL.ICommonOrder.Type { get => _entity.GetBlOrderType(); set => throw new NotImplementedException(); }
@@ -143,7 +155,6 @@ namespace TickTrader.Algo.Core
         //decimal? BL.ICommonOrder.Price { get => (decimal?)_entity.Price; set => throw new NotImplementedException(); }
         //decimal? BL.ICommonOrder.StopPrice { get => (decimal?)_entity.StopPrice; set => throw new NotImplementedException(); }
         //bool BL.ICommonOrder.IsHidden => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.E(0);
-        bool IOrderModel2.IsHidden => Entity.IsHidden;
         //bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
         //string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
         //string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
@@ -151,8 +162,8 @@ namespace TickTrader.Algo.Core
 
         //public event Action<BL.IOrderModel> EssentialParametersChanged;
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-        public event Action<OrderPropArgs<decimal>> SwapChanged;
-        public event Action<OrderPropArgs<decimal>> CommissionChanged;
+        public event Action<OrderPropArgs<double>> SwapChanged;
+        public event Action<OrderPropArgs<double>> CommissionChanged;
 
         #endregion
 
@@ -171,41 +182,41 @@ namespace TickTrader.Algo.Core
 
         internal short ActionNo { get; set; }
         internal OrderType InitialType { get; set; }
-        internal decimal? OpenConversionRate { get; set; }
+        internal double? OpenConversionRate { get; set; }
         internal SymbolAccessor SymbolInfo => _symbol;
-        public decimal? ClosePrice { get; set; }
+        public double? ClosePrice { get; set; }
         internal DateTime PositionCreated { get; set; }
 
-        internal void SetSwap(decimal swap)
+        internal void SetSwap(double swap)
         {
-            var oldSwap = (decimal)Entity.Swap;
-            Entity.Swap = (double)swap;
-            SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, swap));
+            var oldSwap = Entity.Swap;
+            Entity.Swap = swap;
+            SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, swap));
         }
 
-        internal void ChangeCommission(decimal newCommision)
+        internal void ChangeCommission(double newCommision)
         {
-            var oldCom = (decimal)Entity.Commission;
-            Entity.Commission = (double)newCommision;
-            CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCom, newCommision));
+            var oldCom = Entity.Commission;
+            Entity.Commission = newCommision;
+            CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCom, newCommision));
         }
 
-        internal void ChangeRemAmount(decimal newAmount)
+        internal void ChangeRemAmount(double newAmount)
         {
-            var oldAmount = (decimal)Entity.RemainingVolume;
-            Entity.RemainingVolume = (double)newAmount;
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, (decimal?)Entity.Price, Entity.GetBlOrderType(), false));
+            var oldAmount = Entity.RemainingVolume;
+            Entity.RemainingVolume = newAmount;
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, Entity.GetBlOrderType(), false));
         }
 
-        internal void ChangeEssentials(OrderType newType, decimal newAmount, decimal? newPrice)
+        internal void ChangeEssentials(OrderType newType, double newAmount, double? newPrice)
         {
-            var oldPrice = (decimal?)Entity.Price;
+            var oldPrice = Entity.Price;
             var oldType = Entity.GetBlOrderType();
-            var oldAmount = (decimal)Entity.RemainingVolume;
+            var oldAmount = Entity.RemainingVolume;
 
             Entity.Type = newType;
-            Entity.RemainingVolume = (double)newAmount;
-            Entity.Price = (double?)newPrice;
+            Entity.RemainingVolume = newAmount;
+            Entity.Price = newPrice;
 
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldType, false));
         }
@@ -224,62 +235,62 @@ namespace TickTrader.Algo.Core
 
         #region TickTrader.BusinessObjects.IOrder
 
-        int BO.IOrder.RangeId => throw new NotImplementedException();
-        long BO.IOrder.AccountId => throw new NotImplementedException();
-        //string BO.IOrder.Symbol => throw new NotImplementedException();
-        string BO.IOrder.SymbolAlias => Symbol;
-        //long BO.IOrder.OrderId => throw new NotImplementedException();
-        string BO.IOrder.ClientOrderId => null;
-        long? BO.IOrder.ParentOrderId => throw new NotImplementedException();
-        decimal? BO.IOrder.Price => (decimal?)Entity.Price;
-        decimal? BO.IOrder.StopPrice => (decimal?)Entity.StopPrice;
-        BO.OrderSides BO.IOrder.Side => _entity.GetBlOrderSide();
-        BO.OrderTypes BO.IOrder.Type => _entity.GetBlOrderType();
-        BO.OrderTypes BO.IOrder.InitialType => throw new NotImplementedException();
-        BO.OrderStatuses BO.IOrder.Status => throw new NotImplementedException();
-        //decimal BO.IOrder.Amount => throw new NotImplementedException();
-        //decimal BO.IOrder.RemainingAmount => throw new NotImplementedException();
-        decimal BO.IOrder.HiddenAmount => throw new NotImplementedException();
-        decimal? BO.IOrder.MaxVisibleAmount => throw new NotImplementedException();
-        DateTime BO.IOrder.Created => Entity.Created ?? DateTime.MinValue;
-        DateTime? BO.IOrder.Modified => Entity.Modified;
-        DateTime? BO.IOrder.Filled => throw new NotImplementedException();
-        DateTime? BO.IOrder.PositionCreated => throw new NotImplementedException();
-        decimal? BO.IOrder.StopLoss => (decimal?)Entity.StopLoss;
-        decimal? BO.IOrder.TakeProfit => (decimal?)Entity.TakeProfit;
-        decimal? BO.IOrder.Profit => (decimal)Profit;
-        decimal? BO.IOrder.Margin => (decimal)Margin;
-        decimal BO.IOrder.AggrFillPrice => throw new NotImplementedException();
-        decimal BO.IOrder.AverageFillPrice => throw new NotImplementedException();
-        decimal? BO.IOrder.TransferringCoefficient => throw new NotImplementedException();
-        string BO.IOrder.UserComment => Comment;
-        string BO.IOrder.ManagerComment => throw new NotImplementedException();
-        string BO.IOrder.UserTag => Entity.UserTag;
-        string BO.IOrder.ManagerTag => throw new NotImplementedException();
-        int BO.IOrder.Magic => throw new NotImplementedException();
-        decimal? BO.IOrder.Commission => (decimal)Entity.Commission;
-        decimal? BO.IOrder.AgentCommision => throw new NotImplementedException();
-        decimal? BO.IOrder.Swap => (decimal)Entity.Swap;
-        DateTime? BO.IOrder.Expired => Entity.Expiration;
-        //decimal? BO.IOrder.ClosePrice => throw new NotImplementedException();
-        //decimal? BO.IOrder.CurrentPrice => throw new NotImplementedException();
-        decimal? BO.IOrder.MarginRateInitial => throw new NotImplementedException();
-        decimal? BO.IOrder.MarginRateCurrent => throw new NotImplementedException();
-        BO.ActivationTypes BO.IOrder.Activation => throw new NotImplementedException();
-        decimal? BO.IOrder.OpenConversionRate => throw new NotImplementedException();
-        decimal? BO.IOrder.CloseConversionRate => throw new NotImplementedException();
-        bool BO.IOrder.IsReducedOpenCommission => throw new NotImplementedException();
-        bool BO.IOrder.IsReducedCloseCommission => throw new NotImplementedException();
-        int BO.IOrder.Version => throw new NotImplementedException();
-        BO.OrderExecutionOptions BO.IOrder.Options => throw new NotImplementedException();
-        BO.CustomProperties BO.IOrder.Properties => throw new NotImplementedException();
-        decimal? BO.IOrder.Taxes => throw new NotImplementedException();
-        decimal? BO.IOrder.ReqOpenPrice => throw new NotImplementedException();
-        decimal? BO.IOrder.ReqOpenAmount => throw new NotImplementedException();
-        string BO.IOrder.ClientApp => throw new NotImplementedException();
-        int? BO.IOrder.SymbolPrecision => _symbol?.Digits;
+        //int BO.IOrder.RangeId => throw new NotImplementedException();
+        //long BO.IOrder.AccountId => throw new NotImplementedException();
+        ////string BO.IOrder.Symbol => throw new NotImplementedException();
+        //string BO.IOrder.SymbolAlias => Symbol;
+        ////long BO.IOrder.OrderId => throw new NotImplementedException();
+        //string BO.IOrder.ClientOrderId => null;
+        //long? BO.IOrder.ParentOrderId => throw new NotImplementedException();
+        //decimal? BO.IOrder.Price => (decimal?)Entity.Price;
+        //decimal? BO.IOrder.StopPrice => (decimal?)Entity.StopPrice;
+        //BO.OrderSides BO.IOrder.Side => _entity.GetBlOrderSide();
+        //BO.OrderTypes BO.IOrder.Type => _entity.GetBlOrderType();
+        //BO.OrderTypes BO.IOrder.InitialType => throw new NotImplementedException();
+        //BO.OrderStatuses BO.IOrder.Status => throw new NotImplementedException();
+        ////decimal BO.IOrder.Amount => throw new NotImplementedException();
+        ////decimal BO.IOrder.RemainingAmount => throw new NotImplementedException();
+        //decimal BO.IOrder.HiddenAmount => throw new NotImplementedException();
+        //decimal? BO.IOrder.MaxVisibleAmount => throw new NotImplementedException();
+        //DateTime BO.IOrder.Created => Entity.Created ?? DateTime.MinValue;
+        //DateTime? BO.IOrder.Modified => Entity.Modified;
+        //DateTime? BO.IOrder.Filled => throw new NotImplementedException();
+        //DateTime? BO.IOrder.PositionCreated => throw new NotImplementedException();
+        //decimal? BO.IOrder.StopLoss => (decimal?)Entity.StopLoss;
+        //decimal? BO.IOrder.TakeProfit => (decimal?)Entity.TakeProfit;
+        //decimal? BO.IOrder.Profit => (decimal)Profit;
+        //decimal? BO.IOrder.Margin => (decimal)Margin;
+        //decimal BO.IOrder.AggrFillPrice => throw new NotImplementedException();
+        //decimal BO.IOrder.AverageFillPrice => throw new NotImplementedException();
+        //decimal? BO.IOrder.TransferringCoefficient => throw new NotImplementedException();
+        //string BO.IOrder.UserComment => Comment;
+        //string BO.IOrder.ManagerComment => throw new NotImplementedException();
+        //string BO.IOrder.UserTag => Entity.UserTag;
+        //string BO.IOrder.ManagerTag => throw new NotImplementedException();
+        //int BO.IOrder.Magic => throw new NotImplementedException();
+        //decimal? BO.IOrder.Commission => (decimal)Entity.Commission;
+        //decimal? BO.IOrder.AgentCommision => throw new NotImplementedException();
+        //decimal? BO.IOrder.Swap => (decimal)Entity.Swap;
+        //DateTime? BO.IOrder.Expired => Entity.Expiration;
+        ////decimal? BO.IOrder.ClosePrice => throw new NotImplementedException();
+        ////decimal? BO.IOrder.CurrentPrice => throw new NotImplementedException();
+        //decimal? BO.IOrder.MarginRateInitial => throw new NotImplementedException();
+        //decimal? BO.IOrder.MarginRateCurrent => throw new NotImplementedException();
+        //BO.ActivationTypes BO.IOrder.Activation => throw new NotImplementedException();
+        //decimal? BO.IOrder.OpenConversionRate => throw new NotImplementedException();
+        //decimal? BO.IOrder.CloseConversionRate => throw new NotImplementedException();
+        //bool BO.IOrder.IsReducedOpenCommission => throw new NotImplementedException();
+        //bool BO.IOrder.IsReducedCloseCommission => throw new NotImplementedException();
+        //int BO.IOrder.Version => throw new NotImplementedException();
+        //BO.OrderExecutionOptions BO.IOrder.Options => throw new NotImplementedException();
+        //BO.CustomProperties BO.IOrder.Properties => throw new NotImplementedException();
+        //decimal? BO.IOrder.Taxes => throw new NotImplementedException();
+        //decimal? BO.IOrder.ReqOpenPrice => throw new NotImplementedException();
+        //decimal? BO.IOrder.ReqOpenAmount => throw new NotImplementedException();
+        //string BO.IOrder.ClientApp => throw new NotImplementedException();
+        //int? BO.IOrder.SymbolPrecision => _symbol?.Digits;
 
-        decimal? BO.IOrder.Slippage => throw new NotImplementedException();
+        //decimal? BO.IOrder.Slippage => throw new NotImplementedException();
 
         internal bool IsSameOrder(OrderAccessor order)
         {
@@ -290,7 +301,7 @@ namespace TickTrader.Algo.Core
 
         public override string ToString()
         {
-            return $"#{Id} {Symbol} {Side} {RemainingAmount}";
+            return $"#{Id} {Symbol} {Side} {_entity.RemainingVolume}";
         }
     }
 }

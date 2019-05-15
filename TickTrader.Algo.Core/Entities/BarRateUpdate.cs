@@ -39,6 +39,8 @@ namespace TickTrader.Algo.Core
             _quoteCount++;
         }
 
+        public bool HasAsk => true;
+        public bool HasBid => true;
         public string Symbol { get; }
         public BarEntity BidBar { get; }
         public BarEntity AskBar { get; }

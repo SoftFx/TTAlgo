@@ -33,13 +33,13 @@ namespace TickTrader.BotTerminal
             return this;
         }
 
-        public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<decimal> data, ReportSeriesStyles style, bool xAxisDayNames)
+        public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<double> data, ReportSeriesStyles style, bool xAxisDayNames)
         {
             var dataModel = new XyDataSeries<int, double>(data.Count);
 
             for (int i = 0; i < data.Count; i++)
             {
-                var yVal = (double)data[i];
+                var yVal = data[i];
 
                 if (yVal == 0)
                     yVal = -1;

@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
 {
     public static class Rounding
     {
-        private static decimal[] decMap = new decimal[]
+        private static double[] decMap = new double[]
             {
                 1,
                 10,
@@ -25,22 +25,22 @@ namespace TickTrader.Algo.Core
                 1000000000000,
             };
 
-        public static decimal CeilBy(this decimal val, int decimals)
+        public static double CeilBy(this double val, int decimals)
         {
-            var decimalPart = decimal.Truncate(val);
-            var fractionalPart = val - decimal.Truncate(val);
+            var decimalPart = Math.Truncate(val);
+            var fractionalPart = val - Math.Truncate(val);
             var multiplier = decMap[decimals];
-            var roundedFrPart = decimal.Ceiling(fractionalPart * multiplier) / multiplier;
+            var roundedFrPart = Math.Ceiling(fractionalPart * multiplier) / multiplier;
 
             return decimalPart + roundedFrPart;
         }
 
-        public static decimal FloorBy(this decimal val, int decimals)
+        public static double FloorBy(this double val, int decimals)
         {
-            var decimalPart = decimal.Truncate(val);
-            var fractionalPart = val - decimal.Truncate(val);
+            var decimalPart = Math.Truncate(val);
+            var fractionalPart = val - Math.Truncate(val);
             var multiplier = decMap[decimals];
-            var roundedFrPart = decimal.Floor(fractionalPart * multiplier) / multiplier;
+            var roundedFrPart = Math.Floor(fractionalPart * multiplier) / multiplier;
 
             return decimalPart + roundedFrPart;
         }

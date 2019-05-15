@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core
         public Currency ProfitCurrencyInfo => CounterCurrencyInfo;
 
         string BO.ISymbolInfo.Symbol => Name;
-        int BO.ISymbolInfo.Precision => Digits;
+        public int Precision => Digits;
 
         #endregion
 

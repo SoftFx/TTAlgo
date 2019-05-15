@@ -754,7 +754,7 @@ namespace TickTrader.Algo.Common.Model
                 ExecVolume = record.ExecutedVolume,
                 UserTag = record.Tag,
                 RemainingVolume = record.LeavesVolume,
-                RequestedVolume = record.InitialVolume,
+                RequestedVolume = record.InitialVolume ?? 0,
                 Expiration = record.Expiration?.ToLocalTime(),
                 MaxVisibleVolume = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.Common.Business;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote, ISymbolRate, RateUpdate
+    public class QuoteEntity : Api.Quote, ISymbolRate, RateUpdate, ISymbolRate2
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
@@ -116,18 +117,11 @@ namespace TickTrader.Algo.Core
         #region FDK compatibility
 
         public DateTime CreatingTime => Time;
-        public bool HasBid => !double.IsNaN(Bid);
-        public bool HasAsk => !double.IsNaN(Ask);
+        public bool HasBid => _bid.HasValue;
+        public bool HasAsk => _ask.HasValue;
 
-        public double? GetNullableBid()
-        {
-            return double.IsNaN(Bid) ? null : (double?)Bid;
-        }
-
-        public double? GetNullableAsk()
-        {
-            return double.IsNaN(Ask) ? null : (double?)Ask;
-        }
+        public double? GetNullableBid() => _bid;
+        public double? GetNullableAsk() => _ask;
 
         #endregion
 

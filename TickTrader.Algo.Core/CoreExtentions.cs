@@ -4,20 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
     public static class CoreExtentions
     {
-        public static decimal? NullableAsk(this RateUpdate rate)
+        public static double? NullableAsk(this RateUpdate rate)
         {
-            return rate.Ask.NanAwareToDecimal();
+            return rate.HasAsk ? rate.Ask : (double?)null;
         }
 
-        public static decimal? NullableBid(this RateUpdate rate)
+        public static double? NullableBid(this RateUpdate rate)
         {
-            return rate.Bid.NanAwareToDecimal();
+            return rate.HasBid ? rate.Bid : (double?)null;
+        }
+
+        public static double? NullableAsk(this ISymbolRate2 rate)
+        {
+            return rate.HasAsk ? rate.Ask : (double?)null;
+        }
+
+        public static double? NullableBid(this ISymbolRate2 rate)
+        {
+            return rate.HasBid ? rate.Bid : (double?)null;
         }
 
         public static double? DoubleNullableAsk(this RateUpdate rate)

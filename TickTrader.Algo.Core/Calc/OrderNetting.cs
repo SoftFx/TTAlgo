@@ -19,13 +19,13 @@ namespace TickTrader.Algo.Core.Calc
         }
 
         public bool IsEmpty => MarginAmount <= 0;
-        public decimal MarginAmount { get; protected set; }
-        public decimal ProfitAmount { get; protected set; }
-        public decimal WeightedAveragePrice { get; protected set; }
-        public decimal TotalWeight { get; private set; }
+        public double MarginAmount { get; protected set; }
+        public double ProfitAmount { get; protected set; }
+        public double WeightedAveragePrice { get; protected set; }
+        public double TotalWeight { get; private set; }
 
-        public decimal Margin { get; private set; }
-        public decimal Profit { get; private set; }
+        public double Margin { get; private set; }
+        public double Profit { get; private set; }
 
         public IMarginAccountInfo2 AccountData { get; }
         public OrderCalculator Calculator { get; internal set; }
@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core.Calc
         public OrderSides Side { get; }
         public bool IsHidden { get; }
 
-        public event Action<decimal> AmountChanged;
+        public event Action<double> AmountChanged;
 
         public StatsChange Recalculate()
         {
@@ -48,12 +48,12 @@ namespace TickTrader.Algo.Core.Calc
             else
             {
                 if (MarginAmount > 0)
-                    Margin = Calculator.CalculateMargin(MarginAmount, AccountData.Leverage, Type, Side, IsHidden);
+                    Margin = Calculator.CalculateMargin(MarginAmount, AccountData.Leverage, Type, Side, IsHidden, out var error);
                 else
                     Margin = 0;
 
                 if (ProfitAmount > 0)
-                    Profit = Calculator.CalculateProfit(WeightedAveragePrice, ProfitAmount, Side);
+                    Profit = Calculator.CalculateProfit(WeightedAveragePrice, ProfitAmount, Side, out var error);
                 else
                     Profit = 0;
             }
@@ -61,13 +61,13 @@ namespace TickTrader.Algo.Core.Calc
             return new StatsChange(Margin - oldMargin, Profit - oldProfit);
         }
 
-        public StatsChange AddOrder(decimal remAmount, decimal? price)
+        public StatsChange AddOrder(double remAmount, double? price)
         {
             AddOrderWithoutCalculation(remAmount, price);
             return Recalculate();
         }
 
-        public void AddOrderWithoutCalculation(decimal remAmount, decimal? price)
+        public void AddOrderWithoutCalculation(double remAmount, double? price)
         {
             //Count++;
             ChangeMarginAmountBy(remAmount);
@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public void AddPositionWithoutCalculation(decimal posAmount, decimal posPrice)
+        public void AddPositionWithoutCalculation(double posAmount, double posPrice)
         {
             ChangeMarginAmountBy(posAmount);
             ProfitAmount += posAmount;
@@ -88,7 +88,7 @@ namespace TickTrader.Algo.Core.Calc
             UpdateAveragePrice();
         }
 
-        public void RemovePositionWithoutCalculation(decimal posAmount, decimal posPrice)
+        public void RemovePositionWithoutCalculation(double posAmount, double posPrice)
         {
             ChangeMarginAmountBy(-posAmount);
             ProfitAmount -= posAmount;
@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Core.Calc
             UpdateAveragePrice();
         }
 
-        public StatsChange RemoveOrder(decimal remAmount, decimal? price)
+        public StatsChange RemoveOrder(double remAmount, double? price)
         {
             //Count--;
             ChangeMarginAmountBy(-remAmount);
@@ -133,7 +133,7 @@ namespace TickTrader.Algo.Core.Calc
                 WeightedAveragePrice = 0;
         }
 
-        public void ChangeMarginAmountBy(decimal delta)
+        public void ChangeMarginAmountBy(double delta)
         {
             MarginAmount += delta;
 

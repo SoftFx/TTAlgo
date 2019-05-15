@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core
 
     internal class CalculatorFixture : ICalculatorApi
     {
-        private BL.MarketState _state;
+        private MarketState _state;
         private IFixtureContext _context;
         private MarginAccountCalc _marginCalc;
         private BL.CashAccountCalculator cashCalc;
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
         }
 
         public AccountAccessor Acc => acc;
-        public BL.MarketState Market => _state;
+        public MarketState Market => _state;
         public bool IsCalculated => _marginCalc?.IsCalculated ?? true;
         public int RoundingDigits => _marginCalc?.RoundingDigits ??  BL.AccountCalculator.DefaultRounding;
 
@@ -39,9 +39,10 @@ namespace TickTrader.Algo.Core
         {
             _lastRates.Clear();
 
-            _state = new BL.MarketState(BL.NettingCalculationTypes.Optimized);
-            _state.Set(_context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name));
-            _state.Set(_context.Builder.Currencies);
+            var orderedSymbols = _context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name);
+
+            _state = new MarketState();
+            _state.Init(orderedSymbols, _context.Builder.Currencies);
 
             foreach (var smb in _context.Builder.Symbols)
             {
@@ -75,7 +76,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public BL.OrderCalculator GetCalculator(string symbol, string accountCurrency)
+        public OrderCalculator GetCalculator(string symbol, string accountCurrency)
         {
             return _state.GetCalculator(symbol, accountCurrency);
         }
@@ -85,10 +86,10 @@ namespace TickTrader.Algo.Core
             return _context.Builder.Currencies.GetOrNull(currency);
         }
 
-        internal void UpdateRate(RateUpdate entity)
+        internal void UpdateRate(RateUpdate rate)
         {
-            _lastRates[entity.Symbol] = entity;
-            _state?.Update((QuoteEntity)entity.LastQuote);
+            _lastRates[rate.Symbol] = rate;
+            _state?.Update(rate);
         }
 
         internal RateUpdate GetCurrentRateOrNull(string symbol)
@@ -141,7 +142,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
-        public void ValidateNewOrder(OrderAccessor newOrder, BL.OrderCalculator fCalc)
+        public void ValidateNewOrder(OrderAccessor newOrder, OrderCalculator fCalc)
         {
             if (acc.IsMarginType)
             {
@@ -155,8 +156,13 @@ namespace TickTrader.Algo.Core
                 try
                 {
                     // Check for margin
-                    decimal newMargin;
-                    if (!_marginCalc.HasSufficientMarginToOpenOrder(newOrder, out newMargin))
+                    double newMargin;
+                    var hasMargin = _marginCalc.HasSufficientMarginToOpenOrder(newOrder, out newMargin, out var error);
+
+                    if (error != CalcErrorCodes.None)
+                        throw new OrderValidationError($"Failed to calculate order margin: {error}", error.ToOrderError());
+
+                    if (!hasMargin)
                         throw new OrderValidationError($"Not Enough Money. {this}, NewMargin={newMargin}", Api.OrderCmdResultCodes.NotEnoughMoney);
                 }
                 catch (BL.MarketConfigurationException e)
@@ -164,13 +170,13 @@ namespace TickTrader.Algo.Core
                     throw new OrderValidationError(e.Message, Api.OrderCmdResultCodes.InternalError);
                 }
             }
-            else if(acc.AccountingType == BusinessObjects.AccountingTypes.Cash)
+            else if (acc.AccountingType == BusinessObjects.AccountingTypes.Cash)
             {
 
-            }   
+            }
         }
 
-        public void ValidateModifyOrder(OrderAccessor order, decimal newAmount, decimal? newPrice, decimal? newStopPrice)
+        public void ValidateModifyOrder(OrderAccessor order, double newAmount, double? newPrice, double? newStopPrice)
         {
             if (Acc.IsMarginType)
                 ValidateModifyOrder_MarginAccount(order, newAmount);
@@ -178,26 +184,33 @@ namespace TickTrader.Algo.Core
                 ValidateModifyOrder_CashAccount(order, newAmount, newPrice, newStopPrice );
         }
 
-        private void ValidateModifyOrder_MarginAccount(OrderAccessor order, decimal newAmount)
+        private void ValidateModifyOrder_MarginAccount(OrderAccessor order, double newAmount)
         {
-            BL.OrderCalculator fCalc = _state.GetCalculator(order.Symbol, Acc.BalanceCurrency);
-            //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
+            var fCalc = _state.GetCalculator(order.Symbol, Acc.BalanceCurrency);
+            using (fCalc.UsageScope())
+            {
+                //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
 
-            ValidateOrderState(order);
+                ValidateOrderState(order);
 
-            //decimal filledAmount = order.Amount - order.RemainingAmount;
-            //decimal newRemainingAmount = newAmount - filledAmount;
-            decimal volumeDelta = newAmount - order.Amount;
+                //decimal filledAmount = order.Amount - order.RemainingAmount;
+                //decimal newRemainingAmount = newAmount - filledAmount;
+                double volumeDelta = newAmount - order.Amount;
 
-            if (volumeDelta < 0)
-                return;
+                if (volumeDelta < 0)
+                    return;
 
-            var additionalMargin = fCalc.CalculateMargin(newAmount, Acc.Leverage, TickTraderToAlgo.Convert(order.Type), TickTraderToAlgo.Convert(order.Side), false);
-            if (!_marginCalc.HasSufficientMarginToOpenOrder(additionalMargin, order.Symbol, order.Side.ToBoSide()))
-                throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
+                var additionalMargin = fCalc.CalculateMargin(newAmount, Acc.Leverage, order.Type.ToBoType(), order.Side.ToBoSide(), false, out var calcErro);
+
+                if (calcErro != CalcErrorCodes.None)
+                    throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
+
+                if (!_marginCalc.HasSufficientMarginToOpenOrder(additionalMargin, order.Symbol, order.Side.ToBoSide()))
+                    throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
+            }
         }
 
-        private void ValidateModifyOrder_CashAccount(OrderAccessor modifiedOrderModel, decimal newAmount, decimal? newPrice, decimal? newStopPrice)
+        private void ValidateModifyOrder_CashAccount(OrderAccessor modifiedOrderModel, double newAmount, double? newPrice, double? newStopPrice)
         {
             //if (request.NewVolume.HasValue || request.Price.HasValue || request.StopPrice.HasValue)
             //{
@@ -284,7 +297,7 @@ namespace TickTrader.Algo.Core
                 {
                     //var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
                     //calc.UpdateMargin(newOrder, acc);
-                    return _marginCalc.HasSufficientMarginToOpenOrder((decimal)orderVol, symbol, type.ToBoType(), side.ToBoSide(), isHidden, out _);
+                    return _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol, type.ToBoType(), side.ToBoSide(), isHidden, out _, out var error);
                 }
                 //if (cashCalc != null)
                 //{
@@ -304,19 +317,26 @@ namespace TickTrader.Algo.Core
         {
             //var newOrder = GetOrderAccessor(orderEntity, symbol);
 
-            try
+            if (_marginCalc != null)
             {
-                if (_marginCalc != null)
+                var side = oldOrder.GetBlOrderSide();
+                var type = oldOrder.GetBlOrderType();
+
+                var volumeDelta = newVolume - oldOrder.Volume;
+                var newRemVolume = newVolume + volumeDelta;
+
+                var calc = _state.GetCalculator(oldOrder.Symbol, acc.BalanceCurrency);
+                using (calc.UsageScope())
                 {
-                    var side = oldOrder.GetBlOrderSide();
-                    var type = oldOrder.GetBlOrderType();
+                    var oldMargin = calc.CalculateMargin(oldOrder.RemainingVolume, acc.Leverage, type, side, oldOrder.IsHidden, out var error);
 
-                    var volumeDelta = newVolume - oldOrder.Volume;
-                    var newRemVolume = newVolume + volumeDelta;
+                    if (error != CalcErrorCodes.None)
+                        return false;
 
-                    var calc = _state.GetCalculator(oldOrder.Symbol, acc.BalanceCurrency);
-                    var oldMargin = calc.CalculateMargin((decimal)oldOrder.RemainingVolume, acc.Leverage, type, side, oldOrder.IsHidden);
-                    var newMargin = calc.CalculateMargin((decimal)newRemVolume, acc.Leverage, type, side, newIsHidden);
+                    var newMargin = calc.CalculateMargin(newRemVolume, acc.Leverage, type, side, newIsHidden, out error);
+
+                    if (error != CalcErrorCodes.None)
+                        return false;
 
                     var marginDelta = newMargin - oldMargin;
 
@@ -325,18 +345,12 @@ namespace TickTrader.Algo.Core
 
                     return _marginCalc.HasSufficientMarginToOpenOrder(marginDelta, oldOrder.Symbol, side);
                 }
-                //if (cashCalc != null)
-                //{
-                //    var oldMargin = BL.CashAccountCalculator.CalculateMargin(oldOrder, symbol);
-                //    var newMargin = BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
-                //    return cashCalc.HasSufficientMarginToOpenOrder(newOrder, newMargin - oldMargin);
-                //}
             }
-            catch (BL.NotEnoughMoneyException) { }
-            catch (Exception ex)
-            {
-                _context.Builder.Logger.OnError($"Failed to calculate margin for order #{oldOrder.OrderId}", ex);
-            }
+            //catch (BL.NotEnoughMoneyException) { }
+            //catch (Exception ex)
+            //{
+            //    _context.Builder.Logger.OnError($"Failed to calculate margin for order #{oldOrder.OrderId}", ex);
+            //}
             return false;
         }
 
@@ -348,7 +362,7 @@ namespace TickTrader.Algo.Core
                 if (netting == null)
                     return 0;
 
-                return (double)(side == OrderSide.Buy ? netting.Buy.Margin : netting.Sell.Margin);
+                return side == OrderSide.Buy ? netting.Buy.Margin : netting.Sell.Margin;
             }
             return null;
         }
@@ -362,7 +376,8 @@ namespace TickTrader.Algo.Core
                 if (_marginCalc != null)
                 {
                     var calc = _state.GetCalculator(symbol, acc.BalanceCurrency);
-                    return (double)calc.CalculateMargin((decimal)orderVol, acc.Leverage,  type.ToBoType(),  side.ToBoSide(), isHidden);
+                    using (calc.UsageScope())
+                        return calc?.CalculateMargin(orderVol, acc.Leverage, type.ToBoType(), side.ToBoSide(), isHidden, out var error);
                 }
                 if (cashCalc != null)
                 {

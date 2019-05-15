@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
@@ -19,12 +20,12 @@ namespace TickTrader.Algo.Core
 
         public ActivationRegistry()
         {
-            buyLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Ask.NanAwareToDecimal(), agg => agg.AskLow.ToDecimal());
-            buyStopIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask.NanAwareToDecimal(), agg => agg.AskHigh.ToDecimal());
-            buyStopLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask.NanAwareToDecimal(), agg => agg.AskHigh.ToDecimal());
-            sellLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidHigh.ToDecimal());
-            sellStopIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidLow.ToDecimal());
-            sellStopLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid.NanAwareToDecimal(), agg => agg.BidLow.ToDecimal());
+            buyLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Ask, agg => agg.AskLow);
+            buyStopIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask, agg => agg.AskHigh);
+            buyStopLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Ask, agg => agg.AskHigh);
+            sellLimitIndex = new ActivationIndex(new AscendingPriceComparer(), (ordPrice, rate) => ordPrice <= rate, (tick) => tick.Bid, agg => agg.BidHigh);
+            sellStopIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid, agg => agg.BidLow);
+            sellStopLimitIndex = new ActivationIndex(new DescendingPriceComparer(), (ordPrice, rate) => ordPrice >= rate, (tick) => tick.Bid, agg => agg.BidLow);
         }
 
         public int Count { get; private set; }
@@ -175,14 +176,14 @@ namespace TickTrader.Algo.Core
         {
             if (Count > 0)
             {
-                if (!double.IsNaN(rate.Ask))
+                if (rate.HasAsk)
                 {
                     buyLimitIndex.CheckPendingOrders(rate, result);
                     buyStopIndex.CheckPendingOrders(rate, result);
                     buyStopLimitIndex.CheckPendingOrders(rate, result);
                 }
 
-                if (!double.IsNaN(rate.Bid))
+                if (rate.HasBid)
                 {
                     sellLimitIndex.CheckPendingOrders(rate, result);
                     sellStopIndex.CheckPendingOrders(rate, result);
@@ -191,19 +192,19 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private class AscendingPriceComparer : IComparer<decimal>
+        private class AscendingPriceComparer : IComparer<double>
         {
-            public int Compare(decimal x, decimal y)
+            public int Compare(double x, double y)
             {
-                return decimal.Compare(x, y);
+                return x.CompareTo(y);
             }
         }
 
-        private class DescendingPriceComparer : IComparer<decimal>
+        private class DescendingPriceComparer : IComparer<double>
         {
-            public int Compare(decimal x, decimal y)
+            public int Compare(double x, double y)
             {
-                return decimal.Compare(y, x);
+                return y.CompareTo(x);
             }
         }
     }

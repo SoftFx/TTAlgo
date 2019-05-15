@@ -4,18 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    internal class ActivationIndex : SortedList<decimal, LinkedList<ActivationRecord>>
+    internal class ActivationIndex : SortedList<double, LinkedList<ActivationRecord>>
     {
-        private Func<decimal, decimal, bool> priceCompareFunc;
-        private Func<RateUpdate, decimal?> priceSelectorFunc;
-        private Func<RateUpdate, decimal> aggrPriceSelector;
+        private Func<double, double, bool> priceCompareFunc;
+        private Func<RateUpdate, double> priceSelectorFunc;
+        private Func<RateUpdate, double> aggrPriceSelector;
 
-        public ActivationIndex(IComparer<decimal> comparer, Func<decimal, decimal, bool> priceCompareFunc, Func<RateUpdate, decimal?> priceSelectorFunc,
-            Func<RateUpdate, decimal> aggrPriceSelector)
+        public ActivationIndex(IComparer<double> comparer, Func<double, double, bool> priceCompareFunc, Func<RateUpdate, double> priceSelectorFunc,
+            Func<RateUpdate, double> aggrPriceSelector)
             : base(comparer)
         {
             this.priceCompareFunc = priceCompareFunc;
@@ -23,7 +24,7 @@ namespace TickTrader.Algo.Core
             this.aggrPriceSelector = aggrPriceSelector;
         }
 
-        public bool AddRecord(ActivationRecord record, RateUpdate smbInfo)
+        public bool AddRecord(ActivationRecord record, RateUpdate rate)
         {
             LinkedList<ActivationRecord> list;
             if (!TryGetValue(record.Price, out list))
@@ -33,9 +34,9 @@ namespace TickTrader.Algo.Core
             }
             list.AddLast(record);
 
-            if (smbInfo != null)
+            if (rate != null)
             {
-                decimal? currentRate = priceSelectorFunc(smbInfo);
+                double? currentRate = priceSelectorFunc(rate);
                 if (currentRate.HasValue && priceCompareFunc(record.Price, currentRate.Value))
                 {
                     record.ActivationPrice = currentRate.Value;
@@ -48,7 +49,7 @@ namespace TickTrader.Algo.Core
 
         public bool RemoveOrder(OrderAccessor order, ActivationTypes activationType)
         {
-            decimal price = ActivationRecord.GetActivationPrice(order, activationType);
+            double price = ActivationRecord.GetActivationPrice(order, activationType);
 
             LinkedList<ActivationRecord> list;
             if (!TryGetValue(price, out list))
@@ -67,7 +68,7 @@ namespace TickTrader.Algo.Core
 
         public void ResetOrderActivation(OrderAccessor order, ActivationTypes activationType)
         {
-            decimal price = ActivationRecord.GetActivationPrice(order, activationType);
+            double price = ActivationRecord.GetActivationPrice(order, activationType);
 
             LinkedList<ActivationRecord> list;
             if (!TryGetValue(price, out list))
@@ -80,11 +81,11 @@ namespace TickTrader.Algo.Core
             record.LastNotifyTime = null;
         }
 
-        public void CheckPendingOrders(RateUpdate smbInfo, List<ActivationRecord> result)
+        public void CheckPendingOrders(RateUpdate rate, List<ActivationRecord> result)
         {
-            decimal currentRate = aggrPriceSelector(smbInfo);
+            double currentRate = aggrPriceSelector(rate);
 
-            foreach (decimal price in Keys)
+            foreach (double price in Keys)
             {
                 if (!priceCompareFunc(price, currentRate))
                     break;

@@ -12,5 +12,10 @@ namespace TickTrader.Algo.Core
         {
             return System.Math.Round(f, digits) != f;
         }
+
+        public static bool IsPrecisionGreater(this double f, int digits)
+        {
+            return System.Math.Round(f, digits) != f;
+        }
     }
 }

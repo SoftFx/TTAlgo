@@ -8,20 +8,114 @@ using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    public interface IOrderModel2 : IOrder
+    public enum CalcErrorCodes
     {
+        None        = 0,
+        OffQuote,
+        OffCrossQuote,
+        NoCrossSymbol
+    }
+
+    public interface ISymbolRate2 : Api.Quote
+    {
+        //string Symbol { get; }
+        bool HasBid { get; }
+        bool HasAsk { get; }
+        //double Bid { get; }
+        //double Ask { get; }
+    }
+
+    public interface IOrderCalcInfo
+    {
+        //int RangeId { get; }
+        //long AccountId { get; }
+        string Symbol { get; }
+        //string SymbolAlias { get; }
+        //int? SymbolPrecision { get; }
+        //long OrderId { get; }
+        //string ClientOrderId { get; }
+        //long? ParentOrderId { get; }
+        double? Price { get; }
+        //double? StopPrice { get; }
+        OrderSides Side { get; }
+        OrderTypes Type { get; }
+        //OrderTypes InitialType { get; }
+        ////OrderStatuses Status { get; }
+        //double Amount { get; }
+        double RemainingAmount { get; }
+        //double? MaxVisibleAmount { get; }
+        //DateTime Created { get; }
+        //DateTime? Modified { get; }
+        //DateTime? Filled { get; }
+        //DateTime? PositionCreated { get; }
+        //double? StopLoss { get; }
+        //double? TakeProfit { get; }
+        //double? Profit { get; }
+        //double? Margin { get; }
+        //double AggrFillPrice { get; }
+        //double AverageFillPrice { get; }
+        //double? TransferringCoefficient { get; }
+        //string UserComment { get; }
+        //string ManagerComment { get; }
+        //string UserTag { get; }
+        //string ManagerTag { get; }
+        //int Magic { get; }
+        double? Commission { get; }
+        //double? AgentCommision { get; }
+        double? Swap { get; }
+        //DateTime? Expired { get; }
+        //double? ClosePrice { get; }
+        //double? CurrentPrice { get; }
+        //double? MarginRateInitial { get; }
+        //double? MarginRateCurrent { get; }
+        //ActivationTypes Activation { get; }
+        //double? OpenConversionRate { get; }
+        //double? CloseConversionRate { get; }
+        //bool IsReducedOpenCommission { get; }
+        //bool IsReducedCloseCommission { get; }
+        //int Version { get; }
+        //OrderExecutionOptions Options { get; }
+        //CustomProperties Properties { get; }
+        //double? Taxes { get; }
+        //double? ReqOpenPrice { get; }
+        //double? ReqOpenAmount { get; }
+        //string ClientApp { get; }
+        //double? Slippage { get; }
         bool IsHidden { get; }
+    }
+
+    public interface IOrderModel2 : IOrderCalcInfo
+    {
         OrderCalculator Calculator { get; set; }
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         //event Action<OrderPropArgs<decimal>> PriceChanged;
-        event Action<OrderPropArgs<decimal>> SwapChanged;
-        event Action<OrderPropArgs<decimal>> CommissionChanged;
+        event Action<OrderPropArgs<double>> SwapChanged;
+        event Action<OrderPropArgs<double>> CommissionChanged;
+    }
+
+    public interface IPositionModel2
+    {
+        string Symbol { get; }
+        double Commission { get; }
+        double Swap { get; }
+        IPositionSide2 Long { get; } // buy
+        IPositionSide2 Short { get; } //sell
+        DateTime? Modified { get; }
+        OrderCalculator Calculator { get; set; }
+    }
+
+    public interface IPositionSide2
+    {
+        double Amount { get; }
+        double Price { get; }
+        double Margin { get; set; }
+        double Profit { get; set; }
     }
 
     public struct OrderEssentialsChangeArgs
     {
-        public OrderEssentialsChangeArgs(IOrderModel2 order, decimal oldRemAmount, decimal? oldPrice, OrderTypes oldType, bool oldIsHidden)
+        public OrderEssentialsChangeArgs(IOrderModel2 order, double oldRemAmount, double? oldPrice, OrderTypes oldType, bool oldIsHidden)
         {
             Order = order;
             OldRemAmount = oldRemAmount;
@@ -31,8 +125,8 @@ namespace TickTrader.Algo.Core.Calc
         }
 
         public IOrderModel2 Order { get; }
-        public decimal OldRemAmount { get; }
-        public decimal? OldPrice { get; }
+        public double OldRemAmount { get; }
+        public double? OldPrice { get; }
         public OrderTypes OldType { get; }
         public bool OldIsHidden { get; }
     }
@@ -53,14 +147,14 @@ namespace TickTrader.Algo.Core.Calc
 
     internal struct StatsChange
     {
-        public StatsChange(decimal margin, decimal equity)
+        public StatsChange(double margin, double equity)
         {
             MarginDelta = margin;
             ProfitDelta = equity;
         }
 
-        public decimal MarginDelta { get; }
-        public decimal ProfitDelta { get; }
+        public double MarginDelta { get; }
+        public double ProfitDelta { get; }
 
         public static StatsChange operator +(StatsChange c1, StatsChange c2)
         {
@@ -114,7 +208,7 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account balance.
         /// </summary>
-        decimal Balance { get; }
+        double Balance { get; }
 
         /// <summary>
         /// Account leverage.
@@ -134,7 +228,13 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Fired when position changed.
         /// </summary>
-        event Action<IPositionModel, PositionChageTypes> PositionChanged;
+        event Action<IPositionModel2, PositionChageTypes> PositionChanged;
+    }
+
+    public enum PositionChageTypes
+    {
+        AddedModified,
+        Removed
     }
 
     /// <summary>

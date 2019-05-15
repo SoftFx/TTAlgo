@@ -32,50 +32,64 @@ namespace TickTrader.Algo.Core.Calc
         public IMarginAccountInfo2 Info { get; }
         public bool IsCalculated => true;
         public int RoundingDigits { get; private set; }
-        public decimal Profit { get; private set; }
-        public decimal Equity => Info.Balance + Profit + Commission + Swap;
-        public decimal Margin { get; private set; }
-        public decimal MarginLevel => CalculateMarginLevel();
-        public decimal Commission { get; private set; }
+        public double Profit { get; private set; }
+        public double Equity => Info.Balance + Profit + Commission + Swap;
+        public double Margin { get; private set; }
+        public double MarginLevel => CalculateMarginLevel();
+        public double Commission { get; private set; }
         //public decimal AgentCommission { get; private set; }
-        public decimal Swap { get; private set; }
+        public double Swap { get; private set; }
 
         public void Dispose()
         {
             _market.CurrenciesChanged -= InitRounding;
         }
 
-        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order)
+        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, out CalcErrorCodes error)
         {
-            return HasSufficientMarginToOpenOrder(order, out _);
+            return HasSufficientMarginToOpenOrder(order, out _, out error);
         }
 
-        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, out decimal newAccountMargin)
+        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(order.Symbol);
             var calc = netting?.Calc ?? _market.GetCalculator(order.Symbol, Info.BalanceCurrency);
-            var orderMargin = calc.CalculateMargin(order.RemainingAmount, Info.Leverage, order.Type, order.Side, order.IsHidden);
-            return HasSufficientMarginToOpenOrder(orderMargin, netting, order.Side, out newAccountMargin);
+            using (calc.UsageScope())
+            {
+                var orderMargin = calc.CalculateMargin(order.RemainingAmount, Info.Leverage, order.Type, order.Side, order.IsHidden, out error);
+                if (netting == null)
+                    calc.RemoveUsage();
+                return HasSufficientMarginToOpenOrder(orderMargin, netting, order.Side, out newAccountMargin);
+            }
         }
 
-        public bool HasSufficientMarginToOpenOrder(decimal orderAmount, string symbol, OrderTypes type, OrderSides side, bool isHidden, out decimal newAccountMargin)
+        public bool HasSufficientMarginToOpenOrder(double orderAmount, string symbol, OrderTypes type, OrderSides side, bool isHidden,
+            out double newAccountMargin, out CalcErrorCodes error)
         {
             var netting = GetSymbolStats(symbol);
             var calc = netting?.Calc ?? _market.GetCalculator(symbol, Info.BalanceCurrency);
-            var orderMargin = calc.CalculateMargin(orderAmount, Info.Leverage, type, side, isHidden);
-            return HasSufficientMarginToOpenOrder(orderMargin, netting, side, out newAccountMargin);
+            using (calc.UsageScope())
+            {
+                var orderMargin = calc.CalculateMargin(orderAmount, Info.Leverage, type, side, isHidden, out error);
+                if (error != CalcErrorCodes.None)
+                {
+                    newAccountMargin = 0;
+                    return false;
+                }
+                return HasSufficientMarginToOpenOrder(orderMargin, netting, side, out newAccountMargin);
+            }
         }
 
-        public bool HasSufficientMarginToOpenOrder(decimal orderMargin, string symbol, OrderSides orderSide)
+        public bool HasSufficientMarginToOpenOrder(double orderMargin, string symbol, OrderSides orderSide)
         {
             var netting = GetSymbolStats(symbol);
             return HasSufficientMarginToOpenOrder(orderMargin, netting, orderSide, out _);
         }
 
-        public bool HasSufficientMarginToOpenOrder(decimal orderMargin, SymbolCalc netting, OrderSides orderSide, out decimal newAccountMargin)
+        public bool HasSufficientMarginToOpenOrder(double orderMargin, SymbolCalc netting, OrderSides orderSide, out double newAccountMargin)
         {
-            decimal smbMargin;
-            decimal newSmbMargin;
+            double smbMargin;
+            double newSmbMargin;
 
             if (netting == null)
             {
@@ -178,7 +192,7 @@ namespace TickTrader.Algo.Core.Calc
             RemoveIfEmpty(smbCalc);
         }
 
-        private void UpdateNetPos(IPositionModel position, PositionChageTypes chType)
+        private void UpdateNetPos(IPositionModel2 position, PositionChageTypes chType)
         {
             var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
             smbCalc.UpdatePosition(position, out var dSwap, out var dComm);
@@ -214,17 +228,17 @@ namespace TickTrader.Algo.Core.Calc
             Margin += args.MarginDelta;
         }
 
-        private void Order_SwapChanged(OrderPropArgs<decimal> args)
+        private void Order_SwapChanged(OrderPropArgs<double> args)
         {
             Swap += args.NewVal - args.OldVal;
         }
 
-        private void Order_CommissionChanged(OrderPropArgs<decimal> args)
+        private void Order_CommissionChanged(OrderPropArgs<double> args)
         {
             Commission += args.NewVal - args.OldVal;
         }
 
-        private decimal CalculateMarginLevel()
+        private double CalculateMarginLevel()
         {
             if (Margin > 0)
                 return 100 * Equity / Margin;

@@ -15,6 +15,8 @@ namespace TickTrader.Algo.Api
     {
         string Symbol { get; }
         DateTime Time { get; }
+        bool HasAsk { get; }
+        bool HasBid { get; }
         double Ask { get; }
         double AskHigh { get; }
         double AskLow { get; }

@@ -63,8 +63,8 @@ namespace TickTrader.Algo.Core
         {
             if (acc != null && acc.IsMarginType)
             {
-                Stats.InitialBalance = (decimal)settings.InitialBalance;
-                Stats.FinalBalance = (decimal)acc.Balance;
+                Stats.InitialBalance = settings.InitialBalance;
+                Stats.FinalBalance = acc.Balance;
                 Stats.AccBalanceDigits = acc.BalanceCurrencyInfo.Digits;
             }
 
@@ -267,7 +267,7 @@ namespace TickTrader.Algo.Core
 
         #region Stats collection
 
-        public void OnPositionClosed(DateTime timepoint, decimal profit, decimal comission, decimal swap)
+        public void OnPositionClosed(DateTime timepoint, double profit, double comission, double swap)
         {
             if (profit < 0)
             {
@@ -286,7 +286,7 @@ namespace TickTrader.Algo.Core
             Stats.TotalSwap += swap;
         }
 
-        public void OnCommisionCharged(decimal commission)
+        public void OnCommisionCharged(double commission)
         {
             Stats.TotalComission += commission;
         }

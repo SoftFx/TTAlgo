@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public double? RequestedVolume { get; set; }
+        public double RequestedVolume { get; set; }
         public double RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType InitialType { get; set; }

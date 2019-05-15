@@ -95,8 +95,14 @@
     <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Builder\SimplifiedBuilder.cs" />
+    <Compile Include="Calc\Conversion\ConversionManager.cs" />
+    <Compile Include="Calc\Conversion\FormulaBuilder.cs" />
+    <Compile Include="Calc\Conversion\Formula.cs" />
+    <Compile Include="Calc\Conversion\SymbolMarketInfo.cs" />
     <Compile Include="Calc\MarginAccountCalc.cs" />
     <Compile Include="Calc\Interfaces.cs" />
+    <Compile Include="Calc\MarketState.cs" />
+    <Compile Include="Calc\OrderCalculator.cs" />
     <Compile Include="Calc\OrderNetting.cs" />
     <Compile Include="Calc\SideCalc.cs" />
     <Compile Include="Calc\SymbolCalc.cs" />

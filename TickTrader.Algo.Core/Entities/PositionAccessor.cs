@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using BL = TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
 {
-    public class PositionAccessor : NetPosition, BL.IPositionModel
+    public class PositionAccessor : NetPosition, IPositionModel2
     {
         private readonly SideProxy _buy = new SideProxy();
         private readonly SideProxy _sell = new SideProxy();
@@ -49,17 +50,17 @@ namespace TickTrader.Algo.Core
         {
             if (entity.Side == OrderSide.Buy)
             {
-                _buy.Update((decimal)entity.Volume, (decimal)entity.Price);
+                _buy.Update(entity.Volume, entity.Price);
                 _sell.Update(0, 0);
             }
             else
             {
                 _buy.Update(0, 0);
-                _sell.Update((decimal)entity.Volume, (decimal)entity.Price);
+                _sell.Update(entity.Volume, entity.Price);
             }
 
             SettlementPrice = entity.SettlementPrice;
-            Swap = (decimal)entity.Swap;
+            Swap = entity.Swap;
             Commission = entity.Commission;
             Modified = entity.Modified;
             Id = entity.Id;
@@ -88,14 +89,14 @@ namespace TickTrader.Algo.Core
         public double Price => (double)(IsBuySided? _buy.Price : _sell.Price);
         public double SettlementPrice { get; internal set; }
         public OrderSide Side => IsBuySided ? OrderSide.Buy : OrderSide.Sell;
-        public decimal Swap { get; internal set; }
+        public double Swap { get; internal set; }
         public string Symbol => _symbol.Name;
         public double Margin => (double)(IsBuySided ? _buy.Margin : _sell.Margin);
         public double Profit => (double)(IsBuySided ? _buy.Profit : _sell.Profit);
         public DateTime? Modified { get; set; }
         public string Id { get; set; }
         public bool IsEmpty => VolumeUnits == 0;
-        public BL.OrderCalculator Calculator { get; set; }
+        public OrderCalculator Calculator { get; set; }
 
         public double VolumeUnits => (double)Math.Max(_buy.Amount, _sell.Amount);
         public SideProxy Long => _buy;
@@ -103,11 +104,11 @@ namespace TickTrader.Algo.Core
 
         double NetPosition.Swap => (double)Swap;
 
-        decimal BL.IPositionModel.Commission => (decimal)Commission;
-        decimal BL.IPositionModel.AgentCommission => 0;
-        decimal BL.IPositionModel.Swap => Swap;
-        BL.IPositionSide BL.IPositionModel.Long => _buy;
-        BL.IPositionSide BL.IPositionModel.Short => _sell;
+        //decimal IPositionModel.Commission => (decimal)Commission;
+        //decimal IPositionModel.AgentCommission => 0;
+        //decimal IPositionModel.Swap => Swap;
+        IPositionSide2 IPositionModel2.Long => _buy;
+        IPositionSide2 IPositionModel2.Short => _sell;
 
         internal event Action<PositionAccessor> Changed;
         internal event Action<PositionAccessor> Removed;
@@ -119,7 +120,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulator
 
-        internal void Increase(decimal amount, decimal price, OrderSide side)
+        internal void Increase(double amount, double price, OrderSide side)
         {
             if (side == OrderSide.Buy)
                 Long.Increase(amount, price);
@@ -129,19 +130,19 @@ namespace TickTrader.Algo.Core
             FireChanged();
         }
 
-        internal void DecreaseBothSides(decimal byAmount)
+        internal void DecreaseBothSides(double byAmount)
         {
             Long.Decrease(byAmount);
             Short.Decrease(byAmount);
             FireChanged();
         }
 
-        private static decimal CalculatePositionAvgPrice(BL.IPositionSide position, decimal price2, decimal amount2)
+        private static double CalculatePositionAvgPrice(IPositionSide2 position, double price2, double amount2)
         {
             return CalculatePositionAvgPrice(position.Price, position.Amount, price2, amount2);
         }
 
-        private static decimal CalculatePositionAvgPrice(decimal price1, decimal amount1, decimal price2, decimal amount2)
+        private static double CalculatePositionAvgPrice(double price1, double amount1, double price2, double amount2)
         {
             // some optimization
             if (amount1 == 0)
@@ -169,13 +170,13 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        public class SideProxy : BL.IPositionSide
+        public class SideProxy : IPositionSide2
         {
             public SideProxy()
             {
             }
 
-            internal void Update(decimal amount, decimal price)
+            internal void Update(double amount, double price)
             {
                 Amount = amount;
                 Price = price;
@@ -183,21 +184,21 @@ namespace TickTrader.Algo.Core
                 Margin = 0;
             }
 
-            internal void Increase(decimal amount, decimal price)
+            internal void Increase(double amount, double price)
             {
                 Price = CalculatePositionAvgPrice(this, price, amount);
                 Amount += amount;
             }
 
-            internal void Decrease(decimal byAmount)
+            internal void Decrease(double byAmount)
             {
                 Amount -= byAmount;
             }
 
-            public decimal Amount { get; private set; }
-            public decimal Price { get; private set; }
-            public decimal Margin { get; set; }
-            public decimal Profit { get; set; }
+            public double Amount { get; private set; }
+            public double Price { get; private set; }
+            public double Margin { get; set; }
+            public double Profit { get; set; }
         }
     }
 }

@@ -22,5 +22,16 @@ namespace TickTrader.Algo.Core.Lib
                 return defaultValue;
             return result;
         }
+
+        public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> collection, TKey key, Func<TValue> valueProvider)
+        {
+            TValue val;
+            if (!collection.TryGetValue(key, out val))
+            {
+                val = valueProvider();
+                collection.Add(key, val);
+            }
+            return val;
+        }
     }
 }
