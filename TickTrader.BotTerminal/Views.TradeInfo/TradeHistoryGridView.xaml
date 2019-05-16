@@ -54,7 +54,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Reason, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Reason: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Reason, Converter={StaticResource SplitString}}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Reason, Converter={StaticResource PascalSplitString}}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OpenQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Initial Volume: " VerticalAlignment="Center" />
@@ -104,7 +104,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type, Converter={StaticResource SplitString}}"/>
+                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
 
                     <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
 

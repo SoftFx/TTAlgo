@@ -21,7 +21,6 @@ namespace TickTrader.BotTerminal
 
         public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
 
-        [Flags]
         public enum OrderExecutionOptions { None = -1, IoC, MarketWithSlippage, HiddenIceberg }
 
         public TransactionReport() { }

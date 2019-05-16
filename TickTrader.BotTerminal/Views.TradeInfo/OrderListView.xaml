@@ -83,7 +83,7 @@
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
                     <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
                     <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType, Converter={StaticResource SplitString}}"/>
+                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType, Converter={StaticResource PascalSplitString}}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding ConverterParameter=" {0}/{1}" Converter="{StaticResource StringFormat}">
