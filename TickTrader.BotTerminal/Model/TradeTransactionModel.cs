@@ -21,6 +21,7 @@ namespace TickTrader.BotTerminal
 
         public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
 
+        [Flags]
         public enum OrderExecutionOptions { None = -1, IoC, MarketWithSlippage, HiddenIceberg }
 
         public TransactionReport() { }
@@ -62,13 +63,14 @@ namespace TickTrader.BotTerminal
             TakeProfit = GetTakeProfit(transaction);
             MaxVisibleVolume = GetMaxVisibleVolume(transaction);
             Volume = GetVolume(transaction);
-            ReqQauntity = GetReqQuantity(transaction);
+            ReqQuantity = GetReqQuantity(transaction);
             PosRemainingPrice = GetPosRemainingPrice(transaction);
             OrderExecutionOption = GetOrderExecutionOption(transaction);
             InitialType = GetInitialOrderType(transaction);
             Reason = GetReason(transaction);
             Slippage = GetSlippage(transaction);
             Tag = GetTag(transaction);
+            PosQuantity = GetPosQuantity(transaction);
 
             // should be last (it's based on other fields)
             long orderNum;
@@ -126,12 +128,13 @@ namespace TickTrader.BotTerminal
         public double LotSize { get; }
         public double? Volume { get; protected set; }
         public double? Slippage { get; protected set; }
-        public double? ReqQauntity { get; protected set; }
+        public double? ReqQuantity { get; protected set; }
         public double? PosRemainingPrice { get; protected set; }
         public string OrderExecutionOption { get; protected set; }
         public OrderType? InitialType { get; protected set; }
         public Reasons? Reason { get; protected set; }
         public string Tag { get; protected set; }
+        public double? PosQuantity { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -191,6 +194,11 @@ namespace TickTrader.BotTerminal
         }
 
         protected virtual double? GetRemainingQuantity(TradeReportEntity transaction)
+        {
+            return IsBalanceTransaction ? (double?)null : (transaction.LeavesQuantity / LotSize);
+        }
+
+        protected virtual double? GetPosQuantity(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? (double?)null : (transaction.PositionQuantity / LotSize);
         }
@@ -265,12 +273,12 @@ namespace TickTrader.BotTerminal
             if (IsBalanceTransaction)
                 return null;
 
-            return GetTransactionSide(transaction) == TransactionSide.Buy ? transaction.Price - transaction.ReqOpenPrice : transaction.ReqOpenPrice - transaction.Price;
+            return GetTransactionSide(transaction) == TransactionSide.Buy ? OpenPrice - transaction.ReqOpenPrice : transaction.ReqOpenPrice - OpenPrice;
         }
 
         protected virtual double? GetReqQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? null : (transaction.RemainingQuantity + transaction.OrderLastFillAmount / LotSize);
+            return IsBalanceTransaction ? null : ((transaction.RemainingQuantity + transaction.OrderLastFillAmount) / LotSize);
         }
 
         protected virtual double? GetPosRemainingPrice(TradeReportEntity transaction)
@@ -280,19 +288,19 @@ namespace TickTrader.BotTerminal
 
         protected virtual string GetOrderExecutionOption(TradeReportEntity transaction)
         {
-            List<string> options = new List<string>();
+            List<OrderExecutionOptions> options = new List<OrderExecutionOptions>();
 
             if (transaction.ImmediateOrCancel)
             {
                 Type = Type == AggregatedTransactionType.BuyLimit ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
-                options.Add(OrderExecutionOptions.IoC.ToString());
+                options.Add(OrderExecutionOptions.IoC);
             }
 
             if (transaction.MarketWithSlippage)
-                options.Add(OrderExecutionOptions.MarketWithSlippage.ToString());
+                options.Add(OrderExecutionOptions.MarketWithSlippage);
 
             if (transaction.MaxVisibleQuantity >= 0)
-                options.Add(OrderExecutionOptions.HiddenIceberg.ToString());
+                options.Add(OrderExecutionOptions.HiddenIceberg);
 
             return string.Join(",", options);
         }

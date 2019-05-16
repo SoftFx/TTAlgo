@@ -38,14 +38,14 @@
                     <Style TargetType="DataGridRow">
                         <Setter Property="ToolTipService.IsEnabled">
                             <Setter.Value>
-                                <MultiBinding Converter="{StaticResource NullOrEmptyToVis}" >
+                                <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
                                     <Binding Path="Reason"/>
                                     <Binding Path="OpenQuantity"/>
                                     <Binding Path="InitialType"/>
                                     <Binding Path="MaxVisibleVolume"/>
                                     <Binding Path="OrderExecutionOption"/>
                                     <Binding Path="PosRemainingPrice"/>
-                                    <Binding Path="RemainingQuantity"/>
+                                    <Binding Path="PosQuantity"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -83,9 +83,9 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding RemainingQuantity, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding PosQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Pos Volume: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding RemainingQuantity}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PosQuantity}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
