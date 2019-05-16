@@ -36,12 +36,25 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
+                        <Setter Property="ToolTipService.IsEnabled">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
+                                    <Binding Path="Reason"/>
+                                    <Binding Path="OpenQuantity"/>
+                                    <Binding Path="InitialType"/>
+                                    <Binding Path="MaxVisibleVolume"/>
+                                    <Binding Path="OrderExecutionOption"/>
+                                    <Binding Path="PosRemainingPrice"/>
+                                    <Binding Path="PosQuantity"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
                         <Setter Property="ToolTip">
                             <Setter.Value>
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Reason, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Reason: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Reason}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Reason, Converter={StaticResource PascalSplitString}}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OpenQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Initial Volume: " VerticalAlignment="Center" />
@@ -70,9 +83,9 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding RemainingQuantity, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding PosQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Pos Volume: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding RemainingQuantity}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PosQuantity}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
@@ -91,7 +104,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type}"/>
+                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
 
                     <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
 
@@ -173,7 +186,7 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Tag" Width="*" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
 
                     <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>

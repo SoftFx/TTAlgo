@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
     {
         private const int CleanUpDelay = 2000;
         private const string StorageDateTimeFormat = "dd-MM-yyyy HH:mm:ss";
-        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeLocal;
+        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -87,7 +87,7 @@ namespace TickTrader.BotTerminal
         }
 
         #region Properties
-        
+
         public TradeDirection TradeDirectionFilter
         {
             get { return _tradeDirectionFilter; }
@@ -361,7 +361,7 @@ namespace TickTrader.BotTerminal
 
         private void CalculateTimeBoundaries(out DateTime? from, out DateTime? to)
         {
-            var now = DateTime.Now; // fix time point
+            var now = DateTime.UtcNow; // fix time point
 
             switch (Period)
             {
@@ -378,12 +378,12 @@ namespace TickTrader.BotTerminal
                     to = null;
                     break;
                 case TimePeriod.CurrentMonth:
-                    from = new DateTime(now.Year, now.Month, 1);
+                    from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     to = null;
                     break;
                 case TimePeriod.PreviousMonth:
-                    from = new DateTime(now.Year, now.Month, 1).AddMonths(-1);
-                    to = new DateTime(now.Year, now.Month, 1);
+                    from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
+                    to = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     break;
                 case TimePeriod.Today:
                     from = now.Date;
@@ -449,7 +449,7 @@ namespace TickTrader.BotTerminal
         {
             int count = 0;
 
-            while(_tradesList.Count > 0)
+            while (_tradesList.Count > 0)
             {
                 if (++count % 400 == 0)
                     await Dispatcher.Yield(DispatcherPriority.DataBind);
@@ -488,11 +488,11 @@ namespace TickTrader.BotTerminal
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
             if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _from))
-                _from = DateTime.Now.Date;
+                _from = DateTime.UtcNow.Date;
 
             var toProp = _viewPropertyStorage.GetProperty(nameof(To));
             if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
-                _to = DateTime.Now.Date.AddDays(1);
+                _to = DateTime.UtcNow.Date.AddDays(1);
 
             NotifyOfPropertyChange(nameof(SkipCancel));
             NotifyOfPropertyChange(nameof(Period));
