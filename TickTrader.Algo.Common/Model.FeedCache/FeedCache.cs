@@ -374,7 +374,7 @@ namespace TickTrader.Algo.Common.Model
             ISeriesStorage<DateTime> collection;
 
             if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.ToCodeString(), true);
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.ToCodeString(), true);
             else
                 collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.ToCodeString(), false);
 
