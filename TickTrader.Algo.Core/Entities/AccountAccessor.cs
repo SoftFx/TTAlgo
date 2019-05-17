@@ -327,7 +327,7 @@ namespace TickTrader.Algo.Core
 
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.HasEnoughMarginToOpenOrder(symbol, amount, type, side, OrderEntity.IsHiddenOrder(maxVisibleVolume));
+                return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side, price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
             return false;
         }

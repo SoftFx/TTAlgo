@@ -26,6 +26,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public double Margin { get; private set; }
         public double Profit { get; private set; }
+        public int ErrorCount { get; private set; }
 
         public IMarginAccountInfo2 AccountData { get; }
         public OrderCalculator Calculator { get; internal set; }
@@ -39,6 +40,9 @@ namespace TickTrader.Algo.Core.Calc
         {
             var oldMargin = Margin;
             var oldProfit = Profit;
+            var oldErros = ErrorCount;
+
+            ErrorCount = 0;
 
             if (IsEmpty)
             {
@@ -48,17 +52,25 @@ namespace TickTrader.Algo.Core.Calc
             else
             {
                 if (MarginAmount > 0)
+                {
                     Margin = Calculator.CalculateMargin(MarginAmount, AccountData.Leverage, Type, Side, IsHidden, out var error);
+                    if (error != CalcErrorCodes.None)
+                        ErrorCount++;
+                }
                 else
                     Margin = 0;
 
                 if (ProfitAmount > 0)
+                {
                     Profit = Calculator.CalculateProfit(WeightedAveragePrice, ProfitAmount, Side, out var error);
+                    if (error != CalcErrorCodes.None)
+                        ErrorCount++;
+                }
                 else
                     Profit = 0;
             }
 
-            return new StatsChange(Margin - oldMargin, Profit - oldProfit);
+            return new StatsChange(Margin - oldMargin, Profit - oldProfit, ErrorCount - oldErros);
         }
 
         public StatsChange AddOrder(double remAmount, double? price)

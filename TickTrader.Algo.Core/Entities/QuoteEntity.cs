@@ -10,7 +10,7 @@ using TickTrader.Common.Business;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class QuoteEntity : Api.Quote, ISymbolRate, RateUpdate, ISymbolRate2
+    public class QuoteEntity : Api.Quote, ISymbolRate, RateUpdate
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 

@@ -592,7 +592,7 @@ namespace TickTrader.Algo.Core
 
             var isHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
 
-            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol.Name, request.Volume, request.Type, request.Side, isHidden))
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 

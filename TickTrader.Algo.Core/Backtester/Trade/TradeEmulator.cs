@@ -1169,7 +1169,7 @@ namespace TickTrader.Algo.Core
             //position.Status = OrderStatuses.Calculated;
             //position.Entity.Price = (double)openPrice; // position open price
 
-            position.ChangeEssentials(OrderType.Position, posAmount, openPrice);
+            position.ChangeEssentials(OrderType.Position, posAmount, openPrice, null);
 
             // stop price for stops
             //if ((parentOrder != null) && (parentOrder.InitialType == OrderTypes.StopLimit || parentOrder.InitialType == OrderTypes.Stop))

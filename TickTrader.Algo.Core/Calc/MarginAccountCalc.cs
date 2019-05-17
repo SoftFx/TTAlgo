@@ -12,11 +12,14 @@ namespace TickTrader.Algo.Core.Calc
     {
         private readonly MarketState _market;
         private readonly IDictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
+        private int _errorCount;
+        private bool _autoUpdate;
 
-        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketState market)
+        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketState market, bool autoUpdate = false)
         {
             Info = accInfo;
             _market = market;
+            _autoUpdate = autoUpdate;
 
             _market.CurrenciesChanged += InitRounding;
             InitRounding();
@@ -30,7 +33,7 @@ namespace TickTrader.Algo.Core.Calc
         }
 
         public IMarginAccountInfo2 Info { get; }
-        public bool IsCalculated => true;
+        public bool IsCalculated => _errorCount <= 0;
         public int RoundingDigits { get; private set; }
         public double Profit { get; private set; }
         public double Equity => Info.Balance + Profit + Commission + Swap;
@@ -43,6 +46,11 @@ namespace TickTrader.Algo.Core.Calc
         public void Dispose()
         {
             _market.CurrenciesChanged -= InitRounding;
+
+            foreach (var smbCalc in _bySymbolMap.Values)
+                DisposeCalc(smbCalc);
+
+            _bySymbolMap.Clear();
         }
 
         public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, out CalcErrorCodes error)
@@ -142,15 +150,15 @@ namespace TickTrader.Algo.Core.Calc
             return calc;
         }
 
-        public void EnableAutoUpdate()
-        {
-            _market.RateChanged += a =>
-            {
-                var smbCalc = GetSymbolStats(a.Symbol);
-                if (smbCalc != null)
-                    smbCalc.Recalculate();
-            };
-        }
+        //public void EnableAutoUpdate()
+        //{
+        //    _market.RateChanged += a =>
+        //    {
+        //        var smbCalc = GetSymbolStats(a.Symbol);
+        //        if (smbCalc != null)
+        //            smbCalc.Recalculate();
+        //    };
+        //}
 
         private void AddOrder(IOrderModel2 order)
         {
@@ -204,10 +212,15 @@ namespace TickTrader.Algo.Core.Calc
         {
             if (calc.IsEmpty)
             {
-                calc.StatsChanged -= Calc_StatsChanged;
                 _bySymbolMap.Remove(calc.Symbol);
-                //netting.Dispose();
+                DisposeCalc(calc);
             }
+        }
+
+        private void DisposeCalc(SymbolCalc calc)
+        {
+            calc.StatsChanged -= Calc_StatsChanged;
+            calc.Dispose();
         }
 
         private SymbolCalc GetOrAddSymbolCalculator(string symbol)
@@ -215,7 +228,7 @@ namespace TickTrader.Algo.Core.Calc
             SymbolCalc calc;
             if (!_bySymbolMap.TryGetValue(symbol, out calc))
             {
-                calc = new SymbolCalc(symbol, Info, _market);
+                calc = new SymbolCalc(symbol, Info, _market, _autoUpdate);
                 calc.StatsChanged += Calc_StatsChanged;
                 _bySymbolMap.Add(symbol, calc);
             }
@@ -226,6 +239,7 @@ namespace TickTrader.Algo.Core.Calc
         {
             Profit += args.ProfitDelta;
             Margin += args.MarginDelta;
+            _errorCount += args.ErrorDelta;
         }
 
         private void Order_SwapChanged(OrderPropArgs<double> args)

@@ -95,6 +95,7 @@
     <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
     <Compile Include="Builder\SimplifiedBuilder.cs" />
+    <Compile Include="Calc\CashAccountCalculator.cs" />
     <Compile Include="Calc\Conversion\ConversionManager.cs" />
     <Compile Include="Calc\Conversion\FormulaBuilder.cs" />
     <Compile Include="Calc\Conversion\Formula.cs" />

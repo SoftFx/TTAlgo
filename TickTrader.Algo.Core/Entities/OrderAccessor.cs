@@ -42,11 +42,12 @@ namespace TickTrader.Algo.Core
         internal void Update(OrderEntity entity)
         {
             var oldPrice = _entity.Price;
+            var oldStopPrice = _entity.StopPrice;
             var oldVol = _entity.RemainingVolume;
             var oldType = _entity.GetBlOrderType();
             var oldIsHidden = _entity.IsHidden;
             _entity = entity;
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldVol, oldPrice, oldType, oldIsHidden));
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldVol, oldPrice, oldStopPrice, oldType, oldIsHidden));
         }
 
         public OrderEntity Entity => _entity;
@@ -119,6 +120,7 @@ namespace TickTrader.Algo.Core
             }
         }
         public OrderExecOptions Options => _entity.Options;
+        public decimal CashMargin { get; set; }
 
         public bool IsPending => Type == OrderType.Limit || Type == OrderType.StopLimit || Type == OrderType.Stop;
 
@@ -129,6 +131,8 @@ namespace TickTrader.Algo.Core
         public double RemainingAmount => _entity.RemainingVolume;
         bool IOrderCalcInfo.IsHidden => Entity.IsHidden;
         double? IOrderCalcInfo.Price => Entity.Price;
+        double? IOrderCalcInfo.StopPrice => Entity.StopPrice;
+        SymbolAccessor IOrderModel2.SymbolInfo => _symbol;
         BO.OrderSides IOrderCalcInfo.Side => Entity.GetBlOrderSide();
         BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
 
@@ -205,20 +209,22 @@ namespace TickTrader.Algo.Core
         {
             var oldAmount = Entity.RemainingVolume;
             Entity.RemainingVolume = newAmount;
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, Entity.GetBlOrderType(), false));
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, StopPrice, Entity.GetBlOrderType(), false));
         }
 
-        internal void ChangeEssentials(OrderType newType, double newAmount, double? newPrice)
+        internal void ChangeEssentials(OrderType newType, double newAmount, double? newPrice, double? newStopPirce)
         {
             var oldPrice = Entity.Price;
             var oldType = Entity.GetBlOrderType();
             var oldAmount = Entity.RemainingVolume;
+            var oldStopPrice = Entity.StopPrice;
 
             Entity.Type = newType;
             Entity.RemainingVolume = newAmount;
             Entity.Price = newPrice;
+            Entity.StopPrice = newStopPirce;
 
-            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldType, false));
+            EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, oldPrice, oldStopPrice, oldType, false));
         }
 
         //internal void FireChanged()

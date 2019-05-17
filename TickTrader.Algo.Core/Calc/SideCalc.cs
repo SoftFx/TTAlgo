@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public StatsChange Recalculate()
         {
-            var result = new StatsChange(0, 0);
+            var result = new StatsChange(0, 0, 0);
 
             if (!_positions.IsEmpty)
                 result += _positions.Recalculate();

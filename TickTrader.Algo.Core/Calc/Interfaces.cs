@@ -16,15 +16,6 @@ namespace TickTrader.Algo.Core.Calc
         NoCrossSymbol
     }
 
-    public interface ISymbolRate2 : Api.Quote
-    {
-        //string Symbol { get; }
-        bool HasBid { get; }
-        bool HasAsk { get; }
-        //double Bid { get; }
-        //double Ask { get; }
-    }
-
     public interface IOrderCalcInfo
     {
         //int RangeId { get; }
@@ -36,7 +27,7 @@ namespace TickTrader.Algo.Core.Calc
         //string ClientOrderId { get; }
         //long? ParentOrderId { get; }
         double? Price { get; }
-        //double? StopPrice { get; }
+        double? StopPrice { get; }
         OrderSides Side { get; }
         OrderTypes Type { get; }
         //OrderTypes InitialType { get; }
@@ -88,6 +79,9 @@ namespace TickTrader.Algo.Core.Calc
     {
         OrderCalculator Calculator { get; set; }
 
+        decimal CashMargin { get; set; }
+        SymbolAccessor SymbolInfo { get; }
+
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         //event Action<OrderPropArgs<decimal>> PriceChanged;
         event Action<OrderPropArgs<double>> SwapChanged;
@@ -115,11 +109,12 @@ namespace TickTrader.Algo.Core.Calc
 
     public struct OrderEssentialsChangeArgs
     {
-        public OrderEssentialsChangeArgs(IOrderModel2 order, double oldRemAmount, double? oldPrice, OrderTypes oldType, bool oldIsHidden)
+        public OrderEssentialsChangeArgs(IOrderModel2 order, double oldRemAmount, double? oldPrice, double? oldStopPrice, OrderTypes oldType, bool oldIsHidden)
         {
             Order = order;
             OldRemAmount = oldRemAmount;
             OldPrice = oldPrice;
+            OldStopPrice = oldStopPrice;
             OldType = oldType;
             OldIsHidden = oldIsHidden;
         }
@@ -127,6 +122,7 @@ namespace TickTrader.Algo.Core.Calc
         public IOrderModel2 Order { get; }
         public double OldRemAmount { get; }
         public double? OldPrice { get; }
+        public double? OldStopPrice { get; }
         public OrderTypes OldType { get; }
         public bool OldIsHidden { get; }
     }
@@ -147,18 +143,20 @@ namespace TickTrader.Algo.Core.Calc
 
     internal struct StatsChange
     {
-        public StatsChange(double margin, double equity)
+        public StatsChange(double margin, double equity, int errorDelta)
         {
             MarginDelta = margin;
             ProfitDelta = equity;
+            ErrorDelta = errorDelta;
         }
 
+        public int ErrorDelta { get; }
         public double MarginDelta { get; }
         public double ProfitDelta { get; }
 
         public static StatsChange operator +(StatsChange c1, StatsChange c2)
         {
-            return new StatsChange(c1.MarginDelta + c2.MarginDelta, c1.ProfitDelta + c2.ProfitDelta);
+            return new StatsChange(c1.MarginDelta + c2.MarginDelta, c1.ProfitDelta + c2.ProfitDelta, c1.ErrorDelta + c2.ErrorDelta);
         }
     }
 

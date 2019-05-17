@@ -21,16 +21,6 @@ namespace TickTrader.Algo.Core
             return rate.HasBid ? rate.Bid : (double?)null;
         }
 
-        public static double? NullableAsk(this ISymbolRate2 rate)
-        {
-            return rate.HasAsk ? rate.Ask : (double?)null;
-        }
-
-        public static double? NullableBid(this ISymbolRate2 rate)
-        {
-            return rate.HasBid ? rate.Bid : (double?)null;
-        }
-
         public static double? DoubleNullableAsk(this RateUpdate rate)
         {
             return rate.Ask.GetNanAware();

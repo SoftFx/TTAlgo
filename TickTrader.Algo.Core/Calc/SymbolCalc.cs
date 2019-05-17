@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Calc.Conversion;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 
@@ -16,7 +17,7 @@ namespace TickTrader.Algo.Core.Calc
         private double _netPosSwap;
         private double _netPosComm;
 
-        public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketState market)
+        public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketState market, bool autoUpdate)
         {
             Symbol = symbol;
             _market = market;
@@ -24,8 +25,15 @@ namespace TickTrader.Algo.Core.Calc
             Buy = new SideCalc(this, OrderSides.Buy);
             Sell = new SideCalc(this, OrderSides.Sell);
             CreateCalculator();
+
+            if (autoUpdate)
+            {
+                Tracker = market.GetSymbolNodeOrNull(Symbol) ?? throw new Exception("Market state lacks symbol:" + Symbol);
+                Tracker.Changed += Recalculate;
+            }
         }
 
+        internal SymbolMarketInfo Tracker { get; }
         public IMarginAccountInfo2 AccInfo { get; }
         //public int Count { get; private set; }
         public bool IsEmpty => Sell.IsEmpty && Buy.IsEmpty; // Count <= 0;
@@ -97,6 +105,8 @@ namespace TickTrader.Algo.Core.Calc
         {
             _calc?.RemoveUsage();
             _calc = null;
+            if (Tracker != null)
+                Tracker.Changed -= Recalculate;
         }
 
         private SideCalc GetSideCalc(IOrderModel2 order)
@@ -139,7 +149,7 @@ namespace TickTrader.Algo.Core.Calc
             var oldMargin = Margin;
             UpdateMargin();
             var delta = Margin - oldMargin;
-            StatsChanged.Invoke(new StatsChange(delta, args.ProfitDelta));
+            StatsChanged.Invoke(new StatsChange(delta, args.ProfitDelta, args.ErrorDelta));
         }
 
         //private void AddOrder(IOrderModel2 order, SideCalc side)
@@ -163,6 +173,11 @@ namespace TickTrader.Algo.Core.Calc
 
             Buy.SetCalculator(_calc);
             Sell.SetCalculator(_calc);
+        }
+
+        private void Tracker_Changed()
+        {
+            Recalculate();
         }
     }
 }
