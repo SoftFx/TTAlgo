@@ -59,8 +59,6 @@ namespace TickTrader.BotTerminal
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
             _profileManager = profileManager;
-            _to = DateTime.SpecifyKind(_to, DateTimeKind.Utc);
-            _from = DateTime.SpecifyKind(_from, DateTimeKind.Utc);
 
             _tradesList = new ObservableCollection<TransactionReport>();
             GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
@@ -489,15 +487,12 @@ namespace TickTrader.BotTerminal
                 _period = TimePeriod.LastHour;
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
-            if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _from))
+            if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle | DateTimeStyles.AdjustToUniversal, out _from))
                 _from = DateTime.UtcNow.Date;
 
             var toProp = _viewPropertyStorage.GetProperty(nameof(To));
-            if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
+            if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle | DateTimeStyles.AdjustToUniversal, out _to))
                 _to = DateTime.UtcNow.Date.AddDays(1);
-
-            _from = _from.ToUniversalTime();
-            _to = _to.ToUniversalTime();
 
             NotifyOfPropertyChange(nameof(SkipCancel));
             NotifyOfPropertyChange(nameof(Period));
