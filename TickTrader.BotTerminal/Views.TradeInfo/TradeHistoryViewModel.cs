@@ -59,6 +59,8 @@ namespace TickTrader.BotTerminal
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
             _profileManager = profileManager;
+            _to = DateTime.SpecifyKind(_to, DateTimeKind.Utc);
+            _from = DateTime.SpecifyKind(_from, DateTimeKind.Utc);
 
             _tradesList = new ObservableCollection<TransactionReport>();
             GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
@@ -456,7 +458,7 @@ namespace TickTrader.BotTerminal
 
                 var lastIndex = _tradesList.Count - 1;
 
-                if (_tradesList[lastIndex].CloseTime.ToLocalTime() >= from)
+                if (_tradesList[lastIndex].CloseTime.ToUniversalTime() >= from)
                     break;
 
                 _tradesList.RemoveAt(lastIndex);
@@ -493,6 +495,9 @@ namespace TickTrader.BotTerminal
             var toProp = _viewPropertyStorage.GetProperty(nameof(To));
             if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
                 _to = DateTime.UtcNow.Date.AddDays(1);
+
+            _from = _from.ToUniversalTime();
+            _to = _to.ToUniversalTime();
 
             NotifyOfPropertyChange(nameof(SkipCancel));
             NotifyOfPropertyChange(nameof(Period));
