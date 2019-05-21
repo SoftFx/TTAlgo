@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
     {
         private const int CleanUpDelay = 2000;
         private const string StorageDateTimeFormat = "dd-MM-yyyy HH:mm:ss";
-        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal;
+        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -456,7 +456,7 @@ namespace TickTrader.BotTerminal
 
                 var lastIndex = _tradesList.Count - 1;
 
-                if (_tradesList[lastIndex].CloseTime.ToLocalTime() >= from)
+                if (_tradesList[lastIndex].CloseTime.ToUniversalTime() >= from)
                     break;
 
                 _tradesList.RemoveAt(lastIndex);

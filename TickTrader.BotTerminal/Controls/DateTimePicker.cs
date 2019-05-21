@@ -349,9 +349,7 @@ namespace TickTrader.BotTerminal
 
         private DateTime? ParseDateTimeText(string value, string format, bool flexible = true)
         {
-            DateTime datetime;
-
-            if (!DateTime.TryParseExact(value, format, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out datetime))
+            if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTime datetime))
                 //if (!DateTime.TryParse(value, out datetime))
                 return null;
 
