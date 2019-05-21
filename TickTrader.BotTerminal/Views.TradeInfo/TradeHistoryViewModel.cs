@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
     {
         private const int CleanUpDelay = 2000;
         private const string StorageDateTimeFormat = "dd-MM-yyyy HH:mm:ss";
-        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal;
+        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -487,11 +487,11 @@ namespace TickTrader.BotTerminal
                 _period = TimePeriod.LastHour;
 
             var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
-            if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle | DateTimeStyles.AdjustToUniversal, out _from))
+            if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _from))
                 _from = DateTime.UtcNow.Date;
 
             var toProp = _viewPropertyStorage.GetProperty(nameof(To));
-            if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle | DateTimeStyles.AdjustToUniversal, out _to))
+            if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
                 _to = DateTime.UtcNow.Date.AddDays(1);
 
             NotifyOfPropertyChange(nameof(SkipCancel));
