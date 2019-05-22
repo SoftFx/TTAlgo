@@ -334,7 +334,7 @@ namespace TickTrader.BotTerminal
                 transaction.ReqOrderType == OrderType.Limit)
                 Type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
                 return Reasons.Activated;
 
