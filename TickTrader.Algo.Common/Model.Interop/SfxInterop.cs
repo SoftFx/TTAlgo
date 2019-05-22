@@ -871,6 +871,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.CloseOnlyTrading;
                             else if (message == "Max visible amount is not valid for market orders")
                                 return Api.OrderCmdResultCodes.MarketWithMaxVisibleVolume;
+                            else if (message.StartsWith("Order Not Found"))
+                                return Api.OrderCmdResultCodes.OrderNotFound;
                         }
                         break;
                     }
