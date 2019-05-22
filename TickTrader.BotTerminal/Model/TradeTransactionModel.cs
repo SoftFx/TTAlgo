@@ -312,27 +312,27 @@ namespace TickTrader.BotTerminal
         protected virtual Reasons? GetReason(TradeReportEntity transaction)
         {
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.ClientRequest)
-                Type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision)
             {
-                Type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                Type = GetBuyOrSellType(transaction);
                 return Reasons.DealerDecision;
             }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
             {
-                Type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                Type = GetBuyOrSellType(transaction);
                 return Reasons.StopOut;
             }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
                 transaction.ReqOrderType == OrderType.Stop)
-                Type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
                 transaction.ReqOrderType == OrderType.Limit)
-                Type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
@@ -360,6 +360,11 @@ namespace TickTrader.BotTerminal
             }
 
             return null;
+        }
+
+        protected AggregatedTransactionType GetBuyOrSellType(TradeReportEntity transaction)
+        {
+            return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
         }
 
         protected AggregatedTransactionType GetCanceledType(TradeReportEntity transaction)
