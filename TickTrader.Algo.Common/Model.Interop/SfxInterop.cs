@@ -851,22 +851,27 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
                 case RejectReason.Other:
                     {
-                        if (message == "Trade Not Allowed")
-                            return Api.OrderCmdResultCodes.TradeNotAllowed;
-                        else if (message != null && message.StartsWith("Not Enough Money"))
-                            return Api.OrderCmdResultCodes.NotEnoughMoney;
-                        else if (message != null && message.StartsWith("Rejected By Dealer"))
-                            return Api.OrderCmdResultCodes.DealerReject;
-                        else if (message != null && message.StartsWith("Dealer") && message.EndsWith("did not respond."))
-                            return Api.OrderCmdResultCodes.DealingTimeout;
-                        else if (message != null && message.Contains("locked by another operation"))
-                            return Api.OrderCmdResultCodes.OrderLocked;
-                        else if (message != null && message.Contains("Invalid expiration"))
-                            return Api.OrderCmdResultCodes.IncorrectExpiration;
-                        else if (message != null && message.StartsWith("Price precision"))
-                            return Api.OrderCmdResultCodes.IncorrectPricePrecision;
-                        else if (message != null && message.EndsWith("because close-only mode on"))
-                            return Api.OrderCmdResultCodes.CloseOnlyTrading;
+                        if (message != null)
+                        {
+                            if (message == "Trade Not Allowed")
+                                return Api.OrderCmdResultCodes.TradeNotAllowed;
+                            else if (message.StartsWith("Not Enough Money"))
+                                return Api.OrderCmdResultCodes.NotEnoughMoney;
+                            else if (message.StartsWith("Rejected By Dealer"))
+                                return Api.OrderCmdResultCodes.DealerReject;
+                            else if (message.StartsWith("Dealer") && message.EndsWith("did not respond."))
+                                return Api.OrderCmdResultCodes.DealingTimeout;
+                            else if (message.Contains("locked by another operation"))
+                                return Api.OrderCmdResultCodes.OrderLocked;
+                            else if (message.Contains("Invalid expiration"))
+                                return Api.OrderCmdResultCodes.IncorrectExpiration;
+                            else if (message.StartsWith("Price precision"))
+                                return Api.OrderCmdResultCodes.IncorrectPricePrecision;
+                            else if (message.EndsWith("because close-only mode on"))
+                                return Api.OrderCmdResultCodes.CloseOnlyTrading;
+                            else if (message == "Max visible amount is not valid for market orders")
+                                return Api.OrderCmdResultCodes.MarketWithMaxVisibleVolume;
+                        }
                         break;
                     }
                 case RejectReason.None:
