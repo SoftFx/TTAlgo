@@ -462,10 +462,10 @@ namespace TickTrader.Algo.Core
 
         private void ValidateMaxVisibleVolume(double? volume, bool allowed = true)
         {
-            if (!volume.HasValue || !allowed)
+            if (!volume.HasValue)
                 return;
 
-            if (volume < 0 || IsInvalidValue(volume.Value))
+            if (!allowed || volume < 0 || IsInvalidValue(volume.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
         }
 
