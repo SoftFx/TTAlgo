@@ -110,6 +110,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuoteStore", "modules\FDK2\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeCapture", "modules\FDK2\modules\sfx\DotNet\TradeCapture\TradeCapture.csproj", "{451E16C9-DDEC-4ADD-B5CF-C34546647475}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotAgent.Configurator", "TickTrader.BotAgent.Configurator\TickTrader.BotAgent.Configurator.csproj", "{55E667BC-D245-4CAD-9FDC-79BA2438F709}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -574,6 +576,18 @@ Global
 		{451E16C9-DDEC-4ADD-B5CF-C34546647475}.Release|x64.Build.0 = Release|Any CPU
 		{451E16C9-DDEC-4ADD-B5CF-C34546647475}.Release|x86.ActiveCfg = Release|Any CPU
 		{451E16C9-DDEC-4ADD-B5CF-C34546647475}.Release|x86.Build.0 = Release|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Debug|x64.Build.0 = Debug|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Debug|x86.Build.0 = Debug|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x64.ActiveCfg = Release|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x64.Build.0 = Release|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x86.ActiveCfg = Release|Any CPU
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -619,6 +633,7 @@ Global
 		{451E16C9-DDEC-4ADD-B5CF-E04C96095675} = {F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}
 		{451E16C9-DDEC-4ADD-B5CF-E03498347475} = {F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}
 		{451E16C9-DDEC-4ADD-B5CF-C34546647475} = {F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}
+		{55E667BC-D245-4CAD-9FDC-79BA2438F709} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}
