@@ -176,7 +176,7 @@ namespace TickTrader.BotTerminal
 
             orderNum = long.Parse(transaction.OrderId);
 
-            if (hasMultipleRecords && !OrderWasCanceled())
+            if (hasMultipleRecords && !OrderWasCanceled() && Reason != Reasons.Activated)
                 return new TradeReportKey(orderNum, transaction.ActionId);
             else
                 return new TradeReportKey(orderNum, null);
@@ -311,13 +311,30 @@ namespace TickTrader.BotTerminal
 
         protected virtual Reasons? GetReason(TradeReportEntity transaction)
         {
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.ClientRequest)
+                Type = GetBuyOrSellType(transaction);
+
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision)
+            {
+                Type = GetBuyOrSellType(transaction);
                 return Reasons.DealerDecision;
+            }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
+            {
+                Type = GetBuyOrSellType(transaction);
                 return Reasons.StopOut;
+            }
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
+                transaction.ReqOrderType == OrderType.Stop)
+                Type = GetBuyOrSellType(transaction);
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
+                transaction.ReqOrderType == OrderType.Limit)
+                Type = GetBuyOrSellType(transaction);
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
                 return Reasons.Activated;
 
@@ -343,6 +360,11 @@ namespace TickTrader.BotTerminal
             }
 
             return null;
+        }
+
+        protected AggregatedTransactionType GetBuyOrSellType(TradeReportEntity transaction)
+        {
+            return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
         }
 
         protected AggregatedTransactionType GetCanceledType(TradeReportEntity transaction)
@@ -378,9 +400,16 @@ namespace TickTrader.BotTerminal
         public NetTransactionModel(TradeReportEntity transaction, SymbolModel model) : base(transaction, model) { }
         protected override double? GetOpenPrice(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ?
-                (double?)null : transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit ?
-                transaction.StopPrice : transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
+            if (IsBalanceTransaction)
+                return null;
+
+            if (transaction.TradeRecordType == OrderType.Stop)
+                return transaction.OrderFillPrice;
+
+            if (transaction.TradeRecordType == OrderType.StopLimit)
+                return transaction.StopPrice;
+
+            return transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
         }
     }
 

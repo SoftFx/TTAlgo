@@ -128,7 +128,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Req Volume" Width="*" Binding="{Binding ReqQauntity}" Visibility="{Binding Visibility, Source={StaticResource ReqVolumeShow}}"/>
+                    <DataGridTextColumn Header="Req Volume" Width="*" Binding="{Binding ReqQuantity}" Visibility="{Binding Visibility, Source={StaticResource ReqVolumeShow}}"/>
 
                     <DataGridTextColumn Header="Pos Close Price" Width="*" SortMemberPath="ClosePrice" Visibility="{Binding Visibility, Source={StaticResource PosClosePriceShow}}">
                         <DataGridTextColumn.Binding>

@@ -56,5 +56,6 @@ namespace TickTrader.Algo.Api
         OrderLocked         = 117,
         IncorrectPricePrecision = 118,
         CloseOnlyTrading = 119,
+        MarketWithMaxVisibleVolume = 120,
     }
 }
