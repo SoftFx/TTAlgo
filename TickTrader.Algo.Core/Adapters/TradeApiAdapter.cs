@@ -95,7 +95,7 @@ namespace TickTrader.Algo.Core
                 ValidatePrice(price, orderType == OrderType.Limit || orderType == OrderType.StopLimit);
                 ValidateStopPrice(stopPrice, orderType == OrderType.Stop || orderType == OrderType.StopLimit);
                 ValidateVolume(volume);
-                ValidateMaxVisibleVolume(maxVisibleVolume);
+                ValidateMaxVisibleVolume(maxVisibleVolume, orderType != OrderType.Market && orderType != OrderType.Position);
                 ValidateTp(tp);
                 ValidateSl(sl);
 
@@ -460,9 +460,9 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
         }
 
-        private void ValidateMaxVisibleVolume(double? volume)
+        private void ValidateMaxVisibleVolume(double? volume, bool allowed = true)
         {
-            if (!volume.HasValue)
+            if (!volume.HasValue || !allowed)
                 return;
 
             if (volume < 0 || IsInvalidValue(volume.Value))
