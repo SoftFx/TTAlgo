@@ -8,9 +8,13 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ConfigurationModel
     {
+        private RegistryManager _registryManager;
+
         public ConfigurationModel()
         {
+            _registryManager = new RegistryManager();
 
+            _registryManager.FindAllPathApplication();
         }
     }
 }
