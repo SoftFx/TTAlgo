@@ -17,7 +17,6 @@ namespace TickTrader.BotTerminal
         private ObjectPersistController<ProfileStorageModel> _storageController;
         private bool _isSaving;
 
-
         public string Server { get; private set; }
 
         public string Login { get; private set; }
@@ -27,7 +26,6 @@ namespace TickTrader.BotTerminal
         public string CurrentProfilePath => Path.Combine(EnvService.Instance.ProfilesCacheFolder, CurrentProfileFileName);
 
         public ProfileStorageModel CurrentProfile => _storageController.Value;
-
 
         public event Action ProfileUpdated;
         public Action<ProfileStorageModel> SaveProfileSnapshot = delegate { };

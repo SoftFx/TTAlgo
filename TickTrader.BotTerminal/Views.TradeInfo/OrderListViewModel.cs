@@ -15,7 +15,10 @@ namespace TickTrader.BotTerminal
 {
     class OrderListViewModel : AccountBasedViewModel
     {
-        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
+        private ProfileManager _profileManager;
+        private bool _isBacktester;
+
+        public OrderListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Orders = model.Orders
@@ -24,15 +27,29 @@ namespace TickTrader.BotTerminal
                 .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol)))
                 .AsObservable();
 
+            _profileManager = profile;
+            _isBacktester = isBacktester;
+
             Orders.CollectionChanged += OrdersCollectionChanged;
             Account.AccountTypeChanged += () => NotifyOfPropertyChange(nameof(IsGrossAccount));
-            Account.AccountTypeChanged += () => NotifyOfPropertyChange(nameof(IsNetAccount));
+
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
 
+        public ViewModelStorageEntry StateProvider { get; private set; }
         public IObservableList<OrderViewModel> Orders { get; private set; }
         public bool IsGrossAccount => Account.Type == AccountTypes.Gross;
+        public bool AutoSizeColumns { get; set; }
 
-        public bool IsNetAccount => Account.Type == AccountTypes.Net;
+        private void UpdateProvider()
+        {
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.OrdersBacktester : ViewModelStorageKeys.Orders);
+            NotifyOfPropertyChange(nameof(StateProvider));
+        }
 
         private void OrdersCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

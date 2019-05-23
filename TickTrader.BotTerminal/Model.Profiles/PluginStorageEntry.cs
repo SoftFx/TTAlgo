@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;

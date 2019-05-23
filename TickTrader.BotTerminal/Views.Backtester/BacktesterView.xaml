@@ -3,8 +3,6 @@
                     xmlns:cal="http://www.caliburnproject.org"
                     xmlns:l="clr-namespace:TickTrader.BotTerminal">
 
-    <l:FullDateTimeConverter x:Key="UtcDateTimeFormat" ConvertToLocal="False" />
-
     <DataTemplate x:Key="CaliburnViewTemplate">
         <ContentControl cal:View.Model="{Binding}" />
     </DataTemplate>
@@ -99,7 +97,7 @@
                     <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="1" Grid.Row="2" IsReadOnly="True"/>
 
                     <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="2" Grid.Row="2" cal:Message.Attach="OpenTradeSetup"
-                            IsEnabled="{Binding IsTradeBotSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
+                            Style="{StaticResource SideButtonStyle}"/>
 
                     <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="3" Grid.ColumnSpan="3"/>
 
@@ -153,7 +151,9 @@
                     <Separator/>
                     <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
                                   Margin="3,0,0,0" IsChecked="{Binding ChartPage.ChartControlModel.IsCrosshairEnabled.Value}"/>
-                </ToolBar>
+                    <ToggleButton Content="{DynamicResource AutoScrollToolIcon}" ToolTip="Auto-scroll to new data" IsChecked="{Binding ChartPage.ChartControlModel.AutoScroll.Value, Mode=TwoWay}"
+                                  Margin="3,0,0,0" l:Icon.Fill="Black"/>
+                    </ToolBar>
 
                 <TabControl Name="tabBody" Grid.Row="1" Margin="5">
                     <TabItem Header="Setup">

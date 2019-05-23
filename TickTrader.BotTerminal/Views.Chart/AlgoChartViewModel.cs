@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using SciChart.Charting.Model.ChartSeries;
+using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace TickTrader.BotTerminal
         private Property<RateUpdate> _currentRateProp = new Property<RateUpdate>();
         private Property<double?> _askProp = new Property<double?>();
         private Property<double?> _bidProp = new Property<double?>();
+        private Property<TimeFrames> _timeframeProp = new Property<TimeFrames>();
         private IDisposable _axisBind;
         private IDisposable _currentRateBind;
 
@@ -30,6 +32,7 @@ namespace TickTrader.BotTerminal
             var allSeries = VarCollection.CombineChained(dataSeries, overlaySeries);
             var allPanes = OutputGroups.Chain().SelectMany(i => i.Panes);
 
+            DataSeries = dataSeries.AsObservable();
             Series = allSeries.AsObservable();
             Panes = allPanes.AsObservable();
 
@@ -45,16 +48,15 @@ namespace TickTrader.BotTerminal
 
             InitZoom();
         }
-
+        
+        public IReadOnlyList<IRenderableSeriesViewModel> DataSeries { get; }
         public IReadOnlyList<OutputPaneViewModel> Panes { get; }
         public IReadOnlyList<IRenderableSeriesViewModel> Series { get; }
         public VarList<OutputGroupViewModel> OutputGroups { get; } = new VarList<OutputGroupViewModel>();
         public Property<string> ChartWindowId { get; } = new Property<string>();
-        //public VarList<IRenderableSeriesViewModel> DataSeries { get; } = new VarList<IRenderableSeriesViewModel>();
-
+        public BoolProperty AutoScroll { get; } = new BoolProperty();
         public Property<AxisBase> TimeAxis { get; } = new Property<AxisBase>();
-        public ViewportManager ViewportManager { get; } = new ViewportManager();
-
+        public bool ShowScrollbar { get; set; }
         public object Overlay { get; set; }
 
         public BoolProperty IsCrosshairEnabled { get; } = new BoolProperty();
@@ -63,6 +65,7 @@ namespace TickTrader.BotTerminal
         public Property<SymbolEntity> SymbolInfo { get; } = new Property<SymbolEntity>();
         public int Precision { get; private set; }
         public Property<string> YAxisLabelFormat { get; } = new Property<string>();
+        public Var<TimeFrames> Timeframe => _timeframeProp.Var;
 
         public void BindCurrentRate(Var<RateUpdate> rateSrc)
         {
@@ -79,6 +82,11 @@ namespace TickTrader.BotTerminal
         {
             _axisBind?.Dispose();
             _axisBind = _var.TriggerOnChange(axis, a => TimeAxis.Value = a.New);
+        }
+
+        public void SetTimeframe(TimeFrames timeframe)
+        {
+            _timeframeProp.Value = timeframe;
         }
 
         public void Dispose()

@@ -19,7 +19,7 @@
                         <s:CursorModifier ShowTooltipOn="Always"
                                           ShowTooltip="True"
                                           TooltipContainerStyle="{DynamicResource SymbolChartCursorTooltip_Style}"
-                                          IsEnabled="{Binding Chart.IsCrosshairEnabled}"/>
+                                          IsEnabled="{Binding IsCrosshairEnabled.Value}"/>
                         <!--<s:MouseWheelZoomModifier/>-->
                         <s:ZoomPanModifier ClipModeX="None" XyDirection="XDirection"/>
                         <s:TooltipModifier ShowTooltipOn="Always"/>

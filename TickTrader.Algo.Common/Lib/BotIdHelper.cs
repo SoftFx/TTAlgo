@@ -6,26 +6,23 @@ namespace TickTrader.Algo.Common.Lib
 {
     public class BotIdHelper
     {
-        private string _antiPattern = "[^A-Za-z0-9 ]";
-        private int _maxLength = 30;
-
-        public int MaxLength => _maxLength;
-        public string Pattern => _antiPattern;
+        public int MaxLength { get; private set; } = 30;
+        public string Pattern { get; private set; } = "[^A-Za-z0-9 ]";
 
         public void UseMaxLength(int idLength)
         {
-            _maxLength = idLength;
+            MaxLength = idLength;
         }
 
         public void ExcludeCharacters(string pattern)
         {
-            _antiPattern = pattern;
+            Pattern = pattern;
         }
 
         public string BuildId(string botName, string suffix)
         {
-            var botIdBulder = new StringBuilder(Regex.Replace(botName, _antiPattern, ""));
-            botIdBulder.Length -= Math.Max(0, botIdBulder.Length + suffix.Length + 1 - _maxLength);
+            var botIdBulder = new StringBuilder(Regex.Replace(botName, Pattern, ""));
+            botIdBulder.Length -= Math.Max(0, botIdBulder.Length + suffix.Length + 1 - MaxLength);
             botIdBulder.Append(" ").Append(suffix);
             
             return botIdBulder.ToString();
@@ -33,7 +30,7 @@ namespace TickTrader.Algo.Common.Lib
 
         public bool Validate(string botId)
         {
-            return botId.Length <= _maxLength && !Regex.IsMatch(botId, _antiPattern);
+            return botId.Length <= MaxLength && !Regex.IsMatch(botId, Pattern);
         }
     }
 }

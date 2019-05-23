@@ -443,7 +443,8 @@ namespace TickTrader.Algo.Core
             orderEntity.Side = side;
             orderEntity.Type = orderType;
             orderEntity.Symbol = symbolInfo.Symbol;
-            orderEntity.Created = _scheduler.SafeVirtualTimePoint;
+            orderEntity.Created = _scheduler.UnsafeVirtualTimePoint;
+            orderEntity.Modified = _scheduler.UnsafeVirtualTimePoint;
             orderEntity.Comment = comment;
 
             //order.ClientOrderId = request.ClientOrderId;
@@ -823,6 +824,7 @@ namespace TickTrader.Algo.Core
 
             order.Entity.Comment = request.Comment ?? order.Comment;
             order.Entity.UserTag = request.Tag == null ? order.Entity.UserTag : CompositeTag.ExtarctUserTarg(request.Tag);
+            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
             //order.Magic = request.Magic ?? order.Magic;
 
             // calculate reduced commission options
@@ -941,7 +943,9 @@ namespace TickTrader.Algo.Core
             //order.AggrFillPrice += fillAmount * fillPrice;
             //order.AverageFillPrice = order.AggrFillPrice / (order.Amount - order.RemainingAmount);
             //order.Entity.Filled = OperationContext.ExecutionTime;
-            order.Entity.Modified = _scheduler.SafeVirtualTimePoint;
+            order.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
+            order.Entity.LastFillPrice = (double)fillPrice;
+            order.Entity.LastFillVolume = (double)fillAmount;
 
             if ((_acc.AccountingType == AccountingTypes.Net) || (_acc.AccountingType == AccountingTypes.Cash))
             {
@@ -1125,7 +1129,7 @@ namespace TickTrader.Algo.Core
                 position = new OrderAccessor(new OrderEntity(NewOrderId()), smb);
                 //position.ClientOrderId = Guid.NewGuid().ToString("D");
                 position.Entity.Side = side;
-                position.Entity.Created = _scheduler.SafeVirtualTimePoint;
+                position.Entity.Created = _scheduler.UnsafeVirtualTimePoint;
                 position.PositionCreated = ExecutionTime;
                 //position.SymbolPrecision = smb.Digits;
 
@@ -1169,7 +1173,7 @@ namespace TickTrader.Algo.Core
 
             position.Amount = posAmount;
             position.RemainingAmount = posAmount;
-            position.Entity.Modified = _scheduler.SafeVirtualTimePoint;
+            position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
             position.Entity.Expiration = null;
 
             if (_acc.AccountingType == AccountingTypes.Gross && position.Entity.TakeProfit.HasValue)
@@ -1338,7 +1342,7 @@ namespace TickTrader.Algo.Core
             var smb = fromOrder.SymbolInfo;
             var position = _acc.NetPositions.GetOrCreatePosition(smb.Name);
             position.Increase(fillAmount, fillPrice, fromOrder.Side);
-            position.Modified = _scheduler.SafeVirtualTimePoint;
+            position.Modified = _scheduler.UnsafeVirtualTimePoint;
 
             var charges = new TradeChargesInfo();
 
@@ -1367,6 +1371,7 @@ namespace TickTrader.Algo.Core
 
             tradeReport.FillAccountSpecificFields(_calcFixture);
             tradeReport.FillPosData(position, fillPrice, fromOrder.MarginRateCurrent);
+            tradeReport.Entity.PositionOpened = _scheduler.UnsafeVirtualTimePoint;
             tradeReport.Entity.OpenConversionRate = (double?)fromOrder.MarginRateCurrent;
 
             //LogTransactionDetails(() => "Final position: " + position.GetBriefInfo(), JournalEntrySeverities.Info, TransactDetails.Create(position.Id, position.Symbol));
@@ -1416,8 +1421,8 @@ namespace TickTrader.Algo.Core
                 report.Entity.TransactionAmount += (double)balanceMovement;
                 report.Entity.PositionClosed = ExecutionTime;
                 report.Entity.PosOpenPrice = (double)openPrice;
-                report.Entity.PositionClosePrice = (double)closePrice;
-                report.Entity.PositionLastQuantity = (double)oneSideClosingAmount;
+                report.Entity.ClosePrice = (double)closePrice;
+                report.Entity.CloseQuantity = (double)oneSideClosingAmount;
                 report.Entity.Swap += (double)closeSwap;
                 report.Entity.CloseConversionRate = (double)profitRate;
 
@@ -1622,6 +1627,8 @@ namespace TickTrader.Algo.Core
             //position.CloseConversionRate = profit >= 0 ? fCalc.PositiveProfitConversionRate.Value : fCalc.NegativeProfitConversionRate.Value;
 
             position.ClosePrice = closePrice;
+            position.Entity.LastFillPrice = (double)closePrice;
+            position.Entity.LastFillVolume = (double)actualCloseAmount;
 
             //if (managerComment != null)
             //    position.ManagerComment = managerComment;
@@ -1692,7 +1699,7 @@ namespace TickTrader.Algo.Core
             _acc.Balance += totalProfit;
 
             // Update modify timestamp.
-            position.Entity.Modified = _scheduler.SafeVirtualTimePoint;
+            position.Entity.Modified = _scheduler.UnsafeVirtualTimePoint;
 
             decimal historyAmount = nullify ? 0 : actualCloseAmount;
 
@@ -1771,7 +1778,7 @@ namespace TickTrader.Algo.Core
 
             // summary
             _opSummary.AddGrossCloseAction(position, profit, closePrice, charges, (CurrencyEntity)_acc.BalanceCurrencyInfo);
-            _collector.OnPositionClosed(_scheduler.SafeVirtualTimePoint, profit, charges.Commission, charges.Swap);
+            _collector.OnPositionClosed(_scheduler.UnsafeVirtualTimePoint, profit, charges.Commission, charges.Swap);
 
             //return profitInfo;
         }

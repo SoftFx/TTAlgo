@@ -54,11 +54,11 @@ namespace TickTrader.BotTerminal
         private ChartNavigator navigator;
         private long indicatorNextId = 1;
         private Property<AxisBase> _timeAxis = new Property<AxisBase>();
-        private bool isCrosshairEnabled;
         private string dateAxisLabelFormat;
         private List<QuoteEntity> updateQueue;
         private IFeedSubscription subscription;
         private Property<Api.RateUpdate> _currentRateProp = new Property<Api.RateUpdate>();
+        private Api.TimeFrames _timeframe;
 
         public ChartModelBase(SymbolModel symbol, AlgoEnvironment algoEnv)
         {
@@ -105,7 +105,19 @@ namespace TickTrader.BotTerminal
         protected ConnectionModel.Handler Connection { get { return ClientModel.Connection; } }
         protected VarList<IRenderableSeriesViewModel> SeriesCollection { get { return seriesCollection; } }
 
-        public abstract Api.TimeFrames TimeFrame { get; }
+        public Api.TimeFrames TimeFrame
+        {
+            get => _timeframe;
+            set
+            {
+                if (_timeframe != value)
+                {
+                    _timeframe = value;
+                    TimeframeChanged?.Invoke();
+                }
+            }
+        }
+
         public abstract ITimeVectorRef TimeSyncRef { get; }
         public IVarList<IRenderableSeriesViewModel> DataSeriesCollection { get { return seriesCollection; } }
         public IObservableList<AlgoPluginViewModel> AvailableIndicators { get; private set; }
@@ -117,6 +129,8 @@ namespace TickTrader.BotTerminal
         public string SymbolCode { get { return Model.Name; } }
         public Var<Api.RateUpdate> CurrentRate => _currentRateProp.Var;
         public bool IsIndicatorsOnline => isIndicatorsOnline;
+
+        public event System.Action TimeframeChanged;
 
         protected void Activate()
         {
@@ -181,16 +195,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsCrosshairEnabled
-        {
-            get { return isCrosshairEnabled; }
-            set
-            {
-                this.isCrosshairEnabled = value;
-                NotifyOfPropertyChange("IsCrosshairEnabled");
-            }
-        }
-
         public string DateAxisLabelFormat
         {
             get { return dateAxisLabelFormat; }
@@ -214,7 +218,7 @@ namespace TickTrader.BotTerminal
         {
             var indicator = CreateIndicator(config);
             indicators.Add(indicator);
-            Agent.IdProvider.RegisterIndicator(indicator);
+            Agent.IdProvider.RegisterPluginId(indicator.InstanceId);
         }
 
         public void RemoveIndicator(IndicatorModel i)
@@ -274,13 +278,14 @@ namespace TickTrader.BotTerminal
         {
             TimelineStart = startDate;
             TimelineEnd = endDate;
-            Navigator.Init(count, startDate, endDate);
+            //Navigator.Init(count, startDate, endDate);
+            Navigator.OnDataLoaded(count, startDate, endDate);
         }
 
         protected void ExtendBoundaries(int count, DateTime endDate)
         {
             TimelineEnd = endDate;
-            Navigator.Extend(count, endDate);
+            //Navigator.Extend(count, endDate);
         }
 
         private void Connection_Disconnected()

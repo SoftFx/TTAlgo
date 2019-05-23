@@ -29,9 +29,9 @@ namespace TickTrader.BotTerminal
             AvailableSymbols = symbols;
 
             if (type == SymbolSetupType.Main)
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>().Where(t => !t.IsTicks());
+                AvailableTimeFrames = TimeFrameModel.BarTimeFrames;
             else
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>();
+                AvailableTimeFrames = TimeFrameModel.AllTimeFrames;
 
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
@@ -157,12 +157,12 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit)
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
         {
-            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value);
+            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value, isVisualizing);
         }
 
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame, bool isVisualizing)
         {
             var smbData = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
@@ -200,6 +200,18 @@ namespace TickTrader.BotTerminal
 
                 tester.Feed.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
             }
+
+            SetupDataOutput(tester, isVisualizing);
+        }
+
+        private void SetupDataOutput(Backtester tester, bool isVisualizing)
+        {
+            var smbData = SelectedSymbol.Value;
+
+            if (isVisualizing)
+                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
+            else if (SetupType == SymbolSetupType.Main)
+                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream);
         }
 
         public void Reset()

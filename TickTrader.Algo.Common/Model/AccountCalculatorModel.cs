@@ -130,6 +130,7 @@ namespace TickTrader.Algo.Common.Model
             public string Name { get; private set; }
             public int Precision { get; private set; }
             public int SortOrder { get; private set; }
+            public CurrencyType Type => CurrencyType.Default;
         }
 
         protected class AccountAdapter : IMarginAccountInfo, ICashAccountInfo

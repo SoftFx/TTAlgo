@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using SciChart.Charting.Model.ChartSeries;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace TickTrader.BotTerminal
         private VarList<OutputSeriesModel> _overlayOutputs;
         private VarList<IRenderableSeriesViewModel> _overlaySeries;
         private VarList<OutputPaneViewModel> _panes;
+        private BoolVar _isCrosshairEnabled;
 
         public IPluginModel Model { get; }
 
@@ -36,12 +38,14 @@ namespace TickTrader.BotTerminal
 
         public event System.Action PrecisionUpdated;
 
-        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, SymbolEntity symbol)
+        public OutputGroupViewModel(IPluginModel plugin, string windowId, IPluginDataChartModel chart, SymbolEntity symbol,
+            BoolVar isCrosshairEnabled)
         {
             Model = plugin;
             ChartWindowId = windowId;
             _chart = chart;
             _symbol = symbol;
+            _isCrosshairEnabled = isCrosshairEnabled;
 
             _overlayOutputs = new VarList<OutputSeriesModel>();
             _panes = new VarList<OutputPaneViewModel>();
@@ -74,7 +78,7 @@ namespace TickTrader.BotTerminal
                 {
                     if (_outputModels.Any(o => o.Descriptor.Target == target))
                     {
-                        _panes.Add(new OutputPaneViewModel(Model, _outputModels, ChartWindowId, _chart, _symbol, target));
+                        _panes.Add(new OutputPaneViewModel(Model, _outputModels, ChartWindowId, _chart, _symbol, target, _isCrosshairEnabled));
                     }
                 }
             }

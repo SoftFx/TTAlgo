@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
 
         public static readonly DependencyProperty IsDropDownOpenProperty =
             DependencyProperty.Register(nameof(IsDropDownOpen), typeof(bool), typeof(DateTimePicker), new UIPropertyMetadata(false));
-      
+
         public bool CanIncrease
         {
             get { return (bool)GetValue(CanIncreaseProperty); }
@@ -291,9 +291,9 @@ namespace TickTrader.BotTerminal
                 case Key.Down:
                     OnUpDown(Direction.Down);
                     break;
-                //case Key.Enter:
-                //    DisplayedDateTime = datePickerTextBox.Text;
-                //    break;
+                    //case Key.Enter:
+                    //    DisplayedDateTime = datePickerTextBox.Text;
+                    //    break;
             }
         }
 
@@ -308,7 +308,7 @@ namespace TickTrader.BotTerminal
             {
                 ApplyNewSelectedDate(SelectedDateTime);
                 DateTextIsWrong = false;
-            }       
+            }
         }
 
         #endregion
@@ -317,7 +317,7 @@ namespace TickTrader.BotTerminal
 
         private string GetFormattedDateTimeString(DateTime? value, string format)
         {
-            return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : null;
+            return value.HasValue ? value.Value.ToString(format, AppBootstrapper.CultureCache) : null;
         }
 
         private DateTime SmartUpdateDateTime(int direction)
@@ -349,11 +349,9 @@ namespace TickTrader.BotTerminal
 
         private DateTime? ParseDateTimeText(string value, string format, bool flexible = true)
         {
-            DateTime datetime;
-
-            if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
+            if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTime datetime))
                 //if (!DateTime.TryParse(value, out datetime))
-                    return null;
+                return null;
 
             return datetime;
         }

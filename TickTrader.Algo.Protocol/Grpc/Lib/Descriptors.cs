@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "RmlsdGVyRW50cnkiigEKD0lucHV0RGVzY3JpcHRvchJOCg9wcm9wZXJ0eV9o",
             "ZWFkZXIYASABKAsyNS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5M",
             "aWIuUHJvcGVydHlEZXNjcmlwdG9yEicKH2RhdGFfc2VyaWVzX2Jhc2VfdHlw",
-            "ZV9mdWxsX25hbWUYAiABKAki2AMKEE91dHB1dERlc2NyaXB0b3ISTgoPcHJv",
+            "ZV9mdWxsX25hbWUYAiABKAki7AMKEE91dHB1dERlc2NyaXB0b3ISTgoPcHJv",
             "cGVydHlfaGVhZGVyGAEgASgLMjUuVGlja1RyYWRlci5BbGdvLlByb3RvY29s",
             "LkdycGMuTGliLlByb3BlcnR5RGVzY3JpcHRvchInCh9kYXRhX3Nlcmllc19i",
             "YXNlX3R5cGVfZnVsbF9uYW1lGAIgASgJEhkKEWRlZmF1bHRfdGhpY2tuZXNz",
@@ -70,32 +70,33 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "DjI5LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNj",
             "cmlwdG9yLlBsb3RUeXBlEk0KBnRhcmdldBgHIAEoDjI9LlRpY2tUcmFkZXIu",
             "QWxnby5Qcm90b2NvbC5HcnBjLkxpYi5BcGlEZXNjcmlwdG9yLk91dHB1dFRh",
-            "cmdldBIRCglwcmVjaXNpb24YCCABKAUSEQoJemVyb19saW5lGAkgASgBIpAG",
-            "ChBQbHVnaW5EZXNjcmlwdG9yEhcKD2FwaV92ZXJzaW9uX3N0chgBIAEoCRIK",
-            "CgJpZBgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSSgoEdHlwZRgEIAEo",
-            "DjI8LlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVnaW5E",
-            "ZXNjcmlwdG9yLkFsZ29UeXBlElQKBWVycm9yGAUgASgOMkUuVGlja1RyYWRl",
-            "ci5BbGdvLlByb3RvY29sLkdycGMuTGliLlBsdWdpbkRlc2NyaXB0b3IuQWxn",
-            "b01ldGFkYXRhRXJyb3ISFwoPdWlfZGlzcGxheV9uYW1lGAYgASgJEhAKCGNh",
-            "dGVnb3J5GAcgASgJEg8KB3ZlcnNpb24YCCABKAkSEwoLZGVzY3JpcHRpb24Y",
-            "CSABKAkSEQoJY29weXJpZ2h0GAogASgJEkoKCnBhcmFtZXRlcnMYCyADKAsy",
-            "Ni5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuUGFyYW1ldGVy",
-            "RGVzY3JpcHRvchJCCgZpbnB1dHMYDCADKAsyMi5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuSW5wdXREZXNjcmlwdG9yEkQKB291dHB1dHMY",
-            "DSADKAsyMy5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuT3V0",
-            "cHV0RGVzY3JpcHRvchIZChFzZXR1cF9tYWluX3N5bWJvbBgOIAEoCCI9CghB",
-            "bGdvVHlwZRIXChNVTktOT1dOX1BMVUdJTl9UWVBFEAASDQoJSU5ESUNBVE9S",
-            "EAESCQoFUk9CT1QQAiKKAQoRQWxnb01ldGFkYXRhRXJyb3ISCAoETk9ORRAA",
-            "EhoKFlVOS05PV05fTUVUQURBVEFfRVJST1IQARIaChZIQVNfSU5WQUxJRF9Q",
-            "Uk9QRVJUSUVTEAISFQoRVU5LTk9XTl9CQVNFX1RZUEUQAxIcChhJTkNPTVBB",
-            "VElCTEVfQVBJX1ZFUlNJT04QBCK5AgoTUmVkdWN0aW9uRGVzY3JpcHRvchIX",
-            "Cg9hcGlfdmVyc2lvbl9zdHIYASABKAkSCgoCaWQYAiABKAkSFAoMZGlzcGxh",
-            "eV9uYW1lGAMgASgJElIKBHR5cGUYBCABKA4yRC5UaWNrVHJhZGVyLkFsZ28u",
-            "UHJvdG9jb2wuR3JwYy5MaWIuUmVkdWN0aW9uRGVzY3JpcHRvci5SZWR1Y3Rp",
-            "b25UeXBlIpIBCg1SZWR1Y3Rpb25UeXBlEhoKFlVOS05PV05fUkVEVUNUSU9O",
-            "X1RZUEUQABIRCg1CQVJfVE9fRE9VQkxFEAESFgoSRlVMTF9CQVJfVE9fRE9V",
-            "QkxFEAISEwoPRlVMTF9CQVJfVE9fQkFSEAMSEwoPUVVPVEVfVE9fRE9VQkxF",
-            "EAQSEAoMUVVPVEVfVE9fQkFSEAViBnByb3RvMw=="));
+            "cmdldBIRCglwcmVjaXNpb24YCCABKAUSEQoJemVyb19saW5lGAkgASgBEhIK",
+            "CnZpc2liaWxpdHkYCiABKAgikAYKEFBsdWdpbkRlc2NyaXB0b3ISFwoPYXBp",
+            "X3ZlcnNpb25fc3RyGAEgASgJEgoKAmlkGAIgASgJEhQKDGRpc3BsYXlfbmFt",
+            "ZRgDIAEoCRJKCgR0eXBlGAQgASgOMjwuVGlja1RyYWRlci5BbGdvLlByb3Rv",
+            "Y29sLkdycGMuTGliLlBsdWdpbkRlc2NyaXB0b3IuQWxnb1R5cGUSVAoFZXJy",
+            "b3IYBSABKA4yRS5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIu",
+            "UGx1Z2luRGVzY3JpcHRvci5BbGdvTWV0YWRhdGFFcnJvchIXCg91aV9kaXNw",
+            "bGF5X25hbWUYBiABKAkSEAoIY2F0ZWdvcnkYByABKAkSDwoHdmVyc2lvbhgI",
+            "IAEoCRITCgtkZXNjcmlwdGlvbhgJIAEoCRIRCgljb3B5cmlnaHQYCiABKAkS",
+            "SgoKcGFyYW1ldGVycxgLIAMoCzI2LlRpY2tUcmFkZXIuQWxnby5Qcm90b2Nv",
+            "bC5HcnBjLkxpYi5QYXJhbWV0ZXJEZXNjcmlwdG9yEkIKBmlucHV0cxgMIAMo",
+            "CzIyLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5JbnB1dERl",
+            "c2NyaXB0b3ISRAoHb3V0cHV0cxgNIAMoCzIzLlRpY2tUcmFkZXIuQWxnby5Q",
+            "cm90b2NvbC5HcnBjLkxpYi5PdXRwdXREZXNjcmlwdG9yEhkKEXNldHVwX21h",
+            "aW5fc3ltYm9sGA4gASgIIj0KCEFsZ29UeXBlEhcKE1VOS05PV05fUExVR0lO",
+            "X1RZUEUQABINCglJTkRJQ0FUT1IQARIJCgVST0JPVBACIooBChFBbGdvTWV0",
+            "YWRhdGFFcnJvchIICgROT05FEAASGgoWVU5LTk9XTl9NRVRBREFUQV9FUlJP",
+            "UhABEhoKFkhBU19JTlZBTElEX1BST1BFUlRJRVMQAhIVChFVTktOT1dOX0JB",
+            "U0VfVFlQRRADEhwKGElOQ09NUEFUSUJMRV9BUElfVkVSU0lPThAEIrkCChNS",
+            "ZWR1Y3Rpb25EZXNjcmlwdG9yEhcKD2FwaV92ZXJzaW9uX3N0chgBIAEoCRIK",
+            "CgJpZBgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSUgoEdHlwZRgEIAEo",
+            "DjJELlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5SZWR1Y3Rp",
+            "b25EZXNjcmlwdG9yLlJlZHVjdGlvblR5cGUikgEKDVJlZHVjdGlvblR5cGUS",
+            "GgoWVU5LTk9XTl9SRURVQ1RJT05fVFlQRRAAEhEKDUJBUl9UT19ET1VCTEUQ",
+            "ARIWChJGVUxMX0JBUl9UT19ET1VCTEUQAhITCg9GVUxMX0JBUl9UT19CQVIQ",
+            "AxITCg9RVU9URV9UT19ET1VCTEUQBBIQCgxRVU9URV9UT19CQVIQBWIGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -104,7 +105,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.FileFilterEntry), global::TickTrader.Algo.Protocol.Grpc.Lib.FileFilterEntry.Parser, new[]{ "FileTypeName", "FileMask" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ParameterDescriptor), global::TickTrader.Algo.Protocol.Grpc.Lib.ParameterDescriptor.Parser, new[]{ "PropertyHeader", "DataType", "DefaultValue", "IsRequired", "IsEnum", "EnumValues", "FileFilters" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.InputDescriptor), global::TickTrader.Algo.Protocol.Grpc.Lib.InputDescriptor.Parser, new[]{ "PropertyHeader", "DataSeriesBaseTypeFullName" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.OutputDescriptor), global::TickTrader.Algo.Protocol.Grpc.Lib.OutputDescriptor.Parser, new[]{ "PropertyHeader", "DataSeriesBaseTypeFullName", "DefaultThickness", "DefaultColor", "DefaultLineStyle", "PlotType", "Target", "Precision", "ZeroLine" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.OutputDescriptor), global::TickTrader.Algo.Protocol.Grpc.Lib.OutputDescriptor.Parser, new[]{ "PropertyHeader", "DataSeriesBaseTypeFullName", "DefaultThickness", "DefaultColor", "DefaultLineStyle", "PlotType", "Target", "Precision", "ZeroLine", "Visibility" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor), global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor.Parser, new[]{ "ApiVersionStr", "Id", "DisplayName", "Type", "Error", "UiDisplayName", "Category", "Version", "Description", "Copyright", "Parameters", "Inputs", "Outputs", "SetupMainSymbol" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor.Types.AlgoType), typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.PluginDescriptor.Types.AlgoMetadataError) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionDescriptor), global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionDescriptor.Parser, new[]{ "ApiVersionStr", "Id", "DisplayName", "Type" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.ReductionDescriptor.Types.ReductionType) }, null)
           }));
@@ -1150,6 +1151,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       target_ = other.target_;
       precision_ = other.precision_;
       zeroLine_ = other.zeroLine_;
+      visibility_ = other.visibility_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1257,6 +1259,17 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
     }
 
+    /// <summary>Field number for the "visibility" field.</summary>
+    public const int VisibilityFieldNumber = 10;
+    private bool visibility_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Visibility {
+      get { return visibility_; }
+      set {
+        visibility_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as OutputDescriptor);
@@ -1279,6 +1292,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (Target != other.Target) return false;
       if (Precision != other.Precision) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(ZeroLine, other.ZeroLine)) return false;
+      if (Visibility != other.Visibility) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1294,6 +1308,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       if (Target != 0) hash ^= Target.GetHashCode();
       if (Precision != 0) hash ^= Precision.GetHashCode();
       if (ZeroLine != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(ZeroLine);
+      if (Visibility != false) hash ^= Visibility.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1343,6 +1358,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         output.WriteRawTag(73);
         output.WriteDouble(ZeroLine);
       }
+      if (Visibility != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(Visibility);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1377,6 +1396,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (ZeroLine != 0D) {
         size += 1 + 8;
+      }
+      if (Visibility != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1418,6 +1440,9 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
       if (other.ZeroLine != 0D) {
         ZeroLine = other.ZeroLine;
+      }
+      if (other.Visibility != false) {
+        Visibility = other.Visibility;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1467,6 +1492,10 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           }
           case 73: {
             ZeroLine = input.ReadDouble();
+            break;
+          }
+          case 80: {
+            Visibility = input.ReadBool();
             break;
           }
         }

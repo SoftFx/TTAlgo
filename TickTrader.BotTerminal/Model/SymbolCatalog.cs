@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Common.Model.Setup;
 
 namespace TickTrader.BotTerminal
 {
@@ -54,6 +55,16 @@ namespace TickTrader.BotTerminal
         internal Task Update(CustomSymbol customSymbol)
         {
             return _customStorage.Update(customSymbol);
+        }
+
+        public SymbolData GetSymbol(ISymbolInfo info)
+        {
+            if (info.Origin == Algo.Common.Info.SymbolOrigin.Online)
+                return OnlineSymbols.Snapshot[info.Name];
+            else if (info.Origin == Algo.Common.Info.SymbolOrigin.Custom)
+                return CustomSymbols.Snapshot[info.Name];
+
+            throw new Exception("Unsupported symbol origin: " + info.Origin);
         }
     }
 }

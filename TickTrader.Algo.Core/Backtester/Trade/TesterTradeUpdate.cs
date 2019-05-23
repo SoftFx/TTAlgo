@@ -25,8 +25,11 @@ namespace TickTrader.Algo.Core
         internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, FillInfo fillInfo, decimal balance)
         {
             var update = new TesterTradeTransaction();
+            update.OrderExecAction = OrderExecAction.Opened;
             if (order.RemainingAmount > 0)
-                update.OnOrderAdded(OrderExecAction.Opened, order);
+                update.OnOrderAdded(order);
+            else
+                update.OrderUpdate = order.Entity;
             if (fillInfo.NetPos != null)
             {
                 update.OnPositionChanged(fillInfo.NetPos.ResultingPosition);
@@ -58,13 +61,20 @@ namespace TickTrader.Algo.Core
         {
             var update = new TesterTradeTransaction();
 
-            if (order.RemainingAmount == 0)
-                update.OnOrderRemoved(OrderExecAction.Filled, order);
+            if (fillInfo.Position != null && fillInfo.Position.OrderId == order.OrderId) // order was transformed into position
+            {
+                update.OnOrderReplaced(OrderExecAction.Filled, order);
+            }
             else
-                update.OnOrderAdded(OrderExecAction.Filled, order);
+            {
+                if (order.RemainingAmount == 0)
+                    update.OnOrderRemoved(OrderExecAction.Filled, order);
+                else
+                    update.OnOrderAdded(OrderExecAction.Filled, order);
 
-            if (fillInfo.Position != null)
-                update.OnPositionAdded(OrderExecAction.Filled, fillInfo.Position);
+                if (fillInfo.Position != null)
+                    update.OnPositionAdded(OrderExecAction.Filled, fillInfo.Position);
+            }
 
             if (fillInfo.WasNetPositionClosed)
             {
@@ -100,6 +110,12 @@ namespace TickTrader.Algo.Core
             var update = new TesterTradeTransaction();
             update.OnPositionChanged(pos);
             return update;
+        }
+
+        private void OnOrderAdded(OrderAccessor order)
+        {
+            OrderEntityAction = OrderEntityAction.Added;
+            OrderUpdate = order.Entity;
         }
 
         private void OnOrderAdded(OrderExecAction execAction, OrderAccessor order)

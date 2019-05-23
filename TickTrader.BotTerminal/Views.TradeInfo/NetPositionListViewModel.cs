@@ -13,7 +13,14 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
-        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
+        private const string StorageKey = "NetPositions";
+        private const string BacktesterStorageKey = "NetPositionsBacktester";
+
+
+        private ProfileManager _profileManager;
+        private bool _isBacktester;
+
+        public NetPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profile = null, bool isBacktester = false)
             : base(model, connection)
         {
             Positions = model.Positions
@@ -21,8 +28,18 @@ namespace TickTrader.BotTerminal
                 .Select(p => new PositionViewModel(p))
                 .AsObservable();
 
+            _profileManager = profile;
+            _isBacktester = isBacktester;
             Positions.CollectionChanged += PositionsCollectionChanged;
+
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
+
+        public ViewModelStorageEntry StateProvider { get; private set; }
 
         protected override bool SupportsAccount(AccountTypes accType)
         {
@@ -30,6 +47,12 @@ namespace TickTrader.BotTerminal
         }
 
         public IObservableList<PositionViewModel> Positions { get; private set; }
+
+        private void UpdateProvider()
+        {
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.NetPositionsBacktester : ViewModelStorageKeys.NetPositions);
+            NotifyOfPropertyChange(nameof(StateProvider));
+        }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

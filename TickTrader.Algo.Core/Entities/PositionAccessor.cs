@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Core
             Swap = src.Swap;
             Modified = src.Modified;
             Commission = src.Commission;
+            Id = src.Id;
         }
 
         internal void Update(PositionEntity entity)
@@ -61,7 +62,7 @@ namespace TickTrader.Algo.Core
             Swap = (decimal)entity.Swap;
             Commission = entity.Commission;
             Modified = entity.Modified;
-
+            Id = entity.Id;
             FireChanged();
         }
 
@@ -92,6 +93,7 @@ namespace TickTrader.Algo.Core
         public double Margin => (double)(IsBuySided ? _buy.Margin : _sell.Margin);
         public double Profit => (double)(IsBuySided ? _buy.Profit : _sell.Profit);
         public DateTime? Modified { get; set; }
+        public string Id { get; set; }
         public bool IsEmpty => VolumeUnits == 0;
         public BL.OrderCalculator Calculator { get; set; }
 
@@ -161,6 +163,7 @@ namespace TickTrader.Algo.Core
                 Commission = Commission,
                 Modified = Modified,
                 Symbol = Symbol,
+                Id = Id,
             };
         }
 

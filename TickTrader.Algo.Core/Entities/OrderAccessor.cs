@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Core
         public string Comment => _entity.Comment;
         public string Tag => _entity.UserTag;
         public string InstanceId => _entity.InstanceId;
-        public DateTime Expiration => _entity.Expiration?? DateTime.MinValue;
+        public DateTime Expiration => _entity.Expiration ?? DateTime.MinValue;
         public DateTime Modified => _entity.Modified ?? DateTime.MinValue;
         public DateTime Created => _entity.Created ?? DateTime.MinValue;
         public double ExecPrice => _entity.ExecPrice ?? double.NaN;
@@ -104,6 +104,7 @@ namespace TickTrader.Algo.Core
         bool BL.ICommonOrder.IsIceberg => !double.IsNaN(MaxVisibleVolume) && MaxVisibleVolume.Gt(0);
         string BL.ICommonOrder.MarginCurrency { get => _symbol?.BaseCurrency; set => throw new NotImplementedException(); }
         string BL.ICommonOrder.ProfitCurrency { get => _symbol?.CounterCurrency; set => throw new NotImplementedException(); }
+        decimal? BL.ICommonOrder.MaxVisibleAmount => (decimal?)_entity.MaxVisibleVolume;
 
         public event Action<BL.IOrderModel> EssentialParametersChanged;
 
@@ -124,7 +125,7 @@ namespace TickTrader.Algo.Core
 
         internal short ActionNo { get; set; }
         internal OrderType InitialType { get; set; }
-        internal decimal? OpenConversionRate { get;  set; }
+        internal decimal? OpenConversionRate { get; set; }
         internal SymbolAccessor SymbolInfo => _symbol;
         public decimal? ClosePrice { get; set; }
         internal DateTime PositionCreated { get; set; }
@@ -198,6 +199,8 @@ namespace TickTrader.Algo.Core
         decimal? BO.IOrder.ReqOpenAmount => throw new NotImplementedException();
         string BO.IOrder.ClientApp => throw new NotImplementedException();
         int? BO.IOrder.SymbolPrecision => _symbol?.Digits;
+
+        decimal? BO.IOrder.Slippage => throw new NotImplementedException();
 
         internal bool IsSameOrder(OrderAccessor order)
         {

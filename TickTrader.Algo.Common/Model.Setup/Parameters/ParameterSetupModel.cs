@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public string GetQuotedValue()
         {
             var str = ValueAsText;
-            if (str.Contains(" "))
+            if (str != null && str.Contains(" "))
                 return '"' + ValueAsText + '"';
             return str;
         }

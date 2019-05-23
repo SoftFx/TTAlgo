@@ -1,4 +1,6 @@
-﻿namespace TickTrader.Algo.Common.Info
+﻿using TickTrader.Algo.Common.Model.Setup;
+
+namespace TickTrader.Algo.Common.Info
 {
     public enum SymbolOrigin
     {
@@ -8,12 +10,13 @@
     }
 
 
-    public class SymbolInfo
+    public class SymbolInfo : ISymbolInfo
     {
         public string Name { get; set; }
 
         public SymbolOrigin Origin { get; set; }
 
+        public string Id => Name;
 
         public SymbolInfo() { }
 

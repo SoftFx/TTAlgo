@@ -28,6 +28,7 @@ using TickTrader.Algo.Common.Model;
 using Xceed.Wpf.AvalonDock.Layout;
 using System.Windows.Controls;
 using TickTrader.Algo.Common.Info;
+using Machinarium.Var;
 
 namespace TickTrader.BotTerminal
 {
@@ -128,6 +129,8 @@ namespace TickTrader.BotTerminal
 
         public AlgoChartViewModel ChartControl { get; }
 
+        public BoolVar IsCrosshairEnabled => ChartControl.IsCrosshairEnabled.Var;
+
         public KeyValuePair<ChartPeriods, System.Action> SelectedPeriod
         {
             get { return selectedPeriod; }
@@ -180,7 +183,7 @@ namespace TickTrader.BotTerminal
                 Symbol = Symbol,
                 SelectedPeriod = SelectedPeriod.Key,
                 SelectedChartType = Chart.SelectedChartType,
-                CrosshairEnabled = Chart.IsCrosshairEnabled,
+                CrosshairEnabled = ChartControl.IsCrosshairEnabled.Value,
                 Indicators = Indicators.Select(i => new IndicatorStorageEntry
                 {
                     Config = i.Model.Config,
@@ -196,7 +199,7 @@ namespace TickTrader.BotTerminal
             }
 
             Chart.SelectedChartType = snapshot.SelectedChartType;
-            Chart.IsCrosshairEnabled = snapshot.CrosshairEnabled;
+            ChartControl.IsCrosshairEnabled.Value = snapshot.CrosshairEnabled;
             snapshot.Indicators?.ForEach(i => RestoreIndicator(i));
         }
 
@@ -308,6 +311,11 @@ namespace TickTrader.BotTerminal
             UiLock.Release();
         }
 
+        private void Chart_TimeframeChanged()
+        {
+            ChartControl.SetTimeframe(Chart.TimeFrame);
+        }
+
         private void TimeAxis_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
@@ -324,13 +332,13 @@ namespace TickTrader.BotTerminal
 
             if (args.Action == DLinqAction.Insert)
             {
-                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor));
+                allOutputs.Add(new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled));
             }
             else if (args.Action == DLinqAction.Replace)
             {
                 var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem));
                 allOutputs[index].Dispose();
-                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor);
+                allOutputs[index] = new OutputGroupViewModel(args.NewItem, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled);
             }
             else if (args.Action == DLinqAction.Remove)
             {
@@ -347,13 +355,13 @@ namespace TickTrader.BotTerminal
 
             if (args.Action == DLinqAction.Insert)
             {
-                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor));
+                allOutputs.Add(new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled));
             }
             else if (args.Action == DLinqAction.Replace)
             {
                 var index = allOutputs.IndexOf(allOutputs.Values.First(o => o.Model == args.OldItem.Model));
                 allOutputs[index].Dispose();
-                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor);
+                allOutputs[index] = new OutputGroupViewModel((TradeBotModel)args.NewItem.Model, ChartWindowId, Chart, smb.Descriptor, IsCrosshairEnabled);
             }
             else if (args.Action == DLinqAction.Remove)
             {
@@ -371,7 +379,9 @@ namespace TickTrader.BotTerminal
             //ChartControl.TimeAxis.Value = Chart.TimeAxis.Value;
             ChartControl.BindAxis(Chart.TimeAxis);
             ChartControl.BindCurrentRate(Chart.CurrentRate);
+            ChartControl.SetTimeframe(Chart.TimeFrame);
 
+            Chart.TimeframeChanged += Chart_TimeframeChanged;
             Chart.TimeAxis.PropertyChanged += TimeAxis_PropertyChanged;
             Chart.ParamsLocked += Chart_ParamsLocked;
             Chart.ParamsUnlocked += Chart_ParamsUnlocked;
@@ -381,6 +391,7 @@ namespace TickTrader.BotTerminal
         private void DeinitChart()
         {
             //Chart.TimeAxis.PropertyChanged -= TimeAxis_PropertyChanged;
+            Chart.TimeframeChanged -= Chart_TimeframeChanged;
             Chart.ParamsLocked -= Chart_ParamsLocked;
             Chart.ParamsUnlocked -= Chart_ParamsUnlocked;
             Chart.Indicators.Updated -= Indicators_Updated;

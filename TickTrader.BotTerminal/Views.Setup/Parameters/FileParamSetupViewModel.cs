@@ -28,8 +28,6 @@ namespace TickTrader.BotTerminal
                 CheckFileName();
                 NotifyOfPropertyChange(nameof(FileName));
 
-                var fileName = string.Empty;
-
                 try
                 {
                     if (FilePath != null)

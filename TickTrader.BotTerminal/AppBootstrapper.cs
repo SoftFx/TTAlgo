@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Markup;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -20,14 +21,18 @@ namespace TickTrader.BotTerminal
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private static readonly AutoViewManager autoViewLocator = new AutoViewManager();
 
+        public static CultureInfo CultureCache { get; private set; }
+
         private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
         private SimpleContainer _container = new SimpleContainer();
         private ShellViewModel _shell;
 
         public AppBootstrapper()
         {
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            CultureCache = CultureInfo.CurrentCulture;
+
+            //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             LocaleSelector.Instance.ActivateDefault();
 
@@ -215,7 +220,8 @@ namespace TickTrader.BotTerminal
                 {
                     AutoReconnect = true,
                     EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs,
-                    LogsFolder = EnvService.Instance.LogFolder
+                    LogsFolder = EnvService.Instance.LogFolder,
+                    Type = AppType.BotTerminal,
                 };
 
                 var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);

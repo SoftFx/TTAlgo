@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Common.Model
         private double? execAmount;
         private double? lastFillPrice;
         private double? lastFillAmount;
+        private DateTime? modified;
 
         public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
         {
@@ -332,7 +333,18 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public DateTime? Modified { get; private set; }
+        public DateTime? Modified
+        {
+            get { return modified; }
+            private set
+            {
+                if (modified != value)
+                {
+                    modified = value;
+                    NotifyOfPropertyChange(nameof(Modified));
+                }
+            }
+        }
 
         public double? ExecPrice
         {
@@ -416,6 +428,7 @@ namespace TickTrader.Algo.Common.Model
         public BL.OrderCalculator Calculator { get; set; }
         bool BL.IOrderModel.IsCalculated { get { return CalculationError == null; } }
         decimal? BL.IOrderModel.MarginRateCurrent { get; set; }
+        
 
         BO.OrderTypes BL.ICommonOrder.Type
         {
@@ -434,7 +447,7 @@ namespace TickTrader.Algo.Common.Model
         bool BL.ICommonOrder.IsIceberg => MaxVisibleVolume.HasValue && MaxVisibleVolume.Value > 0;
         string BL.ICommonOrder.MarginCurrency { get => MarginCurrency; set => throw new NotImplementedException(); }
         string BL.ICommonOrder.ProfitCurrency { get => ProfitCurrency; set => throw new NotImplementedException(); }
-
+        decimal? BL.ICommonOrder.MaxVisibleAmount => MaxVisibleVolume;
         public AggregatedOrderType AggregatedType => side.Aggregate(orderType);
 
         #endregion

@@ -106,11 +106,11 @@ namespace TickTrader.Algo.Core
             _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            _executor.Start();
+            _executor.StartCollection();
 
             if (!_control.OnStart())
             {
-                _executor.Stop();
+                _executor.StopCollection().Wait();
                 return;
             }
 
@@ -132,7 +132,7 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
-                _executor.Stop();
+                _executor.StopCollection().Wait();
             }
         }
 

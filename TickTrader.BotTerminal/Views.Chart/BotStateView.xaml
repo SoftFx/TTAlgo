@@ -52,7 +52,9 @@
                     </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Bot Info">
-                    <TextBlock Text="{Binding Path=BotInfo, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch" Margin="4"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <TextBlock Text="{Binding Path=BotInfo, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Stretch" Margin="4"/>
+                    </ScrollViewer>
                 </TabItem>
                 <TabItem>
                     <TabItem.Header>

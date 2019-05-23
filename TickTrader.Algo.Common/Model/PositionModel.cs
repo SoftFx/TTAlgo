@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Common.Model
             Amount = position.Volume;// Math.Max(position.BuyAmount, position.SellAmount);
             Swap = (decimal)position.Swap;
             Price = position.Price; //  Math.Max(position.BuyPrice ?? 0, position.SellPrice ?? 0);
+            Modified = position.Modified;
 
             Long = new PositionSide();
             Short = new PositionSide();

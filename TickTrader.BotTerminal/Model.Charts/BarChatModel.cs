@@ -21,7 +21,6 @@ namespace TickTrader.BotTerminal
 {
     internal class BarChartModel : ChartModelBase
     {
-        private Api.TimeFrames timeframe;
         private readonly ChartBarVector _barVector = new ChartBarVector(Api.TimeFrames.M1);
 
         public BarChartModel(SymbolModel symbol, AlgoEnvironment algoEnv)
@@ -39,11 +38,10 @@ namespace TickTrader.BotTerminal
 
         public void Activate(Api.TimeFrames timeframe)
         {
-            this.timeframe = timeframe;
+            TimeFrame = timeframe;
             base.Activate();
         }
 
-        public override Api.TimeFrames TimeFrame { get { return timeframe; } }
         public override ITimeVectorRef TimeSyncRef => _barVector.Ref;
 
         protected override void ClearData()
@@ -54,7 +52,7 @@ namespace TickTrader.BotTerminal
         protected async override Task LoadData(CancellationToken cToken)
         {
             var aproximateTimeRef = DateTime.Now + TimeSpan.FromDays(1) - TimeSpan.FromMinutes(15);
-            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Api.BarPriceType.Bid, timeframe, aproximateTimeRef, -4000);
+            var barArray = await ClientModel.FeedHistory.GetBarPage(SymbolCode, Api.BarPriceType.Bid, TimeFrame, aproximateTimeRef, -4000);
 
             cToken.ThrowIfCancellationRequested();
 

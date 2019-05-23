@@ -113,13 +113,13 @@ namespace TickTrader.Algo.Core
 
         public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, decimal closeAmount, decimal closePrice, decimal? requestAmount, decimal? requestPrice, string posById)
         {
-            Entity.PositionQuantity = order.Entity.Volume;
+            Entity.PositionQuantity = order.Entity.RequestedVolume ?? 0;
             Entity.PositionLeavesQuantity = order.Entity.RemainingVolume;
-            Entity.PositionLastQuantity = (double)closeAmount;
+            Entity.CloseQuantity = (double)closeAmount;
             Entity.PositionOpened = order.PositionCreated;
             Entity.PosOpenPrice = order.Price;
             Entity.PositionClosed = closeTime;
-            Entity.PositionClosePrice =  (double)closePrice;
+            Entity.ClosePrice =  (double)closePrice;
             Entity.PositionModified = order.Modified;
             Entity.PositionById = posById;
             Entity.ReqClosePrice = (double?)requestPrice;

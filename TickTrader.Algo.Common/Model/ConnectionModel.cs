@@ -215,6 +215,8 @@ namespace TickTrader.Algo.Common.Model
 
             try
             {
+                CheckValidType(_options);
+
                 var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
                 if (request.UseSfx)
                     _interop = new SfxInterop(options);
@@ -279,6 +281,12 @@ namespace TickTrader.Algo.Common.Model
             wasConnected = true;
             _stateControl.PushEvent(Events.Connected);
             request.Complete(ConnectionErrorInfo.Ok);
+        }
+
+        private void CheckValidType(ConnectionOptions option)
+        {
+            if (!BusinessObjects.Requests.KnownAppIds.IsValid(option.Type.ToString()))
+                throw new Exception($"Incorrect type application id: {option.Type}");
         }
 
         private void OnFailedConnect(ConnectRequest requets, ConnectionErrorInfo erroInfo)
@@ -508,10 +516,17 @@ namespace TickTrader.Algo.Common.Model
         public bool EnableLogs { get; set; }
         public string LogsFolder { get; set; }
 
+        public AppType Type { get; set; }
 
         public ConnectionOptions WithNewLogsFolder(string logsFolder)
         {
-            return new ConnectionOptions { AutoReconnect = AutoReconnect, EnableLogs = EnableLogs, LogsFolder = logsFolder };
+            return new ConnectionOptions { AutoReconnect = AutoReconnect, EnableLogs = EnableLogs, LogsFolder = logsFolder, Type = Type };
         }
+    }
+
+    public enum AppType
+    {
+        BotTerminal = 0,
+        BotAgent = 1,
     }
 }

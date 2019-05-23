@@ -33,7 +33,7 @@ namespace TickTrader.BotTerminal
             return this;
         }
 
-        public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<decimal> data, ReportSeriesStyles style)
+        public BacktesterStatChartViewModel AddStackedColumns(IReadOnlyList<decimal> data, ReportSeriesStyles style, bool xAxisDayNames)
         {
             var dataModel = new XyDataSeries<int, double>(data.Count);
 
@@ -44,7 +44,7 @@ namespace TickTrader.BotTerminal
                 if (yVal == 0)
                     yVal = -1;
 
-                dataModel.Append(i + 1, yVal);
+                dataModel.Append(i, yVal);
 
                 if (yVal > _maxColumnValue)
                     _maxColumnValue = yVal;
@@ -63,11 +63,14 @@ namespace TickTrader.BotTerminal
                 YRange = new DoubleRange(0, 1);
             NotifyOfPropertyChange(nameof(YRange));
 
+            XAxisDayNames = xAxisDayNames;
+            NotifyOfPropertyChange(nameof(XAxisDayNames));
+
             return this;
         }
 
         public DoubleRange YRange { get; set; }
-
+        public bool XAxisDayNames { get; private set; }
         public string Title { get; }
         public string Style { get; }
 

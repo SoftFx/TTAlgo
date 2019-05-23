@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Core
             InitOutputCollection(settings);
         }
 
-        public void OnStop(IBacktesterSettings settings, AccountAccessor acc)
+        public void OnStop(IBacktesterSettings settings, AccountAccessor acc, FeedEmulator feed)
         {
             if (acc != null && acc.IsMarginType)
             {
@@ -67,6 +67,9 @@ namespace TickTrader.Algo.Core
                 Stats.FinalBalance = (decimal)acc.Balance;
                 Stats.AccBalanceDigits = acc.BalanceCurrencyInfo.Digits;
             }
+
+            var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);
+            Stats.BarsCount = mainVector?.Count ?? 0;
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
 
@@ -306,11 +309,6 @@ namespace TickTrader.Algo.Core
         public void OnOrderModificatinRejected()
         {
             Stats.OrderModificationRejected++;
-        }
-
-        public void OnBufferExtended(int by)
-        {
-            Stats.BarsCount += by;
         }
 
         public void OnRateUpdate(RateUpdate update)

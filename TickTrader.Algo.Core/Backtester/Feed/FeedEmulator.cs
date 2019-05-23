@@ -59,25 +59,22 @@ namespace TickTrader.Algo.Core
 
         internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
         {
-            var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
-            return stream.InitSeries(timeframe, price);
+            return GetFeedSrcOrThrow(symbol).InitSeries(timeframe, price);
         }
 
         internal FeedSeriesEmulator GetFeedSymbolFixture(string symbol, TimeFrames timeframe)
         {
-            return GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
+            return GetFeedSrcOrThrow(symbol);
         }
 
         public void AddBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
         {
-            var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
-            stream.InitSeries(timeframe, price);
+            GetFeedSrcOrThrow(symbol).InitSeries(timeframe, price);
         }
 
         public IReadOnlyList<BarEntity> GetBarSeriesData(string symbol, TimeFrames timeframe, BarPriceType price)
         {
-            var stream = GetFeedSrcOrNull(symbol) ?? throw new InvalidOperationException("No feed source for symbol " + symbol);
-            return stream.GetSeriesData(timeframe, price);
+            return GetFeedSrcOrThrow(symbol).GetSeriesData(timeframe, price);
         }
 
         public void AddSource(string symbol, IEnumerable<QuoteEntity> stream)
@@ -103,10 +100,11 @@ namespace TickTrader.Algo.Core
             _feedSources.Add(symbol, new BarBasedSeriesEmulator(symbol, timeFrame, bidStream, askStream));
         }
 
-        private FeedSeriesEmulator GetFeedSrcOrNull(string symbol)
+        private FeedSeriesEmulator GetFeedSrcOrThrow(string symbol)
         {
             FeedSeriesEmulator src;
-            _feedSources.TryGetValue(symbol, out src);
+            if (!_feedSources.TryGetValue(symbol, out src))
+                throw new MisconfigException("No feed source for symbol " + symbol);
             return src;
         }
 
@@ -119,22 +117,22 @@ namespace TickTrader.Algo.Core
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, to).ToList() ?? new List<BarEntity>();
+            return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, to).ToList() ?? new List<BarEntity>();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryBars(timeFrame, priceType, from, size).ToList() ?? new List<BarEntity>();
+            return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, size).ToList() ?? new List<BarEntity>();
         }
 
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteEntity>();
+            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteEntity>();
         }
 
         List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
-            return GetFeedSrcOrNull(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteEntity>();
+            return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteEntity>();
         }
 
         void IPluginFeedProvider.Subscribe(Action<QuoteEntity[]> FeedUpdated)

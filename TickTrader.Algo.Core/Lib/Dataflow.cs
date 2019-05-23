@@ -33,6 +33,9 @@ namespace TickTrader.Algo.Core.Lib
                     await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
                     buffer.Clear();
                 }
+
+                if (buffer.Count > 0)
+                    await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
             }
         }
 

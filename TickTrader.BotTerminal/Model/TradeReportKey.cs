@@ -22,7 +22,7 @@ namespace TickTrader.BotTerminal
             if (ActionNo == null)
                 return OrderId.ToString();
             else
-                return OrderId + "-" + ActionNo.Value;
+                return OrderId + "#" + ActionNo.Value;
         }
 
         #region IComparable

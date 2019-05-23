@@ -40,6 +40,8 @@ namespace TickTrader.Algo.Common.Model
         private FDK.Client.OrderEntry _tradeProxy;
         private FDK.Client.TradeCapture _tradeHistoryProxy;
 
+        private AppType _appType;
+
         public event Action<IServerInterop, ConnectionErrorInfo> Disconnected;
 
         public SfxInterop(ConnectionOptions options)
@@ -88,6 +90,8 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.TradeUpdateEvent += (c, rep) => TradeTransactionReport?.Invoke(Convert(rep));
             _feedHistoryProxy.LogoutEvent += (c, m) => OnLogout(m);
             _feedHistoryProxy.DisconnectEvent += (c, m) => OnDisconnect(m);
+
+            _appType = options.Type;
         }
 
         public async Task<ConnectionErrorInfo> Connect(string address, string login, string password, CancellationToken cancelToken)
@@ -129,7 +133,8 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed: Connecting...");
             await _feedProxy.ConnectAsync(address);
             logger.Debug("Feed: Connected.");
-            await _feedProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+
+            await _feedProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed: Logged in.");
         }
 
@@ -138,7 +143,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade: Connecting...");
             await _tradeProxy.ConnectAsync(address);
             logger.Debug("Trade: Connected.");
-            await _tradeProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _tradeProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade logged in.");
         }
 
@@ -147,7 +152,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Feed.History: Connecting...");
             await _feedHistoryProxy.ConnectAsync(address);
             logger.Debug("Feed.History: Connected.");
-            await _feedHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _feedHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Feed.History: Logged in.");
         }
 
@@ -156,7 +161,7 @@ namespace TickTrader.Algo.Common.Model
             logger.Debug("Trade.History: Connecting...");
             await _tradeHistoryProxy.ConnectAsync(address);
             logger.Debug("Trade.History: Connected.");
-            await _tradeHistoryProxy.LoginAsync(login, password, "", "", Guid.NewGuid().ToString());
+            await _tradeHistoryProxy.LoginAsync(login, password, "", _appType.ToString(), Guid.NewGuid().ToString());
             logger.Debug("Trade.History: Logged in.");
             await _tradeHistoryProxy.SubscribeTradesAsync(false);
             logger.Debug("Trade.History: Subscribed.");
@@ -285,7 +290,7 @@ namespace TickTrader.Algo.Common.Model
                 try
                 {
                     var e = _feedHistoryProxy.DownloadBars(symbol, ConvertBack(priceType), ToBarPeriod(barPeriod), from, to, DownloadTimeoutMs);
-                    var timeEdge = from;
+                    DateTime? timeEdge = null;
 
                     while (true)
                     {
@@ -293,7 +298,12 @@ namespace TickTrader.Algo.Common.Model
 
                         if (bar != null)
                         {
-                            if (bar.From <= timeEdge)
+                            if (timeEdge == null)
+                            {
+                                if (bar.From < from)
+                                    continue;
+                            }
+                            else if (bar.From <= timeEdge.Value)
                                 continue;
 
                             timeEdge = bar.From;
@@ -838,22 +848,32 @@ namespace TickTrader.Algo.Common.Model
                 case RejectReason.IncorrectQuantity: return Api.OrderCmdResultCodes.IncorrectVolume;
                 case RejectReason.OffQuotes: return Api.OrderCmdResultCodes.OffQuotes;
                 case RejectReason.OrderExceedsLImit: return Api.OrderCmdResultCodes.NotEnoughMoney;
+                case RejectReason.CloseOnly: return Api.OrderCmdResultCodes.CloseOnlyTrading;
                 case RejectReason.Other:
                     {
-                        if (message == "Trade Not Allowed")
-                            return Api.OrderCmdResultCodes.TradeNotAllowed;
-                        else if (message != null && message.StartsWith("Not Enough Money"))
-                            return Api.OrderCmdResultCodes.NotEnoughMoney;
-                        else if (message != null && message.StartsWith("Rejected By Dealer"))
-                            return Api.OrderCmdResultCodes.DealerReject;
-                        else if (message != null && message.StartsWith("Dealer") && message.EndsWith("did not respond."))
-                            return Api.OrderCmdResultCodes.DealingTimeout;
-                        else if (message != null && message.Contains("locked by another operation"))
-                            return Api.OrderCmdResultCodes.OrderLocked;
-                        else if (message != null && message.Contains("Invalid expiration"))
-                            return Api.OrderCmdResultCodes.IncorrectExpiration;
-                        else if (message != null && message.StartsWith("Price precision"))
-                            return Api.OrderCmdResultCodes.IncorrectPricePrecision;
+                        if (message != null)
+                        {
+                            if (message == "Trade Not Allowed")
+                                return Api.OrderCmdResultCodes.TradeNotAllowed;
+                            else if (message.StartsWith("Not Enough Money"))
+                                return Api.OrderCmdResultCodes.NotEnoughMoney;
+                            else if (message.StartsWith("Rejected By Dealer"))
+                                return Api.OrderCmdResultCodes.DealerReject;
+                            else if (message.StartsWith("Dealer") && message.EndsWith("did not respond."))
+                                return Api.OrderCmdResultCodes.DealingTimeout;
+                            else if (message.Contains("locked by another operation"))
+                                return Api.OrderCmdResultCodes.OrderLocked;
+                            else if (message.Contains("Invalid expiration"))
+                                return Api.OrderCmdResultCodes.IncorrectExpiration;
+                            else if (message.StartsWith("Price precision"))
+                                return Api.OrderCmdResultCodes.IncorrectPricePrecision;
+                            else if (message.EndsWith("because close-only mode on"))
+                                return Api.OrderCmdResultCodes.CloseOnlyTrading;
+                            else if (message == "Max visible amount is not valid for market orders")
+                                return Api.OrderCmdResultCodes.MarketWithMaxVisibleVolume;
+                            else if (message.StartsWith("Order Not Found"))
+                                return Api.OrderCmdResultCodes.OrderNotFound;
+                        }
                         break;
                     }
                 case RejectReason.None:
@@ -943,6 +963,35 @@ namespace TickTrader.Algo.Common.Model
             return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
         }
 
+        public static Core.TradeTransactionReason Convert(SFX.TradeTransactionReason reason)
+        {
+            switch (reason)
+            {
+                case SFX.TradeTransactionReason.ClientRequest:
+                    return Core.TradeTransactionReason.ClientRequest;
+                case SFX.TradeTransactionReason.DealerDecision:
+                    return Core.TradeTransactionReason.DealerDecision;
+                case SFX.TradeTransactionReason.DeleteAccount:
+                    return Core.TradeTransactionReason.DeleteAccount;
+                case SFX.TradeTransactionReason.Expired:
+                    return Core.TradeTransactionReason.Expired;
+                case SFX.TradeTransactionReason.PendingOrderActivation:
+                    return Core.TradeTransactionReason.PendingOrderActivation;
+                case SFX.TradeTransactionReason.Rollover:
+                    return Core.TradeTransactionReason.Rollover;
+                case SFX.TradeTransactionReason.StopLossActivation:
+                    return Core.TradeTransactionReason.StopLossActivation;
+                case SFX.TradeTransactionReason.StopOut:
+                    return Core.TradeTransactionReason.StopOut;
+                case SFX.TradeTransactionReason.TakeProfitActivation:
+                    return Core.TradeTransactionReason.TakeProfitActivation;
+                case SFX.TradeTransactionReason.TransferMoney:
+                    return Core.TradeTransactionReason.TransferMoney;
+                default:
+                    return Core.TradeTransactionReason.None;
+            }
+        }
+
         public static TradeReportEntity Convert(TradeTransactionReport report)
         {
             bool isBalanceTransaction = report.TradeTransactionReportType == TradeTransactionReportType.Credit
@@ -998,10 +1047,8 @@ namespace TickTrader.Algo.Common.Model
                 OrderModified = report.OrderModified,
                 PositionById = report.PositionById,
                 PositionClosed = report.PositionClosed,
-                PositionClosePrice = report.PositionClosePrice,
                 PositionCloseRequestedPrice = report.PositionCloseRequestedPrice,
                 PositionId = report.PositionId,
-                PositionLastQuantity = report.PositionLastQuantity,
                 PositionLeavesQuantity = report.PositionLeavesQuantity,
                 PositionModified = report.PositionModified,
                 PositionOpened = report.PositionOpened,
@@ -1032,6 +1079,8 @@ namespace TickTrader.Algo.Common.Model
                 UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
                 UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
+                ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
+                TradeTransactionReason = Convert(report.TradeTransactionReason),
             };
         }
 

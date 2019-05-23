@@ -15,9 +15,9 @@ namespace TickTrader.BotTerminal
     {
         private ObservableCollection<TransactionReport> _reports = new ObservableCollection<TransactionReport>();
 
-        public BacktesterTradeGridViewModel()
+        public BacktesterTradeGridViewModel(ProfileManager profile = null)
         {
-            GridView = new TradeHistoryGridViewModel(new List<TransactionReport>());
+            GridView = new TradeHistoryGridViewModel(new List<TransactionReport>(), profile, true);
             GridView.AutoSizeColumns = false;
             GridView.ConvertTimeToLocal = false;
             GridView.AccType.Value = Algo.Api.AccountTypes.Gross;

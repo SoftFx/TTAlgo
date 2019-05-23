@@ -104,6 +104,7 @@ namespace TickTrader.Algo.Common.Model
             feedCs.Address = address;
             feedCs.Username = login;
             feedCs.Password = password;
+            feedCs.AppId = _options.Type.ToString();
 
             if (logsEnabled)
             {
@@ -135,6 +136,7 @@ namespace TickTrader.Algo.Common.Model
             tradeCs.Address = address;
             tradeCs.Username = login;
             tradeCs.Password = password;
+            tradeCs.AppId = _options.Type.ToString();
 
             if (logsEnabled)
             {
