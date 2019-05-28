@@ -150,6 +150,14 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="TickTrader.BusinessLogic, Version=1.36.4.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.BusinessObjects, Version=1.37.3.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
+    </Reference>
     <Reference Include="TickTrader.Common">
       <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
@@ -1212,14 +1220,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\platform.server.2\src\TickTrader.BusinessLogic\TickTrader.BusinessLogic.csproj">
-      <Project>{06dd18c3-80c1-48d2-8cdd-932b2e3ac6fe}</Project>
-      <Name>TickTrader.BusinessLogic</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\platform.server.2\src\TickTrader.BusinessObjects\TickTrader.BusinessObjects.csproj">
-      <Project>{2f663d56-a7b1-4d99-a934-2d3983b4d30f}</Project>
-      <Name>TickTrader.BusinessObjects</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ActorSharp\ActorSharp.csproj">
       <Project>{7d6b7bba-586c-4a69-a368-6bf9b87026b2}</Project>
       <Name>ActorSharp</Name>
