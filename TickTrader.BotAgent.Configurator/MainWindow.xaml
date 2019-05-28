@@ -4,11 +4,63 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
+        xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
         mc:Ignorable="d"
         Title="BotAgent Configurator" 
         Height="600" Width="800"
         WindowStartupLocation="CenterScreen">
     <Grid>
-        <TextBox x:Name="mainTextBox"></TextBox>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="0.2*"/>
+        </Grid.RowDefinitions>
+        <TabControl>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Credentials"/>
+                </TabItem.Header>
+                
+                <TabItem.Content>
+                    <StackPanel>
+                        <c:CredentialPanel DataContext="{Binding AdminModel}" Style="{StaticResource userControlPanel}"/>
+                        <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource userControlPanel}"/>
+                        <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource userControlPanel}"/>
+                    </StackPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Ssl"/>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <c:SslPanel DataContext="{Binding SslModel}" Style="{StaticResource userControlPanel}"/>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Protocol"/>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource userControlPanel}"/>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Server"/>
+                </TabItem.Header>
+
+                <TabItem.Content>
+                    <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource userControlPanel}"/>
+                </TabItem.Content>
+            </TabItem>
+        </TabControl>
+        
+        <StackPanel Grid.Row="1" Style="{StaticResource stateButtonPanel}">
+            <Button Content="Cancel" Style="{StaticResource stateButton}" Click="CancelButton_Click"/>
+            <Button Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click"/>
+        </StackPanel>
     </Grid>
 </Window>

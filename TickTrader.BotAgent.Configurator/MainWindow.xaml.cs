@@ -20,14 +20,24 @@ namespace TickTrader.BotAgent.Configurator
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ConfigurationModel _model;
+        private ConfigurationViewModel _viewModel;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _model = new ConfigurationModel();
-            DataContext = _model;
+            _viewModel = new ConfigurationViewModel();
+            DataContext = _viewModel;
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.SaveChanges();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.CancelChanges();
         }
     }
 }
