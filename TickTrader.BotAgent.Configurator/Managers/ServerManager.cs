@@ -28,8 +28,8 @@ namespace TickTrader.BotAgent.Configurator
                     case "SecretKey":
                         ServerModel.SecretKey = prop.Value.ToString();
                         break;
-                        //default:
-                        //    throw new Exception($"Unknown property {prop.Name}");
+                    //default:
+                    //    throw new Exception($"Unknown property {prop.Name}");
                 }
             }
         }
