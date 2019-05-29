@@ -311,28 +311,14 @@ namespace TickTrader.BotTerminal
 
         protected virtual Reasons? GetReason(TradeReportEntity transaction)
         {
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.ClientRequest)
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled)
                 Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision)
-            {
-                Type = GetBuyOrSellType(transaction);
                 return Reasons.DealerDecision;
-            }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
-            {
-                Type = GetBuyOrSellType(transaction);
                 return Reasons.StopOut;
-            }
-
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
-                transaction.ReqOrderType == OrderType.Stop)
-                Type = GetBuyOrSellType(transaction);
-
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
-                transaction.ReqOrderType == OrderType.Limit)
-                Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
@@ -376,8 +362,10 @@ namespace TickTrader.BotTerminal
                 case OrderType.Limit:
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
                 case OrderType.StopLimit:
+                    OpenPrice = transaction.StopPrice;
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopLimitCanceled : AggregatedTransactionType.SellStopLimitCanceled;
                 case OrderType.Stop:
+                    OpenPrice = transaction.StopPrice;
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopCanceled : AggregatedTransactionType.SellStopCanceled;
                 default: return AggregatedTransactionType.Unknown;
             }
