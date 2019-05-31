@@ -10,13 +10,13 @@ namespace TickTrader.Algo.Core.Calc.Conversion
 {
     public class ConversionManager
     {
-        private MarketState _market;
+        private MarketStateBase _market;
         private Dictionary<Tuple<string, string>, SymbolAccessor> _convertionSet = new Dictionary<Tuple<string, string>, SymbolAccessor>();
         private Dictionary<Tuple<string, string>, IConversionFormula> _marginConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
         private Dictionary<Tuple<string, string>, IConversionFormula> _posProfitConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
         private Dictionary<Tuple<string, string>, IConversionFormula> _negProfitConversions = new Dictionary<Tuple<string, string>, IConversionFormula>();
 
-        public ConversionManager(MarketState market)
+        public ConversionManager(MarketStateBase market)
         {
             _market = market;
         }
@@ -41,22 +41,22 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             }
         }
 
-        internal IConversionFormula GetMarginFormula(SymbolMarketInfo tracker, string toCurrency)
+        internal IConversionFormula GetMarginFormula(SymbolMarketNode tracker, string toCurrency)
         {
             return _marginConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, toCurrency), () => BuildMarginFormula(tracker, toCurrency));
         }
 
-        internal IConversionFormula GetPositiveProfitFormula(SymbolMarketInfo tracker, string toCurrency)
+        internal IConversionFormula GetPositiveProfitFormula(SymbolMarketNode tracker, string toCurrency)
         {
             return _posProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, toCurrency), () => BuildPositiveProfitFormula(tracker, toCurrency));
         }
 
-        internal IConversionFormula GetNegativeProfitFormula(SymbolMarketInfo tracker, string toCurrency)
+        internal IConversionFormula GetNegativeProfitFormula(SymbolMarketNode tracker, string toCurrency)
         {
             return _negProfitConversions.GetOrAdd(Tuple.Create(tracker.SymbolInfo.Name, toCurrency), () => BuildNegativeProfitFormula(tracker, toCurrency));
         }
 
-        private IConversionFormula BuildMarginFormula(SymbolMarketInfo tracker, string toCurrency)
+        private IConversionFormula BuildMarginFormula(SymbolMarketNode tracker, string toCurrency)
         {
             SymbolAccessor XY = tracker.SymbolInfo;
 
@@ -175,17 +175,17 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             return FormulaBuilder.Error(XY, X, Z);
         }
 
-        private IConversionFormula BuildPositiveProfitFormula(SymbolMarketInfo tracker, string toCurrency)
+        private IConversionFormula BuildPositiveProfitFormula(SymbolMarketNode tracker, string toCurrency)
         {
             return BuildProfitFormula(tracker, toCurrency, FxPriceType.Bid, FxPriceType.Ask);
         }
 
-        private IConversionFormula BuildNegativeProfitFormula(SymbolMarketInfo tracker, string toCurrency)
+        private IConversionFormula BuildNegativeProfitFormula(SymbolMarketNode tracker, string toCurrency)
         {
             return BuildProfitFormula(tracker, toCurrency, FxPriceType.Ask, FxPriceType.Bid);
         }
 
-        private IConversionFormula BuildProfitFormula(SymbolMarketInfo tracker, string toCurrency, FxPriceType price1, FxPriceType price2)
+        private IConversionFormula BuildProfitFormula(SymbolMarketNode tracker, string toCurrency, FxPriceType price1, FxPriceType price2)
         {
             SymbolAccessor XY = tracker.SymbolInfo;
 
@@ -277,9 +277,9 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             return _convertionSet.GetOrDefault(Tuple.Create(currency1, currency2));
         }
 
-        private SymbolMarketInfo GetRate(SymbolAccessor symbol)
+        private SymbolMarketNode GetRate(SymbolAccessor symbol)
         {
-            return _market.GetSymbolNodeOrNull(symbol.Name) ?? throw new Exception("Unknown symbol: " + symbol.Name);
+            return _market.GetSymbolNodeInternal(symbol.Name) ?? throw new Exception("Unknown symbol: " + symbol.Name);
         }
     }
 }

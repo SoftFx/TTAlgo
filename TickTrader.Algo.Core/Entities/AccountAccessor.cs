@@ -82,12 +82,12 @@ namespace TickTrader.Algo.Core
 
         internal void FireBalanceUpdateEvent()
         {
-            builder.InvokePluginMethod(() => BalanceUpdated());
+            builder.InvokePluginMethod((b, p) => p.BalanceUpdated(), this);
         }
 
         internal void FireResetEvent()
         {
-            builder.InvokePluginMethod(() => Reset());
+            builder.InvokePluginMethod((b, p) => p.Reset(), this);
         }
 
         public OrderList OrdersByTag(string orderTag)

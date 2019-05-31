@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
     internal class FeedReader : IEnumerable<RateUpdate>, IDisposable
     {
         private Task _worker;
-        private FlipGate<RateUpdate> _gate = new FlipGate<RateUpdate>(300);
+        private FlipGate<RateUpdate> _gate = new FlipGate<RateUpdate>(1000);
 
         public FeedReader(IEnumerable<SeriesReader> sources)
         {
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core
 
                 while (streams.Count > 0)
                 {
-                    var min = streams.MinBy(e => e.Current.Time);
+                    var min = GetMin(streams);
                     var nextQuote = min.Current;
 
                     if (!min.MoveNext())
@@ -68,25 +68,26 @@ namespace TickTrader.Algo.Core
             }
 
             _gate.CompleteWrite();
+        }
 
-            //var srcCopy = sources.Select(s => s.GetEnumerator()).ToList();
+        private SeriesReader GetMin(List<SeriesReader> readers)
+        {
+            DateTime minTime = DateTime.MaxValue;
+            SeriesReader minReader = null;
 
-            //while (srcCopy.Count > 0)
-            //{
-            //    var min = srcCopy.MinBy(e => e.Current.Time);
-            //    var nextQuote = min.Current;
+            for (int i = 0; i < readers.Count; i++)
+            {
+                var reader = readers[i];
+                var readerTime = reader.Current.Time;
 
-            //    if (!min.MoveNext())
-            //    {
-            //        srcCopy.Remove(min);
-            //        min.Dispose();
-            //    }
+                if (minTime > readerTime)
+                {
+                    minReader = reader;
+                    minTime = readerTime;
+                }
+            }
 
-            //    if (!_gate.Write(nextQuote))
-            //        return;
-            //}
-
-            //_gate.CompleteWrite();
+            return minReader;
         }
 
         public void Dispose()

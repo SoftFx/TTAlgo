@@ -9,13 +9,12 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core.Calc
 {
-    public class MarketState
+    public abstract class MarketStateBase
     {
-        private Dictionary<string, SymbolMarketInfo> _smbMap = new Dictionary<string, SymbolMarketInfo>();
         private Dictionary<Tuple<string, string>, OrderCalculator> _orderCalculators = new Dictionary<Tuple<string, string>, OrderCalculator>();
         private Dictionary<string, CurrencyEntity> _currenciesByName = new Dictionary<string, CurrencyEntity>();
 
-        public MarketState()
+        public MarketStateBase()
         {
             Conversion = new ConversionManager(this);
         }
@@ -25,25 +24,6 @@ namespace TickTrader.Algo.Core.Calc
 
         public ConversionManager Conversion { get; }
 
-        internal IEnumerable<SymbolMarketInfo> Trackers => _smbMap.Values;
-
-        public void Update(IEnumerable<RateUpdate> rates)
-        {
-            if (rates == null)
-                return;
-
-            foreach (RateUpdate rate in rates)
-                Update(rate);
-        }
-
-        public void Update(RateUpdate rate)
-        {
-            var tracker = GetSymbolNodeOrNull(rate.Symbol);
-            tracker.Update(rate);
-            RateChanged?.Invoke(rate);
-            //return RateUpdater.Update(rate.Symbol);
-        }
-
         public void Init(IEnumerable<SymbolAccessor> symbolList, IEnumerable<CurrencyEntity> currencyList)
         {
             Currencies = currencyList.ToList();
@@ -51,11 +31,15 @@ namespace TickTrader.Algo.Core.Calc
             CurrenciesChanged?.Invoke();
 
             Symbols = symbolList.ToList();
-            _smbMap = symbolList.Select(s => new SymbolMarketInfo(s)).ToDictionary(t => t.SymbolInfo.Name);
+            InitNodes();
             SymbolsChanged?.Invoke();
 
             Conversion.Init();
         }
+
+        protected abstract void InitNodes();
+
+        internal abstract SymbolMarketNode GetSymbolNodeInternal(string smb);
 
         public CurrencyEntity GetCurrencyOrThrow(string name)
         {
@@ -67,12 +51,6 @@ namespace TickTrader.Algo.Core.Calc
 
         public event Action SymbolsChanged;
         public event Action CurrenciesChanged;
-        public event Action<RateUpdate> RateChanged;
-
-        internal SymbolMarketInfo GetSymbolNodeOrNull(string symbol)
-        {
-            return _smbMap.GetOrDefault(symbol);
-        }
 
         internal OrderCalculator GetCalculator(string symbol, string balanceCurrency)
         {
@@ -81,7 +59,7 @@ namespace TickTrader.Algo.Core.Calc
             OrderCalculator calculator;
             if (!_orderCalculators.TryGetValue(key, out calculator))
             {
-                var tracker = GetSymbolNodeOrNull(symbol);
+                var tracker = GetSymbolNodeInternal(symbol);
                 if (tracker != null)
                 {
                     calculator = new OrderCalculator(tracker, Conversion, balanceCurrency);
@@ -89,6 +67,75 @@ namespace TickTrader.Algo.Core.Calc
                 }
             }
             return calculator;
+        }
+    }
+
+    public class MarketState : MarketStateBase
+    {
+        private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
+
+        public void Update(RateUpdate rate)
+        {
+            var tracker = GetSymbolNodeOrNull(rate.Symbol);
+            tracker.Update(rate);
+            //RateChanged?.Invoke(rate);
+            //return RateUpdater.Update(rate.Symbol);
+        }
+
+        public void Update(IEnumerable<RateUpdate> rates)
+        {
+            if (rates == null)
+                return;
+
+            foreach (RateUpdate rate in rates)
+                Update(rate);
+        }
+
+        internal SymbolMarketNode GetSymbolNodeOrNull(string symbol)
+        {
+            return _smbMap.GetOrDefault(symbol);
+        }
+
+        protected override void InitNodes()
+        {
+            _smbMap.Clear();
+
+            foreach (var smb in Symbols)
+                _smbMap.Add(smb.Name, new SymbolMarketNode(smb));
+        }
+
+        internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
+        {
+            return GetSymbolNodeOrNull(smb);
+        }
+    }
+
+    internal class AlgoMarketState : MarketStateBase
+    {
+        private readonly Dictionary<string, AlgoMarketNode> _smbMap = new Dictionary<string, AlgoMarketNode>();
+
+        public AlgoMarketState()
+        {
+        }
+
+        public IEnumerable<AlgoMarketNode> Nodes => _smbMap.Values;
+
+        protected override void InitNodes()
+        {
+            _smbMap.Clear();
+
+            foreach (var smb in Symbols)
+                _smbMap.Add(smb.Name, new AlgoMarketNode(smb));
+        }
+
+        public AlgoMarketNode GetSymbolNodeOrNull(string symbol)
+        {
+            return _smbMap.GetOrDefault(symbol);
+        }
+
+        internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
+        {
+            return GetSymbolNodeOrNull(smb);
         }
     }
 }

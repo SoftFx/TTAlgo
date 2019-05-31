@@ -153,12 +153,15 @@ namespace TickTrader.BotTerminal
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedSymbol, a =>
             {
-                _mainSymbolToken.Id = a.New.Name;
+                if (a.New != null)
+                {
+                    _mainSymbolToken.Id = a.New.Name;
 
-                if (_openedPluginSetup != null)
-                    _openedPluginSetup.Setup.MainSymbol = a.New.ToSymbolToken();
+                    if (_openedPluginSetup != null)
+                        _openedPluginSetup.Setup.MainSymbol = a.New.ToSymbolToken();
 
-                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+                    MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+                }
             });
 
             client.Connected += () =>

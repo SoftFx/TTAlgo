@@ -28,50 +28,7 @@ namespace TickTrader.Algo.Core
                     yield return rate;
                 }
             }
-
-            //return GetJoinedStream();
         }
-
-        //public override void Dispose()
-        //{
-        //    if (_reader != null)
-        //    {
-        //        _reader.Dispose();
-        //        _reader = null;
-        //    }
-
-        //    base.Dispose();
-        //}
-
-        //private IEnumerable<RateUpdate> GetJoinedStream()
-        //{
-        //    var streams = _feedSeries.Values.ToList();
-
-        //    foreach (var e in streams.ToList())
-        //    {
-        //        e.Start();
-
-        //        if (!e.MoveNext())
-        //        {
-        //            streams.Remove(e);
-        //            e.Stop();
-        //        }
-        //    }
-
-        //    while (streams.Count > 0)
-        //    {
-        //        var min = streams.MinBy(e => e.Current.Time);
-        //        var nextQuote = min.Current;
-
-        //        if (!min.MoveNext())
-        //        {
-        //            streams.Remove(min);
-        //            min.Stop();
-        //        }
-
-        //        yield return nextQuote;
-        //    }
-        //}
 
         internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
         {

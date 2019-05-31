@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>();
 
-        private const int SliceMaxSize = 8000;
+        private const int SliceMaxSize = 4000;
         private string _dataFolder;
         private FeedHistoryFolderOptions _folderOptions;
         private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());

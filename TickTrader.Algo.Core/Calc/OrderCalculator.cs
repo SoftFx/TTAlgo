@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Calc
         //private readonly ConversionManager conversionMap;
         private readonly Converter<int, int> _leverageProvider;
 
-        internal OrderCalculator(SymbolMarketInfo tracker, ConversionManager conversion, string accountCurrency)
+        internal OrderCalculator(SymbolMarketNode tracker, ConversionManager conversion, string accountCurrency)
         {
             RateTracker = tracker;
 
@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core.Calc
         internal IConversionFormula NegativeProfitConversionRate { get; private set; }
         internal IConversionFormula MarginConversionRate { get; private set; }
 
-        internal SymbolMarketInfo RateTracker { get; }
+        internal SymbolMarketNode RateTracker { get; }
 
         //public void Dispose()
         //{

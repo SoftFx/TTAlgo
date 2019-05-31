@@ -62,6 +62,20 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
+        private bool GetBothFixtures(string smbCode, out BarSeriesFixture bid, out BarSeriesFixture ask)
+        {
+            BarSeriesFixture[] fixturePair;
+            if (fixtures.TryGetValue(smbCode, out fixturePair))
+            {
+                bid = fixturePair[0];
+                ask = fixturePair[1];
+                return true;
+            }
+            bid = null;
+            ask = null;
+            return false;
+        }
+
         private void AddFixture(string smbCode, BarPriceType priceType, BarSeriesFixture fixture)
         {
             BarSeriesFixture[] fixturePair;
@@ -80,10 +94,8 @@ namespace TickTrader.Algo.Core
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
             var overallResult = new BufferUpdateResult();
-            //var aggregation = update as BarRateUpdate;
 
-            var askFixture = GetFixutre(update.Symbol, BarPriceType.Ask);
-            var bidFixture = GetFixutre(update.Symbol, BarPriceType.Bid);
+            GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
 
             if (askFixture != null)
             {

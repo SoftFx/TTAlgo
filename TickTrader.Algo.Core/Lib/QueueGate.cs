@@ -8,21 +8,26 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core.Lib
 {
-    public class FlipGate<T> : IEnumerable<T>
+    public class QueueGate<T> : IEnumerable<T>
     {
         private object _lockObj = new object();
         private List<T> _writeBuff;
         private List<T> _readBuff;
         private int _buffSize;
-        private bool _readRequest;
-        private bool _writeRequest;
+        private Queue<List<T>> _queue = new Queue<List<T>>();
+        private Queue<List<T>> _emptyBuffCache = new Queue<List<T>>();
+        //private bool _readRequest;
+        //private bool _writeRequest;
         private bool _closed;
 
-        public FlipGate(int buffSize)
+        public QueueGate(int buffSize, int queueLen)
         {
             _buffSize = buffSize;
             _writeBuff = new List<T>(buffSize);
-            _readBuff = new List<T>(buffSize);
+            //_readBuff = new List<T>(buffSize);
+
+            for (int i = 0; i < queueLen; i++)
+                _emptyBuffCache.Enqueue(new List<T>(buffSize));
         }
 
         public bool Write(T item)
@@ -49,17 +54,11 @@ namespace TickTrader.Algo.Core.Lib
         {
             lock (_lockObj)
             {
-                _readRequest = false;
-                _writeRequest = false;
+                //_readRequest = false;
+                //_writeRequest = false;
                 _closed = true;
                 Monitor.PulseAll(_lockObj);
             }
-        }
-
-        private void Flip()
-        {
-            _readBuff.Clear();
-            Ref.Swap(ref _readBuff, ref _writeBuff);
         }
 
         private bool WritePage()
@@ -69,20 +68,19 @@ namespace TickTrader.Algo.Core.Lib
                 if (_closed)
                     return false;
 
-                if (_readRequest)
+                _queue.Enqueue(_writeBuff);
+                Monitor.Pulse(_lockObj);
+                _writeBuff = null;
+
+                while (_emptyBuffCache.Count == 0)
                 {
-                    Flip();
-                    _readRequest = false;
-                    Monitor.Pulse(_lockObj);
-                    return true;
+                    Monitor.Wait(_lockObj);
+                    if (_closed)
+                        return false;
                 }
-                else
-                {
-                    _writeRequest = true;
-                    while (_writeRequest)
-                        Monitor.Wait(_lockObj);
-                    return !_closed;
-                }
+
+                _writeBuff = _emptyBuffCache.Dequeue();
+                return true;
             }
         }
 
@@ -93,20 +91,22 @@ namespace TickTrader.Algo.Core.Lib
                 if (_closed)
                     return false;
 
-                if (_writeRequest)
+                if (_readBuff != null)
                 {
-                    Flip();
-                    _writeRequest = false;
+                    _readBuff.Clear();
+                    _emptyBuffCache.Enqueue(_readBuff);
                     Monitor.Pulse(_lockObj);
-                    return true;
                 }
-                else
+
+                while (_queue.Count == 0)
                 {
-                    _readRequest = true;
-                    while (_readRequest)
-                        Monitor.Wait(_lockObj);
-                    return !_closed;
+                    Monitor.Wait(_lockObj);
+                    if (_closed)
+                        return false;
                 }
+
+                _readBuff = _queue.Dequeue();
+                return true;
             }
         }
 
@@ -114,8 +114,8 @@ namespace TickTrader.Algo.Core.Lib
         {
             while (ReadPage())
             {
-                for (int i = 0; i < _readBuff.Count; i++)
-                    yield return _readBuff[i];
+                foreach (T item in _readBuff)
+                    yield return item;
             }
         }
 

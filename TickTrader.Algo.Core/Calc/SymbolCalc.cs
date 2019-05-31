@@ -11,13 +11,13 @@ namespace TickTrader.Algo.Core.Calc
 {
     internal class SymbolCalc : IDisposable
     {
-        private MarketState _market;
+        private MarketStateBase _market;
         private OrderCalculator _calc;
         private double _hedgeFormulPart;
         private double _netPosSwap;
         private double _netPosComm;
 
-        public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketState market, bool autoUpdate)
+        public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate)
         {
             Symbol = symbol;
             _market = market;
@@ -28,12 +28,12 @@ namespace TickTrader.Algo.Core.Calc
 
             if (autoUpdate)
             {
-                Tracker = market.GetSymbolNodeOrNull(Symbol) ?? throw new Exception("Market state lacks symbol:" + Symbol);
+                Tracker = market.GetSymbolNodeInternal(Symbol) ?? throw new Exception("Market state lacks symbol:" + Symbol);
                 Tracker.Changed += Recalculate;
             }
         }
 
-        internal SymbolMarketInfo Tracker { get; }
+        internal SymbolMarketNode Tracker { get; }
         public IMarginAccountInfo2 AccInfo { get; }
         //public int Count { get; private set; }
         public bool IsEmpty => Sell.IsEmpty && Buy.IsEmpty; // Count <= 0;

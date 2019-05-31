@@ -62,7 +62,8 @@ namespace TickTrader.Algo.Common.Model
 
             private Api.BookEntry ReadBookEntry(LightObjectReader reader)
             {
-                return new Api.BookEntry(reader.ReadDouble(), reader.ReadDouble());
+                //return new Api.BookEntry(reader.ReadDouble(), reader.ReadDouble());
+                return new Api.BookEntry(reader.ReadDouble(), 0);
             }
 
             public ArraySegment<byte> Serialize(QuoteEntity[] val)
@@ -92,7 +93,7 @@ namespace TickTrader.Algo.Common.Model
             private void WriteBookEntry(Api.BookEntry entry, LightObjectWriter writer)
             {
                 writer.Write(entry.Price);
-                writer.Write(entry.Volume);
+                //writer.Write(entry.Volume);
             }
         }
 

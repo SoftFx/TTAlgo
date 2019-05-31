@@ -111,7 +111,7 @@
     <Compile Include="Calc\Conversion\ConversionManager.cs" />
     <Compile Include="Calc\Conversion\FormulaBuilder.cs" />
     <Compile Include="Calc\Conversion\Formula.cs" />
-    <Compile Include="Calc\Conversion\SymbolMarketInfo.cs" />
+    <Compile Include="Calc\Conversion\SymbolMarketNode.cs" />
     <Compile Include="Calc\MarginAccountCalc.cs" />
     <Compile Include="Calc\Interfaces.cs" />
     <Compile Include="Calc\MarketState.cs" />
@@ -133,6 +133,7 @@
     <Compile Include="Entities.Requests\ReplaceOrderRequest.cs" />
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
+    <Compile Include="Entities\AlgoMarketNode.cs" />
     <Compile Include="Entities\AssetAccessor.cs" />
     <Compile Include="Entities\AssetEntity.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\ExecutorHandler.cs" />
+    <Compile Include="Executor\MarketStateFixture.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
@@ -208,6 +210,7 @@
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
+    <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
     <Compile Include="Logger.cs" />

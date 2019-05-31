@@ -345,14 +345,21 @@ namespace TickTrader.Algo.Core
             statusApi.Apply();
         }
 
-        internal void InvokePluginMethod(Action invokeAction, bool initMethod = false)
+        internal void InvokePluginMethod(Action<PluginBuilder, object> invokeAction, bool initMethod = false)
         {
-            var ex = InvokeMethod(invokeAction);
+            var ex = InvokeMethod<object>(invokeAction, null);
             if (ex != null)
                 OnPluginException(ex, initMethod);
         }
 
-        protected virtual Exception InvokeMethod(Action invokeAction)
+        internal void InvokePluginMethod<T>(Action<PluginBuilder, T> invokeAction, T param, bool initMethod = false)
+        {
+            var ex = InvokeMethod(invokeAction, param);
+            if (ex != null)
+                OnPluginException(ex, initMethod);
+        }
+
+        protected virtual Exception InvokeMethod<T>(Action<PluginBuilder, T> invokeAction, T param)
         {
             Exception pluginException = null;
 
@@ -363,7 +370,7 @@ namespace TickTrader.Algo.Core
             SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
-                invokeAction();
+                invokeAction(this, param);
             }
             catch (ThreadAbortException) { }
             catch (Exception ex)
@@ -379,41 +386,41 @@ namespace TickTrader.Algo.Core
 
         internal void InvokeCalculate(bool isUpdate)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate), false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeCalculate(p), isUpdate, false);
         }
 
         internal void InvokeOnStart()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStart, true);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnStart(), true);
             Logger.OnStart();
         }
 
         internal void InvokeOnStop()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStop, false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnStop(), false);
             Logger.OnStop();
         }
 
         internal void InvokeInit()
         {
-            InvokePluginMethod(PluginProxy.InvokeInit, true);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeInit(), true);
             Logger.OnInitialized();
         }
 
         internal void InvokeOnQuote(Quote quote)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote), false);
+            InvokePluginMethod((b, q) => b.PluginProxy.InvokeOnQuote(q), quote, false);
         }
 
         internal void InvokeAsyncAction(Action asyncAction)
         {
-            InvokePluginMethod(asyncAction, false);
+            InvokePluginMethod((b, p) => asyncAction(), false);
         }
 
         internal async Task InvokeAsyncStop()
         {
             Task result = null;
-            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop(), false);
+            InvokePluginMethod((b, p) => result = b.PluginProxy.InvokeAsyncStop(), false);
             try
             {
                 await result;
@@ -426,13 +433,13 @@ namespace TickTrader.Algo.Core
 
         internal void FireConnectedEvent()
         {
-            InvokePluginMethod(()=> PluginProxy.InvokeConnectedEvent(), false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeConnectedEvent(), false);
             Logger.OnConnected();
         }
 
         internal void FireDisconnectedEvent()
         {
-            InvokePluginMethod(() => PluginProxy.InvokeDisconnectedEvent(), false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeDisconnectedEvent(), false);
             Logger.OnDisconnected();
         }
 

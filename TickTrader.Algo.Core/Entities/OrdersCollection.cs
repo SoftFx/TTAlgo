@@ -75,37 +75,37 @@ namespace TickTrader.Algo.Core
 
         public void FireOrderOpened(OrderOpenedEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderOpened(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderOpened(p), args);
         }
 
         public void FireOrderModified(OrderModifiedEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderModified(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderModified(p), args);
         }
 
         public void FireOrderClosed(OrderClosedEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderClosed(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderClosed(p), args);
         }
 
         public void FireOrderCanceled(OrderCanceledEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderCanceled(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderCanceled(p), args);
         }
 
         public void FireOrderExpired(OrderExpiredEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderExpired(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderExpired(p), args);
         }
 
         public void FireOrderFilled(OrderFilledEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderFilled(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderFilled(p), args);
         }
 
         public void FireOrderActivated(OrderActivatedEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireOrderActivated(args));
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderActivated(args));
         }
 
         public IEnumerator<OrderAccessor> GetEnumerator()

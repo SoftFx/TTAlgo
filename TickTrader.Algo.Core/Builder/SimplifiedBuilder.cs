@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        protected override Exception InvokeMethod(Action invokeAction)
+        protected override Exception InvokeMethod<T>(Action<PluginBuilder, T> invokeAction, T param)
         {
             Exception pluginException = null;
 
@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
             
             try
             {
-                invokeAction();
+                invokeAction(this, param);
             }
             catch (ThreadAbortException) { }
             catch (Exception ex)

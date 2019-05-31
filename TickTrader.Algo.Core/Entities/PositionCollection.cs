@@ -46,7 +46,12 @@ namespace TickTrader.Algo.Core
 
         public void FirePositionUpdated(NetPositionModifiedEventArgs args)
         {
-            _builder.InvokePluginMethod(() => _fixture.FirePositionModified(args));
+            _builder.InvokePluginMethod(InvokePositionUpdated, args, false);
+        }
+
+        private void InvokePositionUpdated(PluginBuilder builder, NetPositionModifiedEventArgs args)
+        {
+            builder.Account.NetPositions._fixture.FirePositionModified(args);
         }
 
         public IEnumerator<PositionAccessor> GetEnumerator()

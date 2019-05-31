@@ -14,7 +14,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             return new NoConvertion();
         }
 
-        public static IConversionFormula Conversion(SymbolMarketInfo tracker, FxPriceType side)
+        public static IConversionFormula Conversion(SymbolMarketNode tracker, FxPriceType side)
         {
             if (side == FxPriceType.Bid)
                 return new GetBid() { SrcSymbol = tracker };
@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
                 return new GetAsk() { SrcSymbol = tracker };
         }
 
-        public static IConversionFormula InverseConversion(SymbolMarketInfo tracker, FxPriceType side)
+        public static IConversionFormula InverseConversion(SymbolMarketNode tracker, FxPriceType side)
         {
             if (side == FxPriceType.Bid)
                 return new GetInvertedBid() { SrcSymbol = tracker };
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
                 return new GetInvertedAsk() { SrcSymbol = tracker };
         }
 
-        public static IConversionFormula Then(this IConversionFormula formula, SymbolMarketInfo tracker, FxPriceType side)
+        public static IConversionFormula Then(this IConversionFormula formula, SymbolMarketNode tracker, FxPriceType side)
         {
             if (side == FxPriceType.Bid)
                 return new MultByBid() { SrcSymbol = tracker, SrcFromula = formula };
@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
                 return new MultByAsk() { SrcSymbol = tracker, SrcFromula = formula };
         }
 
-        public static IConversionFormula ThenDivide(this IConversionFormula formula, SymbolMarketInfo tracker, FxPriceType side)
+        public static IConversionFormula ThenDivide(this IConversionFormula formula, SymbolMarketNode tracker, FxPriceType side)
         {
             if (side == FxPriceType.Bid)
                 return new DivByBid() { SrcSymbol = tracker, SrcFromula = formula };

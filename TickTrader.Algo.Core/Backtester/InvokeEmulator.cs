@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
         public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
         public EmulatorStates State { get; private set; }
 
-        public event Action<RateUpdate> RateUpdated;
+        public event Action<AlgoMarketNode> RateUpdated;
         public event Action<EmulatorStates> StateUpdated;
 
         #region InvokeStartegy implementation
@@ -386,11 +386,14 @@ namespace TickTrader.Algo.Core
 
         private void ExecItem(object item)
         {
-            var action = item as Action<PluginBuilder>;
-            if (action != null)
-                action(Builder);
+            var rate = item as RateUpdate;
+            if (rate != null)
+                EmulateRateUpdate(rate);
             else
-                EmulateRateUpdate((RateUpdate)item);
+            {
+                var action = (Action<PluginBuilder>)item;
+                action(Builder);
+            }
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
@@ -465,8 +468,8 @@ namespace TickTrader.Algo.Core
         {
             DelayExecution();
 
-            var bufferUpdate = OnFeedUpdate(rate);
-            RateUpdated?.Invoke(rate);
+            var bufferUpdate = OnFeedUpdate(rate, out var node);
+            RateUpdated?.Invoke(node);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;

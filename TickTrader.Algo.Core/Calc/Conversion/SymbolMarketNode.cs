@@ -7,9 +7,9 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Calc.Conversion
 {
-    internal class SymbolMarketInfo
+    public class SymbolMarketNode
     {
-        public SymbolMarketInfo(SymbolAccessor smb)
+        public SymbolMarketNode(SymbolAccessor smb)
         {
             SymbolInfo = smb;
             Rate = new QuoteEntity(smb.Name, DateTime.MinValue, (double?)null, (double?)null); // empty rate

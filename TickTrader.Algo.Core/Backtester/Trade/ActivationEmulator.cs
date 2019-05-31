@@ -12,9 +12,14 @@ namespace TickTrader.Algo.Core
     {
         //private static List<ActivationRecord> NoActivatons = Enumerable.Empty<ActivationRecord>();
 
-        private Dictionary<string, ActivationRegistry> indexes = new Dictionary<string, ActivationRegistry>();
+        private readonly AlgoMarketState _state;
 
         private List<ActivationRecord> _result = new List<ActivationRecord>();
+
+        public ActivationEmulator(AlgoMarketState state)
+        {
+            _state = state;
+        }
 
         /// <summary>
         /// Register limit order or position for activation monitoring
@@ -23,23 +28,19 @@ namespace TickTrader.Algo.Core
         /// <param name="acc"></param>
         public ActivationRecord AddOrder(OrderAccessor order, RateUpdate currentRate)
         {
-            ActivationRegistry index;
-            if (!indexes.TryGetValue(order.Symbol, out index))
-            {
-                index = new ActivationRegistry();
-                indexes.Add(order.Symbol, index);
-            }
-
-            return index.AddOrder(order, currentRate);
+            var node = _state.GetSymbolNodeOrNull(order.Symbol);
+            if (node.ActivationIndex == null)
+                node.ActivationIndex = new ActivationRegistry();
+            return node.ActivationIndex.AddOrder(order, currentRate);
         }
 
         public bool RemoveOrder(OrderAccessor order)
         {
-            ActivationRegistry index;
-            if (!indexes.TryGetValue(order.Symbol, out index))
+            var node = _state.GetSymbolNodeOrNull(order.Symbol);
+            if (node.ActivationIndex == null)
                 return false;
 
-            return index.RemoveOrder(order);
+            return node.ActivationIndex.RemoveOrder(order);
         }
 
         //public void ResetOrderActivation(OrderAccessor order)
@@ -57,14 +58,11 @@ namespace TickTrader.Algo.Core
         /// </summary>
         /// <param name="rate"></param>
         /// <returns></returns>
-        public List<ActivationRecord> CheckPendingOrders(RateUpdate rate)
+        public List<ActivationRecord> CheckPendingOrders(AlgoMarketNode node)
         {
             _result.Clear();
-
-            ActivationRegistry index;
-            if (indexes.TryGetValue(rate.Symbol, out index))
-                index.CheckPendingOrders(rate, _result);
-
+            var index = node.ActivationIndex;
+            index?.CheckPendingOrders(node.Rate, _result);
             return _result;
         }
     }

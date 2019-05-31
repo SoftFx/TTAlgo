@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
 {
@@ -76,6 +77,7 @@ namespace TickTrader.Algo.Core
     internal interface IFixtureContext
     {
         PluginBuilder Builder { get; }
+        AlgoMarketState MarketData { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         PluginLoggerAdapter Logger { get; }

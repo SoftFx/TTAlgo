@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Core.Calc.Conversion
     internal abstract class ComplexConversion : UsageAwareFormula
     {
         public IConversionFormula SrcFromula { get; set; }
-        public SymbolMarketInfo SrcSymbol { get; set; }
+        public SymbolMarketNode SrcSymbol { get; set; }
 
         protected abstract double GetValue();
 

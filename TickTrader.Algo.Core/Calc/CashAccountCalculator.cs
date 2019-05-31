@@ -13,9 +13,9 @@ namespace TickTrader.Algo.Core.Calc
     {
         private readonly ICashAccountInfo2 account;
         private readonly Dictionary<string, IAssetModel> assets = new Dictionary<string, IAssetModel>();
-        private MarketState market;
+        private MarketStateBase market;
 
-        public MarketState Market
+        public MarketStateBase Market
         {
             get { return market; }
             set
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core.Calc
             }
         }
 
-        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketState market)
+        public CashAccountCalculator(ICashAccountInfo2 infoProvider, MarketStateBase market)
         {
             if (infoProvider == null)
                 throw new ArgumentNullException("infoProvider");

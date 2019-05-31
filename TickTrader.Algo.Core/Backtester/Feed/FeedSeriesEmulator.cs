@@ -138,13 +138,13 @@ namespace TickTrader.Algo.Core
 
         private void UpdateBars(RateUpdate quote)
         {
-            if (!double.IsNaN(quote.Bid))
+            if (quote.HasBid)
             {
                 foreach (var rec in _bidBars.Values)
                     rec.AppendQuote(quote.Time, quote.Bid, 1);
             }
 
-            if (!double.IsNaN(quote.Ask))
+            if (quote.HasAsk)
             {
                 foreach (var rec in _askBars.Values)
                     rec.AppendQuote(quote.Time, quote.Ask, 1);

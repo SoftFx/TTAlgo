@@ -10,12 +10,12 @@ namespace TickTrader.Algo.Core.Calc
 {
     internal class MarginAccountCalc
     {
-        private readonly MarketState _market;
+        private readonly MarketStateBase _market;
         private readonly IDictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
         private int _errorCount;
         private bool _autoUpdate;
 
-        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketState market, bool autoUpdate = false)
+        public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate = false)
         {
             Info = accInfo;
             _market = market;

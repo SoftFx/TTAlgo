@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
 {
     internal class TradeEmulator : TradeCommands, IExecutorFixture
     {
-        private ActivationEmulator _activator = new ActivationEmulator();
+        private ActivationEmulator _activator;
         private OrderExpirationEmulator _expirationManager = new OrderExpirationEmulator();
         private CalculatorFixture _calcFixture;
         private AccountAccessor _acc;
@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Core
             TradeHistoryEmulator history, AlgoTypes pluginType)
         {
             _context = context;
+            _activator = new ActivationEmulator(_context.MarketData);
             _calcFixture = calc;
             _scheduler = scheduler;
             _collector = collector;
@@ -1451,11 +1452,11 @@ namespace TickTrader.Algo.Core
             return info;
         }
 
-        internal void CheckActivation(RateUpdate quote)
+        internal void CheckActivation(AlgoMarketNode node)
         {
-            IEnumerable<ActivationRecord> records = _activator.CheckPendingOrders(quote);
-            foreach (ActivationRecord record in records)
-                ActivateOrderTransaction(record);
+            var records = _activator.CheckPendingOrders(node);
+            for (int i = 0; i < records.Count; i++)
+                ActivateOrderTransaction(records[i]);
         }
 
         private void ActivateOrderTransaction(ActivationRecord record)
