@@ -58,10 +58,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveChanges()
         {
-            SslManager.SaveConfigurationModels(_configurationObject);
-            ServerManager.SaveConfigurationModels(_configurationObject);
-            ProtocolManager.SaveConfigurationModels(_configurationObject);
-            CredentialsManager.SaveConfigurationModels(_configurationObject);
+            foreach (var uploader in _uploaderModels)
+                uploader.SaveConfigurationModels(_configurationObject);
 
             SaveConfiguration();
         }
@@ -95,10 +93,8 @@ namespace TickTrader.BotAgent.Configurator
         {
             _configurationObject = JObject.Parse(json);
 
-            UploadModel(CredentialsManager);
-            UploadModel(SslManager);
-            UploadModel(ProtocolManager);
-            UploadModel(ServerManager);
+            foreach (var uploader in _uploaderModels)
+                UploadModel(uploader);
         }
 
         private void UploadModel(IUploaderModels model)
