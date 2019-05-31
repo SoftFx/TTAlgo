@@ -7,18 +7,16 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class SslManager
+    public class SslManager : ContentManager, IUploaderModels
     {
-        private const string SectionName = "Ssl";
-
         public SslModel SslModel { get; }
 
-        public SslManager()
+        public SslManager(string sectioName = "") : base(sectioName)
         {
             SslModel = new SslModel();
         }
 
-        public void UploadSslModel(List<JProperty> sslProp)
+        public void UploadModels(List<JProperty> sslProp)
         {
             foreach (var prop in sslProp)
             {
@@ -34,19 +32,34 @@ namespace TickTrader.BotAgent.Configurator
                         throw new Exception($"Unknown property {prop.Name}");
                 }
             }
+
+            SetDefaultModelValues();
         }
 
-        public void SaveSslModel(JObject obj)
+        public void SaveConfigurationModels(JObject root)
         {
-            obj[SectionName]["File"] = SslModel.File;
-            obj[SectionName]["Password"] = SslModel.Password;
+            SaveProperty(root, "File", SslModel.File);
+            SaveProperty(root, "Password", SslModel.Password);
+        }
+
+        public void SetDefaultModelValues()
+        {
+            SslModel.SetDefaultValues();
         }
     }
 
     public class SslModel
     {
+        private const string DefaultFile = "certificate.ptx";
+
         public string File { get; set; }
 
         public string Password { get; set; }
+
+        public void SetDefaultValues()
+        {
+            if (string.IsNullOrEmpty(File))
+                File = DefaultFile;
+        }
     }
 }

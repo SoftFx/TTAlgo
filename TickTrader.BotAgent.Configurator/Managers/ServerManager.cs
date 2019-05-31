@@ -1,22 +1,18 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ServerManager
+    public class ServerManager : ContentManager, IUploaderModels
     {
         public ServerModel ServerModel { get; }
 
-        public ServerManager()
+        public ServerManager(string sectionName = "") : base(sectionName)
         {
             ServerModel = new ServerModel();
         }
 
-        public void UploadServerModel(List<JProperty> serverProp)
+        public void UploadModels(List<JProperty> serverProp)
         {
             foreach (var prop in serverProp)
             {
@@ -28,23 +24,40 @@ namespace TickTrader.BotAgent.Configurator
                     case "SecretKey":
                         ServerModel.SecretKey = prop.Value.ToString();
                         break;
-                    //default:
-                    //    throw new Exception($"Unknown property {prop.Name}");
                 }
             }
+
+            SetDefaultModelValues();
         }
 
-        public void SaveServerModel(JObject obj)
+        public void SaveConfigurationModels(JObject root)
         {
-            obj["server.urls"] = ServerModel.Urls;
-            obj["SecretKey"] = ServerModel.SecretKey;
+            SaveProperty(root, "server.urls", ServerModel.Urls);
+            SaveProperty(root, "SecretKey", ServerModel.SecretKey);
+        }
+
+        public void SetDefaultModelValues()
+        {
+            ServerModel.SetDefaultValues();
         }
     }
 
     public class ServerModel
     {
+        private const string DefaultUrls = "https://localhost:50000/";
+        private const string DefaultSecretKey = "kQ17Dww5EOFWBtSMWXMWgdjWouXRMhKT0AMEHuFqFhpv5j8rCGNqArAAufAbfYkgsDYZX7mShsrl8TYRiugEKSEz1oVLkXFg3GUyydfpW1DTX8YJcZzHwhQPXYJ6iWyd";
+
         public string Urls { get; set; }
 
         public string SecretKey { get; set; }
+
+        public void SetDefaultValues()
+        {
+            if (string.IsNullOrEmpty(Urls))
+                Urls = DefaultUrls;
+
+            if (string.IsNullOrEmpty(SecretKey))
+                SecretKey = DefaultSecretKey;
+        }
     }
 }

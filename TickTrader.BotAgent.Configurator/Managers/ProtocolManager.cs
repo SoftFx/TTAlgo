@@ -7,18 +7,16 @@ using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolManager
+    public class ProtocolManager : ContentManager, IUploaderModels
     {
-        private const string SectionName = "Protocol";
-
         public ProtocolModel ProtocolModel { get; }
 
-        public ProtocolManager()
+        public ProtocolManager(string sectionName = "") : base(sectionName)
         {
             ProtocolModel = new ProtocolModel();
         }
 
-        public void UploadProtocolModel(List<JProperty> protocolProp)
+        public void UploadModels(List<JProperty> protocolProp)
         {
             foreach (var prop in protocolProp)
             {
@@ -33,26 +31,43 @@ namespace TickTrader.BotAgent.Configurator
                     case "LogMessages":
                         ProtocolModel.LogMessage = bool.Parse(prop.Value.ToString());
                         break;
-                    default:
-                        throw new Exception($"Unknown property {prop.Name}");
                 }
             }
+
+            SetDefaultModelValues();
         }
 
-        public void SaveProtocolModel(JObject obj)
+        public void SaveConfigurationModels(JObject root)
         {
-            obj[SectionName]["ListeningPort"] = ProtocolModel.ListeningPort.ToString();
-            obj[SectionName]["LogDirectoryName"] = ProtocolModel.DirectoryName;
-            obj[SectionName]["LogMessages"] = ProtocolModel.LogMessage.ToString();
+            SaveProperty(root, "ListeningPort", ProtocolModel.ListeningPort.ToString());
+            SaveProperty(root, "LogDirectoryName", ProtocolModel.DirectoryName);
+            SaveProperty(root, "LogMessages", ProtocolModel.LogMessage.ToString());
+        }
+
+        public void SetDefaultModelValues()
+        {
+            ProtocolModel.SetDefaultValues();
         }
     }
 
     public class ProtocolModel
     {
+        private const string DefaultDirectoryName = "Logs";
+        private const int DefaultPort = 58443;
+
         public int ListeningPort { get; set; }
 
         public string DirectoryName { get; set; }
 
         public bool LogMessage { get; set; }
+
+        public void SetDefaultValues()
+        {
+            if (string.IsNullOrEmpty(DirectoryName))
+                DirectoryName = DefaultDirectoryName;
+
+            if (ListeningPort == 0)
+                ListeningPort = DefaultPort;
+        }
     }
 }

@@ -14,6 +14,7 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -26,7 +27,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -51,6 +51,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -88,12 +94,14 @@
     <Compile Include="Controls\SslPanel.xaml.cs">
       <DependentUpon>SslPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Managers\ContentManager.cs" />
     <Compile Include="Managers\CredentialsManager.cs" />
     <Compile Include="Managers\MessageBoxManager.cs" />
     <Compile Include="Managers\ProtocolManager.cs" />
     <Compile Include="Managers\RegistryManager.cs" />
     <Compile Include="Managers\ServerManager.cs" />
     <Compile Include="Managers\SslManager.cs" />
+    <Compile Include="Helpers\Validations.cs" />
     <Compile Include="ViewModels\CredentialViewModel.cs" />
     <Compile Include="ViewModels\ProtocolViewModel.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />

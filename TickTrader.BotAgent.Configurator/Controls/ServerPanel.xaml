@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
+             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="250">
     <Grid>
@@ -19,7 +19,25 @@
         <TextBlock Grid.Row="0" Text="Urls: "/>
         <TextBlock Grid.Row="1" Text="Secret Key: "/>
 
-        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Urls, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding SecretKey, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        <TextBox Grid.Column="1" Grid.Row="0" Validation.Error="TextBox_Error">
+            <TextBox.Text>
+                <Binding Path="Urls" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <Binding.ValidationRules>
+                        <local:ValidationUri/>
+                        <ExceptionValidationRule/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+        <TextBox Grid.Column="1" Grid.Row="1" Validation.Error="TextBox_Error">
+            <TextBox.Text>
+                <Binding Path="SecretKey" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <Binding.ValidationRules>
+                        <local:ValidationString MinLength="1"/>
+                        <ExceptionValidationRule/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
     </Grid>
 </UserControl>

@@ -34,7 +34,11 @@ namespace TickTrader.BotAgent.Configurator
         public void CancelChanges()
         {
             _model.LoadConfiguration();
+            RefreshModels();
+        }
 
+        public void RefreshModels()
+        {
             AdminModel.RefreshModel();
             DealerModel.RefreshModel();
             ViewerModel.RefreshModel();

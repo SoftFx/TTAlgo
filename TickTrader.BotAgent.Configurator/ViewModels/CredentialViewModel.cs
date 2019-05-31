@@ -51,6 +51,13 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
+        public void GenerateNewPassword()
+        {
+            _model.GeneratePassword();
+
+            OnPropertyChanged(nameof(Password));
+        }
+
         public void RefreshModel()
         {
             OnPropertyChanged(nameof(Login));

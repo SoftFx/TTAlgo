@@ -1,30 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IErrorCounter
     {
         private ConfigurationViewModel _viewModel;
+        private int _countErrors = 0;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _viewModel = new ConfigurationViewModel();
-            DataContext = _viewModel;
+            try
+            {
+                _viewModel = new ConfigurationViewModel();
+                DataContext = _viewModel;
+            }
+            catch
+            {
+                Close();
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -34,7 +30,25 @@ namespace TickTrader.BotAgent.Configurator
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.CancelChanges();
+            try
+            {
+                _viewModel.CancelChanges();
+            }
+            catch
+            {
+                Close();
+            }
         }
+
+        public void CountNumberErrors(object sender, ValidationErrorEventArgs e)
+        {
+            _countErrors += e.Action == ValidationErrorEventAction.Added ? 1 : -1;
+            SaveButton.IsEnabled = _countErrors <= 0;
+        }
+    }
+
+    public interface IErrorCounter
+    {
+        void CountNumberErrors(object obj, ValidationErrorEventArgs e);
     }
 }

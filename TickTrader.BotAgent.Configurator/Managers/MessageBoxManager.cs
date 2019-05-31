@@ -18,5 +18,12 @@ namespace TickTrader.BotAgent.Configurator
         {
             MessageBox.Show(message, "", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        public static bool YesNoBox(string message)
+        {
+            var result = MessageBox.Show(message, "Error", MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+            return result == MessageBoxResult.Yes;
+        }
     }
 }

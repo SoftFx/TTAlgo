@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
+             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="250">
     <Grid>
@@ -21,8 +21,26 @@
         <TextBlock Grid.Row="1" Text="Directory Name: "/>
         <TextBlock Grid.Row="2" Text="Log Message: "/>
 
-        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding ListeningPort, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding DirectoryName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        <TextBox Grid.Column="1" Grid.Row="0">
+            <TextBox.Text>
+                <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <Binding.ValidationRules>
+                        <ExceptionValidationRule/>
+                        <local:ValidationPort MinValue="100" MaxValue="100000"/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+        <TextBox Grid.Column="1" Grid.Row="1" Validation.Error="TextBox_Error">
+            <TextBox.Text>
+                <Binding Path="DirectoryName" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <Binding.ValidationRules>
+                        <local:ValidationString MinLength="1"/>
+                        <ExceptionValidationRule/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
         <CheckBox Grid.Column="1" Grid.Row="2" IsChecked="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource checkBoxControlPanel}"/>
     </Grid>
 </UserControl>

@@ -9,7 +9,17 @@
     <Style TargetType="TextBox">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Height" Value="22"/>
+        <Setter Property="Width" Value="150"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip"
+                Value="{Binding RelativeSource={RelativeSource Self},
+                    Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="Foreground" Value="Red" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="stateButton" TargetType="Button">
@@ -26,7 +36,7 @@
 
     <Style x:Key="userControlPanel">
         <Setter Property="Control.Height" Value="100"/>
-        <Setter Property="Control.Width" Value="250"/>
+        <!--<Setter Property="Control.Width" Value="250"/>-->
         <Setter Property="Control.HorizontalAlignment" Value="Left"/>
         <Setter Property="Control.Margin" Value="10"/>
         <Setter Property="Control.VerticalAlignment" Value="Top"/>
@@ -35,5 +45,11 @@
     <Style x:Key="checkBoxControlPanel" TargetType="CheckBox">
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <Style x:Key="generateButton" TargetType="Button">
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Margin" Value="10 0 0 0"/>
     </Style>
 </ResourceDictionary>

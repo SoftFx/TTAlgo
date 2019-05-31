@@ -43,7 +43,7 @@
                     <TextBlock Text="Protocol"/>
                 </TabItem.Header>
                 <TabItem.Content>
-                    <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource userControlPanel}"/>
+                    <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource userControlPanel}" Validation.Error="CountNumberErrors"/>
                 </TabItem.Content>
             </TabItem>
 
@@ -60,7 +60,7 @@
         
         <StackPanel Grid.Row="1" Style="{StaticResource stateButtonPanel}">
             <Button Content="Cancel" Style="{StaticResource stateButton}" Click="CancelButton_Click"/>
-            <Button Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click"/>
+            <Button x:Name="SaveButton" Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>
