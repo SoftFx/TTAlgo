@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core.Container
 
         public IEnumerable<PluginMetadata> AlgoMetadata { get; private set; }
 
-        internal T Activate<T>() where T : MarshalByRefObject, new()
+        public T Activate<T>() where T : MarshalByRefObject, new()
         {
             return new T();
         }

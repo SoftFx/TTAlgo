@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Api
         BookEntry[] BidBook { get; }
     }
 
+    [Serializable]
     public struct BookEntry
     {
         public BookEntry(double price, double volume)

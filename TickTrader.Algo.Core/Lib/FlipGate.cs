@@ -110,6 +110,16 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
+        /// <summary>
+        /// Lists are re-used, so please do not cache them! 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<List<T>> PagedRead()
+        {
+            while (ReadPage())
+                yield return _readBuff;
+        }
+
         public IEnumerator<T> GetEnumerator()
         {
             while (ReadPage())

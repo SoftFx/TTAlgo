@@ -233,6 +233,8 @@ namespace TickTrader.Algo.Core
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
+        internal event Action Stopped;
+
         #endregion
 
         public void Start()
@@ -414,6 +416,15 @@ namespace TickTrader.Algo.Core
                 OnException(ex);
             }
 
+            try
+            {
+                Stopped?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                OnException(ex);
+            }
+
             lock (_sync) ChangeState(States.Idle);
         }
 
@@ -554,7 +565,6 @@ namespace TickTrader.Algo.Core
         #endregion
 
         #endregion
-
 
         private void Validate()
         {

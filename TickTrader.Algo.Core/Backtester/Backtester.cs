@@ -106,7 +106,10 @@ namespace TickTrader.Algo.Core
             _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            _executor.StartCollection();
+            bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
+                | OutputDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | SymbolDataConfig.Any(s => s.Value.IsFlagSet(TestDataSeriesFlags.Realtime));
+
+            _executor.StartCollection(isRealtime);
 
             if (!_control.OnStart())
             {
