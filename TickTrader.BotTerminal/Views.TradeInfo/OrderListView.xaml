@@ -35,11 +35,11 @@
                         <Setter Property="ToolTip" >
                             <Setter.Value>
                                 <StackPanel Orientation="Vertical">
-                                    <StackPanel Orientation="Horizontal" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.InstanceId, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.LimitPrice, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Limit Price: " VerticalAlignment="Center" />
                                         <TextBlock VerticalAlignment="Center" >
                                             <TextBlock.Text>
@@ -50,11 +50,15 @@
                                             </TextBlock.Text>
                                         </TextBlock>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.StopPrice, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Stop Price: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.StopPrice}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal" >
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Expiration, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.Expiration}" VerticalAlignment="Center" />
                                     </StackPanel>
@@ -79,7 +83,7 @@
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
                     <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
                     <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType}"/>
+                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType, Converter={StaticResource PascalSplitString}}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
                         <DataGridTextColumn.Binding>
                             <MultiBinding ConverterParameter=" {0}/{1}" Converter="{StaticResource StringFormat}">

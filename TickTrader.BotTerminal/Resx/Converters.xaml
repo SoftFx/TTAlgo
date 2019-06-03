@@ -4,12 +4,14 @@
 
     <l:BooleanToVisibilityConverter x:Key="BoolToVis"/>
     <l:BooleanToVisibilityConverter x:Key="LeastOneBoolToVisible" ConversionMode="LeastOne"/>
+    <l:NullToVisibilityConverter x:Key="NullOrEmptyToVis"/>
+    <l:NullToBoolConverter x:Key="NullOrEmptyToBool"/>
     <l:ColorRefToBrushConverter x:Key="ColorRefConverter"/>
     <l:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     <l:ColorToHexConverter x:Key="ColorToHexConverter" />
     <l:BoolInverter x:Key="BoolInverter" />
     <l:DateTimeConverter x:Key="ExtDateTimeFormat" Format="GExt" ConvertToLocal="True"/>
-    <l:DateTimeConverter x:Key="FullDateTimeFormat" Format="G" ConvertToLocal="True"/>
+    <l:DateTimeConverter x:Key="FullDateTimeFormat" Format="G" ConvertToLocal="False"/>
     <l:DateTimeConverter x:Key="ShortDateTimeFormat" Format="g" ConvertToLocal="True"/>
     <l:DateTimeConverter x:Key="UtcExtDateTimeFormat" Format="GExt" ConvertToLocal="False" />
     <l:DateTimeConverter x:Key="UtcFullDateTimeFormat" Format="G" ConvertToLocal="False" />
@@ -27,5 +29,6 @@
     <l:DoubleCmpConverter x:Key="CmpGe" Mode="LessOrEqual"/>
     <l:LogSeverityToBrushConverter x:Key="LogSeverityConverter" />
     <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
+    <l:PascalCaseSplitConverter x:Key="PascalSplitString"/>
 
 </ResourceDictionary>

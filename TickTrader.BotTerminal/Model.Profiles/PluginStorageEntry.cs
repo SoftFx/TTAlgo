@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
@@ -40,14 +41,5 @@ namespace TickTrader.BotTerminal
             res.Started = Started;
             return res;
         }
-    }
-
-    [DataContract(Namespace = "BotTerminal.Profile.v2", Name = "ColumnState")]
-    internal class ColumnStateStorageEntry : PluginStorageEntry<TradeBotStorageEntry>
-    {
-        [DataMember]
-        public string Key { get; set; }
-        [DataMember]
-        public bool State { get; set; }
     }
 }

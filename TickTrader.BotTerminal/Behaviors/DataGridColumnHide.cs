@@ -10,15 +10,15 @@ namespace TickTrader.BotTerminal
     public class DataGridColumnHide : Freezable
     {
         public static readonly DependencyProperty IsShownProperty = DependencyProperty.Register("IsShown", typeof(bool),
-    typeof(DataGridColumnHide), new PropertyMetadata(false, new PropertyChangedCallback(IsShownPropertyChanged)));
+            typeof(DataGridColumnHide), new PropertyMetadata(false, new PropertyChangedCallback(IsShownPropertyChanged)));
 
         public static readonly DependencyProperty VisibilityProperty = DependencyProperty.Register("Visibility", typeof(Visibility),
-    typeof(DataGridColumnHide), new PropertyMetadata(Visibility.Collapsed));
+            typeof(DataGridColumnHide), new PropertyMetadata(Visibility.Collapsed));
 
         public static readonly DependencyProperty ColumnKeyProperty = DependencyProperty.Register("ColumnKey", typeof(string),
-    typeof(DataGridColumnHide), new PropertyMetadata("Unknown"));
+            typeof(DataGridColumnHide), new PropertyMetadata("Unknown"));
 
-        public static readonly DependencyProperty ProviderProperty = DependencyProperty.Register("Provider", typeof(ProviderColumnsState),
+        public static readonly DependencyProperty ProviderProperty = DependencyProperty.Register("Provider", typeof(ViewModelStorageEntry),
             typeof(DataGridColumnHide), new PropertyMetadata(null, new PropertyChangedCallback(ProviderPropertyChanged)));
 
         public bool IsShown
@@ -39,9 +39,9 @@ namespace TickTrader.BotTerminal
             set { SetValue(ColumnKeyProperty, value); }
         }
 
-        internal ProviderColumnsState Provider
+        internal ViewModelStorageEntry Provider
         {
-            get { return (ProviderColumnsState)GetValue(ProviderProperty); }
+            get { return (ViewModelStorageEntry)GetValue(ProviderProperty); }
             set { SetValue(ProviderProperty, value); }
         }
 
@@ -54,24 +54,27 @@ namespace TickTrader.BotTerminal
             else
                 stateObj.Visibility = Visibility.Collapsed;
 
-            if (stateObj.Provider != null)
-
-                stateObj.Provider[stateObj.ColumnKey] = stateObj.IsShown;
+            stateObj.Provider.ChangeProperty(GetKey(stateObj), stateObj.IsShown.ToString());
         }
 
         private static void ProviderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)
         {
             var stateObj = (DataGridColumnHide)d;
 
-            var key = stateObj.ColumnKey;
+            var prop = stateObj.Provider?.GetProperty(GetKey(stateObj));
 
-            if (stateObj.Provider?.ContainsKey(key) == true)
-                stateObj.IsShown = (bool)stateObj.Provider[key];
+            if (bool.TryParse(prop?.State, out var show))
+                stateObj.IsShown = show;
         }
 
         protected override Freezable CreateInstanceCore()
         {
             return new DataGridColumnHide();
+        }
+
+        private static string GetKey(DataGridColumnHide stateObj)
+        {
+            return $"Column_{stateObj.ColumnKey}";
         }
     }
 }

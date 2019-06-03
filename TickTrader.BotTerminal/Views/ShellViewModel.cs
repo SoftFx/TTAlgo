@@ -61,7 +61,7 @@ namespace TickTrader.BotTerminal
             algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 
             AlgoList = new AlgoListViewModel(algoEnv);
-            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this, true);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this, false);
 
             ProfileManager = new ProfileManagerViewModel(this, storage);
 
