@@ -531,6 +531,12 @@ namespace TickTrader.Algo.Core
         {
             var currentRate = _calcFixture.GetCurrentRateOrNull(order.Symbol);
 
+            if (order.Type == OrderType.Market && execPrice == null)
+            {
+                execPrice = GetOpenOrderPrice(currentRate, order.Side);
+                order.Entity.Price = execPrice;
+            }
+
             _acc.Orders.Add(order);
 
             //CommissionStrategy.OnOrderOpened(order, null);

@@ -88,14 +88,10 @@ namespace TickTrader.Algo.Core
                 var calc = Calculator;
                 if (calc != null)
                 {
-                    //try
-                    //{
-                        var margin = calc.CalculateMargin(this, _leverage, out var error);
-                        if (error != CalcErrorCodes.None)
-                            return double.NaN;
-                        return margin;
-                    //}
-                    //catch (TickTrader.BusinessLogic.BusinessLogicException) { }
+                    var margin = calc.CalculateMargin(this, _leverage, out var error);
+                    if (error != CalcErrorCodes.None)
+                        return double.NaN;
+                    return margin;
                 }
                 return double.NaN;
             }
@@ -104,17 +100,16 @@ namespace TickTrader.Algo.Core
         {
             get
             {
+                if (Type != OrderType.Position)
+                    return 0;
+
                 var calc = Calculator;
                 if (calc != null)
                 {
-                    //try
-                    //{
-                        var prof = calc.CalculateProfit(this, out var error);
-                        if (error != CalcErrorCodes.None)
-                            return double.NaN;
-                        return prof;
-                    //}
-                    //catch (TickTrader.BusinessLogic.BusinessLogicException) { }
+                    var prof = calc.CalculateProfit(this, out var error);
+                    if (error != CalcErrorCodes.None)
+                        return double.NaN;
+                    return prof;
                 }
                 return double.NaN;
             }
