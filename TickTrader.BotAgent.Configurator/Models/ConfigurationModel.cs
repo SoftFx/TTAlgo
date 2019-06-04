@@ -9,7 +9,10 @@ namespace TickTrader.BotAgent.Configurator
     public class ConfigurationModel
     {
         private RegistryManager _registryManager;
+        private PortsManager _portsManager;
         private JObject _configurationObject;
+
+        private readonly List<IUploaderModels> _uploaderModels;
 
         public CredentialsManager CredentialsManager { get; }
 
@@ -19,11 +22,11 @@ namespace TickTrader.BotAgent.Configurator
 
         public ServerManager ServerManager { get; }
 
-        private List<IUploaderModels> _uploaderModels;
 
         public ConfigurationModel()
         {
             _registryManager = new RegistryManager();
+            _portsManager = new PortsManager();
 
             CredentialsManager = new CredentialsManager("Credentials");
             SslManager = new SslManager("Ssl");
@@ -35,24 +38,19 @@ namespace TickTrader.BotAgent.Configurator
             LoadConfiguration();
         }
 
+        public void StartAgent()
+        {
+            var hostAndPort = _portsManager.GetHostAndPort(ServerManager.ServerModel.Urls);
+            _portsManager.RegistryPortInFirewall(hostAndPort.Item2, _registryManager.ApplicationName);
+            _portsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
+            MessageBoxManager.OKBox("Port is open");
+        }
+
         public void LoadConfiguration()
         {
-            StreamReader configStreamReader = null;
-
-            try
+            using (var configStreamReader = _registryManager.GetConfigurationStreamReader())
             {
-                configStreamReader = _registryManager.GetConfigurationStreamReader();
-
                 ParseJsonString(configStreamReader.ReadToEnd());
-            }
-            catch (Exception ex)
-            {
-                MessageBoxManager.ErrorBox(ex.Message);
-                throw;
-            }
-            finally
-            {
-                configStreamReader?.Dispose();
             }
         }
 
@@ -66,27 +64,12 @@ namespace TickTrader.BotAgent.Configurator
 
         private void SaveConfiguration()
         {
-            StreamWriter configStreamWriter = null;
-            bool successfully = false;
-
-            try
+            using (var configStreamWriter = _registryManager.GetConfigurationStreamWriter())
             {
-                configStreamWriter = _registryManager.GetConfigurationStreamWriter();
                 configStreamWriter.Write(_configurationObject.ToString());
+            }
 
-                successfully = true;
-            }
-            catch (Exception ex)
-            {
-                MessageBoxManager.ErrorBox(ex.Message);
-            }
-            finally
-            {
-                configStreamWriter?.Dispose();
-
-                if (successfully)
-                    MessageBoxManager.OKBox("Successfully");
-            }
+            MessageBoxManager.OKBox("Successfully");
         }
 
         private void ParseJsonString(string json)

@@ -1,19 +1,13 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class RegistryManager
     {
-        public const string ApplicationName = "TickTrader Bot Agent";
-        public const string ApplicationPathKey = "";
+        private const string ApplicationPathKey = "";
 
         //public List<RegistryKey> _applicationPaths;
 
@@ -21,6 +15,9 @@ namespace TickTrader.BotAgent.Configurator
         private string _configPath = Path.Combine("WebAdmin", "appsettings.json");
         private string _botAgentPath;
         private string _botAgentConfigPath = string.Empty;
+
+        public string RegistryApplicationName => "TickTrader Bot Agent";
+        public string ApplicationName => "TickTrader.BotAgent";
 
         public RegistryManager()
         {
@@ -53,9 +50,9 @@ namespace TickTrader.BotAgent.Configurator
             //if (_applicationPaths.Count == 0)
             //    throw new Exception($"{ApplicationName} not found");
 
-            var applicationKey = _baseKey.OpenSubKey(ApplicationName);
+            var applicationKey = _baseKey.OpenSubKey(RegistryApplicationName);
             if (applicationKey == null)
-                throw new Exception($"{ApplicationName} not found");
+                throw new Exception($"{RegistryApplicationName} not found");
 
             _botAgentPath = GetApplicationPath(applicationKey);
             _botAgentConfigPath = GetBotAgentConfigPath();
@@ -76,7 +73,7 @@ namespace TickTrader.BotAgent.Configurator
             var path = key.GetValue(ApplicationPathKey);
 
             if (path == null)
-                throw new Exception($"{ApplicationName} path was not found");
+                throw new Exception($"{RegistryApplicationName} path was not found");
 
             return path as string;
         }

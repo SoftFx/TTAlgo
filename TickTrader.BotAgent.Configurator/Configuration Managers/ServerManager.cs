@@ -57,7 +57,7 @@ namespace TickTrader.BotAgent.Configurator
                 Urls = DefaultUrls;
 
             if (string.IsNullOrEmpty(SecretKey))
-                SecretKey = DefaultSecretKey;
+                SecretKey = DefaultSecretKey; 
         }
     }
 }

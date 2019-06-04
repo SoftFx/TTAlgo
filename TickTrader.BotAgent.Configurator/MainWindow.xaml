@@ -61,6 +61,7 @@
         <StackPanel Grid.Row="1" Style="{StaticResource stateButtonPanel}">
             <Button Content="Cancel" Style="{StaticResource stateButton}" Click="CancelButton_Click"/>
             <Button x:Name="SaveButton" Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click"/>
+            <Button Content="Start" Style="{StaticResource stateButton}" Click="StartButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>

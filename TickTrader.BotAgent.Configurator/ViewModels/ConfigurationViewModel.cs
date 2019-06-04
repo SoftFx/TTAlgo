@@ -52,5 +52,10 @@ namespace TickTrader.BotAgent.Configurator
         {
             _model.SaveChanges();
         }
+
+        public void StartAgent()
+        {
+            _model.StartAgent();
+        }
     }
 }

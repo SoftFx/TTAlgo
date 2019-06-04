@@ -25,5 +25,10 @@ namespace TickTrader.BotAgent.Configurator
 
             return result == MessageBoxResult.Yes;
         }
+
+        public static void WarningBox(string message)
+        {
+            MessageBox.Show(message, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 }

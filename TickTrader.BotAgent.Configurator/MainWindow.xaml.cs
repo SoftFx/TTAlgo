@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace TickTrader.BotAgent.Configurator
@@ -17,25 +18,9 @@ namespace TickTrader.BotAgent.Configurator
                 _viewModel = new ConfigurationViewModel();
                 DataContext = _viewModel;
             }
-            catch
+            catch (Exception ex)
             {
-                Close();
-            }
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            _viewModel.SaveChanges();
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                _viewModel.CancelChanges();
-            }
-            catch
-            {
+                MessageBoxManager.ErrorBox(ex.Message);
                 Close();
             }
         }
@@ -44,6 +29,47 @@ namespace TickTrader.BotAgent.Configurator
         {
             _countErrors += e.Action == ValidationErrorEventAction.Added ? 1 : -1;
             SaveButton.IsEnabled = _countErrors <= 0;
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _viewModel.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxManager.ErrorBox(ex.Message);
+            }
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _viewModel.CancelChanges();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxManager.ErrorBox(ex.Message);
+                Close();
+            }
+        }
+
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _viewModel.StartAgent();
+            }
+            catch (WarningException ex)
+            {
+                MessageBoxManager.WarningBox(ex.Message);
+            }
+            catch (Exception exx)
+            {
+                MessageBoxManager.ErrorBox(exx.Message);
+            }
         }
     }
 
