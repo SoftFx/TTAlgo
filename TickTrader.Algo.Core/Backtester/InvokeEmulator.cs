@@ -196,7 +196,7 @@ namespace TickTrader.Algo.Core
             {
                 StopFeedRead();
                 EmulateStop();
-                throw WrapException(ex);
+                throw;
             }
             finally
             {
@@ -543,14 +543,6 @@ namespace TickTrader.Algo.Core
             UpdateVirtualTimepoint(next.Time);
             isTrade = next.IsTrade;
             return next.Content;
-        }
-
-        private Exception WrapException(Exception ex)
-        {
-            if (ex is AlgoException)
-                return ex;
-
-            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }
 }

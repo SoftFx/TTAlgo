@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Common.Model
 
         private Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            return _feedProxy.GetAvailableRange(symbol, priceType, timeFrame);
+            return _feedProxy?.GetAvailableRange(symbol, priceType, timeFrame) ?? Task.FromResult<Tuple<DateTime, DateTime>>(null);
         }
 
         private async Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int pageSize)

@@ -65,7 +65,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IReadOnlyList<SymbolInfo> AvailableSymbols { get; private set; }
+        public IReadOnlyList<SymbolKey> AvailableSymbols { get; private set; }
 
         public ISymbolInfo MainSymbol
         {

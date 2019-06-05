@@ -2,8 +2,10 @@
 using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,6 +19,8 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterSymbolSetupViewModel : EntityBase
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private IntProperty _requestsCount;
         private bool _suppressRangeUpdates;
 
@@ -27,6 +31,8 @@ namespace TickTrader.BotTerminal
             SetupType = type;
 
             AvailableSymbols = symbols;
+
+            symbols.CollectionChanged += Symbols_CollectionChanged;
 
             if (type == SymbolSetupType.Main)
                 AvailableTimeFrames = TimeFrameModel.BarTimeFrames;
@@ -60,6 +66,7 @@ namespace TickTrader.BotTerminal
                 TriggerOnChange(SelectedTimeframe.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
             }
 
+            //TriggerOn(SelectedSymbol.Var.IsNull(), SelectDefaultSymbol);
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
 
             SelectDefaultSymbol();
@@ -109,11 +116,14 @@ namespace TickTrader.BotTerminal
                 {
                     //AvailableRange.Value = await smb.GetAvailableRange(SelectedTimeframe.Value, BarPriceType.Bid);
                     var range = await smb.GetAvailableRange(timeFrame, BarPriceType.Bid);
-                    AvailableRange.Value = new Tuple<DateTime, DateTime>(range.Item1.Date, range.Item2.Date + TimeSpan.FromDays(1));
+                    if (range != null)
+                        AvailableRange.Value = new Tuple<DateTime, DateTime>(range.Item1.Date, range.Item2.Date + TimeSpan.FromDays(1));
+                    else
+                        AvailableRange.Value = null;
                 }
                 catch (Exception ex)
                 {
-                    //TO DO
+                    _logger.Warn("Failed to get available range for symbol + " + smb.Name + ": " + ex.Message);
                 }
 
                 _requestsCount.Value--;
@@ -282,7 +292,19 @@ namespace TickTrader.BotTerminal
 
         public override void Dispose()
         {
+            if(AvailableSymbols != null)
+                AvailableSymbols.CollectionChanged -= Symbols_CollectionChanged;
+
             base.Dispose();
+        }
+
+        private void Symbols_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                if (SelectedSymbol.Value == null || e.OldItems.Contains(SelectedSymbol.Value))
+                    SelectDefaultSymbol();
+            }
         }
 
         //private IEnumerable<BarEntity> ReadSlices(BlockingChannel<Slice<DateTime, BarEntity>> channel)

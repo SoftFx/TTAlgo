@@ -227,12 +227,12 @@ namespace TickTrader.BotTerminal
 
         public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            return null;
+            return CompletedTask.Default;
         }
 
         public override Task Remove()
         {
-            throw new NotImplementedException();
+            return _storage.Remove(_symbolInfo.Name);
         }
 
         public override SymbolToken ToSymbolToken()

@@ -18,7 +18,9 @@ namespace TickTrader.Algo.Core
 
         internal IEnumerable<RateUpdate> GetFeedStream()
         {
-            using (var reader = new FeedReader(_feedReaders.Values))
+            var reader = new FeedReader(_feedReaders.Values);
+
+            using (reader)
             {
                 foreach (var rate in reader)
                 {
@@ -28,6 +30,9 @@ namespace TickTrader.Algo.Core
                     yield return rate;
                 }
             }
+
+            if (reader.HasFailed)
+                throw new Exception("Failed to read feed stream! " + reader.Fault.Message, reader.Fault);
         }
 
         internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)

@@ -38,7 +38,7 @@ namespace TickTrader.BotTerminal
         private SymbolCatalog _catalog;
 
         private SymbolToken _mainSymbolToken;
-        private IVarList<ISymbolInfo> _symbolTokens;
+        private IVarSet<SymbolKey, ISymbolInfo> _symbolTokens;
         private IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
         private VarContext _var = new VarContext();
         private TraderClientModel _client;
@@ -113,10 +113,15 @@ namespace TickTrader.BotTerminal
             TradeSettingsSummary = _var.AddProperty<string>();
 
             _mainSymbolToken = SpecialSymbols.MainSymbolPlaceholder;
-            var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
-            var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISymbolInfo)s.ToSymbolToken());
-            _symbolTokens = VarCollection.Combine<ISymbolInfo>(predefinedSymbolTokens, existingSymbolTokens);
-            _observableSymbolTokens = _symbolTokens.AsObservable();
+            //var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
+            var predefinedSymbolTokens = new VarDictionary<SymbolKey, ISymbolInfo>();
+            predefinedSymbolTokens.Add(_mainSymbolToken.GetKey(), _mainSymbolToken);
+
+            var existingSymbolTokens = _catalog.AllSymbols.Select((k, s) => (ISymbolInfo)s.ToSymbolToken());
+            _symbolTokens = VarCollection.Combine(predefinedSymbolTokens, existingSymbolTokens);
+
+            var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
+            _observableSymbolTokens = sortedSymbolTokens.AsObservable();
 
             env.LocalAgentVM.Plugins.Updated += a =>
             {

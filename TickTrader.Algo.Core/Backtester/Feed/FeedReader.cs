@@ -19,6 +19,9 @@ namespace TickTrader.Algo.Core
             _worker = Task.Factory.StartNew(() => ReadLoop(sources), TaskCreationOptions.LongRunning);
         }
 
+        public Exception Fault { get; private set; }
+        public bool HasFailed => Fault != null;
+
         public IEnumerator<RateUpdate> GetEnumerator()
         {
             return _gate.GetEnumerator();
@@ -61,11 +64,13 @@ namespace TickTrader.Algo.Core
                         return;
                 }
             }
-            finally
+            catch(Exception ex)
             {
-                foreach (var src in streams)
-                    src.Stop();
+                Fault = ex;
             }
+
+            foreach (var src in streams)
+                src.Stop();
 
             _gate.CompleteWrite();
         }
