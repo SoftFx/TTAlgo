@@ -54,28 +54,28 @@ namespace TickTrader.Algo.Core.Calc
         public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, decimal? marginMovement)
         {
             var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
-            return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, order.Price, order.StopPrice, marginMovement);
+            return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
         }
 
-        public bool HasSufficientMarginToOpenOrder(OrderTypes type, OrderSides side, SymbolAccessor symbol, double? price, double? stopPrice, decimal? marginMovement)
+        public bool HasSufficientMarginToOpenOrder(OrderTypes type, OrderSides side, SymbolAccessor symbol, decimal? marginMovement)
         {
             //if (order == null)
             //    throw new ArgumentNullException("order");
 
-            if (type != OrderTypes.Limit && type != OrderTypes.StopLimit)
-                throw new ArgumentException("Invalid Order Type", "order");
+            //if (type != OrderTypes.Limit && type != OrderTypes.StopLimit)
+            //    throw new ArgumentException("Invalid Order Type", "order");
 
-            if (type == OrderTypes.Stop || type == OrderTypes.StopLimit)
-            {
-                if (stopPrice == null || stopPrice <= 0)
-                    throw new ArgumentException("Invalid Stop Price", "order");
-            }
+            //if (type == OrderTypes.Stop || type == OrderTypes.StopLimit)
+            //{
+            //    if (stopPrice == null || stopPrice <= 0)
+            //        throw new ArgumentException("Invalid Stop Price", "order");
+            //}
 
-            if (type != OrderTypes.Stop)
-            {
-                if (price == null || price <= 0)
-                    throw new ArgumentException("Invalid Price", "order");
-            }
+            //if (type != OrderTypes.Stop)
+            //{
+            //    if (price == null || price <= 0)
+            //        throw new ArgumentException("Invalid Price", "order");
+            //}
 
             //if (order.Amount <= 0)
             //    throw new ArgumentException("Invalid Amount", "order");

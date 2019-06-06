@@ -92,6 +92,8 @@ namespace TickTrader.Algo.Core
                 sl = RoundPrice(sl, smbMetadata, side);
                 tp = RoundPrice(tp, smbMetadata, side);
 
+                if (orderType == OrderType.Market && price == null)
+                    price = GetMarketOpenPriceOrThrow(smbMetadata, side);
 
                 ValidatePrice(price, orderType == OrderType.Limit || orderType == OrderType.StopLimit);
                 ValidateStopPrice(stopPrice, orderType == OrderType.Stop || orderType == OrderType.StopLimit);
@@ -621,7 +623,11 @@ namespace TickTrader.Algo.Core
 
             var newIsHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
 
-            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder.Entity, request.NewVolume.Value, newIsHidden))
+            var newVol = request.NewVolume ?? oldOrder.RemainingVolume;
+            var newPrice = request.Price ?? oldOrder.Price;
+            var newStopPrice = request.StopPrice ?? oldOrder.StopPrice;
+
+            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -656,11 +662,28 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        #region Logging
+        private double GetMarketOpenPriceOrThrow(SymbolAccessor smb, OrderSide orderSide)
+        {
+            var rate = smb.LastQuote;
 
-       
+            if (rate == null)
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
 
-        #endregion
+            if (orderSide == OrderSide.Buy)
+            {
+                if (rate.HasAsk)
+                    return rate.Ask;
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            }
+            else if (orderSide == OrderSide.Sell)
+            {
+                if (rate.HasBid)
+                    return rate.Bid;
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            }
+
+            throw new Exception("Unknown order side: " + orderSide);
+        }
     }
 
     internal class OrderValidationError : Exception
