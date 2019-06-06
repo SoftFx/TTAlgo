@@ -173,7 +173,7 @@ namespace TickTrader.Algo.Core
                     if (order.Modified <= entity.Modified)
                     {
                         order.Update(entity);
-                        Updated?.Invoke(order);
+                        Replaced?.Invoke(order);
                     }
                 }
 
@@ -247,7 +247,7 @@ namespace TickTrader.Algo.Core
             public event Action<OrderActivatedEventArgs> Activated = delegate { };
             public event Action<Order> Added;
             public event Action<Order> Removed;
-            public event Action<Order> Updated;
+            public event Action<Order> Replaced;
             public event Action Cleared;
 
             public IEnumerator<OrderAccessor> GetTypedEnumerator()
