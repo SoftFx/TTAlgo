@@ -25,6 +25,7 @@ namespace TickTrader.Algo.Core.Calc
             InitRounding();
 
             AddOrdersBunch(accInfo.Orders);
+            AddPositions(accInfo.Positions);
 
             Info.OrderAdded += AddOrder;
             Info.OrderRemoved += RemoveOrder;
@@ -198,6 +199,15 @@ namespace TickTrader.Algo.Core.Calc
             var smbCalc = GetOrAddSymbolCalculator(order.Symbol);
             smbCalc.RemoveOrder(order);
             RemoveIfEmpty(smbCalc);
+        }
+
+        private void AddPositions(IEnumerable<IPositionModel2> positions)
+        {
+            if (positions != null)
+            {
+                foreach (var pos in positions)
+                    UpdateNetPos(pos, PositionChageTypes.AddedModified);
+            }
         }
 
         private void UpdateNetPos(IPositionModel2 position, PositionChageTypes chType)

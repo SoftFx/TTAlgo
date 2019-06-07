@@ -221,7 +221,7 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Account positions.
         /// </summary>
-        //IEnumerable<IPositionModel> Positions { get; }
+        IEnumerable<IPositionModel2> Positions { get; }
 
         /// <summary>
         /// Fired when position changed.

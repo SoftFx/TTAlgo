@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
             this.builder = builder;
 
             Orders = new OrdersCollection(builder);
-            NetPositions = new PositionCollection(builder);
+            NetPositions = new PositionCollection(builder, this);
             Assets = new AssetsCollection(builder);
 
             //Equity = double.NaN;
@@ -176,7 +176,7 @@ namespace TickTrader.Algo.Core
         public BO.AccountingTypes AccountingType => TickTraderToAlgo.Convert(Type);
         double IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
-        //IEnumerable<BL.IPositionModel> BL.IMarginAccountInfo.Positions => NetPositions;
+        IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => NetPositions;
         IEnumerable<BL.IAssetModel> ICashAccountInfo2.Assets => Assets;
 
         //void BL.IAccountInfo.LogInfo(string message)

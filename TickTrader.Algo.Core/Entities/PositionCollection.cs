@@ -11,14 +11,15 @@ namespace TickTrader.Algo.Core
 {
     public class PositionCollection : IEnumerable<PositionAccessor>
     {
-        private PluginBuilder _builder;
-        private PositionsFixture _fixture = new PositionsFixture();
+        private readonly PluginBuilder _builder;
+        private readonly PositionsFixture _fixture;
 
         internal NetPositionList PositionListImpl { get { return _fixture; } }
 
-        public PositionCollection(PluginBuilder builder)
+        public PositionCollection(PluginBuilder builder, AccountAccessor acc)
         {
             _builder = builder;
+            _fixture = new PositionsFixture(acc);
         }
 
         public PositionAccessor UpdatePosition(PositionEntity eReport)
@@ -108,6 +109,12 @@ namespace TickTrader.Algo.Core
         internal class PositionsFixture : NetPositionList
         {
             private ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
+            private AccountAccessor _acc;
+
+            public PositionsFixture(AccountAccessor acc)
+            {
+                _acc = acc;
+            }
 
             public NetPosition this[string symbol]
             {
@@ -115,7 +122,7 @@ namespace TickTrader.Algo.Core
                 {
                     PositionAccessor entity;
                     if (!_positions.TryGetValue(symbol, out entity))
-                        return PositionAccessor.CreateEmpty(symbol);
+                        return PositionAccessor.CreateEmpty(symbol, _acc.Leverage);
                     return entity;
                 }
             }
@@ -155,7 +162,7 @@ namespace TickTrader.Algo.Core
 
             public PositionAccessor CreatePosition(SymbolAccessor symbol)
             {
-                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol));
+                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol, _acc.Leverage));
             }
 
             public PositionAccessor RemovePosition(string symbol)

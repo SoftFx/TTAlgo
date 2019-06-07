@@ -15,26 +15,28 @@ namespace TickTrader.Algo.Core
         private readonly SideProxy _sell = new SideProxy();
         private readonly Symbol _symbol;
         private readonly double _lotSize;
+        private readonly int _leverage;
 
-        internal PositionAccessor(PositionEntity entity, Func<string, Symbol> symbolProvider)
-            : this(entity, symbolProvider(entity.Symbol))
+        internal PositionAccessor(PositionEntity entity, int leverage, Func<string, Symbol> symbolProvider)
+            : this(entity, symbolProvider(entity.Symbol), leverage)
         {
         }
 
-        internal PositionAccessor(Symbol symbol)
+        internal PositionAccessor(Symbol symbol, int leverage)
         {
             _symbol = symbol;
             _lotSize = symbol?.ContractSize ?? 1;
+            _leverage = leverage;
         }
 
-        internal PositionAccessor(PositionEntity entity, Symbol symbol)
-            : this(symbol)
+        internal PositionAccessor(PositionEntity entity, Symbol symbol, int leverage)
+            : this(symbol, leverage)
         {
             Update(entity ?? throw new ArgumentNullException("entity"));
         }
 
         internal PositionAccessor(PositionAccessor src)
-            : this(src._symbol)
+            : this(src._symbol, src._leverage)
         {
             _buy.Update(src._buy.Amount, src._buy.Price);
             _sell.Update(src._sell.Amount, src._sell.Price);
@@ -72,9 +74,9 @@ namespace TickTrader.Algo.Core
             Removed?.Invoke(this);
         }
 
-        internal static PositionAccessor CreateEmpty(string symbol)
+        internal static PositionAccessor CreateEmpty(string symbol, int leverage)
         {
-            return new PositionAccessor(new PositionEntity { Symbol = symbol }, (Symbol)null);
+            return new PositionAccessor(new PositionEntity { Symbol = symbol }, (Symbol)null, leverage);
         }
 
         public PositionAccessor Clone()
@@ -91,8 +93,8 @@ namespace TickTrader.Algo.Core
         public OrderSide Side => IsBuySided ? OrderSide.Buy : OrderSide.Sell;
         public double Swap { get; internal set; }
         public string Symbol => _symbol.Name;
-        public double Margin => (double)(IsBuySided ? _buy.Margin : _sell.Margin);
-        public double Profit => (double)(IsBuySided ? _buy.Profit : _sell.Profit);
+        public double Margin => CalculateMargin();
+        public double Profit => CalculateProfit();
         public DateTime? Modified { get; set; }
         public string Id { get; set; }
         public bool IsEmpty => VolumeUnits == 0;
@@ -199,6 +201,32 @@ namespace TickTrader.Algo.Core
             public double Price { get; private set; }
             public double Margin { get; set; }
             public double Profit { get; set; }
+        }
+
+        private double CalculateMargin()
+        {
+            var calc = Calculator;
+            if (calc != null)
+            {
+                var margin = calc.CalculateMargin(VolumeUnits, _leverage, BusinessObjects.OrderTypes.Position, Side.ToBoSide(), false, out var error);
+                if (error != CalcErrorCodes.None)
+                    return double.NaN;
+                return margin;
+            }
+            return double.NaN;
+        }
+
+        private double CalculateProfit()
+        {
+            var calc = Calculator;
+            if (calc != null)
+            {
+                var prof = calc.CalculateProfit(Price, VolumeUnits, Side.ToBoSide(), out _, out var error);
+                if (error != CalcErrorCodes.None)
+                    return double.NaN;
+                return prof;
+            }
+            return double.NaN;
         }
     }
 }
