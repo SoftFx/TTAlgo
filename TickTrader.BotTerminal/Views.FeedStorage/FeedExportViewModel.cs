@@ -170,14 +170,15 @@ namespace TickTrader.BotTerminal
                         }
                         else
                         {
-                            throw new NotImplementedException();
-                            //foreach (var slice in _storage.IterateTickCache(_key, from, to))
-                            //{
-                            //    exporter.ExportSlice(slice.From, slice.To, slice.Content);
-                            //    ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
-                            //}
-                        }
+                            var i = _series.IterateTickCache(from, to);
 
+                            while (await i.ReadNext())
+                            {
+                                var slice = i.Current;
+                                exporter.ExportSlice(slice.From, slice.To, slice.Content);
+                                ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
+                            }
+                        }
                     }
                     finally
                     {

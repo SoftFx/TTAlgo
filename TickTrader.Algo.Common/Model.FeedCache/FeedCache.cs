@@ -114,9 +114,21 @@ namespace TickTrader.Algo.Common.Model
                 return channel;
             }
 
+            public Channel<Slice<DateTime, QuoteEntity>> IterateTickCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                var channel = new Channel<Slice<DateTime, QuoteEntity>>(ChannelDirections.Out, 1);
+                _ref.SendChannel(channel, (a, c) => a.IterateTickCache(c, key, from, to));
+                return channel;
+            }
+
             public BlockingChannel<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
             {
                 return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, BarEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateBarCache(c, key, from, to));
+            }
+
+            public BlockingChannel<Slice<DateTime, QuoteEntity>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, QuoteEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateTickCache(c, key, from, to));
             }
 
             public Channel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
@@ -334,10 +346,10 @@ namespace TickTrader.Algo.Common.Model
 
         #region Tick History
 
-        //private IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
-        //{
-        //    return IterateTickCacheInternal(key, from, to).GetSyncWrapper(_syncObj);
-        //}
+        private void IterateTickCache(Channel<Slice<DateTime, QuoteEntity>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            channel.WriteAll(() => IterateTickCacheInternal(key, from, to));
+        }
 
         protected IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
         {

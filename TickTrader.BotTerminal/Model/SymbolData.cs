@@ -269,5 +269,10 @@ namespace TickTrader.BotTerminal
         {
             return _storage.IterateBarCacheAsync(Key, from, to);
         }
+
+        internal Channel<Slice<DateTime, QuoteEntity>> IterateTickCache(DateTime from, DateTime to)
+        {
+            return _storage.IterateTickCacheAsync(Key, from, to);
+        }
     }
 }
