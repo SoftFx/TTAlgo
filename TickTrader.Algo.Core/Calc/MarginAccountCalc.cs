@@ -206,11 +206,11 @@ namespace TickTrader.Algo.Core.Calc
             if (positions != null)
             {
                 foreach (var pos in positions)
-                    UpdateNetPos(pos, PositionChageTypes.AddedModified);
+                    UpdateNetPos(pos);
             }
         }
 
-        private void UpdateNetPos(IPositionModel2 position, PositionChageTypes chType)
+        private void UpdateNetPos(IPositionModel2 position)
         {
             var smbCalc = GetOrAddSymbolCalculator(position.Symbol);
             smbCalc.UpdatePosition(position, out var dSwap, out var dComm);

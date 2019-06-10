@@ -69,14 +69,9 @@ namespace TickTrader.Algo.Core
             FireChanged();
         }
 
-        internal void Remove()
+        internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider, int leverage)
         {
-            Removed?.Invoke(this);
-        }
-
-        internal static PositionAccessor CreateEmpty(string symbol, int leverage)
-        {
-            return new PositionAccessor(new PositionEntity { Symbol = symbol }, (Symbol)null, leverage);
+            return new PositionAccessor(new PositionEntity(symbol), leverage, symbolInfoProvider);
         }
 
         public PositionAccessor Clone()
@@ -113,7 +108,6 @@ namespace TickTrader.Algo.Core
         IPositionSide2 IPositionModel2.Short => _sell;
 
         internal event Action<PositionAccessor> Changed;
-        internal event Action<PositionAccessor> Removed;
 
         private void FireChanged()
         {
@@ -157,7 +151,7 @@ namespace TickTrader.Algo.Core
 
         internal PositionEntity GetEntityCopy()
         {
-            return new PositionEntity()
+            return new PositionEntity(Symbol)
             {
                 Volume = VolumeUnits,
                 Price = Price,
@@ -165,7 +159,6 @@ namespace TickTrader.Algo.Core
                 Swap = (double)Swap,
                 Commission = Commission,
                 Modified = Modified,
-                Symbol = Symbol,
                 Id = Id,
             };
         }

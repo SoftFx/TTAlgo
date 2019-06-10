@@ -16,23 +16,20 @@ namespace TickTrader.Algo.Core
 
         internal NetPositionList PositionListImpl { get { return _fixture; } }
 
-        public PositionCollection(PluginBuilder builder, AccountAccessor acc)
+        public PositionCollection(PluginBuilder builder)
         {
             _builder = builder;
-            _fixture = new PositionsFixture(acc);
+            _fixture = new PositionsFixture(builder);
         }
 
         public PositionAccessor UpdatePosition(PositionEntity eReport)
         {
             PositionAccessor pos;
 
+            pos = GetOrCreatePosition(eReport.Symbol);
+            pos.Update(eReport);
             if (eReport.Volume <= 0)
-                pos = _fixture.RemovePosition(eReport.Symbol);
-            else
-            {
-                pos = GetOrCreatePosition(eReport.Symbol);
-                pos.Update(eReport);
-            }
+                RemovePosition(eReport.Symbol);
 
             return pos;
         }
@@ -43,7 +40,7 @@ namespace TickTrader.Algo.Core
         }
 
         public event Action<PositionAccessor> PositionUpdated;
-        public event Action<PositionAccessor> PositionRemoved;
+        //public event Action<PositionAccessor> PositionRemoved;
 
         public void FirePositionUpdated(NetPositionModifiedEventArgs args)
         {
@@ -84,19 +81,21 @@ namespace TickTrader.Algo.Core
             {
                 pos = _fixture.CreatePosition(smbInfo);
                 pos.Changed += Pos_Changed;
-                pos.Removed += Pos_Removed;
             }
 
             return pos;
         }
 
-        private void Pos_Removed(PositionAccessor pos)
+        internal PositionAccessor RemovePosition(string smb)
         {
-            pos.Changed -= Pos_Changed;
-            pos.Removed -= Pos_Removed;
-            var removed = _fixture.RemovePosition(pos.Symbol);
-            if (removed != null)
-                PositionRemoved?.Invoke(pos);
+            var toRemove = _fixture.GetOrDefault(smb);
+            if (toRemove != null)
+            {
+                _fixture.RemovePosition(smb);
+                //PositionRemoved?.Invoke(toRemove);
+                toRemove.Changed -= Pos_Changed;
+            }
+            return toRemove;
         }
 
         private void Pos_Changed(PositionAccessor pos)
@@ -108,12 +107,12 @@ namespace TickTrader.Algo.Core
 
         internal class PositionsFixture : NetPositionList
         {
-            private ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
-            private AccountAccessor _acc;
+            private Dictionary<string, PositionAccessor> _positions = new Dictionary<string, PositionAccessor>();
+            private PluginBuilder _builder;
 
-            public PositionsFixture(AccountAccessor acc)
+            public PositionsFixture(PluginBuilder builder)
             {
-                _acc = acc;
+                _builder = builder;
             }
 
             public NetPosition this[string symbol]
@@ -122,7 +121,7 @@ namespace TickTrader.Algo.Core
                 {
                     PositionAccessor entity;
                     if (!_positions.TryGetValue(symbol, out entity))
-                        return PositionAccessor.CreateEmpty(symbol, _acc.Leverage);
+                        return PositionAccessor.CreateEmpty(symbol, _builder.Symbols.GetOrDefault, _builder.Account.Leverage);
                     return entity;
                 }
             }
@@ -138,38 +137,14 @@ namespace TickTrader.Algo.Core
                 Modified?.Invoke(args);
             }
 
-            //public PositionAccessor UpdatePosition(PositionEntity entity)
-            //{
-            //    PositionAccessor pos;
-
-            //    if (!_positions.TryGetValue(entity.Symbol, out pos))
-            //    {
-            //        pos = new PositionAccessor(entity, symbolProvider);
-            //        _positions[entity.Symbol] = pos;
-            //    }
-            //    else
-            //        pos.Update(entity);
-
-            //    return pos;
-            //}
-
-            //public PositionAccessor GetPosition(string symbol)
-            //{
-            //    PositionAccessor pos;
-            //    _positions.TryGetValue(symbol, out pos);
-            //    return pos;
-            //}
-
             public PositionAccessor CreatePosition(SymbolAccessor symbol)
             {
-                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol, _acc.Leverage));
+                return _positions.GetOrAdd(symbol.Name, n => new PositionAccessor(symbol, _builder.Account.Leverage));
             }
 
-            public PositionAccessor RemovePosition(string symbol)
+            public bool RemovePosition(string symbol)
             {
-                PositionAccessor pos;
-                _positions.TryRemove(symbol, out pos);
-                return pos;
+                return _positions.Remove(symbol);
             }
 
             public PositionAccessor GetOrDefault(string symbol)
@@ -178,19 +153,6 @@ namespace TickTrader.Algo.Core
                 _positions.TryGetValue(symbol, out entity);
                 return entity;
             }
-
-            //public PositionAccessor GetOrCreate(Symbol symbolInfo)
-            //{
-            //    PositionAccessor pos;
-
-            //    if (!_positions.TryGetValue(symbolInfo.Name, out pos))
-            //    {
-            //        pos = new PositionAccessor(symbolInfo);
-            //        _positions[symbolInfo.Name] = pos;
-            //    }
-
-            //    return pos;
-            //}
 
             public IEnumerator<NetPosition> GetEnumerator()
             {

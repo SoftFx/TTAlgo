@@ -1432,7 +1432,7 @@ namespace TickTrader.Algo.Core
                 var isClosed = position.IsEmpty;
 
                 if (position.IsEmpty)
-                    position.Remove();
+                    _acc.NetPositions.RemovePosition(position.Symbol);
 
                 report.Entity.TransactionAmount += (double)balanceMovement;
                 report.Entity.PositionClosed = ExecutionTime;

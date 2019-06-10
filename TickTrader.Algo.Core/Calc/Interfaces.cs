@@ -226,14 +226,14 @@ namespace TickTrader.Algo.Core.Calc
         /// <summary>
         /// Fired when position changed.
         /// </summary>
-        event Action<IPositionModel2, PositionChageTypes> PositionChanged;
+        event Action<IPositionModel2> PositionChanged;
     }
 
-    public enum PositionChageTypes
-    {
-        AddedModified,
-        Removed
-    }
+    //public enum PositionChageTypes
+    //{
+    //    AddedModified,
+    //    Removed
+    //}
 
     /// <summary>
     /// Defines methods and properties for cash account.

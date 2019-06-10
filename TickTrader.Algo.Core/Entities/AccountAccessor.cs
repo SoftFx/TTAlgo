@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
             this.builder = builder;
 
             Orders = new OrdersCollection(builder);
-            NetPositions = new PositionCollection(builder, this);
+            NetPositions = new PositionCollection(builder);
             Assets = new AssetsCollection(builder);
 
             //Equity = double.NaN;
@@ -197,7 +197,7 @@ namespace TickTrader.Algo.Core
         //public event Action<IOrderModel2> OrderReplaced = delegate { };
         public event Action BalanceUpdated = delegate { };
         public event Action Reset = delegate { };
-        public event Action<IPositionModel2, PositionChageTypes> PositionChanged;
+        public event Action<IPositionModel2> PositionChanged;
         public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
 
         internal void EnableBlEvents()
@@ -207,7 +207,7 @@ namespace TickTrader.Algo.Core
             Orders.Removed += OnOrderRemoved;
 
             NetPositions.PositionUpdated += OnPositionUpdated;
-            NetPositions.PositionRemoved += OnPositionRemoved;
+            //NetPositions.PositionRemoved += OnPositionRemoved;
 
             Assets.AssetChanged += OnAssetsChanged;
 
@@ -223,7 +223,7 @@ namespace TickTrader.Algo.Core
                 Orders.Removed -= OnOrderRemoved;
 
                 NetPositions.PositionUpdated -= OnPositionUpdated;
-                NetPositions.PositionRemoved -= OnPositionRemoved;
+                //NetPositions.PositionRemoved -= OnPositionRemoved;
 
                 Assets.AssetChanged -= OnAssetsChanged;
 
@@ -248,13 +248,13 @@ namespace TickTrader.Algo.Core
 
         private void OnPositionUpdated(IPositionModel2 position)
         {
-            UpdateAccountInfo("Update position", () => PositionChanged?.Invoke(position, PositionChageTypes.AddedModified));
+            UpdateAccountInfo("Update position", () => PositionChanged?.Invoke(position));
         }
 
-        private void OnPositionRemoved(IPositionModel2 position)
-        {
-            UpdateAccountInfo("Remove position", () => PositionChanged?.Invoke(position, PositionChageTypes.Removed));
-        }
+        //private void OnPositionRemoved(IPositionModel2 position)
+        //{
+        //    UpdateAccountInfo("Remove position", () => PositionChanged?.Invoke(position, PositionChageTypes.Removed));
+        //}
 
         private void OnAssetsChanged(BL.IAssetModel asset, AssetChangeType type)
         {
