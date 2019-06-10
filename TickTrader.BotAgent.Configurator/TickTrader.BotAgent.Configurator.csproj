@@ -58,6 +58,9 @@
   <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>settings.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Interop.NetFwTypeLib">
       <HintPath>..\TickTrader.Algo.TestCollection\obj\Debug\Interop.NetFwTypeLib.dll</HintPath>
@@ -191,6 +194,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ServerSetting.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="settings.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

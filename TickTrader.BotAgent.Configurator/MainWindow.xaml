@@ -7,7 +7,8 @@
         xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
         mc:Ignorable="d"
         Title="BotAgent Configurator" 
-        Height="600" Width="800"
+        Height="600" Width="600"
+        MinHeight="600" MinWidth="600"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
@@ -57,11 +58,11 @@
                 </TabItem.Content>
             </TabItem>
         </TabControl>
-        
+
         <StackPanel Grid.Row="1" Style="{StaticResource stateButtonPanel}">
-            <Button x:Name="CancelButton" Content="Cancel" Style="{StaticResource stateButton}" Click="CancelButton_Click" IsEnabled="False"/>
-            <Button x:Name="SaveButton" Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click" IsEnabled="False"/>
-            <Button x:Name="StartButton" Content="Start" Style="{StaticResource stateButton}" Click="StartButton_Click"/>
+            <Button x:Name="CancelButton" Content="Cancel" Style="{StaticResource stateButton}" Click="CancelButton_Click"/>
+            <Button x:Name="SaveButton" Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click"/>
+            <Button x:Name="StartButton" Content="Start" Style="{StaticResource stateButtonStart}" Click="StartButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>
