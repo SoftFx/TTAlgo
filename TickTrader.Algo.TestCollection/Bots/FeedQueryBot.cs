@@ -119,7 +119,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintBar(Bar bar)
         {
-            Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime.ToLocalTime(), bar.Open, bar.High, bar.Low, bar.Close);
+            Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
         }
 
         private void PrintQuotes(DateTime from, DateTime to, bool level2)
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 if (IsStopped)
                     break;
 
-                Print("{0} b:{1} a:{2}", quote.Time.ToLocalTime(), quote.Bid, quote.Ask);
+                Print("{0} b:{1} a:{2}", quote.Time, quote.Bid, quote.Ask);
                 count++;
             }
             Status.WriteLine("Done. Printed {0} quotes.", count);
