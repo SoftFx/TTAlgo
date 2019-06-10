@@ -68,6 +68,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -86,6 +87,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Application Manages\ServiceManager.cs" />
+    <Compile Include="Application Manages\ConfigManager.cs" />
     <Compile Include="Controls\CredentialPanel.xaml.cs">
       <DependentUpon>CredentialPanel.xaml</DependentUpon>
     </Compile>

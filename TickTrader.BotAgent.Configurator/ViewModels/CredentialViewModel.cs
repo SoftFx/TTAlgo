@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class CredentialViewModel : INotifyPropertyChanged
     {
         private CredentialModel _model;
+        private RefreshManager _refreshManager;
 
-        public CredentialViewModel(CredentialModel model)
+        public CredentialViewModel(CredentialModel model, RefreshManager refManager = null)
         {
             _model = model;
+            _refreshManager = refManager;
         }
 
         public string Name => _model.Name;
@@ -31,6 +28,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Login = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(Login));
             }
         }
@@ -47,6 +46,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Password = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(Password));
             }
         }
@@ -54,6 +55,7 @@ namespace TickTrader.BotAgent.Configurator
         public void GenerateNewPassword()
         {
             _model.GeneratePassword();
+            _refreshManager?.Refresh();
 
             OnPropertyChanged(nameof(Password));
         }

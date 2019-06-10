@@ -8,11 +8,15 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ConfigurationModel
     {
-        private RegistryManager _registryManager;
+        private ConfigManager _configManager;
         private PortsManager _portsManager;
+        private ServiceManager _serviceManager;
+        private IBotAgentConfigPathHolder _botAgentHolder;
+
         private JObject _configurationObject;
 
         private readonly List<IUploaderModels> _uploaderModels;
+        private readonly ConfigurationProperies _settings;
 
         public CredentialsManager CredentialsManager { get; }
 
@@ -25,8 +29,13 @@ namespace TickTrader.BotAgent.Configurator
 
         public ConfigurationModel()
         {
-            _registryManager = new RegistryManager();
+            _configManager = new ConfigManager();
+            _settings = _configManager.Properties;
+
+            _botAgentHolder = _settings.UseProvider ? (IBotAgentConfigPathHolder)_settings.MultipleAgentProvider : new RegistryManager(_settings[AppProperties.RegistryAppName], _settings[AppProperties.AppSettings]);
+
             _portsManager = new PortsManager();
+            _serviceManager = new ServiceManager(_settings[AppProperties.ServiceName]);
 
             CredentialsManager = new CredentialsManager("Credentials");
             SslManager = new SslManager("Ssl");
@@ -38,19 +47,33 @@ namespace TickTrader.BotAgent.Configurator
             LoadConfiguration();
         }
 
-        public void StartAgent()
+        public bool StartAgent()
         {
-            var hostAndPort = _portsManager.GetHostAndPort(ServerManager.ServerModel.Urls);
-            _portsManager.RegistryPortInFirewall(hostAndPort.Item2, _registryManager.ApplicationName);
+            if (_serviceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
+                return false;
+
+            //var hostAndPort = _portsManager.GetHostAndPort(ServerManager.ServerModel.Urls);
+            //_portsManager.RegistryPortInFirewall(hostAndPort.Item2, _registryManager.ApplicationName);
+
+            _portsManager.RegistryApplicationInFirewall(_settings[AppProperties.ApplicationName], _botAgentHolder.BotAgentPath);
+
+            if (_serviceManager.IsServiceRunning)
+                _serviceManager.ServiceStop();
+
             _portsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
-            MessageBoxManager.OKBox("Port is open");
+            _serviceManager.ServiceStart();
+
+            return true;
         }
 
         public void LoadConfiguration()
         {
-            using (var configStreamReader = _registryManager.GetConfigurationStreamReader())
+            using (var configStreamReader = new StreamReader(_botAgentHolder.BotAgentConfigPath))
             {
-                ParseJsonString(configStreamReader.ReadToEnd());
+                _configurationObject = JObject.Parse(configStreamReader.ReadToEnd());
+
+                foreach (var uploader in _uploaderModels)
+                    UploadModel(uploader);
             }
         }
 
@@ -59,25 +82,10 @@ namespace TickTrader.BotAgent.Configurator
             foreach (var uploader in _uploaderModels)
                 uploader.SaveConfigurationModels(_configurationObject);
 
-            SaveConfiguration();
-        }
-
-        private void SaveConfiguration()
-        {
-            using (var configStreamWriter = _registryManager.GetConfigurationStreamWriter())
+            using (var configStreamWriter = new StreamWriter(_botAgentHolder.BotAgentConfigPath))
             {
                 configStreamWriter.Write(_configurationObject.ToString());
             }
-
-            MessageBoxManager.OKBox("Successfully");
-        }
-
-        private void ParseJsonString(string json)
-        {
-            _configurationObject = JObject.Parse(json);
-
-            foreach (var uploader in _uploaderModels)
-                UploadModel(uploader);
         }
 
         private void UploadModel(IUploaderModels model)
@@ -89,7 +97,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (NullReferenceException)
             {
-                if (MessageBoxManager.YesNoBox($"Loading section {model.SectionName} failed. Apply default settings?"))
+                if (MessageBoxManager.YesNoBoxError($"Loading section {model.SectionName} failed. Apply default settings?"))
                 {
                     model.SetDefaultModelValues();
                 }
@@ -98,6 +106,7 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
     }
+
 
     public interface IUploaderModels
     {
@@ -108,5 +117,12 @@ namespace TickTrader.BotAgent.Configurator
         void SetDefaultModelValues();
 
         void SaveConfigurationModels(JObject root);
+    }
+
+    public interface IBotAgentConfigPathHolder
+    {
+        string BotAgentPath { get; }
+
+        string BotAgentConfigPath { get; }
     }
 }

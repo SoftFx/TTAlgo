@@ -30,7 +30,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool InsertSection(JObject root, JProperty prop)
         {
-            if (root.Children<JProperty>().Where(p => p.Name == prop.Name).Count() != 0)
+            if (root.Children<JProperty>().Where(p => p.Name == prop.Name).Count() > 0)
                 return false;
 
             root.Add(prop);

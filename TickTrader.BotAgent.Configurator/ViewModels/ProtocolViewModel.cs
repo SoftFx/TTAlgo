@@ -11,10 +11,12 @@ namespace TickTrader.BotAgent.Configurator
     public class ProtocolViewModel : INotifyPropertyChanged
     {
         private ProtocolModel _model;
+        private RefreshManager _refreshManager;
 
-        public ProtocolViewModel(ProtocolModel model)
+        public ProtocolViewModel(ProtocolModel model, RefreshManager refManager = null)
         {
             _model = model;
+            _refreshManager = refManager;
         }
 
         public int ListeningPort
@@ -30,6 +32,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.ListeningPort = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(ListeningPort));
             }
         }
@@ -47,6 +51,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.DirectoryName = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(DirectoryName));
             }
         }
@@ -64,6 +70,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.LogMessage = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(LogMessage));
             }
         }

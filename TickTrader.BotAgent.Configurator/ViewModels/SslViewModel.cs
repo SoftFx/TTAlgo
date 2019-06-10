@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class SslViewModel : INotifyPropertyChanged
     {
         private SslModel _model;
+        private RefreshManager _refreshManager;
 
-        public SslViewModel(SslModel model)
+        public SslViewModel(SslModel model, RefreshManager refManager = null)
         {
             _model = model;
+            _refreshManager = refManager;
         }
 
         public string File
@@ -30,6 +27,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.File = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(File));
             }
         }
@@ -46,6 +45,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Password = value;
+                _refreshManager?.Refresh();
+
                 OnPropertyChanged(nameof(Password));
             }
         }

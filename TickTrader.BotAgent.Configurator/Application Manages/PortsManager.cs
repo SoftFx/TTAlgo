@@ -1,14 +1,14 @@
 ﻿using NetFwTypeLib;
 using System;
-using System.IO.Ports;
+using System.IO;
 using System.Net;
-using System.Net.Sockets;
+using System.Net.NetworkInformation;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class PortsManager
     {
-        private string _localhost;
+        //private string _localhost;
         private readonly INetFwMgr _firewallManager;
 
         public PortsManager()
@@ -16,16 +16,16 @@ namespace TickTrader.BotAgent.Configurator
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
         }
 
-        public string LocalHost
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_localhost))
-                    SetLocalHost();
+        //public string LocalHost
+        //{
+        //    get
+        //    {
+        //        if (string.IsNullOrEmpty(_localhost))
+        //            SetLocalHost();
 
-                return _localhost;
-            }
-        }
+        //        return _localhost;
+        //    }
+        //}
 
         public void CheckPortOpen(string urls)
         {
@@ -42,31 +42,56 @@ namespace TickTrader.BotAgent.Configurator
             //hostname = "10.9.14.74"; //from test
             //port = 52167;
 
-            using (var tcpClient = new TcpClient())
+            //using (var tcpClient = new TcpClient())
+            //{
+            //    try
+            //    {
+            //        tcpClient.Connect(hostname, port);
+            //        tcpClient.Close();
+            //    }
+            //    catch
+            //    {
+            //        throw new WarningException($"Port {port} not avaible");
+            //    }
+            //}
+
+            foreach (var tcp in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections())
             {
-                try
-                {
-                    tcpClient.Connect(hostname, port);
-                    tcpClient.Close();
-                }
-                catch
-                {
+                if (tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp))
                     throw new WarningException($"Port {port} not avaible");
-                }
             }
+
+            foreach (var tcp in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+            {
+                if (tcp.Port == port)
+                    throw new WarningException($"Port {port} not avaible");
+            }
+        }
+
+        private bool CheckActiveServiceState(TcpConnectionInformation tcp)
+        {
+            return tcp.State == TcpState.Established || tcp.State == TcpState.Listen;
         }
 
         public void RegistryPortInFirewall(int port, string name)
         {
-            var portIns = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", false));
-            portIns.Port = port;
-            portIns.Name = name + "new";
-            portIns.Enabled = true;
+            var portInst = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", true));
+            portInst.Port = port;
+            portInst.Name = name + "new";
+            portInst.Enabled = true;
 
-            _firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portIns);
-            SerialPort sp = new SerialPort();
-            sp.PortName = port.ToString();
-            sp.Open();
+            _firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portInst);
+        }
+
+        public void RegistryApplicationInFirewall(string name, string path)
+        {
+            var applicationInst = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWAuthorizedApplication", false));
+
+            applicationInst.Name = name + "+";
+            applicationInst.ProcessImageFileName = Path.Combine(path, "TestConfigurator.exe"); //Path.GetFileName(path)
+            applicationInst.Enabled = true;
+
+            _firewallManager.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(applicationInst);
         }
 
         public Tuple<string, int> GetHostAndPort(string urls)
@@ -84,20 +109,20 @@ namespace TickTrader.BotAgent.Configurator
             return new Tuple<string, int>(parts[n - 2].Trim('/'), port);
         }
 
-        private void SetLocalHost()
-        {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
+        //private void SetLocalHost()
+        //{
+        //    var host = Dns.GetHostEntry(Dns.GetHostName());
 
-            foreach (var ip in host.AddressList)
-            {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    _localhost = ip.ToString();
-                    return;
-                }
-            }
+        //    foreach (var ip in host.AddressList)
+        //    {
+        //        if (ip.AddressFamily == AddressFamily.InterNetwork)
+        //        {
+        //            _localhost = ip.ToString();
+        //            return;
+        //        }
+        //    }
 
-            throw new Exception("No network adapters with an IPv4 address in the system!");
-        }
+        //    throw new Exception("No network adapters with an IPv4 address in the system!");
+        //}
     }
 }
