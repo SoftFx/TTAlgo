@@ -143,11 +143,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         private void GetBounds(out DateTime from, out DateTime to)
         {
             DateTime now = DateTime.UtcNow;
+            DateTime today = now.Date;
 
             switch (Period)
             {
-                case FeedQueryPeriods.Today: from = DateTime.Today; to = DateTime.Today + TimeSpan.FromDays(1); return;
-                case FeedQueryPeriods.Yesterday: from = DateTime.Today - TimeSpan.FromDays(1); to = DateTime.Today; return;
+                case FeedQueryPeriods.Today: from = today; to = today + TimeSpan.FromDays(1); return;
+                case FeedQueryPeriods.Yesterday: from = today - TimeSpan.FromDays(1); to = today; return;
                 case FeedQueryPeriods.ThisHour: from = GetHour(now, 0); to = GetHour(now, 1); return;
                 case FeedQueryPeriods.PreviousHour: from = GetHour(now, -1); to = GetHour(now, 0); return;
                 case FeedQueryPeriods.ThisMonth: from = GetMonth(now, 0); to = GetMonth(now, 1); return;
