@@ -162,14 +162,14 @@ namespace TickTrader.Algo.Core.Calc
         public void AddOrder(IOrderModel2 order)
         {
             var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
-            decimal margin = CalculateMargin(order, symbol);
+            order.CashMargin = CalculateMargin(order, symbol);
             //order.Margin = margin;
             //OrderLightClone clone = new OrderLightClone(order);
             //orders.Add(order.OrderId, clone);
 
             IAssetModel marginAsset = GetMarginAsset(order);
             if (marginAsset != null)
-                marginAsset.Margin += margin;
+                marginAsset.Margin += order.CashMargin;
 
             order.EssentialsChanged += OnOrderChanged;
         }
@@ -181,7 +181,6 @@ namespace TickTrader.Algo.Core.Calc
             //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
             IAssetModel marginAsset = GetMarginAsset(order);
             marginAsset.Margin -= order.CashMargin;
-
             order.CashMargin = CalculateMargin(order, symbol);
             marginAsset.Margin += order.CashMargin;
 

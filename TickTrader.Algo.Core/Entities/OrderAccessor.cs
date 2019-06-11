@@ -81,39 +81,8 @@ namespace TickTrader.Algo.Core
         public double ExecVolume => _entity.ExecVolume / _lotSize ?? double.NaN;
         public double LastFillPrice => _entity.LastFillPrice ?? double.NaN;
         public double LastFillVolume => _entity.LastFillVolume / _lotSize ?? double.NaN;
-        public double Margin
-        {
-            get
-            {
-                var calc = Calculator;
-                if (calc != null)
-                {
-                    var margin = calc.CalculateMargin(this, _leverage, out var error);
-                    if (error != CalcErrorCodes.None)
-                        return double.NaN;
-                    return margin;
-                }
-                return double.NaN;
-            }
-        }
-        public double Profit
-        {
-            get
-            {
-                if (Type != OrderType.Position)
-                    return 0;
-
-                var calc = Calculator;
-                if (calc != null)
-                {
-                    var prof = calc.CalculateProfit(this, out var error);
-                    if (error != CalcErrorCodes.None)
-                        return double.NaN;
-                    return prof;
-                }
-                return double.NaN;
-            }
-        }
+        public double Margin => CalculateMargin();
+        public double Profit => CalculateProfit();
         public OrderExecOptions Options => _entity.Options;
         public decimal CashMargin { get; set; }
 
@@ -303,6 +272,35 @@ namespace TickTrader.Algo.Core
         public override string ToString()
         {
             return $"#{Id} {Symbol} {Side} {_entity.RemainingVolume}";
+        }
+
+        private double CalculateMargin()
+        {
+            var calc = Calculator;
+            if (calc != null)
+            {
+                var margin = calc.CalculateMargin(this, _leverage, out var error);
+                if (error != CalcErrorCodes.None)
+                    return double.NaN;
+                return margin;
+            }
+            return double.NaN;
+        }
+
+        private double CalculateProfit()
+        {
+            if (Type != OrderType.Position)
+                return 0;
+
+            var calc = Calculator;
+            if (calc != null)
+            {
+                var prof = calc.CalculateProfit(this, out var error);
+                if (error != CalcErrorCodes.None)
+                    return double.NaN;
+                return prof;
+            }
+            return double.NaN;
         }
     }
 }
