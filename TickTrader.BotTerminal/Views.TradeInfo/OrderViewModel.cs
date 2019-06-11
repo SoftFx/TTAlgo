@@ -12,6 +12,7 @@ namespace TickTrader.BotTerminal
 {
     class OrderViewModel : PropertyChangedBase, IDisposable
     {
+        private static IndificationNumberGenerator _numberGenerator = new IndificationNumberGenerator();
         private SymbolModel symbol;
 
         public OrderViewModel(OrderModel order, SymbolModel symbol)
@@ -26,6 +27,8 @@ namespace TickTrader.BotTerminal
             {
                 NotifyOfPropertyChange(nameof(Price));
             };
+
+            SortedNumber = GetSortedNumber(order);
 
             this.symbol.RateUpdated += UpdateDeviationPrice;
         }
@@ -48,6 +51,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public string SortedNumber { get; }
+
         public void Dispose()
         {
         }
@@ -55,6 +60,10 @@ namespace TickTrader.BotTerminal
         private void UpdateDeviationPrice(SymbolModel model)
         {
             NotifyOfPropertyChange(nameof(DeviationPrice));
+        }
+        private string GetSortedNumber(OrderModel position)
+        {
+            return position.Modified?.ToString("dd.MM.yyyyHH:mm:ss.fff") + "-" + _numberGenerator.GetNumber(position.Modified.Value);
         }
     }
 }

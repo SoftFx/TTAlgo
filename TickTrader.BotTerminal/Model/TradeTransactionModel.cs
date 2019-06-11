@@ -11,6 +11,8 @@ namespace TickTrader.BotTerminal
 {
     abstract class TransactionReport
     {
+        private static IndificationNumberGenerator _numberGenerator = new IndificationNumberGenerator();
+
         public enum AggregatedTransactionType
         {
             Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit, SellStopLimitCanceled,
@@ -70,10 +72,10 @@ namespace TickTrader.BotTerminal
             Slippage = GetSlippage(transaction);
             Tag = GetTag(transaction);
             PosQuantity = GetPosQuantity(transaction);
+            SortedNumber = GetSortedNumber();
 
             // should be last (it's based on other fields)
-            long orderNum;
-            UniqueId = GetUniqueId(transaction, out orderNum);
+            UniqueId = GetUniqueId(transaction, out long orderNum);
             OrderNum = orderNum;
         }
 
@@ -134,6 +136,7 @@ namespace TickTrader.BotTerminal
         public Reasons? Reason { get; protected set; }
         public string Tag { get; protected set; }
         public double? PosQuantity { get; protected set; }
+        public string SortedNumber { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -375,6 +378,11 @@ namespace TickTrader.BotTerminal
         {
             CompositeTag.TryParse(transaction.Tag, out CompositeTag tag);
             return tag?.Tag ?? null;
+        }
+
+        protected string GetSortedNumber()
+        {
+            return CloseTime.ToString("dd.MM.yyyyHH:mm:ss.fff") + "-" + _numberGenerator.GetNumber(CloseTime);
         }
 
         private bool OrderWasCanceled()
