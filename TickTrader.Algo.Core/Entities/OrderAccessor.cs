@@ -54,7 +54,10 @@ namespace TickTrader.Algo.Core
 
         public OrderAccessor Clone()
         {
-            return new OrderAccessor(new OrderEntity(_entity), _symbol, _leverage);
+            var clone = new OrderAccessor(new OrderEntity(_entity), _symbol, _leverage);
+            clone.Calculator = Calculator;
+            clone.CalculationError = CalculationError;
+            return clone;
         }
 
         #region API Order
@@ -290,7 +293,7 @@ namespace TickTrader.Algo.Core
         private double CalculateProfit()
         {
             if (Type != OrderType.Position)
-                return 0;
+                return double.NaN;
 
             var calc = Calculator;
             if (calc != null)

@@ -46,6 +46,8 @@ namespace TickTrader.Algo.Core
             Modified = src.Modified;
             Commission = src.Commission;
             Id = src.Id;
+
+            Calculator = src.Calculator;
         }
 
         internal void Update(PositionEntity entity)
