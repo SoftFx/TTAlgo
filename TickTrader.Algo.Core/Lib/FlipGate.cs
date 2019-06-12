@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Core.Lib
         private bool _readRequest;
         private bool _writeRequest;
         private bool _closed;
+        private bool _completed;
 
         public FlipGate(int buffSize)
         {
@@ -49,8 +50,8 @@ namespace TickTrader.Algo.Core.Lib
         {
             lock (_lockObj)
             {
-                _readRequest = false;
-                _writeRequest = false;
+                //_readRequest = false;
+                //_writeRequest = false;
                 _closed = true;
                 Monitor.PulseAll(_lockObj);
             }
@@ -80,8 +81,13 @@ namespace TickTrader.Algo.Core.Lib
                 {
                     _writeRequest = true;
                     while (_writeRequest)
+                    {
+                        if (_closed)
+                            return false;
+
                         Monitor.Wait(_lockObj);
-                    return !_closed;
+                    }
+                    return true;
                 }
             }
         }
@@ -90,7 +96,7 @@ namespace TickTrader.Algo.Core.Lib
         {
             lock (_lockObj)
             {
-                if (_closed)
+                if (_completed)
                     return false;
 
                 if (_writeRequest)
@@ -98,14 +104,25 @@ namespace TickTrader.Algo.Core.Lib
                     Flip();
                     _writeRequest = false;
                     Monitor.Pulse(_lockObj);
+                    if (_closed)
+                        _completed = true;
                     return true;
                 }
                 else
                 {
                     _readRequest = true;
                     while (_readRequest)
+                    {
+                        if (_closed)
+                        {
+                            _completed = true;
+                            _readRequest = false;
+                            return false;
+                        }
+
                         Monitor.Wait(_lockObj);
-                    return !_closed;
+                    }
+                    return true;
                 }
             }
         }

@@ -11,7 +11,7 @@
                        SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
                        Visibility="{Binding Data.IsNetAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                 <DataGrid.Resources>
-                    <l:DataGridColumnHide x:Key="SlippageShow" Provider="{Binding StateProvider}" ColumnKey="Slippage"/>
+                    <l:DataGridColumnHide x:Key="SlippageShow" Provider="{Binding StateProvider}" ColumnKey="Slippage" IsColumnEnabled="{Binding IsSlippageSupported}"/>
                     <l:DataGridColumnHide x:Key="ReqVolumeShow" Provider="{Binding StateProvider}" ColumnKey="ReqVolume"/>
                     <l:DataGridColumnHide x:Key="PosClosePriceShow" Provider="{Binding StateProvider}" ColumnKey="PosClosePrice"/>
                     <l:DataGridColumnHide x:Key="PosCloseVolumeShow" Provider="{Binding StateProvider}" ColumnKey="PosCloseVolume"/>
@@ -24,7 +24,8 @@
                     <ContextMenu>
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
                         <Separator/>
-                        <MenuItem Header="Show Slippage" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SlippageShow}}"/>
+                        <MenuItem Header="Show Slippage" IsCheckable="True" DataContext="{StaticResource SlippageShow}" IsChecked="{Binding IsShown}"
+                                  Visibility="{Binding IsColumnEnabled, Converter={StaticResource boolToVisibilityConverter}}"/>
                         <MenuItem Header="Show Req Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqVolumeShow}}"/>
                         <MenuItem Header="Show Close Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource PosClosePriceShow}}"/>
                         <MenuItem Header="Show Close Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource PosCloseVolumeShow}}"/>

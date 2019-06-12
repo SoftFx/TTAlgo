@@ -113,7 +113,7 @@ namespace TickTrader.Algo.Core
 
             if (!_control.OnStart())
             {
-                _executor.StopCollection().Wait();
+                _executor.StopCollection();
                 return;
             }
 
@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
-                _executor.StopCollection().Wait();
+                _executor.StopCollection();
             }
         }
 

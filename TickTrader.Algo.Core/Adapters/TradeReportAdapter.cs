@@ -64,9 +64,9 @@ namespace TickTrader.Algo.Core
             //Entity.ParentOrderId = order.ParentOrderId;
             //ClientOrderId = order.ClientOrderId;
             Entity.TradeRecordType = order.Type;
-            //Entity.ParentOrderType = order.InitialType;
-            Entity.OpenQuantity = (double)order.Amount;
-            Entity.RemainingQuantity = (double)order.RemainingAmount;
+            Entity.ReqOrderType = order.InitialType;
+            Entity.OpenQuantity = order.Amount;
+            Entity.RemainingQuantity = order.RemainingAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
             Entity.Price = order.Price;

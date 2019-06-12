@@ -50,12 +50,11 @@ namespace TickTrader.Algo.Core
             _worker.Start(this, Core);
         }
 
-        internal async Task StopCollection()
+        internal void StopCollection()
         {
             try
             {
-                await _worker.Stop();
-               
+                _worker.Stop();
             }
             catch (Exception ex)
             {
@@ -115,7 +114,7 @@ namespace TickTrader.Algo.Core
         public interface IUpdateWorker
         {
             void Start(ExecutorHandler handler, PluginExecutor executor);
-            Task Stop();
+            void Stop();
         }
 
         public class BulckUpdateWorker : CrossDomainObject, IUpdateWorker
@@ -133,10 +132,10 @@ namespace TickTrader.Algo.Core
                 _gatePushTask = Task.Factory.StartNew(PushUpdates);
             }
 
-            public Task Stop()
+            public void Stop()
             {
                 _gate.Close();
-                return _gatePushTask;
+                _gatePushTask.Wait();
             }
 
             private void Executor_Stopped()
@@ -177,15 +176,13 @@ namespace TickTrader.Algo.Core
                 _batchJob = _updateBuffer.BatchLinkTo(_updateSender, 50);
             }
 
-            public async Task Stop()
+            public void Stop()
             {
                 _updateBuffer.Complete();
-                await _updateBuffer.Completion;
-
-                await _batchJob;
-
+                _updateBuffer.Completion.Wait();
+                _batchJob.Wait();
                 _updateSender.Complete();
-                await _updateSender.Completion;
+                _updateSender.Completion.Wait();
             }
 
             private void EnqueueUpdate(object update)

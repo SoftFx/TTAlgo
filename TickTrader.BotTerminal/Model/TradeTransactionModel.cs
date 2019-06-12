@@ -386,7 +386,7 @@ namespace TickTrader.BotTerminal
         protected string GetTag(TradeReportEntity transaction)
         {
             CompositeTag.TryParse(transaction.Tag, out CompositeTag tag);
-            return tag?.Tag ?? null;
+            return tag?.Tag ?? transaction.Tag;
         }
 
         private bool OrderWasCanceled()

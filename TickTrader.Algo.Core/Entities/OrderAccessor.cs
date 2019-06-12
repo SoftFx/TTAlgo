@@ -152,7 +152,7 @@ namespace TickTrader.Algo.Core
         #region Emulation
 
         internal short ActionNo { get; set; }
-        internal OrderType InitialType { get; set; }
+        internal OrderType InitialType { get => Entity.InitialType; set => Entity.InitialType = value; }
         internal double? OpenConversionRate { get; set; }
         internal SymbolAccessor SymbolInfo => _symbol;
         public double? ClosePrice { get; set; }
