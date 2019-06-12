@@ -382,7 +382,7 @@ namespace TickTrader.BotTerminal
 
         protected string GetSortedNumber()
         {
-            return CloseTime.ToString("dd.MM.yyyyHH:mm:ss.fff") + "-" + _numberGenerator.GetNumber(CloseTime);
+            return $"{CloseTime.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{_numberGenerator.GetNumber(CloseTime)}";
         }
 
         private bool OrderWasCanceled()

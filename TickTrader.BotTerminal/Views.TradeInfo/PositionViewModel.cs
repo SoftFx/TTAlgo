@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
 
         private string GetSortedNumber(PositionModel position)
         {
-            return position.Modified?.ToString("dd.MM.yyyyHH:mm:ss.fff") + "-" + _numberGenerator.GetNumber(position.Modified.Value);
+            return $"{position.Modified?.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{_numberGenerator.GetNumber(position.Modified.Value)}";
         }
     }
 }
