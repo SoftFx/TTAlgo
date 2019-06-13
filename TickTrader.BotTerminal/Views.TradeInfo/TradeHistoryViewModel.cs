@@ -123,7 +123,7 @@ namespace TickTrader.BotTerminal
 
         public DateTime From
         {
-            get { return _from; }
+            get { return DateTime.SpecifyKind(_from, DateTimeKind.Utc); }
             set
             {
                 if (_from == value)
@@ -141,7 +141,7 @@ namespace TickTrader.BotTerminal
 
         public DateTime To
         {
-            get { return _to; }
+            get { return DateTime.SpecifyKind(_to, DateTimeKind.Utc); }
             set
             {
                 if (_to == value)

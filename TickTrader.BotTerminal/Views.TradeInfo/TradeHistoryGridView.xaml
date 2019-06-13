@@ -95,14 +95,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Width="*" Binding="{Binding UniqueId}"/>
 
-                    <DataGridTextColumn Header="Time" Width="1.3*" SortMemberPath="CloseTime">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
-                                <Binding Path="CloseTime"/>
-                                <Binding Path="Data.ConvertTimeToLocal" Source="{StaticResource ProxyContext}"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Time" Width="1.3*" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
 
                     <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
 

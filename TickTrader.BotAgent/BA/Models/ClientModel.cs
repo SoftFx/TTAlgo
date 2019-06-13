@@ -51,7 +51,7 @@ namespace TickTrader.BotAgent.BA.Models
             UseNewProtocol = useNewProtocol;
         }
 
-        public async Task Init(PackageStorage packageProvider)
+        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder, Type = AppType.BotAgent };
 
-                _core = new Algo.Common.Model.ClientModel.ControlHandler2(options,
+                _core = new Algo.Common.Model.ClientModel.ControlHandler2(fdkOptionsProvider.GetConnectionOptions(),
                     ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
 
                 await _core.OpenHandler();

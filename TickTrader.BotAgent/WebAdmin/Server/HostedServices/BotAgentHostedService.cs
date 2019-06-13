@@ -10,13 +10,15 @@ namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
     public class BotAgentHostedService : IHostedService
     {
         private readonly IBotAgent _botAgent;
+        private readonly IFdkOptionsProvider _fdkOptionsProvider;
         private readonly ILogger<BotAgentHostedService> _logger;
         private bool _started;
 
 
-        public BotAgentHostedService(IBotAgent botAgent, ILogger<BotAgentHostedService> logger)
+        public BotAgentHostedService(IBotAgent botAgent, IFdkOptionsProvider fdkOptionsProvider, ILogger<BotAgentHostedService> logger)
         {
             _botAgent = botAgent;
+            _fdkOptionsProvider = fdkOptionsProvider;
             _logger = logger;
         }
 
@@ -27,7 +29,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.HostedServices
                 return;
 
             _logger.LogInformation("Starting bot agent...");
-            await _botAgent.InitAsync();
+            await _botAgent.InitAsync(_fdkOptionsProvider);
             _started = true;
             _logger.LogInformation("Started bot agent...");
         }

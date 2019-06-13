@@ -14,6 +14,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         public SslSettings Ssl { get; set; }
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ProtocolSettings Protocol { get; set; }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public FdkSettings Fdk { get; set; }
 
         public static AppSettings Default => new AppSettings
         {
@@ -22,6 +24,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             SecretKey = RandomSecretKey,
             Ssl = DefaultSslSettings,
             Protocol = DefaultProtocolSettings,
+            Fdk = DefaultFdkSettings,
         };
 
         public static string DefaultServerUrl => @"https://localhost:5001/;http://localhost:5000";
@@ -33,6 +36,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             ListeningPort = 8443,
             LogDirectoryName = "Logs",
             LogMessages = false,
+        };
+        public static FdkSettings DefaultFdkSettings => new FdkSettings
+        {
+            EnableLogs = false,
         };
     }
 }
