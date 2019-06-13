@@ -158,6 +158,11 @@ namespace TickTrader.BotAgent
                 currentSettings.Credentials.AdminPassword = oldCreds.Password;
                 anyChanges = true;
             }
+            if (currentSettings.Fdk == null)
+            {
+                currentSettings.Fdk = AppSettings.Default.Fdk;
+                anyChanges = true;
+            }
 
             if (anyChanges)
             {

@@ -31,6 +31,7 @@ namespace TickTrader.BotAgent.BA.Models
         private List<ClientModel> _accounts = new List<ClientModel>();
         private Dictionary<string, TradeBotModel> _allBots;
         private BotIdHelper _botIdHelper;
+        private IFdkOptionsProvider _fdkOptionsProvider;
 
         public static EnvService Environment => envService;
 
@@ -39,11 +40,12 @@ namespace TickTrader.BotAgent.BA.Models
             return Path.Combine(Environment.AlgoWorkingFolder, botId.Escape());
         }
 
-        private async Task InitAsync()
+        private async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
         {
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
+            _fdkOptionsProvider = fdkOptionsProvider;
 
             await _packageStorage.Library.WaitInit();
 
@@ -160,7 +162,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             #endregion
 
-            public Task InitAsync() => CallActorFlattenAsync(a => a.InitAsync());
+            public Task InitAsync(IFdkOptionsProvider fdkOptionsProvider) => CallActorFlattenAsync(a => a.InitAsync(fdkOptionsProvider));
 
             public Task ShutdownAsync() => CallActorFlattenAsync(a => a.ShutdownAsync());
         }
@@ -173,7 +175,7 @@ namespace TickTrader.BotAgent.BA.Models
         public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password, bool useNewProtocol)
         {
             var acc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
-            await acc.Init(_packageStorage);
+            await acc.Init(_packageStorage, _fdkOptionsProvider);
 
             var testResult = await acc.TestConnection();
 
@@ -293,7 +295,7 @@ namespace TickTrader.BotAgent.BA.Models
             acc.StateChanged += OnAccountStateChanged;
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
-            await acc.Init(_packageStorage);
+            await acc.Init(_packageStorage, _fdkOptionsProvider);
         }
 
         private void OnBotStateChanged(TradeBotModel bot)

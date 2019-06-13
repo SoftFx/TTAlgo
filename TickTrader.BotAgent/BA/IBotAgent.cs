@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Metadata;
@@ -66,7 +67,7 @@ namespace TickTrader.BotAgent.BA
 
         // TO DO : server start and stop should not be managed from WebAdmin
 
-        Task InitAsync();
+        Task InitAsync(IFdkOptionsProvider fdkOptionsProvider);
 
         Task ShutdownAsync();
     }
@@ -97,5 +98,10 @@ namespace TickTrader.BotAgent.BA
     {
         IEnumerable<ILogEntry> Messages { get; }
         string Status { get; }
+    }
+
+    public interface IFdkOptionsProvider
+    {
+        ConnectionOptions GetConnectionOptions();
     }
 }
