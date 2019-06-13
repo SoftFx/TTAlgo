@@ -283,7 +283,8 @@ namespace TickTrader.BotTerminal
                     saveError = ex;
                 }
 
-                yield return VmActions.ShowError("Failed to save parameters: " + saveError.Message, "Error");
+                if (saveError != null)
+                    yield return VmActions.ShowError("Failed to save parameters: " + saveError.Message, "Error");
             }
         }
 

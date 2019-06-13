@@ -31,6 +31,9 @@ namespace TickTrader.Algo.Core
                 }
             }
 
+            foreach (var series in _feedSeries.Values)
+                series.Close();
+
             if (reader.HasFailed)
                 throw new Exception("Failed to read feed stream! " + reader.Fault.Message, reader.Fault);
         }

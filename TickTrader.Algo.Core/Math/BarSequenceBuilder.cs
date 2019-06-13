@@ -111,6 +111,7 @@ namespace TickTrader.Algo.Core
             BarEntity closedBar = null;
             if (_currentBar != null)
             {
+                BarClosed?.Invoke(_currentBar);
                 closedBar = _currentBar;
                 _currentBar = null;
                 

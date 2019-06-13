@@ -173,8 +173,7 @@ namespace TickTrader.Algo.Core
                     var timeCoordinate = refTimeline[i];
                     if (timeCoordinate == bar.OpenTime) // found right place
                     {
-                        Buffer.Append(bar);
-                        LastBar = bar;
+                        AppendBarToBuffer(bar);
                         return;
                     }
                     else if (timeCoordinate > bar.OpenTime) // place not found - throw out
@@ -182,19 +181,21 @@ namespace TickTrader.Algo.Core
 
                     // fill empty spaces
                     var fillBar = CreateFillingBar(timeCoordinate);
-                    Buffer.Append(fillBar); 
-                    LastBar = fillBar;
+                    AppendBarToBuffer(fillBar);
                 }
 
                 futureBarCache.Add(bar); // place not found - add to future cache
                 LastBar = bar;
             }
             else
-            {
-                Buffer.Append(bar);
-                LastBar = bar;
-                Appended?.Invoke();
-            }
+                AppendBarToBuffer(bar);
+        }
+
+        private void AppendBarToBuffer(BarEntity bar)
+        {
+            Buffer.Append(bar);
+            LastBar = bar;
+            Appended?.Invoke();
         }
 
         private BarEntity CreateFillingBar(DateTime openTime)

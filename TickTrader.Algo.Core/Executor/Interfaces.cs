@@ -21,12 +21,10 @@ namespace TickTrader.Algo.Core
 
         public static BufferUpdateResult operator +(BufferUpdateResult x, BufferUpdateResult y)
         {
-            bool isLastUpdated = x.IsLastUpdated || (x.ExtendedBy == 0 && y.IsLastUpdated);
-
             return new BufferUpdateResult()
             {
-                IsLastUpdated = isLastUpdated,
-                ExtendedBy = x.ExtendedBy + y.ExtendedBy
+                IsLastUpdated = x.IsLastUpdated || y.IsLastUpdated,
+                ExtendedBy = Math.Max(x.ExtendedBy, y.ExtendedBy)
             };
         }
     }

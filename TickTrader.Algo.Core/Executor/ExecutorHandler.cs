@@ -119,7 +119,7 @@ namespace TickTrader.Algo.Core
 
         public class BulckUpdateWorker : CrossDomainObject, IUpdateWorker
         {
-            private FlipGate<object> _gate = new FlipGate<object>(300);
+            private PagedGate<object> _gate = new PagedGate<object>(300);
             private Task _gatePushTask;
             private ExecutorHandler _handler;
 
@@ -134,13 +134,13 @@ namespace TickTrader.Algo.Core
 
             public void Stop()
             {
-                _gate.Close();
+                //_gate.Close();
                 _gatePushTask.Wait();
             }
 
             private void Executor_Stopped()
             {
-                _gate.CompleteWrite();
+                _gate.Complete();
             }
 
             private void EnqueueUpdate(object update)

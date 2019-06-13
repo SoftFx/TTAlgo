@@ -210,6 +210,7 @@
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
+    <Compile Include="Lib\PagedGate.cs" />
     <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />

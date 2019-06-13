@@ -40,7 +40,6 @@ namespace TickTrader.BotTerminal
 
         public IDictionary<string, IOutputCollector> Outputs => _outputs;
 
-
         protected LocalAlgoAgent Agent { get; }
 
         protected IAlgoSetupContext SetupContext { get; }

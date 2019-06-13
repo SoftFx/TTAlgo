@@ -110,8 +110,6 @@ namespace TickTrader.Algo.Core
 
         internal BufferUpdateResult ApplyUpdate(RateUpdate update, out AlgoMarketNode node)
         {
-            //var lastQuote = update.LastQuote;
-
             node = _marketFixture.UpdateRate(update);
 
             var result = UpdateBuffers(update);

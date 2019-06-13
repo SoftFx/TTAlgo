@@ -337,7 +337,6 @@ namespace TickTrader.BotTerminal
 
             if (PluginConfig != null)
                 pluginSetupModel.Load(PluginConfig);
-            pluginSetupModel.MainSymbolPlaceholder.Id = chartSymbol.Name;
 
             // TODO: place correctly to avoid domain unload during backtester run
             //packageRef.IncrementRef();
@@ -350,14 +349,6 @@ namespace TickTrader.BotTerminal
                 try
                 {
                     pluginSetupModel.Apply(_backtester);
-
-                    foreach (var outputSetup in pluginSetupModel.Outputs)
-                    {
-                        if (outputSetup is ColoredLineOutputSetupModel)
-                            _backtester.InitOutputCollection<double>(outputSetup.Id);
-                        else if (outputSetup is MarkerSeriesOutputSetupModel)
-                            _backtester.InitOutputCollection<Marker>(outputSetup.Id);
-                    }
 
                     _backtester.Executor.LogUpdated += JournalPage.Append;
                     _backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;

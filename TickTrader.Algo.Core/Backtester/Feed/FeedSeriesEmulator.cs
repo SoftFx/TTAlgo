@@ -101,6 +101,12 @@ namespace TickTrader.Algo.Core
             RateUpdated?.Invoke(rate);
         }
 
+        public void Close()
+        {
+            foreach (var rec in _bidBars.Values)
+                rec.Close();
+        }
+
         protected BarVector GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
         {
             // TO DO : build-up series data basing on data from other time frames
@@ -124,9 +130,9 @@ namespace TickTrader.Algo.Core
 
         private void UpdateBars(BarRateUpdate barUpdate)
         {
-            if (barUpdate.BidBar.Volume != 0) // skip filler
+            //if (barUpdate.BidBar.Volume != 0) // skip filler
                 UpdateBars(_bidBars.Values, barUpdate.BidBar);
-            if (barUpdate.AskBar.Volume != 0) // skip filler
+            //if (barUpdate.AskBar.Volume != 0) // skip filler
                 UpdateBars(_askBars.Values, barUpdate.AskBar);
         }
 

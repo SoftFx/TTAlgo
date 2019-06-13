@@ -110,7 +110,7 @@ namespace TickTrader.Algo.Core
                 var bidResult = bidFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
                     bidResult.ExtendedBy = 0;
-                overallResult = bidResult;
+                overallResult += bidResult;
             }
 
             if (overallResult.ExtendedBy > 0)

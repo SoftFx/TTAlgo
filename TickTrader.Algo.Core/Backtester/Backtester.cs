@@ -184,11 +184,6 @@ namespace TickTrader.Algo.Core
             return _control.TradeHistory.Marshal();
         }
 
-        public void InitOutputCollection<T>(string id)
-        {
-            _control.Collector.InitOutputCollection<T>(id);
-        }
-
         public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
             return _control.Collector.GetOutputData<T>(id);

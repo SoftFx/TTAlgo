@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class ChartDataCollector : IDisposable
+    internal class ChartDataCollector
     {
         private ITimeSequenceRef _timeRef;
         private List<BarEntity> _snapshot;
@@ -52,17 +52,15 @@ namespace TickTrader.Algo.Core
 
         public void OnStop()
         {
-            if (_currentBar != null && _currentBar.Volume > 0)
-            {
-                _snapshot?.Add(_currentBar);
+            //if (_currentBar != null && _currentBar.Volume > 0)
+            //{
+            //    _snapshot?.Add(_currentBar);
+            //    System.Diagnostics.Debug.WriteLine("EM DATA UPDATE - " + _currentBar.OpenTime);
 
-                if (_sendOnClose)
-                    SendUpdate(_currentBar, SeriesUpdateActions.Append);
-            }
-        }
+            //    if (_sendOnClose)
+            //        SendUpdate(_currentBar, SeriesUpdateActions.Append);
+            //}
 
-        public void Dispose()
-        {
             _timeRef.BarOpened -= _timeRef_BarOpened;
             _timeRef.BarClosed -= _timeRef_BarClosed;
         }
@@ -104,8 +102,6 @@ namespace TickTrader.Algo.Core
 
         private void SendUpdate(BarEntity bar, SeriesUpdateActions action)
         {
-            //System.Diagnostics.Debug.WriteLine("BAR - " + bar.OpenTime);
-
             var update = new DataSeriesUpdate<BarEntity>(_type, _streamId, action, bar);
             _sendUpdateAction(update);
         }

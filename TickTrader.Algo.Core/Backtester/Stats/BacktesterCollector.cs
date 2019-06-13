@@ -78,8 +78,8 @@ namespace TickTrader.Algo.Core
             foreach (var sCollector in _symbolDataCollectors)
                 sCollector.Value.Dispose();
 
-            _equityCollector.Dispose();
-            _marginCollector.Dispose();
+            _equityCollector.OnStop();
+            _marginCollector.OnStop();
 
             //if (!string.IsNullOrWhiteSpace(_lastStatus))
             //    AddEvent(LogSeverities.Custom, _lastStatus);
@@ -244,17 +244,6 @@ namespace TickTrader.Algo.Core
         }
 
         #region Output collection
-
-        public void InitOutputCollection<T>(string id)
-        {
-            var output = _executor.GetOutput<T>(id);
-            var outputBuffer = new List<T>();
-
-            output.Appended += a =>
-            {
-                outputBuffer.Add(a.Value);
-            };
-        }
 
         public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
