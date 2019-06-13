@@ -853,7 +853,7 @@ namespace TickTrader.Algo.Common.Model
                     {
                         if (message != null)
                         {
-                            if (message == "Trade Not Allowed")
+                            if (message == "Trade Not Allowed" || message == "Trade is not allowed!")
                                 return Api.OrderCmdResultCodes.TradeNotAllowed;
                             else if (message.StartsWith("Not Enough Money"))
                                 return Api.OrderCmdResultCodes.NotEnoughMoney;
@@ -873,6 +873,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.MarketWithMaxVisibleVolume;
                             else if (message.StartsWith("Order Not Found"))
                                 return Api.OrderCmdResultCodes.OrderNotFound;
+                            else if (message.StartsWith("Invalid order type"))
+                                return Api.OrderCmdResultCodes.Unsupported;
                         }
                         break;
                     }

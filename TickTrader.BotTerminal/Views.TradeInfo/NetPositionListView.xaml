@@ -23,7 +23,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{l:Resx Position_Id}" Width="*" Binding="{Binding Position.Id}"/>
                 <DataGridTextColumn Header="{l:Resx Position_Symbol}" Width="*" Binding="{Binding Position.Symbol}"/>
-                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="*" Binding="{Binding Position.Modified, Converter={StaticResource FullDateTimeFormat}}"/>
+                <DataGridTextColumn Header="{l:Resx Position_ModifiedTime}" Width="*" Binding="{Binding Position.Modified, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
                 <DataGridTextColumn Header="{l:Resx Position_Side}" Width="*" Binding="{Binding Position.Side}"/>
                 <DataGridTextColumn Header="{l:Resx Position_Volume}" Width="*" Binding="{Binding Position.Amount}"/>
                 <DataGridTextColumn Header="{l:Resx Position_OpenPrice}" Width="*">

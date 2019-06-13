@@ -11,6 +11,8 @@ namespace TickTrader.BotTerminal
 {
     abstract class TransactionReport
     {
+        private static IndificationNumberGenerator _numberGenerator = new IndificationNumberGenerator();
+
         public enum AggregatedTransactionType
         {
             Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit, SellStopLimitCanceled,
@@ -70,10 +72,10 @@ namespace TickTrader.BotTerminal
             Slippage = GetSlippage(transaction);
             Tag = GetTag(transaction);
             PosQuantity = GetPosQuantity(transaction);
+            SortedNumber = GetSortedNumber();
 
             // should be last (it's based on other fields)
-            long orderNum;
-            UniqueId = GetUniqueId(transaction, out orderNum);
+            UniqueId = GetUniqueId(transaction, out long orderNum);
             OrderNum = orderNum;
         }
 
@@ -134,6 +136,7 @@ namespace TickTrader.BotTerminal
         public Reasons? Reason { get; protected set; }
         public string Tag { get; protected set; }
         public double? PosQuantity { get; protected set; }
+        public string SortedNumber { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -311,28 +314,14 @@ namespace TickTrader.BotTerminal
 
         protected virtual Reasons? GetReason(TradeReportEntity transaction)
         {
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.ClientRequest)
+            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled)
                 Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision)
-            {
-                Type = GetBuyOrSellType(transaction);
                 return Reasons.DealerDecision;
-            }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
-            {
-                Type = GetBuyOrSellType(transaction);
                 return Reasons.StopOut;
-            }
-
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
-                transaction.ReqOrderType == OrderType.Stop)
-                Type = GetBuyOrSellType(transaction);
-
-            if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.PendingOrderActivation &&
-                transaction.ReqOrderType == OrderType.Limit)
-                Type = GetBuyOrSellType(transaction);
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
@@ -376,8 +365,10 @@ namespace TickTrader.BotTerminal
                 case OrderType.Limit:
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
                 case OrderType.StopLimit:
+                    OpenPrice = transaction.StopPrice;
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopLimitCanceled : AggregatedTransactionType.SellStopLimitCanceled;
                 case OrderType.Stop:
+                    OpenPrice = transaction.StopPrice;
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopCanceled : AggregatedTransactionType.SellStopCanceled;
                 default: return AggregatedTransactionType.Unknown;
             }
@@ -387,6 +378,11 @@ namespace TickTrader.BotTerminal
         {
             CompositeTag.TryParse(transaction.Tag, out CompositeTag tag);
             return tag?.Tag ?? transaction.Tag;
+        }
+
+        protected string GetSortedNumber()
+        {
+            return $"{CloseTime.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{_numberGenerator.GetNumber(CloseTime)}";
         }
 
         private bool OrderWasCanceled()

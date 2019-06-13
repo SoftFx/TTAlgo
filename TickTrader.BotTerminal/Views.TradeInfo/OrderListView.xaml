@@ -60,7 +60,7 @@
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Expiration, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.Expiration}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.Expiration, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
@@ -82,7 +82,7 @@
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}"/>
                     <DataGridTextColumn Header="Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource TimeShow}}"/>
-                    <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" />
+                    <DataGridTextColumn Header="Modified Time" Width="*" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
                     <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Order.AggregatedType, Converter={StaticResource PascalSplitString}}"/>
                     <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="*">
                         <DataGridTextColumn.Binding>

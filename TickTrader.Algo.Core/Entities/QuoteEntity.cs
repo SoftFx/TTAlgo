@@ -87,7 +87,6 @@ namespace TickTrader.Algo.Core
         public DateTime Time { get; set; }
         public double Ask => _ask ?? double.NaN;
         public double Bid => _bid ?? double.NaN;
-
         public BookEntry[] BidList { get; private set; }
         public BookEntry[] AskList { get; private set; }
 
