@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.Configurator
             if (_serviceManager.IsServiceRunning)
                 _serviceManager.ServiceStop();
 
-            _portsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
+            PortsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
             _serviceManager.ServiceStart();
 
             return true;

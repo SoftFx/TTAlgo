@@ -92,8 +92,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Application Manages\ServiceManager.cs" />
-    <Compile Include="Application Manages\ConfigManager.cs" />
+    <Compile Include="ApplicationManages\ServiceManager.cs" />
+    <Compile Include="ApplicationManages\ConfigManager.cs" />
     <Compile Include="Controls\CredentialPanel.xaml.cs">
       <DependentUpon>CredentialPanel.xaml</DependentUpon>
     </Compile>
@@ -106,16 +106,16 @@
     <Compile Include="Controls\SslPanel.xaml.cs">
       <DependentUpon>SslPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Configuration Managers\ContentManager.cs" />
-    <Compile Include="Configuration Managers\CredentialsManager.cs" />
-    <Compile Include="Application Manages\MessageBoxManager.cs" />
-    <Compile Include="Configuration Managers\ProtocolManager.cs" />
-    <Compile Include="Application Manages\RegistryManager.cs" />
-    <Compile Include="Configuration Managers\ServerManager.cs" />
-    <Compile Include="Configuration Managers\SslManager.cs" />
+    <Compile Include="ConfigurationManagers\ContentManager.cs" />
+    <Compile Include="ConfigurationManagers\CredentialsManager.cs" />
+    <Compile Include="ApplicationManages\MessageBoxManager.cs" />
+    <Compile Include="ConfigurationManagers\ProtocolManager.cs" />
+    <Compile Include="ApplicationManages\RegistryManager.cs" />
+    <Compile Include="ConfigurationManagers\ServerManager.cs" />
+    <Compile Include="ConfigurationManagers\SslManager.cs" />
     <Compile Include="Helpers\Exceptions.cs" />
     <Compile Include="Helpers\Validations.cs" />
-    <Compile Include="Application Manages\PortsManager.cs" />
+    <Compile Include="ApplicationManages\PortsManager.cs" />
     <Compile Include="ViewModels\CredentialViewModel.cs" />
     <Compile Include="ViewModels\ProtocolViewModel.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />

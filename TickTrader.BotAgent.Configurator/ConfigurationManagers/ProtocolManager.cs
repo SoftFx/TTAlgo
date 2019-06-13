@@ -69,5 +69,10 @@ namespace TickTrader.BotAgent.Configurator
             if (ListeningPort == 0)
                 ListeningPort = DefaultPort;
         }
+
+        public void CheckPort(int port)
+        {
+            PortsManager.CheckPortOpen(port);
+        }
     }
 }

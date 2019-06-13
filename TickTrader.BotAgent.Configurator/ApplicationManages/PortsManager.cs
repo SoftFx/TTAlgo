@@ -27,14 +27,14 @@ namespace TickTrader.BotAgent.Configurator
         //    }
         //}
 
-        public void CheckPortOpen(string urls)
+        public static void CheckPortOpen(string urls)
         {
             var pair = GetHostAndPort(urls);
 
-            CheckPortOpen(pair.Item1, pair.Item2);
+            CheckPortOpen(pair.Item2, pair.Item1);
         }
 
-        public void CheckPortOpen(string hostname, int port)
+        public static void CheckPortOpen(int port, string hostname = "localhost")
         {
             if (hostname.ToLower().Trim('/') == "localhost")
                 hostname = IPAddress.Loopback.ToString();
@@ -68,7 +68,7 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        private bool CheckActiveServiceState(TcpConnectionInformation tcp)
+        private static bool CheckActiveServiceState(TcpConnectionInformation tcp)
         {
             return tcp.State == TcpState.Established || tcp.State == TcpState.Listen;
         }
@@ -94,7 +94,7 @@ namespace TickTrader.BotAgent.Configurator
             _firewallManager.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(applicationInst);
         }
 
-        public Tuple<string, int> GetHostAndPort(string urls)
+        public static Tuple<string, int> GetHostAndPort(string urls)
         {
             var parts = urls.Split(':');
 
