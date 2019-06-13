@@ -53,7 +53,6 @@ namespace TickTrader.Algo.Core
         public DateTime Time { get; set; }
         public double Ask { get; set; }
         public double Bid { get; set; }
-
         public BookEntry[] BidList { get; set; }
         public BookEntry[] AskList { get; set; }
 
