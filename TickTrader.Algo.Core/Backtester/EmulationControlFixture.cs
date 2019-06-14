@@ -109,6 +109,9 @@ namespace TickTrader.Algo.Core
             if (ex is AlgoException)
                 return ex;
 
+            if (ex is OperationCanceledException || ex is TaskCanceledException)
+                return new AlgoOperationCanceledException(ex.Message);
+
             return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }

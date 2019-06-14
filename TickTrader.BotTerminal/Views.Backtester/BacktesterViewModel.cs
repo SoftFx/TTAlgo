@@ -411,7 +411,12 @@ namespace TickTrader.BotTerminal
                         await SaveResults(pluginSetupModel, observer);
 
                     if (execError != null)
-                        throw execError; //observer.SetMessage(execError.Message);
+                    {
+                        if (execError is AlgoOperationCanceledException)
+                            observer.SetMessage("Canceled by user!");
+                        else
+                            throw execError; //observer.SetMessage(execError.Message);
+                    }
                     else
                         observer.SetMessage("Done.");
                 }
