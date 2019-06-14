@@ -127,7 +127,7 @@ namespace TickTrader.Algo.Core
             {
                 _handler = handler;
                 executor.OnUpdate = EnqueueUpdate;
-                executor.Stopped += Executor_Stopped;
+                //executor.Stopped += Executor_Stopped;
 
                 _gatePushTask = Task.Factory.StartNew(PushUpdates);
             }
@@ -135,13 +135,14 @@ namespace TickTrader.Algo.Core
             public void Stop()
             {
                 //_gate.Close();
+                _gate.Complete(); // TO DO: It will work only in backtester! Need to refactor to use in executor.
                 _gatePushTask.Wait();
             }
 
-            private void Executor_Stopped()
-            {
-                _gate.Complete();
-            }
+            //private void Executor_Stopped()
+            //{
+            //    _gate.Complete();
+            //}
 
             private void EnqueueUpdate(object update)
             {

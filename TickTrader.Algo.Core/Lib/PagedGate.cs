@@ -60,7 +60,16 @@ namespace TickTrader.Algo.Core.Lib
         /// </summary>
         public void Complete()
         {
-            WritePage(true);
+            if (_writeBuff.Count > 0)
+                WritePage(true);
+            else
+            {
+                lock (_sendQueue)
+                {
+                    _writeCompleted = true;
+                    Monitor.Pulse(_sendQueue);
+                }
+            }
         }
 
         private void WritePage(bool final)
