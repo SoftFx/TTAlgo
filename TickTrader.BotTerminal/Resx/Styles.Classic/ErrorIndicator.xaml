@@ -1,0 +1,18 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <ControlTemplate x:Key="ErrorIndicatorTemplate" TargetType="l:ErrorIndicator">
+        <Border CornerRadius="3" Padding="{TemplateBinding Padding}" Background="Red" ToolTip="{TemplateBinding Error}"
+                Visibility="{TemplateBinding ErrorIconVisibility}">
+            <TextBlock Text="!" FontSize="{TemplateBinding FontSize}" Foreground="White" FontWeight="Bold" Margin="0"/>
+        </Border>
+    </ControlTemplate>
+
+
+    <Style TargetType="l:ErrorIndicator">
+        <Setter Property="Template" Value="{StaticResource ErrorIndicatorTemplate}"/>
+        <Setter Property="Padding" Value="3,1,3,1"/>
+    </Style>
+    
+</ResourceDictionary>

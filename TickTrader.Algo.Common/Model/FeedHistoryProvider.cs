@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
                 return Actor.Call(a => a.GetQuotePage(symbol, Prepare(startTime), count, includeLevel2));
             }
 
-            public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+            public Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
             {
                 return Actor.Call(a => a.GetAvailableRange(symbol, priceType, timeFrame));
             }
@@ -143,9 +143,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        private Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            return _feedProxy?.GetAvailableRange(symbol, priceType, timeFrame) ?? Task.FromResult<Tuple<DateTime, DateTime>>(null);
+            return _feedProxy?.GetAvailableRange(symbol, priceType, timeFrame) ?? Task.FromResult<Tuple<DateTime?, DateTime?>>(null);
         }
 
         private async Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int pageSize)

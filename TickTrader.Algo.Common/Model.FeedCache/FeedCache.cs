@@ -141,7 +141,7 @@ namespace TickTrader.Algo.Common.Model
             public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Api.TimeFrames frame, Api.BarPriceType? priceType, DateTime from, DateTime to)
                 => _ref.Call(a => a.GetFirstRange(symbol, frame, priceType, from, to));
 
-            public Task<Tuple<DateTime, DateTime>> GetRange(FeedCacheKey key)
+            public Task<Tuple<DateTime?, DateTime?>> GetRange(FeedCacheKey key)
                 => _ref.Call(a => a.GetRange(key));
 
             public Task<double?> GetCollectionSize(FeedCacheKey key)
@@ -208,26 +208,22 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        protected Tuple<DateTime, DateTime> GetRange(FeedCacheKey key)
+        protected Tuple<DateTime?, DateTime?> GetRange(FeedCacheKey key)
         {
             CheckState();
 
-            bool hasValues = false;
-            var min = DateTime.MinValue;
-            var max = DateTime.MaxValue;
+            DateTime? min = null;
+            DateTime? max = null;
 
             foreach (var r in IterateCacheKeysInternal(key))
             {
-                if (!hasValues)
-                {
+                if (min == null)
                     min = r.From;
-                    hasValues = true;
-                }
 
                 max = r.To;
             }
 
-            return hasValues ? new Tuple<DateTime, DateTime>(min, max) : null;
+            return new Tuple<DateTime?, DateTime?>(min, max);
         }
 
         //private Task<Tuple<DateTime, DateTime>> GetRangeAsync(FeedCacheKey key, bool custom)

@@ -380,18 +380,18 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public async Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        public async Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
             if (timeFrame.IsTicks())
             {
                 var level2 = timeFrame == TimeFrames.TicksLevel2;
                 var info = await _feedHistoryProxy.GetQuotesHistoryInfoAsync(symbol, level2);
-                return new Tuple<DateTime, DateTime>(info.AvailFrom ?? DateTime.MinValue, info.AvailTo ?? DateTime.MinValue);
+                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
             else // bars
             {
                 var info = await _feedHistoryProxy.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeFrame), ConvertBack(priceType));
-                return new Tuple<DateTime, DateTime>(info.AvailFrom ?? DateTime.MinValue, info.AvailTo ?? DateTime.MinValue);
+                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
         }
 

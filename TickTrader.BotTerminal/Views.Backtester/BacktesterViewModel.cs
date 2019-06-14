@@ -55,6 +55,7 @@ namespace TickTrader.BotTerminal
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
         private BacktesterPluginSetupViewModel _openedPluginSetup;
+        private readonly BoolProperty _isDateRangeValid;
 
         private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
 
@@ -79,6 +80,7 @@ namespace TickTrader.BotTerminal
 
             DateRange = new DateRangeSelectionViewModel(false);
             IsUpdatingRange = new BoolProperty();
+            _isDateRangeValid = new BoolProperty();
             MainTimeFrame = new Property<TimeFrames>();
 
             TradesPage = new BacktesterCurrentTradesViewModel(profile);
@@ -102,7 +104,7 @@ namespace TickTrader.BotTerminal
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
             //IsRunning = ActionOverlay.IsRunning;
             //IsStopping = ActionOverlay.IsCancelling;
-            CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var;
+            CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var & _isDateRangeValid.Var;
             CanSetup = !IsRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
@@ -206,6 +208,7 @@ namespace TickTrader.BotTerminal
         public IntProperty SelectedSpeed { get; private set; }
         public BoolProperty IsUpdatingRange { get; private set; }
         public DateRangeSelectionViewModel DateRange { get; }
+        public BoolVar IsDateRangeEnabled => _isDateRangeValid.Var;
         public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
         //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
 
@@ -765,12 +768,18 @@ namespace TickTrader.BotTerminal
             var max = allSymbols.Max(s => s.AvailableRange.Value?.Item2);
             var min = allSymbols.Min(s => s.AvailableRange.Value?.Item1);
 
-            bool wasEmpty = DateRange.From == DateTime.MinValue;
+            if (max != null && min != null)
+            {
+                bool wasEmpty = DateRange.From == DateTime.MinValue;
 
-            DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
+                DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
+                _isDateRangeValid.Set();
 
-            if (wasEmpty)
-                DateRange.ResetSelectedRange();
+                if (wasEmpty)
+                    DateRange.ResetSelectedRange();
+            }
+            else
+                _isDateRangeValid.Clear();
         }
 
         private void UpdateSymbolsState()

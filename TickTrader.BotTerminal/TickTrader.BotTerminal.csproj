@@ -253,6 +253,7 @@
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\DropDownMenuButton.cs" />
+    <Compile Include="Controls\ErrorIndicator.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
     <Compile Include="Controls\Icon.cs" />
@@ -767,6 +768,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles.Classic\Ellipse.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ErrorIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
