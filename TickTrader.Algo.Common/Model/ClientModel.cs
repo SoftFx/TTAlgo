@@ -155,6 +155,14 @@ namespace TickTrader.Algo.Common.Model
                 var apiRef = await Actor.Call(a => a._tradeApi.GetRef());
                 return new PluginTradeApiProvider.Handler(apiRef);
             }
+
+            public async Task<TradeHistoryProvider.Handler> CreateTradeHistory()
+            {
+                var apiRef = await Actor.Call(a => a._tradeHistory.GetRef());
+                var provider = new TradeHistoryProvider.Handler(apiRef);
+                await provider.Init();
+                return provider;
+            }
         }
 
         public class Data : Handler<ClientModel>, IQuoteDistributorSource, IMarketDataProvider

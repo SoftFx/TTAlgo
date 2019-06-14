@@ -101,6 +101,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 PluginTradeApi = await _core.CreateTradeApi();
                 PluginTradeInfo = await _core.CreateTradeProvider();
+                PluginTradeHistory = await _core.CreateTradeHistory();
 
                 _isInitialized = true;
 
@@ -116,6 +117,7 @@ namespace TickTrader.BotAgent.BA.Models
         public ConnectionErrorInfo LastError => _lastError;
         public PluginTradeApiProvider.Handler PluginTradeApi { get; private set; }
         public PluginTradeInfoProvider PluginTradeInfo { get; private set; }
+        public TradeHistoryProvider.Handler PluginTradeHistory { get; private set; }
 
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;

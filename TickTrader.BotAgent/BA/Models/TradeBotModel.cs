@@ -243,7 +243,7 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;
                 executor.TradeExecutor = _client.PluginTradeApi;
-                //executor.TradeHistoryProvider =  new TradeHistoryProvider(_client.Connection);
+                executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.InstanceId = Id;
