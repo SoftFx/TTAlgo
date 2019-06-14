@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolViewModel : INotifyPropertyChanged
+    public class ProtocolViewModel : IViewModel
     {
         private ProtocolModel _model;
         private RefreshManager _refreshManager;
@@ -21,10 +16,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public int ListeningPort
         {
-            get
-            {
-                return _model.ListeningPort;
-            }
+            get => _model.ListeningPort;
 
             set
             {
@@ -40,10 +32,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string DirectoryName
         {
-            get
-            {
-                return _model.DirectoryName;
-            }
+            get => _model.DirectoryName;
 
             set
             {
@@ -59,10 +48,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool LogMessage
         {
-            get
-            {
-                return _model.LogMessage;
-            }
+            get => _model.LogMessage;
 
             set
             {
@@ -83,6 +69,10 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(LogMessage));
         }
 
+        public void CheckPort()
+        {
+            _model.CheckListeningPort();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

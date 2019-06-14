@@ -8,52 +8,31 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class PortsManager
     {
-        //private string _localhost;
         private readonly INetFwMgr _firewallManager;
+        private readonly ServiceManager _serviceManager;
+        private readonly DefaultServiceSettingsModel _serviceModel;
 
-        public PortsManager()
+        public PortsManager(ServiceManager service, DefaultServiceSettingsModel serviceModel)
         {
+            _serviceManager = service;
+            _serviceModel = serviceModel;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
         }
 
-        //public string LocalHost
-        //{
-        //    get
-        //    {
-        //        if (string.IsNullOrEmpty(_localhost))
-        //            SetLocalHost();
-
-        //        return _localhost;
-        //    }
-        //}
-
-        public static void CheckPortOpen(string urls)
+        public void CheckPortOpen(string urls)
         {
             var pair = GetHostAndPort(urls);
 
             CheckPortOpen(pair.Item2, pair.Item1);
         }
 
-        public static void CheckPortOpen(int port, string hostname = "localhost")
+        public void CheckPortOpen(int port, string hostname = "localhost")
         {
             if (hostname.ToLower().Trim('/') == "localhost")
                 hostname = IPAddress.Loopback.ToString();
 
             //hostname = "10.9.14.74"; //from test
             //port = 52167;
-
-            //using (var tcpClient = new TcpClient())
-            //{
-            //    try
-            //    {
-            //        tcpClient.Connect(hostname, port);
-            //        tcpClient.Close();
-            //    }
-            //    catch
-            //    {
-            //        throw new WarningException($"Port {port} not avaible");
-            //    }
-            //}
 
             foreach (var tcp in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections())
             {
@@ -63,17 +42,22 @@ namespace TickTrader.BotAgent.Configurator
 
             foreach (var tcp in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
             {
-                if (tcp.Port == port)
+                if (tcp.Port == port && !IsAgentService(port))
                     throw new WarningException($"Port {port} not avaible");
             }
         }
 
-        private static bool CheckActiveServiceState(TcpConnectionInformation tcp)
+        private bool CheckActiveServiceState(TcpConnectionInformation tcp)
         {
             return tcp.State == TcpState.Established || tcp.State == TcpState.Listen;
         }
 
-        public void RegistryPortInFirewall(int port, string name)
+        private bool IsAgentService(int port)
+        {
+            return _serviceManager.IsServiceRunning && _serviceModel.ListeningPort == port;
+        }
+
+        public void RegisterPortInFirewall(int port, string name)
         {
             var portInst = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", true));
             portInst.Port = port;
@@ -83,7 +67,7 @@ namespace TickTrader.BotAgent.Configurator
             _firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portInst);
         }
 
-        public void RegistryApplicationInFirewall(string name, string path)
+        public void RegisterApplicationInFirewall(string name, string path)
         {
             var applicationInst = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWAuthorizedApplication", false));
 
@@ -94,7 +78,7 @@ namespace TickTrader.BotAgent.Configurator
             _firewallManager.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(applicationInst);
         }
 
-        public static Tuple<string, int> GetHostAndPort(string urls)
+        public Tuple<string, int> GetHostAndPort(string urls)
         {
             var parts = urls.Split(':');
 
@@ -109,7 +93,7 @@ namespace TickTrader.BotAgent.Configurator
             return new Tuple<string, int>(parts[n - 2].Trim('/'), port);
         }
 
-        //private void SetLocalHost()
+        //private void SetLocalIP()
         //{
         //    var host = Dns.GetHostEntry(Dns.GetHostName());
 

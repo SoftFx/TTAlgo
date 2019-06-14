@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialViewModel : INotifyPropertyChanged
+    public class CredentialViewModel : IViewModel
     {
         private CredentialModel _model;
         private RefreshManager _refreshManager;
@@ -18,10 +18,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public string Login
         {
-            get
-            {
-                return _model.Login;
-            }
+            get => _model.Login;
+
             set
             {
                 if (_model.Login == value)
@@ -36,10 +34,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public string Password
         {
-            get
-            {
-                return _model.Password;
-            }
+            get => _model.Password;
+
             set
             {
                 if (_model.Password == value)

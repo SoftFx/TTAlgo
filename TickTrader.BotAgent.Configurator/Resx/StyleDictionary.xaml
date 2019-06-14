@@ -9,7 +9,7 @@
     <Style TargetType="TextBox">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Height" Value="22"/>
-        <Setter Property="Width" Value="150"/>
+        <Setter Property="Width" Value="170"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Style.Triggers>
@@ -42,14 +42,51 @@
         <Setter Property="Control.VerticalAlignment" Value="Top"/>
     </Style>
 
+    <Style x:Key="serverControlPanel" BasedOn="{StaticResource userControlPanel}">
+        <Setter Property="Control.Height" Value="400"/>
+        <Setter Property="Control.Width" Value="600"/>
+        <Setter Property="Control.Margin" Value="10 0"/>
+    </Style>
+
+    <Style x:Key="fdkControlPanel" BasedOn="{StaticResource userControlPanel}">
+        <Setter Property="Control.Height" Value="40"/>
+    </Style>
+
     <Style x:Key="checkBoxControlPanel" TargetType="CheckBox">
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
 
-    <Style x:Key="generateButton" TargetType="Button">
+    <Style x:Key="checkBoxFdkPanel" BasedOn="{StaticResource checkBoxControlPanel}" TargetType="CheckBox">
+        <Setter Property="Margin" Value="10 0"/>
+    </Style>
+    
+    <Style x:Key="secondaryButton" TargetType="Button">
         <Setter Property="FontSize" Value="10"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="Margin" Value="10 0 0 0"/>
+        <Setter Property="Padding" Value="3"/>
+    </Style>
+
+    <Style x:Key="textAreaStyle" TargetType="TextBox">
+        <Setter Property="Width" Value="300"/>
+        <Setter Property="Height" Value="300"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+
+    <Style x:Key="stateServiceIndicator" TargetType="Ellipse">
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Height" Value="10"/>
+        <Setter Property="Fill" Value="Red"/>
+        <Setter Property="Margin" Value="5 0"/>
+    </Style>
+
+    <Style x:Key="stateServiceRow">
+        <Setter Property="Control.HorizontalAlignment" Value="Right"/>
+        <Setter Property="Control.Margin" Value="20 0"/>
     </Style>
 </ResourceDictionary>

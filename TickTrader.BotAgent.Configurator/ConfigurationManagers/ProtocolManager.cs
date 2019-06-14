@@ -1,9 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -11,9 +7,9 @@ namespace TickTrader.BotAgent.Configurator
     {
         public ProtocolModel ProtocolModel { get; }
 
-        public ProtocolManager(string sectionName = "") : base(sectionName)
+        public ProtocolManager(string sectionName = "", PortsManager manager = null) : base(sectionName)
         {
-            ProtocolModel = new ProtocolModel();
+            ProtocolModel = new ProtocolModel(manager);
         }
 
         public void UploadModels(List<JProperty> protocolProp)
@@ -52,8 +48,15 @@ namespace TickTrader.BotAgent.Configurator
 
     public class ProtocolModel
     {
+        private readonly PortsManager _portManager;
+
         private const string DefaultDirectoryName = "Logs";
         private const int DefaultPort = 58443;
+
+        public ProtocolModel(PortsManager manager)
+        {
+            _portManager = manager;
+        }
 
         public int ListeningPort { get; set; }
 
@@ -70,9 +73,9 @@ namespace TickTrader.BotAgent.Configurator
                 ListeningPort = DefaultPort;
         }
 
-        public void CheckPort(int port)
+        public void CheckListeningPort()
         {
-            PortsManager.CheckPortOpen(port);
+            _portManager?.CheckPortOpen(ListeningPort);
         }
     }
 }

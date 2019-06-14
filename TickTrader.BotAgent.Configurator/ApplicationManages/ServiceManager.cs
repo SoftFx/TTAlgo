@@ -11,6 +11,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool IsServiceRunning => _serviceController?.Status == ServiceControllerStatus.Running;
 
+        public ServiceControllerStatus ServiceStatus => _serviceController.Status;
 
         public ServiceManager(string serviceName)
         {
@@ -20,6 +21,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void ServiceStart()
         {
+            _serviceController = new ServiceController(_serviceName);
+
             if (_serviceController.Status == ServiceControllerStatus.Running)
                 throw new Exception("Service alredy started");
 

@@ -94,14 +94,21 @@
     </ApplicationDefinition>
     <Compile Include="ApplicationManages\ServiceManager.cs" />
     <Compile Include="ApplicationManages\ConfigManager.cs" />
+    <Compile Include="ConfigurationManagers\FdkManager.cs" />
     <Compile Include="Controls\CredentialPanel.xaml.cs">
       <DependentUpon>CredentialPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FdkPanel.xaml.cs">
+      <DependentUpon>FdkPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ProtocolPanel.xaml.cs">
       <DependentUpon>ProtocolPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ServerPanel.xaml.cs">
       <DependentUpon>ServerPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ServiceStateControl.xaml.cs">
+      <DependentUpon>ServiceStateControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SslPanel.xaml.cs">
       <DependentUpon>SslPanel.xaml</DependentUpon>
@@ -113,14 +120,22 @@
     <Compile Include="ApplicationManages\RegistryManager.cs" />
     <Compile Include="ConfigurationManagers\ServerManager.cs" />
     <Compile Include="ConfigurationManagers\SslManager.cs" />
+    <Compile Include="Helpers\Converters.cs" />
     <Compile Include="Helpers\Exceptions.cs" />
     <Compile Include="Helpers\Validations.cs" />
     <Compile Include="ApplicationManages\PortsManager.cs" />
+    <Compile Include="Models\DefaultServiceSettingsModel.cs" />
     <Compile Include="ViewModels\CredentialViewModel.cs" />
+    <Compile Include="ViewModels\FdkViewModel.cs" />
     <Compile Include="ViewModels\ProtocolViewModel.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />
     <Compile Include="ViewModels\SslViewModel.cs" />
+    <Compile Include="ViewModels\StateServiceViewModel.cs" />
     <Page Include="Controls\CredentialPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FdkPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -129,6 +144,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ServerPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ServiceStateControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -150,7 +169,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="StyleDictionary.xaml">
+    <Page Include="Resx\Converters.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\StyleDictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

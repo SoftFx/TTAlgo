@@ -4,8 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
-             mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="250">
+             mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.7*"/>
@@ -21,16 +20,20 @@
         <TextBlock Grid.Row="1" Text="Directory Name: "/>
         <TextBlock Grid.Row="2" Text="Log Message: "/>
 
-        <TextBox Grid.Column="1" Grid.Row="0">
-            <TextBox.Text>
-                <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                    <Binding.ValidationRules>
-                        <ExceptionValidationRule/>
-                        <local:ValidationPort MinValue="100" MaxValue="100000"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
+            <TextBox  Validation.Error="TextBox_Error">
+                <TextBox.Text>
+                    <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <ExceptionValidationRule/>
+                            <local:ValidationPort MinValue="0" MaxValue="65535"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button x:Name="CheckPortButton" Style="{StaticResource secondaryButton}" Content="Check" Click="CheckPort_Click"/>
+        </StackPanel>
+
         <TextBox Grid.Column="1" Grid.Row="1" Validation.Error="TextBox_Error">
             <TextBox.Text>
                 <Binding Path="DirectoryName" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">

@@ -20,6 +20,8 @@ namespace TickTrader.BotAgent.Configurator.Controls
     /// </summary>
     public partial class ProtocolPanel : UserControl
     {
+        private int _countErrors = 0;
+
         public ProtocolPanel()
         {
             InitializeComponent();
@@ -27,9 +29,33 @@ namespace TickTrader.BotAgent.Configurator.Controls
 
         private void TextBox_Error(object sender, ValidationErrorEventArgs e)
         {
+            _countErrors += e.Action == ValidationErrorEventAction.Added ? 1 : -1;
+
+            CheckPortButton.IsEnabled = _countErrors <= 0;
+
             if (Window.GetWindow(this) is IErrorCounter parentWindows)
             {
                 parentWindows.CountNumberErrors(sender, e);
+            }
+        }
+
+        private void CheckPort_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ProtocolViewModel model)
+            {
+                try
+                {
+                    model.CheckPort();
+                    MessageBoxManager.OKBox("Port is avaible");
+                }
+                catch (WarningException ex)
+                {
+                    MessageBoxManager.WarningBox(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    MessageBoxManager.ErrorBox(ex.Message);
+                }
             }
         }
     }

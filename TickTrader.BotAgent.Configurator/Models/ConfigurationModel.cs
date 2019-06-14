@@ -10,13 +10,17 @@ namespace TickTrader.BotAgent.Configurator
     {
         private ConfigManager _configManager;
         private PortsManager _portsManager;
-        private ServiceManager _serviceManager;
         private IBotAgentConfigPathHolder _botAgentHolder;
+
+        private DefaultServiceSettingsModel _defaultServiceSettings;
 
         private JObject _configurationObject;
 
         private readonly List<IUploaderModels> _uploaderModels;
-        private readonly ConfigurationProperies _settings;
+
+        public ServiceManager ServiceManager { get; }
+
+        public ConfigurationProperies Settings { get; }
 
         public CredentialsManager CredentialsManager { get; }
 
@@ -26,42 +30,46 @@ namespace TickTrader.BotAgent.Configurator
 
         public ServerManager ServerManager { get; }
 
+        public FdkManager FdkManager { get; }
+
 
         public ConfigurationModel()
         {
+            _defaultServiceSettings = new DefaultServiceSettingsModel();
             _configManager = new ConfigManager();
-            _settings = _configManager.Properties;
+            Settings = _configManager.Properties;
 
-            _botAgentHolder = _settings.UseProvider ? (IBotAgentConfigPathHolder)_settings.MultipleAgentProvider : new RegistryManager(_settings[AppProperties.RegistryAppName], _settings[AppProperties.AppSettings]);
+            _botAgentHolder = Settings.UseProvider ? (IBotAgentConfigPathHolder)Settings.MultipleAgentProvider : new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
 
-            _portsManager = new PortsManager();
-            _serviceManager = new ServiceManager(_settings[AppProperties.ServiceName]);
+            ServiceManager = new ServiceManager(Settings[AppProperties.ServiceName]);
+            _portsManager = new PortsManager(ServiceManager, _defaultServiceSettings);
 
             CredentialsManager = new CredentialsManager("Credentials");
             SslManager = new SslManager("Ssl");
-            ProtocolManager = new ProtocolManager("Protocol");
+            ProtocolManager = new ProtocolManager("Protocol", _portsManager);
+            FdkManager = new FdkManager("Fdk");
             ServerManager = new ServerManager();
 
-            _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager };
+            _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 
             LoadConfiguration();
         }
 
         public bool StartAgent()
         {
-            if (_serviceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
+            if (ServiceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
                 return false;
 
             //var hostAndPort = _portsManager.GetHostAndPort(ServerManager.ServerModel.Urls);
             //_portsManager.RegistryPortInFirewall(hostAndPort.Item2, _registryManager.ApplicationName);
 
-            _portsManager.RegistryApplicationInFirewall(_settings[AppProperties.ApplicationName], _botAgentHolder.BotAgentPath);
+            _portsManager.RegisterApplicationInFirewall(Settings[AppProperties.ApplicationName], _botAgentHolder.BotAgentPath);
 
-            if (_serviceManager.IsServiceRunning)
-                _serviceManager.ServiceStop();
+            if (ServiceManager.IsServiceRunning)
+                ServiceManager.ServiceStop();
 
-            PortsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
-            _serviceManager.ServiceStart();
+            _portsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
+            ServiceManager.ServiceStart();
 
             return true;
         }
@@ -75,6 +83,8 @@ namespace TickTrader.BotAgent.Configurator
                 foreach (var uploader in _uploaderModels)
                     UploadModel(uploader);
             }
+
+            UploadDefaultServiceModel();
         }
 
         public void SaveChanges()
@@ -86,6 +96,8 @@ namespace TickTrader.BotAgent.Configurator
             {
                 configStreamWriter.Write(_configurationObject.ToString());
             }
+
+            UploadDefaultServiceModel();
         }
 
         private void UploadModel(IUploaderModels model)
@@ -104,6 +116,11 @@ namespace TickTrader.BotAgent.Configurator
                 else
                     throw new Exception("Unable to load settings");
             }
+        }
+
+        private void UploadDefaultServiceModel()
+        {
+            _defaultServiceSettings.ListeningPort = ProtocolManager.ProtocolModel.ListeningPort;
         }
     }
 

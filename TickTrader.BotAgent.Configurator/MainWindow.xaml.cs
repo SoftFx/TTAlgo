@@ -115,6 +115,10 @@ namespace TickTrader.BotAgent.Configurator
             {
                 MessageBoxManager.ErrorBox("Saving settings was failed");
             }
+            finally
+            {
+                _viewModel.Dispose();
+            }
         }
 
         private void EnableChangeStateButton()

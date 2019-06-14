@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class SslViewModel : INotifyPropertyChanged
+    public class SslViewModel : IViewModel
     {
         private SslModel _model;
         private RefreshManager _refreshManager;
@@ -16,10 +16,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string File
         {
-            get
-            {
-                return _model.File;
-            }
+            get => _model.File;
 
             set
             {
@@ -35,10 +32,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public string Password
         {
-            get
-            {
-                return _model.Password;
-            }
+            get => _model.Password;
+
             set
             {
                 if (_model.Password == value)
@@ -56,7 +51,6 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(File));
             OnPropertyChanged(nameof(Password));
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
 

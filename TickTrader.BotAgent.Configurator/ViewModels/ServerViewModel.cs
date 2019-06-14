@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ServerViewModel : INotifyPropertyChanged
+    public class ServerViewModel : IViewModel
     {
         private ServerModel _model;
         private RefreshManager _refreshManager;
@@ -16,10 +16,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string Urls
         {
-            get
-            {
-                return _model.Urls;
-            }
+            get => _model.Urls;
 
             set
             {
@@ -35,10 +32,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string SecretKey
         {
-            get
-            {
-                return _model.SecretKey;
-            }
+            get => _model.SecretKey;
 
             set
             {
@@ -57,7 +51,6 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(Urls));
             OnPropertyChanged(nameof(SecretKey));
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
 
