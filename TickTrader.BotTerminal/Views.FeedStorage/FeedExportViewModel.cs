@@ -204,7 +204,8 @@ namespace TickTrader.BotTerminal
             IsRangeLoaded = false;
             DateRange.Reset();
 
-            var range = await _series.Symbol.GetAvailableRange(Algo.Api.TimeFrames.M1);
+            var key = _series.Key;
+            var range = await _series.Symbol.GetAvailableRange(key.Frame, key.PriceType);
 
             DateTime from = DateTime.UtcNow.Date;
             DateTime to = from;
