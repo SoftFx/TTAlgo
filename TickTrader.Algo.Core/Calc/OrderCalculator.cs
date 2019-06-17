@@ -164,7 +164,7 @@ namespace TickTrader.Algo.Core.Calc
         {
             error = MarginConversionRate.ErrorCode;
             if (error == CalcErrorCodes.None)
-                return margin;
+                return margin * MarginConversionRate.Value;
             return 0;
         }
 
