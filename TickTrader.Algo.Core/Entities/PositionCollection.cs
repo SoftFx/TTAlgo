@@ -26,7 +26,7 @@ namespace TickTrader.Algo.Core
         {
             PositionAccessor pos;
 
-            pos = GetOrCreatePosition(eReport.Symbol);
+            pos = GetOrCreatePosition(eReport.Symbol, () => eReport.Id);
             pos.Update(eReport);
             if (eReport.Volume <= 0)
                 RemovePosition(eReport.Symbol);
@@ -69,7 +69,7 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
-        internal PositionAccessor GetOrCreatePosition(string symbol)
+        internal PositionAccessor GetOrCreatePosition(string symbol, Func<string> idGenerator)
         {
             var smbInfo = _builder.Symbols.GetOrDefault(symbol);
             if (smbInfo == null)
@@ -80,6 +80,7 @@ namespace TickTrader.Algo.Core
             if (pos == null)
             {
                 pos = _fixture.CreatePosition(smbInfo);
+                pos.Id = idGenerator();
                 pos.Changed += Pos_Changed;
             }
 

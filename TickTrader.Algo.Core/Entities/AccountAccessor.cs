@@ -283,9 +283,9 @@ namespace TickTrader.Algo.Core
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 
-        internal void IncreasePosition(string symbol, double amount, double price, OrderSide side)
+        internal void IncreasePosition(string symbol, double amount, double price, OrderSide side, Func<string> idGenerator)
         {
-            var pos = NetPositions.GetOrCreatePosition(symbol);
+            var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);
             pos.Increase(amount, price, side);
             OnPositionUpdated(pos);
         }

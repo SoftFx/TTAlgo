@@ -1353,7 +1353,7 @@ namespace TickTrader.Algo.Core
         internal NetPositionOpenInfo OpenNetPositionFromOrder(OrderAccessor fromOrder, double fillAmount, double fillPrice, TradeReportAdapter tradeReport)
         {
             var smb = fromOrder.SymbolInfo;
-            var position = _acc.NetPositions.GetOrCreatePosition(smb.Name);
+            var position = _acc.NetPositions.GetOrCreatePosition(smb.Name, NewOrderId);
             position.Increase(fillAmount, fillPrice, fromOrder.Side);
             position.Modified = _scheduler.UnsafeVirtualTimePoint;
 
@@ -1362,13 +1362,13 @@ namespace TickTrader.Algo.Core
             // commission
             CommisionEmulator.OnNetPositionOpened(fromOrder, position, fillAmount, smb, charges, _calcFixture);
 
-            tradeReport.Entity.Commission =  (double)charges.Commission;
+            tradeReport.Entity.Commission = charges.Commission;
             //tradeReport.Entity.AgentCommission = (double)charges.AgentCommission;
             //tradeReport.Entity.MinCommissionCurrency = (double)charges.MinCommissionCurrency;
             //tradeReport.Entity.MinCommissionConversionRate =  (double)charges.MinCommissionConversionRate;
 
             double balanceMovement = charges.Total;
-            tradeReport.Entity.TransactionAmount = (double)balanceMovement;
+            tradeReport.Entity.TransactionAmount = balanceMovement;
 
             if (fromOrder.Type == OrderType.Market || fromOrder.RemainingAmount == 0)
                 _acc.Orders.Remove(fromOrder.Id);
