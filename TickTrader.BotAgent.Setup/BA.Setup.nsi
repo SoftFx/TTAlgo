@@ -119,15 +119,12 @@ FunctionEnd
 		; Stop and Remove BA Service
 		${UninstallService} "${SERVICE_NAME}" 80
 		
-		; Clear InstallDir
-		!include BA.Setup.Uninstall.nsi
+		; Run uninstaller of previous version
+		ExecWait "$INSTDIR\uninstall.exe" /S
 	
 		; Delete Shortcuts
 		Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
 		RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
-	
-		; Delete self
-		Delete "$INSTDIR\uninstall.exe"
 	
 		; Remove from registry...
 		DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
