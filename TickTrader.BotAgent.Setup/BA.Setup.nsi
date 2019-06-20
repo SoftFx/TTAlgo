@@ -120,7 +120,7 @@ FunctionEnd
 		${UninstallService} "${SERVICE_NAME}" 80
 		
 		; Run uninstaller of previous version
-		ExecWait "$INSTDIR\uninstall.exe" /S
+		ExecWait "$INSTDIR\uninstall.exe" "/S"
 	
 		; Delete Shortcuts
 		Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
