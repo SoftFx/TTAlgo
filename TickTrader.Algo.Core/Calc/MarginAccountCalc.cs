@@ -66,8 +66,6 @@ namespace TickTrader.Algo.Core.Calc
             using (calc.UsageScope())
             {
                 var orderMargin = calc.CalculateMargin(order.RemainingAmount, Info.Leverage, order.Type, order.Side, order.IsHidden, out error);
-                if (netting == null)
-                    calc.RemoveUsage();
                 return HasSufficientMarginToOpenOrder(orderMargin, netting, order.Side, out newAccountMargin);
             }
         }
