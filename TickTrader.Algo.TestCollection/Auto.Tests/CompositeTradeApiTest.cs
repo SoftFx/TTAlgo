@@ -16,7 +16,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private List<OrderVerifier> _tradeRepVerifiers = new List<OrderVerifier>();
         private TaskCompletionSource<object> _eventWaiter;
 
-        private readonly TimeSpan PauseVal = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan OpenEventTimeout = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan CancelEventTimeout = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
+        private readonly TimeSpan PauseBetweenOrders = TimeSpan.FromSeconds(1);
 
         [Parameter]
         public bool UseDealerCmdApi { get; set; }
@@ -66,72 +70,111 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await OpenFill(OrderType.Limit, OrderSide.Sell, 1);
             await OpenFill(OrderType.Limit, OrderSide.Sell, 1);
 
-            await Delay(PauseVal);
+            // wait some time to allow trade reports reach DB
+            await Delay(TimeSpan.FromSeconds(10)); 
         }
 
         #region Orders
 
         private async Task OpenFill(OrderType type, OrderSide side, double volumeFactor)
         {
+            await Delay(PauseBetweenOrders);
+
             var volume = BaseOrderVolume * volumeFactor;
             var price = GetImmExecPrice(side, type);
 
-            var resp = await OpenOrderAsync(Symbol.Name, type, side, volume, null, price, null, null, null, null, OrderExecOptions.None);
+            // open order
+            var openVer = await OpenAndCheck(type, side, volume, price, null);
 
-            var openedEventArgs = WaitEvent<OrderOpenedEventArgs>();
-
-            ThrowIfOpenFailed(resp);
-
-            var verifier = new OrderVerifier(resp.ResultingOrder.Id, Account.Type, type, side, volume, price, null);
-
+            // check fill event
+            DateTime fillTime = openVer.TradeReportTimestamp;
+            var fillVer = openVer.Fill(fillTime);
             if (!IsImmidiateFill(type, OrderExecOptions.None))
-                await Delay(PauseVal);
-
-            var fillVerifier = verifier.Fill();
+            {
+                var fillEventArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
+                fillVer.VerifyEvent(fillEventArgs);
+                fillTime = fillEventArgs.NewOrder.Modified;
+            }
 
             if (Account.Type == AccountTypes.Gross)
             {
-                var closeResp = await CloseOrderAsync(resp.ResultingOrder.Id);
-
+                // close order
+                var closeResp = await CloseOrderAsync(openVer.OrderId);
                 ThrowIfCloseFailed(closeResp);
 
-                var closeVerifier = fillVerifier.Close(DateTime.MinValue);
-                _tradeRepVerifiers.Add(closeVerifier);
+                // check closed order
+                var closeVer = fillVer.Close(closeResp.TransactionTime);
+                closeVer.VerifyOrder(closeResp.ResultingOrder);
+
+                // add trade report verification
+                _tradeRepVerifiers.Add(closeVer);
             }
             else
-                _tradeRepVerifiers.Add(fillVerifier);
+            {
+                // add trade report verification
+                _tradeRepVerifiers.Add(fillVer);
+            }
         }
 
         private async Task OpenCancel(OrderType type, OrderSide side, double volumeFactor)
         {
+            await Delay(PauseBetweenOrders);
+
             var volume = BaseOrderVolume * volumeFactor;
             var price = GetDoNotExecPrice(side, type);
 
-            var resp = await OpenOrderAsync(Symbol.Name, type, side, volume, null, price, null, null, null);
+            // open order
+            var openVer = await OpenAndCheck(type, side, volume, price, null);
 
-            ThrowIfOpenFailed(resp);
-
-            var verifier = new OrderVerifier(resp.ResultingOrder.Id, Account.Type, type, side, volume, price, null);
-
-            var cancelResp = await CancelOrderAsync(resp.ResultingOrder.Id);
-
+            // cancel order
+            var cancelResp = await CancelOrderAsync(openVer.OrderId);
             ThrowIfCancelFailed(cancelResp);
+            var cancelVer = openVer.Cancel(cancelResp.TransactionTime);
+            cancelVer.VerifyOrder(cancelResp.ResultingOrder);
 
-            var cancelVerifier = verifier.Cancel();
+            // check cancel event
+            var cancelEventArgs = await WaitEvent<OrderCanceledEventArgs>(CancelEventTimeout);
+            cancelVer.VerifyEvent(cancelEventArgs);
 
-            _tradeRepVerifiers.Add(cancelVerifier);
+            // add trade report verification
+            _tradeRepVerifiers.Add(cancelVer);
         }
 
         private async Task OpenExpire(OrderType type, OrderSide side, double volumeFactor)
         {
+            await Delay(PauseBetweenOrders);
+
             var volume = BaseOrderVolume * volumeFactor;
             var price = GetDoNotExecPrice(side, OrderType.Limit);
-            var expiration = Now;
+            var liftime = TimeSpan.FromSeconds(5);
 
-            var resp = await OpenOrderAsync(Symbol.Name, type, side, volume, null, price,
-                null, null, null, null, OrderExecOptions.None, null, expiration);
+            // open order
+            var openVer = await OpenAndCheck(type, side, volume, price, Now + liftime);
 
+            // check expiration event
+            var expirationEventArgs = await WaitEvent<OrderExpiredEventArgs>(ExpirationEventTimeout + liftime);
+            var expVer = openVer.Expire(expirationEventArgs.Order.Modified);
+            openVer.VerifyEvent(expirationEventArgs);
+
+            // add trade report verification
+            _tradeRepVerifiers.Add(expVer);
+        }
+
+        private async Task<OrderVerifier> OpenAndCheck(OrderType type, OrderSide side, double volume, double price, DateTime? expiration)
+        {
+            // open order
+            var resp = await OpenOrderAsync(Symbol.Name, type, side, volume, null, price, null, null, null, null, OrderExecOptions.None, null, expiration);
             ThrowIfOpenFailed(resp);
+
+            // check opened order
+            var verifier = new OrderVerifier(resp.ResultingOrder.Id, Account.Type, type, side, volume, price, null, resp.TransactionTime);
+            verifier.VerifyOrder(resp.ResultingOrder);
+
+            // check open event
+            var openedEventArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+            verifier.VerifyEvent(openedEventArgs);
+
+            return verifier;
         }
 
         private double GetImmExecPrice(OrderSide side, OrderType type)
@@ -205,35 +248,40 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private async Task DoQueryTests(bool async, ThQueryOptions options)
         {
             await QueryRangeAll_Exact(async, options);
-            await QueryRangeAll_Near(async, options);
+            //await QueryRangeAll_Near(async, options);
         }
 
         private void ReportsIteratorTest()
         {
-            Print("Test simple iterator");
+            Print("Query trade history: simple iterator");
 
-            var rangeStart = _tradeRepVerifiers.First().TradeReportTimestamp;
+            //var rangeStart = _tradeRepVerifiers.First().TradeReportTimestamp;
             var expected = Enumerable.Reverse(_tradeRepVerifiers).ToList();
-            var actual = Account.TradeHistory.TakeWhile(r => r.ReportTime >= rangeStart).ToList();
+            //var actual = Account.TradeHistory.TakeWhile(r => r.ReportTime >= rangeStart).ToList();
+            var actual = Account.TradeHistory.Take(expected.Count).ToList();
 
             CheckReports(expected, actual);
         }
 
         private async Task QueryRangeAll_Exact(bool async, ThQueryOptions options)
         {
+            Print("Query trade history: async=" + async + " options=" + options);
+
             var from = _tradeRepVerifiers.First().TradeReportTimestamp;
             var to = _tradeRepVerifiers.Last().TradeReportTimestamp;
 
             await QuerySegmentTest(from, to, async, options);
         }
 
-        private async Task QueryRangeAll_Near(bool async, ThQueryOptions options)
-        {
-            var from = _tradeRepVerifiers.First().TradeReportTimestamp - TimeSpan.FromSeconds(1);
-            var to = _tradeRepVerifiers.Last().TradeReportTimestamp + TimeSpan.FromSeconds(1);
+        //private async Task QueryRangeAll_Near(bool async, ThQueryOptions options)
+        //{
+        //    Print("Query trade history: range=near async=" + async + " options=" + options);
 
-            await QuerySegmentTest(from, to, async, options);
-        }
+        //    var from = _tradeRepVerifiers.First().TradeReportTimestamp - TimeSpan.FromSeconds(1);
+        //    var to = _tradeRepVerifiers.Last().TradeReportTimestamp + TimeSpan.FromSeconds(1);
+
+        //    await QuerySegmentTest(from, to, async, options);
+        //}
 
         private async Task QueryMiddleSegment(bool async)
         {
@@ -249,28 +297,41 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task QuerySegmentTest(DateTime from, DateTime to, bool async, ThQueryOptions options)
         {
-            Print("Test {0} segment query from {1} to {2}, {3}", async ? "async" : "", from, to, options);
+            //Print("Test {0} segment query from {1} to {2}, {3}", async ? "async" : "", from, to, options);
 
-            var reversed = options.HasFlag(ThQueryOptions.Backwards);
-            var noCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
+            try
+            {
+                var reversed = options.HasFlag(ThQueryOptions.Backwards);
+                var noCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
 
-            var expected = TakeVerifiers(from, to, reversed, noCancels);
-            var actual = await QuerySegmentToList(from, to, async, options);
+                var expected = TakeVerifiers(from, to, reversed, noCancels);
+                var actual = await QuerySegmentToList(from, to, async, options);
 
-            CheckReports(expected, actual);
+                CheckReports(expected, actual);
+            }
+            catch (Exception ex)
+            {
+                PrintError("Test failed: " + ex.Message);
+            }
         }
 
-        private async Task QueryVectorTest(DateTime from, bool async, ThQueryOptions options)
+        //private async Task QueryVectorTest(DateTime from, bool async, ThQueryOptions options)
+        //{
+        //    Print("Test {0} vector query from {1}, {2}", async ? "async" : "", from, options);
+
+        //    var reversed = options.HasFlag(ThQueryOptions.Backwards);
+        //    var noCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
+
+        //    var expected = TakeVerifiers(from, reversed, noCancels);
+        //    var actual = await QueryVectorToList(from, async, options);
+
+        //    CheckReports(expected, actual);
+        //}
+
+        private bool ShouldSkip(bool skipCancels, OrderVerifier v)
         {
-            Print("Test {0} vector query from {1}, {2}", async ? "async" : "", from, options);
-
-            var reversed = options.HasFlag(ThQueryOptions.Backwards);
-            var noCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
-
-            var expected = TakeVerifiers(from, reversed, noCancels);
-            var actual = await QueryVectorToList(from, async, options);
-
-            CheckReports(expected, actual);
+            return skipCancels && (v.TradeReportAction == TradeExecActions.OrderCanceled
+                || v.TradeReportAction == TradeExecActions.OrderExpired);
         }
 
         private List<OrderVerifier> TakeVerifiers(DateTime from, DateTime to, bool reversed, bool noCancels)
@@ -279,9 +340,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             foreach (var v in _tradeRepVerifiers)
             {
-                var skipCancel = noCancels && v.TradeReportAction == TradeExecActions.OrderCanceled;
+                if (ShouldSkip(noCancels, v))
+                    continue;
 
-                if ((v.TradeReportTimestamp >= from && v.TradeReportTimestamp <= to) && !skipCancel)
+                if ((v.TradeReportTimestamp >= from && v.TradeReportTimestamp <= to))
                     result.Add(v);
             }
 
@@ -291,23 +353,24 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             return result;
         }
 
-        private List<OrderVerifier> TakeVerifiers(DateTime from, bool reversed, bool noCancels)
-        {
-            var result = new List<OrderVerifier>();
+        //private List<OrderVerifier> TakeVerifiers(DateTime from, bool reversed, bool noCancels)
+        //{
+        //    var result = new List<OrderVerifier>();
 
-            foreach (var v in _tradeRepVerifiers)
-            {
-                var skipCancel = noCancels && v.TradeReportAction == TradeExecActions.OrderCanceled;
+        //    foreach (var v in _tradeRepVerifiers)
+        //    {
+        //        var skipCancel = noCancels && (v.TradeReportAction == TradeExecActions.OrderCanceled
+        //            || v.TradeReportAction == TradeExecActions.OrderExpired);
 
-                if (reversed && v.TradeReportTimestamp <= from || v.TradeReportTimestamp >= from)
-                    result.Add(v);
-            }
+        //        if (reversed && v.TradeReportTimestamp <= from || v.TradeReportTimestamp >= from)
+        //            result.Add(v);
+        //    }
 
-            if (reversed)
-                result.Reverse();
+        //    if (reversed)
+        //        result.Reverse();
 
-            return result;
-        }
+        //    return result;
+        //}
 
         private void CheckReports(List<OrderVerifier> verifiers, List<TradeReport> reports)
         {
@@ -322,11 +385,14 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task<List<TradeReport>> QuerySegmentToList(DateTime from, DateTime to, bool async, ThQueryOptions options)
         {
+            var nFrom = FloorToSec(from);
+            var nTo = CeilToSec(to);
+
             if (async)
             {
                 var result = new List<TradeReport>();
 
-                using (var e = Account.TradeHistory.GetRangeAsync(from, to, options))
+                using (var e = Account.TradeHistory.GetRangeAsync(nFrom, nTo, options))
                 {
                     while (await e.Next())
                         result.Add(e.Current);
@@ -335,7 +401,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 return result;
             }
             else
-                return Account.TradeHistory.GetRange(from, to, options).ToList();
+                return Account.TradeHistory.GetRange(nFrom, nTo, options).ToList();
         }
 
         private async Task<List<TradeReport>> QueryVectorToList(DateTime from, bool async, ThQueryOptions options)
@@ -360,11 +426,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         #region Event Verification
 
-        private async Task<TArgs> WaitEvent<TArgs>()
+        private async Task<TArgs> WaitEvent<TArgs>(TimeSpan waitTimeout)
         {
             _eventWaiter = new TaskCompletionSource<object>();
 
-            var delayTask = Delay(1000);
+            var delayTask = Delay(waitTimeout);
             var eventTask = _eventWaiter.Task;
 
             var completedFirst = await Task.WhenAny(delayTask, eventTask);
@@ -377,16 +443,37 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (argsObj is TArgs)
                 return (TArgs)argsObj;
 
-            throw new Exception("Unexpected event: " + typeof(TArgs).Name);
+            throw new Exception("Unexpected event: Received " + argsObj.GetType().Name + " while expecting " + typeof(TArgs).Name);
         }
 
         private void OnEventFired<TArgs>(TArgs args)
         {
-            if (_eventWaiter == null)
-                return; //throw new Exception("Unexpected event: " + args.GetType().Name);
+            //Print("Event: " + args.GetType().Name + (_eventWaiter == null ? " (n)" : ""));
 
-            _eventWaiter.SetResult(args);
+            if (_eventWaiter == null)
+            {
+                Print("Unexpected event: " + args.GetType().Name);
+                return; //throw new Exception("Unexpected event: " + args.GetType().Name);
+            }
+
+            // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
+            var waiterCopy = _eventWaiter;
             _eventWaiter = null;
+            waiterCopy.SetResult(args);
+        }
+
+        #endregion
+
+        #region Misc methods
+
+        private DateTime FloorToSec(DateTime src)
+        {
+            return src.Floor(TimeSpan.FromSeconds(1));
+        }
+
+        private DateTime CeilToSec(DateTime src)
+        {
+            return src.Ceil(TimeSpan.FromSeconds(1));
         }
 
         #endregion

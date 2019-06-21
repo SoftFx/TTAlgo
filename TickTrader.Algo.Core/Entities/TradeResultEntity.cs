@@ -10,11 +10,11 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class TradeResultEntity
     {
-        public TradeResultEntity(OrderCmdResultCodes code, OrderEntity entity, DateTime? trTime)
+        public TradeResultEntity(OrderCmdResultCodes code, OrderEntity entity)
         {
             ResultCode = code;
             ResultingOrder = entity;
-            TransactionTime = trTime;
+            TransactionTime = entity?.Modified;
         }
 
         public OrderCmdResultCodes ResultCode { get; private set; }

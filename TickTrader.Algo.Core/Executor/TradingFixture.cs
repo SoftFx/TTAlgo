@@ -398,7 +398,7 @@ namespace TickTrader.Algo.Core
             reportListeners.Add(operationId, rep =>
             {
                 reportListeners.Remove(operationId);
-                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
+                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
             });
 
             orderRequest.OperationId = operationId;
@@ -439,7 +439,7 @@ namespace TickTrader.Algo.Core
                 if (resultContainer.Count == 2)
                 {
                     reportListeners.Remove(operationId);
-                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
+                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
                 }
             });
 

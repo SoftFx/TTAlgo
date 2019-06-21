@@ -101,6 +101,7 @@
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
     <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Indicators\MultiplePrecisionIndicator.cs" />
+    <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\PrintExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
