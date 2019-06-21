@@ -2,6 +2,8 @@
 
   <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
 
+  <property name="NSIS_Path"       value="c:\Program Files (x86)\NSIS\"      unless="${property::exists('NSIS_Path')}" />
+
   <tstamp property="Date"		        pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
   <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
   <property name="Configuration"		value="Release"							                unless="${property::exists('Configuration')}" />
