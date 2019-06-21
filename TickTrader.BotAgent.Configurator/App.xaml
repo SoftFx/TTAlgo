@@ -6,7 +6,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resx/StyleDictionary.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/StyleDictionary.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/CredentialsStyles.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ProtocolStyles.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/ServerStyles.xaml"/>
+                <ResourceDictionary Source="Resx/Styles/AdvancedStyles.xaml"/>
                 <ResourceDictionary Source="Resx/Converters.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

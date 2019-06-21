@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using TickTrader.BotAgent.WebAdmin.Server.Core.Crypto;
+using TickTrader.BotAgent.Common;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {

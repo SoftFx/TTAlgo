@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace TickTrader.BotAgent.Configurator
@@ -25,7 +26,32 @@ namespace TickTrader.BotAgent.Configurator
     {
         public int MinValue { get; set; } = 0;
 
-        public int MaxValue { get; set; } = 0;
+        public int MaxValue { get; set; } = 1 << 16;
+
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            int port = Convert.ToInt32(value);
+
+            var model = Application.Current.MainWindow.DataContext as ConfigurationViewModel;
+
+            try
+            {
+                model?.ProtocolModel.CheckPort(port);
+            }
+            catch (Exception ex)
+            {
+                return new ValidationResult(false, ex.Message);
+            }
+
+            return new ValidationResult(true, "");
+        }
+    }
+
+    public class ValidationNumber : ValidationRule
+    {
+        public int MinValue { get; set; } = 0;
+
+        public int MaxValue { get; set; } = int.MaxValue;
 
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
@@ -48,7 +74,31 @@ namespace TickTrader.BotAgent.Configurator
             if (Uri.TryCreate(value as string, UriKind.Absolute, out Uri uri))
                 return new ValidationResult(true, "");
             else
-                return new ValidationResult(false, $"Cannot convert to Uri");
+                return new ValidationResult(false, $"Cannot convert to Url");
+        }
+    }
+
+    public class ValidationHostUri : ValidationRule
+    {
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            string specialSymbols = "$-_.+ !*'()";
+
+            if (value is string host)
+            {
+                if (string.IsNullOrEmpty(host))
+                    return new ValidationResult(false, "This field is required");
+
+                foreach (var c in host)
+                {
+                    if (!char.IsLetterOrDigit(c) && specialSymbols.IndexOf(c) == -1)
+                        return new ValidationResult(false, $"An invalid character {c} was found");
+                }
+
+                return new ValidationResult(true, "");
+            }
+
+            return new ValidationResult(false, "Cannot convert to string");
         }
     }
 }

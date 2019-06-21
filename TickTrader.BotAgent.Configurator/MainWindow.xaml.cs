@@ -17,26 +17,31 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _viewModel = new ConfigurationViewModel();
                 DataContext = _viewModel;
+                _viewModel.RefreshManager.NewValuesEvent += EnableChangeStateButton;
+                _viewModel.RefreshManager.SaveValuesEvent += DisableChangeStateButton;
+                Closing += MainWindow_Closing;
             }
             catch (Exception ex)
             {
                 MessageBoxManager.ErrorBox(ex.Message);
-                Close();
+                Application.Current.Shutdown();
             }
-
-            _viewModel.RefreshManager.NewValuesEvent += EnableChangeStateButton;
-            _viewModel.RefreshManager.SaveValuesEvent += DisableChangeStateButton;
-            Closing += MainWindow_Closing;
         }
 
         public void CountNumberErrors(object sender, ValidationErrorEventArgs e)
         {
             _countErrors += e.Action == ValidationErrorEventAction.Added ? 1 : -1;
 
-            SaveButton.IsEnabled = _countErrors <= 0;
             StartButton.IsEnabled = _countErrors <= 0;
             CancelButton.IsEnabled = true;
+        }
 
+        public void RestartApplication()
+        {
+            Closing -= MainWindow_Closing;
+            SaveChangesMethod();
+            System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+            Application.Current.Shutdown();
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -107,18 +112,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
-            {
-                SaveChangesQuestion();
-            }
-            catch
-            {
-                MessageBoxManager.ErrorBox("Saving settings was failed");
-            }
-            finally
-            {
-                _viewModel.Dispose();
-            }
+            SaveChangesMethod();
         }
 
         private void EnableChangeStateButton()
@@ -131,6 +125,22 @@ namespace TickTrader.BotAgent.Configurator
         {
             CancelButton.IsEnabled = false;
             SaveButton.IsEnabled = false;
+        }
+
+        private void SaveChangesMethod()
+        {
+            try
+            {
+                SaveChangesQuestion();
+            }
+            catch
+            {
+                MessageBoxManager.ErrorBox("Saving settings was failed");
+            }
+            finally
+            {
+                _viewModel.Dispose();
+            }
         }
     }
 

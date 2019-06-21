@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="TickTrader.BotAgent.Configurator.Controls.AdvancedPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
+             mc:Ignorable="d">
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        
+        <ComboBox Style="{StaticResource comboBoxStyle}" ItemsSource="{Binding AgentPaths}" SelectedValue="{Binding SelectPath}" SelectionChanged="ComboBox_SelectionChanged"/>
+        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource advancedRestartAppButton}" Click="RestartApplicationButton"/>
+
+        <Separator Grid.Row="1" Grid.ColumnSpan="3"/>
+
+        <TextBlock Grid.Column="2" Text="{Binding ModelDescription}" Style="{StaticResource descriptionTextBox}"/>
+    </Grid>
+</UserControl>

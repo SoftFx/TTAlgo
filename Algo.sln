@@ -112,6 +112,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeCapture", "modules\FDK
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotAgent.Configurator", "TickTrader.BotAgent.Configurator\TickTrader.BotAgent.Configurator.csproj", "{55E667BC-D245-4CAD-9FDC-79BA2438F709}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotAgent.Common", "TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj", "{E54D1888-6449-41AF-8226-5A5BDC93715A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -588,6 +590,18 @@ Global
 		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x64.Build.0 = Release|Any CPU
 		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x86.ActiveCfg = Release|Any CPU
 		{55E667BC-D245-4CAD-9FDC-79BA2438F709}.Release|x86.Build.0 = Release|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Debug|x64.Build.0 = Debug|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Debug|x86.Build.0 = Debug|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x64.ActiveCfg = Release|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x64.Build.0 = Release|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x86.ActiveCfg = Release|Any CPU
+		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -634,6 +648,7 @@ Global
 		{451E16C9-DDEC-4ADD-B5CF-E03498347475} = {F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}
 		{451E16C9-DDEC-4ADD-B5CF-C34546647475} = {F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}
 		{55E667BC-D245-4CAD-9FDC-79BA2438F709} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
+		{E54D1888-6449-41AF-8226-5A5BDC93715A} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}

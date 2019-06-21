@@ -5,33 +5,117 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
         xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Title="BotAgent Configurator" 
         Height="600" Width="1000"
-        MinHeight="600" MinWidth="1000"
+        MinHeight="640" MinWidth="1000"
         WindowStartupLocation="CenterScreen">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="0.5*"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="0.2*"/>
+            <RowDefinition Height="33"/>
+            <RowDefinition Height="410"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="22"/>
         </Grid.RowDefinitions>
 
-        <TabControl TabStripPlacement="Left">
+        <ToolBarTray>
+            <ToolBar Height="33">
+                <Button x:Name="CancelButton" Style="{StaticResource toolBarButton}" Click="CancelButton_Click" IsEnabled="False">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Share" Style="{StaticResource toolBarIcon}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Reset Changes"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button x:Name="SaveButton" Style="{StaticResource toolBarButton}" Click="SaveButton_Click" IsEnabled="False">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Save" Style="{StaticResource toolBarIcon}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Save Changes"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Click="StartButton_Click">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Play" Style="{StaticResource toolBarIcon}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Restart Agent"/>
+                    </Button.ToolTip>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="0">
+            <TabControl.Resources>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="#FFEEF5FD"/>
+                </Style>
+            </TabControl.Resources>
             <TabItem>
                 <TabItem.Header>
-                    <TextBlock Text="Credentials"/>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="AddressCardOutline"/>
+                        <TextBlock Text="User credentials"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <DockPanel>
+                        <StackPanel>
+                            <c:CredentialPanel Background="White" DataContext="{Binding AdminModel}" Style="{StaticResource firstCredentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource credentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource credentialControlPanel}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Desktop"/>
+                        <TextBlock Text="Terminal connection"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <DockPanel>
+                        <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource protocolControlPanel}"/>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Server"/>
+                        <TextBlock Text="WEB Admin"/>
+                    </StackPanel>
                 </TabItem.Header>
 
                 <TabItem.Content>
-                    <StackPanel>
-                        <c:CredentialPanel DataContext="{Binding AdminModel}" Style="{StaticResource userControlPanel}"/>
-                        <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource userControlPanel}"/>
-                        <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource userControlPanel}"/>
+                    <DockPanel>
+                        <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource serverControlPanel}"/>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="PlusSquareOutline"/>
+                        <TextBlock Text="Advanced settings"/>
                     </StackPanel>
+                </TabItem.Header>
+
+                <TabItem.Content>
+                    <DockPanel>
+                        <StackPanel>
+                            <c:AdvancedPanel DataContext="{Binding AdvancedModel}" Style="{StaticResource advancedControlPanel}"/>
+                            <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource fdkControlPanel}"/>
+                        </StackPanel>
+                    </DockPanel>
                 </TabItem.Content>
             </TabItem>
 
@@ -40,66 +124,36 @@
                     <TextBlock Text="Ssl"/>
                 </TabItem.Header>
                 <TabItem.Content>
-                    <c:SslPanel DataContext="{Binding SslModel}" Style="{StaticResource userControlPanel}"/>
+                    <c:SslPanel DataContext="{Binding SslModel}" Style="{StaticResource contentControlPanel}"/>
                 </TabItem.Content>
             </TabItem>-->
-
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="Protocol"/>
-                </TabItem.Header>
-                <TabItem.Content>
-                    <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource userControlPanel}" Validation.Error="CountNumberErrors"/>
-                </TabItem.Content>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="Server"/>
-                </TabItem.Header>
-
-                <TabItem.Content>
-                    <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource serverControlPanel}"/>
-                </TabItem.Content>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="FDK"/>
-                </TabItem.Header>
-
-                <TabItem.Content>
-                    <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource fdkControlPanel}"/>
-                </TabItem.Content>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <TextBlock Text="Log"/>
-                </TabItem.Header>
-            </TabItem>
         </TabControl>
 
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="0.05*"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
+        <DockPanel Grid.Row="2" Background="#FFEEF5FD">
+            <TextBlock Text="Logs" Style="{StaticResource logsHeader}" DockPanel.Dock="Top"/>
+            <Border Style="{StaticResource logsBorderPanel}" DockPanel.Dock="Bottom">
+                <TextBlock Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource logsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible"/>
+            </Border>
+        </DockPanel>
 
-            <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource stateServiceRow}"/>
-        </Grid>
-
-        <Grid Grid.Row="1" Grid.ColumnSpan="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-
-            <Button x:Name="CancelButton" Grid.Column="1" Content="Cancel" Style="{StaticResource stateButton}" Click="CancelButton_Click" IsEnabled="False"/>
-            <Button x:Name="SaveButton" Grid.Column="2" Content="Save" Style="{StaticResource stateButton}" Click="SaveButton_Click" IsEnabled="False"/>
-            <Button x:Name="StartButton" Grid.Column="3" Content="Start" Style="{StaticResource stateButton}" Click="StartButton_Click"/>
-        </Grid>
+        <StatusBar Grid.Row="3" Background="#FFEEF5FD">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="1">
+                <TextBlock Text="{Binding RestartMessage}" Style="{StaticResource restartMessage}" Visibility="{Binding VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="2">
+                <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource stateServiceRow}"/>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>

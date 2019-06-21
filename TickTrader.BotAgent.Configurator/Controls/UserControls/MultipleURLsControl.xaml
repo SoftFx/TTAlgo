@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="TickTrader.BotAgent.Configurator.Controls.MultipleURLsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+
+        <ListView x:Name="urlsListView" Style="{StaticResource urlsListViewStyle}" ItemsSource="{Binding Path=Urls}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Scheme}" Width="80">Scheme</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Host}" Width="238">Host</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Port}" Width="80">Port</GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <Grid Grid.Column="1" Background="White">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Button Grid.Row="0" Content="Add" Style="{StaticResource urlsControlButton}" Command="{Binding AddUrlDialog}"/>
+            <Button Grid.Row="1" Content="Delete" Style="{StaticResource urlsControlButton}" Command="{Binding RemoveUrls}"
+                    CommandParameter="{Binding ElementName=urlsListView, Path=SelectedItems}"/>
+            <Button Grid.Row="2" Content="Modify" Style="{StaticResource urlsControlButton}" Command="{Binding ModifyUri}" CommandParameter="{Binding Path=SelectedItem, ElementName=urlsListView}"/>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -69,7 +69,7 @@
 ;--------------------------
 ; Main Install settings
 Name "${PRODUCT_NAME}"
-InstallDir "$PROGRAMFILES\${INSTALL_DIRECTORY}" ;rename to programfiles86
+InstallDir "$PROGRAMFILES64\${INSTALL_DIRECTORY}"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 OutFile "..\build.ouput\${SETUP_FILENAME}"
 

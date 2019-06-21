@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
+    public enum SectionNames {None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider }
+
     public class ConfigurationModel
     {
         private ConfigManager _configManager;
@@ -32,27 +34,33 @@ namespace TickTrader.BotAgent.Configurator
 
         public FdkManager FdkManager { get; }
 
+        public PrompterManager Prompts { get; }
+
+        public LogsManager Logs { get; }
 
         public ConfigurationModel()
         {
             _defaultServiceSettings = new DefaultServiceSettingsModel();
             _configManager = new ConfigManager();
+
             Settings = _configManager.Properties;
+            Prompts = new PrompterManager();
+            Logs = new LogsManager();
 
             _botAgentHolder = Settings.UseProvider ? (IBotAgentConfigPathHolder)Settings.MultipleAgentProvider : new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
 
             ServiceManager = new ServiceManager(Settings[AppProperties.ServiceName]);
             _portsManager = new PortsManager(ServiceManager, _defaultServiceSettings);
 
-            CredentialsManager = new CredentialsManager("Credentials");
-            SslManager = new SslManager("Ssl");
-            ProtocolManager = new ProtocolManager("Protocol", _portsManager);
-            FdkManager = new FdkManager("Fdk");
+            CredentialsManager = new CredentialsManager(SectionNames.Credentials);
+            SslManager = new SslManager(SectionNames.Ssl);
+            ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
+            FdkManager = new FdkManager(SectionNames.Fdk);
             ServerManager = new ServerManager();
 
             _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 
-            LoadConfiguration();
+            LoadConfiguration(false);
         }
 
         public bool StartAgent()
@@ -63,19 +71,22 @@ namespace TickTrader.BotAgent.Configurator
             //var hostAndPort = _portsManager.GetHostAndPort(ServerManager.ServerModel.Urls);
             //_portsManager.RegistryPortInFirewall(hostAndPort.Item2, _registryManager.ApplicationName);
 
-            _portsManager.RegisterApplicationInFirewall(Settings[AppProperties.ApplicationName], _botAgentHolder.BotAgentPath);
+            //_portsManager.RegisterApplicationInFirewall(Settings[AppProperties.ApplicationName], _botAgentHolder.BotAgentPath);
 
             if (ServiceManager.IsServiceRunning)
                 ServiceManager.ServiceStop();
 
-            _portsManager.CheckPortOpen(ServerManager.ServerModel.Urls);
+            //_portsManager.CheckPortOpen(ServerManager.ServerModel.UrlsStr);
             ServiceManager.ServiceStart();
 
             return true;
         }
 
-        public void LoadConfiguration()
+        public void LoadConfiguration(bool loadConfig = true)
         {
+            if (loadConfig)
+                _configManager.LoadProperties();
+
             using (var configStreamReader = new StreamReader(_botAgentHolder.BotAgentConfigPath))
             {
                 _configurationObject = JObject.Parse(configStreamReader.ReadToEnd());
@@ -97,6 +108,7 @@ namespace TickTrader.BotAgent.Configurator
                 configStreamWriter.Write(_configurationObject.ToString());
             }
 
+            _configManager.SaveChanges();
             UploadDefaultServiceModel();
         }
 

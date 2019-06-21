@@ -40,6 +40,7 @@
     <ProjectReference Include="..\TickTrader.Algo.Core\TickTrader.Algo.Core.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Ext\TickTrader.Algo.Ext.csproj" />
     <ProjectReference Include="..\TickTrader.Algo.Protocol\TickTrader.Algo.Protocol.csproj" />
+    <ProjectReference Include="..\TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
