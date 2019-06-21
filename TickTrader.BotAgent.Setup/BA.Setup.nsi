@@ -119,12 +119,15 @@ FunctionEnd
 		; Stop and Remove BA Service
 		${UninstallService} "${SERVICE_NAME}" 80
 		
-		; Run uninstaller of previous version
-		ExecWait "$INSTDIR\uninstall.exe" "/S"
+		; Clear InstallDir
+		!include BA.Setup.Uninstall.nsi
 	
 		; Delete Shortcuts
 		Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
 		RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
+
+		; Delete Self
+		Delete "$INSTDIR\uninstall.exe"
 	
 		; Remove from registry...
 		DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
@@ -132,7 +135,7 @@ FunctionEnd
 	FunctionEnd
 !macroend
 
-!insertmacro UninstallBAMacro ""
+; !insertmacro UninstallBAMacro ""
 !insertmacro UninstallBAMacro "un."
 
 
@@ -145,7 +148,12 @@ Section "TickTrader Bot Agent" Section1
 		Quit
 	uninst:
 		ClearErrors
-		Call UninstallBA
+		; Copy previous uninstaller to temp location
+		CreateDirectory "$INSTDIR\tmp"
+		CopyFiles /SILENT /FILESONLY "$INSTDIR\uninstall.exe" "$INSTDIR\tmp"
+		; Run uninstaller of previous version
+		ExecWait '"$INSTDIR\tmp\uninstall.exe" /S _?=$INSTDIR'
+		RMDir /r "$INSTDIR\tmp"
 	${EndIf}
 
 	; Set Section properties
