@@ -3,12 +3,16 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class ConfigurationViewModel : INotifyPropertyChanged, IDisposable
     {
         private bool _visibleRestartMessage;
+        private Window _mainWindow;
+
+        private AgentVersionManager _versionManager;
 
         public string RestartMessage => "To apply the new settings, restart the service.";
 
@@ -57,6 +61,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public ConfigurationViewModel()
         {
+            _mainWindow = Application.Current.MainWindow;
+
             _runnignApplication = true;
             _model = new ConfigurationModel();
 
@@ -64,6 +70,7 @@ namespace TickTrader.BotAgent.Configurator
             RefreshManager.NewValuesEvent += () => VisibleRestartMessage = true;
             RefreshManager.SaveValuesEvent += () => VisibleRestartMessage = false;
 
+            _versionManager = new AgentVersionManager(_model.BotAgentHolder.BotAgentPath, _model.Settings[AppProperties.ApplicationName]);
 
             AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshManager)
             {
@@ -112,6 +119,9 @@ namespace TickTrader.BotAgent.Configurator
 
 
             ThreadPool.QueueUserWorkItem(RefreshServiceState);
+
+            _mainWindow.Title = $"BotAgent Configurator: {_versionManager.FullVersion}";
+            //Application.Current.MainWindow.Closin
         }
 
         public void CancelChanges()

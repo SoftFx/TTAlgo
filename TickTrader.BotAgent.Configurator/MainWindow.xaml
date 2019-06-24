@@ -131,9 +131,7 @@
 
         <DockPanel Grid.Row="2" Background="#FFEEF5FD">
             <TextBlock Text="Logs" Style="{StaticResource logsHeader}" DockPanel.Dock="Top"/>
-            <Border Style="{StaticResource logsBorderPanel}" DockPanel.Dock="Bottom">
-                <TextBlock Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource logsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible"/>
-            </Border>
+            <TextBox Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Style="{StaticResource logsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom"/>
         </DockPanel>
 
         <StatusBar Grid.Row="3" Background="#FFEEF5FD">

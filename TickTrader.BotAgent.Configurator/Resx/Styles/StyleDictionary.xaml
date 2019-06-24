@@ -139,9 +139,14 @@
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
-    <Style x:Key="logsPanel" TargetType="TextBlock">
+    <Style x:Key="logsPanel" TargetType="TextBox">
         <Setter Property="Background" Value="White"/>
         <Setter Property="Padding" Value="5 0"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="Margin" Value="0 5"/>
+        <Setter Property="BorderBrush" Value="SteelBlue"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <Style TargetType="{x:Type fa:ImageAwesome}">

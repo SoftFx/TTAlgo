@@ -12,7 +12,6 @@ namespace TickTrader.BotAgent.Configurator
     {
         private ConfigManager _configManager;
         private PortsManager _portsManager;
-        private IBotAgentConfigPathHolder _botAgentHolder;
 
         private DefaultServiceSettingsModel _defaultServiceSettings;
 
@@ -38,6 +37,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; }
 
+        public IBotAgentConfigPathHolder BotAgentHolder { get; }
+
         public ConfigurationModel()
         {
             _defaultServiceSettings = new DefaultServiceSettingsModel();
@@ -47,7 +48,7 @@ namespace TickTrader.BotAgent.Configurator
             Prompts = new PrompterManager();
             Logs = new LogsManager();
 
-            _botAgentHolder = Settings.UseProvider ? (IBotAgentConfigPathHolder)Settings.MultipleAgentProvider : new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
+            BotAgentHolder = Settings.UseProvider ? (IBotAgentConfigPathHolder)Settings.MultipleAgentProvider : new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
 
             ServiceManager = new ServiceManager(Settings[AppProperties.ServiceName]);
             _portsManager = new PortsManager(ServiceManager, _defaultServiceSettings);
@@ -87,7 +88,7 @@ namespace TickTrader.BotAgent.Configurator
             if (loadConfig)
                 _configManager.LoadProperties();
 
-            using (var configStreamReader = new StreamReader(_botAgentHolder.BotAgentConfigPath))
+            using (var configStreamReader = new StreamReader(BotAgentHolder.BotAgentConfigPath))
             {
                 _configurationObject = JObject.Parse(configStreamReader.ReadToEnd());
 
@@ -103,7 +104,7 @@ namespace TickTrader.BotAgent.Configurator
             foreach (var uploader in _uploaderModels)
                 uploader.SaveConfigurationModels(_configurationObject);
 
-            using (var configStreamWriter = new StreamWriter(_botAgentHolder.BotAgentConfigPath))
+            using (var configStreamWriter = new StreamWriter(BotAgentHolder.BotAgentConfigPath))
             {
                 configStreamWriter.Write(_configurationObject.ToString());
             }

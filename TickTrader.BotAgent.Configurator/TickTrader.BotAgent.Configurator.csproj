@@ -96,6 +96,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Helpers\Dependencies\ViewPanelProperty.cs" />
+    <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
     <Compile Include="Managers\ApplicationManages\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
     <Compile Include="Managers\ApplicationManages\PrompterManager.cs" />

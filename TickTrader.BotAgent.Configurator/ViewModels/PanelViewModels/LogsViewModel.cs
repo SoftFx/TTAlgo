@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class LogsViewModel
+    public class LogsViewModel : INotifyPropertyChanged
     {
         private LogsManager _manager;
 
