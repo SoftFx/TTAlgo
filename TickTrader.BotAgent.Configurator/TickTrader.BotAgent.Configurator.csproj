@@ -95,6 +95,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\Dependencies\UpdateNewProperty.cs" />
     <Compile Include="Helpers\Dependencies\ViewPanelProperty.cs" />
     <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
     <Compile Include="Managers\ApplicationManages\CryptoManager.cs" />
@@ -249,6 +250,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="prompterFile.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\app.manifest">
       <SubType>Designer</SubType>
     </None>
@@ -276,10 +280,6 @@
     <Resource Include="icons\settings.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj">
-      <Project>{bffe802c-bcb0-4376-9551-977fe8c277d2}</Project>
-      <Name>TickTrader.Algo.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj">
       <Project>{E54D1888-6449-41AF-8226-5A5BDC93715A}</Project>
       <Name>TickTrader.BotAgent.Common</Name>

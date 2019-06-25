@@ -3,9 +3,6 @@ using System.Windows.Controls;
 
 namespace TickTrader.BotAgent.Configurator.Controls
 {
-    /// <summary>
-    /// Interaction logic for ProtocolPanel.xaml
-    /// </summary>
     public partial class ProtocolPanel : UserControl
     {
         public ProtocolPanel()

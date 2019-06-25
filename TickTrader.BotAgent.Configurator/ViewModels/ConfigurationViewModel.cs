@@ -7,28 +7,19 @@ using System.Windows;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ConfigurationViewModel : INotifyPropertyChanged, IDisposable
+    public class ConfigurationViewModel : IDisposable
     {
-        private bool _visibleRestartMessage;
         private Window _mainWindow;
 
         private AgentVersionManager _versionManager;
+        private ConfigurationModel _model;
 
-        public string RestartMessage => "To apply the new settings, restart the service.";
+        private bool _runnignApplication;
 
-        public bool VisibleRestartMessage
-        {
-            get => _visibleRestartMessage;
-            set
-            {
-                if (_visibleRestartMessage == value)
-                    return;
-
-                _visibleRestartMessage = value;
-
-                OnPropertyChanged(nameof(VisibleRestartMessage));
-            }
-        }
+        private DelegateCommand _startAgent;
+        private DelegateCommand _restartApplication;
+        private DelegateCommand _saveChanges;
+        private DelegateCommand _cancelChanges;
 
         public CredentialViewModel AdminModel { get; set; }
 
@@ -54,82 +45,142 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool WasUpdate => RefreshManager.Update;
 
-        private ConfigurationModel _model;
-        private bool _runnignApplication;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public ConfigurationViewModel()
         {
-            _mainWindow = Application.Current.MainWindow;
-
-            _runnignApplication = true;
-            _model = new ConfigurationModel();
-
-            RefreshManager = new RefreshManager();
-            RefreshManager.NewValuesEvent += () => VisibleRestartMessage = true;
-            RefreshManager.SaveValuesEvent += () => VisibleRestartMessage = false;
-
-            _versionManager = new AgentVersionManager(_model.BotAgentHolder.BotAgentPath, _model.Settings[AppProperties.ApplicationName]);
-
-            AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshManager)
+            try
             {
-                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Admin.Name)
-            };
+                _mainWindow = Application.Current.MainWindow;
 
-            DealerModel = new CredentialViewModel(_model.CredentialsManager.Dealer, RefreshManager)
+                _runnignApplication = true;
+                _model = new ConfigurationModel();
+
+                RefreshManager = new RefreshManager();
+
+                _versionManager = new AgentVersionManager(_model.BotAgentHolder.BotAgentPath, _model.Settings[AppProperties.ApplicationName]);
+
+                AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshManager)
+                {
+                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Admin.Name)
+                };
+
+                DealerModel = new CredentialViewModel(_model.CredentialsManager.Dealer, RefreshManager)
+                {
+                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Dealer.Name)
+                };
+
+                ViewerModel = new CredentialViewModel(_model.CredentialsManager.Viewer, RefreshManager)
+                {
+                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Viewer.Name)
+                };
+
+
+                SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshManager);
+
+                ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshManager)
+                {
+                    ListeningPortDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.PortNameProperty),
+                    DirectoryNameDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.DirectoryNameProperty),
+                    LogMessageDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.UseLogNameProperty),
+                };
+
+                ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshManager)
+                {
+                    UrlsDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.UrlsNameProperty),
+                    SecretKeyDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.SecretKeyNameProperty),
+                };
+
+                FdkModel = new FdkViewModel(_model.FdkManager.FdkModel, RefreshManager)
+                {
+                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Fdk, FdkManager.EnableLogsNameProperty),
+                };
+
+
+                AdvancedModel = new AdvancedViewModel(_model.Settings, RefreshManager)
+                {
+                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, MultipleAgentConfigurator.AgentCongPathsNameSection),
+                };
+
+                StateServiceModel = new StateServiceViewModel(_model.Settings[AppProperties.ServiceName]);
+                LogsModel = new LogsViewModel(_model.Logs);
+
+                RefreshManager.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
+                RefreshManager.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
+
+                ThreadPool.QueueUserWorkItem(RefreshServiceState);
+
+                _mainWindow.Title = $"BotAgent Configurator: {_versionManager.FullVersion}";
+                _mainWindow.Closing += MainWindow_Closing;
+            }
+            catch (Exception ex)
             {
-                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Dealer.Name)
-            };
-
-            ViewerModel = new CredentialViewModel(_model.CredentialsManager.Viewer, RefreshManager)
-            {
-                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Viewer.Name)
-            };
-
-
-            SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshManager);
-
-            ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshManager)
-            {
-                ListeningPortDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.PortNameProperty),
-                DirectoryNameDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.DirectoryNameProperty),
-                LogMessageDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.UseLogNameProperty),
-            };
-
-            ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshManager)
-            {
-                UrlsDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.UrlsNameProperty),
-                SecretKeyDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.SecretKeyNameProperty),
-            };
-
-            FdkModel = new FdkViewModel(_model.FdkManager.FdkModel, RefreshManager)
-            {
-                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Fdk, FdkManager.EnableLogsNameProperty),
-            };
-
-
-            AdvancedModel = new AdvancedViewModel(_model.Settings, RefreshManager)
-            {
-                ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, MultipleAgentConfigurator.AgentCongPathsNameSection),
-            };
-
-            StateServiceModel = new StateServiceViewModel(_model.Settings[AppProperties.ServiceName]);
-            LogsModel = new LogsViewModel(_model.Logs);
-
-
-            ThreadPool.QueueUserWorkItem(RefreshServiceState);
-
-            _mainWindow.Title = $"BotAgent Configurator: {_versionManager.FullVersion}";
-            //Application.Current.MainWindow.Closin
+                MessageBoxManager.ErrorBox(ex.Message);
+                Application.Current.Shutdown();
+            }
         }
 
-        public void CancelChanges()
-        {
-            _model.LoadConfiguration();
-            RefreshManager.DropRefresh();
-            RefreshModels();
-        }
+        public DelegateCommand StartAgent => _startAgent ?? (
+            _startAgent = new DelegateCommand(obj =>
+            {
+                if (SaveChangesQuestion())
+                {
+                    try
+                    {
+                        if (_model.StartAgent())
+                            MessageBoxManager.OKBox("Agent has been started!");
+                    }
+                    catch (WarningException ex)
+                    {
+                        MessageBoxManager.WarningBox(ex.Message);
+                    }
+                    catch (Exception exx)
+                    {
+                        MessageBoxManager.ErrorBox(exx.Message);
+                    }
+                }
+            }));
+
+        public DelegateCommand RestartApplication => _restartApplication ?? (
+            _restartApplication = new DelegateCommand(obj =>
+            {
+                _mainWindow.Closing -= MainWindow_Closing;
+                SaveChangesMethod();
+                System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+                Application.Current.Shutdown();
+            }));
+
+        public DelegateCommand SaveChanges => _saveChanges ?? (
+            _saveChanges = new DelegateCommand(obj =>
+            {
+                try
+                {
+                    _model.SaveChanges();
+                    RefreshManager.DropRefresh();
+                    MessageBoxManager.OKBox("Saving configuration successfully!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBoxManager.ErrorBox(ex.Message);
+                }
+            }));
+
+        public DelegateCommand CancelChanges => _cancelChanges ?? (
+            _cancelChanges = new DelegateCommand(obj =>
+            {
+                if (MessageBoxManager.YesNoBoxQuestion("The model has been changed. Сancel changes?"))
+                {
+                    try
+                    {
+                        _model.LoadConfiguration();
+                        RefreshManager.DropRefresh();
+                        RefreshModels();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBoxManager.ErrorBox(ex.Message);
+                        Application.Current.Shutdown();
+                    }
+                }
+            }));
 
         public void RefreshModels()
         {
@@ -145,25 +196,9 @@ namespace TickTrader.BotAgent.Configurator
             FdkModel.RefreshModel();
         }
 
-        public void SaveChanges()
-        {
-            _model.SaveChanges();
-            RefreshManager.DropRefresh();
-        }
-
-        public bool StartAgent()
-        {
-            return _model.StartAgent();
-        }
-
         public void Dispose()
         {
             _runnignApplication = false;
-        }
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
         private async void RefreshServiceState(object obj)
@@ -175,16 +210,65 @@ namespace TickTrader.BotAgent.Configurator
                 await Task.Delay(1000);
             }
         }
+
+        private void SaveChangesMethod()
+        {
+            try
+            {
+                SaveChangesQuestion();
+            }
+            catch
+            {
+                MessageBoxManager.ErrorBox("Saving settings was failed");
+            }
+            finally
+            {
+                Dispose();
+            }
+        }
+
+        private bool SaveChangesQuestion()
+        {
+            if (WasUpdate)
+            {
+                var result = MessageBoxManager.YesNoBoxQuestion("The model has been changed. Save changes?");
+
+                if (result)
+                    SaveChangesMethod();
+
+                return result;
+            }
+
+            return !WasUpdate;
+        }
+
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            SaveChangesMethod();
+        }
     }
 
-    public class RefreshManager
+    public class RefreshManager : INotifyPropertyChanged
     {
+        private bool _update;
+
         public delegate void ConfigurationStateChanged();
 
         public event ConfigurationStateChanged NewValuesEvent;
         public event ConfigurationStateChanged SaveValuesEvent;
 
-        public bool Update { get; private set; }
+        public bool Update
+        {
+            get => _update;
+            private set
+            {
+                if (_update == value)
+                    return;
+
+                _update = value;
+                OnPropertyChanged(nameof(Update));
+            }
+        }
 
         public void Refresh()
         {
@@ -198,6 +282,13 @@ namespace TickTrader.BotAgent.Configurator
             Update = false;
 
             SaveValuesEvent?.Invoke();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged([CallerMemberName]string prop = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 

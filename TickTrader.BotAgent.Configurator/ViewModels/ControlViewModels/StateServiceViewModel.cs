@@ -7,7 +7,11 @@ namespace TickTrader.BotAgent.Configurator
     public class StateServiceViewModel : INotifyPropertyChanged
     {
         private readonly string _serviceName;
+
+        private bool _visibleRestartMessage;
         private string _state;
+
+        public string RestartMessage => "To apply the new settings, restart the service.";
 
         public string ServiceState => $"{_serviceName} is {_state}";
 
@@ -16,6 +20,20 @@ namespace TickTrader.BotAgent.Configurator
         public StateServiceViewModel(string serviceName)
         {
             _serviceName = serviceName;
+        }
+
+        public bool VisibleRestartMessage
+        {
+            get => _visibleRestartMessage;
+            set
+            {
+                if (_visibleRestartMessage == value)
+                    return;
+
+                _visibleRestartMessage = value;
+
+                OnPropertyChanged(nameof(VisibleRestartMessage));
+            }
         }
 
         public void RefreshService(ServiceControllerStatus currentState)

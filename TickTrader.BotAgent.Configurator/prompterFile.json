@@ -1,0 +1,26 @@
+{
+  "Server": {
+    "server.urls": "I'm urls",
+    "SecretKey": "Whether article spirits new her covered hastily sitting her. Money witty books nor son add. Chicken age had evening believe but proceed pretend mrs. At missed advice my it no sister. Miss told ham dull knew see she spot near can. Spirit her entire her called. "
+  },
+  "Credentials": {
+    "Admin": "It sportsman earnestly ye preserved an on. Moment led family sooner cannot her window pulled any. Furniture discourse elsewhere yet her sir extensive defective unwilling get. Why resolution one motionless you him thoroughly. Noise is round to in it quick timed doors. Written address greatly get attacks inhabit pursuit our but. Lasted hunted enough an up seeing in lively letter. Had judgment out opinions property the supplied. ",
+    "Dealer": "I'm dealer",
+    "Viewer": "I'm viewer"
+  },
+  "Ssl": {
+    "File": "I'm file ssl",
+    "Password": "I'm password ssl"
+  },
+  "Protocol": {
+    "ListeningPort": "Abilities or he perfectly pretended so strangers be exquisite. Oh to another chamber pleased imagine do in. Went me rank at last loud shot an draw. Excellent so to no sincerity smallness. Removal request delight if on he we. Unaffected in we by apartments astonished to decisively themselves. Offended ten old consider speaking. ",
+    "LogDirectoryName": "I'm log",
+    "LogMessages": "I'm bool log"
+  },
+  "Fdk": {
+    "EnableLogs": "I'm fdk log"
+  },
+  "MultipleAgentProvider": {
+    "AgentConfigurationPaths": "I'm agent provider"
+  }
+}

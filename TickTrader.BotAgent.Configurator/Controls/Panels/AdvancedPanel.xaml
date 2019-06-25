@@ -3,9 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
+             xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              mc:Ignorable="d">
     <Grid Background="White">
+        <Grid.Resources>
+            <!--<local:UpdateNewProperty x:Key="propertyHolder" OldValue="{Binding OldValue}"/>-->
+        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
@@ -16,12 +19,12 @@
             <RowDefinition/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        
-        <ComboBox Style="{StaticResource comboBoxStyle}" ItemsSource="{Binding AgentPaths}" SelectedValue="{Binding SelectPath}" SelectionChanged="ComboBox_SelectionChanged"/>
-        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource advancedRestartAppButton}" Click="RestartApplicationButton"/>
+
+        <ComboBox x:Name="urlsComboBox" ItemsSource="{Binding AdvancedModel.AgentPaths}" SelectedValue="{Binding AdvancedModel.SelectPath}" SelectionChanged="ComboBox_SelectionChanged" Style="{StaticResource comboBoxStyle}"/>
+        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource advancedRestartAppButton}" Command="{Binding RestartApplication}"/>
 
         <Separator Grid.Row="1" Grid.ColumnSpan="3"/>
 
-        <TextBlock Grid.Column="2" Text="{Binding ModelDescription}" Style="{StaticResource descriptionTextBox}"/>
+        <TextBlock Grid.Column="2" Text="{Binding AdvancedModel.ModelDescription}" Style="{StaticResource descriptionTextBox}"/>
     </Grid>
 </UserControl>

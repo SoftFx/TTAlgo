@@ -13,9 +13,12 @@ namespace TickTrader.BotAgent.Configurator
             _refreshManager = _refManager;
 
             InitialSelectedPath = _settings.MultipleAgentProvider.BotAgentPath;
+            OldValue = InitialSelectedPath;
         }
 
         public string InitialSelectedPath { get; }
+
+        public string OldValue { get; }
 
         public List<string> AgentPaths => _settings.MultipleAgentProvider.BotAgentPaths;
 

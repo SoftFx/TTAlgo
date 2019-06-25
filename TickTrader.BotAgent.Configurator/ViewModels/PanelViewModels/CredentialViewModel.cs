@@ -8,6 +8,9 @@ namespace TickTrader.BotAgent.Configurator
         private CredentialModel _model;
         private RefreshManager _refreshManager;
 
+        private DelegateCommand _generateLogin;
+        private DelegateCommand _generatePassword;
+
         public CredentialViewModel(CredentialModel model, RefreshManager refManager = null)
         {
             _model = model;
@@ -50,28 +53,29 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public void GenerateNewPassword()
-        {
-            _model.GeneratePassword();
-            _refreshManager?.Refresh();
+        public DelegateCommand GeneratePassword => _generatePassword ?? (
+            _generatePassword = new DelegateCommand(obj =>
+            {
+                _model.GeneratePassword();
+                _refreshManager?.Refresh();
 
-            OnPropertyChanged(nameof(Password));
-        }
+                OnPropertyChanged(nameof(Password));
+            }));
 
-        public void GeneratenewLogin()
-        {
-            _model.GenerateNewLogin();
-            _refreshManager?.Refresh();
+        public DelegateCommand GenerateLogin => _generateLogin ?? (
+            _generateLogin = new DelegateCommand(obj =>
+            {
+                _model.GenerateNewLogin();
+                _refreshManager?.Refresh();
 
-            OnPropertyChanged(nameof(Login));
-        }
+                OnPropertyChanged(nameof(Login));
+            }));
 
         public void RefreshModel()
         {
             OnPropertyChanged(nameof(Login));
             OnPropertyChanged(nameof(Password));
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
 

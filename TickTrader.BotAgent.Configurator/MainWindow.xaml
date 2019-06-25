@@ -21,7 +21,7 @@
 
         <ToolBarTray>
             <ToolBar Height="33">
-                <Button x:Name="CancelButton" Style="{StaticResource toolBarButton}" Click="CancelButton_Click" IsEnabled="False">
+                <Button x:Name="CancelButton" Style="{StaticResource toolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Share" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
@@ -29,7 +29,7 @@
                         <TextBlock Text="Reset Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="SaveButton" Style="{StaticResource toolBarButton}" Click="SaveButton_Click" IsEnabled="False">
+                <Button x:Name="SaveButton" Style="{StaticResource toolBarButton}" Command="{Binding SaveChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Save" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
@@ -37,7 +37,7 @@
                         <TextBlock Text="Save Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Click="StartButton_Click">
+                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Command="{Binding StartAgent}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Play" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
@@ -112,7 +112,7 @@
                 <TabItem.Content>
                     <DockPanel>
                         <StackPanel>
-                            <c:AdvancedPanel DataContext="{Binding AdvancedModel}" Style="{StaticResource advancedControlPanel}"/>
+                            <c:AdvancedPanel Style="{StaticResource advancedControlPanel}"/>
                             <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource fdkControlPanel}"/>
                         </StackPanel>
                     </DockPanel>
@@ -147,7 +147,7 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="1">
-                <TextBlock Text="{Binding RestartMessage}" Style="{StaticResource restartMessage}" Visibility="{Binding VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
+                <TextBlock Text="{Binding StateServiceModel.RestartMessage}" Style="{StaticResource restartMessage}" Visibility="{Binding StateServiceModel.VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">
                 <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource stateServiceRow}"/>
