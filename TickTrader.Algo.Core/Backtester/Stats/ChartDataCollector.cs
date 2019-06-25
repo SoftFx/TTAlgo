@@ -95,7 +95,8 @@ namespace TickTrader.Algo.Core
 
         private void _timeRef_BarClosed(BarEntity bar)
         {
-            _snapshot?.Add(_currentBar);
+            if (_currentBar?.Volume > 0)
+                _snapshot?.Add(_currentBar);
             if (_sendOnClose)
                 SendUpdate(_currentBar, SeriesUpdateActions.Append);
         }
