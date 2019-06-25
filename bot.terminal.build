@@ -30,7 +30,6 @@
   <property name="CoreZipFile"         value="${OutputFolder}Core ${Build}.zip" />
   <property name="TerminalZipFile"     value="${OutputFolder}BotTerminal ${Build}.zip" />
   <property name="AgentZipFile"        value="${OutputFolder}BotAgent ${Build}.x64.zip" />
-  <property name="ConfiguratorZipFile" value="${OutputFolder}BotAgent.Configurator ${Build}.zip" />
 
   <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators,TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest" />
 
@@ -236,6 +235,13 @@
       </fileset>
     </copy>
 
+    <copy todir="${AgentBinDir}\Configurator\">
+      <fileset basedir="${ConfiguratorBinDir}">
+        <include name ="*.*" />
+        <include name ="**/*" />
+      </fileset>
+    </copy>
+
     <property name="Zip.SrcDir" value="${CoreBinDir}" />
     <property name="Zip.DstFile" value="${CoreZipFile}" />
     <call target="ZipDirectory" />
@@ -246,10 +252,6 @@
 
     <property name="Zip.SrcDir" value="${AgentBinDir}" />
     <property name="Zip.DstFile" value="${AgentZipFile}" />
-    <call target="ZipDirectory" />
-
-    <property name="Zip.SrcDir" value="${ConfiguratorBinDir}" />
-    <property name="Zip.DstFile" value="${ConfiguratorZipFile}" />
     <call target="ZipDirectory" />
   
   </target>
