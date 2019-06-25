@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using TickTrader.BotAgent.Common.Extensions;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -21,10 +21,13 @@ namespace TickTrader.BotAgent.Configurator
             {
                 var assemblyName = AssemblyName.GetAssemblyName(_agentPath);
                 Version = assemblyName.Version.ToString();
-                BuildDate = assemblyName.GetLinkerTime().ToString("yyyy.MM.dd"); 
+                BuildDate = assemblyName.GetLinkerTime().ToString("yyyy.MM.dd");
             }
-            catch (Exception ex)
-            { }    
+            catch
+            {
+                Version = "Developer";
+                BuildDate = DateTime.MinValue.ToString("yyyy.MM.dd");
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ namespace TickTrader.BotAgent.Configurator
     {
         private ConfigManager _configManager;
         private PortsManager _portsManager;
+        private RegistryManager _registryManager;
 
         private DefaultServiceSettingsModel _defaultServiceSettings;
 
@@ -37,7 +38,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; }
 
-        public IBotAgentConfigPathHolder BotAgentHolder { get; }
+        public MultipleAgentConfigurator BotAgentHolder { get; }
 
         public ConfigurationModel()
         {
@@ -48,7 +49,9 @@ namespace TickTrader.BotAgent.Configurator
             Prompts = new PrompterManager();
             Logs = new LogsManager();
 
-            BotAgentHolder = Settings.UseProvider ? (IBotAgentConfigPathHolder)Settings.MultipleAgentProvider : new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
+
+            BotAgentHolder = Settings.MultipleAgentProvider;
+            _registryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
 
             ServiceManager = new ServiceManager(Settings[AppProperties.ServiceName]);
             _portsManager = new PortsManager(ServiceManager, _defaultServiceSettings);
@@ -88,6 +91,8 @@ namespace TickTrader.BotAgent.Configurator
             if (loadConfig)
                 _configManager.LoadProperties();
 
+            BotAgentHolder.SetNewBotAgentPath(_registryManager.BotAgentPath, Settings[AppProperties.AppSettings]);
+
             using (var configStreamReader = new StreamReader(BotAgentHolder.BotAgentConfigPath))
             {
                 _configurationObject = JObject.Parse(configStreamReader.ReadToEnd());
@@ -97,6 +102,7 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             UploadDefaultServiceModel();
+            _configManager.SaveChanges();
         }
 
         public void SaveChanges()

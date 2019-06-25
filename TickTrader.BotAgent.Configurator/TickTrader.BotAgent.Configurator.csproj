@@ -274,6 +274,10 @@
     <Resource Include="icons\settings.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TickTrader.Algo.Common\TickTrader.Algo.Common.csproj">
+      <Project>{bffe802c-bcb0-4376-9551-977fe8c277d2}</Project>
+      <Name>TickTrader.Algo.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj">
       <Project>{E54D1888-6449-41AF-8226-5A5BDC93715A}</Project>
       <Name>TickTrader.BotAgent.Common</Name>

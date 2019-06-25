@@ -2,10 +2,11 @@
 using System.IO;
 using System.Reflection;
 
-namespace TickTrader.BotTerminal.Extensions
+namespace TickTrader.Algo.Common.Lib
 {
     public static class AssemblyExtension
     {
+
         public static DateTime GetLinkerTime(this Assembly assembly, TimeZoneInfo target = null)
         {
             var filePath = assembly.Location;

@@ -19,7 +19,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             Properties = new ConfigurationProperies();
 
-            _defaultProperties = new ConfigurationProperies( new Dictionary<string, string>()
+            _defaultProperties = new ConfigurationProperies(new Dictionary<string, string>()
             {
                 { "AppSettings", "WebAdmin/appsettings.json" },
                 { "ApplicationName", "TickTrader.BotAgent" },
@@ -37,7 +37,7 @@ namespace TickTrader.BotAgent.Configurator
                 using (var sr = new StreamReader(_appConfigPath))
                 {
                     string settings = sr.ReadToEnd();
-                    
+
                     if (!string.IsNullOrEmpty(settings))
                         Properties.LoadProperties(JObject.Parse(settings));
                 }
@@ -66,8 +66,6 @@ namespace TickTrader.BotAgent.Configurator
         private Dictionary<string, string> _properties;
 
         public MultipleAgentConfigurator MultipleAgentProvider { get; private set; }
-
-        public bool UseProvider => MultipleAgentProvider.Use;
 
         public string this[string key] => _properties.ContainsKey(key) ? _properties[key] : null;
 
@@ -121,12 +119,10 @@ namespace TickTrader.BotAgent.Configurator
 
     public class MultipleAgentConfigurator : ContentManager, IBotAgentConfigPathHolder
     {
-        public const string AgentCongPathsNameSection = "AgentConfigurationPaths";  
+        public const string AgentCongPathsNameSection = "AgentConfigurationPaths";
 
-        private int _selectPath;
+        private int _selectPath = -1;
         private string _botAgentConfigPath;
-
-        public bool Use { get; private set; }
 
         public string BotAgentPath
         {
@@ -146,10 +142,10 @@ namespace TickTrader.BotAgent.Configurator
         {
             get
             {
-                return (_selectPath >= 0 && _selectPath <= BotAgentPaths.Count) ?
+                return (_selectPath >= -1 && _selectPath <= BotAgentPaths.Count) ?
                     _selectPath : throw new Exception($"Incorrect {nameof(SelectPath)} = {_selectPath}");
             }
-            private set
+            set
             {
                 if (_selectPath == value)
                     return;
@@ -167,23 +163,34 @@ namespace TickTrader.BotAgent.Configurator
 
         public void LoadSettings(JObject obj, string appSetting = "")
         {
-            if (obj.SelectToken(nameof(Use)) != null)
-                Use = obj[nameof(Use)].ToObject<bool>();
-
             if (obj.SelectToken(nameof(SelectPath)) != null)
                 SelectPath = obj[nameof(SelectPath)].ToObject<int>() - 1;
 
             if (obj.SelectToken(AgentCongPathsNameSection) != null)
                 BotAgentPaths = obj[AgentCongPathsNameSection].ToObject<List<string>>();
 
-            _botAgentConfigPath = Path.Combine(BotAgentPaths[_selectPath], appSetting);
+            if (BotAgentPaths.Count > 0)
+                _botAgentConfigPath = Path.Combine(BotAgentPaths[_selectPath], appSetting);
+        }
+
+        public void SetNewBotAgentPath(string path, string appSetting = "")
+        {
+            if (!BotAgentPaths.Contains(path))
+            {
+                BotAgentPaths.Add(path);
+
+                if (BotAgentPaths.Count == 1)
+                {
+                    _selectPath = 0;
+                    _botAgentConfigPath = Path.Combine(BotAgentPaths[_selectPath], appSetting);
+                }
+            }
         }
 
         public JObject GetJObject()
         {
             return new JObject()
             {
-                new JProperty(nameof(Use), Use),
                 new JProperty(nameof(SelectPath), SelectPath + 1),
                 new JProperty(AgentCongPathsNameSection, BotAgentPaths)
             };

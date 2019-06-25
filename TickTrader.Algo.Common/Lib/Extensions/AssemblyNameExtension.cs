@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace TickTrader.BotAgent.Common.Extensions
+namespace TickTrader.Algo.Common.Lib
 {
-    public static class AssemblyExtension
+    public static class AssemblyNameExtension
     {
         public static DateTime GetLinkerTime(this AssemblyName assemblyName, TimeZoneInfo target = null)
         {
             var uri = new UriBuilder(assemblyName.CodeBase);
             string filePath = Uri.UnescapeDataString(uri.Path);
-
             const int c_PeHeaderOffset = 60;
             const int c_LinkerTimestampOffset = 8;
 
@@ -24,7 +22,6 @@ namespace TickTrader.BotAgent.Common.Extensions
 
             var offset = BitConverter.ToInt32(buffer, c_PeHeaderOffset);
             var secondsSince1970 = BitConverter.ToInt32(buffer, offset + c_LinkerTimestampOffset);
-
             var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             var linkTimeUtc = epoch.AddSeconds(secondsSince1970);
