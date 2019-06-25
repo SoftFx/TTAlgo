@@ -31,7 +31,7 @@
   <property name="TerminalZipFile"     value="${OutputFolder}BotTerminal ${Build}.zip" />
   <property name="AgentZipFile"        value="${OutputFolder}BotAgent ${Build}.x64.zip" />
 
-  <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators,TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest" />
+  <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators,TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest,TickTrader.Algo.NewsIndicator" />
 
 
   <target name="help">
@@ -51,8 +51,8 @@
       <call target="PublishTerminal" />
     </if>
 
-    <call target="CreateZipArtifacts" />
     <call target="CreatePackages" />
+    <call target="CreateZipArtifacts" />
 
     <call target="CreateInstallers" />
 
@@ -234,6 +234,8 @@
         <include name="*.vsix" />
       </fileset>
     </copy>
+
+    <copy file="${OutputFolder}\TickTrader.Algo.NewsIndicator.ttalgo" todir="${TerminalBinDir}\AlgoRepository\" />
 
     <copy todir="${AgentBinDir}\Configurator\">
       <fileset basedir="${ConfiguratorBinDir}">

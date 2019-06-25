@@ -1,14 +1,11 @@
 ﻿using SoftFx.FxCalendar.Calendar.FxStreet;
 using SoftFx.FxCalendar.Models;
 using SoftFx.FxCalendar.Providers;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 
-namespace TickTrader.Algo.Indicators.Other.News
+namespace TickTrader.Algo.Indicators.NewsIndicator
 {
     public abstract class NewsMarkersBase : Indicator
     {
