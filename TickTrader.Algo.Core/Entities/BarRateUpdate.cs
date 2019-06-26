@@ -61,8 +61,8 @@ namespace TickTrader.Algo.Core
             _quoteCount++;
         }
 
-        public bool HasAsk => BidBar != null;
-        public bool HasBid => AskBar != null;
+        public bool HasAsk => AskBar != null;
+        public bool HasBid => BidBar != null;
         public string Symbol { get; }
         public BarEntity BidBar { get; private set; }
         public BarEntity AskBar { get; private set; }
