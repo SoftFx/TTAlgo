@@ -94,14 +94,12 @@ namespace TickTrader.BotAgent.Configurator
                     ModelDescription = _model.Prompts.GetPrompt(SectionNames.Fdk, FdkManager.EnableLogsNameProperty),
                 };
 
-
                 AdvancedModel = new AdvancedViewModel(_model.Settings, RefreshManager)
                 {
                     ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, MultipleAgentConfigurator.AgentCongPathsNameSection),
                 };
 
                 StateServiceModel = new StateServiceViewModel(_model.Settings[AppProperties.ServiceName]);
-                LogsModel = new LogsViewModel(_model.Logs);
 
                 RefreshManager.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
                 RefreshManager.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
@@ -203,11 +201,13 @@ namespace TickTrader.BotAgent.Configurator
 
         private async void RefreshServiceState(object obj)
         {
+            LogsModel = new LogsViewModel(_model.Logs);
+
             while (_runnignApplication)
             {
+                await Task.Delay(5000);
                 StateServiceModel.RefreshService(_model.ServiceManager.ServiceStatus);
                 LogsModel.RefreshLog();
-                await Task.Delay(1000);
             }
         }
 
@@ -260,6 +260,7 @@ namespace TickTrader.BotAgent.Configurator
         public bool Update
         {
             get => _update;
+
             private set
             {
                 if (_update == value)
