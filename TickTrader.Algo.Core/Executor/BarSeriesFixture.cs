@@ -93,9 +93,17 @@ namespace TickTrader.Algo.Core
         public BufferUpdateResult Update(BarRateUpdate update)
         {
             if (priceType == BarPriceType.Bid)
-                return Update(update.BidBar);
+            {
+                if (update.HasBid)
+                    return Update(update.BidBar);
+            }
             else
-                return Update(update.AskBar);
+            {
+                if (update.HasAsk)
+                    return Update(update.AskBar);
+            }
+
+            return new BufferUpdateResult();
         }
 
         public BufferUpdateResult Update(BarEntity bar)
