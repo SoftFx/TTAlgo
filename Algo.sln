@@ -114,6 +114,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotAgent.Configu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.BotAgent.Common", "TickTrader.BotAgent.Common\TickTrader.BotAgent.Common.csproj", "{E54D1888-6449-41AF-8226-5A5BDC93715A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TickTrader.Algo.NewsIndicator", "TickTrader.Algo.NewsIndicator\TickTrader.Algo.NewsIndicator.csproj", "{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -601,6 +603,18 @@ Global
 		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x64.Build.0 = Release|Any CPU
 		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x86.ActiveCfg = Release|Any CPU
 		{E54D1888-6449-41AF-8226-5A5BDC93715A}.Release|x86.Build.0 = Release|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Debug|x64.Build.0 = Debug|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Debug|x86.Build.0 = Debug|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Release|x64.ActiveCfg = Release|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Release|x64.Build.0 = Release|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Release|x86.ActiveCfg = Release|Any CPU
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -648,6 +662,7 @@ Global
 		{451E16C9-DDEC-4ADD-B5CF-C34546647475} = {F174B9A6-C8BD-4525-BC5D-AC1E6ABFBE8F}
 		{55E667BC-D245-4CAD-9FDC-79BA2438F709} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
 		{E54D1888-6449-41AF-8226-5A5BDC93715A} = {EAFDF5CB-7010-4EA0-8D57-4D5035362975}
+		{9D5B5B95-D1F0-4D97-8D86-29A4D886A2D0} = {51B8AFF5-4AEA-45F9-8126-6D51C2CCAB7B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {676AD27B-E03C-4277-A423-E2533F837976}
