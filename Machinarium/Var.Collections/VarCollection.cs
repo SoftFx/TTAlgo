@@ -185,6 +185,12 @@ namespace Machinarium.Qnil
             return new DictionarySelector<TKey, TSource, TResult>(src, selector);
         }
 
+        public static IVarSet<TResultKey, TResult> Select<TSourceKey, TResultKey, TSource, TResult>(
+            this IVarSet<TSourceKey, TSource> src, Func<TSourceKey, TSource, KeyValuePair<TResultKey, TResult>> selector)
+        {
+            return new DictionarySelectorFull<TSourceKey, TResultKey, TSource, TResult>(src, selector);
+        }
+
         public static IVarList<TValue> OrderBy<TKey, TValue, TBy>(
             this IVarSet<TKey, TValue> src,
             Func<TKey, TValue, TBy> orderPropSelector)

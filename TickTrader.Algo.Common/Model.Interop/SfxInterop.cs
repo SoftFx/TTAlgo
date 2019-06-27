@@ -380,18 +380,18 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public async Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        public async Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
             if (timeFrame.IsTicks())
             {
                 var level2 = timeFrame == TimeFrames.TicksLevel2;
                 var info = await _feedHistoryProxy.GetQuotesHistoryInfoAsync(symbol, level2);
-                return new Tuple<DateTime, DateTime>(info.AvailFrom ?? DateTime.MinValue, info.AvailTo ?? DateTime.MinValue);
+                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
             else // bars
             {
                 var info = await _feedHistoryProxy.GetBarsHistoryInfoAsync(symbol, ToBarPeriod(timeFrame), ConvertBack(priceType));
-                return new Tuple<DateTime, DateTime>(info.AvailFrom ?? DateTime.MinValue, info.AvailTo ?? DateTime.MinValue);
+                return new Tuple<DateTime?, DateTime?>(info.AvailFrom, info.AvailTo);
             }
         }
 
@@ -754,7 +754,7 @@ namespace TickTrader.Algo.Common.Model
                 ExecVolume = record.ExecutedVolume,
                 UserTag = record.Tag,
                 RemainingVolume = record.LeavesVolume,
-                RequestedVolume = record.InitialVolume,
+                RequestedVolume = record.InitialVolume ?? 0,
                 Expiration = record.Expiration?.ToLocalTime(),
                 MaxVisibleVolume = record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
@@ -907,13 +907,12 @@ namespace TickTrader.Algo.Common.Model
                 amount = p.SellAmount;
             }
 
-            return new PositionEntity()
+            return new PositionEntity(p.Symbol)
             {
                 Id = p.PosId,
                 Side = side,
                 Volume = amount,
                 Price = price,
-                Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
@@ -1149,13 +1148,9 @@ namespace TickTrader.Algo.Common.Model
                 return book.Select(b => Convert(b)).ToArray();
         }
 
-        public static BookEntryEntity Convert(QuoteEntry fdkEntry)
+        public static BookEntry Convert(QuoteEntry fdkEntry)
         {
-            return new BookEntryEntity()
-            {
-                Price = fdkEntry.Price,
-                Volume = fdkEntry.Volume
-            };
+            return new BookEntry(fdkEntry.Price, fdkEntry.Volume);
         }
 
         public static BalanceOperationReport Convert(SFX.BalanceOperation op)

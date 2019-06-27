@@ -238,10 +238,10 @@ namespace TickTrader.BotTerminal
                     for (int i = 1; i < parts.Length; i += 4)
                     {
                         if (!string.IsNullOrEmpty(parts[i + 0]))
-                            bids.Add(new BookEntryEntity(double.Parse(parts[i + 0]), double.Parse(parts[i + 1])));
+                            bids.Add(new BookEntry(double.Parse(parts[i + 0]), double.Parse(parts[i + 1])));
 
                         if (!string.IsNullOrEmpty(parts[i + 2]))
-                            asks.Add(new BookEntryEntity(double.Parse(parts[i + 2]), double.Parse(parts[i + 3])));
+                            asks.Add(new BookEntry(double.Parse(parts[i + 2]), double.Parse(parts[i + 3])));
                     }
 
                     yield return new QuoteEntity("", time, bids.ToArray(), asks.ToArray());

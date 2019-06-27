@@ -106,11 +106,14 @@ namespace TickTrader.Algo.Core
             _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            _executor.StartCollection();
+            bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
+                | OutputDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | SymbolDataConfig.Any(s => s.Value.IsFlagSet(TestDataSeriesFlags.Realtime));
+
+            _executor.StartCollection(isRealtime);
 
             if (!_control.OnStart())
             {
-                _executor.StopCollection().Wait();
+                _executor.StopCollection();
                 return;
             }
 
@@ -132,7 +135,7 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
-                _executor.StopCollection().Wait();
+                _executor.StopCollection();
             }
         }
 
@@ -179,11 +182,6 @@ namespace TickTrader.Algo.Core
         public IPagedEnumerator<TradeReportEntity> GetTradeHistory()
         {
             return _control.TradeHistory.Marshal();
-        }
-
-        public void InitOutputCollection<T>(string id)
-        {
-            _control.Collector.InitOutputCollection<T>(id);
         }
 
         public IPagedEnumerator<T> GetOutputData<T>(string id)

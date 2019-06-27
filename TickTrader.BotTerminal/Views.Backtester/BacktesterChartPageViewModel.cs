@@ -14,6 +14,7 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Entities;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.BotTerminal.Lib;
 using static TickTrader.BotTerminal.TransactionReport;
 

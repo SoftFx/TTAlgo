@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Core.UnitTest
     [TestClass]
     public class BarVector2Tests
     {
+        const double NoVal = 0;
+
         [TestMethod]
         public void BarVector2_SlaveFirst()
         {
@@ -34,7 +36,7 @@ namespace TickTrader.Algo.Core.UnitTest
             Assert.AreEqual(3, slave.Count);
 
             Assert.AreEqual(1.1, slave[0].Open);
-            Assert.AreEqual(double.NaN, slave[1].Open);
+            Assert.AreEqual(NoVal, slave[1].Open);
             Assert.AreEqual(1.4, slave[2].Open);
         }
 
@@ -66,10 +68,10 @@ namespace TickTrader.Algo.Core.UnitTest
 
             Assert.AreEqual(5, slave.Count);
 
-            Assert.AreEqual(double.NaN, slave[0].Open);
-            Assert.AreEqual(double.NaN, slave[1].Open);
+            Assert.AreEqual(NoVal, slave[0].Open);
+            Assert.AreEqual(NoVal, slave[1].Open);
             Assert.AreEqual(1.4, slave[2].Open);
-            Assert.AreEqual(double.NaN, slave[3].Open);
+            Assert.AreEqual(NoVal, slave[3].Open);
             Assert.AreEqual(1.6, slave[4].Open);
         }
 
@@ -98,10 +100,10 @@ namespace TickTrader.Algo.Core.UnitTest
 
             Assert.AreEqual(5, slave.Count);
 
-            Assert.AreEqual(double.NaN, slave[0].Open);
-            Assert.AreEqual(double.NaN, slave[1].Open);
+            Assert.AreEqual(NoVal, slave[0].Open);
+            Assert.AreEqual(NoVal, slave[1].Open);
             Assert.AreEqual(1.4, slave[2].Open);
-            Assert.AreEqual(double.NaN, slave[3].Open);
+            Assert.AreEqual(NoVal, slave[3].Open);
             Assert.AreEqual(1.6, slave[4].Open);
         }
 

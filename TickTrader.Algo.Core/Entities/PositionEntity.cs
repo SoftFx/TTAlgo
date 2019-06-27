@@ -6,20 +6,19 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class PositionEntity
     {
-        public PositionEntity()
+        public PositionEntity(string symbol)
         {
-            
+            Symbol = symbol;
         }
 
         public PositionEntity(PositionExecReport report)
-            : this()
+            : this(report.PositionInfo.Symbol)
         {
-            Symbol = report.PositionInfo.Symbol;
             Update(report.PositionInfo);
         }
 
         public PositionEntity(PositionEntity src)
-            : this()
+            : this(src.Symbol)
         {
             Update(src);
         }
@@ -54,7 +53,7 @@ namespace TickTrader.Algo.Core
         public double SettlementPrice { get; set; }
         public OrderSide Side { get; set; }
         public double Swap { get; set; }
-        public string Symbol { get; set; }
+        public string Symbol { get; private set; }
         public DateTime? Modified { get; set; }
         public bool IsEmpty => Volume == 0;
     }

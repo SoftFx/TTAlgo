@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Core
             if (currentBar != null && currentBar.OpenTime == boundaries.Open)
             {
                 // append last bar
-                currentBar.AppendNanProof(price, volume);
+                currentBar.Append(price, volume);
                 OnBarUpdated(currentBarIndex, currentBar);
             }
             else
@@ -171,7 +171,7 @@ namespace TickTrader.Algo.Core
             newVector.InitSynchronization(master.Ref, i =>
             {
                 var masterBar = master[i];
-                return new BarEntity(masterBar.OpenTime, masterBar.CloseTime, double.NaN, double.NaN);
+                return new BarEntity(masterBar.OpenTime, masterBar.CloseTime, 0, 0);
             });
             return newVector;
         }

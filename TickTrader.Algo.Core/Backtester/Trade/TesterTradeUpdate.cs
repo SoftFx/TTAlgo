@@ -20,9 +20,9 @@ namespace TickTrader.Algo.Core
         public PositionEntity NetPositionUpdate { get; private set; }
         public AssetEntity Asset1Update { get; }
         public AssetEntity Asset2Update { get; }
-        public decimal? Balance { get; private set; }
+        public double? Balance { get; private set; }
 
-        internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, FillInfo fillInfo, decimal balance)
+        internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, FillInfo fillInfo, double balance)
         {
             var update = new TesterTradeTransaction();
             update.OrderExecAction = OrderExecAction.Opened;
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
             return update;
         }
 
-        internal static TesterTradeTransaction OnClosePosition(bool remove, OrderAccessor position, decimal balance)
+        internal static TesterTradeTransaction OnClosePosition(bool remove, OrderAccessor position, double balance)
         {
             var update = new TesterTradeTransaction();
             if (remove)
@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Core
             return update;
         }
 
-        internal static TesterTradeTransaction OnFill(OrderAccessor order, FillInfo fillInfo, decimal balance)
+        internal static TesterTradeTransaction OnFill(OrderAccessor order, FillInfo fillInfo, double balance)
         {
             var update = new TesterTradeTransaction();
 
@@ -165,7 +165,7 @@ namespace TickTrader.Algo.Core
             NetPositionUpdate = pos.GetEntityCopy();
         }
 
-        private void OnBalanceChanged(decimal balance)
+        private void OnBalanceChanged(double balance)
         {
             Balance = balance;
         }

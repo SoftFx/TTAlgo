@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
 
         public void FireModified(AssetModifiedEventArgs args)
         {
-            builder.InvokePluginMethod(() => fixture.FireModified(args));
+            builder.InvokePluginMethod((b, p) => fixture.FireModified(p), args);
         }
 
         public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies)

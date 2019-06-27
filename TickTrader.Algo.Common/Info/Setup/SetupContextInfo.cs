@@ -10,14 +10,14 @@ namespace TickTrader.Algo.Common.Info
     {
         public TimeFrames DefaultTimeFrame { get; set; }
 
-        public SymbolInfo DefaultSymbol { get; set; }
+        public SymbolKey DefaultSymbol { get; set; }
 
         public MappingKey DefaultMapping { get; set; }
 
 
         public SetupContextInfo() { }
 
-        public SetupContextInfo(TimeFrames defaultTimeFrame, SymbolInfo defaultSymbol, MappingKey defaultMapping)
+        public SetupContextInfo(TimeFrames defaultTimeFrame, SymbolKey defaultSymbol, MappingKey defaultMapping)
         {
             DefaultTimeFrame = defaultTimeFrame;
             DefaultSymbol = defaultSymbol;

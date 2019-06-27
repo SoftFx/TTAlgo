@@ -10,51 +10,32 @@ namespace TickTrader.Algo.Core
 {
     public class FeedEmulator : CrossDomainObject, IPluginFeedProvider, ISynchronizationContext
     {
-        private Dictionary<string, FeedSeriesEmulator> _feedSources = new Dictionary<string, FeedSeriesEmulator>();
+        //private FeedReader _reader;
+        private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
+        private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
 
         ISynchronizationContext IPluginFeedProvider.Sync => this;
 
         internal IEnumerable<RateUpdate> GetFeedStream()
         {
-            return GetJoinedStream();
-        }
+            var reader = new FeedReader(_feedReaders.Values);
 
-        public override void Dispose()
-        {
-            foreach (var src in _feedSources.Values)
-                src.Stop();
-
-            base.Dispose();
-        }
-
-        private IEnumerable<RateUpdate> GetJoinedStream()
-        {
-            var streams = _feedSources.Values.ToList();
-
-            foreach (var e in streams.ToList())
+            using (reader)
             {
-                e.Start();
-
-                if (!e.MoveNext())
+                foreach (var rate in reader)
                 {
-                    streams.Remove(e);
-                    e.Stop();
+                    FeedSeriesEmulator series;
+                    if (_feedSeries.TryGetValue(rate.Symbol, out series))
+                        series.Update(rate);
+                    yield return rate;
                 }
             }
 
-            while (streams.Count > 0)
-            {
-                var min = streams.MinBy(e => e.Current.Time);
-                var nextQuote = min.Current;
+            foreach (var series in _feedSeries.Values)
+                series.Close();
 
-                if (!min.MoveNext())
-                {
-                    streams.Remove(min);
-                    min.Stop();
-                }
-
-                yield return nextQuote;
-            }
+            if (reader.HasFailed)
+                throw new Exception("Failed to read feed stream! " + reader.Fault.Message, reader.Fault);
         }
 
         internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)
@@ -78,8 +59,9 @@ namespace TickTrader.Algo.Core
         }
 
         public void AddSource(string symbol, IEnumerable<QuoteEntity> stream)
-        {            
-            _feedSources.Add(symbol, new TickBasedSeriesEmulator(symbol, stream));
+        {
+            _feedReaders.Add(symbol, new TickSeriesReader(symbol, stream));
+            _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
         public void AddSource(string symbol, ITickStorage storage)
@@ -87,23 +69,26 @@ namespace TickTrader.Algo.Core
             //if (timeFrame != TimeFrames.Ticks && timeFrame != TimeFrames.TicksLevel2)
             //    throw new ArgumentException("timeFrame", "This overload accept only TimeFrames.Ticks or TimeFrames.TicksLevel2.");
 
-            _feedSources.Add(symbol, new TickBasedSeriesEmulator(symbol, storage));
+            _feedReaders.Add(symbol, new TickSeriesReader(symbol, storage));
+            _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
         public void AddSource(string symbol, TimeFrames timeFrame, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
         {
-            _feedSources.Add(symbol, new BarBasedSeriesEmulator(symbol, timeFrame, bidStream, askStream));
+            _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeFrame, bidStream, askStream));
+            _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
         public void AddSource(string symbol, TimeFrames timeFrame, IBarStorage bidStream, IBarStorage askStream)
         {
-            _feedSources.Add(symbol, new BarBasedSeriesEmulator(symbol, timeFrame, bidStream, askStream));
+            _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeFrame, bidStream, askStream));
+            _feedSeries.Add(symbol, new FeedSeriesEmulator());
         }
 
         private FeedSeriesEmulator GetFeedSrcOrThrow(string symbol)
         {
             FeedSeriesEmulator src;
-            if (!_feedSources.TryGetValue(symbol, out src))
+            if (!_feedSeries.TryGetValue(symbol, out src))
                 throw new MisconfigException("No feed source for symbol " + symbol);
             return src;
         }
@@ -112,7 +97,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
         {
-            return _feedSources.Values.Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
+            return _feedSeries.Values.Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
