@@ -72,8 +72,8 @@ namespace TickTrader.BotAgent.Configurator
             if (ServiceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
                 return false;
 
-            foreach (var uri in ServerManager.ServerModel.Urls)
-                _portsManager.RegisterPortInFirewall(uri.Port, Settings[AppProperties.ApplicationName]);
+            //foreach (var uri in ServerManager.ServerModel.Urls)
+            //    _portsManager.RegisterPortInFirewall(uri.Port, Settings[AppProperties.ApplicationName]);
 
             _portsManager.RegisterPortInFirewall(ProtocolManager.ProtocolModel.ListeningPort, Settings[AppProperties.ApplicationName]);
 

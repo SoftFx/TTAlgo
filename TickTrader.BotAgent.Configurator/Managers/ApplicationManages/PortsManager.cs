@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -54,12 +55,27 @@ namespace TickTrader.BotAgent.Configurator
 
         public void RegisterPortInFirewall(int port, string name)
         {
-            var portInst = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", true));
-            portInst.Port = port;
-            portInst.Name = name;
-            portInst.Enabled = true;
+            //var portInst = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", true));
+            //portInst.Port = port;
+            //portInst.Name = name;
+            //portInst.Enabled = true;
 
-            _firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portInst);
+            //_firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portInst);
+
+            INetFwRule firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
+
+            firewallRule.Name = "TickTrader.BAtest";
+            firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
+
+            firewallRule.Profiles = (int)NET_FW_PROFILE_TYPE_.NET_FW_PROFILE_CURRENT;
+            firewallRule.serviceName = "_sfxBotAgent";
+            firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
+            firewallRule.Description = "I'm test firewall rule";
+            firewallRule.LocalPorts = "";
+
+            INetFwPolicy2 firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
+            firewallPolicy.Rules.Add(firewallRule);
+
         }
 
         public void RegisterApplicationInFirewall(string name, string path)
