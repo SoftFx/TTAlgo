@@ -10,8 +10,8 @@ namespace TickTrader.BotTerminal
 {
     public abstract class InputSetupViewModel : PropertySetupViewModel
     {
-        private SymbolInfo _defaultSymbol;
-        private SymbolInfo _selectedSymbol;
+        private SymbolKey _defaultSymbol;
+        private SymbolKey _selectedSymbol;
 
 
         protected SetupMetadata SetupMetadata { get; }
@@ -19,9 +19,9 @@ namespace TickTrader.BotTerminal
 
         public InputDescriptor Descriptor { get; }
 
-        public IReadOnlyList<SymbolInfo> AvailableSymbols { get; private set; }
+        public IReadOnlyList<SymbolKey> AvailableSymbols { get; private set; }
 
-        public SymbolInfo SelectedSymbol
+        public SymbolKey SelectedSymbol
         {
             get { return _selectedSymbol; }
             set
@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
         }
 
 
-        private InputSetupViewModel(InputDescriptor descriptor, SymbolInfo defaultSymbol)
+        private InputSetupViewModel(InputDescriptor descriptor, SymbolKey defaultSymbol)
         {
             Descriptor = descriptor;
             _defaultSymbol = defaultSymbol;
@@ -74,7 +74,7 @@ namespace TickTrader.BotTerminal
         public class Invalid : InputSetupViewModel
         {
             public Invalid(InputDescriptor descriptor, object error = null)
-                : base(descriptor, (SymbolInfo)null)
+                : base(descriptor, (SymbolKey)null)
             {
                 if (error == null)
                     Error = new ErrorMsgModel(descriptor.Error);

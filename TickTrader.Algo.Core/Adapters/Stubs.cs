@@ -142,7 +142,7 @@ namespace TickTrader.Algo.Core
     internal class NullTradeApi : ITradeApi
     {
         private static Task<TradeResultEntity> rejectResult
-            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null, null));
+            = Task.FromResult<TradeResultEntity>(new TradeResultEntity(OrderCmdResultCodes.Unsupported, null));
 
         public Task<TradeResultEntity> CancelOrder(bool isAysnc, CancelOrderRequest request)
         {
@@ -174,6 +174,8 @@ namespace TickTrader.Algo.Core
     {
         public double Ask { get { return double.NaN; } }
         public double Bid { get { return double.NaN; } }
+        public bool HasBid => false;
+        public bool HasAsk => false;
         public BookEntry[] AskBook { get { return Null.Book; } }
         public BookEntry[] BidBook { get { return Null.Book; } }
         public string Symbol { get { return ""; } }

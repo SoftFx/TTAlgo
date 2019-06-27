@@ -13,13 +13,23 @@ namespace TickTrader.Algo.Api
         double Ask { get; }
         double Bid { get; }
 
+        bool HasAsk { get; }
+        bool HasBid { get; }
+
         BookEntry[] AskBook { get; }
         BookEntry[] BidBook { get; }
     }
 
-    public interface BookEntry
+    [Serializable]
+    public struct BookEntry
     {
-        double Price { get; }
-        double Volume { get; }
+        public BookEntry(double price, double volume)
+        {
+            Price = price;
+            Volume = volume;
+        }
+
+        public double Price { get; }
+        public double Volume { get; }
     }
 }

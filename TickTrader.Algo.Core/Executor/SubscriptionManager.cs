@@ -11,10 +11,6 @@ namespace TickTrader.Algo.Core
     internal class SubscriptionManager
     {
         private IFixtureContext _context;
-        //private Dictionary<string, SubscriptionFixture> userSubscriptions = new Dictionary<string, SubscriptionFixture>();
-        //private HashSet<IAllRatesSubscription> allSymbolsSubscribers = new HashSet<IAllRatesSubscription>();
-        private Dictionary<string, SubscriptionCollection> subscribersBySymbol = new Dictionary<string, SubscriptionCollection>();
-        //private DateTime _startTime;
 
         public SubscriptionManager(IFixtureContext context)
         {
@@ -23,10 +19,11 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            foreach (var entry in subscribersBySymbol)
+            foreach (var node in _context.MarketData.Nodes)
             {
-                if (entry.Value.GetMaxDepth() != 1)
-                    UpdateSubscription(entry.Key, entry.Value);
+                var entry = node.UserSubscriptions;
+                if (entry != null && entry.GetMaxDepth() != 1)
+                    UpdateSubscription(node.SymbolInfo.Name, entry);
             }
         }
 
@@ -34,11 +31,12 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        public void OnUpdateEvent(Quote quote)
+        public void OnUpdateEvent(AlgoMarketNode node)
         {
-            var collection = GetListOrNull(quote.Symbol);
+            var collection = node.UserSubscriptions;
             if (collection != null)
             {
+                var quote = node.Rate.LastQuote;
                 if (quote.Time > collection.LastQuoteTime) // old quotes from snapshot should not be sent as new quotes
                     collection.OnUpdate(quote);
             }
@@ -62,14 +60,18 @@ namespace TickTrader.Algo.Core
 
         public void ClearUserSubscriptions()
         {
-            foreach (var collection in subscribersBySymbol.Values)
+            foreach (var node in _context.MarketData.Nodes)
             {
-                collection.UserSubscription = null;
-                collection.CurrentDepth = 1;
+                var collection = node.UserSubscriptions;
+                if (collection != null)
+                {
+                    collection.UserSubscription = null;
+                    collection.CurrentDepth = 1;
+                }
             }
         }
 
-        private void UpdateSubscription(string symbol, SubscriptionCollection subscribers)
+        private void UpdateSubscription(string symbol, Collection subscribers)
         {
             if (_context == null)
                 return;
@@ -83,38 +85,16 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private SubscriptionCollection GetOrAddList(string symbolCode)
+        private Collection GetOrAddList(string symbolCode)
         {
-            SubscriptionCollection list;
-            if (!subscribersBySymbol.TryGetValue(symbolCode, out list))
-            {
-                list = new SubscriptionCollection();
-                subscribersBySymbol.Add(symbolCode, list);
-            }
-            return list;
+            var node = _context.MarketData.GetSymbolNodeOrNull(symbolCode);
+
+            if (node.UserSubscriptions == null)
+                node.UserSubscriptions = new Collection();
+
+            return node.UserSubscriptions;
         }
 
-        private SubscriptionCollection GetListOrNull(string symbolCode)
-        {
-            SubscriptionCollection list;
-            subscribersBySymbol.TryGetValue(symbolCode, out list);
-            return list;
-        }
-
-        //private static int GetMaxDepth(List<IRateSubscription> subscribersList)
-        //{
-        //    int max = 1;
-
-        //    foreach (var s in subscribersList)
-        //    {
-        //        if (s.Depth == 0)
-        //            return 0;
-        //        if (s.Depth > max)
-        //            max = s.Depth;
-        //    }
-
-        //    return max;
-        //}
 
         [Serializable]
         private class CrossdomainRequest
@@ -134,9 +114,9 @@ namespace TickTrader.Algo.Core
             //}
         }
 
-        private class SubscriptionCollection
+        internal class Collection
         {
-            public SubscriptionCollection()
+            public Collection()
             {
                 CurrentDepth = 1;
             }

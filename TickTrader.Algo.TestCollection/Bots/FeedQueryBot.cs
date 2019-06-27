@@ -119,7 +119,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void PrintBar(Bar bar)
         {
-            Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime.ToLocalTime(), bar.Open, bar.High, bar.Low, bar.Close);
+            Print("{0} o:{1} h:{2} l:{3} c:{4}", bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
         }
 
         private void PrintQuotes(DateTime from, DateTime to, bool level2)
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 if (IsStopped)
                     break;
 
-                Print("{0} b:{1} a:{2}", quote.Time.ToLocalTime(), quote.Bid, quote.Ask);
+                Print("{0} b:{1} a:{2}", quote.Time, quote.Bid, quote.Ask);
                 count++;
             }
             Status.WriteLine("Done. Printed {0} quotes.", count);
@@ -143,11 +143,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         private void GetBounds(out DateTime from, out DateTime to)
         {
             DateTime now = DateTime.UtcNow;
+            DateTime today = now.Date;
 
             switch (Period)
             {
-                case FeedQueryPeriods.Today: from = DateTime.Today; to = DateTime.Today + TimeSpan.FromDays(1); return;
-                case FeedQueryPeriods.Yesterday: from = DateTime.Today - TimeSpan.FromDays(1); to = DateTime.Today; return;
+                case FeedQueryPeriods.Today: from = today; to = today + TimeSpan.FromDays(1); return;
+                case FeedQueryPeriods.Yesterday: from = today - TimeSpan.FromDays(1); to = today; return;
                 case FeedQueryPeriods.ThisHour: from = GetHour(now, 0); to = GetHour(now, 1); return;
                 case FeedQueryPeriods.PreviousHour: from = GetHour(now, -1); to = GetHour(now, 0); return;
                 case FeedQueryPeriods.ThisMonth: from = GetMonth(now, 0); to = GetMonth(now, 1); return;

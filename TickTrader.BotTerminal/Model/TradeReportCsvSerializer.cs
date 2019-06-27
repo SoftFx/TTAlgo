@@ -18,25 +18,40 @@ namespace TickTrader.BotTerminal
 
         static TradeReportCsvSerializer()
         {
-            AddCommon(s => s.AddColumn("Order", r => r.UniqueId.ToString()));
-            AddCommon(s => s.AddColumn("Open Time", r => r.OpenTime));
-            AddCommon(s => s.AddEnumColumn("Type", r => r.Type));
-            AddCommon(s => s.AddEnumColumn("Trx Type", r => r.ActionType));
-            AddCommon(s => s.AddColumn("Symbol", r => r.Symbol));
-            AddCommon(s => s.AddColumn("Initial Volume", r => r.OpenQuantity));
-            AddCommon(s => s.AddColumn("Open Price", r => r.OpenPrice));
-            AddGrossOnly(s => s.AddColumn("Stop Loss",  r => r.StopLoss));
-            AddGrossOnly(s => s.AddColumn("Take Profit",  r => r.TakeProfit));
-            AddCommon(s => s.AddColumn("Close Time", r => r.CloseTime));
-            AddCommon(s => s.AddColumn("Trade Volume", r => r.CloseQuantity));
-            AddCommon(s => s.AddColumn("Close Price",  r => r.ClosePrice));
-            AddCommon(s => s.AddColumn("Remaining Volume",  r => r.RemainingQuantity));
-            AddCommon(s => s.AddColumn("Gross P/L",  r => r.GrossProfitLoss));
-            AddCommon(s => s.AddColumn("Commission",  r => r.Commission));
-            AddCommon(s => s.AddColumn("Swap",  r => r.Swap));
-            AddCommon(s => s.AddColumn("Net P/L",  r => r.NetProfitLoss));
-            AddCommon(s => s.AddColumn("Max Visible V", r => r.MaxVisibleVolume));
-            AddCommon(s => s.AddColumn("Comment",  r => r.Comment));
+            AddGrossOnly(s => s.AddColumn("Order", r => r.UniqueId.ToString()));
+            AddGrossOnly(s => s.AddColumn("Open Time", r => r.OpenTime));
+            AddGrossOnly(s => s.AddEnumColumn("Type", r => r.Type));
+            AddGrossOnly(s => s.AddEnumColumn("Trx Type", r => r.ActionType));
+            AddGrossOnly(s => s.AddColumn("Symbol", r => r.Symbol));
+            AddGrossOnly(s => s.AddColumn("Initial Volume", r => r.OpenQuantity));
+            AddGrossOnly(s => s.AddColumn("Open Price", r => r.OpenPrice));
+            AddGrossOnly(s => s.AddColumn("S/L", r => r.StopLoss));
+            AddGrossOnly(s => s.AddColumn("T/P", r => r.TakeProfit));
+            AddGrossOnly(s => s.AddColumn("Close Time", r => r.CloseTime));
+            AddGrossOnly(s => s.AddColumn("Trade Volume", r => r.CloseQuantity));
+            AddGrossOnly(s => s.AddColumn("Close Price", r => r.ClosePrice));
+            AddGrossOnly(s => s.AddColumn("Remaining Volume", r => r.RemainingQuantity));
+            AddGrossOnly(s => s.AddColumn("Gross P/L", r => r.GrossProfitLoss));
+            AddGrossOnly(s => s.AddColumn("Commission", r => r.Commission));
+            AddGrossOnly(s => s.AddColumn("Swap", r => r.Swap));
+            AddGrossOnly(s => s.AddColumn("Net P/L", r => r.NetProfitLoss));
+            AddGrossOnly(s => s.AddColumn("Comment", r => r.Comment));
+            AddGrossOnly(s => s.AddColumn("Max Visible V", r => r.MaxVisibleVolume));
+
+            AddNetOnly(s => s.AddColumn("ID", r => r.UniqueId.ToString()));
+            AddNetOnly(s => s.AddColumn("Time", r => r.CloseTime));
+            AddNetOnly(s => s.AddEnumColumn("Type", r => r.Type));
+            AddNetOnly(s => s.AddColumn("Symbol", r => r.Symbol));
+            AddNetOnly(s => s.AddColumn("Volume", r => r.Volume));
+            AddNetOnly(s => s.AddColumn("Price", r => r.OpenPrice));
+            AddNetOnly(s => s.AddColumn("Req Volume", r => r.ReqQuantity));
+            AddNetOnly(s => s.AddColumn("Pos Close Price", r => r.ClosePrice));
+            AddNetOnly(s => s.AddColumn("Pos Close Volume", r => r.CloseQuantity));
+            AddNetOnly(s => s.AddColumn("Commission", r => r.Commission));
+            AddNetOnly(s => s.AddColumn("Swap", r => r.Swap));
+            AddNetOnly(s => s.AddColumn("Net P/L", r => r.NetProfitLoss));
+            AddNetOnly(s => s.AddColumn("Tag", r => r.Tag));
+            AddNetOnly(s => s.AddColumn("Comment", r => r.Comment));
         }
 
         private static void AddCommon(Action<CsvSerializer<TransactionReport>> addAction)

@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    class BarBasedSeriesEmulator : FeedSeriesEmulator
+    class BarSeriesReader : SeriesReader
     {
         private string _symbol;
         private IEnumerable<BarEntity> _bidSrc;
@@ -23,14 +23,14 @@ namespace TickTrader.Algo.Core
         //private IBarStorage _bidStorage;
         //private IBarStorage _askStorage;
 
-        public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
+        public BarSeriesReader(string symbol, TimeFrames baseTimeFrame, IBarStorage bidSrc, IBarStorage askSrc)
             : this(symbol, baseTimeFrame, bidSrc?.GrtBarStream(), askSrc?.GrtBarStream())
         {
             //_bidStorage = bidSrc;
             //_askStorage = askSrc;
         }
 
-        public BarBasedSeriesEmulator(string symbol, TimeFrames baseTimeFrame, IEnumerable<BarEntity> bidSrc, IEnumerable<BarEntity> askSrc)
+        public BarSeriesReader(string symbol, TimeFrames baseTimeFrame, IEnumerable<BarEntity> bidSrc, IEnumerable<BarEntity> askSrc)
         {
             _symbol = symbol;
             _bidSrc = bidSrc;
@@ -41,11 +41,11 @@ namespace TickTrader.Algo.Core
 
             // add base builders
 
-            if (bidSrc != null)
-                GetOrAddBuilder(BarPriceType.Bid, baseTimeFrame);
+            //if (bidSrc != null)
+            //    GetOrAddBuilder(BarPriceType.Bid, baseTimeFrame);
 
-            if (askSrc != null)
-                GetOrAddBuilder(BarPriceType.Ask, baseTimeFrame);
+            //if (askSrc != null)
+            //    GetOrAddBuilder(BarPriceType.Ask, baseTimeFrame);
         }
 
         public override void Start()
@@ -93,7 +93,7 @@ namespace TickTrader.Algo.Core
             _lastAsk = _askE.Current;
             _lastBid = CreateFiller(_lastAsk.OpenTime, _lastAsk.CloseTime, _lastBid?.Close ?? double.NaN);
 
-            UpdateBars(_askBars.Values, _askE.Current);
+            //UpdateBars(_askBars.Values, _askE.Current);
 
             MoveAsk();
 
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core
             _lastBid = _bidE.Current;
             _lastAsk = CreateFiller(_lastBid.OpenTime, _lastBid.CloseTime, _lastAsk?.Close ?? double.NaN);
 
-            UpdateBars(_bidBars.Values, _bidE.Current);
+            //UpdateBars(_bidBars.Values, _bidE.Current);
 
             MoveBid();
 
@@ -121,8 +121,8 @@ namespace TickTrader.Algo.Core
             _lastBid = _bidE.Current;
             _lastAsk = _askE.Current;
 
-            UpdateBars(_bidBars.Values, _bidE.Current);
-            UpdateBars(_askBars.Values, _askE.Current);
+            //UpdateBars(_bidBars.Values, _bidE.Current);
+            //UpdateBars(_askBars.Values, _askE.Current);
 
             MoveBid();
             MoveAsk();

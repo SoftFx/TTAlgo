@@ -30,11 +30,13 @@ namespace TickTrader.Algo.Common.Model
 
             using (var db = SeriesDatabase.Create(poolManager))
             {
-                var series = db.GetSeries(new DateTimeKeySerializer(), new TickSerializer(_key.Symbol), b => b.Time, _key.ToCodeString(), true);
+                var series = db.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(_key), b => b.Time, _key.ToCodeString(), true);
 
                 foreach (var tick in series.Iterate(_from, _to))
                     yield return tick;
             }
         }
+
+        
     }
 }

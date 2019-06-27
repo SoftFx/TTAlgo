@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.Common.Business;
 
 namespace TickTrader.Algo.Core
@@ -13,8 +14,11 @@ namespace TickTrader.Algo.Core
     {
         public static readonly BookEntry[] EmptyBook = new BookEntry[0];
 
+        private double? _ask;
+        private double? _bid;
+
         public QuoteEntity(string symbol, DateTime time, double bid, double ask)
-            : this(symbol, time, new BookEntryEntity(bid), new BookEntryEntity(ask))
+            : this(symbol, time, new BookEntry(bid, 0), new BookEntry(ask, 0))
         {
         }
 
@@ -24,7 +28,7 @@ namespace TickTrader.Algo.Core
         }
 
         public QuoteEntity(string symbol, DateTime time, double? bid, double? ask)
-            : this(symbol, time, bid == null ? null : new BookEntry[] { new BookEntryEntity(bid.Value) }, ask == null ? null : new BookEntry[] { new BookEntryEntity(ask.Value) })
+            : this(symbol, time, bid == null ? null : new BookEntry[] { new BookEntry(bid.Value, 0) }, ask == null ? null : new BookEntry[] { new BookEntry(ask.Value, 0) })
         {
         }
 
@@ -32,37 +36,67 @@ namespace TickTrader.Algo.Core
         {
             Symbol = symbol;
             Time = time;
-            BidList = bids;
-            AskList = asks;
-
+            
             bids = bids ?? new BookEntry[0];
             asks = asks ?? new BookEntry[0];
 
+            Array.Sort(bids, (x, y) => y.Price.CompareTo(x.Price));
+            Array.Sort(asks, (x, y) => x.Price.CompareTo(y.Price));
+
+            BidList = bids;
+            AskList = asks;
+
             if (bids.Length > 0)
-                Bid = bids.Max(b => b.Price);
+                _bid = bids[0].Price;
             else
-                Bid = double.NaN;
+                _bid = null;
 
             if (asks.Length > 0)
-                Ask = asks.Min(a => a.Price);
+                _ask = asks[0].Price;
             else
-                Ask = double.NaN;
+                _ask = null;
+        }
+
+        private QuoteEntity()
+        {
+        }
+
+        public static QuoteEntity CreatePrepared(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks)
+        {
+            var entity = new QuoteEntity();
+
+            entity.BidList = bids;
+            entity.AskList = asks;
+            entity.Time = time;
+            entity.Symbol = symbol;
+
+            if (bids.Length > 0)
+                entity._bid = bids[0].Price;
+            else
+                entity._bid = null;
+
+            if (asks.Length > 0)
+                entity._ask = asks[0].Price;
+            else
+                entity._ask = null;
+
+            return entity;
         }
 
         public string Symbol { get; set; }
         public DateTime Time { get; set; }
-        public double Ask { get; set; }
-        public double Bid { get; set; }
-        public BookEntry[] BidList { get; set; }
-        public BookEntry[] AskList { get; set; }
+        public double Ask => _ask ?? double.NaN;
+        public double Bid => _bid ?? double.NaN;
+        public BookEntry[] BidList { get; private set; }
+        public BookEntry[] AskList { get; private set; }
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
 
         decimal ISymbolRate.Ask => (decimal)Ask;
         decimal ISymbolRate.Bid => (decimal)Bid;
-        decimal? ISymbolRate.NullableAsk => double.IsNaN(Ask) ? null : (decimal?)Ask;
-        decimal? ISymbolRate.NullableBid => double.IsNaN(Bid) ? null : (decimal?)Bid;
+        public decimal? NullableAsk => (decimal?)_ask;
+        public decimal? NullableBid => (decimal?)_bid;
         bool ISymbolRate.IndicativeTick => throw new NotImplementedException();
 
         #region RateUpdate
@@ -82,18 +116,11 @@ namespace TickTrader.Algo.Core
         #region FDK compatibility
 
         public DateTime CreatingTime => Time;
-        public bool HasBid => !double.IsNaN(Bid);
-        public bool HasAsk => !double.IsNaN(Ask);
+        public bool HasBid => _bid.HasValue;
+        public bool HasAsk => _ask.HasValue;
 
-        public double? GetNullableBid()
-        {
-            return double.IsNaN(Bid) ? null : (double?)Bid;
-        }
-
-        public double? GetNullableAsk()
-        {
-            return double.IsNaN(Ask) ? null : (double?)Ask;
-        }
+        public double? GetNullableBid() => _bid;
+        public double? GetNullableAsk() => _ask;
 
         #endregion
 
@@ -104,20 +131,20 @@ namespace TickTrader.Algo.Core
         }
     }
 
-    [Serializable]
-    public class BookEntryEntity : Api.BookEntry
-    {
-        public BookEntryEntity()
-        {
-        }
+    //[Serializable]
+    //public class BookEntryEntity : Api.BookEntry
+    //{
+    //    public BookEntryEntity()
+    //    {
+    //    }
 
-        public BookEntryEntity(double price, double volume = 0)
-        {
-            Price = price;
-            Volume = volume;
-        }
+    //    public BookEntryEntity(double price, double volume = 0)
+    //    {
+    //        Price = price;
+    //        Volume = volume;
+    //    }
 
-        public double Price { get; set; }
-        public double Volume { get; set; }
-    }
+    //    public double Price { get; set; }
+    //    public double Volume { get; set; }
+    //}
 }

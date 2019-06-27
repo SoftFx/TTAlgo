@@ -325,7 +325,10 @@ namespace TickTrader.BotTerminal
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
+            {
+                Type = Type == AggregatedTransactionType.Sell ? AggregatedTransactionType.SellStopLimit : AggregatedTransactionType.BuyStopLimit;
                 return Reasons.Activated;
+            }
 
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderCanceled && transaction.TradeTransactionReason == TradeTransactionReason.ClientRequest)
                 Type = GetCanceledType(transaction);
@@ -377,7 +380,7 @@ namespace TickTrader.BotTerminal
         protected string GetTag(TradeReportEntity transaction)
         {
             CompositeTag.TryParse(transaction.Tag, out CompositeTag tag);
-            return tag?.Tag ?? null;
+            return tag?.Tag ?? transaction.Tag;
         }
 
         protected string GetSortedNumber()

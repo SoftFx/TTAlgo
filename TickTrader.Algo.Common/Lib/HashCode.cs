@@ -28,19 +28,19 @@ namespace TickTrader.Algo.Common.Lib
             return Combine(Combine(h1, h2, h3, h4), h5);
         }
 
-        public static int Combine(object h1, object h2)
+        public static int GetComposite<T1, T2>(T1 prop1, T2 prop2)
         {
-            return Combine(h1.GetHashCode(), h2.GetHashCode());
+            return Combine(prop1.GetHashCode(), prop2.GetHashCode());
         }
 
-        public static int Combine(object h1, object h2, object h3)
+        public static int GetComposite<T1, T2, T3>(T1 prop1, T2 prop2, T3 prop3)
         {
-            return Combine(h1.GetHashCode(), h2.GetHashCode(), h3.GetHashCode());
+            return Combine(prop1.GetHashCode(), prop2.GetHashCode(), prop3.GetHashCode());
         }
 
-        public static int Combine(object h1, object h2, object h3, object h4)
+        public static int GetComposite<T1, T2, T3, T4>(T1 prop1, T2 prop2, T3 prop3, T4 prop4)
         {
-            return Combine(h1.GetHashCode(), h2.GetHashCode(), h3.GetHashCode(), h4.GetHashCode());
+            return Combine(prop1.GetHashCode(), prop2.GetHashCode(), prop3.GetHashCode(), prop4.GetHashCode());
         }
     }
 }

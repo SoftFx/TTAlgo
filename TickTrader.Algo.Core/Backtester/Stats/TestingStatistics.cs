@@ -11,10 +11,10 @@ namespace TickTrader.Algo.Core
     {
         public TestingStatistics()
         {
-            ProfitByHours = new decimal[24];
-            LossByHours = new decimal[24];
-            ProfitByWeekDays = new decimal[7];
-            LossByWeekDays = new decimal[7];
+            ProfitByHours = new double[24];
+            LossByHours = new double[24];
+            ProfitByWeekDays = new double[7];
+            LossByWeekDays = new double[7];
         }
 
         public long BarsCount { get; internal set; }
@@ -26,18 +26,18 @@ namespace TickTrader.Algo.Core
 
         public TimeSpan Elapsed { get; internal set; }
 
-        public decimal GrossProfit { get; internal set; }
-        public decimal GrossLoss { get; internal set; }
-        public decimal InitialBalance { get; internal set; }
-        public decimal FinalBalance { get; internal set; }
-        public decimal TotalComission { get; internal set; }
-        public decimal TotalSwap { get; internal set; }
+        public double GrossProfit { get; internal set; }
+        public double GrossLoss { get; internal set; }
+        public double InitialBalance { get; internal set; }
+        public double FinalBalance { get; internal set; }
+        public double TotalComission { get; internal set; }
+        public double TotalSwap { get; internal set; }
         
         public int AccBalanceDigits { get; internal set; }
 
-        public decimal[] ProfitByHours { get; }
-        public decimal[] LossByHours { get; }
-        public decimal[] ProfitByWeekDays { get; }
-        public decimal[] LossByWeekDays { get; }
+        public double[] ProfitByHours { get; }
+        public double[] LossByHours { get; }
+        public double[] ProfitByWeekDays { get; }
+        public double[] LossByWeekDays { get; }
     }
 }

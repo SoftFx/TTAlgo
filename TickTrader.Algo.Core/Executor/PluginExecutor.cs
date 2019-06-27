@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
@@ -24,12 +25,14 @@ namespace TickTrader.Algo.Core
         private readonly SubscriptionManager dispenser;
         private InvokeStartegy iStrategy;
         private readonly CalculatorFixture calcFixture;
+        private readonly MarketStateFixture _marketFixture;
         private IExecutorFixture accFixture;
         private IExecutorFixture _timerFixture;
         private StatusFixture statusFixture;
         private IAccountInfoProvider _externalAccData;
         private ITradeExecutor _externalTradeApi;
         private string mainSymbol;
+        private Func<PluginMetadata, PluginBuilder> _builderFactory = m => new PluginBuilder(m);
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
@@ -51,6 +54,7 @@ namespace TickTrader.Algo.Core
             statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
+            _marketFixture = new MarketStateFixture(this);
             _timerFixture = new TimerFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
@@ -229,6 +233,8 @@ namespace TickTrader.Algo.Core
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
+        internal event Action Stopped;
+
         #endregion
 
         public void Start()
@@ -245,7 +251,7 @@ namespace TickTrader.Algo.Core
 
                     // Setup builder
 
-                    builder = new PluginBuilder(descriptor);
+                    builder = _builderFactory(descriptor);
                     builder.MainSymbol = MainSymbolCode;
                     builder.TimeFrame = TimeFrame;
                     InitMetadata();
@@ -266,8 +272,9 @@ namespace TickTrader.Algo.Core
 
                     // Setup strategy
 
+                    _marketFixture.Start();
                     iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
-                    fStrategy.Init(this, bStrategy, ApplyNewRate);
+                    fStrategy.Init(this, bStrategy, _marketFixture);
                     fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
@@ -409,6 +416,15 @@ namespace TickTrader.Algo.Core
                 OnException(ex);
             }
 
+            try
+            {
+                Stopped?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                OnException(ex);
+            }
+
             lock (_sync) ChangeState(States.Idle);
         }
 
@@ -532,6 +548,7 @@ namespace TickTrader.Algo.Core
             _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
+            _builderFactory = m => new SimplifiedBuilder(m);
             return fixture;
         }
 
@@ -548,11 +565,6 @@ namespace TickTrader.Algo.Core
         #endregion
 
         #endregion
-
-        private void ApplyNewRate(RateUpdate quote)
-        {
-            calcFixture.UpdateRate(quote);
-        }
 
         private void Validate()
         {
@@ -672,6 +684,7 @@ namespace TickTrader.Algo.Core
         SubscriptionManager IFixtureContext.Dispenser => dispenser;
         FeedBufferStrategy IFixtureContext.BufferingStrategy => fStrategy.BufferingStrategy;
         string IFixtureContext.MainSymbolCode => mainSymbol;
+        AlgoMarketState IFixtureContext.MarketData => _marketFixture.Market;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
         PluginLoggerAdapter IFixtureContext.Logger => builder.LogAdapter;

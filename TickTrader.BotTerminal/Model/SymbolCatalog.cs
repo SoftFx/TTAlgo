@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Setup;
 
@@ -17,10 +18,9 @@ namespace TickTrader.BotTerminal
         {
             _customStorage = customStorage;
 
-            OnlineSymbols = client.Symbols.Select<string, SymbolModel, SymbolData>(
-                (k, s) => new OnlineSymbolData(s, client));
+            OnlineSymbols = client.Symbols.Select((k, s) => CreateSymbolData(s, client));
 
-            CustomSymbols = customStorage.Symbols.Select<string, CustomSymbol, SymbolData>(
+            CustomSymbols = customStorage.Symbols.Select<SymbolKey, CustomSymbol, SymbolData>(
                 (k, s) => new CustomSymbolData(s, customStorage));
 
             var sortedOnlineList = OnlineSymbols.OrderBy((k, v) => v.Name);
@@ -29,8 +29,11 @@ namespace TickTrader.BotTerminal
             ObservableOnlineSymbols = sortedOnlineList.AsObservable();
             ObservableCustomSymbols = sortedCustomList.AsObservable();
 
-            AllSymbols = VarCollection.Combine(sortedOnlineList, sortedCustomList);
-            ObservableSymbols = AllSymbols.AsObservable();
+            AllSymbols = VarCollection.Combine(OnlineSymbols, CustomSymbols);
+
+            var sortedList = AllSymbols.OrderBy((k, v) => k, new SymbolKeyComparer());
+
+            ObservableSymbols = sortedList.AsObservable();
 
             AllSymbols.Updated += a =>
             {
@@ -39,9 +42,9 @@ namespace TickTrader.BotTerminal
             };
         }
 
-        public IVarList<SymbolData> AllSymbols { get; }
-        public IVarSet<string, SymbolData> OnlineSymbols { get; }
-        public IVarSet<string, SymbolData> CustomSymbols { get; }
+        public IVarSet<SymbolKey, SymbolData> AllSymbols { get; }
+        public IVarSet<SymbolKey, SymbolData> OnlineSymbols { get; }
+        public IVarSet<SymbolKey, SymbolData> CustomSymbols { get; }
 
         public IObservableList<SymbolData> ObservableSymbols { get; }
         public IObservableList<SymbolData> ObservableOnlineSymbols { get; }
@@ -59,12 +62,22 @@ namespace TickTrader.BotTerminal
 
         public SymbolData GetSymbol(ISymbolInfo info)
         {
+            var key = new SymbolKey(info.Name, info.Origin);
+
             if (info.Origin == Algo.Common.Info.SymbolOrigin.Online)
-                return OnlineSymbols.Snapshot[info.Name];
+                return OnlineSymbols.Snapshot[key];
             else if (info.Origin == Algo.Common.Info.SymbolOrigin.Custom)
-                return CustomSymbols.Snapshot[info.Name];
+                return CustomSymbols.Snapshot[key];
 
             throw new Exception("Unsupported symbol origin: " + info.Origin);
+        }
+
+        private KeyValuePair<SymbolKey, SymbolData> CreateSymbolData(SymbolModel smb, TraderClientModel client)
+        {
+            var key = new SymbolKey(smb.Name, SymbolOrigin.Online);
+            var data = new OnlineSymbolData(smb, client);
+            return new KeyValuePair<SymbolKey, SymbolData>(key, data);
+
         }
     }
 }

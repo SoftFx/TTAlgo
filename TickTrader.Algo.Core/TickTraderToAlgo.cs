@@ -33,6 +33,11 @@ namespace TickTrader.Algo.Core
             throw new NotImplementedException("Unsupported change type: " + cType);
         }
 
+        public static BO.OrderTypes ToBoType(this OrderType type)
+        {
+            return Convert(type);
+        }
+
         public static BO.OrderTypes GetBlOrderType(this OrderEntity order)
         {
             return Convert(order.Type);
@@ -49,6 +54,11 @@ namespace TickTrader.Algo.Core
                 case OrderType.Stop: return BO.OrderTypes.Stop;
                 default: throw new NotImplementedException("Unknown order type: " + apiType);
             }
+        }
+
+        public static BO.OrderSides ToBoSide(this OrderSide side)
+        {
+            return Convert(side);
         }
 
         public static BO.OrderSides GetBlOrderSide(this OrderEntity order)

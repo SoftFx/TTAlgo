@@ -52,6 +52,7 @@ namespace TickTrader.BotTerminal
         public BoolVar IsMarginAccount { get; }
         public BoolVar IsAccTypeSet { get; }
 
+        public bool IsSlippageSupported { get; set; } = true;
         public bool AutoSizeColumns { get; set; }
         public bool ConvertTimeToLocal { get; set; }
 
