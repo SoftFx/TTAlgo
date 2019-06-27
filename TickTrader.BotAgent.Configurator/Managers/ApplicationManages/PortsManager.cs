@@ -53,25 +53,21 @@ namespace TickTrader.BotAgent.Configurator
             return _serviceManager.IsServiceRunning && _serviceModel.ListeningPort == port;
         }
 
-        public void RegisterPortInFirewall(int port, string name)
+        public void RegisterRuleInFirewall(string name, string application, string porst, string serviceName)
         {
-            //var portInst = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", true));
-            //portInst.Port = port;
-            //portInst.Name = name;
-            //portInst.Enabled = true;
-
-            //_firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portInst);
 
             INetFwRule firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
 
-            firewallRule.Name = "TickTrader.BAtest";
+            firewallRule.Name = name;
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
 
-            firewallRule.Profiles = (int)NET_FW_PROFILE_TYPE_.NET_FW_PROFILE_CURRENT;
-            firewallRule.serviceName = "_sfxBotAgent";
+            firewallRule.Profiles = 7; // Profiles == ALL
+            firewallRule.serviceName = serviceName;
             firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
-            firewallRule.Description = "I'm test firewall rule";
-            firewallRule.LocalPorts = "";
+            firewallRule.Description = "Bot Agent Custom Rules";
+            firewallRule.LocalPorts = porst;
+            firewallRule.Enabled = true;
+            firewallRule.ApplicationName = application;
 
             INetFwPolicy2 firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
             firewallPolicy.Rules.Add(firewallRule);

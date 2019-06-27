@@ -75,7 +75,9 @@ namespace TickTrader.BotAgent.Configurator
             //foreach (var uri in ServerManager.ServerModel.Urls)
             //    _portsManager.RegisterPortInFirewall(uri.Port, Settings[AppProperties.ApplicationName]);
 
-            _portsManager.RegisterPortInFirewall(ProtocolManager.ProtocolModel.ListeningPort, Settings[AppProperties.ApplicationName]);
+            string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
+
+            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine($"{BotAgentHolder.BotAgentPath}{Settings[AppProperties.ApplicationName]}.exe"), ports, Settings[AppProperties.ServiceName]);
 
             if (ServiceManager.IsServiceRunning)
                 ServiceManager.ServiceStop();
