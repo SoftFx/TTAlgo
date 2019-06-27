@@ -73,7 +73,6 @@ namespace TickTrader.BotAgent.Configurator
                     ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Viewer.Name)
                 };
 
-
                 SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshManager);
 
                 ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshManager)
@@ -141,7 +140,13 @@ namespace TickTrader.BotAgent.Configurator
             _restartApplication = new DelegateCommand(obj =>
             {
                 _mainWindow.Closing -= MainWindow_Closing;
-                SaveChangesMethod();
+
+                if (!SaveChangesMethod())
+                {
+                    _mainWindow.Closing += MainWindow_Closing;
+                    return;
+                }
+
                 System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
             }));
@@ -203,23 +208,31 @@ namespace TickTrader.BotAgent.Configurator
         {
             LogsModel = new LogsViewModel(_model.Logs);
 
+            int sec = 0;
+
             while (_runnignApplication)
             {
-                await Task.Delay(5000);
                 StateServiceModel.RefreshService(_model.ServiceManager.ServiceStatus);
-                LogsModel.RefreshLog();
+
+                sec = sec == 5 ? 0 : sec + 1;
+
+                if (sec == 0)
+                    LogsModel.RefreshLog();
+
+                await Task.Delay(1000);
             }
         }
 
-        private void SaveChangesMethod()
+        private bool SaveChangesMethod()
         {
             try
             {
-                SaveChangesQuestion();
+                return SaveChangesQuestion();
             }
             catch
             {
                 MessageBoxManager.ErrorBox("Saving settings was failed");
+                return false;
             }
             finally
             {
@@ -234,7 +247,7 @@ namespace TickTrader.BotAgent.Configurator
                 var result = MessageBoxManager.YesNoBoxQuestion("The model has been changed. Save changes?");
 
                 if (result)
-                    SaveChangesMethod();
+                    _model.SaveChanges();
 
                 return result;
             }

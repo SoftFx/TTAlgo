@@ -9,10 +9,5 @@ namespace TickTrader.BotAgent.Configurator.Controls
         {
             InitializeComponent();
         }
-
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            restartAppButton.IsEnabled = e.AddedItems[0] as string != (DataContext as ConfigurationViewModel).AdvancedModel.InitialSelectedPath;
-        }
     }
 }

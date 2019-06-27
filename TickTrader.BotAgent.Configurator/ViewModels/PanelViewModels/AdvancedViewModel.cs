@@ -18,7 +18,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string InitialSelectedPath { get; }
 
-        public string OldValue { get; }
+        public string OldValue { get; set; }
 
         public List<string> AgentPaths => _settings.MultipleAgentProvider.BotAgentPaths;
 

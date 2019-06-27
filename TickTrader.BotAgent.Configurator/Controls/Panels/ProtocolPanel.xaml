@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              mc:Ignorable="d">
-    <Grid Background="White">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="170"/>
             <ColumnDefinition Width="*"/>
@@ -24,7 +24,7 @@
         <TextBlock Grid.Row="0" Text="Listening Port: "/>
         <TextBlock Grid.Row="3" Text="Directory Name: "/>
 
-        <TextBox Grid.Row="1" Validation.Error="TextBox_Error">
+        <TextBox Grid.Row="1">
             <TextBox.Text>
                 <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" Delay="500">
                     <Binding.ValidationRules>
@@ -38,7 +38,7 @@
 
         <Separator Grid.Row="2" Grid.ColumnSpan="2"/>
 
-        <TextBox Grid.Row="4" Validation.Error="TextBox_Error">
+        <TextBox Grid.Row="4">
             <TextBox.Text>
                 <Binding Path="DirectoryName" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                     <Binding.ValidationRules>

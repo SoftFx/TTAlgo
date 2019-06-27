@@ -50,7 +50,6 @@ namespace TickTrader.BotAgent.Configurator
     public class ServerModel
     {
         private const string DefaultUrls = "https://localhost:50000/";
-        private const string DefaultSecretKey = "kQ17Dww5EOFWBtSMWXMWgdjWouXRMhKT0AMEHuFqFhpv5j8rCGNqArAAufAbfYkgsDYZX7mShsrl8TYRiugEKSEz1oVLkXFg3GUyydfpW1DTX8YJcZzHwhQPXYJ6iWyd";
 
         public List<Uri> Urls { get; private set; }
 
@@ -79,7 +78,9 @@ namespace TickTrader.BotAgent.Configurator
                 UrlsStr = DefaultUrls;
 
             if (string.IsNullOrEmpty(SecretKey))
-                SecretKey = DefaultSecretKey; 
+            {
+                GenerateSecretKey();
+            }
         }
 
         public void GenerateSecretKey()

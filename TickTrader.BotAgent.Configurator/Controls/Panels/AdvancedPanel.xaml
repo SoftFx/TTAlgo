@@ -5,9 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              mc:Ignorable="d">
-    <Grid Background="White">
+    <Grid>
         <Grid.Resources>
-            <!--<local:UpdateNewProperty x:Key="propertyHolder" OldValue="{Binding OldValue}"/>-->
+            <local:UpdateNewProperty x:Key="urlsHolder" Holder="{Binding AdvancedModel}"/>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
@@ -20,8 +20,8 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <ComboBox x:Name="urlsComboBox" ItemsSource="{Binding AdvancedModel.AgentPaths}" SelectedValue="{Binding AdvancedModel.SelectPath}" SelectionChanged="ComboBox_SelectionChanged" Style="{StaticResource comboBoxStyle}"/>
-        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource advancedRestartAppButton}" Command="{Binding RestartApplication}"/>
+        <ComboBox x:Name="urlsComboBox" ItemsSource="{Binding AdvancedModel.AgentPaths}" SelectedValue="{Binding NewValue, Source={StaticResource urlsHolder}}" Style="{StaticResource comboBoxStyle}"/>
+        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource advancedRestartAppButton}" Command="{Binding RestartApplication}" IsEnabled="{Binding WasUpdate, Source={StaticResource urlsHolder}}"/>
 
         <Separator Grid.Row="1" Grid.ColumnSpan="3"/>
 

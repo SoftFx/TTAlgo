@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
              mc:Ignorable="d">
-    <Grid Background="White">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>

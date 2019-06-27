@@ -19,13 +19,6 @@ namespace TickTrader.BotAgent.Configurator
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
         }
 
-        public void CheckPortOpen(string urls)
-        {
-            var pair = GetHostAndPort(urls);
-
-            CheckPortOpen(pair.Item2, pair.Item1);
-        }
-
         public bool CheckPortOpen(int port, string hostname = "localhost", bool exception = true)
         {
             if (hostname.ToLower().Trim('/') == "localhost")
@@ -63,7 +56,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             var portInst = (INetFwOpenPort)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWOpenPort", true));
             portInst.Port = port;
-            portInst.Name = name + "new";
+            portInst.Name = name;
             portInst.Enabled = true;
 
             _firewallManager?.LocalPolicy.CurrentProfile.GloballyOpenPorts.Add(portInst);
@@ -79,36 +72,5 @@ namespace TickTrader.BotAgent.Configurator
 
             _firewallManager.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(applicationInst);
         }
-
-        public Tuple<string, int> GetHostAndPort(string urls)
-        {
-            var parts = urls.Split(':');
-
-            int n = parts.Length;
-
-            if (n != 2 && n != 3)
-                throw new Exception($"Incorrect urls {urls}");
-
-            if (!int.TryParse(parts[n - 1].Trim('/'), out int port))
-                throw new Exception($"Incorrect port {parts[n - 1]}");
-
-            return new Tuple<string, int>(parts[n - 2].Trim('/'), port);
-        }
-
-        //private void SetLocalIP()
-        //{
-        //    var host = Dns.GetHostEntry(Dns.GetHostName());
-
-        //    foreach (var ip in host.AddressList)
-        //    {
-        //        if (ip.AddressFamily == AddressFamily.InterNetwork)
-        //        {
-        //            _localhost = ip.ToString();
-        //            return;
-        //        }
-        //    }
-
-        //    throw new Exception("No network adapters with an IPv4 address in the system!");
-        //}
     }
 }

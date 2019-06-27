@@ -11,6 +11,10 @@
         Height="600" Width="1000"
         MinHeight="640" MinWidth="1000"
         WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <local:CorrectAgentSettingsProperty x:Key="errorCounterProp" Error="{Binding Validation.HasError, ElementName=dockCred, UpdateSourceTrigger=PropertyChanged}"/>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="33"/>
@@ -37,7 +41,7 @@
                         <TextBlock Text="Save Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Command="{Binding StartAgent}">
+                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Command="{Binding StartAgent}" IsEnabled="{Binding EnableStart, Source={StaticResource errorCounterProp}}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Play" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
@@ -48,7 +52,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="0">
+        <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="0"  Validation.Error="CountNumberErrors">
             <TabControl.Resources>
                 <Style TargetType="Grid">
                     <Setter Property="Background" Value="#FFEEF5FD"/>
@@ -58,13 +62,18 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="AddressCardOutline"/>
-                        <TextBlock Text="User credentials"/>
+                        <TextBlock Text="User credentials" Style="{StaticResource errorTabItem}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <TabItem.Content>
-                    <DockPanel>
+                    <DockPanel x:Name="docCred">
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
                         <StackPanel>
-                            <c:CredentialPanel Background="White" DataContext="{Binding AdminModel}" Style="{StaticResource firstCredentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding AdminModel}" Style="{StaticResource firstCredentialControlPanel}"/>
                             <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource credentialControlPanel}"/>
                             <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource credentialControlPanel}"/>
                         </StackPanel>
@@ -81,6 +90,11 @@
                 </TabItem.Header>
                 <TabItem.Content>
                     <DockPanel>
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
                         <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource protocolControlPanel}"/>
                     </DockPanel>
                 </TabItem.Content>
@@ -96,6 +110,11 @@
 
                 <TabItem.Content>
                     <DockPanel>
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
                         <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource serverControlPanel}"/>
                     </DockPanel>
                 </TabItem.Content>
@@ -111,6 +130,11 @@
 
                 <TabItem.Content>
                     <DockPanel>
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
                         <StackPanel>
                             <c:AdvancedPanel Style="{StaticResource advancedControlPanel}"/>
                             <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource fdkControlPanel}"/>

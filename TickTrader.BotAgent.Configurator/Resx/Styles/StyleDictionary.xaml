@@ -11,7 +11,7 @@
     <Style TargetType="Separator">
         <Setter Property="Margin" Value="0 10"/>
     </Style>
-    
+
     <Style x:Key="descriptionTextBox" TargetType="TextBlock">
         <Setter Property="Margin" Value="40 0 0 0"/>
         <Setter Property="FontSize" Value="14"/>
@@ -177,5 +177,16 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="errorTabItem" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="Red"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ElementName=docCred, Path=(Validation.Errors).Count, UpdateSourceTrigger=PropertyChanged}" Value="0">
+                <Setter Property="Foreground" Value="Black"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 </ResourceDictionary>

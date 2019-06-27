@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public partial class MainWindow : Window, IErrorCounter
+    public partial class MainWindow : Window
     {
         private int _countErrors = 0;
 
@@ -19,11 +19,7 @@ namespace TickTrader.BotAgent.Configurator
 
             StartButton.IsEnabled = _countErrors <= 0;
             CancelButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
         }
-    }
-
-    public interface IErrorCounter
-    {
-        void CountNumberErrors(object obj, ValidationErrorEventArgs e);
     }
 }
