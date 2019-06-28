@@ -57,10 +57,10 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        public void SetRate(Quote quote)
-        {
-            (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
-        }
+        //public void SetRate(Quote quote)
+        //{
+        //    (fixture.GetOrDefault(quote.Symbol) as SymbolAccessor)?.UpdateRate(quote);
+        //}
 
         public IEnumerator<SymbolAccessor> GetEnumerator()
         {

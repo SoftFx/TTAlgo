@@ -41,7 +41,7 @@ namespace TickTrader.BotTerminal
 
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
-        public abstract Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null);
+        public abstract Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null);
         public abstract Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,
             TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to);
 
@@ -107,7 +107,7 @@ namespace TickTrader.BotTerminal
         public override string Security => _symbolInfo.Descriptor.Security;
         public override SymbolEntity InfoEntity => _symbolInfo.Descriptor;
 
-        public override Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
+        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
         {
             return _client.FeedHistory.GetAvailableRange(_symbolInfo.Name, priceType ?? BarPriceType.Bid, timeFrame);
         }
@@ -220,19 +220,19 @@ namespace TickTrader.BotTerminal
         public override string Security => "";
         public override SymbolEntity InfoEntity => new SymbolEntity(Name) { IsTradeAllowed = true, SwapEnabled = false, MinAmount = 0.001, MaxAmount = 100000 };
 
-        public override Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
+        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
         {
             return _storage.GetRange(new FeedCacheKey(_symbolInfo.Name, timeFrame, priceType));
         }
 
         public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            return null;
+            return CompletedTask.Default;
         }
 
         public override Task Remove()
         {
-            throw new NotImplementedException();
+            return _storage.Remove(_symbolInfo.Name);
         }
 
         public override SymbolToken ToSymbolToken()
@@ -268,6 +268,11 @@ namespace TickTrader.BotTerminal
         internal Channel<Slice<DateTime, BarEntity>> IterateBarCache(DateTime from, DateTime to)
         {
             return _storage.IterateBarCacheAsync(Key, from, to);
+        }
+
+        internal Channel<Slice<DateTime, QuoteEntity>> IterateTickCache(DateTime from, DateTime to)
+        {
+            return _storage.IterateTickCacheAsync(Key, from, to);
         }
     }
 }

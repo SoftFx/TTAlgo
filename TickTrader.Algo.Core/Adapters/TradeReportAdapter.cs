@@ -64,9 +64,9 @@ namespace TickTrader.Algo.Core
             //Entity.ParentOrderId = order.ParentOrderId;
             //ClientOrderId = order.ClientOrderId;
             Entity.TradeRecordType = order.Type;
-            //Entity.ParentOrderType = order.InitialType;
-            Entity.OpenQuantity = (double)order.Amount;
-            Entity.RemainingQuantity = (double)order.RemainingAmount;
+            Entity.ReqOrderType = order.InitialType;
+            Entity.OpenQuantity = order.Amount;
+            Entity.RemainingQuantity = order.RemainingAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
             Entity.Price = order.Price;
@@ -111,9 +111,9 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, decimal closeAmount, decimal closePrice, decimal? requestAmount, decimal? requestPrice, string posById)
+        public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, double closeAmount, double closePrice, double? requestAmount, double? requestPrice, string posById)
         {
-            Entity.PositionQuantity = order.Entity.RequestedVolume ?? 0;
+            Entity.PositionQuantity = order.Entity.RequestedVolume;
             Entity.PositionLeavesQuantity = order.Entity.RemainingVolume;
             Entity.CloseQuantity = (double)closeAmount;
             Entity.PositionOpened = order.PositionCreated;
@@ -138,14 +138,14 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillBalanceMovement(decimal balance, decimal movement)
+        public TradeReportAdapter FillBalanceMovement(double balance, double movement)
         {
             Entity.AccountBalance = (double)balance;
             Entity.TransactionAmount = (double)movement;
             return this;
         }
 
-        public TradeReportAdapter FillCharges(TradeChargesInfo charges, decimal profit, decimal balanceMovement)
+        public TradeReportAdapter FillCharges(TradeChargesInfo charges, double profit, double balanceMovement)
         {
             Entity.Commission +=  (double)charges.Commission;
             //Entity.AgentCommission += (double)charges.AgentCommission;
@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillPosData(PositionAccessor position, decimal openPrice, decimal? openConversionRate)
+        public TradeReportAdapter FillPosData(PositionAccessor position, double openPrice, double? openConversionRate)
         {
             //Entity.PositionId = position.Id;
             if (!position.IsEmpty)
@@ -175,12 +175,12 @@ namespace TickTrader.Algo.Core
             }
 
             Entity.PosOpenPrice = (double)openPrice;
-            Entity.OpenConversionRate = (double)openConversionRate;
+            Entity.OpenConversionRate = (double?)openConversionRate;
 
             return this;
         }
 
-        public TradeReportAdapter FillProfitConversionRates(string balanceCurrency, decimal? profit, CalculatorFixture acc)
+        public TradeReportAdapter FillProfitConversionRates(string balanceCurrency, double? profit, CalculatorFixture acc)
         {
             //try
             //{
@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillAccountBalanceConversionRates(CalculatorFixture acc, string balanceCurrency, decimal? balance)
+        public TradeReportAdapter FillAccountBalanceConversionRates(CalculatorFixture acc, string balanceCurrency, double? balance)
         {
             //try
             //{
@@ -224,28 +224,28 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillAccountAssetsMovement(CalculatorFixture acc, string srcAssetCurrency, decimal srcAssetAmount, decimal srcAssetMovement, string dstAssetCurrency, decimal dstAssetAmount, decimal dstAssetMovement)
+        public TradeReportAdapter FillAccountAssetsMovement(CalculatorFixture acc, string srcAssetCurrency, double srcAssetAmount, double srcAssetMovement, string dstAssetCurrency, double dstAssetAmount, double dstAssetMovement)
         {
-            try
-            {
-                Entity.SrcAssetToUsdConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion(srcAssetCurrency, "USD").Value;
-            }
-            catch (Exception) { }
-            try
-            {
-                Entity.UsdToSrcAssetConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion("USD", srcAssetCurrency).Value;
-            }
-            catch (Exception) { }
-            try
-            {
-                Entity.DstAssetToUsdConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion(dstAssetCurrency, "USD").Value;
-            }
-            catch (Exception) { }
-            try
-            {
-                Entity.UsdToDstAssetConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion("USD", dstAssetCurrency).Value;
-            }
-            catch (Exception) { }
+            //try
+            //{
+            //    Entity.SrcAssetToUsdConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion(srcAssetCurrency, "USD").Value;
+            //}
+            //catch (Exception) { }
+            //try
+            //{
+            //    Entity.UsdToSrcAssetConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion("USD", srcAssetCurrency).Value;
+            //}
+            //catch (Exception) { }
+            //try
+            //{
+            //    Entity.DstAssetToUsdConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion(dstAssetCurrency, "USD").Value;
+            //}
+            //catch (Exception) { }
+            //try
+            //{
+            //    Entity.UsdToDstAssetConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion("USD", dstAssetCurrency).Value;
+            //}
+            //catch (Exception) { }
 
             Entity.SrcAssetCurrency = srcAssetCurrency;
             Entity.SrcAssetAmount = (double)srcAssetAmount;
@@ -266,16 +266,16 @@ namespace TickTrader.Algo.Core
             {
                 if (acc.Acc.AccountingType != Bo.AccountingTypes.Cash)
                 {
-                    try
-                    {
-                        Entity.MarginCurrencyToUsdConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion(symbol.MarginCurrency, "USD").Value;
-                    }
-                    catch (Exception) { }
-                    try
-                    {
-                        Entity.UsdToMarginCurrencyConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion("USD", symbol.MarginCurrency).Value;
-                    }
-                    catch (Exception) { }
+                    //try
+                    //{
+                    //    Entity.MarginCurrencyToUsdConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion(symbol.MarginCurrency, "USD").Value;
+                    //}
+                    //catch (Exception) { }
+                    //try
+                    //{
+                    //    Entity.UsdToMarginCurrencyConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion("USD", symbol.MarginCurrency).Value;
+                    //}
+                    //catch (Exception) { }
                 }
                 else
                 {
@@ -290,16 +290,16 @@ namespace TickTrader.Algo.Core
             {
                 if (acc.Acc.AccountingType != Bo.AccountingTypes.Cash)
                 {
-                    try
-                    {
-                        Entity.ProfitCurrencyToUsdConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion(symbol.ProfitCurrency, "USD").Value;
-                    }
-                    catch (Exception) { }
-                    try
-                    {
-                        Entity.UsdToProfitCurrencyConversionRate = (double)acc.Market.ConversionMap.GetPositiveAssetConversion("USD", symbol.ProfitCurrency).Value;
-                    }
-                    catch (Exception) { }
+                    //try
+                    //{
+                    //    Entity.ProfitCurrencyToUsdConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion(symbol.ProfitCurrency, "USD").Value;
+                    //}
+                    //catch (Exception) { }
+                    //try
+                    //{
+                    //    Entity.UsdToProfitCurrencyConversionRate = (double)acc.Market.Conversion.GetPositiveAssetConversion("USD", symbol.ProfitCurrency).Value;
+                    //}
+                    //catch (Exception) { }
                 }
                 else
                 {

@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Core
         private long _feedCount;
         private DateTime _timePoint;
         private long _safeTimePoint;
-        private FeedReader _feedReader;
+        private FeedEventSeries _feedReader;
         private volatile bool _checkStateFlag;
         private volatile int _execDelay;
         private BacktesterCollector _collector;
@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Core
         public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
         public EmulatorStates State { get; private set; }
 
-        public event Action<RateUpdate> RateUpdated;
+        public event Action<AlgoMarketNode> RateUpdated;
         public event Action<EmulatorStates> StateUpdated;
 
         #region InvokeStartegy implementation
@@ -180,6 +180,7 @@ namespace TickTrader.Algo.Core
                     return;
                 }
                 _exStartAction();
+                ((SimplifiedBuilder)Builder).InitContext();
                 EmulateEvents();
                 EmulateStop();
                 StopFeedRead();
@@ -195,7 +196,11 @@ namespace TickTrader.Algo.Core
             {
                 StopFeedRead();
                 EmulateStop();
-                throw WrapException(ex);
+                throw;
+            }
+            finally
+            {
+                ((SimplifiedBuilder)Builder)?.DeinitContext();
             }
         }
 
@@ -381,11 +386,14 @@ namespace TickTrader.Algo.Core
 
         private void ExecItem(object item)
         {
-            var action = item as Action<PluginBuilder>;
-            if (action != null)
-                action(Builder);
+            var rate = item as RateUpdate;
+            if (rate != null)
+                EmulateRateUpdate(rate);
             else
-                EmulateRateUpdate((RateUpdate)item);
+            {
+                var action = (Action<PluginBuilder>)item;
+                action(Builder);
+            }
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
@@ -414,7 +422,7 @@ namespace TickTrader.Algo.Core
         public bool StartFeedRead()
         {
             if (_feedReader == null)
-                _feedReader = new FeedReader(_feed);
+                _feedReader = new FeedEventSeries(_feed);
             if (_feedReader.IsCompeted)
                 return false;
             UpdateVirtualTimepoint(_feedReader.NextOccurrance.Date);
@@ -460,8 +468,8 @@ namespace TickTrader.Algo.Core
         {
             DelayExecution();
 
-            var bufferUpdate = OnFeedUpdate(rate);
-            RateUpdated?.Invoke(rate);
+            var bufferUpdate = OnFeedUpdate(rate, out var node);
+            RateUpdated?.Invoke(node);
             _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;
@@ -535,14 +543,6 @@ namespace TickTrader.Algo.Core
             UpdateVirtualTimepoint(next.Time);
             isTrade = next.IsTrade;
             return next.Content;
-        }
-
-        private Exception WrapException(Exception ex)
-        {
-            if (ex is AlgoException)
-                return ex;
-
-            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }
 }

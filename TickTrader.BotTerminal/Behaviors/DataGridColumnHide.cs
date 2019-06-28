@@ -21,10 +21,19 @@ namespace TickTrader.BotTerminal
         public static readonly DependencyProperty ProviderProperty = DependencyProperty.Register("Provider", typeof(ViewModelStorageEntry),
             typeof(DataGridColumnHide), new PropertyMetadata(null, new PropertyChangedCallback(ProviderPropertyChanged)));
 
+        public static readonly DependencyProperty IsColumnEnabledProperty = DependencyProperty.Register("IsColumnEnabled", typeof(bool),
+            typeof(DataGridColumnHide), new PropertyMetadata(true, new PropertyChangedCallback(IsColumnEnabledChanged)));
+
         public bool IsShown
         {
             get { return (bool)GetValue(IsShownProperty); }
             set { SetValue(IsShownProperty, value); }
+        }
+
+        public bool IsColumnEnabled
+        {
+            get { return (bool)GetValue(IsColumnEnabledProperty); }
+            set { SetValue(IsColumnEnabledProperty, value); }
         }
 
         public Visibility Visibility
@@ -45,16 +54,24 @@ namespace TickTrader.BotTerminal
             set { SetValue(ProviderProperty, value); }
         }
 
+        private void UpdateVisibility()
+        {
+            if (IsShown && IsColumnEnabled)
+                Visibility = Visibility.Visible;
+            else
+                Visibility = Visibility.Collapsed;
+        }
+
         private static void IsShownPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)
         {
             var stateObj = (DataGridColumnHide)d;
-
-            if ((bool)a.NewValue)
-                stateObj.Visibility = Visibility.Visible;
-            else
-                stateObj.Visibility = Visibility.Collapsed;
-
+            stateObj.UpdateVisibility();
             stateObj.Provider.ChangeProperty(GetKey(stateObj), stateObj.IsShown.ToString());
+        }
+
+        private static void IsColumnEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)
+        {
+            ((DataGridColumnHide)d).UpdateVisibility();
         }
 
         private static void ProviderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs a)

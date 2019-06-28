@@ -66,6 +66,7 @@
     <Compile Include="Var.Collections\DictionaryGrouping.cs" />
     <Compile Include="Var.Collections\DictionarySelector.cs" />
     <Compile Include="Var.Collections\DictionaryFilter.cs" />
+    <Compile Include="Var.Collections\DictionarySelectorFull.cs" />
     <Compile Include="Var.Collections\DictionarySortOperator.cs" />
     <Compile Include="Var.Collections\DictionaryToListOperator.cs" />
     <Compile Include="Var.Collections\DynamicDictionary.cs" />

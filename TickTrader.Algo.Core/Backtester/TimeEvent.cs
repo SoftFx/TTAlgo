@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -33,6 +34,8 @@ namespace TickTrader.Algo.Core
 
     internal class TimeSeriesAggregator
     {
+        private static readonly Comparer<DateTime> comparer = Comparer<DateTime>.Default;
+
         private List<ITimeEventSeries> _seriesList = new List<ITimeEventSeries>();
 
         public void Add(ITimeEventSeries series)
@@ -42,8 +45,28 @@ namespace TickTrader.Algo.Core
 
         public TimeEvent Dequeue()
         {
-            var nextSeries = _seriesList.MinBy(s => s.NextOccurrance);
+            var nextSeries = GetMin(); //_seriesList.MinBy(s => s.NextOccurrance, comparer);
             return nextSeries.Take();
+        }
+
+        private ITimeEventSeries GetMin()
+        {
+            DateTime minTime = DateTime.MaxValue;
+            ITimeEventSeries minSeries = null;
+
+            for (int i = 0; i < _seriesList.Count; i++)
+            {
+                var series = _seriesList[i];
+                var readerTime = series.NextOccurrance;
+
+                if (minTime > readerTime)
+                {
+                    minSeries = series;
+                    minTime = readerTime;
+                }
+            }
+
+            return minSeries;
         }
 
         //public bool TryDequeue(out TimeEvent nextEvent)

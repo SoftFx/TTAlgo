@@ -465,7 +465,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 case Lib.SymbolConfig.Types.SymbolOrigin.Custom:
                     return SymbolOrigin.Custom;
                 case Lib.SymbolConfig.Types.SymbolOrigin.Special:
-                    return SymbolOrigin.Special;
+                    return SymbolOrigin.Token;
                 default:
                     throw new ArgumentException();
             }
@@ -754,13 +754,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static SymbolInfo Convert(this Lib.SymbolInfo symbol)
+        public static SymbolKey Convert(this Lib.SymbolInfo symbol)
         {
-            return new SymbolInfo
-            {
-                Name = symbol.Name,
-                Origin = symbol.Origin.Convert(),
-            };
+            return new SymbolKey(symbol.Name, symbol.Origin.Convert());
         }
 
         public static AccountMetadataInfo Convert(this Lib.AccountMetadataInfo accountMetadata)

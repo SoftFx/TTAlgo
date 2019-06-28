@@ -279,16 +279,15 @@ namespace TickTrader.Algo.Common.Model
 
         internal PositionEntity GetEntity()
         {
-            return new PositionEntity
+            return new PositionEntity(Symbol)
             {
-                Symbol = this.Symbol,
-                AgentCommission = (double)this.AgentCommission,
-                Commission = (double)this.Commission,
-                SettlementPrice = this.SettlementPrice,
-                Side = this.Side,
+                AgentCommission = (double)AgentCommission,
+                Commission = (double)Commission,
+                SettlementPrice = SettlementPrice,
+                Side = Side,
                 Volume = Amount,
-                Swap = (double)this.Swap,
-                Price = (double)this.Price
+                Swap = (double)Swap,
+                Price = (double)Price
             };
         }
     }

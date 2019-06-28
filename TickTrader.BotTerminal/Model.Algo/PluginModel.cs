@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Repository;
@@ -13,7 +12,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginModel : CrossDomainObject, IPluginModel
+    internal class PluginModel : Algo.Core.Lib.CrossDomainObject, IPluginModel
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -40,7 +39,6 @@ namespace TickTrader.BotTerminal
         public PluginStates State { get; protected set; }
 
         public IDictionary<string, IOutputCollector> Outputs => _outputs;
-
 
         protected LocalAlgoAgent Agent { get; }
 

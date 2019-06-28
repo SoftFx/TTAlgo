@@ -57,7 +57,7 @@ namespace TickTrader.Algo.Common.Model
             if (report.Assets != null)
                 algoReport.Assets = report.Assets.Select(assetInfo => new AssetModel(assetInfo, _cache.Currencies.Snapshot).GetEntity()).ToList();
             algoReport.NetPosition = position;
-            algoReport.TransactionTime = report.ExecTime;
+            //algoReport.TransactionTime = report.ExecTime;
             AlgoEvent_OrderUpdated(algoReport);
         }
 

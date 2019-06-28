@@ -11,9 +11,9 @@ namespace TickTrader.Algo.Common.Model.Setup
             return new SymbolConfig { Name = symbol.Name, Origin = symbol.Origin };
         }
 
-        public static SymbolInfo ToInfo(this ISymbolInfo symbol)
+        public static SymbolKey ToInfo(this ISymbolInfo symbol)
         {
-            return new SymbolInfo(symbol.Name, symbol.Origin);
+            return new SymbolKey(symbol.Name, symbol.Origin);
         }
     }
 
@@ -25,7 +25,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             ISymbolInfo res = null;
             switch (config.Origin)
             {
-                case SymbolOrigin.Special:
+                case SymbolOrigin.Token:
                     switch (config.Name)
                     {
                         case SpecialSymbols.MainSymbol:
@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Common.Model.Setup
             {
                 switch (config.Origin)
                 {
-                    case SymbolOrigin.Special:
+                    case SymbolOrigin.Token:
                         switch (config.Name)
                         {
                             case SpecialSymbols.MainSymbol:

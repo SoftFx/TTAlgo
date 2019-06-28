@@ -133,13 +133,12 @@ namespace TickTrader.Algo.Common.Model
                 amount = p.SellAmount;
             }
 
-            return new PositionEntity()
+            return new PositionEntity(p.Symbol)
             {
                 Id = p.PosID,
                 Side = side,
                 Volume = amount,
                 Price = price,
-                Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
@@ -174,13 +173,9 @@ namespace TickTrader.Algo.Common.Model
                 return book.Select(b => Convert(b)).ToArray();
         }
 
-        public static BookEntryEntity Convert(QuoteEntry fdkEntry)
+        public static Api.BookEntry Convert(QuoteEntry fdkEntry)
         {
-            return new BookEntryEntity()
-            {
-                Price = fdkEntry.Price,
-                Volume = fdkEntry.Volume
-            };
+            return new Api.BookEntry(fdkEntry.Price, fdkEntry.Volume);
         }
 
         public static SymbolEntity[] Convert(SymbolInfo[] info)

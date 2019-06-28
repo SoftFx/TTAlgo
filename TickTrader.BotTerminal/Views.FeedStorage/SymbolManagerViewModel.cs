@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
@@ -25,8 +26,8 @@ namespace TickTrader.BotTerminal
         private SymbolCatalog _catalog;
         private VarContext _varContext = new VarContext();
         private VarDictionary<string, SymbolModel> _onlineSymbols = new VarDictionary<string, SymbolModel>();
-        private IVarSet<string, ManagedSymbolViewModel> _customManagedSymbols;
-        private IVarSet<string, ManagedSymbolViewModel> _onlineManagedSymbols;
+        private IVarSet<SymbolKey, ManagedSymbolViewModel> _customManagedSymbols;
+        private IVarSet<SymbolKey, ManagedSymbolViewModel> _onlineManagedSymbols;
 
         public SymbolManagerViewModel(TraderClientModel clientModel, SymbolCatalog catalog, WindowManager wndManager)
         {
@@ -142,7 +143,7 @@ namespace TickTrader.BotTerminal
 
         public void AddSymbol()
         {
-            var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, _customManagedSymbols.Snapshot.ContainsKey);
+            var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, HasCustomSymbol);
 
             if (_wndManager.ShowDialog(model, this) == true)
             {
@@ -153,7 +154,7 @@ namespace TickTrader.BotTerminal
 
         public void EditSymbol(SymbolData symbol)
         {
-            var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, _customManagedSymbols.Snapshot.ContainsKey);
+            var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasCustomSymbol);
 
             if (_wndManager.ShowDialog(model, this) == true)
             {
@@ -194,6 +195,11 @@ namespace TickTrader.BotTerminal
                 await item.UpdateSize();
 
             CanUpdateSizes = true;
+        }
+
+        private bool HasCustomSymbol(string smbName)
+        {
+            return _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Custom));
         }
     }
 

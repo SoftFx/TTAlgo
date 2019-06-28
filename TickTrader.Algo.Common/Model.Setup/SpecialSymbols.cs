@@ -8,7 +8,12 @@ namespace TickTrader.Algo.Common.Model.Setup
         public const string MainSymbol = "[main symbol]";
 
 
-        public static SymbolToken MainSymbolPlaceholder => new SymbolToken(MainSymbol, SymbolOrigin.Special, null);
+        public static SymbolToken MainSymbolPlaceholder => new SymbolToken(MainSymbol, SymbolOrigin.Token, null);
+
+        public static SymbolKey GetKey(this ISymbolInfo info)
+        {
+            return new SymbolKey(info.Name, info.Origin);
+        }
     }
 
     public class SymbolToken : ISymbolInfo

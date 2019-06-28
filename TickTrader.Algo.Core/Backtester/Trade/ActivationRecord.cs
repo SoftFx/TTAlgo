@@ -17,27 +17,27 @@ namespace TickTrader.Algo.Core
             Price = GetActivationPrice(order, type);
         }
 
-        public static decimal GetActivationPrice(OrderAccessor order, ActivationTypes type)
+        public static double GetActivationPrice(OrderAccessor order, ActivationTypes type)
         {
             if (type == ActivationTypes.Pending)
             {
                 if ((order.Type == OrderType.Stop) || (order.Type == OrderType.StopLimit))
-                    return (decimal)order.StopPrice;
+                    return order.StopPrice;
                 else
-                    return (decimal)order.Price;
+                    return order.Price;
             }
             else if (type == ActivationTypes.TakeProfit)
-                return (decimal)order.TakeProfit;
+                return order.TakeProfit;
             else if (type == ActivationTypes.StopLoss)
-                return (decimal)order.StopLoss;
+                return order.StopLoss;
             else
                 throw new ArgumentException("Invalid activation type:" + type);
         }
 
         public OrderAccessor Order { get; private set; }
         public ActivationTypes ActivationType { get; private set; }
-        public decimal ActivationPrice { get; set; }
-        public decimal Price { get; private set; }
+        public double ActivationPrice { get; set; }
+        public double Price { get; private set; }
         public string OrderId { get { return Order.Id; } }
 
         public DateTime? LastNotifyTime { get; set; }

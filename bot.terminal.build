@@ -109,6 +109,7 @@
       <arg line="-Recursive" />
       <arg line="-NonInteractive" />
       <arg line="-Verbosity detailed" />
+      <arg line='-MSBuildPath "${MSBuildDir}."' />
     </exec>
 
   </target>

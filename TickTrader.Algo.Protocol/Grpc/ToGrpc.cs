@@ -474,7 +474,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                     return Lib.SymbolConfig.Types.SymbolOrigin.Online;
                 case SymbolOrigin.Custom:
                     return Lib.SymbolConfig.Types.SymbolOrigin.Custom;
-                case SymbolOrigin.Special:
+                case SymbolOrigin.Token:
                     return Lib.SymbolConfig.Types.SymbolOrigin.Special;
                 default:
                     throw new ArgumentException();
@@ -770,7 +770,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.SymbolInfo Convert(this SymbolInfo symbol)
+        public static Lib.SymbolInfo Convert(this SymbolKey symbol)
         {
             return new Lib.SymbolInfo
             {

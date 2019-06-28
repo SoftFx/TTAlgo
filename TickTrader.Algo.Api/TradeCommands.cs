@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Api
         bool IsCompleted { get; }
         bool IsFaulted { get; }
         Order ResultingOrder { get; }
+        DateTime TransactionTime { get; }
     }
 
     [Flags]
