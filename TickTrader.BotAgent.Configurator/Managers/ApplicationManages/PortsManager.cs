@@ -12,12 +12,14 @@ namespace TickTrader.BotAgent.Configurator
         private readonly INetFwMgr _firewallManager;
         private readonly ServiceManager _serviceManager;
         private readonly DefaultServiceSettingsModel _serviceModel;
+        private readonly INetFwPolicy2 _firewallPolicy;
 
         public PortsManager(ServiceManager service, DefaultServiceSettingsModel serviceModel)
         {
             _serviceManager = service;
             _serviceModel = serviceModel;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
+            _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
 
         public bool CheckPortOpen(int port, string hostname = "localhost", bool exception = true)
@@ -53,14 +55,26 @@ namespace TickTrader.BotAgent.Configurator
             return _serviceManager.IsServiceRunning && _serviceModel.ListeningPort == port;
         }
 
-        public void RegisterRuleInFirewall(string name, string application, string porst, string serviceName)
+        public void RegisterRuleInFirewall(string nameApp, string application, string porst, string serviceName)
         {
+            string name = $"{nameApp}Access";
 
-            INetFwRule firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
+            INetFwRule firewallRule = null;
 
-            firewallRule.Name = name;
+            bool newRule = false;
+
+            try
+            {
+                firewallRule = _firewallPolicy.Rules.Item(name);
+            }
+            catch
+            {
+                firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
+                firewallRule.Name = name;
+                newRule = true;
+            }
+
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
-
             firewallRule.Profiles = 7; // Profiles == ALL
             firewallRule.serviceName = serviceName;
             firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
@@ -69,9 +83,8 @@ namespace TickTrader.BotAgent.Configurator
             firewallRule.Enabled = true;
             firewallRule.ApplicationName = application;
 
-            INetFwPolicy2 firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
-            firewallPolicy.Rules.Add(firewallRule);
-
+            if (newRule)
+                _firewallPolicy.Rules.Add(firewallRule);
         }
 
         public void RegisterApplicationInFirewall(string name, string path)
