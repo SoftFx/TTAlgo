@@ -138,7 +138,7 @@ namespace TickTrader.BotAgent.BA.Models
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_archiveExtension}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_archiveExtension}")),
                 EnableArchiveFileCompression = true,
             };
 
@@ -147,7 +147,7 @@ namespace TickTrader.BotAgent.BA.Models
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_archiveExtension}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_archiveExtension}")),
                 EnableArchiveFileCompression = true,
             };
 
