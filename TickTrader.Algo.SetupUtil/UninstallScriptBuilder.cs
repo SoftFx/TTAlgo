@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace TickTrader.BotAgent.CmdUtil
+namespace TickTrader.Algo.SetupUtil
 {
     class UninstallScriptBuilder
     {

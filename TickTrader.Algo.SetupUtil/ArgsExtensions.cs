@@ -1,6 +1,6 @@
-﻿namespace TickTrader.BotAgent.CmdUtil
+﻿namespace TickTrader.Algo.SetupUtil
 {
-    static class ArgsExtensions
+    internal static class ArgsExtensions
     {
         public static string Read(this string[] args, string param)
         {

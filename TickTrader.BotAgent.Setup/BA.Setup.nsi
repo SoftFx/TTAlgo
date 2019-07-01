@@ -40,7 +40,7 @@
 !endif
 
 !ifndef LICENSE_FILE
-  !define LICENSE_FILE "..\TickTrader.BotAgent\bin\Release\net462\publish\license.txt"
+  !define LICENSE_FILE "..\TickTrader.Algo.Setup\license.txt"
 !endif
 
 !ifndef APPDIR

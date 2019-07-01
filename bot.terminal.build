@@ -31,6 +31,10 @@
   <property name="TerminalZipFile"     value="${OutputFolder}BotTerminal ${Build}.zip" />
   <property name="AgentZipFile"        value="${OutputFolder}BotAgent ${Build}.x64.zip" />
 
+  <property name="SetupDir"            value="${SourcesDir}TickTrader.Algo.Setup" />
+  <property name="SetupUtilName"       value="TickTrader.Algo.SetupUtil" />
+  <property name="SetupUtilExe"        value="${SourcesDir}${SetupUtilName}\bin\${Configuration}\${SetupUtilName}.exe" />
+
   <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators,TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest,TickTrader.Algo.NewsIndicator" />
 
 
@@ -52,6 +56,7 @@
     </if>
 
     <call target="CreatePackages" />
+    <call target="AlgoInstaller" />
     <call target="CreateZipArtifacts" />
 
     <call target="CreateInstallers" />
@@ -294,11 +299,8 @@
   </target>
 
   <target name="CreateInstallers">
-
-    <property name="UtilDir" value="${SourcesDir}TickTrader.BotAgent.CmdUtil\bin\Release\" />
       
-    <exec program="${UtilDir}TickTrader.BotAgent.CmdUtil.exe">
-      <arg value="Mode=uninstall" />
+    <exec program="${SetupUtilExe}">
       <arg value="AppDir=${AgentBinDir}" />
       <arg value="OutFile=${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.Uninstall.nsi" />
     </exec>
@@ -306,6 +308,30 @@
     <exec program="${NSIS_Path}\makensis.exe" >
       <arg value="/DPRODUCT_BUILD=${Build}" />
       <arg value="${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.nsi" />
+    </exec>
+
+  </target>
+
+  <target name="AlgoInstaller">
+
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${TerminalBinDir}" />
+      <arg value="OutFile=${SetupDir}\Terminal.Uninstall.nsi" />
+    </exec>    
+
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${AgentBinDir}" />
+      <arg value="OutFile=${SetupDir}\Agent.Uninstall.nsi" />
+    </exec>
+
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${ConfiguratorBinDir}" />
+      <arg value="OutFile=${SetupDir}\Configurator.Uninstall.nsi" />
+    </exec>
+
+    <exec program="${NSIS_Path}\makensis.exe" >
+      <arg value="/DPRODUCT_BUILD=${Build}" />
+      <arg value="${SourcesDir}TickTrader.Algo.Setup\Algo.Setup.nsi" />
     </exec>
 
   </target>
