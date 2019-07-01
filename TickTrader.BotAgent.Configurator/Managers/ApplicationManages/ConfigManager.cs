@@ -5,7 +5,7 @@ using System.IO;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public enum AppProperties { AppSettings, ApplicationName, RegistryAppName, ServiceName };
+    public enum AppProperties { AppSettings, ApplicationName, RegistryAppName, ServiceName, LogsPath };
 
     public class ConfigManager
     {
@@ -25,6 +25,7 @@ namespace TickTrader.BotAgent.Configurator
                 { "ApplicationName", "TickTrader.BotAgent" },
                 { "RegistryAppName", "TickTrader Bot Agent" },
                 { "ServiceName", "_sfxBotAgent" },
+                { "LogsPath", "Logs/agent-error.log" }
             });
 
             LoadProperties();

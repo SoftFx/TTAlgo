@@ -36,7 +36,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public PrompterManager Prompts { get; }
 
-        public LogsManager Logs { get; }
+        public LogsManager Logs { get; private set; }
 
         public MultipleAgentConfigurator BotAgentHolder { get; }
 
@@ -47,8 +47,6 @@ namespace TickTrader.BotAgent.Configurator
 
             Settings = _configManager.Properties;
             Prompts = new PrompterManager();
-            Logs = new LogsManager();
-
 
             BotAgentHolder = Settings.MultipleAgentProvider;
             _registryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
@@ -93,6 +91,8 @@ namespace TickTrader.BotAgent.Configurator
                 _configManager.LoadProperties();
 
             BotAgentHolder.SetNewBotAgentPath(_registryManager.BotAgentPath, Settings[AppProperties.AppSettings]);
+
+            Logs = new LogsManager(BotAgentHolder.BotAgentPath, Settings[AppProperties.LogsPath]);
 
             using (var configStreamReader = new StreamReader(BotAgentHolder.BotAgentConfigPath))
             {

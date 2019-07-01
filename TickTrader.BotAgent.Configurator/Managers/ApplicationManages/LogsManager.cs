@@ -11,16 +11,17 @@ namespace TickTrader.BotAgent.Configurator
         private const long BlockSize = 2048L;
         private const int MaxMessagesCount = 1000;
 
-        private readonly string _logsFilePath = Path.Combine(Environment.CurrentDirectory, "Test.log");
+        private readonly string _logsFilePath;
         private readonly string[] separators = new string[] { Environment.NewLine };
 
         private long _lastSize;
 
         private LinkedList<string> _messages;
 
-        public LogsManager()
+        public LogsManager(string path, string folder)
         {
             _messages = new LinkedList<string>();
+            _logsFilePath = Path.Combine(path, folder);
 
             LoadLog();
         }
@@ -96,6 +97,10 @@ namespace TickTrader.BotAgent.Configurator
             try
             {
                 long fileSize = new FileInfo(_logsFilePath).Length;
+
+                if (_lastSize > fileSize) //to update the file at 12 at night
+                    _lastSize = 0;
+
                 long uk = fileSize - _lastSize;
                 bool gap = false;
 
