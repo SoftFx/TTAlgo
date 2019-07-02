@@ -22,6 +22,8 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.EnableLogs == value)
                     return;
 
+                Logger.Info($"{nameof(FdkViewModel)} {nameof(EnableLogs)}", _model.EnableLogs.ToString(), value.ToString());
+
                 _model.EnableLogs = value;
                 _refreshManager?.Refresh();
 

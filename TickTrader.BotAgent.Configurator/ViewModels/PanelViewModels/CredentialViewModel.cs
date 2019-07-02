@@ -30,6 +30,8 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.Login == value)
                     return;
 
+                Logger.Info($"{_model.Name}{nameof(Login)}", _model.Login, value);
+
                 _model.Login = value;
                 _refreshManager?.Refresh();
 

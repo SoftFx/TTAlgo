@@ -18,6 +18,8 @@ namespace TickTrader.BotAgent.Configurator
         {
             _manager.UpdateLog();
 
+            Logger.Info("Log was updated");
+
             OnPropertyChanged(nameof(Messages));
         }
 

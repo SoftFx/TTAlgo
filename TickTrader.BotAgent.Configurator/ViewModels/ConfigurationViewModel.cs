@@ -124,7 +124,10 @@ namespace TickTrader.BotAgent.Configurator
                     try
                     {
                         if (_model.StartAgent())
+                        {
                             MessageBoxManager.OKBox("Agent has been started!");
+                            Logger.Info($"Agent has been started!");
+                        }
                     }
                     catch (WarningException ex)
                     {
@@ -150,6 +153,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
                 }
 
+                Logger.Info($"The application has been restarted!");
                 System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
             }));
@@ -162,6 +166,7 @@ namespace TickTrader.BotAgent.Configurator
                     _model.SaveChanges();
                     RefreshManager.DropRefresh();
                     MessageBoxManager.OKBox("Saving configuration successfully!");
+                    Logger.Info($"Changes have been saved.");
                 }
                 catch (Exception ex)
                 {
@@ -180,6 +185,7 @@ namespace TickTrader.BotAgent.Configurator
                         _model.LoadConfiguration();
                         RefreshManager.DropRefresh();
                         RefreshModels();
+                        Logger.Info($"Changes have been canceled.");
                     }
                     catch (Exception ex)
                     {
@@ -202,6 +208,8 @@ namespace TickTrader.BotAgent.Configurator
             ProtocolModel.RefreshModel();
             ServerModel.RefreshModel();
             FdkModel.RefreshModel();
+
+            Logger.Info($"Models have been updated.");
         }
 
         public void Dispose()

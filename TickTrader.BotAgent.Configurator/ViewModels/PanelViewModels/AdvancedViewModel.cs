@@ -31,6 +31,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_settings.MultipleAgentProvider.BotAgentPath == value)
                     return;
 
+                Logger.Info($"{nameof(AdvancedViewModel)} {nameof(SelectPath)}", _settings.MultipleAgentProvider.BotAgentConfigPath, value);
                 _settings.MultipleAgentProvider.BotAgentPath = value;
                 _refreshManager?.Refresh();
             }

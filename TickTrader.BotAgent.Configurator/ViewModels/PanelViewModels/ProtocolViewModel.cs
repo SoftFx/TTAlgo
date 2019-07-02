@@ -23,6 +23,8 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.ListeningPort == value)
                     return;
 
+                Logger.Info($"{nameof(ProtocolViewModel)} {nameof(ListeningPort)}", _model.ListeningPort.ToString(), value.ToString());
+
                 _model.ListeningPort = value;
                 _refreshManager?.Refresh();
 
@@ -39,6 +41,8 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.DirectoryName == value)
                     return;
 
+                Logger.Info($"{nameof(ProtocolViewModel)} {nameof(DirectoryName)}", _model.DirectoryName, value);
+
                 _model.DirectoryName = value;
                 _refreshManager?.Refresh();
 
@@ -54,6 +58,8 @@ namespace TickTrader.BotAgent.Configurator
             {
                 if (_model.LogMessage == value)
                     return;
+
+                Logger.Info($"{nameof(ProtocolViewModel)} {nameof(LogMessage)}", _model.LogMessage.ToString(), value.ToString());
 
                 _model.LogMessage = value;
                 _refreshManager?.Refresh();

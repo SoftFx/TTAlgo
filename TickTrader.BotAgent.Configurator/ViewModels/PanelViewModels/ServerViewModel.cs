@@ -66,8 +66,10 @@ namespace TickTrader.BotAgent.Configurator
                     Urls.Remove(_oldUri);
                     _model.Urls.Remove(_oldUri);
                     _refreshManager?.Refresh();
-                    _addUrlWnd.DialogResult = true;
+                    Logger.Info($"{nameof(ServerViewModel)} new url was added: {uri}");
                 }
+
+                _addUrlWnd.DialogResult = true;
             }));
 
         public DelegateCommand RemoveUrls => _removeUrls ?? (
@@ -78,6 +80,8 @@ namespace TickTrader.BotAgent.Configurator
                             Urls.Remove(u);
                             _model.Urls.Remove(u);
                         }
+
+                        Logger.Info($"{nameof(ServerViewModel)} select urls was removed");
 
                         _refreshManager?.Refresh();
                     }));

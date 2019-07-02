@@ -23,6 +23,8 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.File == value)
                     return;
 
+                Logger.Info($"{nameof(SslViewModel)} {nameof(File)}", _model.File, value);
+
                 _model.File = value;
                 _refreshManager?.Refresh();
 
@@ -38,6 +40,8 @@ namespace TickTrader.BotAgent.Configurator
             {
                 if (_model.Password == value)
                     return;
+
+                Logger.Info($"{nameof(SslViewModel)} {nameof(Password)}", _model.Password, value);
 
                 _model.Password = value;
                 _refreshManager?.Refresh();
