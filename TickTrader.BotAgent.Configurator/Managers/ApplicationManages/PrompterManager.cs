@@ -18,7 +18,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             _prompts = new Dictionary<SectionNames, Dictionary<string, string>>();
 
-            DownloadPropts();
+            DownloadPrompts();
         }
 
         public Dictionary<string, string> GetDict(SectionNames section)
@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent.Configurator
             return _prompts.ContainsKey(section) && _prompts[section].ContainsKey(key) ? _prompts[section][key] : null;
         }
 
-        private void DownloadPropts()
+        private void DownloadPrompts()
         {
             JObject obj = null;
 

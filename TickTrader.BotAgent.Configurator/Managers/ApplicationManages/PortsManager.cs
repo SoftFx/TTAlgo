@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -57,7 +56,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void RegisterRuleInFirewall(string nameApp, string application, string porst, string serviceName)
         {
-            string name = $"{nameApp}Access";
+            string name = $"{nameApp} Access";
 
             INetFwRule firewallRule = null;
 

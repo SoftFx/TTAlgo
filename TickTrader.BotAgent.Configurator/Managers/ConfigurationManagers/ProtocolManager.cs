@@ -39,9 +39,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, PortNameProperty, ProtocolModel.ListeningPort.ToString());
+            SaveProperty(root, PortNameProperty, ProtocolModel.ListeningPort);
             SaveProperty(root, DirectoryNameProperty, ProtocolModel.DirectoryName);
-            SaveProperty(root, UseLogNameProperty, ProtocolModel.LogMessage.ToString());
+            SaveProperty(root, UseLogNameProperty, ProtocolModel.LogMessage);
         }
 
         public void SetDefaultModelValues()

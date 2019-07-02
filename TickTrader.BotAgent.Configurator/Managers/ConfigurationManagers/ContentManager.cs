@@ -12,18 +12,18 @@ namespace TickTrader.BotAgent.Configurator
             SectionName = sectionName == SectionNames.None ? string.Empty : sectionName.ToString();
         }
 
-        protected virtual void SaveProperty(JObject root, string property, string value)
+        protected virtual void SaveProperty(JObject root, string property, object value)
         {
             if (!string.IsNullOrEmpty(SectionName))
             {
                 InsertSection(root, new JProperty(SectionName, new JObject()));
                 if (!InsertSection(root[SectionName] as JObject, new JProperty(property, value)))
-                    root[SectionName][property] = value;
+                    root[SectionName][property] = JToken.FromObject(value);
             }
             else
             {
                 if (!InsertSection(root, new JProperty(property, value)))
-                    root[property] = value;
+                    root[property] = JToken.FromObject(value);
             }
         }
 

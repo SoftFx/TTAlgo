@@ -12,7 +12,7 @@ namespace TickTrader.BotAgent.Configurator
         private const int MaxMessagesCount = 1000;
 
         private readonly string _logsFilePath;
-        private readonly string[] separators = new string[] { Environment.NewLine };
+        private readonly string[] _separators = new string[] { Environment.NewLine };
 
         private long _lastSize;
 
@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.Configurator
 
                         string block = Encoding.Default.GetString(output);
 
-                        var records = block.Split(separators, StringSplitOptions.RemoveEmptyEntries).Reverse().ToList();
+                        var records = block.Split(_separators, StringSplitOptions.RemoveEmptyEntries).Reverse().ToList();
 
                         if (block.Last() != '\n')
                         {
@@ -124,7 +124,7 @@ namespace TickTrader.BotAgent.Configurator
 
                             string block = Encoding.Default.GetString(output);
 
-                            var records = block.Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
+                            var records = block.Split(_separators, StringSplitOptions.RemoveEmptyEntries).ToList();
 
                             if (gap)
                             {

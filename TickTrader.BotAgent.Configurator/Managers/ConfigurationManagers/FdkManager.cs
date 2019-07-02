@@ -29,7 +29,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, EnableLogsNameProperty, FdkModel.EnableLogs.ToString());
+            SaveProperty(root, EnableLogsNameProperty, FdkModel.EnableLogs);
         }
 
         public void SetDefaultModelValues() { }
