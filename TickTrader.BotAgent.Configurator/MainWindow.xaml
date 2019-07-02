@@ -11,10 +11,6 @@
         Height="600" Width="1000"
         MinHeight="640" MinWidth="1000"
         WindowStartupLocation="CenterScreen">
-    <Window.Resources>
-        <local:CorrectAgentSettingsProperty x:Key="errorCounterProp" Error="{Binding Validation.HasError, ElementName=dockCred, UpdateSourceTrigger=PropertyChanged}"/>
-    </Window.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="33"/>
@@ -25,7 +21,7 @@
 
         <ToolBarTray>
             <ToolBar Height="33">
-                <Button x:Name="CancelButton" Style="{StaticResource toolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                <Button x:Name="CancelButton" Style="{StaticResource toolBarButton}" Command="{Binding CancelChanges}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Share" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
@@ -33,7 +29,7 @@
                         <TextBlock Text="Reset Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="SaveButton" Style="{StaticResource toolBarButton}" Command="{Binding SaveChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                <Button x:Name="SaveButton" Style="{StaticResource toolBarButton}" Command="{Binding SaveChanges}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Save" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
@@ -41,12 +37,12 @@
                         <TextBlock Text="Save Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Command="{Binding StartAgent}" IsEnabled="{Binding EnableStart, Source={StaticResource errorCounterProp}}">
+                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Command="{Binding StartAgent}" IsEnabled="True">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Play" Style="{StaticResource toolBarIcon}"/>
                     </Button.Content>
                     <Button.ToolTip>
-                        <TextBlock Text="Restart Agent"/>
+                        <TextBlock Text="Start Agent"/>
                     </Button.ToolTip>
                 </Button>
             </ToolBar>

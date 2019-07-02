@@ -64,8 +64,8 @@ namespace TickTrader.BotAgent.Configurator
 
         private void SaveModels(JObject root, CredentialModel model)
         {
-            SaveProperty(root, model.Name + "Login", model.Login);
-            SaveProperty(root, model.Name + "Password", model.Password);
+            SaveProperty(root, $"{model.Name}Login", model.Login);
+            SaveProperty(root, $"{model.Name}Password", model.Password);
         }
     }
 

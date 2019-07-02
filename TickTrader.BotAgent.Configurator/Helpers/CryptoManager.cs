@@ -7,9 +7,9 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static KeyGenerator _generator = new KeyGenerator();
 
-        public static string GetNewPassword(int lenght)
+        public static string GetNewPassword(int length)
         {
-            return _generator.GetUniqueKey(lenght);
+            return _generator.GetUniqueKey(length);
         }
     }
 }
