@@ -62,4 +62,6 @@ namespace TickTrader.Algo.Core
         WriteTrade = 8,
         WriteOrderModifications = 128
     }
+
+    
 }

@@ -239,6 +239,7 @@
     <Compile Include="Controls.Chart\ViewportManager.cs" />
     <Compile Include="Controls.Chart\ZoomControl.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
+    <Compile Include="Controls\AdaptiveGrid.cs" />
     <Compile Include="Controls\AutoColumnsGrid.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
@@ -320,6 +321,7 @@
     <Compile Include="Infrustructure\WindowManager.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Lib\ChartBarVectorWithMarkers.cs" />
+    <Compile Include="Lib\DialogModel.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
@@ -339,6 +341,10 @@
     <Compile Include="Model.Algo\Outputs\OutputSynchronizer.cs" />
     <Compile Include="Model.Algo\Outputs\OutputSeriesModel.cs" />
     <Compile Include="Model.Algo\Outputs\TesterOutputCollector.cs" />
+    <Compile Include="Model.Algo\ParamSetup\EnumSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\InvalidSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\NumericSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\ParamSeekSetModel.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Algo\PluginStateHelper.cs" />
@@ -464,6 +470,7 @@
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterCurrentTradesViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterJournalViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterOptimizerViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
@@ -471,6 +478,7 @@
     <Compile Include="Views.Backtester\BacktesterTradeGridViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
+    <Compile Include="Views.Backtester\OptimizerParamSetupViewModel.cs" />
     <Compile Include="Views.Chart\AlgoChartViewModel.cs" />
     <Compile Include="Views.Chart\BotListOverlayViewModel.cs" />
     <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
@@ -1003,6 +1011,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Backtester\BacktesterOptimizerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Backtester\BacktesterPluginSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1028,6 +1040,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\OptimizerParamSetupView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

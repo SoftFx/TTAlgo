@@ -43,6 +43,10 @@
         </Style.Resources>-->
     </Style>
 
+    <Style x:Key="NoHScrollDataGrid_Style" TargetType="DataGrid" BasedOn="{StaticResource DataGrid_Style}">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Hidden"/>
+    </Style>
+
     <!--<Style x:Key="DataGridWithScroll_Style" BasedOn="{StaticResource DataGrid_Style}" TargetType="DataGrid">
     </Style>-->
 

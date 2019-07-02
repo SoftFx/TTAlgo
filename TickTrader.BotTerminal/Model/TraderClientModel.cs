@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected.Set();
+                _isConnected.Set();
                 Connected?.Invoke();
             }
             catch (Exception ex)
@@ -83,7 +83,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected.Unset();
+                _isConnected.Clear();
                 Disconnected?.Invoke();
             }
             catch (Exception ex)

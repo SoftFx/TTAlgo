@@ -108,6 +108,7 @@
     <Compile Include="Var\Interfaces.cs" />
     <Compile Include="Var\IntVar.cs" />
     <Compile Include="Var\Operator.cs" />
+    <Compile Include="Var\RefOperator.cs" />
     <Compile Include="Var\SelectOperator.cs" />
     <Compile Include="Var\StateMachine.cs" />
     <Compile Include="Var\StateMachineBase.cs" />

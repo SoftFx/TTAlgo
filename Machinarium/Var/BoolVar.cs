@@ -17,6 +17,12 @@ namespace Machinarium.Var
         {
         }
 
+        // Do not implement implicit convertors! It's a huge source of possible errors!
+        //public static implicit operator BoolVar(bool constVal)
+        //{
+        //    return new BoolVar(constVal);
+        //}
+
         public static BoolVar operator &(BoolVar c1, BoolVar c2)
         {
             return Operator<BoolVar>(() => c1.Value && c2.Value, c1, c2);
@@ -55,16 +61,6 @@ namespace Machinarium.Var
         internal override bool Equals(bool val1, bool val2)
         {
             return val1 == val2;
-        }
-
-        public void Set()
-        {
-            Value = true;
-        }
-
-        public void Unset()
-        {
-            Value = false;
         }
     }
 }

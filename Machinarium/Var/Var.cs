@@ -21,25 +21,25 @@ namespace Machinarium.Var
         public event PropertyChangedEventHandler PropertyChanged;
         public abstract void Dispose();
 
-        //public static Var<T> New<T>(T initialValue = default(T))
-        //{
-        //    return new Var<T>(initialValue);
-        //}
+        public static BoolVar Const(bool val)
+        {
+            return new BoolVar(val);
+        }
 
-        //public static BoolVar NewBool(bool initialValue = false)
-        //{
-        //    return new BoolVar(initialValue);
-        //}
+        public static IntVar Const(int val)
+        {
+            return new IntVar(val);
+        }
 
-        //public static IntVar NewInt(int initialValue = 0)
-        //{
-        //    return new IntVar(initialValue);
-        //}
+        public static DoubleVar Const(double val)
+        {
+            return new DoubleVar(val);
+        }
 
-        //public static DoubleVar NewDouble(double initialValue = 0)
-        //{
-        //    return new DoubleVar(initialValue);
-        //}
+        public static Var<T> Const<T>(T val)
+        {
+            return new Var<T>(val);
+        }
 
         internal abstract void AttachSource(object src);
         internal abstract object GetBoxedValue();

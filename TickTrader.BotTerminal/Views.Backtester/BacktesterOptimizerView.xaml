@@ -1,0 +1,86 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal">
+
+    <Style x:Key="SettingsLabel" TargetType="Label">
+        <Setter Property="Margin" Value="5,0,0,4"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <!--<Setter Property="Background" Value="Red"/>-->
+        <Setter Property="Padding" Value="0,0,0,2"/>
+    </Style>
+
+    <Style x:Key="SettingsCombo" TargetType="ComboBox">
+        <Setter Property="Margin" Value="5,0,0,5"/>
+    </Style>
+
+    <DataTemplate x:Key="ParamNameTemplate">
+        <CheckBox Content="{Binding ParamName}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ParamValTemplate">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding ValueDescription.Value}" Grid.Column="0" />
+            <Button Content="..." Grid.Column="1" cal:Message.Attach="Modify" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- View Template -->
+
+    <ControlTemplate x:Key="OptimizerPage.Classic">
+        <StackPanel Orientation="Vertical">
+            <WrapPanel>
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                    <Label Content="Optimization:" Style="{StaticResource SettingsLabel}"/>
+                    <ComboBox Style="{StaticResource SettingsCombo}" SelectedIndex="0" Width="200" >
+                        <ComboBoxItem Content="Disabled"/>
+                        <ComboBoxItem Content="Slow algorithm (brute-force)"/>
+                        <ComboBoxItem Content="Fast algorithm (genetic)"/>
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                    <Label Content="Parameter:" Style="{StaticResource SettingsLabel}"/>
+                    <ComboBox SelectedIndex="0" Style="{StaticResource SettingsCombo}" Width="200">
+                        <ComboBoxItem Content="Balance max" />
+                        <ComboBoxItem Content="Balance + max Profit Factor" />
+                        <ComboBoxItem Content="Balance + max Except Payoff" />
+                        <ComboBoxItem Content="Balance + min Drawdown" />
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                    <Label Content="Cores:" Style="{StaticResource SettingsLabel}"/>
+                    <ComboBox MaxWidth="80" Style="{StaticResource SettingsCombo}" SelectedIndex="3" Width="60"
+                          HorizontalAlignment="Left">
+                        <ComboBoxItem Content="1" />
+                        <ComboBoxItem Content="2" />
+                        <ComboBoxItem Content="3" />
+                        <ComboBoxItem Content="4" />
+                    </ComboBox>
+                </StackPanel>
+            </WrapPanel>
+
+            <!--<Label Content="Bot parameters:"/>-->
+            <DataGrid AutoGenerateColumns="False" Margin="5,10,5,5" Style="{DynamicResource NoHScrollDataGrid_Style}"
+                          ItemsSource="{Binding Parameters}" CanUserReorderColumns="False" CanUserSortColumns="False">
+                <DataGrid.Columns>
+                    <!--<DataGridTextColumn Header="Property" Width="1.5*" Binding="{Binding Model.ParamName}" />-->
+                    <DataGridTemplateColumn Header="Fixed Value" Width="1.5*" CellTemplate="{StaticResource ParamNameTemplate}"/>
+                    <DataGridTemplateColumn Header="Scenario" Width="2*" CellTemplate="{StaticResource ParamValTemplate}"/>
+                    <DataGridTextColumn Header="Variants count" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+        </StackPanel>
+    </ControlTemplate>
+
+    <!-- View Style -->
+
+    <Style x:Key="BacktesterOptimizerViewStyle.Classic" TargetType="UserControl">
+        <Setter Property="Template" Value="{StaticResource OptimizerPage.Classic}"/>
+    </Style>
+
+</ResourceDictionary>

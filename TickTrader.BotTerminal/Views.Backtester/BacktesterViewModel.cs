@@ -79,6 +79,8 @@ namespace TickTrader.BotTerminal
 
             TradeHistoryPage = new BacktesterTradeGridViewModel();
 
+            OptimizationPage = new BacktesterOptimizerViewModel(_localWnd);
+
             MainTimeFrame.Value = TimeFrames.M1;
 
             SaveResultsToFile = new BoolProperty();
@@ -127,6 +129,7 @@ namespace TickTrader.BotTerminal
                 if (a.New != null)
                 {
                     PluginConfig = null;
+                    OptimizationPage.SetPluign(a.New.Descriptor);
                 }
             });
 
@@ -201,6 +204,7 @@ namespace TickTrader.BotTerminal
         public BacktesterChartPageViewModel ChartPage { get; }
         public BacktesterTradeGridViewModel TradeHistoryPage { get; }
         public BacktesterCurrentTradesViewModel TradesPage { get; } = new BacktesterCurrentTradesViewModel();
+        public BacktesterOptimizerViewModel OptimizationPage { get; }
 
         public async void OpenTradeSetup()
         {
@@ -519,11 +523,11 @@ namespace TickTrader.BotTerminal
             CloseSetupDialog();
 
             //ActionOverlay.Value = observer;
-            IsRunning.Set();
+            _isRunning.Set();
             ProgressMonitor.Start(DoEmulation);
             await ProgressMonitor.Completion;
 
-            IsRunning.Unset();
+            _isRunning.Clear();
             //ActionOverlay.Value = null;
         }
 
