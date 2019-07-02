@@ -40,6 +40,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
+                Logger.Error(ex);
                 return new ValidationResult(false, ex.Message);
             }
 

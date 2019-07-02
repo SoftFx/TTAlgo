@@ -23,10 +23,11 @@ namespace TickTrader.BotAgent.Configurator
                 Version = assemblyName.Version.ToString();
                 BuildDate = assemblyName.GetLinkerTime().ToString("yyyy.MM.dd");
             }
-            catch
+            catch (Exception ex)
             {
                 Version = "Developer";
                 BuildDate = DateTime.MinValue.ToString("yyyy.MM.dd");
+                Logger.Error(ex);
             }
         }
     }

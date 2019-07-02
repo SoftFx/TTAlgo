@@ -103,6 +103,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (string.IsNullOrEmpty(freePortMassage))
                     freePortMassage = "Free ports not found";
 
+                Logger.Error(ex);
                 throw new WarningException($"{ex.Message}. {freePortMassage}");
             }
         }

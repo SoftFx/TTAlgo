@@ -59,7 +59,10 @@ namespace TickTrader.BotAgent.Configurator
                         }
                     }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
         }
 
         private void SetNewPrompts(SectionNames section, string key, string value)

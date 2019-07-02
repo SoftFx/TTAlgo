@@ -85,8 +85,10 @@ namespace TickTrader.BotAgent.Configurator
                     }
                 }
             }
-            catch
-            { }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
         }
 
         public void UpdateLog()
@@ -145,8 +147,10 @@ namespace TickTrader.BotAgent.Configurator
                     _lastSize = fileSize;
                 }
             }
-            catch
-            { }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
         }
     }
 }

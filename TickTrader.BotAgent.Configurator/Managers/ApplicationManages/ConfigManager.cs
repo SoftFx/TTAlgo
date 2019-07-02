@@ -25,7 +25,7 @@ namespace TickTrader.BotAgent.Configurator
                 { "ApplicationName", "TickTrader.BotAgent" },
                 { "RegistryAppName", "TickTrader Bot Agent" },
                 { "ServiceName", "_sfxBotAgent" },
-                { "LogsPath", "Logs/agent-error.log" }
+                { "LogsPath", "Logs/agent.log" }
             });
 
             LoadProperties();
@@ -51,12 +51,19 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveChanges()
         {
-            using (var fs = new FileStream(_appConfigPath, FileMode.Create))
+            try
             {
-                using (var sw = new StreamWriter(fs))
+                using (var fs = new FileStream(_appConfigPath, FileMode.Create))
                 {
-                    sw.Write(Properties.GetJObject().ToString());
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        sw.Write(Properties.GetJObject().ToString());
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
             }
         }
     }

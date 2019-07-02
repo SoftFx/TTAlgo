@@ -31,8 +31,9 @@ namespace TickTrader.BotAgent.Configurator
                 _serviceController.Start();
                 _serviceController.WaitForStatus(ServiceControllerStatus.Running);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex);
                 throw new Exception($"Cannot start Windows Service {_serviceName}");
             }
         }
@@ -47,8 +48,9 @@ namespace TickTrader.BotAgent.Configurator
                 _serviceController.Stop();
                 _serviceController.WaitForStatus(ServiceControllerStatus.Stopped);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex);
                 throw new Exception($"Cannot stopped Windows Service {_serviceName}");
             }
         }

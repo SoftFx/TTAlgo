@@ -110,6 +110,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
+                Logger.Fatal(ex);
                 MessageBoxManager.ErrorBox(ex.Message);
                 Application.Current.Shutdown();
             }
@@ -127,10 +128,12 @@ namespace TickTrader.BotAgent.Configurator
                     }
                     catch (WarningException ex)
                     {
+                        Logger.Error(ex);
                         MessageBoxManager.WarningBox(ex.Message);
                     }
                     catch (Exception exx)
                     {
+                        Logger.Error(exx);
                         MessageBoxManager.ErrorBox(exx.Message);
                     }
                 }
@@ -163,6 +166,7 @@ namespace TickTrader.BotAgent.Configurator
                 catch (Exception ex)
                 {
                     MessageBoxManager.ErrorBox(ex.Message);
+                    Logger.Error(ex);
                 }
             }));
 
@@ -179,6 +183,7 @@ namespace TickTrader.BotAgent.Configurator
                     }
                     catch (Exception ex)
                     {
+                        Logger.Fatal(ex);
                         MessageBoxManager.ErrorBox(ex.Message);
                         Application.Current.Shutdown();
                     }
@@ -229,8 +234,9 @@ namespace TickTrader.BotAgent.Configurator
             {
                 return SaveChangesQuestion();
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex);
                 MessageBoxManager.ErrorBox("Saving settings was failed");
                 return false;
             }

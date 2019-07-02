@@ -67,11 +67,12 @@ namespace TickTrader.BotAgent.Configurator
             {
                 firewallRule = _firewallPolicy.Rules.Item(name);
             }
-            catch
+            catch (Exception ex)
             {
                 firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
                 firewallRule.Name = name;
                 newRule = true;
+                Logger.Error(ex);
             }
 
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;

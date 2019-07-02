@@ -127,8 +127,10 @@ namespace TickTrader.BotAgent.Configurator
                 var args = model.SectionName == "" ? _configurationObject.Values<JProperty>() : _configurationObject[model.SectionName].Children<JProperty>();
                 model.UploadModels(args.ToList());
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException ex)
             {
+                Logger.Error(ex);
+
                 if (MessageBoxManager.YesNoBoxError($"Loading section {model.SectionName} failed. Apply default settings?"))
                 {
                     model.SetDefaultModelValues();
