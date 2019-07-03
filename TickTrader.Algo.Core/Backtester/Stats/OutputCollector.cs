@@ -74,13 +74,12 @@ namespace TickTrader.Algo.Core
                     Snapshot.Add(buffer[i]);
             }
 
-            if (streamEnabled && !isRealtimeStream)
+            if (streamEnabled && !isRealtimeStream && _fixture.Buffer != null)
             {
                 // copy all data from buffer to update
                 for (int i = 0; i < _fixture.Count; i++)
                 {
                     var point = _fixture[i].ChangeIndex(-1);
-                    //System.Diagnostics.Debug.WriteLine("OUTPUT - " + point.TimeCoordinate);
                     var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
                     _onTruncateUpdate(update);
                 }
@@ -112,7 +111,6 @@ namespace TickTrader.Algo.Core
             for (int i = 0; i < size; i++)
             {
                 var point = _fixture[i].ChangeIndex(-1);
-                //System.Diagnostics.Debug.WriteLine("OUTPUT - " + point.TimeCoordinate);
                 var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
                 _onTruncateUpdate?.Invoke(update);
                 Snapshot?.Add(point.Value);

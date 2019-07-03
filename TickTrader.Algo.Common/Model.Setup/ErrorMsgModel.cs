@@ -10,7 +10,8 @@
         NotDouble,
         NumberOverflow,
         RequiredButNotSet,
-        NotBoolean
+        NotBoolean,
+        InvalidCharacters
     }
 
 

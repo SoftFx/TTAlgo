@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal

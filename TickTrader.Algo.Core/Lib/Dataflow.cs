@@ -14,39 +14,29 @@ namespace TickTrader.Algo.Core.Lib
     {
         public static async Task BatchLinkTo<T>(this IReceivableSourceBlock<T> input, ITargetBlock<T[]> output, int batchSize)
         {
-            CancellationTokenSource cancelReceiveSrc = new CancellationTokenSource();
+            var buffer = new List<T>(batchSize);
 
-            List<T> buffer = new List<T>(batchSize);
-
-            try
+            while (await input.OutputAvailableAsync().ConfigureAwait(false))
             {
-                var ct = input.Completion.ContinueWith(t =>
+                while (input.TryReceive(out var item))
                 {
-                    cancelReceiveSrc.Cancel();
-                }, TaskContinuationOptions.ExecuteSynchronously);
-
-                while (!input.Completion.IsCompleted)
-                {
-                    buffer.Add(await input.ReceiveAsync(cancelReceiveSrc.Token).ConfigureAwait(false));
-
-                    T item;
-                    while (buffer.Count < batchSize)
+                    buffer.Add(item);
+                    if (buffer.Count >= batchSize)
                     {
-                        if (!input.TryReceive(out item))
-                            break;
-                        buffer.Add(item);
+                        await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
+                        buffer.Clear();
                     }
+                }
 
+                if (buffer.Count > 0)
+                {
                     await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
-
                     buffer.Clear();
                 }
 
                 if (buffer.Count > 0)
                     await output.SendAsync(buffer.ToArray()).ConfigureAwait(false);
             }
-            catch (InvalidOperationException) { /* normal exit */ }
-            catch (OperationCanceledException) { /* normal exit */ }
         }
 
         public static IPropagatorBlock<T, T[]> CreateBatchingBlock<T>(int batchSize)
@@ -57,7 +47,7 @@ namespace TickTrader.Algo.Core.Lib
             var inBuffer = new BufferBlock<T>(inputBufferOptions);
             var outBuffer = new BufferBlock<T[]>(outputBufferOptions);
 
-            inBuffer.BatchLinkTo(outBuffer, batchSize);
+            inBuffer.BatchLinkTo(outBuffer, batchSize).Forget();
 
             return DataflowBlock.Encapsulate<T, T[]>(inBuffer, outBuffer);
         }

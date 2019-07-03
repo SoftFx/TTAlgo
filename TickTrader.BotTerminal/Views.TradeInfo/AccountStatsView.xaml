@@ -44,7 +44,9 @@
             <l:KeyValueLabel Key="Margin Used:" Value="{Binding Margin}" />
             <l:KeyValueLabel Key="Free Margin:" Value="{Binding FreeMargin}" />
             <l:KeyValueLabel Key="Margin Level:" Value="{Binding MarginLevel}" />
-            <ContentControl ContentTemplate="{StaticResource ProfitEntryTemplate}" Content="{Binding}" />
+            <l:KeyValueLabel Key="Floating:" Value="{Binding Floating}" />
+            <l:KeyValueLabel Key="Swap:" Value="{Binding Swap}" />
+            <!--<ContentControl ContentTemplate="{StaticResource ProfitEntryTemplate}" Content="{Binding}" />-->
         </StackPanel>
     </Grid>
     

@@ -59,14 +59,17 @@ namespace TickTrader.Algo.Core
             InitOutputCollection(settings);
         }
 
-        public void OnStop(IBacktesterSettings settings, AccountAccessor acc)
+        public void OnStop(IBacktesterSettings settings, AccountAccessor acc, FeedEmulator feed)
         {
             if (acc != null && acc.IsMarginType)
             {
-                Stats.InitialBalance = (decimal)settings.InitialBalance;
-                Stats.FinalBalance = (decimal)acc.Balance;
+                Stats.InitialBalance = settings.InitialBalance;
+                Stats.FinalBalance = acc.Balance;
                 Stats.AccBalanceDigits = acc.BalanceCurrencyInfo.Digits;
             }
+
+            var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);
+            Stats.BarsCount = mainVector?.Count ?? 0;
 
             Stats.Elapsed = DateTime.UtcNow - _startTime;
 
@@ -75,8 +78,8 @@ namespace TickTrader.Algo.Core
             foreach (var sCollector in _symbolDataCollectors)
                 sCollector.Value.Dispose();
 
-            _equityCollector.Dispose();
-            _marginCollector.Dispose();
+            _equityCollector.OnStop();
+            _marginCollector.OnStop();
 
             //if (!string.IsNullOrWhiteSpace(_lastStatus))
             //    AddEvent(LogSeverities.Custom, _lastStatus);
@@ -242,17 +245,6 @@ namespace TickTrader.Algo.Core
 
         #region Output collection
 
-        public void InitOutputCollection<T>(string id)
-        {
-            var output = _executor.GetOutput<T>(id);
-            var outputBuffer = new List<T>();
-
-            output.Appended += a =>
-            {
-                outputBuffer.Add(a.Value);
-            };
-        }
-
         public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
             var collector = _outputCollectors[id];
@@ -264,7 +256,7 @@ namespace TickTrader.Algo.Core
 
         #region Stats collection
 
-        public void OnPositionClosed(DateTime timepoint, decimal profit, decimal comission, decimal swap)
+        public void OnPositionClosed(DateTime timepoint, double profit, double comission, double swap)
         {
             if (profit < 0)
             {
@@ -283,7 +275,7 @@ namespace TickTrader.Algo.Core
             Stats.TotalSwap += swap;
         }
 
-        public void OnCommisionCharged(decimal commission)
+        public void OnCommisionCharged(double commission)
         {
             Stats.TotalComission += commission;
         }
@@ -308,11 +300,6 @@ namespace TickTrader.Algo.Core
             Stats.OrderModificationRejected++;
         }
 
-        public void OnBufferExtended(int by)
-        {
-            Stats.BarsCount += by;
-        }
-
         public void OnRateUpdate(RateUpdate update)
         {
             Stats.TicksCount += update.NumberOfQuotes;
@@ -320,8 +307,8 @@ namespace TickTrader.Algo.Core
 
         public void RegisterEquity(DateTime timepoint, double equity, double margin)
         {
-            _equityCollector.AppendQuote(timepoint, equity, 0);
-            _marginCollector.AppendQuote(timepoint, margin, 0);
+            _equityCollector.AppendQuote(equity);
+            _marginCollector.AppendQuote(margin);
         }
 
         #endregion

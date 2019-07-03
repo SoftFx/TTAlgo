@@ -73,6 +73,7 @@
       <arg value="Algo.sln" />
   	  <arg value="-Recursive" />
   	  <arg value="-NonInteractive" />
+      <arg line='-MSBuildPath "${MSBuildDir}."' />
     </exec>
 
     <exec program="${MSBuildDir}msbuild.exe" >

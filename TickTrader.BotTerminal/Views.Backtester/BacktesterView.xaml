@@ -45,7 +45,7 @@
 
             <Style TargetType="Label">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
-                <Setter Property="Margin" Value="0,0,5,0"/>
+                <Setter Property="Margin" Value="0,0,2,0"/>
             </Style>
 
         </ControlTemplate.Resources>
@@ -64,6 +64,7 @@
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="14"/> <!-- for error indicators --> 
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
@@ -78,38 +79,39 @@
                     </Grid.RowDefinitions>
 
                     <Label Grid.Column="0" Grid.Row="0" Content="Bot/Indicator:"/>
-                    <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding Source={StaticResource PluginsCollection}}"
+                    <ComboBox Grid.Column="2" Grid.Row="0" ItemsSource="{Binding Source={StaticResource PluginsCollection}}"
                       ItemTemplate="{StaticResource PluginComboItemTemplate}" SelectedValue="{Binding SelectedPlugin.Value}" >
                         <ComboBox.GroupStyle>
                             <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
                         </ComboBox.GroupStyle>
                     </ComboBox>
 
-                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="2" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
+                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
                             IsEnabled="{Binding IsPluginSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
 
-                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="1">
+                    <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
                         <CheckBox Content="Save results to file" IsChecked="{Binding SaveResultsToFile.Value}" Margin="25,4,0,12" />
                         <CheckBox Content="Visualization" IsChecked="{Binding IsVisualizationEnabled.Value}" Margin="25,4,0,12" />
                     </StackPanel>
 
                     <Label Content="Account:" Grid.Column="0" Grid.Row="2"/>
-                    <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="1" Grid.Row="2" IsReadOnly="True"/>
+                    <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="2" Grid.Row="2" IsReadOnly="True"/>
 
-                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="2" Grid.Row="2" cal:Message.Attach="OpenTradeSetup"
+                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="2" cal:Message.Attach="OpenTradeSetup"
                             Style="{StaticResource SideButtonStyle}"/>
 
-                    <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="3" Grid.ColumnSpan="3"/>
+                    <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="3" Grid.ColumnSpan="4"/>
 
                     <Label Grid.Column="0" Grid.Row="4" Content="Model:"/>
-                    <ComboBox Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
+                    <ComboBox Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
                               ItemTemplate="{StaticResource ModelTemplate}" Margin="0,4,4,0"/>
 
-                    <ItemsControl ItemsSource="{Binding AdditionalSymbols}" Grid.ColumnSpan="3" Grid.Row="5" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
+                    <ItemsControl ItemsSource="{Binding AdditionalSymbols}" Grid.ColumnSpan="4" Grid.Row="5" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
 
                     <Label Grid.Column="0" Grid.Row="6" Content="Time range:"/>
-                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="1" Grid.Row="6" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
-                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="1" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,4,4,0"/>
+                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="2" Grid.Row="6" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
+                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,4,4,0"
+                                    IsEnabled="{Binding IsDateRangeEnabled.Value}"/>
                 </Grid>
             </Grid>
         </ScrollViewer>

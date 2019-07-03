@@ -57,6 +57,11 @@ namespace TickTrader.Algo.Core
             throw new NotImplementedException();
         }
 
+        public void SyncByTime()
+        {
+            throw new NotSupportedException("Synchronization by time is not supported for quote series!");
+        }
+
         public BufferUpdateResult Update(Api.Quote quote)
         {
             buffer.Append(quote);

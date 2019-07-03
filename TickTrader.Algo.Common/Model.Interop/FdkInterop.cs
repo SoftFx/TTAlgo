@@ -104,6 +104,7 @@ namespace TickTrader.Algo.Common.Model
             feedCs.Address = address;
             feedCs.Username = login;
             feedCs.Password = password;
+            feedCs.AppId = _options.Type.ToString();
 
             if (logsEnabled)
             {
@@ -135,6 +136,7 @@ namespace TickTrader.Algo.Common.Model
             tradeCs.Address = address;
             tradeCs.Username = login;
             tradeCs.Password = password;
+            tradeCs.AppId = _options.Type.ToString();
 
             if (logsEnabled)
             {
@@ -365,7 +367,7 @@ namespace TickTrader.Algo.Common.Model
             throw new NotSupportedException("FDK does not support getting quotes");
         }
 
-        public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        public Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
             return requestProcessor.EnqueueTask(() =>
             {
@@ -373,16 +375,16 @@ namespace TickTrader.Algo.Common.Model
                 {
                     var fakeTimePoint = new DateTime(2017, 1, 1);
                     var result = _feedProxy.Server.GetHistoryBars(symbol, fakeTimePoint, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
-                    return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
+                    return new Tuple<DateTime?, DateTime?>(result.FromAll, result.ToAll);
                 }
                 else //bars
                 {
                     var fakeTimePoint = new DateTime(1990, 1, 1);
                     var result = _feedProxy.Server.GetHistoryBars(symbol, fakeTimePoint, 1, FdkConvertor.Convert(priceType), FdkConvertor.ToBarPeriod(timeFrame));
                     if (result.Bars != null && result.Bars.Length > 0)
-                        return new Tuple<DateTime, DateTime>(result.Bars[0].From, result.ToAll);
+                        return new Tuple<DateTime?, DateTime?>(result.Bars[0].From, result.ToAll);
                     else
-                        return new Tuple<DateTime, DateTime>(result.FromAll, result.ToAll);
+                        return new Tuple<DateTime?, DateTime?>(result.FromAll, result.ToAll);
                 }
             });
         }

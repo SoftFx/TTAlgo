@@ -66,6 +66,12 @@ namespace TickTrader.SeriesStorage.LightSerializer
             }
         }
 
+        public void Write(byte value)
+        {
+            var offset = EnlargeBy(1);
+            stream[offset++] = value;
+        }
+
         public void Write(int value)
         {
             var offset = EnlargeBy(4);

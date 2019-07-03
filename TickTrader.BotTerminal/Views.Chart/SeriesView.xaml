@@ -48,6 +48,11 @@
         <Setter Property="DrawNaNAs" Value="Gaps"/>
     </Style>
 
+    <Style x:Key="HiddenOverlayMarkerSeries_Style" TargetType="s:FastLineRenderableSeries" BasedOn="{StaticResource OverlayMarkerSeries_Style}">
+        <Setter Property="s:CursorModifier.IncludeSeries" Value="False"/>
+        <Setter Property="StrokeThickness" Value="0"/>
+    </Style>
+
     <Style x:Key="BarChart_OhlcStyle" TargetType="s:FastOhlcRenderableSeries">
         <Setter Property="s:TooltipModifier.IncludeSeries" Value="False"/>
         <Setter Property="StrokeUp" Value="#009344"/>

@@ -89,6 +89,11 @@ namespace TickTrader.Algo.Core
             return range;
         }
 
+        public void Close()
+        {
+            _builder.CloseSequence();
+        }
+
         public IEnumerator<BarEntity> GetEnumerator()
         {
             return _list.GetEnumerator();

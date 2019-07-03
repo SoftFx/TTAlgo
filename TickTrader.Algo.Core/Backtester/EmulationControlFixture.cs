@@ -37,9 +37,16 @@ namespace TickTrader.Algo.Core
 
         public bool OnStart()
         {
-            Collector.OnStart(Settings, Feed);
+            try
+            {
+                Collector.OnStart(Settings, Feed);
 
-            return InvokeEmulator.StartFeedRead();
+                return InvokeEmulator.StartFeedRead();
+            }
+            catch (Exception ex)
+            {
+                throw WrapException(ex);
+            }
         }
 
         public void OnStop()
@@ -49,12 +56,19 @@ namespace TickTrader.Algo.Core
 
             //tradeEmulator.Stop();
 
-            Collector.OnStop(Settings, builder?.Account);
+            Collector.OnStop(Settings, builder?.Account, Feed);
         }
 
         public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
         {
-            InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
+            try
+            {
+                InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
+            }
+            catch (Exception ex)
+            {
+                throw WrapException(ex);
+            }
         }
 
         public void CancelEmulation()
@@ -88,6 +102,17 @@ namespace TickTrader.Algo.Core
         private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
         {
             Executor.OnUpdate(rep.Entity);
+        }
+
+        private Exception WrapException(Exception ex)
+        {
+            if (ex is AlgoException)
+                return ex;
+
+            if (ex is OperationCanceledException || ex is TaskCanceledException)
+                return new AlgoOperationCanceledException(ex.Message);
+
+            return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }
     }
 }

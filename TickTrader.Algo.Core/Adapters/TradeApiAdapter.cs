@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
 {
@@ -91,11 +92,13 @@ namespace TickTrader.Algo.Core
                 sl = RoundPrice(sl, smbMetadata, side);
                 tp = RoundPrice(tp, smbMetadata, side);
 
+                if (orderType == OrderType.Market && price == null)
+                    price = GetMarketOpenPriceOrThrow(smbMetadata, side);
 
                 ValidatePrice(price, orderType == OrderType.Limit || orderType == OrderType.StopLimit);
                 ValidateStopPrice(stopPrice, orderType == OrderType.Stop || orderType == OrderType.StopLimit);
                 ValidateVolume(volume);
-                ValidateMaxVisibleVolume(maxVisibleVolume);
+                ValidateMaxVisibleVolume(maxVisibleVolume, orderType);
                 ValidateTp(tp);
                 ValidateSl(sl);
 
@@ -132,7 +135,7 @@ namespace TickTrader.Algo.Core
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, account.Leverage), orderResp.TransactionTime);
             }
             catch (OrderValidationError ex)
             {
@@ -206,7 +209,7 @@ namespace TickTrader.Algo.Core
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed");
-                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
+                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, account.Leverage), result.TransactionTime);
                 }
                 else
                 {
@@ -324,7 +327,7 @@ namespace TickTrader.Algo.Core
                 ValidatePrice(price, false);
                 ValidateStopPrice(stopPrice, false);
                 ValidateVolume(newOrderVolume);
-                ValidateMaxVisibleVolume(orderMaxVisibleVolume);
+                ValidateMaxVisibleVolume(orderMaxVisibleVolume, orderType);
                 ValidateTp(tp);
                 ValidateSl(sl);
 
@@ -361,7 +364,7 @@ namespace TickTrader.Algo.Core
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata), result.TransactionTime);
+                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, account.Leverage), result.TransactionTime);
                 }
                 else
                 {
@@ -460,13 +463,16 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
         }
 
-        private void ValidateMaxVisibleVolume(double? volume)
+        private void ValidateMaxVisibleVolume(double? volume, OrderType orderType)
         {
             if (!volume.HasValue)
                 return;
 
             if (volume < 0 || IsInvalidValue(volume.Value))
                 throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+
+            if (orderType == OrderType.Market)
+                throw new OrderValidationError(OrderCmdResultCodes.MarketWithMaxVisibleVolume);
         }
 
         private void ValidateVolumeLots(double volumeLots, Symbol smbMetadata)
@@ -572,24 +578,26 @@ namespace TickTrader.Algo.Core
 
         private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
         {
-            var orderEntity = new OrderEntity("-1")
-            {
-                Symbol = request.Symbol,
-                InitialType = request.Type,
-                Type = request.Type,
-                Side = request.Side,
-                Price = request.Price,
-                StopPrice = request.StopPrice,
-                RequestedVolume = request.Volume,
-                RemainingVolume = request.Volume,
-                MaxVisibleVolume = request.MaxVisibleVolume,
-                StopLoss = request.StopLoss,
-                TakeProfit = request.TakeProfit,
-                Expiration = request.Expiration,
-                Options = request.Options,
-            };
+            //var orderEntity = new OrderEntity("-1")
+            //{
+            //    Symbol = request.Symbol,
+            //    InitialType = request.Type,
+            //    Type = request.Type,
+            //    Side = request.Side,
+            //    Price = request.Price,
+            //    StopPrice = request.StopPrice,
+            //    RequestedVolume = request.Volume,
+            //    RemainingVolume = request.Volume,
+            //    MaxVisibleVolume = request.MaxVisibleVolume,
+            //    StopLoss = request.StopLoss,
+            //    TakeProfit = request.TakeProfit,
+            //    Expiration = request.Expiration,
+            //    Options = request.Options,
+            //};
 
-            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(orderEntity, symbol))
+            var isHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
+
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -597,23 +605,29 @@ namespace TickTrader.Algo.Core
         {
             var oldOrder = account.Orders.GetOrderOrNull(request.OrderId);
 
-            var orderEntity = new OrderEntity(request.OrderId)
-            {
-                Symbol = request.Symbol,
-                Type = request.Type,
-                Side = request.Side,
-                Price = request.Price ?? oldOrder.Price,
-                StopPrice = request.StopPrice ?? oldOrder.StopPrice,
-                RequestedVolume = request.NewVolume ?? request.CurrentVolume,
-                RemainingVolume = request.NewVolume ?? request.CurrentVolume,
-                MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
-                StopLoss = request.StopLoss ?? oldOrder.StopLoss,
-                TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
-                Expiration = request.Expiration ?? oldOrder.Expiration,
-                Options = request.Options ?? oldOrder.Entity.Options,
-            };
+            //var orderEntity = new OrderEntity(request.OrderId)
+            //{
+            //    Symbol = request.Symbol,
+            //    Type = request.Type,
+            //    Side = request.Side,
+            //    Price = request.Price ?? oldOrder.Price,
+            //    StopPrice = request.StopPrice ?? oldOrder.StopPrice,
+            //    RequestedVolume = request.NewVolume ?? request.CurrentVolume,
+            //    RemainingVolume = request.NewVolume ?? request.CurrentVolume,
+            //    MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
+            //    StopLoss = request.StopLoss ?? oldOrder.StopLoss,
+            //    TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
+            //    Expiration = request.Expiration ?? oldOrder.Expiration,
+            //    Options = request.Options ?? oldOrder.Entity.Options,
+            //};
 
-            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, orderEntity, symbol))
+            var newIsHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
+
+            var newVol = request.NewVolume ?? oldOrder.RemainingVolume;
+            var newPrice = request.Price ?? oldOrder.Price;
+            var newStopPrice = request.StopPrice ?? oldOrder.StopPrice;
+
+            if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
@@ -648,11 +662,28 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        #region Logging
+        private double GetMarketOpenPriceOrThrow(SymbolAccessor smb, OrderSide orderSide)
+        {
+            var rate = smb.LastQuote;
 
-       
+            if (rate == null)
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
 
-        #endregion
+            if (orderSide == OrderSide.Buy)
+            {
+                if (rate.HasAsk)
+                    return rate.Ask;
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            }
+            else if (orderSide == OrderSide.Sell)
+            {
+                if (rate.HasBid)
+                    return rate.Bid;
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            }
+
+            throw new Exception("Unknown order side: " + orderSide);
+        }
     }
 
     internal class OrderValidationError : Exception
@@ -669,6 +700,22 @@ namespace TickTrader.Algo.Core
         }
 
         public OrderCmdResultCodes ErrorCode { get; }
+    }
+
+    internal static class TradeApiExtentions
+    {
+        public static OrderCmdResultCodes ToOrderError(this CalcErrorCodes error)
+        {
+            switch (error)
+            {
+                case CalcErrorCodes.None: return OrderCmdResultCodes.Ok;
+                case CalcErrorCodes.NoCrossSymbol: return OrderCmdResultCodes.Misconfiguration;
+                case CalcErrorCodes.OffCrossQuote: return OrderCmdResultCodes.OffQuotes;
+                case CalcErrorCodes.OffQuote: return OrderCmdResultCodes.OffQuotes;
+            }
+
+            throw new Exception("Unknown code: " + error);
+        }
     }
 
 }

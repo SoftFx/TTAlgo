@@ -31,8 +31,8 @@ namespace TickTrader.BotTerminal
         {
             CultureCache = CultureInfo.CurrentCulture;
 
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+            //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             LocaleSelector.Instance.ActivateDefault();
 
@@ -220,7 +220,8 @@ namespace TickTrader.BotTerminal
                 {
                     AutoReconnect = true,
                     EnableLogs = BotTerminal.Properties.Settings.Default.EnableConnectionLogs,
-                    LogsFolder = EnvService.Instance.LogFolder
+                    LogsFolder = EnvService.Instance.LogFolder,
+                    Type = AppType.BotTerminal,
                 };
 
                 var clientHandler = new ClientModel.ControlHandler(connectionOptions, EnvService.Instance.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerHierarchy);

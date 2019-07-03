@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Api
         bool IsCompleted { get; }
         bool IsFaulted { get; }
         Order ResultingOrder { get; }
+        DateTime TransactionTime { get; }
     }
 
     [Flags]
@@ -54,5 +55,8 @@ namespace TickTrader.Algo.Api
         DealingTimeout      = 115,
         Misconfiguration    = 116,
         OrderLocked         = 117,
+        IncorrectPricePrecision = 118,
+        CloseOnlyTrading = 119,
+        MarketWithMaxVisibleVolume = 120,
     }
 }

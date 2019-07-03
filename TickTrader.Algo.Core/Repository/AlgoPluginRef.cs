@@ -1,4 +1,5 @@
-﻿using TickTrader.Algo.Core.Container;
+﻿using System;
+using TickTrader.Algo.Core.Container;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.Algo.Core.Repository
@@ -21,6 +22,12 @@ namespace TickTrader.Algo.Core.Repository
         {
             return new PluginExecutor(Id);
         }
+
+        public virtual T CreateObject<T>()
+            where T : MarshalByRefObject, new()
+        {
+            return new T();
+        }
     }
 
 
@@ -39,6 +46,11 @@ namespace TickTrader.Algo.Core.Repository
         public override PluginExecutor CreateExecutor()
         {
             return _sandbox.CreateExecutor(Id);
+        }
+
+        public override T CreateObject<T>()
+        {
+            return _sandbox.Activate<T>();
         }
     }
 }

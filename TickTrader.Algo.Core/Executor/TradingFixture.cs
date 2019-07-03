@@ -71,7 +71,7 @@ namespace TickTrader.Algo.Core
             builder.Account.Update(_dataProvider.AccountInfo, currencies);
 
             foreach (var order in _dataProvider.GetOrders())
-                builder.Account.Orders.Add(order);
+                builder.Account.Orders.Add(order, _account);
             foreach (var position in _dataProvider.GetPositions())
                 builder.Account.NetPositions.UpdatePosition(position.PositionInfo);
         }
@@ -117,13 +117,13 @@ namespace TickTrader.Algo.Core
             }
 
             if (eReport.Action == OrderEntityAction.Added)
-                return collection.Add(eReport.OrderCopy);
+                return collection.Add(eReport.OrderCopy, _account);
             if (eReport.Action == OrderEntityAction.Removed)
                 return collection.UpdateAndRemove(eReport.OrderCopy);
             if (eReport.Action == OrderEntityAction.Updated)
                 return collection.Replace(eReport.OrderCopy);
 
-            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+            return new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, accProxy.Leverage);
         }
 
         private void DataProvider_BalanceUpdated(BalanceOperationReport report)
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Core
 
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
-                    accProxy.Balance = (decimal)report.Balance;
+                    accProxy.Balance = report.Balance;
                     context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
                     context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                 }
@@ -178,7 +178,7 @@ namespace TickTrader.Algo.Core
                 var positions = accProxy.NetPositions;
 
                 var oldPos = positions.GetPositionOrNull(report.NetPosition.Symbol);
-                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.NetPosition.Symbol);
+                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.NetPosition.Symbol, _symbols.GetOrDefault, accProxy.Leverage);
                 var pos = positions.UpdatePosition(report.NetPosition);
                 var isClosed = report.ExecAction == OrderExecAction.Closed;
 
@@ -276,7 +276,7 @@ namespace TickTrader.Algo.Core
                 if (eReport.OrderCopy.Type == OrderType.Market)
                 {
                     // market orders are never added to orders collection. Cash account has actually limit IoC
-                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                    var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);
                     if (clone != null)
                     {
                         var isOwnOrder = CallListener(eReport);
@@ -300,7 +300,7 @@ namespace TickTrader.Algo.Core
                     }
                     else
                     {
-                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault);
+                        var clone = new OrderAccessor(eReport.OrderCopy, _symbols.GetOrDefault, _account.Leverage);
                         if (clone != null)
                         {
                             if (!IsInvisible(clone))
@@ -326,9 +326,9 @@ namespace TickTrader.Algo.Core
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
             {
-                if (eReport.NewBalance != null && acc.Balance != (decimal)eReport.NewBalance.Value)
+                if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
                 {
-                    acc.Balance = (decimal) eReport.NewBalance.Value;
+                    acc.Balance =  eReport.NewBalance.Value;
                     context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }
@@ -398,7 +398,7 @@ namespace TickTrader.Algo.Core
             reportListeners.Add(operationId, rep =>
             {
                 reportListeners.Remove(operationId);
-                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
+                resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
             });
 
             orderRequest.OperationId = operationId;
@@ -439,7 +439,7 @@ namespace TickTrader.Algo.Core
                 if (resultContainer.Count == 2)
                 {
                     reportListeners.Remove(operationId);
-                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy, rep.TransactionTime));
+                    resultTask.TrySetResult(new TradeResultEntity(rep.ResultCode, rep.OrderCopy));
                 }
             });
 

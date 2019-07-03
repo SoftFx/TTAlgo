@@ -9,14 +9,17 @@ namespace TickTrader.BotTerminal
     internal class BotJournal : Journal<BotMessage>
     {
         private Logger _logger;
+        private bool _writeToLogger;
 
         public BotMessageTypeCounter MessageCount { get; }
 
-        public BotJournal(string botId) : this(botId, 1000) { }
+        public BotJournal(string botId, bool writeToLogger) : this(botId, writeToLogger, 1000) { }
 
-        public BotJournal(string botId, int journalSize)
+        public BotJournal(string botId, bool writeToLogger, int journalSize)
             : base(1000)
         {
+            _writeToLogger = writeToLogger;
+
             _logger = LogManager.GetLogger(LoggerHelper.GetBotLoggerName(botId));
             MessageCount = new BotMessageTypeCounter();
         }
@@ -32,8 +35,7 @@ namespace TickTrader.BotTerminal
         {
             base.Add(items);
 
-            foreach (var item in items)
-                WriteToLogger(item);
+            WriteToLogger(items);
         }
 
         public void LogStatus(string status)
@@ -59,6 +61,9 @@ namespace TickTrader.BotTerminal
 
         private void WriteToLogger(BotMessage message)
         {
+            if (!_writeToLogger)
+                return;
+
             if (message.Type != JournalMessageType.Error)
                 _logger.Info(message.ToString());
             else
@@ -67,6 +72,15 @@ namespace TickTrader.BotTerminal
                 if (message.Details != null)
                     _logger.Error(message.Details);
             }
+        }
+
+        private void WriteToLogger(List<BotMessage> items)
+        {
+            if (!_writeToLogger)
+                return;
+
+            foreach (var item in items)
+                WriteToLogger(item);
         }
 
         private void LogError(BotMessage message)

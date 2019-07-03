@@ -14,37 +14,17 @@ namespace TickTrader.Algo.Core
     public class ExecutorHandler : CrossDomainObject
     {
         private ISynchronizationContext _syncContext;
-        private BufferBlock<object> _updateBuffer;
-        private ActionBlock<object[]> _updateSender;
-        private Task _batchJob;
+        
+        private AlgoPluginRef _ref;
+        private IUpdateWorker _worker;
 
         public ExecutorHandler(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
+            _ref = pluginRef;
             _syncContext = updatesSync;
-            //_syncContext = SynchronizationContext.Current
-            //    ?? throw new Exception("No synchronization context! ExecutorHandler can only be crteater on UI thread or inside an Actor!");
-
             Core = pluginRef.CreateExecutor();
             IsIsolated = pluginRef.IsIsolated;
-
-            Core.OnUpdate = EnqueueUpdate;
         }
-
-        //public void Start()
-        //{
-        //    StartCollection();
-        //}
-
-        //public void Stop()
-        //{
-        //    StopCollection().Wait();
-        //}
-
-        //public async Task Stop()
-        //{
-        //    await Task.Factory.StartNew(() => Core.Stop());
-        //    await StopCollection();
-        //}
 
         // TO DO: Direct access to Core should be removed in future refactoring!
         public PluginExecutor Core { get; }
@@ -60,26 +40,21 @@ namespace TickTrader.Algo.Core
         public event Action<IDataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
 
-        internal void StartCollection()
+        internal void StartCollection(bool realtime)
         {
-            var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 30 };
-            var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 30, SingleProducerConstrained = true };
+            if (realtime)
+                _worker = _ref.CreateObject<RealtimeUpdateWorker>();
+            else
+                _worker = _ref.CreateObject<BulckUpdateWorker>();
 
-            _updateBuffer = new BufferBlock<object>(bufferOptions);
-            _updateSender = new ActionBlock<object[]>(msgList => _syncContext.Invoke(() => MarshalUpdates(msgList)), senderOptions);
-
-            _batchJob = _updateBuffer.BatchLinkTo(_updateSender, 30);
+            _worker.Start(this, Core);
         }
 
-        internal async Task StopCollection()
+        internal void StopCollection()
         {
             try
             {
-                _updateBuffer.Complete();
-                await _updateBuffer.Completion;
-                await _batchJob;
-                _updateSender.Complete();
-                await _updateSender.Completion;
+                _worker.Stop();
             }
             catch (Exception ex)
             {
@@ -87,24 +62,22 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void EnqueueUpdate(object update)
+        private void MarshalUpdates(IList<object> updates)
         {
-            _updateBuffer.SendAsync(update).Wait();
-        }
-
-        private void MarshalUpdates(object[] updates)
-        {
-            foreach (var update in updates)
+            _syncContext.Invoke(() =>
             {
-                try
+                for (int i = 0; i < updates.Count; i++)
                 {
-                    MarshalUpdate(update);
+                    try
+                    {
+                        MarshalUpdate(updates[i]);
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorOccurred?.Invoke(ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    ErrorOccurred?.Invoke(ex);
-                }
-            }
+            });
         }
 
         private void MarshalUpdate(object update)
@@ -135,6 +108,87 @@ namespace TickTrader.Algo.Core
                 }
                 else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
+            }
+        }
+
+        public interface IUpdateWorker
+        {
+            void Start(ExecutorHandler handler, PluginExecutor executor);
+            void Stop();
+        }
+
+        public class BulckUpdateWorker : CrossDomainObject, IUpdateWorker
+        {
+            private PagedGate<object> _gate = new PagedGate<object>(300);
+            private Task _gatePushTask;
+            private ExecutorHandler _handler;
+
+            public void Start(ExecutorHandler handler, PluginExecutor executor)
+            {
+                _handler = handler;
+                executor.OnUpdate = EnqueueUpdate;
+                //executor.Stopped += Executor_Stopped;
+
+                _gatePushTask = Task.Factory.StartNew(PushUpdates);
+            }
+
+            public void Stop()
+            {
+                //_gate.Close();
+                _gate.Complete(); // TO DO: It will work only in backtester! Need to refactor to use in executor.
+                _gatePushTask.Wait();
+            }
+
+            //private void Executor_Stopped()
+            //{
+            //    _gate.Complete();
+            //}
+
+            private void EnqueueUpdate(object update)
+            {
+                _gate.Write(update);
+            }
+
+            private void PushUpdates()
+            {
+                foreach (var page in _gate.PagedRead())
+                    _handler.MarshalUpdates(page);
+            }
+        }
+
+        public class RealtimeUpdateWorker : CrossDomainObject, IUpdateWorker
+        {
+            private ExecutorHandler _handler;
+            private BufferBlock<object> _updateBuffer;
+            private ActionBlock<object[]> _updateSender;
+            private Task _batchJob;
+
+            public void Start(ExecutorHandler handler, PluginExecutor executor)
+            {
+                _handler = handler;
+                executor.OnUpdate = EnqueueUpdate;
+
+                var bufferOptions = new DataflowBlockOptions() { BoundedCapacity = 200 };
+                var senderOptions = new ExecutionDataflowBlockOptions() { BoundedCapacity = 10, SingleProducerConstrained = true };
+
+                _updateBuffer = new BufferBlock<object>(bufferOptions);
+                _updateSender = new ActionBlock<object[]>(msgList => _handler.MarshalUpdates(msgList), senderOptions);
+
+                _batchJob = _updateBuffer.BatchLinkTo(_updateSender, 50);
+            }
+
+            public void Stop()
+            {
+                _updateBuffer.Complete();
+                _updateBuffer.Completion.Wait();
+                _batchJob.Wait();
+                _updateSender.Complete();
+                _updateSender.Completion.Wait();
+            }
+
+            private void EnqueueUpdate(object update)
+            {
+                _updateBuffer.SendAsync(update).Wait();
             }
         }
     }

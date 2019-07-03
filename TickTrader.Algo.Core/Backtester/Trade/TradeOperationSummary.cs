@@ -11,10 +11,10 @@ namespace TickTrader.Algo.Core
 {
     internal class TradeChargesInfo
     {
-        public decimal Swap { get; set; }
-        public decimal Commission { get; set; }
+        public double Swap { get; set; }
+        public double Commission { get; set; }
 
-        public decimal Total => Swap + Commission;
+        public double Total => Swap + Commission;
         public CurrencyEntity CurrencyInfo { get; set; }
 
         public void Clear()
@@ -30,8 +30,8 @@ namespace TickTrader.Algo.Core
 
     internal struct FillInfo
     {
-        public decimal FillAmount { get; set; }
-        public decimal FillPrice { get; set; }
+        public double FillAmount { get; set; }
+        public double FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
         public NetPositionOpenInfo NetPos { get; set; }
         public SymbolAccessor SymbolInfo { get; set; }
@@ -101,7 +101,7 @@ namespace TickTrader.Algo.Core
         {
             var smbInfo = order.SymbolInfo;
             var priceFormat = smbInfo.PriceFormat;
-            var fillAmountLots = info.FillAmount / (decimal)smbInfo.ContractSize;
+            var fillAmountLots = info.FillAmount / smbInfo.ContractSize;
 
             StartNewAction();
 
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Core
             PrintAmountAndPrice(order);
         }
 
-        public void AddStopLimitActivationAction(OrderAccessor order, decimal price)
+        public void AddStopLimitActivationAction(OrderAccessor order, double price)
         {
             StartNewAction();
 
@@ -136,7 +136,7 @@ namespace TickTrader.Algo.Core
             //return _builder.ToString();
         }
 
-        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, decimal price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
+        public void AddGrossCloseAction(OrderAccessor pos, double profit, double price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
         {
             var priceFormat = pos.SymbolInfo.PriceFormat;
             var profitFormat = balanceCurrInf.Format;
@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Core
                 return;
 
             var priceFormat = symbol.PriceFormat;
-            var closeAmountLost = closeInfo.CloseAmount / (decimal)symbol.ContractSize;
+            var closeAmountLost = closeInfo.CloseAmount / symbol.ContractSize;
             var profitFormat = balanceCurrInfo.Format;
 
             StartNewAction();

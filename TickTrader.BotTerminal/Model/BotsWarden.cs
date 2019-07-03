@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.BotTerminal
 {

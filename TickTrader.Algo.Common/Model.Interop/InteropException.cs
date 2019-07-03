@@ -18,7 +18,7 @@ namespace TickTrader.Algo.Common.Model.Interop
             ErrorCode = ConnectionErrorCodes.Unknown;
         }
 
-        public InteropException(string message, ConnectionErrorCodes errorCode)
+        public InteropException(string message, ConnectionErrorCodes errorCode) : base(message)
         {
             ErrorCode = errorCode;
         }

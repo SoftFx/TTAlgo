@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<FeedHistoryProviderModel>();
 
-        private const int SliceMaxSize = 8000;
+        private const int SliceMaxSize = 4000;
         private string _dataFolder;
         private FeedHistoryFolderOptions _folderOptions;
         private FeedCache.Handler _diskCache = new FeedCache.Handler(SpawnLocal<FeedCache>());
@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Common.Model
                 return Actor.Call(a => a.GetQuotePage(symbol, Prepare(startTime), count, includeLevel2));
             }
 
-            public Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+            public Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
             {
                 return Actor.Call(a => a.GetAvailableRange(symbol, priceType, timeFrame));
             }
@@ -143,9 +143,9 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private Task<Tuple<DateTime, DateTime>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
+        private Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(string symbol, BarPriceType priceType, TimeFrames timeFrame)
         {
-            return _feedProxy.GetAvailableRange(symbol, priceType, timeFrame);
+            return _feedProxy?.GetAvailableRange(symbol, priceType, timeFrame) ?? Task.FromResult<Tuple<DateTime?, DateTime?>>(null);
         }
 
         private async Task<BarEntity[]> GetBarPage(string symbol, BarPriceType priceType, TimeFrames timeFrame, DateTime startTime, int pageSize)

@@ -8,6 +8,7 @@ using Api = TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
 using BO = TickTrader.BusinessObjects;
 using SoftFX.Extended.Reports;
+using FIX = SoftFX.Extended;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -132,15 +133,16 @@ namespace TickTrader.Algo.Common.Model
                 amount = p.SellAmount;
             }
 
-            return new PositionEntity()
+            return new PositionEntity(p.Symbol)
             {
+                Id = p.PosID,
                 Side = side,
                 Volume = amount,
                 Price = price,
-                Symbol = p.Symbol,
                 Commission = p.Commission,
                 AgentCommission = p.AgentCommission,
-                Swap = p.Swap
+                Swap = p.Swap,
+                Modified = p.PosModified,
             };
         }
 
@@ -171,13 +173,9 @@ namespace TickTrader.Algo.Common.Model
                 return book.Select(b => Convert(b)).ToArray();
         }
 
-        public static BookEntryEntity Convert(QuoteEntry fdkEntry)
+        public static Api.BookEntry Convert(QuoteEntry fdkEntry)
         {
-            return new BookEntryEntity()
-            {
-                Price = fdkEntry.Price,
-                Volume = fdkEntry.Volume
-            };
+            return new Api.BookEntry(fdkEntry.Price, fdkEntry.Volume);
         }
 
         public static SymbolEntity[] Convert(SymbolInfo[] info)
@@ -393,6 +391,35 @@ namespace TickTrader.Algo.Common.Model
             return Api.OrderCmdResultCodes.UnknownError;
         }
 
+        public static Core.TradeTransactionReason Convert(FIX.Reports.TradeTransactionReason reason)
+        {
+            switch(reason)
+            {
+                case FIX.Reports.TradeTransactionReason.ClientRequest:
+                    return Core.TradeTransactionReason.ClientRequest;
+                case FIX.Reports.TradeTransactionReason.DealerDecision:
+                    return Core.TradeTransactionReason.DealerDecision;
+                case FIX.Reports.TradeTransactionReason.DeleteAccount:
+                    return Core.TradeTransactionReason.DeleteAccount;
+                case FIX.Reports.TradeTransactionReason.Expired:
+                    return Core.TradeTransactionReason.Expired;
+                case FIX.Reports.TradeTransactionReason.PendingOrderActivation:
+                    return Core.TradeTransactionReason.PendingOrderActivation;
+                case FIX.Reports.TradeTransactionReason.Rollover:
+                    return Core.TradeTransactionReason.Rollover;
+                case FIX.Reports.TradeTransactionReason.StopLossActivation:
+                    return Core.TradeTransactionReason.StopLossActivation;
+                case FIX.Reports.TradeTransactionReason.StopOut:
+                    return Core.TradeTransactionReason.StopOut;
+                case FIX.Reports.TradeTransactionReason.TakeProfitActivation:
+                    return Core.TradeTransactionReason.TakeProfitActivation;
+                case FIX.Reports.TradeTransactionReason.TransferMoney:
+                    return Core.TradeTransactionReason.TransferMoney;
+                default:
+                    return Core.TradeTransactionReason.None;
+            }
+        }
+
         public static Api.OrderCmdResultCodes Convert(ArgumentOutOfRangeException ex)
         {
             var paramName = ex.ParamName.ToLowerInvariant();
@@ -510,6 +537,7 @@ namespace TickTrader.Algo.Common.Model
                 UsdToMarginCurrencyConversionRate = report.UsdToMarginCurrencyConversionRate,
                 UsdToProfitCurrencyConversionRate = report.UsdToProfitCurrencyConversionRate,
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
+                TradeTransactionReason = Convert(report.TradeTransactionReason),
             };
         }
 

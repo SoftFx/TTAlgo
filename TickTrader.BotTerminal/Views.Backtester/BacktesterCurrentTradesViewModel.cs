@@ -16,11 +16,11 @@ namespace TickTrader.BotTerminal
         private MockClient _client;
         private MockConnection _connection = new MockConnection();
 
-        public BacktesterCurrentTradesViewModel()
+        public BacktesterCurrentTradesViewModel(ProfileManager profile = null)
         {
             _client = new MockClient();
-            Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false);
-            Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor);
+            Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false, profile, true);
+            Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor, null, false);
         }
 
         public TradeInfoViewModel Trades { get; }
@@ -54,6 +54,7 @@ namespace TickTrader.BotTerminal
             backtester.Executor.SymbolRateUpdated -= Executor_SymbolRateUpdated;
 
             _connection.EmulateDisconnect();
+            _client.Deinit();
         }
 
         private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)

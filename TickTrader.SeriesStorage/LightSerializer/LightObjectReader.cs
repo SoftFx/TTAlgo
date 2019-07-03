@@ -12,7 +12,11 @@ namespace TickTrader.SeriesStorage.LightSerializer
         private int _offset;
         private int _maxOffset;
 
-        public LightObjectReader(ArraySegment<byte> buffer)
+        public LightObjectReader()
+        {
+        }
+
+        public void SetDataBuffer(ArraySegment<byte> buffer)
         {
             _buffer = buffer.Array;
             _offset = buffer.Offset;
@@ -35,27 +39,33 @@ namespace TickTrader.SeriesStorage.LightSerializer
                 throw new Exception();
         }
 
+        //public T[] ReadArray<T>(Func<LightObjectReader, T> elementDeserializer)
+        //{
+        //    var count = ReadInt();
+        //    var array = new T[count];
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        var objectSize = ReadInt();
+        //        var newOffset = _offset + objectSize;
+        //        array[i] = elementDeserializer(this);
+        //        _offset = newOffset;
+        //    }
+        //    return array;
+        //}
+
         public T[] ReadArray<T>(Func<LightObjectReader, T> elementDeserializer)
         {
             var count = ReadInt();
             var array = new T[count];
             for (int i = 0; i < count; i++)
-            {
-                var objectSize = ReadInt();
-                var newOffset = _offset + objectSize;
                 array[i] = elementDeserializer(this);
-                _offset = newOffset;
-            }
             return array;
         }
 
-        public T[] ReadFixedSizeArray<T>(Func<LightObjectReader, T> elementDeserializer)
+        public int ReadByte()
         {
-            var count = ReadInt();
-            var array = new T[count];
-            for (int i = 0; i < count; i++)
-                array[i] = elementDeserializer(this);
-            return array;
+            CheckPossibleRead(1);
+            return _buffer[_offset++];
         }
 
         public int ReadInt()

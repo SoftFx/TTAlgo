@@ -7,19 +7,19 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    internal class TickBasedSeriesEmulator : FeedSeriesEmulator
+    internal class TickSeriesReader : SeriesReader
     {
         //private string _symbol;
         private IEnumerable<QuoteEntity> _src;
         private IEnumerator<QuoteEntity> _e;
         //private QuoteEntity _current;
 
-        public TickBasedSeriesEmulator(string symbol, IEnumerable<QuoteEntity> src)
+        public TickSeriesReader(string symbol, IEnumerable<QuoteEntity> src)
         {
             _src = src;
         }
 
-        public TickBasedSeriesEmulator(string symbol, ITickStorage storage)
+        public TickSeriesReader(string symbol, ITickStorage storage)
         {
             _src = storage.GetQuoteStream();
         }
@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core
             {
                 var quote = _e.Current;
                 Current = quote;
-                UpdateBars(quote);
+                //UpdateBars(quote);
                 return true;
             }
             else
@@ -47,12 +47,19 @@ namespace TickTrader.Algo.Core
             _e.Dispose();
         }
 
-        private void UpdateBars(QuoteEntity quote)
-        {
-            foreach (var rec in _bidBars.Values)
-                rec.AppendQuote(quote.CreatingTime, quote.Bid, 1);
-            foreach (var rec in _askBars.Values)
-                rec.AppendQuote(quote.CreatingTime, quote.Ask, 1);
-        }
+        //private void UpdateBars(QuoteEntity quote)
+        //{
+        //    if (!double.IsNaN(quote.Bid))
+        //    {
+        //        foreach (var rec in _bidBars.Values)
+        //            rec.AppendQuote(quote.CreatingTime, quote.Bid, 1);
+        //    }
+
+        //    if (!double.IsNaN(quote.Ask))
+        //    {
+        //        foreach (var rec in _askBars.Values)
+        //            rec.AppendQuote(quote.CreatingTime, quote.Ask, 1);
+        //    }
+        //}
     }
 }
