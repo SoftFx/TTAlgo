@@ -7,19 +7,9 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public static void Info(string message)
-        {
-            _logger.Info(message);
-        }
-
         public static void Error(Exception ex)
         {
             _logger.Error(ex);
-        }
-
-        public static void Fatal(Exception ex)
-        {
-            _logger.Fatal(ex);
         }
     }
 }

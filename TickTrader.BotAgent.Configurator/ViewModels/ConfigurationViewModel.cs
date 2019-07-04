@@ -269,7 +269,10 @@ namespace TickTrader.BotAgent.Configurator
                 var result = MessageBoxManager.YesNoBoxQuestion("The model has been changed. Save changes?");
 
                 if (result)
+                {
                     _model.SaveChanges();
+                    RefreshManager.DropRefresh();
+                }
 
                 return result;
             }
