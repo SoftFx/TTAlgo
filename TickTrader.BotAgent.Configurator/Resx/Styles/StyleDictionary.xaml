@@ -195,4 +195,23 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
+
+    <Style x:Key="MainTabControl" TargetType="TabControl">
+        <Setter Property="TabStripPlacement" Value="Left"/>
+        <Setter Property="SelectedIndex" Value="0"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ElementName=startAgentSpinner, Path=Visibility}" Value="Visible">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="AgentSpinner" TargetType="fa:ImageAwesome">
+        <Setter Property="Icon" Value="Spinner"/>
+        <Setter Property="SpinDuration" Value="4"/>
+        <Setter Property="Spin" Value="True"/>
+        <Setter Property="Height" Value="60"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
 </ResourceDictionary>

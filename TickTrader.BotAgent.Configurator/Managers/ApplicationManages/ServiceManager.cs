@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.ServiceProcess;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {

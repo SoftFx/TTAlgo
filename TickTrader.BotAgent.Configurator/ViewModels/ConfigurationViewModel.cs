@@ -44,6 +44,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public RefreshManager RefreshManager { get; }
 
+        public SpinnerViewModel Spinner { get; }
+
         public bool WasUpdate => RefreshManager.Update;
 
         public ConfigurationViewModel()
@@ -56,6 +58,7 @@ namespace TickTrader.BotAgent.Configurator
                 _model = new ConfigurationModel();
 
                 RefreshManager = new RefreshManager();
+                Spinner = new SpinnerViewModel();
 
                 _versionManager = new AgentVersionManager(_model.BotAgentHolder.BotAgentPath, _model.Settings[AppProperties.ApplicationName]);
 
@@ -118,28 +121,16 @@ namespace TickTrader.BotAgent.Configurator
         }
 
         public DelegateCommand StartAgent => _startAgent ?? (
-            _startAgent = new DelegateCommand(obj =>
+            _startAgent = new DelegateCommand( obj =>
             {
                 if (SaveChangesQuestion())
                 {
-                    try
-                    {
-                        if (_model.StartAgent())
-                        {
-                            MessageBoxManager.OKBox("Agent has been started!");
-                            _logger.Info($"Agent has been started!");
-                        }
-                    }
-                    catch (WarningException ex)
-                    {
-                        _logger.Error(ex);
-                        MessageBoxManager.WarningBox(ex.Message);
-                    }
-                    catch (Exception exx)
-                    {
-                        _logger.Error(exx);
-                        MessageBoxManager.ErrorBox(exx.Message);
-                    }
+                    if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
+                        return;
+
+                    Spinner.Run = true;
+
+                    ThreadPool.QueueUserWorkItem(StartAgentMethod);
                 }
             }));
 
@@ -283,6 +274,32 @@ namespace TickTrader.BotAgent.Configurator
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
             SaveChangesMethod();
+        }
+
+        private void StartAgentMethod(object obj)
+        {
+            try
+            {
+                _model.StartAgent();
+
+                Spinner.Run = false;
+                MessageBoxManager.OKBox("Agent has been started!");
+                _logger.Info($"Agent has been started!");
+            }
+            catch (WarningException ex)
+            {
+                _logger.Error(ex);
+                MessageBoxManager.WarningBox(ex.Message);
+            }
+            catch (Exception exx)
+            {
+                _logger.Error(exx);
+                MessageBoxManager.ErrorBox(exx.Message);
+            }
+            finally
+            {
+                Spinner.Run = false;
+            }
         }
     }
 

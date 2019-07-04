@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -65,24 +66,16 @@ namespace TickTrader.BotAgent.Configurator
             LoadConfiguration(false);
         }
 
-        public bool StartAgent()
+        public void StartAgent()
         {
-            if (ServiceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
-                return false;
-
-            //foreach (var uri in ServerManager.ServerModel.Urls)
-            //    _portsManager.RegisterPortInFirewall(uri.Port, Settings[AppProperties.ApplicationName]);
-
             string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
 
             _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine($"{BotAgentHolder.BotAgentPath}{Settings[AppProperties.ApplicationName]}.exe"), ports, Settings[AppProperties.ServiceName]);
 
             if (ServiceManager.IsServiceRunning)
-                ServiceManager.ServiceStop();
+                 ServiceManager.ServiceStop();
 
-            ServiceManager.ServiceStart();
-
-            return true;
+             ServiceManager.ServiceStart();
         }
 
         public void LoadConfiguration(bool loadConfig = true)

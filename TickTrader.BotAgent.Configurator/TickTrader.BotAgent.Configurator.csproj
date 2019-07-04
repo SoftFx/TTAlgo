@@ -103,6 +103,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Infrastructure\AsyncCommand.cs" />
     <Compile Include="Infrastructure\Dependencies\UpdateNewProperty.cs" />
     <Compile Include="Infrastructure\Dependencies\ViewPanelProperty.cs" />
     <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
@@ -150,6 +151,7 @@
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
     <Compile Include="Models\DefaultServiceSettingsModel.cs" />
     <Compile Include="Infrastructure\DelegateCommand.cs" />
+    <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\LogsViewModel.cs" />
     <Compile Include="Windows\NewUrlWindow.xaml.cs">
