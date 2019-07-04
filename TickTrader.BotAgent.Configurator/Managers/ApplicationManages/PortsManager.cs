@@ -76,7 +76,7 @@ namespace TickTrader.BotAgent.Configurator
 
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
             firewallRule.Profiles = 7; // Profiles == ALL
-            firewallRule.serviceName = serviceName;
+            //firewallRule.serviceName = serviceName; // disabled connection to virtual machine
             firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
             firewallRule.Description = "Bot Agent Custom Rules";
             firewallRule.LocalPorts = porst;
