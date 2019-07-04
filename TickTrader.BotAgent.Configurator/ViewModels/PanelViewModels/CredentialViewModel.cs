@@ -1,10 +1,9 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace TickTrader.BotAgent.Configurator
+﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialViewModel : IContentViewModel
+    public class CredentialViewModel : BaseViewModel, IContentViewModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private CredentialModel _model;
         private RefreshManager _refreshManager;
 
@@ -30,7 +29,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.Login == value)
                     return;
 
-                Logger.Info($"{_model.Name}{nameof(Login)}", _model.Login, value);
+                _logger.Info(GetChangeMessage($"{_model.Name}{nameof(Login)}", _model.Login, value));
 
                 _model.Login = value;
                 _refreshManager?.Refresh();
@@ -77,13 +76,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             OnPropertyChanged(nameof(Login));
             OnPropertyChanged(nameof(Password));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

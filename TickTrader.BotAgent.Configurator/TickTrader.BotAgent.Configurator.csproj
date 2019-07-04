@@ -150,6 +150,7 @@
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
     <Compile Include="Models\DefaultServiceSettingsModel.cs" />
     <Compile Include="Infrastructure\DelegateCommand.cs" />
+    <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\LogsViewModel.cs" />
     <Compile Include="Windows\NewUrlWindow.xaml.cs">
       <DependentUpon>NewUrlWindow.xaml</DependentUpon>

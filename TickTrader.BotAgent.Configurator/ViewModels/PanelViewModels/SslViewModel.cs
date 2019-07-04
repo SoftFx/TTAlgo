@@ -1,10 +1,9 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace TickTrader.BotAgent.Configurator
+﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class SslViewModel : IContentViewModel
+    public class SslViewModel : BaseViewModel, IContentViewModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private SslModel _model;
         private RefreshManager _refreshManager;
 
@@ -23,7 +22,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.File == value)
                     return;
 
-                Logger.Info($"{nameof(SslViewModel)} {nameof(File)}", _model.File, value);
+                _logger.Info(GetChangeMessage($"{nameof(SslViewModel)} {nameof(File)}", _model.File, value));
 
                 _model.File = value;
                 _refreshManager?.Refresh();
@@ -41,7 +40,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.Password == value)
                     return;
 
-                Logger.Info($"{nameof(SslViewModel)} {nameof(Password)}", _model.Password, value);
+                _logger.Info(GetChangeMessage($"{nameof(SslViewModel)} {nameof(Password)}", _model.Password, value));
 
                 _model.Password = value;
                 _refreshManager?.Refresh();
@@ -56,13 +55,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             OnPropertyChanged(nameof(File));
             OnPropertyChanged(nameof(Password));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

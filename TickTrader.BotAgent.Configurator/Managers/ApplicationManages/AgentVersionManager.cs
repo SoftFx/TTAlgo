@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.IO;
 using System.Reflection;
 using TickTrader.Algo.Common.Lib;
@@ -7,6 +8,8 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class AgentVersionManager
     {
+        private static readonly NLog.Logger _logger = LogManager.GetCurrentClassLogger();
+
         private readonly string _agentPath;
 
         public string Version { get; }
@@ -27,7 +30,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 Version = "Developer";
                 BuildDate = DateTime.MinValue.ToString("yyyy.MM.dd");
-                Logger.Error(ex);
+                _logger.Error(ex);
             }
         }
     }

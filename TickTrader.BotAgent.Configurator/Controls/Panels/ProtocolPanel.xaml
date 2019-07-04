@@ -29,8 +29,8 @@
                 <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" Delay="500">
                     <Binding.ValidationRules>
                         <ExceptionValidationRule/>
-                        <local:ValidationNumber MaxValue="65536"/>
-                        <local:ValidationPort/>
+                        <local:RangeNumberValidationRule MaxValue="65536"/>
+                        <local:FreePortValidationRule/>
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>
@@ -42,7 +42,7 @@
             <TextBox.Text>
                 <Binding Path="DirectoryName" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                     <Binding.ValidationRules>
-                        <local:ValidationString MinLength="1"/>
+                        <local:StringLengthValidationRule MinLength="1"/>
                         <ExceptionValidationRule/>
                     </Binding.ValidationRules>
                 </Binding>
@@ -52,12 +52,12 @@
         <Separator Grid.Row="5" Grid.ColumnSpan="2"/>
 
         <TextBlock Grid.Row="6" Text="Log Message: "/>
-        <CheckBox Grid.Row="6" IsChecked="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource protocolCheckBox}"/>
+        <CheckBox Grid.Row="6" IsChecked="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource ProtocolCheckBox}"/>
 
         <Separator Grid.Row="7" Grid.ColumnSpan="2"/>
 
-        <TextBlock Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Text="{Binding ListeningPortDescription}" Style="{StaticResource descriptionTextBox}"/>
-        <TextBlock Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Text="{Binding DirectoryNameDescription}" Style="{StaticResource descriptionTextBox}"/>
-        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding LogMessageDescription}" Style="{StaticResource descriptionTextBox}"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Text="{Binding ListeningPortDescription}" Style="{StaticResource DescriptionTextBox}"/>
+        <TextBlock Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Text="{Binding DirectoryNameDescription}" Style="{StaticResource DescriptionTextBox}"/>
+        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding LogMessageDescription}" Style="{StaticResource DescriptionTextBox}"/>
     </Grid>
 </UserControl>

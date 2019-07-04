@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using NLog;
+using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class AdvancedViewModel
+    public class AdvancedViewModel : BaseViewModel
     {
+        private static readonly NLog.Logger _logger = LogManager.GetCurrentClassLogger();
+
         private ConfigurationProperies _settings;
         private RefreshManager _refreshManager;
 
@@ -31,7 +34,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_settings.MultipleAgentProvider.BotAgentPath == value)
                     return;
 
-                Logger.Info($"{nameof(AdvancedViewModel)} {nameof(SelectPath)}", _settings.MultipleAgentProvider.BotAgentConfigPath, value);
+                _logger.Info(GetChangeMessage($"{nameof(AdvancedViewModel)} {nameof(SelectPath)}", _settings.MultipleAgentProvider.BotAgentConfigPath, value));
                 _settings.MultipleAgentProvider.BotAgentPath = value;
                 _refreshManager?.Refresh();
             }

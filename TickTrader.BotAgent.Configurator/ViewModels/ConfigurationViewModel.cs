@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -9,6 +8,8 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ConfigurationViewModel : IDisposable
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private Window _mainWindow;
 
         private AgentVersionManager _versionManager;
@@ -110,7 +111,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Fatal(ex);
+                _logger.Fatal(ex);
                 MessageBoxManager.ErrorBox(ex.Message);
                 Application.Current.Shutdown();
             }
@@ -126,17 +127,17 @@ namespace TickTrader.BotAgent.Configurator
                         if (_model.StartAgent())
                         {
                             MessageBoxManager.OKBox("Agent has been started!");
-                            Logger.Info($"Agent has been started!");
+                            _logger.Info($"Agent has been started!");
                         }
                     }
                     catch (WarningException ex)
                     {
-                        Logger.Error(ex);
+                        _logger.Error(ex);
                         MessageBoxManager.WarningBox(ex.Message);
                     }
                     catch (Exception exx)
                     {
-                        Logger.Error(exx);
+                        _logger.Error(exx);
                         MessageBoxManager.ErrorBox(exx.Message);
                     }
                 }
@@ -153,7 +154,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
                 }
 
-                Logger.Info($"The application has been restarted!");
+                _logger.Info($"The application has been restarted!");
                 System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
             }));
@@ -166,12 +167,12 @@ namespace TickTrader.BotAgent.Configurator
                     _model.SaveChanges();
                     RefreshManager.DropRefresh();
                     MessageBoxManager.OKBox("Saving configuration successfully!");
-                    Logger.Info($"Changes have been saved.");
+                    _logger.Info($"Changes have been saved.");
                 }
                 catch (Exception ex)
                 {
                     MessageBoxManager.ErrorBox(ex.Message);
-                    Logger.Error(ex);
+                    _logger.Error(ex);
                 }
             }));
 
@@ -185,11 +186,11 @@ namespace TickTrader.BotAgent.Configurator
                         _model.LoadConfiguration();
                         RefreshManager.DropRefresh();
                         RefreshModels();
-                        Logger.Info($"Changes have been canceled.");
+                        _logger.Info($"Changes have been canceled.");
                     }
                     catch (Exception ex)
                     {
-                        Logger.Fatal(ex);
+                        _logger.Fatal(ex);
                         MessageBoxManager.ErrorBox(ex.Message);
                         Application.Current.Shutdown();
                     }
@@ -209,7 +210,7 @@ namespace TickTrader.BotAgent.Configurator
             ServerModel.RefreshModel();
             FdkModel.RefreshModel();
 
-            Logger.Info($"Models have been updated.");
+            _logger.Info($"Models have been updated.");
         }
 
         public void Dispose()
@@ -219,20 +220,27 @@ namespace TickTrader.BotAgent.Configurator
 
         private async void RefreshServiceState(object obj)
         {
-            LogsModel = new LogsViewModel(_model.Logs);
-
-            int sec = 0;
-
-            while (_runnignApplication)
+            try
             {
-                StateServiceModel.RefreshService(_model.ServiceManager.ServiceStatus);
+                LogsModel = new LogsViewModel(_model.Logs);
 
-                sec = sec == 5 ? 0 : sec + 1;
+                int sec = 0;
 
-                if (sec == 0)
-                    LogsModel.RefreshLog();
+                while (_runnignApplication)
+                {
+                    StateServiceModel.RefreshService(_model.ServiceManager.ServiceStatus);
 
-                await Task.Delay(1000);
+                    sec = sec == 5 ? 0 : sec + 1;
+
+                    if (sec == 0)
+                        LogsModel.RefreshLog();
+
+                    await Task.Delay(1000);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
             }
         }
 
@@ -244,7 +252,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
                 MessageBoxManager.ErrorBox("Saving settings was failed");
                 return false;
             }
@@ -275,7 +283,7 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public class RefreshManager : INotifyPropertyChanged
+    public class RefreshManager : BaseViewModel
     {
         private bool _update;
 
@@ -311,21 +319,12 @@ namespace TickTrader.BotAgent.Configurator
 
             SaveValuesEvent?.Invoke();
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
     }
 
-    public interface IContentViewModel : INotifyPropertyChanged
+    public interface IContentViewModel
     {
         string ModelDescription { get; set; }
 
         void RefreshModel();
-
-        void OnPropertyChanged([CallerMemberName]string prop = "");
     }
 }

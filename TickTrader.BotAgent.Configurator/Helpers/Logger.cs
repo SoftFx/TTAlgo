@@ -7,11 +7,6 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public static void Info(string category, string oldVal, string newVal)
-        {
-            Info($"{category} was changed: {oldVal} to {newVal}");
-        }
-
         public static void Info(string message)
         {
             _logger.Info(message);

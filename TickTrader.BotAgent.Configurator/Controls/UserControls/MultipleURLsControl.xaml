@@ -10,12 +10,12 @@
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
 
-        <ListView x:Name="urlsListView" Style="{StaticResource urlsListViewStyle}" ItemsSource="{Binding Path=Urls}">
+        <ListView x:Name="urlsListView" Style="{StaticResource UrlsListViewStyle}" ItemsSource="{Binding Path=Urls}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Scheme}" Width="80">Scheme</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Host}" Width="238">Host</GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Port}" Width="80">Port</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Scheme}" Width="80" Header="Scheme"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Host}" Width="238" Header="Host"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Port}" Width="80" Header="Port"/>
                 </GridView>
             </ListView.View>
         </ListView>
@@ -27,10 +27,10 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <Button Grid.Row="0" Content="Add" Style="{StaticResource urlsControlButton}" Command="{Binding AddUrlDialog}"/>
-            <Button Grid.Row="1" Content="Delete" Style="{StaticResource urlsControlButton}" Command="{Binding RemoveUrls}"
+            <Button Grid.Row="0" Content="Add" Style="{StaticResource UrlsControlButton}" Command="{Binding AddUrlDialog}"/>
+            <Button Grid.Row="1" Content="Delete" Style="{StaticResource UrlsControlButton}" Command="{Binding RemoveUrls}"
                     CommandParameter="{Binding ElementName=urlsListView, Path=SelectedItems}"/>
-            <Button Grid.Row="2" Content="Modify" Style="{StaticResource urlsControlButton}" Command="{Binding ModifyUri}" CommandParameter="{Binding Path=SelectedItem, ElementName=urlsListView}"/>
+            <Button Grid.Row="2" Content="Modify" Style="{StaticResource UrlsControlButton}" Command="{Binding ModifyUri}" CommandParameter="{Binding Path=SelectedItem, ElementName=urlsListView}"/>
         </Grid>
     </Grid>
 </UserControl>

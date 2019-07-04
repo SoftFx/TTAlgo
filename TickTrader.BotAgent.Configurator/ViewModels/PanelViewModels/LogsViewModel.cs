@@ -1,10 +1,9 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace TickTrader.BotAgent.Configurator
+﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class LogsViewModel : INotifyPropertyChanged
+    public class LogsViewModel : BaseViewModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private LogsManager _manager;
 
         public LogsViewModel(LogsManager manager)
@@ -18,16 +17,9 @@ namespace TickTrader.BotAgent.Configurator
         {
             _manager.UpdateLog();
 
-            Logger.Info("Log was updated");
+            _logger.Info("Log was updated");
 
             OnPropertyChanged(nameof(Messages));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

@@ -12,7 +12,7 @@
         <Setter Property="Margin" Value="0 10"/>
     </Style>
 
-    <Style x:Key="descriptionTextBox" TargetType="TextBlock">
+    <Style x:Key="DescriptionTextBox" TargetType="TextBlock">
         <Setter Property="Margin" Value="40 0 0 0"/>
         <Setter Property="FontSize" Value="14"/>
         <!--<Setter Property="Background" Value="LightGray"/>-->
@@ -66,25 +66,25 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>-->
 
-    <Style x:Key="stateButton" TargetType="Button">
+    <Style x:Key="StateButton" TargetType="Button">
         <Setter Property="Margin" Value="20 0"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="BorderBrush" Value="SteelBlue"/>
     </Style>
 
-    <Style x:Key="contentControlPanel">
+    <Style x:Key="ContentControlPanel">
         <Setter Property="Control.Width" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DockPanel}}, Path=ActualWidth}"/>
         <Setter Property="Control.Padding" Value="20 0 10 0"/>
         <Setter Property="Control.Margin" Value="0 10 0 5"/>
         <Setter Property="Control.VerticalAlignment" Value="Top"/>
     </Style>
 
-    <Style x:Key="baseCheckBox" TargetType="CheckBox">
+    <Style x:Key="BaseCheckBox" TargetType="CheckBox">
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
 
-    <Style x:Key="secondaryButton" TargetType="Button">
+    <Style x:Key="SecondaryButton" TargetType="Button">
         <Setter Property="FontSize" Value="10"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="Margin" Value="10 0 0 0"/>
@@ -92,25 +92,25 @@
         <!--<Setter Property="Padding" Value="3"/>-->
     </Style>
 
-    <Style x:Key="stateServiceIndicator" TargetType="Ellipse">
+    <Style x:Key="StateServiceIndicator" TargetType="Ellipse">
         <Setter Property="Width" Value="10"/>
         <Setter Property="Height" Value="10"/>
         <Setter Property="Fill" Value="Red"/>
         <Setter Property="Margin" Value="5 0"/>
     </Style>
 
-    <Style x:Key="stateServiceRow">
+    <Style x:Key="StateServiceRow">
         <Setter Property="Control.HorizontalAlignment" Value="Right"/>
         <Setter Property="Control.Margin" Value="0 0 20 0"/>
     </Style>
 
-    <Style x:Key="restartMessage" TargetType="TextBlock">
+    <Style x:Key="RestartMessage" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Foreground" Value="Red"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
     </Style>
 
-    <Style x:Key="toolBarButton" TargetType="Button">
+    <Style x:Key="ToolBarButton" TargetType="Button">
         <Setter Property="Margin" Value="10 0"/>
         <Setter Property="Height" Value="25"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
@@ -123,7 +123,7 @@
         </Style.Triggers>
     </Style>
     
-    <Style x:Key="toolBarIcon" TargetType="{x:Type fa:ImageAwesome}">
+    <Style x:Key="ToolBarIcon" TargetType="{x:Type fa:ImageAwesome}">
         <Setter Property="Width" Value="25"/>
         <Setter Property="Height" Value="20"/>
         <Style.Triggers>
@@ -133,19 +133,19 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="logsHeader" TargetType="TextBlock">
+    <Style x:Key="LogsHeader" TargetType="TextBlock">
         <Setter Property="Margin" Value="5"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
 
-    <Style x:Key="logsBorderPanel" TargetType="Border">
+    <Style x:Key="LogsBorderPanel" TargetType="Border">
         <Setter Property="Margin" Value="0 5"/>
         <Setter Property="BorderBrush" Value="SteelBlue"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
-    <Style x:Key="logsPanel" TargetType="TextBox">
+    <Style x:Key="LogsPanel" TargetType="TextBox">
         <Setter Property="Background" Value="White"/>
         <Setter Property="Padding" Value="5 0"/>
         <Setter Property="IsReadOnly" Value="True"/>
@@ -185,7 +185,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="errorTabItem" TargetType="TextBlock">
+    <Style x:Key="ErrorTabItem" TargetType="TextBlock">
         <Setter Property="Foreground" Value="Red"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalAlignment" Value="Center"/>

@@ -25,14 +25,14 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Text="Scheme" Style="{StaticResource headerStyle}"/>
-        <TextBlock Grid.Column="1" Text="Host" Style="{StaticResource headerStyle}"/>
-        <TextBlock Grid.Column="2" Text="Port" Style="{StaticResource headerStyle}"/>
+        <TextBlock Grid.Column="0" Text="Scheme" Style="{StaticResource HeaderStyle}"/>
+        <TextBlock Grid.Column="1" Text="Host" Style="{StaticResource HeaderStyle}"/>
+        <TextBlock Grid.Column="2" Text="Port" Style="{StaticResource HeaderStyle}"/>
 
-        <ComboBox Grid.Row="1" ItemsSource="{Binding Path=NewUri.TypesOfScheme}" SelectedItem="{Binding Path=NewUri.Scheme}" Style="{StaticResource comboBoxScheme}"/>
-        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="newHost" ItemsSource="{Binding Path=Hosts}" SelectedItem="{Binding Path=NewUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource comboBoxHost}"/>
+        <ComboBox Grid.Row="1" ItemsSource="{Binding Path=NewUri.TypesOfScheme}" SelectedItem="{Binding Path=NewUri.Scheme}" Style="{StaticResource ComboBoxScheme}"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="newHost" ItemsSource="{Binding Path=Hosts}" SelectedItem="{Binding Path=NewUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComboBoxHost}"/>
 
-        <TextBox Grid.Column="2" Grid.Row="1" x:Name="newPort" Text="{Binding Path=NewUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Style="{StaticResource portTextBoxStyle}"/>
+        <TextBox Grid.Column="2" Grid.Row="1" x:Name="newPort" Text="{Binding Path=NewUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Style="{StaticResource PortTextBoxStyle}"/>
 
         <Button x:Name="saveNewUrlButton" Grid.Column="1" Grid.Row="3" Command="{Binding SaveNewUri}"/>
     </Grid>

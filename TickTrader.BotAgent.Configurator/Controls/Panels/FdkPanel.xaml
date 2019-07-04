@@ -16,10 +16,10 @@
         </Grid.RowDefinitions>
         
         <TextBlock Text="Enable server connection logs: "/>
-        <CheckBox IsChecked="{Binding EnableLogs, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource checkBoxFdkPanel}"/>
+        <CheckBox IsChecked="{Binding EnableLogs, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource CheckBoxFdkPanel}"/>
 
         <Separator Grid.Row="1" Grid.ColumnSpan="2"/>
 
-        <TextBlock Grid.Column="1" Text="{Binding ModelDescription}" Style="{StaticResource descriptionTextBox}"/>
+        <TextBlock Grid.Column="1" Text="{Binding ModelDescription}" Style="{StaticResource DescriptionTextBox}"/>
     </Grid>
 </UserControl>

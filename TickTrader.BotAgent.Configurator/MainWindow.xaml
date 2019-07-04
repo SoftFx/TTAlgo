@@ -21,25 +21,25 @@
 
         <ToolBarTray>
             <ToolBar Height="33">
-                <Button x:Name="CancelButton" Style="{StaticResource toolBarButton}" Command="{Binding CancelChanges}">
+                <Button x:Name="CancelButton" Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Share" Style="{StaticResource toolBarIcon}"/>
+                        <fa:ImageAwesome Icon="Share" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Reset Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="SaveButton" Style="{StaticResource toolBarButton}" Command="{Binding SaveChanges}">
+                <Button x:Name="SaveButton" Style="{StaticResource ToolBarButton}" Command="{Binding SaveChanges}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Save" Style="{StaticResource toolBarIcon}"/>
+                        <fa:ImageAwesome Icon="Save" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Save Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="StartButton" Style="{StaticResource toolBarButton}" Command="{Binding StartAgent}" IsEnabled="True">
+                <Button x:Name="StartButton" Style="{StaticResource ToolBarButton}" Command="{Binding StartAgent}" IsEnabled="True">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Play" Style="{StaticResource toolBarIcon}"/>
+                        <fa:ImageAwesome Icon="Play" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                     <Button.ToolTip>
                         <TextBlock Text="Start Agent"/>
@@ -58,7 +58,7 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="AddressCardOutline"/>
-                        <TextBlock Text="User credentials" Style="{StaticResource errorTabItem}"/>
+                        <TextBlock Text="User credentials" Style="{StaticResource ErrorTabItem}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <TabItem.Content>
@@ -69,9 +69,9 @@
                             </Style>
                         </DockPanel.Resources>
                         <StackPanel>
-                            <c:CredentialPanel DataContext="{Binding AdminModel}" Style="{StaticResource firstCredentialControlPanel}"/>
-                            <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource credentialControlPanel}"/>
-                            <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource credentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding AdminModel}" Style="{StaticResource FirstCredentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource CredentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource CredentialControlPanel}"/>
                         </StackPanel>
                     </DockPanel>
                 </TabItem.Content>
@@ -91,7 +91,7 @@
                                 <Setter Property="Background" Value="White"/>
                             </Style>
                         </DockPanel.Resources>
-                        <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource protocolControlPanel}"/>
+                        <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource ProtocolControlPanel}"/>
                     </DockPanel>
                 </TabItem.Content>
             </TabItem>
@@ -111,7 +111,7 @@
                                 <Setter Property="Background" Value="White"/>
                             </Style>
                         </DockPanel.Resources>
-                        <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource serverControlPanel}"/>
+                        <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource ServerControlPanel}"/>
                     </DockPanel>
                 </TabItem.Content>
             </TabItem>
@@ -132,8 +132,8 @@
                             </Style>
                         </DockPanel.Resources>
                         <StackPanel>
-                            <c:AdvancedPanel Style="{StaticResource advancedControlPanel}"/>
-                            <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource fdkControlPanel}"/>
+                            <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}"/>
+                            <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource FdkControlPanel}"/>
                         </StackPanel>
                     </DockPanel>
                 </TabItem.Content>
@@ -144,14 +144,14 @@
                     <TextBlock Text="Ssl"/>
                 </TabItem.Header>
                 <TabItem.Content>
-                    <c:SslPanel DataContext="{Binding SslModel}" Style="{StaticResource contentControlPanel}"/>
+                    <c:SslPanel DataContext="{Binding SslModel}" Style="{StaticResource ContentControlPanel}"/>
                 </TabItem.Content>
             </TabItem>-->
         </TabControl>
 
         <DockPanel Grid.Row="2" Background="#FFEEF5FD">
-            <TextBlock Text="Logs" Style="{StaticResource logsHeader}" DockPanel.Dock="Top"/>
-            <TextBox Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Style="{StaticResource logsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom"/>
+            <TextBlock Text="Logs" Style="{StaticResource LogsHeader}" DockPanel.Dock="Top"/>
+            <TextBox Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Style="{StaticResource LogsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom"/>
         </DockPanel>
 
         <StatusBar Grid.Row="3" Background="#FFEEF5FD">
@@ -167,10 +167,10 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="1">
-                <TextBlock Text="{Binding StateServiceModel.RestartMessage}" Style="{StaticResource restartMessage}" Visibility="{Binding StateServiceModel.VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
+                <TextBlock Text="{Binding StateServiceModel.RestartMessage}" Style="{StaticResource RestartMessage}" Visibility="{Binding StateServiceModel.VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">
-                <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource stateServiceRow}"/>
+                <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource StateServiceRow}"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>

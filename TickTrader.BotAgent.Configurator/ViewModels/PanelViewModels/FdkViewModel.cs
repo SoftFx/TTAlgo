@@ -1,10 +1,9 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace TickTrader.BotAgent.Configurator
+﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class FdkViewModel : IContentViewModel
+    public class FdkViewModel : BaseViewModel, IContentViewModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private FdkModel _model;
         private RefreshManager _refreshManager;
 
@@ -22,7 +21,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.EnableLogs == value)
                     return;
 
-                Logger.Info($"{nameof(FdkViewModel)} {nameof(EnableLogs)}", _model.EnableLogs.ToString(), value.ToString());
+                _logger.Info(GetChangeMessage($"{nameof(FdkViewModel)} {nameof(EnableLogs)}", _model.EnableLogs.ToString(), value.ToString()));
 
                 _model.EnableLogs = value;
                 _refreshManager?.Refresh();
@@ -36,13 +35,6 @@ namespace TickTrader.BotAgent.Configurator
         public void RefreshModel()
         {
             OnPropertyChanged(nameof(EnableLogs));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

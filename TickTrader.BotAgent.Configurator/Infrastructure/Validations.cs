@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ValidationString : ValidationRule
+    public class StringLengthValidationRule : ValidationRule
     {
         public int MinLength { get; set; } = 0;
 
@@ -22,7 +18,7 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public class ValidationPort : ValidationRule
+    public class FreePortValidationRule : ValidationRule
     {
         public int MinValue { get; set; } = 0;
 
@@ -48,7 +44,7 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public class ValidationNumber : ValidationRule
+    public class RangeNumberValidationRule : ValidationRule
     {
         public int MinValue { get; set; } = 0;
 
@@ -68,7 +64,7 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public class ValidationUri : ValidationRule
+    public class CorrectUriValidationRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
@@ -79,7 +75,7 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public class ValidationHostUri : ValidationRule
+    public class CorrectHostValidationRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {

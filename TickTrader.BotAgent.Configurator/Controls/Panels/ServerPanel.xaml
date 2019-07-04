@@ -22,8 +22,8 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Secret Key: "/>
-        <TextBox Grid.Row="1" Text="{Binding SecretKey, Mode=OneWay}" Style="{StaticResource textAreaStyle}"/>
-        <Button Grid.Row="2" Command="{Binding GenerateSecretKey}" Style="{StaticResource generateSecretKeyButton}" />
+        <TextBox Grid.Row="1" Text="{Binding SecretKey, Mode=OneWay}" Style="{StaticResource TextAreaStyle}"/>
+        <Button Grid.Row="2" Command="{Binding GenerateSecretKey}" Style="{StaticResource GenerateSecretKeyButton}" />
 
         <Separator Grid.Row="3" Grid.ColumnSpan="2"/>
 
@@ -32,7 +32,7 @@
 
         <Separator Grid.Row="6" Grid.ColumnSpan="2"/>
 
-        <TextBlock Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Text="{Binding SecretKeyDescription}" Style="{StaticResource descriptionTextBox}"/>
-        <TextBlock Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" Text="{Binding UrlsDescription}" Style="{StaticResource descriptionTextBox}"/>
+        <TextBlock Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Text="{Binding SecretKeyDescription}" Style="{StaticResource DescriptionTextBox}"/>
+        <TextBlock Grid.Column="1" Grid.Row="4" Grid.RowSpan="2" Text="{Binding UrlsDescription}" Style="{StaticResource DescriptionTextBox}"/>
     </Grid>
 </UserControl>

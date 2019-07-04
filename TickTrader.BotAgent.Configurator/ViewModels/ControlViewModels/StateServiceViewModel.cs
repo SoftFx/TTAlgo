@@ -1,10 +1,8 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.ServiceProcess;
+﻿using System.ServiceProcess;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class StateServiceViewModel : INotifyPropertyChanged
+    public class StateServiceViewModel : BaseViewModel
     {
         private readonly string _serviceName;
 
@@ -44,13 +42,6 @@ namespace TickTrader.BotAgent.Configurator
 
             OnPropertyChanged(nameof(ServiceState));
             OnPropertyChanged(nameof(Status));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

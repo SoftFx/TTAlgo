@@ -20,11 +20,11 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <ComboBox x:Name="urlsComboBox" ItemsSource="{Binding AdvancedModel.AgentPaths}" SelectedValue="{Binding NewValue, Source={StaticResource urlsHolder}}" Style="{StaticResource comboBoxStyle}"/>
-        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource advancedRestartAppButton}" Command="{Binding RestartApplication}" IsEnabled="{Binding WasUpdate, Source={StaticResource urlsHolder}}"/>
+        <ComboBox x:Name="urlsComboBox" ItemsSource="{Binding AdvancedModel.AgentPaths}" SelectedValue="{Binding NewValue, Source={StaticResource urlsHolder}}" Style="{StaticResource ComboBoxStyle}"/>
+        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource AdvancedRestartAppButton}" Command="{Binding RestartApplication}" IsEnabled="{Binding WasUpdate, Source={StaticResource urlsHolder}}"/>
 
         <Separator Grid.Row="1" Grid.ColumnSpan="3"/>
 
-        <TextBlock Grid.Column="2" Text="{Binding AdvancedModel.ModelDescription}" Style="{StaticResource descriptionTextBox}"/>
+        <TextBlock Grid.Column="2" Text="{Binding AdvancedModel.ModelDescription}" Style="{StaticResource DescriptionTextBox}"/>
     </Grid>
 </UserControl>

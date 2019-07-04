@@ -1,10 +1,9 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-namespace TickTrader.BotAgent.Configurator
+﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolViewModel : IContentViewModel
+    public class ProtocolViewModel : BaseViewModel, IContentViewModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private ProtocolModel _model;
         private RefreshManager _refreshManager;
 
@@ -23,7 +22,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.ListeningPort == value)
                     return;
 
-                Logger.Info($"{nameof(ProtocolViewModel)} {nameof(ListeningPort)}", _model.ListeningPort.ToString(), value.ToString());
+                _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(ListeningPort)}", _model.ListeningPort.ToString(), value.ToString()));
 
                 _model.ListeningPort = value;
                 _refreshManager?.Refresh();
@@ -41,7 +40,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.DirectoryName == value)
                     return;
 
-                Logger.Info($"{nameof(ProtocolViewModel)} {nameof(DirectoryName)}", _model.DirectoryName, value);
+                _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(DirectoryName)}", _model.DirectoryName, value));
 
                 _model.DirectoryName = value;
                 _refreshManager?.Refresh();
@@ -59,7 +58,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.LogMessage == value)
                     return;
 
-                Logger.Info($"{nameof(ProtocolViewModel)} {nameof(LogMessage)}", _model.LogMessage.ToString(), value.ToString());
+                _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(LogMessage)}", _model.LogMessage.ToString(), value.ToString()));
 
                 _model.LogMessage = value;
                 _refreshManager?.Refresh();
@@ -86,13 +85,6 @@ namespace TickTrader.BotAgent.Configurator
         public void CheckPort(int port = -1)
         {
             _model.CheckPort(port == -1 ? ListeningPort : port);
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

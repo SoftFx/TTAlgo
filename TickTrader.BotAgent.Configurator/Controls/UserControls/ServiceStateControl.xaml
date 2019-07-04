@@ -7,7 +7,7 @@
              mc:Ignorable="d">
     <Grid>
         <StackPanel Orientation="Horizontal">
-            <Ellipse Style="{StaticResource stateServiceIndicator}" Fill="{Binding Status, Converter={StaticResource stateToColorConverter}}"/>
+            <Ellipse Style="{StaticResource StateServiceIndicator}" Fill="{Binding Status, Converter={StaticResource stateToColorConverter}}"/>
             <TextBlock Text="{Binding ServiceState}" FontSize="12"/>
         </StackPanel>
     </Grid>

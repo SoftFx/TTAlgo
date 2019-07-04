@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ServerViewModel : IContentViewModel
+    public class ServerViewModel : BaseViewModel, IContentViewModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private NewUrlWindow _addUrlWnd;
 
         private DelegateCommand _removeUrls;
@@ -66,7 +65,7 @@ namespace TickTrader.BotAgent.Configurator
                     Urls.Remove(_oldUri);
                     _model.Urls.Remove(_oldUri);
                     _refreshManager?.Refresh();
-                    Logger.Info($"{nameof(ServerViewModel)} new url was added: {uri}");
+                    _logger.Info($"{nameof(ServerViewModel)} new url was added: {uri}");
                 }
 
                 _addUrlWnd.DialogResult = true;
@@ -81,7 +80,7 @@ namespace TickTrader.BotAgent.Configurator
                             _model.Urls.Remove(u);
                         }
 
-                        Logger.Info($"{nameof(ServerViewModel)} select urls was removed");
+                        _logger.Info($"{nameof(ServerViewModel)} select urls was removed");
 
                         _refreshManager?.Refresh();
                     }));
@@ -113,13 +112,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             OnPropertyChanged(nameof(Urls));
             OnPropertyChanged(nameof(SecretKey));
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 
