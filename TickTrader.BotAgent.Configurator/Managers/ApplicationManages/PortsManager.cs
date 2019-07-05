@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent.Configurator
 
             foreach (var tcp in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections())
             {
-                if (tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp))
+                if (tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp) && !IsAgentService(port))
                     return !exception ? false : throw new WarningException($"Port {port} is not available");
             }
 

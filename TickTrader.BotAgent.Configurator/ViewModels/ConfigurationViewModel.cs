@@ -16,7 +16,6 @@ namespace TickTrader.BotAgent.Configurator
 
         private AgentVersionManager _versionManager;
         private ConfigurationModel _model;
-        private Process _explorerProcess;
 
         private bool _runnignApplication;
 
@@ -195,8 +194,7 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand OpenLogsFolder => _openLogsFolder ?? (
             _openLogsFolder = new DelegateCommand(obj =>
             {
-                if (_explorerProcess == null)
-                    _explorerProcess = Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
+                Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
             }));
 
         public void RefreshModels()

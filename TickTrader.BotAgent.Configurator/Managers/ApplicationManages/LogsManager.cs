@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.Configurator
             LoadLog();
         }
 
-        public string LogsStr => string.Join("", new LinkedList<string>(_messages));
+        public string LogsStr => string.Join("", _messages);
 
         public void LoadLog()
         {
