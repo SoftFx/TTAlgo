@@ -1,0 +1,71 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator">
+
+    <Style x:Key="BaseTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <Style x:Key="HeaderStyle" BasedOn="{StaticResource BaseTextBlockStyle}" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+
+    <Style x:Key="BaseTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip"
+                Value="{Binding RelativeSource={RelativeSource Self},
+                    Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="Foreground" Value="Red" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PortTextBoxStyle" BasedOn="{StaticResource BaseTextBoxStyle}" TargetType="TextBox">
+        <Setter Property="Width" Value="60"/>
+        <Setter Property="Height" Value="24"/>
+    </Style>
+
+    <Style TargetType="Button">
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Margin" Value="0 0 0 10"/>
+        <Setter Property="Content" Value="Save"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=newPort}" Value="True">
+                <Setter Property="IsEnabled" Value="False"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=newHost}" Value="True">
+                <Setter Property="IsEnabled" Value="False"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ComboBoxBase" TargetType="ComboBox">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <Style x:Key="ComboBoxScheme" BasedOn="{StaticResource ComboBoxBase}" TargetType="ComboBox">
+        <Setter Property="Width" Value="70"/>
+    </Style>
+
+    <Style x:Key="ComboBoxHost" BasedOn="{StaticResource ComboBoxBase}" TargetType="ComboBox">
+        <Setter Property="Width" Value="170"/>
+        <Setter Property="IsEditable" Value="true"/>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip"
+                Value="{Binding RelativeSource={RelativeSource Self},
+                    Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="Foreground" Value="Red" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

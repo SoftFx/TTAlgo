@@ -4,7 +4,7 @@ import 'rxjs/add/operator/toPromise';
 import { Observable } from "rxjs/Observable";
 import { Subject } from "rxjs/Subject";
 
-import '../../../node_modules/signalr/jquery.signalR.js';
+import * as signalR from '@aspnet/signalr';
 
 import { FeedSignalR, FeedProxy, FeedServer, FeedClient, ConnectionStatus, PackageModel, AccountModel, TradeBotStateModel, TradeBotModel } from '../models/index';
 import { setTimeout } from 'timers';
@@ -34,6 +34,7 @@ export class FeedService {
     private deleteBotSubject = new Subject<string>();
     private updateBotSubject = new Subject<TradeBotModel>();
     private reconnectFlag: boolean;
+    private connection: signalR.HubConnection;
 
     constructor(private _zone: NgZone) {
         this.ConnectionState = this.connectionStateSubject.asObservable();
@@ -50,34 +51,39 @@ export class FeedService {
 
     public start(debug: boolean, token?: string): Observable<ConnectionStatus> {
         if (this.CurrentState !== ConnectionStatus.Connected) {
+
+            let connectionBuilder = new signalR.HubConnectionBuilder();
+
             if (token) {
-                $.connection.hub.qs = { 'authorization-token': token };
+                connectionBuilder.withUrl("/signalr", { accessTokenFactory: () => token });
+            }
+            else {
+                connectionBuilder.withUrl("/signalr");
             }
 
-            $.connection.hub.logging = debug;
+            if (debug) {
+                //connectionBuilder.configureLogging(signalR.LogLevel.Debug);
+            }
 
-            let connection = <FeedSignalR>$.connection;
-            let feedHub = connection.bAFeed;
+            this.connection = connectionBuilder.build();
 
-            feedHub.client.addOrUpdatePackage = x => this.onAddOrUpdatePackage(new PackageModel().Deserialize(x));
-            feedHub.client.deletePackage = x => this.onDeletePackage(x);
-            feedHub.client.addAccount = x => this.onAddAccount(new AccountModel().Deserialize(x));
-            feedHub.client.deleteAccount = x => this.onDeleteAccount(new AccountModel().Deserialize(x));
-            feedHub.client.changeBotState = x => this.onChangeBotState(new TradeBotStateModel().Deserialize(x));
-            feedHub.client.addBot = x => this.onBotAdded(new TradeBotModel().Deserialize(x));
-            feedHub.client.deleteBot = x => this.onBotDeleted(x);
-            feedHub.client.updateBot = x => this.onBotUpdated(new TradeBotModel().Deserialize(x));
+            this.connection.on("addOrUpdatePackage", x => this.onAddOrUpdatePackage(new PackageModel().Deserialize(x)));
+            this.connection.on("deletePackage", x => this.onDeletePackage(x));
+            this.connection.on("addAccount", x => this.onAddAccount(new AccountModel().Deserialize(x)));
+            this.connection.on("deleteAccount", x => this.onDeleteAccount(new AccountModel().Deserialize(x)));
+            this.connection.on("changeBotState", x => this.onChangeBotState(new TradeBotStateModel().Deserialize(x)));
+            this.connection.on("addBot", x => this.onBotAdded(new TradeBotModel().Deserialize(x)));
+            this.connection.on("deleteBot", x => this.onBotDeleted(x));
+            this.connection.on("updateBot", x => this.onBotUpdated(new TradeBotModel().Deserialize(x)));
 
-            $.connection.hub.disconnected(() => {
+            this.connection.onclose(() => {
                 this.setConnectionState(ConnectionStatus.Disconnected);
                 if (this.reconnectFlag)
                     this.reconnectAnyway();
             });
-            $.connection.hub.reconnecting(() => this.setConnectionState(ConnectionStatus.Reconnecting));
-            $.connection.hub.reconnected(() => this.setConnectionState(ConnectionStatus.Connected));
-            $.connection.hub.start()
-                .done(response => this.setConnectionState(ConnectionStatus.Connected))
-                .fail(error => this._zone.run(() => this.connectionStateSubject.error(error)));
+            this.connection.start()
+                .then(response => this.setConnectionState(ConnectionStatus.Connected))
+                .catch(error => this._zone.run(() => this.connectionStateSubject.error(error)));
 
             this.reconnectFlag = true;
         }
@@ -89,21 +95,26 @@ export class FeedService {
         if (this.CurrentState !== ConnectionStatus.Disconnected) {
 
             this.reconnectFlag = false;
-            $.connection.hub.stop(true, true);
-            $.connection.hub.qs = {};
+            this.connection.stop();
+            this.connection = null;
             this.setConnectionState(ConnectionStatus.Disconnected);
         }
         return this.ConnectionState;
     }
 
     private reconnectAnyway() {
-        setTimeout(() => {
-            if (this.reconnectFlag && this.CurrentState === ConnectionStatus.Disconnected) {
-                $.connection.hub.start()
-                    .done(response => this.setConnectionState(ConnectionStatus.Connected))
-                    .fail(error => this.reconnectAnyway());
-            }
-        }, 10000);
+        if (this.CurrentState !== ConnectionStatus.WaitReconnect) {
+
+            this.setConnectionState(ConnectionStatus.WaitReconnect);
+            setTimeout(() => {
+                if (this.reconnectFlag && this.CurrentState === ConnectionStatus.WaitReconnect) {
+                    this.setConnectionState(ConnectionStatus.Reconnecting);
+                    this.connection.start()
+                        .then(response => this.setConnectionState(ConnectionStatus.Connected))
+                        .catch(error => this.reconnectAnyway());
+                }
+            }, 10000);
+        }
     }
 
     private setConnectionState(connectionState: ConnectionStatus) {

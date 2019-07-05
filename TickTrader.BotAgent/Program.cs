@@ -2,9 +2,8 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using TickTrader.BotAgent.WebAdmin;
 using Microsoft.Extensions.Configuration;
-using TickTrader.BotAgent.BA.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
 using TickTrader.BotAgent.BA;
 using TickTrader.Algo.Core;
 using System.Diagnostics;
@@ -14,12 +13,23 @@ using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using NLog;
 using System.Globalization;
 using ActorSharp;
-using TickTrader.BotAgent.WebAdmin.Server.Protocol;
+using NLog.Web;
+using NLog.Extensions.Logging;
+using System.Collections.Generic;
+using TickTrader.BotAgent.Hosting;
 
 namespace TickTrader.BotAgent
 {
     public class Program
     {
+        public static readonly Dictionary<string, string> SwitchMappings =
+            new Dictionary<string, string>
+            {
+                {"-e", WebHostDefaults.EnvironmentKey},
+                {"-c", LaunchSettings.ConsoleKey },
+            };
+
+
         public static void Main(string[] args)
         {
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
@@ -29,55 +39,22 @@ namespace TickTrader.BotAgent
 
             CoreLoggerFactory.Init(cn => new LoggerAdapter(LogManager.GetLogger(cn)));
 
-            var logger = LogManager.GetLogger(nameof(Startup));
+            var logger = LogManager.GetLogger(nameof(Program));
 
             SetupGlobalExceptionLogging(logger);
 
-            var agent = new ServerModel.Handler(ServerModel.Load());
-
             try
             {
-                bool isService = true;
+                var hostBuilder = CreateWebHostBuilder(args);
 
-                if (Debugger.IsAttached || args.Contains("console"))
-                    isService = false;
-
-                var pathToContentRoot = Directory.GetCurrentDirectory();
-
-                if (isService)
-                {
-                    var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
-                    pathToContentRoot = Path.GetDirectoryName(pathToExe);
-                }
-
-                var pathToWebRoot = Path.Combine(pathToContentRoot, "WebAdmin","wwwroot");
-                var pathToAppSettings = Path.Combine(pathToContentRoot, "WebAdmin", "appsettings.json");
-
-                var config = EnsureDefaultConfiguration(pathToAppSettings);
-
-                var protocolServer = new Algo.Protocol.Grpc.GrpcServer(new BotAgentServer(agent, config), config.GetProtocolServerSettings(), new JwtProvider(config.GetJwtKey()));
-                protocolServer.Start();
-
-                var cert = config.GetCertificate(pathToContentRoot);
-
-                var host = new WebHostBuilder()
-                    .UseConfiguration(config)
-                    .UseKestrel(options => options.UseHttps(cert))
-                    .UseContentRoot(pathToContentRoot)
-                    .UseWebRoot(pathToWebRoot)
-                    .UseStartup<Startup>()
-                    .AddBotAgent(agent)
-                    .AddProtocolServer(protocolServer)
+                var host = hostBuilder
+                    .AddBotAgent()
+                    .AddProtocolServer()
                     .Build();
-
-                Console.WriteLine($"Web root path: {pathToWebRoot}");
 
                 logger.Info("Starting web host");
 
-                if (isService)
-                    host.RunAsCustomService();
-                else
-                    host.Run();
+                host.Launch();
             }
             catch (Exception ex)
             {
@@ -85,10 +62,68 @@ namespace TickTrader.BotAgent
             }
         }
 
-
-        private static IConfiguration EnsureDefaultConfiguration(string configFile)
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
-            if (!System.IO.File.Exists(configFile))
+            var launchSettings = LaunchSettings.Read(args, SwitchMappings);
+
+            Console.WriteLine(launchSettings);
+
+            var pathToContentRoot = Directory.GetCurrentDirectory();
+
+            if (launchSettings.Mode == LaunchMode.WindowsService)
+                pathToContentRoot = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
+            var pathToWebAdmin = Path.Combine(pathToContentRoot, "WebAdmin");
+            var pathToWebRoot = Path.Combine(pathToWebAdmin, "wwwroot");
+            var pathToAppSettings = Path.Combine(pathToWebAdmin, "appsettings.json");
+
+            EnsureDefaultConfiguration(pathToAppSettings);
+
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder
+                .SetBasePath(pathToWebAdmin)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{launchSettings.Environment}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables(LaunchSettings.EnvironmentVariablesPrefix)
+                .AddCommandLine(args)
+                .AddInMemoryCollection(launchSettings.GenerateEnvironmentOverride());
+
+            var config = configBuilder.Build();
+
+            var cert = config.GetCertificate(pathToContentRoot);
+
+            return new WebHostBuilder()
+                .UseConfiguration(config)
+                .ConfigureAppConfiguration((context, builder) => 
+                {
+                    // Thanks Microsoft for not doing this in UseConfiguration
+                    // I enjoy spending hours in framework sources
+                    builder.Sources.Clear();
+                    builder.AddConfiguration(config);
+                })
+                .UseKestrel()
+                .ConfigureKestrel((context, options) =>
+                    options.ConfigureHttpsDefaults(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificate = cert;
+                        httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12;
+                    }))
+                .UseContentRoot(pathToContentRoot)
+                .UseWebRoot(pathToWebRoot)
+                .ConfigureLogging(logging => logging.AddNLog())
+                .ConfigureServices(services =>
+                    services.Configure<LaunchSettings>(options =>
+                    {
+                        options.Environment = launchSettings.Environment;
+                        options.Mode = launchSettings.Mode;
+                    }))
+                .UseStartup<Startup>();
+        }
+
+
+        private static void EnsureDefaultConfiguration(string configFile)
+        {
+            if (!File.Exists(configFile))
             {
                 CreateDefaultConfig(configFile);
             }
@@ -96,12 +131,6 @@ namespace TickTrader.BotAgent
             {
                 MigrateConfig(configFile);
             }
-
-            var builder = new ConfigurationBuilder()
-              .AddJsonFile(configFile, optional: false)
-              .AddEnvironmentVariables();
-
-            return builder.Build();
         }
 
         private static void CreateDefaultConfig(string configFile)
@@ -112,7 +141,7 @@ namespace TickTrader.BotAgent
 
         private static void MigrateConfig(string configFile)
         {
-            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(System.IO.File.ReadAllText(configFile));
+            var currentSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(configFile));
 
             var anyChanges = false;
 
@@ -129,6 +158,11 @@ namespace TickTrader.BotAgent
                 currentSettings.Credentials.AdminPassword = oldCreds.Password;
                 anyChanges = true;
             }
+            if (currentSettings.Fdk == null)
+            {
+                currentSettings.Fdk = AppSettings.Default.Fdk;
+                anyChanges = true;
+            }
 
             if (anyChanges)
             {
@@ -138,7 +172,24 @@ namespace TickTrader.BotAgent
 
         private static void SaveConfig(string configFile, AppSettings appSettings)
         {
-            System.IO.File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
+            File.WriteAllText(configFile, JsonConvert.SerializeObject(appSettings, Formatting.Indented));
+        }
+
+        private static void SetupGlobalExceptionLogging(Logger log)
+        {
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                var ex = e.ExceptionObject as Exception;
+                if (ex != null)
+                    log.Fatal(ex, "Unhandled Exception on Domain level!");
+                else
+                    log.Fatal("Unhandled Exception on Domain level! No exception specified!");
+            };
+
+            Actor.UnhandledException += (ex) =>
+            {
+                log.Error(ex, "Unhandled Exception on Actor level!");
+            };
         }
 
         //private static void RunConsole()
@@ -412,23 +463,5 @@ namespace TickTrader.BotAgent
         //    if (p is Parameter)
         //        Console.WriteLine("\t{0} - {1}", p.Id, ((Parameter)p).ValObj);
         //}
-
-        private static void SetupGlobalExceptionLogging(Logger log)
-        {
-            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-            {
-                var ex = e.ExceptionObject as Exception;
-                if (ex != null)
-                    log.Fatal(ex, "Unhandled Exception on Domain level!");
-                else
-                    log.Fatal("Unhandled Exception on Domain level! No exception specified!");
-            };
-
-            Actor.UnhandledException += (ex) =>
-            {
-                log.Error(ex, "Unhandled Exception on Actor level!");
-            };
-        }
-
     }
 }

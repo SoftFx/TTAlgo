@@ -11,31 +11,26 @@ using Newtonsoft.Json;
 using TickTrader.BotAgent.WebAdmin.Server.Extensions;
 using TickTrader.BotAgent.BA;
 using TickTrader.BotAgent.WebAdmin.Server.Core.Auth;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using System;
 using TickTrader.BotAgent.WebAdmin.Server.Models;
-using NLog.Extensions.Logging;
-using NLog.Web;
 using Microsoft.AspNetCore.Http;
 using TickTrader.Algo.Protocol;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 
 namespace TickTrader.BotAgent.WebAdmin
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public IConfiguration Configuration { get; private set; }
+
+
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("WebAdmin/appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; private set; }
-        private string JwtKey => Configuration.GetJwtKey();
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -44,50 +39,52 @@ namespace TickTrader.BotAgent.WebAdmin
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.Configure<IConfiguration>(Configuration);
             services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders.Add(new ViewLocationExpander()));
-            services.AddTransient<ITokenOptions>(x => new TokenOptions
-            {
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
-                    SecurityAlgorithms.HmacSha256)
-            });
-            services.AddTransient<IAuthManager, AuthManager>();
 
-            // .NET Core SDK 2.1.4 has broken core-1.1 apps compatibility with net4xx targets
-            // This workaround should avoid problematic code paths
-            // Upgrading to core-2.1 should resolve issue completely
-            var manager = new ApplicationPartManager();
-            manager.ApplicationParts.Add(new AssemblyPart(typeof(Startup).Assembly));
-            services.AddSingleton(manager);
+            var tokenProvider = new JwtSecurityTokenProvider(Configuration);
+            services.AddSingleton<ISecurityTokenProvider, JwtSecurityTokenProvider>(s => tokenProvider);
+            services.AddSingleton<IAuthManager, AuthManager>();
+            services.AddSingleton<IFdkOptionsProvider, FdkOptionsProvider>();
 
-            services.AddSignalR(options => options.Hubs.EnableDetailedErrors = true);
-            services.AddMvc().AddJsonOptions(options =>
-            {
-                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-            });
+            services.AddSignalR(options => options.EnableDetailedErrors = true)
+                .AddJsonProtocol(o => o.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver());
 
-            services.AddSwaggerGen();
+            services.AddMvc()
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                })
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "BotAgent WebAPI", Version = "v1" }));
             services.AddStorageOptions(Configuration.GetSection("PackageStorage"));
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(jwtOptions =>
+            {
+                jwtOptions.SecurityTokenValidators.Clear();
+                jwtOptions.SecurityTokenValidators.Add(tokenProvider);
+                jwtOptions.TokenValidationParameters = tokenProvider.WebValidationParams;
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifeTime, IServiceProvider services)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifeTime, IServiceProvider services)
         {
-            loggerFactory.AddNLog();
-            app.AddNLogWeb();
-
-            appLifeTime.ApplicationStopping.Register(() => Shutdown(services, loggerFactory));
-
-            LogUnhandledExceptions(loggerFactory);
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
                 {
                     HotModuleReplacement = true,
+                    HotModuleReplacementEndpoint = "/dist/__webpack_hmr",
                     ConfigFile = "./WebAdmin/webpack.config"
                 });
                 app.UseSwagger();
-                app.UseSwaggerUi();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BotAgent WebAPI v1"));
             }
             else
             {
@@ -95,28 +92,16 @@ namespace TickTrader.BotAgent.WebAdmin
             }
 
             app.UseStaticFiles();
+            app.UseHttpsRedirection();
 
             app.UseJwtAuthentication();
 
             app.ObserveBotAgent();
             app.UseWardenOverBots();
 
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtKey)),
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }
-            });
+            app.UseAuthentication();
 
-            app.UseSignalR();
+            app.UseSignalR(route => route.MapHub<BAFeed>("/signalr"));
 
             app.UseMvc(routes =>
             {
@@ -128,27 +113,6 @@ namespace TickTrader.BotAgent.WebAdmin
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
-        }
-
-        private void Shutdown(IServiceProvider services, ILoggerFactory loggerFactory)
-        {
-            var server = services.GetRequiredService<IBotAgent>();
-            var protocolServer = services.GetRequiredService<ProtocolServer>();
-
-            protocolServer.Stop();
-            server.ShutdownAsync().Wait(TimeSpan.FromMinutes(1));
-
-            var logger = loggerFactory.CreateLogger(nameof(Startup));
-            logger.LogInformation("Web host stopped");
-        }
-
-        private void LogUnhandledExceptions(ILoggerFactory loggerFactory)
-        {
-            var logger = loggerFactory.CreateLogger("AppDomain.UnhandledException");
-            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-            {
-                logger.LogError($"(This is definitely a bug!) {e.ExceptionObject}");
-            };
         }
     }
 }

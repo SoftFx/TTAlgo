@@ -40,7 +40,7 @@
 !endif
 
 !ifndef LICENSE_FILE
-  !define LICENSE_FILE "..\TickTrader.BotAgent\bin\Release\net462\publish\license.txt"
+  !define LICENSE_FILE "..\TickTrader.Algo.Setup\license.txt"
 !endif
 
 !ifndef APPDIR
@@ -69,7 +69,7 @@
 ;--------------------------
 ; Main Install settings
 Name "${PRODUCT_NAME}"
-InstallDir "$PROGRAMFILES\${INSTALL_DIRECTORY}"
+InstallDir "$PROGRAMFILES64\${INSTALL_DIRECTORY}"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 OutFile "..\build.ouput\${SETUP_FILENAME}"
 
@@ -125,8 +125,8 @@ FunctionEnd
 		; Delete Shortcuts
 		Delete "$SMPROGRAMS\${SM_DIRECTORY}\Uninstall.lnk"
 		RMDir "$SMPROGRAMS\${SM_DIRECTORY}"
-	
-		; Delete self
+
+		; Delete Self
 		Delete "$INSTDIR\uninstall.exe"
 	
 		; Remove from registry...
@@ -135,7 +135,7 @@ FunctionEnd
 	FunctionEnd
 !macroend
 
-!insertmacro UninstallBAMacro ""
+; !insertmacro UninstallBAMacro ""
 !insertmacro UninstallBAMacro "un."
 
 
@@ -148,7 +148,12 @@ Section "TickTrader Bot Agent" Section1
 		Quit
 	uninst:
 		ClearErrors
-		Call UninstallBA
+		; Copy previous uninstaller to temp location
+		CreateDirectory "$INSTDIR\tmp"
+		CopyFiles /SILENT /FILESONLY "$INSTDIR\uninstall.exe" "$INSTDIR\tmp"
+		; Run uninstaller of previous version
+		ExecWait '"$INSTDIR\tmp\uninstall.exe" /S _?=$INSTDIR'
+		RMDir /r "$INSTDIR\tmp"
 	${EndIf}
 
 	; Set Section properties
