@@ -108,7 +108,6 @@
     <Compile Include="Infrastructure\Dependencies\ViewPanelProperty.cs" />
     <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
     <Compile Include="Helpers\CryptoManager.cs" />
-    <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
     <Compile Include="Managers\ApplicationManages\PrompterManager.cs" />
     <Compile Include="Managers\ApplicationManages\ServiceManager.cs" />
@@ -149,7 +148,6 @@
     <Compile Include="Infrastructure\Exceptions.cs" />
     <Compile Include="Infrastructure\Validations.cs" />
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
-    <Compile Include="Models\DefaultServiceSettingsModel.cs" />
     <Compile Include="Infrastructure\DelegateCommand.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />

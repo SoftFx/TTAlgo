@@ -1,18 +1,28 @@
 ﻿using System;
-using System.Linq;
 using System.ServiceProcess;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class ServiceManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private ServiceController _serviceController;
         private readonly string _serviceName;
+        private int _servicePort;
 
         public bool IsServiceRunning => _serviceController?.Status == ServiceControllerStatus.Running;
 
         public ServiceControllerStatus ServiceStatus => _serviceController.Status;
+        public int ServicePort
+        {
+            get => _servicePort;
+            set
+            {
+                if (IsServiceRunning && _servicePort != value)
+                    _servicePort = value;
+            }
+        }
 
         public ServiceManager(string serviceName)
         {
@@ -20,7 +30,7 @@ namespace TickTrader.BotAgent.Configurator
             _serviceController = new ServiceController(_serviceName);
         }
 
-        public void ServiceStart()
+        public void ServiceStart(int listeningPort)
         {
             _serviceController = new ServiceController(_serviceName);
 
@@ -31,10 +41,11 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _serviceController.Start();
                 _serviceController.WaitForStatus(ServiceControllerStatus.Running);
+                ServicePort = listeningPort;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
                 throw new Exception($"Cannot start Windows Service {_serviceName}");
             }
         }
@@ -51,7 +62,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
                 throw new Exception($"Cannot stopped Windows Service {_serviceName}");
             }
         }

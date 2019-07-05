@@ -8,6 +8,8 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class LogsManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private const long BlockSize = 2048L;
         private const int MaxMessagesCount = 1000;
 
@@ -87,7 +89,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
             }
         }
 
@@ -149,7 +151,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
             }
         }
     }

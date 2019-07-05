@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -11,11 +10,11 @@ namespace TickTrader.BotAgent.Configurator
 
     public class ConfigurationModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private ConfigManager _configManager;
         private PortsManager _portsManager;
         private RegistryManager _registryManager;
-
-        private DefaultServiceSettingsModel _defaultServiceSettings;
 
         private JObject _configurationObject;
 
@@ -43,7 +42,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public ConfigurationModel()
         {
-            _defaultServiceSettings = new DefaultServiceSettingsModel();
             _configManager = new ConfigManager();
 
             Settings = _configManager.Properties;
@@ -53,7 +51,7 @@ namespace TickTrader.BotAgent.Configurator
             _registryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
 
             ServiceManager = new ServiceManager(Settings[AppProperties.ServiceName]);
-            _portsManager = new PortsManager(ServiceManager, _defaultServiceSettings);
+            _portsManager = new PortsManager(ServiceManager);
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
             SslManager = new SslManager(SectionNames.Ssl);
@@ -62,6 +60,8 @@ namespace TickTrader.BotAgent.Configurator
             ServerManager = new ServerManager();
 
             _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
+
+            ServiceManager.ServicePort = ProtocolManager.ProtocolModel.ListeningPort;
 
             LoadConfiguration(false);
         }
@@ -75,7 +75,7 @@ namespace TickTrader.BotAgent.Configurator
             if (ServiceManager.IsServiceRunning)
                  ServiceManager.ServiceStop();
 
-             ServiceManager.ServiceStart();
+             ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort);
         }
 
         public void LoadConfiguration(bool loadConfig = true)
@@ -95,7 +95,6 @@ namespace TickTrader.BotAgent.Configurator
                     UploadModel(uploader);
             }
 
-            UploadDefaultServiceModel();
             _configManager.SaveChanges();
         }
 
@@ -110,7 +109,6 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             _configManager.SaveChanges();
-            UploadDefaultServiceModel();
         }
 
         private void UploadModel(IUploaderModels model)
@@ -122,7 +120,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (NullReferenceException ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
 
                 if (MessageBoxManager.YesNoBoxError($"Loading section {model.SectionName} failed. Apply default settings?"))
                 {
@@ -131,11 +129,6 @@ namespace TickTrader.BotAgent.Configurator
                 else
                     throw new Exception("Unable to load settings");
             }
-        }
-
-        private void UploadDefaultServiceModel()
-        {
-            _defaultServiceSettings.ListeningPort = ProtocolManager.ProtocolModel.ListeningPort;
         }
     }
 

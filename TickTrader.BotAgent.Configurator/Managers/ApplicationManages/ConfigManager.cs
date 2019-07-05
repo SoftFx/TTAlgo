@@ -9,6 +9,7 @@ namespace TickTrader.BotAgent.Configurator
 
     public class ConfigManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         private readonly string _appConfigPath = Path.Combine(Environment.CurrentDirectory, "appConfig.json");
 
         private ConfigurationProperies _defaultProperties;
@@ -63,7 +64,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
             }
         }
     }

@@ -8,15 +8,15 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class PortsManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly INetFwMgr _firewallManager;
         private readonly ServiceManager _serviceManager;
-        private readonly DefaultServiceSettingsModel _serviceModel;
         private readonly INetFwPolicy2 _firewallPolicy;
 
-        public PortsManager(ServiceManager service, DefaultServiceSettingsModel serviceModel)
+        public PortsManager(ServiceManager service)
         {
             _serviceManager = service;
-            _serviceModel = serviceModel;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
@@ -51,7 +51,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool IsAgentService(int port)
         {
-            return _serviceManager.IsServiceRunning && _serviceModel.ListeningPort == port;
+            return _serviceManager.IsServiceRunning && _serviceManager.ServicePort == port;
         }
 
         public void RegisterRuleInFirewall(string nameApp, string application, string porst, string serviceName)
@@ -71,7 +71,7 @@ namespace TickTrader.BotAgent.Configurator
                 firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
                 firewallRule.Name = name;
                 newRule = true;
-                Logger.Error(ex);
+                _logger.Error(ex);
             }
 
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;

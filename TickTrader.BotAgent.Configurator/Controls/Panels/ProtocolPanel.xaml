@@ -24,13 +24,13 @@
         <TextBlock Grid.Row="0" Text="Listening Port: "/>
         <TextBlock Grid.Row="3" Text="Directory Name: "/>
 
-        <TextBox Grid.Row="1" x:Name="listeningPortBox" Style="{StaticResource ListeningPortTextBox}">
+        <TextBox Grid.Row="1" Validation.ErrorTemplate="{StaticResource validationFailed}">
             <TextBox.Text>
                 <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" Delay="500">
                     <Binding.ValidationRules>
-                        <ExceptionValidationRule/>
-                        <local:RangeNumberValidationRule MaxValue="65536" ValidationStep="RawProposedValue"/>
-                        <local:FreePortValidationRule ValidationStep="RawProposedValue"/>
+                        <ExceptionValidationRule ValidatesOnTargetUpdated="True"/>
+                        <local:RangeNumberValidationRule MaxValue="65536" ValidatesOnTargetUpdated="True"/>
+                        <local:FreePortValidationRule ValidatesOnTargetUpdated="True"/>
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>
@@ -42,7 +42,7 @@
             <TextBox.Text>
                 <Binding Path="DirectoryName" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                     <Binding.ValidationRules>
-                        <local:StringLengthValidationRule MinLength="1"/>
+                        <local:StringLengthValidationRule MinLength="1" ValidatesOnTargetUpdated="True"/>
                         <ExceptionValidationRule/>
                     </Binding.ValidationRules>
                 </Binding>

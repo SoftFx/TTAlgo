@@ -52,6 +52,8 @@ namespace TickTrader.BotAgent.Configurator
 
     public class ProtocolModel
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private const int MaxPort = 1 << 16;
 
         private readonly PortsManager _portManager;
@@ -103,7 +105,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (string.IsNullOrEmpty(freePortMassage))
                     freePortMassage = "Free ports not found";
 
-                Logger.Error(ex);
+                _logger.Error(ex);
                 throw new WarningException($"{ex.Message}. {freePortMassage}");
             }
         }

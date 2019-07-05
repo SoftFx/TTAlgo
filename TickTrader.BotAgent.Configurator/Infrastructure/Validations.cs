@@ -20,6 +20,8 @@ namespace TickTrader.BotAgent.Configurator
 
     public class FreePortValidationRule : ValidationRule
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public int MinValue { get; set; } = 0;
 
         public int MaxValue { get; set; } = 1 << 16;
@@ -40,7 +42,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
                 return new ValidationResult(false, ex.Message);
             }
         }

@@ -29,10 +29,16 @@
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
                 <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
-                <Setter Property="Foreground" Value="Red" />
+                <Setter Property="Foreground" Value="Red"/>
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <ControlTemplate x:Key="validationFailed">
+        <Border BorderBrush="Red" BorderThickness="1">
+            <AdornedElementPlaceholder />
+        </Border>
+    </ControlTemplate>
 
     <!--<ControlTemplate x:Key="rdButton" TargetType="Button">
         <Border x:Name="buttonBorder" CornerRadius="5"
@@ -114,11 +120,6 @@
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="IsEnabled" Value="False"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}" Value="True">
-                <Setter Property="IsEnabled" Value="True"/>
-            </DataTrigger>
-        </Style.Triggers>
     </Style>
     
     <Style x:Key="ToolBarIcon" TargetType="{x:Type fa:ImageAwesome}">

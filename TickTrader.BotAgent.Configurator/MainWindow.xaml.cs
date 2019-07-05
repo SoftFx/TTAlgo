@@ -18,8 +18,6 @@ namespace TickTrader.BotAgent.Configurator
             _countErrors += e.Action == ValidationErrorEventAction.Added ? 1 : -1;
 
             StartButton.IsEnabled = _countErrors <= 0;
-            CancelButton.IsEnabled = true;
-            SaveButton.IsEnabled = true;
         }
     }
 }

@@ -2,14 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class PrompterManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _appPrompterFile = Path.Combine(Environment.CurrentDirectory, "prompterFile.json");
 
         private Dictionary<SectionNames, Dictionary<string, string>> _prompts { get; }
@@ -61,7 +60,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             catch (Exception ex)
             {
-                Logger.Error(ex);
+                _logger.Error(ex);
             }
         }
 
