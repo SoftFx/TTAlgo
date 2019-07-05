@@ -70,7 +70,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
 
-            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(BotAgentHolder.BotAgentPath, $"{Settings[AppProperties.ApplicationName]}"), ports, Settings[AppProperties.ServiceName]);
+            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(BotAgentHolder.BotAgentPath, $"{Settings[AppProperties.ApplicationName]}.exe"), ports, Settings[AppProperties.ServiceName]);
 
             if (ServiceManager.IsServiceRunning)
                  ServiceManager.ServiceStop();
