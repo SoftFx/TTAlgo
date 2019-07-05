@@ -8,4 +8,18 @@
     <Style x:Key="ProtocolCheckBox" BasedOn="{StaticResource BaseCheckBox}" TargetType="CheckBox">
         <Setter Property="Margin" Value="90 4 0 0"/>
     </Style>
+
+    <Style x:Key="ListeningPortTextBox" TargetType="TextBox">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Width" Value="170"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                <Setter Property="Foreground" Value="Red" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

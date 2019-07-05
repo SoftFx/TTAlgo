@@ -28,9 +28,7 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip"
-                Value="{Binding RelativeSource={RelativeSource Self},
-                    Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
                 <Setter Property="Foreground" Value="Red" />
             </Trigger>
         </Style.Triggers>
@@ -207,10 +205,10 @@
     </Style>
 
     <Style x:Key="AgentSpinner" TargetType="fa:ImageAwesome">
-        <Setter Property="Icon" Value="Spinner"/>
+        <Setter Property="Icon" Value="Cog"/>
         <Setter Property="SpinDuration" Value="4"/>
         <Setter Property="Spin" Value="True"/>
-        <Setter Property="Height" Value="60"/>
+        <Setter Property="Height" Value="80"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>

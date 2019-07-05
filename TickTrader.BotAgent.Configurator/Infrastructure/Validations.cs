@@ -30,17 +30,19 @@ namespace TickTrader.BotAgent.Configurator
 
             var model = Application.Current.MainWindow.DataContext as ConfigurationViewModel;
 
+            if (model == null)
+                return new ValidationResult(false, "error");
+
             try
             {
                 model?.ProtocolModel.CheckPort(port);
+                return new ValidationResult(true, "");
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
                 return new ValidationResult(false, ex.Message);
             }
-
-            return new ValidationResult(true, "");
         }
     }
 
