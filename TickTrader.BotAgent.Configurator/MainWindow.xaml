@@ -48,7 +48,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <!--<fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>-->
+        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
 
         <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}" Validation.Error="CountNumberErrors">
             <TabControl.Resources>
