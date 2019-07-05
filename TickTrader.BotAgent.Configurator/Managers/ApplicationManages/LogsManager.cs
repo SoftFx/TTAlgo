@@ -13,17 +13,17 @@ namespace TickTrader.BotAgent.Configurator
         private const long BlockSize = 2048L;
         private const int MaxMessagesCount = 1000;
 
-        private readonly string _logsFilePath;
         private readonly string[] _separators = new string[] { Environment.NewLine };
 
         private long _lastSize;
-
         private LinkedList<string> _messages;
+
+        public string LogsFilePath { get; }
 
         public LogsManager(string path, string folder)
         {
             _messages = new LinkedList<string>();
-            _logsFilePath = Path.Combine(path, folder);
+            LogsFilePath = Path.Combine(path, folder);
 
             LoadLog();
         }
@@ -32,19 +32,19 @@ namespace TickTrader.BotAgent.Configurator
 
         public void LoadLog()
         {
-            if (!File.Exists(_logsFilePath))
+            if (!File.Exists(LogsFilePath))
                 return;
 
             try
             {
-                long fileSize = new FileInfo(_logsFilePath).Length;
+                long fileSize = new FileInfo(LogsFilePath).Length;
                 long shift = 0;
 
                 bool finish = false;
 
                 _lastSize = fileSize;
 
-                using (var fs = new FileStream(_logsFilePath, FileMode.Open))
+                using (var fs = new FileStream(LogsFilePath, FileMode.Open))
                 {
                     while (fileSize > shift)
                     {
@@ -95,12 +95,12 @@ namespace TickTrader.BotAgent.Configurator
 
         public void UpdateLog()
         {
-            if (!File.Exists(_logsFilePath))
+            if (!File.Exists(LogsFilePath))
                 return;
 
             try
             {
-                long fileSize = new FileInfo(_logsFilePath).Length;
+                long fileSize = new FileInfo(LogsFilePath).Length;
 
                 if (_lastSize > fileSize) //to update the file at 12 at night
                     _lastSize = 0;
@@ -110,7 +110,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 if (_lastSize != fileSize)
                 {
-                    using (var fs = new FileStream(_logsFilePath, FileMode.Open))
+                    using (var fs = new FileStream(LogsFilePath, FileMode.Open))
                     {
                         while (uk > 0)
                         {

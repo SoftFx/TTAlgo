@@ -61,9 +61,9 @@ namespace TickTrader.BotAgent.Configurator
 
             _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 
-            ServiceManager.ServicePort = ProtocolManager.ProtocolModel.ListeningPort;
-
             LoadConfiguration(false);
+
+            ServiceManager.ServicePort = ProtocolManager.ProtocolModel.ListeningPort;
         }
 
         public void StartAgent()

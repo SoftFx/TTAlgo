@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,6 +16,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private AgentVersionManager _versionManager;
         private ConfigurationModel _model;
+        private Process _explorerProcess;
 
         private bool _runnignApplication;
 
@@ -21,6 +24,7 @@ namespace TickTrader.BotAgent.Configurator
         private DelegateCommand _restartApplication;
         private DelegateCommand _saveChanges;
         private DelegateCommand _cancelChanges;
+        private DelegateCommand _openLogsFolder;
 
         public CredentialViewModel AdminModel { get; set; }
 
@@ -186,6 +190,13 @@ namespace TickTrader.BotAgent.Configurator
                         Application.Current.Shutdown();
                     }
                 }
+            }));
+
+        public DelegateCommand OpenLogsFolder => _openLogsFolder ?? (
+            _openLogsFolder = new DelegateCommand(obj =>
+            {
+                if (_explorerProcess == null)
+                    _explorerProcess = Process.Start(Path.GetDirectoryName(_model.Logs.LogsFilePath));
             }));
 
         public void RefreshModels()

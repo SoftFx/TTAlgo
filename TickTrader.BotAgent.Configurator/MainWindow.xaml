@@ -48,7 +48,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
+        <!--<fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>-->
 
         <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}" Validation.Error="CountNumberErrors">
             <TabControl.Resources>
@@ -152,7 +152,21 @@
         </TabControl>
 
         <DockPanel Grid.Row="2" Background="#FFEEF5FD">
-            <TextBlock Text="Logs" Style="{StaticResource LogsHeader}" DockPanel.Dock="Top"/>
+            <Grid DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Logs" Style="{StaticResource LogsHeader}" />
+                <Button Grid.Column="1" Style="{StaticResource OpenLogsFolderButton}" Command="{Binding OpenLogsFolder}">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="FolderOutlinepenOutline" Style="{x:Null}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Show in folder"/>
+                    </Button.ToolTip>
+                </Button>
+            </Grid>
             <TextBox Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Style="{StaticResource LogsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom"/>
         </DockPanel>
 
