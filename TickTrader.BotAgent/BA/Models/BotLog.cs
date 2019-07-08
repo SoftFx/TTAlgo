@@ -129,7 +129,8 @@ namespace TickTrader.BotAgent.BA.Models
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_archiveExtension}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-log{_archiveExtension}")),
+                ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
             };
 
@@ -138,7 +139,8 @@ namespace TickTrader.BotAgent.BA.Models
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_archiveExtension}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-error{_archiveExtension}")),
+                ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
             };
 
@@ -147,7 +149,8 @@ namespace TickTrader.BotAgent.BA.Models
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_archiveExtension}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-status{_archiveExtension}")),
+                ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
             };
 
