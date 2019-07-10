@@ -1,83 +1,178 @@
 <project name="TickTrader Algo" default="help">
 
-  <property name="MSBuildDir"		    value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"  		unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"      unless="${property::exists('MSBuildDir')}" />
+  <property name="NSIS_Path"           value="c:\Program Files (x86)\NSIS\"      unless="${property::exists('NSIS_Path')}" />
+  <property name="WinScpPath"          value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
 
-  <tstamp property="Date"		        pattern="yyyy-MM-dd"						            unless="${property::exists('Date')}" />
-  <property name="Build"		        value="0.0.0.0"						                  unless="${property::exists('Build')}" />
-  <property name="Configuration"		value="Release"							                unless="${property::exists('Configuration')}" />
+  <property name="Build"               value="0.0.0.0"                              unless="${property::exists('Build')}" />
+  <property name="Configuration"       value="Release"                              unless="${property::exists('Configuration')}" />
 
-  <property name="SourcesDir"		    value=".\"							      unless="${property::exists('SourcesDir')}" />
-  <property name="SolutionFile"			value="Algo.sln"					                  unless="${property::exists('SolutionFile')}" />
+  <property name="SourcesDir"          value=".\"                                   unless="${property::exists('SourcesDir')}" />
+  <property name="SolutionFile"        value="${SourcesDir}Algo.sln"                unless="${property::exists('SolutionFile')}" />
   
-  <property name="InstallUrl"		    value="http://tp.dev.soft-fx.eu/bt.setup/"	unless="${property::exists('InstallUrl')}" />
+  <property name="InstallUrl"          value="http://tp.dev.soft-fx.eu/bt.setup/"   unless="${property::exists('InstallUrl')}" />
+  <property name="EnableClickOnce"     value="false"                                unless="${property::exists('EnableClickOnce')}" />
+  
 
-  <property name="WinScpPath"			value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
-  
-  <property name="BADir"				value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net462\publish\" unless="${property::exists('BADir')}" />
-  
-  <property name="OutpuFolder"			value="${SourcesDir}build.ouput\" />
-  <property name="PublishFolder"		value="${SourcesDir}bt.publish\"/>
-  <property name="ToolsFolder"			value="${SourcesDir}tools\"  />
+  <property name="OutputFolder"        value="${SourcesDir}build.ouput\" />
+  <property name="PublishFolder"       value="${SourcesDir}bt.publish\"/>
+  <property name="ToolsFolder"         value="${SourcesDir}tools\"  />
+
+  <property name="TerminalProject"     value="${SourcesDir}TickTrader.BotTerminal\TickTrader.BotTerminal.csproj" />
+  <property name="AgentProject"        value="${SourcesDir}TickTrader.BotAgent\TickTrader.BotAgent.csproj" />
+
+  <property name="CoreBinDir"          value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
+  <property name="VsPackageBinDir"     value="${SourcesDir}TickTrader.Algo.VS.Package\bin\${Configuration}"/>
+  <property name="TerminalBinDir"      value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}\" />
+  <property name="AgentBinDir"         value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net462\publish\" />
+  <property name="ConfiguratorBinDir"  value="${SourcesDir}TickTrader.BotAgent.Configurator\bin\${Configuration}\" />
+
+  <property name="CoreZipFile"         value="${OutputFolder}Core ${Build}.zip" />
+  <property name="TerminalZipFile"     value="${OutputFolder}BotTerminal ${Build}.zip" />
+  <property name="AgentZipFile"        value="${OutputFolder}BotAgent ${Build}.x64.zip" />
+
+  <property name="SetupDir"            value="${SourcesDir}TickTrader.Algo.Setup" />
+  <property name="SetupUtilName"       value="TickTrader.Algo.SetupUtil" />
+  <property name="SetupUtilExe"        value="${SourcesDir}${SetupUtilName}\bin\${Configuration}\${SetupUtilName}.exe" />
+
+  <property name="ProjectsToPackage"   value="TickTrader.Algo.Indicators,TickTrader.Algo.TestCollection,TickTrader.Algo.VersionTest,TickTrader.Algo.NewsIndicator" />
+
 
   <target name="help">
-    <echo message="Use: nant.exe -buildfile:bot.terminal.build [Build|Publish|Clean]"/>
+    <echo message="Use: nant.exe -buildfile:bot.terminal.build [Build|Clean]"/>
   </target>
 
   <target name="Build" >
-	<property name="Build.Target" value="Build" />
-    <call target="CleanUpFolder" />
-    <call target="RunMSBuild" />
-    <property name="Build.Target" value="Publish" />
-    <call target="RunMSBuild" />
-	<call target="CreateBinPackage" />
-    <call target="GenerateSetupHmtl" />
-    <property name="Package.ProjectFolder" value="TickTrader.Algo.Indicators" />
-    <call target="CreateAlgoPackage"/>
-    <property name="Package.ProjectFolder" value="TickTrader.Algo.TestCollection" />
-    <call target="CreateAlgoPackage"/>
-    <property name="Package.ProjectFolder" value="TickTrader.Algo.VersionTest" />
-    <call target="CreateAlgoPackage"/>
-	<call target="CreateBAInstaller" />
-  </target>
 
-  <target name="Publish" >
-    <call target="FtpPublish" />
+    <call target="CleanOutput" />
+
+    <call target="SetupMSBuild" />
+    <call target="RestoreNugetPackages" />
+
+    <call target="BuildSolution" />
+    <call target="PublishAgent" />
+    <if test="${EnableClickOnce=='true'}">
+      <call target="PublishTerminal" />
+    </if>
+
+    <call target="CreatePackages" />
+    <call target="AlgoInstaller" />
+    <call target="CreateZipArtifacts" />
+
+    <call target="CreateInstallers" />
+
   </target>
 
   <target name="Clean" >
-    <property name="Build.Target" value="Clean" />
+
+    <call target="CleanOutput" />
+
+    <call target="SetupMSBuild" />
+    <call target="CleanSolution" />
+
+  </target>
+
+  <target name="CleanOutput">
+
+    <delete>
+      <fileset basedir="${OutputFolder}">
+        <include name="*.zip" />
+      </fileset>
+    </delete>
+
+    <delete>
+      <fileset basedir="${OutputFolder}">
+        <include name="*.exe" />
+      </fileset>
+    </delete>
+
+    <delete>
+      <fileset basedir="${OutputFolder}">
+        <include name="*.ttalgo" />
+      </fileset>
+    </delete>
+    
+    <delete>
+      <fileset basedir="${PublishFolder}">
+        <include name="**/*" />
+      </fileset>
+    </delete>
+    
+    <delete>
+      <fileset basedir="${AgentBinDir}">
+        <include name="**/*" />
+      </fileset>
+    </delete>
+
+  </target>
+
+  <target name="RestoreNugetPackages">
+
+    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}" verbose="true">
+      <arg line="restore" />
+      <arg line="${SolutionFile}" />
+      <arg line="-Recursive" />
+      <arg line="-NonInteractive" />
+      <arg line="-Verbosity detailed" />
+      <arg line='-MSBuildPath "${MSBuildDir}."' />
+    </exec>
+
+  </target>
+
+  <target name="SetupMSBuild">
+
+    <property name="MSBuild.SolutionDir" value="${SourcesDir}" />
+    <property name="MSBuild.Output" value="${SourcesDir}Algo.build-${Configuration}.log" />
+    <property name="MSBuild.Configuration" value="${Configuration}" />
+
+  </target>
+
+  <target name="BuildSolution">
+
+    <property name="MSBuild.Target" value="Build" />
+    <property name="MSBuild.TargetFile" value="${SolutionFile}" />
+    <call target="RunMSBuildSolution" />
+
+  </target>
+
+  <target name="PublishAgent">
+
+    <property name="MSBuild.Target" value="Publish" />
+    <property name="MSBuild.TargetFile" value="${AgentProject}" />
+    <call target="RunMSBuildProject" />
+
+  </target>
+
+  <target name="CleanSolution">
+
+    <property name="MSBuild.Target" value="Clean" />
+    
+    <property name="MSBuild.TargetFile" value="${SolutionFile}" />
+    <call target="RunMSBuildSolution" />
+
+    <property name="MSBuild.TargetFile" value="${AgentProject}" />
+    <call target="RunMSBuildProject" />
+
+  </target>
+
+  <target name="RunMSBuildSolution">
+
+    <property name="MSBuild.Platform" value="Any CPU" />  
     <call target="RunMSBuild" />
-    <call target="CleanUpFolder" />
+
+  </target>
+
+  <target name="RunMSBuildProject">
+
+    <property name="MSBuild.Platform" value="AnyCPU" />  
+    <call target="RunMSBuild" />
+
   </target>
 
   <target name="RunMSBuild">
 
-    <property name="MSBuild.SourcesDir" value="${SourcesDir}" />
-    <property name="MSBuild.SolutionFile" value="${SourcesDir}${SolutionFile}" />
-    <property name="MSBuild.Target" value="${Build.Target}" />
-    <property name="MSBuild.Output" value="${SourcesDir}BotTerminal.build-${Configuration}.log" />
-    <property name="MSBuild.Configuration" value="${Configuration}" />
-    <property name="MSBuild.Platform" value="Any CPU" />
-
-    <if test="${MSBuild.Target=='Publish' and property::exists('Publish.User') and property::exists('Publish.Password')}">
-      <exec program="net">
-        <arg value="use" />
-        <arg value="${PublishFolder}" />
-        <arg value="${Publish.Password}" />
-        <arg value="/USER:${Publish.User}" />
-      </exec>
-    </if>
-
-    <exec program="${ToolsFolder}nuget.exe" workingdir="${SourcesDir}">
-      <arg value="restore" />
-      <arg value="Algo.sln" />
-  	  <arg value="-Recursive" />
-  	  <arg value="-NonInteractive" />
-      <arg line='-MSBuildPath "${MSBuildDir}."' />
-    </exec>
-
     <exec program="${MSBuildDir}msbuild.exe" >
-      <arg value="${MSBuild.SolutionFile}" />
+      <arg value="${MSBuild.TargetFile}" />
       <arg value="/t:${MSBuild.Target}" />
       <arg value="/maxcpucount" />
       <arg value="/fl" />
@@ -87,14 +182,17 @@
       <arg value="/nologo" />
       <arg value="/p:Configuration=${MSBuild.Configuration}" />
       <arg value="/p:Platform=${MSBuild.Platform}" />
-      <arg value="/p:SolutionDir=${MSBuild.SourcesDir}" />
-      <arg value="/p:InstallUrl=${InstallUrl}" />
-      <arg value="/p:ApplicationVersion=${Build}" />
+      <arg value="/p:SolutionDir=${MSBuild.SolutionDir}" />
     </exec>
 
   </target>
-  
-   <target name="GenerateSetupHmtl">
+
+  <target name="PublishTerminal">
+
+    <property name="MSBuild.Target" value="Publish" />
+    <property name="MSBuild.TargetFile" value="${TerminalProject}" />
+    <call target="RunMSBuildClickOnce" />
+
     <copy file="${SourcesDir}ClickOnce\BotTerminal.Setup.html" tofile="${PublishFolder}\setup.html">
       <filterchain>
         <replacetokens>
@@ -102,95 +200,7 @@
         </replacetokens>
       </filterchain>
     </copy>
-  </target>
 
-  <target name="CleanUpFolder">
-    <delete>
-      <fileset basedir="${OutpuFolder}">
-        <include name="*.zip" />
-      </fileset>
-    </delete>
-    <delete>
-      <fileset basedir="${OutpuFolder}">
-        <include name="*.exe" />
-      </fileset>
-    </delete>
-    <delete>
-      <fileset basedir="${OutpuFolder}">
-        <include name="*.ttalgo" />
-      </fileset>
-    </delete>
-    <delete>
-      <fileset basedir="${PublishFolder}">
-        <include name="**/*" />
-      </fileset>
-    </delete>
-    <delete>
-      <fileset basedir="${BADir}">
-        <include name="**/*" />
-      </fileset>
-    </delete>
-  </target>
-
-  <target name="CreateBinPackage">
-
-    <property name="VsPackageDir" value="${SourcesDir}TickTrader.Algo.VS.Package\bin\${Configuration}"/>
-    <property name="BotTerminalBinDir" value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}" />
-
-    <copy todir="${BotTerminalBinDir}\Redist\">
-      <fileset basedir="${VsPackageDir}">
-        <include name="*.vsix" />
-      </fileset>
-    </copy>
-
-    <property name="BotTerminalDestArchive" value="${OutpuFolder}BotTerminal ${Build}.zip" />
-    
-    <zip zipfile="${BotTerminalDestArchive}">
-      <fileset basedir="${BotTerminalBinDir}">
-        <include name ="*.*" />
-        <include name ="**/*" />
-      </fileset>
-    </zip>
-
-	  <property name="CoreBinDir" value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
-    <property name="CoreDestArchive" value="${OutpuFolder}Core ${Build}.zip" />
-
-    <zip zipfile="${CoreDestArchive}">
-      <fileset basedir="${CoreBinDir}">
-        <include name ="*.*" />
-        <include name ="**/*" />
-      </fileset>
-    </zip>
-
-    <property name="ServerDestArchive" value="${OutpuFolder}BotAgent ${Build}.x64.zip" />
-
-    <zip zipfile="${ServerDestArchive}">
-      <fileset basedir="${BADir}">
-        <include name ="*.*" />
-        <include name ="**/*" />
-      </fileset>
-    </zip>
-	
-  </target>
-   
-   
-  <target name="CreateBAInstaller">
-    <property name="UtilDir" value="${SourcesDir}TickTrader.BotAgent.CmdUtil\bin\Release\" />
-     	
-  	<exec program="${UtilDir}TickTrader.BotAgent.CmdUtil.exe">
-  		<arg value="Mode=uninstall" />
-  		<arg value="AppDir=${BADir}" />
-  		<arg value="OutFile=${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.Uninstall.nsi" />
-  	</exec>
-      
-  	<exec program="${NSIS_Path}\makensis.exe" >
-  	  <arg value="/DPRODUCT_BUILD=${Build}" />
-      <arg value="${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.nsi" />
-    </exec>
-  </target>
-   
-   
-  <target name="FtpPublish">
     <exec program="${WinScpPath}" verbose="true">
       <arg value="/command" />
       <arg value='"open sftp://${Ftp.User}:${Ftp.Pwd}@${Ftp.Host} -certificate=*"' />
@@ -198,19 +208,132 @@
       <arg value='"close"' />
       <arg value='"exit"' />
     </exec>
+
+  </target>
+
+  <target name="RunMSBuildClickOnce">
+
+    <property name="MSBuild.Platform" value="AnyCPU" />  
+
+    <exec program="${MSBuildDir}msbuild.exe" >
+      <arg value="${MSBuild.TargetFile}" />
+      <arg value="/t:${MSBuild.Target}" />
+      <arg value="/maxcpucount" />
+      <arg value="/fl" />
+      <arg value="/flp:Verbosity=Normal;LogFile=${MSBuild.Output}" />
+      <arg value="/clp:NoItemAndPropertyList" />
+      <arg value="/verbosity:n" />
+      <arg value="/nologo" />
+      <arg value="/p:Configuration=${MSBuild.Configuration}" />
+      <arg value="/p:Platform=${MSBuild.Platform}" />
+      <arg value="/p:SolutionDir=${MSBuild.SolutionDir}" />
+      <arg value="/p:InstallUrl=${InstallUrl}" />
+      <arg value="/p:ApplicationVersion=${Build}" />
+    </exec>
+
+  </target>
+
+  <target name="CreateZipArtifacts">
+
+    <copy todir="${TerminalBinDir}\Redist\">
+      <fileset basedir="${VsPackageBinDir}">
+        <include name="*.vsix" />
+      </fileset>
+    </copy>
+
+    <copy file="${OutputFolder}\TickTrader.Algo.NewsIndicator.ttalgo" todir="${TerminalBinDir}\AlgoRepository\" />
+
+    <copy todir="${AgentBinDir}\Configurator\">
+      <fileset basedir="${ConfiguratorBinDir}">
+        <include name ="*.*" />
+        <include name ="**/*" />
+      </fileset>
+    </copy>
+
+    <property name="Zip.SrcDir" value="${CoreBinDir}" />
+    <property name="Zip.DstFile" value="${CoreZipFile}" />
+    <call target="ZipDirectory" />
+
+    <property name="Zip.SrcDir" value="${TerminalBinDir}" />
+    <property name="Zip.DstFile" value="${TerminalZipFile}" />
+    <call target="ZipDirectory" />
+
+    <property name="Zip.SrcDir" value="${AgentBinDir}" />
+    <property name="Zip.DstFile" value="${AgentZipFile}" />
+    <call target="ZipDirectory" />
+  
+  </target>
+
+  <target name="ZipDirectory">
+
+    <zip zipfile="${Zip.DstFile}">
+      <fileset basedir="${Zip.SrcDir}">
+        <include name ="*.*" />
+        <include name ="**/*" />
+      </fileset>
+    </zip>
+
+  </target>
+
+  <target name="CreatePackages">
+
+    <foreach item="String" in="${ProjectsToPackage}" delim="," property="Package.Name">
+      <call target="CreateAlgoPackage"/>
+    </foreach>
+
   </target>
 
   <target name="CreateAlgoPackage">
+
     <exec program="${ToolsFolder}CmdUtil.exe">
       <arg value="build" />
-      <arg value="path=${SourcesDir}${Package.ProjectFolder}\bin\${Configuration}"/>
-      <arg value="main=${Package.ProjectFolder}.dll"/>
+      <arg value="path=${SourcesDir}${Package.Name}\bin\${Configuration}"/>
+      <arg value="main=${Package.Name}.dll"/>
       <arg value="runtime=.NETFramework,Version=v4.5.2" />
       <arg value="ide=VS14.0" />
-      <arg value="project=${SourcesDir}${Package.ProjectFolder}\${Package.ProjectFolder}.cs" />
-      <arg value="workspace=${SourcesDir}${SolutionFile}" />
-      <arg value="output=${OutpuFolder}" />
+      <arg value="project=${SourcesDir}${Package.Name}\${Package.Name}.csproj" />
+      <arg value="workspace=${SolutionFile}" />
+      <arg value="output=${OutputFolder}" />
     </exec>
+
+  </target>
+
+  <target name="CreateInstallers">
+      
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${AgentBinDir}" />
+      <arg value="OutFile=${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.Uninstall.nsi" />
+    </exec>
+      
+    <exec program="${NSIS_Path}\makensis.exe" >
+      <arg value="/DPRODUCT_BUILD=${Build}" />
+      <arg value="${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.nsi" />
+    </exec>
+
+  </target>
+
+  <target name="AlgoInstaller">
+
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${TerminalBinDir}" />
+      <arg value="OutFile=${SetupDir}\Terminal.Uninstall.nsi" />
+    </exec>    
+
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${AgentBinDir}" />
+      <arg value="OutFile=${SetupDir}\Agent.Uninstall.nsi" />
+    </exec>
+
+    <exec program="${SetupUtilExe}">
+      <arg value="AppDir=${ConfiguratorBinDir}" />
+      <arg value="OutFile=${SetupDir}\Configurator.Uninstall.nsi" />
+    </exec>
+
+    <exec program="${NSIS_Path}\makensis.exe" >
+      <arg value="/DPRODUCT_BUILD=${Build}" />
+      <arg value="${SourcesDir}TickTrader.Algo.Setup\Algo.Setup.nsi" />
+    </exec>
+
   </target>
 
 </project>

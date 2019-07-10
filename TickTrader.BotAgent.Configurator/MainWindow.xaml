@@ -1,0 +1,193 @@
+﻿<Window x:Class="TickTrader.BotAgent.Configurator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
+        xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        mc:Ignorable="d"
+        Title="BotAgent Configurator" 
+        Height="600" Width="1000"
+        MinHeight="640" MinWidth="1000"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="33"/>
+            <RowDefinition Height="410"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="22"/>
+        </Grid.RowDefinitions>
+
+        <ToolBarTray>
+            <ToolBar Height="33">
+                <Button x:Name="CancelButton" Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Share" Style="{StaticResource ToolBarIcon}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Reset Changes"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button x:Name="SaveButton" Style="{StaticResource ToolBarButton}" Command="{Binding SaveChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Save" Style="{StaticResource ToolBarIcon}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Save Changes"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button x:Name="StartButton" Style="{StaticResource ToolBarButton}" Command="{Binding StartAgent}" IsEnabled="True">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Play" Style="{StaticResource ToolBarIcon}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Start Agent"/>
+                    </Button.ToolTip>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
+
+        <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}" x:Name="mainTabControl" Validation.Error="CountNumberErrors">
+            <TabControl.Resources>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="#FFEEF5FD"/>
+                </Style>
+            </TabControl.Resources>
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="AddressCardOutline"/>
+                        <TextBlock Text="User credentials" Style="{StaticResource ErrorTabItem}"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <DockPanel x:Name="docCred">
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
+                        <StackPanel>
+                            <c:CredentialPanel DataContext="{Binding AdminModel}" Style="{StaticResource FirstCredentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding DealerModel}" Style="{StaticResource CredentialControlPanel}"/>
+                            <c:CredentialPanel DataContext="{Binding ViewerModel}" Style="{StaticResource CredentialControlPanel}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Desktop"/>
+                        <TextBlock Text="Terminal connection"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <DockPanel>
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
+                        <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource ProtocolControlPanel}"/>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="Server"/>
+                        <TextBlock Text="WEB Admin"/>
+                    </StackPanel>
+                </TabItem.Header>
+
+                <TabItem.Content>
+                    <DockPanel>
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
+                        <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource ServerControlPanel}"/>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome Icon="PlusSquareOutline"/>
+                        <TextBlock Text="Advanced settings"/>
+                    </StackPanel>
+                </TabItem.Header>
+
+                <TabItem.Content>
+                    <DockPanel>
+                        <DockPanel.Resources>
+                            <Style TargetType="Grid">
+                                <Setter Property="Background" Value="White"/>
+                            </Style>
+                        </DockPanel.Resources>
+                        <StackPanel>
+                            <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}"/>
+                            <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource FdkControlPanel}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </TabItem.Content>
+            </TabItem>
+
+            <!--<TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Ssl"/>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <c:SslPanel DataContext="{Binding SslModel}" Style="{StaticResource ContentControlPanel}"/>
+                </TabItem.Content>
+            </TabItem>-->
+        </TabControl>
+
+        <DockPanel Grid.Row="2" Background="#FFEEF5FD">
+            <Grid DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Logs" Style="{StaticResource LogsHeader}" />
+                <Button Grid.Column="1" Style="{StaticResource OpenLogsFolderButton}" Command="{Binding OpenLogsFolder}">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="FolderOutlinepenOutline" Style="{x:Null}"/>
+                    </Button.Content>
+                    <Button.ToolTip>
+                        <TextBlock Text="Show in folder"/>
+                    </Button.ToolTip>
+                </Button>
+            </Grid>
+            <TextBox Text="{Binding LogsModel.Messages, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Style="{StaticResource LogsPanel}" ScrollViewer.VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom"/>
+        </DockPanel>
+
+        <StatusBar Grid.Row="3" Background="#FFEEF5FD">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="1">
+                <TextBlock Text="{Binding StateServiceModel.RestartMessage}" Style="{StaticResource RestartMessage}" Visibility="{Binding StateServiceModel.VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="2">
+                <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource StateServiceRow}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

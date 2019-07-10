@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
@@ -9,9 +8,20 @@ namespace TickTrader.Algo.Protocol
 {
     public interface IBotAgentServer
     {
-        #region Initialization
+        #region Credentials
+
+        event Action AdminCredsChanged;
+
+        event Action DealerCredsChanged;
+
+        event Action ViewerCredsChanged;
 
         AccessLevels ValidateCreds(string login, string password);
+
+        #endregion Credentials
+
+
+        #region Initialization
 
         List<PackageInfo> GetPackageList();
 

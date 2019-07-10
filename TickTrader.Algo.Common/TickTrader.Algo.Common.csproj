@@ -113,6 +113,8 @@
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\DictionarySyncrhonizer.cs" />
     <Compile Include="Lib\EnumerableExt.cs" />
+    <Compile Include="Lib\Extensions\AssemblyExtension.cs" />
+    <Compile Include="Lib\Extensions\AssemblyNameExtension.cs" />
     <Compile Include="Lib\HashCode.cs" />
     <Compile Include="Lib\InvariantFormat.cs" />
     <Compile Include="Lib\PathEscaper.cs" />

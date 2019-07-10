@@ -195,6 +195,12 @@ namespace TickTrader.BotAgent.BA.Models
             if (State == PluginStates.Stopped || State == PluginStates.Faulted)
                 return Task.CompletedTask;
 
+            if (State == PluginStates.Starting && (_startedEvent == null || _startedEvent.Task.IsCompleted))
+            {
+                ChangeState(PluginStates.Stopped);
+                return Task.CompletedTask; // acc can't connect at bot start, also bot might be launched before
+            }
+
             if (State == PluginStates.Running || State == PluginStates.Reconnecting || State == PluginStates.Starting)
             {
                 ChangeState(PluginStates.Stopping);
@@ -243,7 +249,7 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;
                 executor.TradeExecutor = _client.PluginTradeApi;
-                //executor.TradeHistoryProvider =  new TradeHistoryProvider(_client.Connection);
+                executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.InstanceId = Id;

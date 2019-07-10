@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using TickTrader.BotAgent.WebAdmin.Server.Core.Crypto;
+using TickTrader.BotAgent.Common;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Models
 {
@@ -14,6 +14,8 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
         public SslSettings Ssl { get; set; }
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ProtocolSettings Protocol { get; set; }
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public FdkSettings Fdk { get; set; }
 
         public static AppSettings Default => new AppSettings
         {
@@ -22,9 +24,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             SecretKey = RandomSecretKey,
             Ssl = DefaultSslSettings,
             Protocol = DefaultProtocolSettings,
+            Fdk = DefaultFdkSettings,
         };
 
-        public static string DefaultServerUrl => @"https://localhost:5000/";
+        public static string DefaultServerUrl => @"https://localhost:5001/;http://localhost:5000";
         public static string RandomSecretKey => new KeyGenerator().GetUniqueKey(128);
         public static ServerCredentials DefaultCredentials => new ServerCredentials("Administrator", "Administrator", "Dealer", "Dealer", "Viewer", "Viewer");
         public static SslSettings DefaultSslSettings => new SslSettings { File = "certificate.pfx", Password = "" };
@@ -33,6 +36,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Models
             ListeningPort = 8443,
             LogDirectoryName = "Logs",
             LogMessages = false,
+        };
+        public static FdkSettings DefaultFdkSettings => new FdkSettings
+        {
+            EnableLogs = false,
         };
     }
 }

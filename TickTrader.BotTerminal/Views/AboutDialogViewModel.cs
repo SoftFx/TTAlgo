@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using TickTrader.BotTerminal.Extensions;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {

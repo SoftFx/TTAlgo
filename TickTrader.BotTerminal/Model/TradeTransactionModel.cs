@@ -175,11 +175,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual TradeReportKey GetUniqueId(TradeReportEntity transaction, out long orderNum)
         {
-            bool hasMultipleRecords = transaction.ActionId > 1 || RemainingQuantity > 0;
-
             orderNum = long.Parse(transaction.OrderId);
 
-            if (hasMultipleRecords && !OrderWasCanceled() && Reason != Reasons.Activated)
+            if (transaction.ActionId > 1)
+                return new TradeReportKey(orderNum, transaction.ActionId);
+
+            if (ActionId == 1 && RemainingQuantity > 0 && !OrderWasCanceled() && Reason != Reasons.Activated)
                 return new TradeReportKey(orderNum, transaction.ActionId);
             else
                 return new TradeReportKey(orderNum, null);

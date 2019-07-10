@@ -19,13 +19,13 @@ namespace TickTrader.BotTerminal
 
         public PluginStates State => Model.State;
 
-        public bool IsRunning => PluginStateHelper.IsRunning(Model.State);
+        public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginStates.Starting;
 
         public bool IsStopped => PluginStateHelper.IsStopped(Model.State);
 
-        public bool CanStart => PluginStateHelper.IsStopped(Model.State) && Agent.Model.AccessManager.CanStartBot();
+        public bool CanStart => IsStopped && Agent.Model.AccessManager.CanStartBot();
 
-        public bool CanStop => PluginStateHelper.IsRunning(Model.State) && Agent.Model.AccessManager.CanStopBot();
+        public bool CanStop => IsRunning && Agent.Model.AccessManager.CanStopBot();
 
         public bool CanStartStop => CanStart || CanStop;
 

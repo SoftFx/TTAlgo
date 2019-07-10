@@ -1,0 +1,26 @@
+{
+  "Server": {
+    "server.urls": "Web server will listen to certain ports and protocols. Server has auto https redirect so setting both http(ex. 80) and https(ex. 443) ports is recomended for easier browser access.",
+    "SecretKey": "Secret key is used for singing auth tokens. Changing it makes all existing tokens invalid, all users will have relogin. It is not recomended to change it unless it becomes compromised."
+  },
+  "Credentials": {
+    "Admin": "User that has full rights to modify bot agent state. Avaliable both in browser and BotTerminal.",
+    "Dealer": "User that has same access as viewer, but can start and stop bots. Available only in BotTerminal.",
+    "Viewer": "User that has readonly access to agent state. He can see packages, accounts, bots, their status, logs. But he can't see AlgoData and download packages. Available only in BotTerminal."
+  },
+  "Ssl": {
+    "File": "PKCS#12 file containing private and public keys for web server certificate, that are protected by password. Since we don't have own certificate authority server, this feature is disabled now.",
+    "Password": "Password to required to open PKCS#12 file."
+  },
+  "Protocol": {
+    "ListeningPort": "Port that is used for BotTerminal connection. It should be different from web server ports.",
+    "LogDirectoryName": "Directory where BotTermianl connection logs will be stored.",
+    "LogMessages": "Enables writing messages sent over BotTerminal connection to logs. Only for troubleshooting, has severe impact on performance."
+  },
+  "Fdk": {
+    "EnableLogs": "Enables writing messages sent over trade server connection to logs. Only for troubleshooting, has severe impact on performance."
+  },
+  "MultipleAgentProvider": {
+    "AgentConfigurationPaths": "I'm agent provider"
+  }
+}

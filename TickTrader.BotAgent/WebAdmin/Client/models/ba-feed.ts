@@ -26,7 +26,8 @@ export interface FeedServer {
 
 export enum ConnectionStatus {
     Connected = 1,
-    Reconnecting = 2,
-    Disconnected = 3,
-    Error = 4
+    Disconnected = 2,
+    WaitReconnect = 3,
+    Reconnecting = 4,
+    Error = 5
 }

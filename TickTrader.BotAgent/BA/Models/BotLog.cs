@@ -24,6 +24,7 @@ namespace TickTrader.BotAgent.BA.Models
         private string _logDirectory;
         private string _status;
         private readonly string _fileExtension = ".txt";
+        private readonly string _archiveExtension = ".zip";
 
         private void Init(string name, int keepInMemory = 100)
         {
@@ -126,19 +127,31 @@ namespace TickTrader.BotAgent.BA.Models
             var logFile = new FileTarget(logTarget)
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_fileExtension}")),
-                Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
+                Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-log{_archiveExtension}")),
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true,
             };
 
             var errorFile = new FileTarget(errTarget)
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_fileExtension}")),
-                Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
+                Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-error{_archiveExtension}")),
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true,
             };
 
             var statusFile = new FileTarget(statusTarget)
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_fileExtension}")),
-                Layout = Layout.FromString("${longdate} | ${logger} | ${message}")
+                Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-status{_archiveExtension}")),
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true,
             };
 
             var logConfig = new LoggingConfiguration();
