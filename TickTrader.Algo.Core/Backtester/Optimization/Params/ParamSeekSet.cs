@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class ParamSeekSet
     {
         public abstract int Size { get; }
         public abstract object GetParamValue(int valNo);
     }
 
+    [Serializable]
     public abstract class ParamSeekSet<T> : ParamSeekSet
     {
         protected abstract T GetValue(int valNo);

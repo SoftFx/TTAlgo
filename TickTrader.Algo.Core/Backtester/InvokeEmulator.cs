@@ -10,8 +10,6 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public enum EmulatorStates { WarmingUp, Running, Paused, Stopping, Stopped }
-
     internal class InvokeEmulator : InvokeStartegy
     {
         private object _syncState = new object();
@@ -192,7 +190,7 @@ namespace TickTrader.Algo.Core
                 EmulateStop();
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 StopFeedRead();
                 EmulateStop();
@@ -333,7 +331,7 @@ namespace TickTrader.Algo.Core
             StartFeedRead();
 
             var warmupStart = _timePoint;
-            var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
+            var buider = _feed.GetBarBuilder(_settings.CommonSettings.MainSymbol, _settings.CommonSettings.MainTimeframe, BarPriceType.Bid);
             var tickCount = 1;
 
             while (true)

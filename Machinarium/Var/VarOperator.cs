@@ -19,6 +19,11 @@ namespace Machinarium.Var
             return DoubleVar.Operator<DoubleVar>(() => operatorDef(src.Value), src);
         }
 
+        public static Var<TOut> Convert<TIn, TOut>(this Var<TIn> src, Func<TIn, TOut> operatorDef)
+        {
+            return Var<TOut>.Operator<Var<TOut>>(() => operatorDef(src.Value), src);
+        }
+
         public static BoolVar Check<T>(this Var<T> src, Func<T, bool> operatorDef)
         {
             return BoolVar.Operator<BoolVar>(() => operatorDef(src.Value), src);

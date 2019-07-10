@@ -23,8 +23,9 @@ namespace TickTrader.BotTerminal
             _min = CreateValidable();
             _step = CreateValidable();
 
-            MaxStr = AddConverter(_max, GetConverter());
-            MinStr = AddConverter(_min, GetConverter());
+            var converter = GetConverter();
+            MaxStr = AddConverter(_max, converter);
+            MinStr = AddConverter(_min, converter);
             StepStr = AddConverter(_step, GetConverter());
 
             TriggerOnChange(_max, a => OnMinMaxStepChanged());
@@ -39,14 +40,29 @@ namespace TickTrader.BotTerminal
         protected abstract RangeParamSet<T> CreateRangeModel();
 
         public override BoolVar IsValid { get; }
+        public override string Description => GetDescription();
+        public override int Size => _range.Size;
+        public override string EditorType => "NumericRange";
 
         public IValidable<string> MaxStr { get; protected set; }
         public IValidable<string> MinStr { get; protected set; }
         public IValidable<string> StepStr { get; protected set; }
 
-        public override void Apply(Optimizer optimizer)
+        protected void SetValues(T min, T max, T step)
         {
-            //optimizer.SetParameter( _range);
+            _min.Value = min;
+            _max.Value = max;
+            _step.Value = step;
+        }
+
+        public override ParamSeekSet GetSeekSet()
+        {
+            return _range;
+        }
+
+        private string GetDescription()
+        {
+            return string.Format("[{0} - {1}, {2}]", MinStr.Value, MaxStr.Value, StepStr.Value);
         }
 
         protected void CopyTo(NumericSetModel<T> clone)
@@ -61,7 +77,6 @@ namespace TickTrader.BotTerminal
             _range.Max = _max.Value;
             _range.Min = _min.Value;
             _range.Step = _step.Value;
-            SizeProp.Value = _range.Size;
         }
     }
 
@@ -71,15 +86,22 @@ namespace TickTrader.BotTerminal
         protected override IValueConverter<double, string> GetConverter() => new StringToDouble();
         protected override RangeParamSet<double> CreateRangeModel() => new RangeParamSet.Double();
 
-        protected override void Reset(object defaultValue)
-        {
-        }
-
         public override ParamSeekSetModel Clone()
         {
             var clone =  new DoubleRangeSet();
             CopyTo(clone);
             return clone;
+        }
+
+        protected override void Reset(object defaultValue)
+        {
+            if (defaultValue is double)
+            {
+                var defNumVal = (double)defaultValue;
+                SetValues(defNumVal, defNumVal, 0.1);
+            }
+            else
+                SetValues(0, 0, 0.1);
         }
     }
 
@@ -89,15 +111,22 @@ namespace TickTrader.BotTerminal
         protected override IValueConverter<int, string> GetConverter() => new StringToInt();
         protected override RangeParamSet<int> CreateRangeModel() => new RangeParamSet.Int32();
 
-        protected override void Reset(object defaultValue)
-        {
-        }
-
         public override ParamSeekSetModel Clone()
         {
             var clone = new Int32RangeSet();
             CopyTo(clone);
             return clone;
+        }
+
+        protected override void Reset(object defaultValue)
+        {
+            if (defaultValue is int)
+            {
+                var defNumVal = (int)defaultValue;
+                SetValues(defNumVal, defNumVal, 1);
+            }
+            else
+                SetValues(0, 0, 1);
         }
     }
 }

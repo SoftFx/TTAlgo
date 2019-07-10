@@ -9,21 +9,27 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal class InvalidSetModel : ParamSeekSetModel
-    {
-        public InvalidSetModel(ErrorMsgCodes code)
-        {
-        }
+    //internal class InvalidSetModel : ParamSeekSetModel
+    //{
+    //    public InvalidSetModel(ErrorMsgCodes code)
+    //    {
+    //    }
 
-        public override BoolVar IsValid => Var.Const(false);
+    //    public override BoolVar IsValid => Var.Const(false);
+    //    public override string Description => "";
+    //    public override string EditorType => "Invalid";
+    //    public override int Size => 1;
 
-        public override void Apply(Optimizer optimizer) { }
+    //    public override ParamSeekSet GetSeekSet()
+    //    {
+    //        return null;
+    //    }
 
-        public override ParamSeekSetModel Clone()
-        {
-            return this;
-        }
+    //    public override ParamSeekSetModel Clone()
+    //    {
+    //        return this;
+    //    }
 
-        protected override void Reset(object defaultValue) { }
-    }
+    //    protected override void Reset(object defaultValue) { }
+    //}
 }

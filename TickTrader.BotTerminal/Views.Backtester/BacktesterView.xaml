@@ -167,11 +167,16 @@
                     <TabItem Header="Journal">
                         <UserControl cal:View.Model="{Binding JournalPage}"/>
                     </TabItem>
-                    <TabItem Header="Trades" Visibility="{Binding IsVisualizing.Value, Converter={StaticResource BoolToVis}}">
+                    <TabItem Header="Trades"
+                             Visibility="{Binding IsVisualizing.Value, Converter={StaticResource BoolToVis}}">
                         <ContentControl cal:View.Model="{Binding TradesPage}"/>
                     </TabItem>
                     <TabItem Header="Trade History">
                         <ContentControl cal:View.Model="{Binding TradeHistoryPage}"/>
+                    </TabItem>
+                    <TabItem Header="Optimization Results"
+                             Visibility="{Binding OptimizationResultsPage.IsVisible.Value, Converter={StaticResource BoolToVis}}">
+                        <ContentControl cal:View.Model="{Binding OptimizationResultsPage}"/>
                     </TabItem>
                     <TabItem Header="Graph">
                         <ContentControl cal:View.Model="{Binding ChartPage}"/>

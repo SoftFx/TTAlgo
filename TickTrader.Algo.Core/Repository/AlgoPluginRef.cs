@@ -23,6 +23,11 @@ namespace TickTrader.Algo.Core.Repository
             return new PluginExecutor(Id);
         }
 
+        public virtual PluignExecutorFactory CreateExecutorFactory()
+        {
+            return new PluignExecutorFactory(Id);
+        }
+
         public virtual T CreateObject<T>()
             where T : MarshalByRefObject, new()
         {
@@ -46,6 +51,11 @@ namespace TickTrader.Algo.Core.Repository
         public override PluginExecutor CreateExecutor()
         {
             return _sandbox.CreateExecutor(Id);
+        }
+
+        public override PluignExecutorFactory CreateExecutorFactory()
+        {
+            return _sandbox.CreateExecutorFactory(Id);
         }
 
         public override T CreateObject<T>()

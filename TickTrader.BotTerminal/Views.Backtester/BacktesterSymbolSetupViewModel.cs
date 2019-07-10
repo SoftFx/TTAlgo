@@ -176,12 +176,34 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void Apply(Optimizer tester, DateTime fromLimit, DateTime toLimit)
+        {
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, SelectedTimeframe.Value);
+        }
+
+        public void Apply(Optimizer tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
+        {
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, baseTimeFrame);
+        }
+
         public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
         {
-            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value, isVisualizing);
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, SelectedTimeframe.Value);
+            SetupDataOutput(tester, isVisualizing);
         }
 
         public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame, bool isVisualizing)
+        {
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, baseTimeFrame);
+            SetupDataOutput(tester, isVisualizing);
+        }
+
+        public void Apply(CommonTestSettings settings, FeedEmulator feedEmulator, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
+        {
+            Apply(settings, feedEmulator, fromLimit, toLimit, SelectedTimeframe.Value);
+        }
+
+        public void Apply(CommonTestSettings settings, FeedEmulator feedEmulator, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
         {
             var smbData = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
@@ -191,20 +213,20 @@ namespace TickTrader.BotTerminal
 
             if (SetupType == SymbolSetupType.Main)
             {
-                tester.MainSymbol = smbData.Name;
-                tester.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
+                settings.MainSymbol = smbData.Name;
+                settings.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
             }
 
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
-            tester.Symbols.Add(smbData.Name, smbData.InfoEntity);
+            settings.Symbols.Add(smbData.Name, smbData.InfoEntity);
 
             if (baseTimeFrame == TimeFrames.Ticks || baseTimeFrame == TimeFrames.TicksLevel2)
             {
                 ITickStorage feed = smbData.GetCrossDomainTickReader(baseTimeFrame, precacheFrom, precacheTo);
 
-                tester.Feed.AddSource(smbData.Name, feed);
+                feedEmulator.AddSource(smbData.Name, feed);
             }
             else
             {
@@ -217,10 +239,8 @@ namespace TickTrader.BotTerminal
                 if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
                     askFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, BarPriceType.Ask, precacheFrom, precacheTo);
 
-                tester.Feed.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
+                feedEmulator.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
             }
-
-            SetupDataOutput(tester, isVisualizing);
         }
 
         private void SetupDataOutput(Backtester tester, bool isVisualizing)

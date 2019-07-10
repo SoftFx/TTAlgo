@@ -6,20 +6,23 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class ParamSeekStrategy
     {
         internal void OnInit(Dictionary<string, ParamSeekSet> parameters)
         {
             Params = parameters;
-            Init();
         }
-
-        public int CaseCount { get; protected set; }
 
         protected IReadOnlyDictionary<string, ParamSeekSet> Params { get; private set; }
 
-        public abstract void Init();
+        public abstract int CaseCount { get; }
+        public abstract void Start(IBacktestQueue queue, int degreeOfParallelism);
+        public abstract int OnCaseCompleted(OptCaseReport report, IBacktestQueue queue);
+    }
 
-        public abstract IEnumerable<OptCaseConfig> GetCases();
+    public interface IBacktestQueue
+    {
+        void Enqueue(OptCaseConfig caseCfg);
     }
 }

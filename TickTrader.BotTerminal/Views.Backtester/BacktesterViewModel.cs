@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
         private BoolProperty _hasDataToSave;
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
-        private Backtester _backtester;
+        private ITestExecController _tester;
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
@@ -140,9 +140,12 @@ namespace TickTrader.BotTerminal
             {
                 if (a.New != null)
                 {
-                    PluginConfig = null;
-                    OptimizationPage.SetPluign(a.New.Descriptor);
+                    var pluginRef = _env.LocalAgent.Library.GetPluginRef(a.New.Key);
+                    PluginSetup = new PluginSetupModel(pluginRef, this, this);
+                    OptimizationPage.SetPluign(a.New.Descriptor, PluginSetup);
                 }
+                else
+                    PluginSetup = null;
             });
 
             _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
@@ -192,7 +195,8 @@ namespace TickTrader.BotTerminal
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
-        public PluginConfig PluginConfig { get; private set; }
+        public PluginSetupModel PluginSetup { get; private set; }
+        //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
         public BoolProperty IsVisualizationEnabled { get; }
         public BoolProperty SaveResultsToFile { get; }
@@ -221,6 +225,7 @@ namespace TickTrader.BotTerminal
         public BacktesterTradeGridViewModel TradeHistoryPage { get; }
         public BacktesterCurrentTradesViewModel TradesPage { get; private set; }
         public BacktesterOptimizerViewModel OptimizationPage { get; }
+        public OptimizationResultsPageViewModel OptimizationResultsPage { get; } = new OptimizationResultsPageViewModel();
 
         public async void OpenTradeSetup()
         {
@@ -249,9 +254,9 @@ namespace TickTrader.BotTerminal
         {
             _localWnd.OpenOrActivateWindow(SetupWndKey, () =>
             {
-                _openedPluginSetup = PluginConfig == null
+                _openedPluginSetup = PluginSetup == null
                     ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo())
-                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginConfig);
+                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginSetup.Save());
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;
@@ -269,7 +274,7 @@ namespace TickTrader.BotTerminal
         private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
         {
             if (dlgResult)
-                PluginConfig = setup.GetConfig();
+                PluginSetup.Load(setup.GetConfig());
 
             setup.Closed -= PluginSetupClosed;
             setup.Setup.ConfigLoaded -= Setup_ConfigLoaded;
@@ -331,72 +336,79 @@ namespace TickTrader.BotTerminal
             var chartTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
             var chartPriceLayer = BarPriceType.Bid;
 
-            var progressMin = _emulteFrom.GetAbsoluteDay();
-
             _mainSymbolToken.Id = chartSymbol.Name;
-
-            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
-            observer.SetMessage("Emulating...");
 
             var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
             var pluginRef = _env.LocalAgent.Library.GetPluginRef(SelectedPlugin.Value.Info.Key);
-            var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
+            //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
-            if (PluginConfig != null)
-                pluginSetupModel.Load(PluginConfig);
+            //if (PluginConfig != null)
+            //    pluginSetupModel.Load(PluginConfig);
 
             // TODO: place correctly to avoid domain unload during backtester run
             //packageRef.IncrementRef();
             //packageRef.DecrementRef();
 
-            using (_backtester = new Backtester(pluginRef, new DispatcherSync(), _emulteFrom, _emulateTo))
+            if (OptimizationPage.IsOptimizationEnabled)
+                await DoOptimization(observer, cToken, pluginRef, PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
+            else
+                await DoBacktesting(observer, cToken, pluginRef, PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
+
+        }
+
+        private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
+            SymbolData chartSymbol, TimeFrames chartTimeframe, BarPriceType chartPriceLayer)
+        {
+            var progressMin = _emulteFrom.GetAbsoluteDay();
+
+            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            observer.SetMessage("Emulating...");
+
+            using (var backtester = new Backtester(pluginRef, new DispatcherSync(), _emulteFrom, _emulateTo))
             {
-                OnStartTesting();
+                OnStartTesting(backtester);
 
                 try
                 {
-                    pluginSetupModel.Apply(_backtester);
+                    pluginSetupModel.Apply(backtester);
 
-                    _backtester.Executor.LogUpdated += JournalPage.Append;
-                    _backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
+                    backtester.Executor.LogUpdated += JournalPage.Append;
+                    backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
 
                     if (IsVisualizationEnabled.Value)
                     {
                         _isVisualizing.Set();
 
                         var delay = SpeedToDelayMap[SelectedSpeed.Value];
-                        _backtester.SetExecDelay(delay);
-                        _backtester.StreamExecReports = true;
+                        backtester.SetExecDelay(delay);
+                        backtester.StreamExecReports = true;
                     }
 
                     Exception execError = null;
 
-                    System.Action updateProgressAction = () => observer.SetProgress(_backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
+                    System.Action updateProgressAction = () => observer.SetProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
 
                     using (new UiUpdateTimer(updateProgressAction))
                     {
                         try
                         {
-                            MainSymbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, SelectedModel.Value, _isVisualizing.Value);
+                            MainSymbolSetup.Apply(backtester, _emulteFrom, _emulateTo, SelectedModel.Value, _isVisualizing.Value);
 
                             foreach (var symbolSetup in AdditionalSymbols)
-                                symbolSetup.Apply(_backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
+                                symbolSetup.Apply(backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
 
-                            _backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+                            backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 
                             foreach (var rec in _client.Currencies.Snapshot)
-                                _backtester.Currencies.Add(rec.Key, rec.Value);
+                                backtester.CommonSettings.Currencies.Add(rec.Key, rec.Value);
 
-                            //foreach (var rec in _client.Symbols.Snapshot)
-                            //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
+                            _settings.Apply(backtester);
 
-                            _settings.Apply(_backtester);
-
-                            FireOnStart(chartSymbol, pluginSetupModel, _backtester);
+                            FireOnStart(chartSymbol, pluginSetupModel, backtester);
 
                             _hasDataToSave.Set();
 
-                            await Task.Run(() => _backtester.Run(cToken));
+                            await Task.Run(() => backtester.Run(cToken));
 
                             observer.SetProgress(DateRange.To.GetAbsoluteDay());
                         }
@@ -405,11 +417,11 @@ namespace TickTrader.BotTerminal
                             execError = ex;
                         }
 
-                        FireOnStop(_backtester);
+                        FireOnStop(backtester);
                     }
 
-                    await LoadStats(observer, _backtester);
-                    await LoadChartData(_backtester, observer);
+                    await LoadStats(observer, backtester);
+                    await LoadChartData(backtester, observer);
 
                     if (SaveResultsToFile.Value)
                         await SaveResults(pluginSetupModel, observer);
@@ -427,7 +439,89 @@ namespace TickTrader.BotTerminal
                 finally
                 {
                     OnStopTesting();
-                    _backtester = null;
+                    //backtester = null;
+                }
+            }
+        }
+
+        private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
+            SymbolData chartSymbol, TimeFrames chartTimeframe, BarPriceType chartPriceLayer)
+        {
+            using (var optimizer = new Optimizer(pluginRef, new DispatcherSync()))
+            {
+                OnStartTesting(optimizer);
+
+                try
+                {
+                    pluginSetupModel.Apply(optimizer);
+
+                    Exception execError = null;
+
+                    try
+                    {
+
+                        MainSymbolSetup.Apply(optimizer, _emulteFrom, _emulateTo, SelectedModel.Value);
+
+                        foreach (var symbolSetup in AdditionalSymbols)
+                            symbolSetup.Apply(optimizer, _emulteFrom, _emulateTo);
+
+                        optimizer.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+
+                        foreach (var rec in _client.Currencies.Snapshot)
+                            optimizer.CommonSettings.Currencies.Add(rec.Key, rec.Value);
+
+                        // setup params
+                        _settings.Apply(optimizer.CommonSettings);
+                        OptimizationPage.Apply(optimizer);
+
+                        FireOnStart(pluginRef, optimizer);
+
+                        _hasDataToSave.Set();
+
+                        var maxProgress = optimizer.MaxCasesNo;
+
+                        observer.StartProgress(0, maxProgress);
+                        observer.SetMessage(GetOptimizationProgressMessage(maxProgress, 0));
+
+                        Action<OptCaseReport, int> repHandler = (r, cl) =>
+                        {
+                            var progress = maxProgress - cl;
+                            observer.SetProgress(progress);
+                            observer.SetMessage(GetOptimizationProgressMessage(maxProgress, progress));
+                            OptimizationResultsPage.Update(r);
+                        };
+
+                        optimizer.CaseCompleted += repHandler;
+
+                        try
+                        {
+                            await Task.Run(() => optimizer.Run(cToken));
+                        }
+                        finally
+                        {
+                            optimizer.CaseCompleted -= repHandler;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        execError = ex;
+                    }
+
+                    FireOnStop(optimizer);
+
+                    if (execError != null)
+                    {
+                        if (execError is AlgoOperationCanceledException)
+                            observer.SetMessage("Canceled by user!");
+                        else
+                            throw execError; //observer.SetMessage(execError.Message);
+                    }
+                    else
+                        observer.SetMessage("Done.");
+                }
+                finally
+                {
+                    OnStopTesting();
                 }
             }
         }
@@ -440,6 +534,8 @@ namespace TickTrader.BotTerminal
             ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester, symbols);
             if (IsVisualizing.Value)
                 TradesPage.Start(tester, currecnies, symbols);
+
+            OptimizationResultsPage.Hide();
         }
 
         private void FireOnStop(Backtester tester)
@@ -447,6 +543,16 @@ namespace TickTrader.BotTerminal
             ChartPage.OnStop(tester);
             if (IsVisualizing.Value)
                 TradesPage.Stop(tester);
+        }
+
+        private void FireOnStart(AlgoPluginRef pluginRef, Optimizer tester)
+        {
+            OptimizationResultsPage.Start(pluginRef.Metadata.Descriptor, tester);
+        }
+
+        private void FireOnStop(Optimizer tester)
+        {
+            OptimizationResultsPage.Stop(tester);
         }
 
         private BotLogRecord CreateInfoRecord(uint no, string message)
@@ -473,8 +579,8 @@ namespace TickTrader.BotTerminal
 
         private async Task LoadChartData(Backtester backtester, IActionObserver observer)
         {
-            var mainSymbol = backtester.MainSymbol;
-            var timeFrame = backtester.MainTimeframe;
+            var mainSymbol = backtester.CommonSettings.MainSymbol;
+            var timeFrame = backtester.CommonSettings.MainTimeframe;
             var count = backtester.GetSymbolHistoryBarCount(mainSymbol);
 
             timeFrame = AdjustTimeframe(timeFrame, count, out count);
@@ -551,13 +657,13 @@ namespace TickTrader.BotTerminal
 
         public void PauseEmulation()
         {
-            _backtester?.Pause();
+            _tester?.Pause();
         }
 
         public void ResumeEmulation()
         {
             _pauseRequestedProp.Set();
-            _backtester?.Resume();
+            _tester?.Resume();
         }
 
         private void InitExecControl()
@@ -576,7 +682,7 @@ namespace TickTrader.BotTerminal
                 if (IsVisualizing.Value)
                 {
                     var delay = SpeedToDelayMap[a.New];
-                    _backtester?.SetExecDelay(delay);
+                    _tester?.SetExecDelay(delay);
                 }
             });
 
@@ -587,17 +693,19 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private void OnStartTesting()
+        private void OnStartTesting(ITestExecController tester)
         {
-            _backtester.StateChanged += _backtester_StateChanged;
-            _backtester.Executor.ErrorOccurred += Executor_ErrorOccurred;
+            _tester = tester;
+            _tester.StateChanged += _backtester_StateChanged;
+            _tester.ErrorOccurred += Executor_ErrorOccurred;
         }
 
         private void OnStopTesting()
         {
-            _backtester.StateChanged -= _backtester_StateChanged;
-            _backtester.Executor.ErrorOccurred -= Executor_ErrorOccurred;
+            _tester.StateChanged -= _backtester_StateChanged;
+            _tester.ErrorOccurred -= Executor_ErrorOccurred;
             _stateProp.Value = EmulatorStates.Stopped;
+            _tester = null;
         }
 
         private void _backtester_StateChanged(EmulatorStates state)
@@ -835,6 +943,11 @@ namespace TickTrader.BotTerminal
             if (_settings.AccType == AccountTypes.Gross || _settings.AccType == AccountTypes.Net)
                 TradeSettingsSummary.Value = string.Format("{0} {1} {2} L={3}, D={4}, {5}ms", _settings.AccType,
                     _settings.InitialBalance, _settings.BalanceCurrency, _settings.Leverage, "Default", _settings.ServerPingMs);
+        }
+
+        private string GetOptimizationProgressMessage(int max, int progress)
+        {
+            return string.Format("Optimizing... {0}/{1}", progress, max);
         }
 
         #region IAlgoSetupMetadata

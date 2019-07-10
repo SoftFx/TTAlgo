@@ -85,6 +85,7 @@
     <Compile Include="Backtester\Optimization\OptCaseReport.cs" />
     <Compile Include="Backtester\Optimization\OptCaseConfig.cs" />
     <Compile Include="Backtester\Optimization\ParamSeekStrategy.cs" />
+    <Compile Include="Backtester\Optimization\Params\ConstParam.cs" />
     <Compile Include="Backtester\Optimization\Params\ParamSeekSet.cs" />
     <Compile Include="Backtester\Optimization\Params\RangeParamSet.cs" />
     <Compile Include="Backtester\Optimization\Params\EnumParamSet.cs" />
@@ -186,6 +187,7 @@
     <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\PluignExecutorFactory.cs" />
     <Compile Include="Executor\ExecutorHandler.cs" />
     <Compile Include="Executor\MarketStateFixture.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
@@ -222,6 +224,7 @@
     <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
     <Compile Include="Lib\TaskExtensions.cs" />
+    <Compile Include="Lib\UpdateChannel.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />

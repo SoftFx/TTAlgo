@@ -9,19 +9,26 @@ namespace TickTrader.Algo.Core
 {
     internal class TickSeriesReader : SeriesReader
     {
-        //private string _symbol;
+        private string _symbol;
         private IEnumerable<QuoteEntity> _src;
         private IEnumerator<QuoteEntity> _e;
         //private QuoteEntity _current;
 
         public TickSeriesReader(string symbol, IEnumerable<QuoteEntity> src)
         {
+            _symbol = symbol;
             _src = src;
         }
 
         public TickSeriesReader(string symbol, ITickStorage storage)
         {
+            _symbol = symbol;
             _src = storage.GetQuoteStream();
+        }
+
+        public override SeriesReader Clone()
+        {
+            return new TickSeriesReader(_symbol, _src);
         }
 
         public override bool MoveNext()

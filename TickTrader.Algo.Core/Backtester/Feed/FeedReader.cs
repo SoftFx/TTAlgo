@@ -61,7 +61,7 @@ namespace TickTrader.Algo.Core
                     }
 
                     if (!_gate.Write(nextQuote))
-                        return;
+                        break;
                 }
             }
             catch(Exception ex)

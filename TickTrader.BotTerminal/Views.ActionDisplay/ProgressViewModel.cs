@@ -42,6 +42,7 @@ namespace TickTrader.BotTerminal
 
                 ProgressMin.Value = min;
                 ProgressMax.Value = max;
+                Progress.Value = min;
                 IsIndeterminate.Clear();
             });
         }

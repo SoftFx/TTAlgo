@@ -34,11 +34,12 @@ namespace TickTrader.BotTerminal
         public void Start(Backtester backtester, IEnumerable<CurrencyEntity> currencies, IEnumerable<SymbolEntity> symbols)
         {
             var accInfo = new AccountEntity();
-            accInfo.Balance = backtester.InitialBalance;
-            accInfo.BalanceCurrency = backtester.BalanceCurrency;
-            accInfo.Leverage = backtester.Leverage;
+            var settings = backtester.CommonSettings;
+            accInfo.Balance = settings.InitialBalance;
+            accInfo.BalanceCurrency = settings.BalanceCurrency;
+            accInfo.Leverage = settings.Leverage;
             accInfo.Id = "1";
-            accInfo.Type = backtester.AccountType;
+            accInfo.Type = settings.AccountType;
 
             _client.Init(accInfo, symbols, currencies);
 

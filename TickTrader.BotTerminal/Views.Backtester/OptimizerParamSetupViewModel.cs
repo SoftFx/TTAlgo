@@ -10,10 +10,11 @@ namespace TickTrader.BotTerminal
 {
     class OptimizerParamSetupViewModel : DialogModel
     {
-        public OptimizerParamSetupViewModel(ParamSeekSetModel setupModel)
+        public OptimizerParamSetupViewModel(string paramName, ParamSeekSetModel setupModel)
         {
             Model = setupModel.Clone();
             IsValid = Model.IsValid;
+            DisplayName = "Setup " + paramName;
         }
 
         public ParamSeekSetModel Model { get; }

@@ -17,20 +17,40 @@ namespace TickTrader.Algo.Core
         IEnumerable<BarEntity> GrtBarStream();
     }
 
+    [Serializable]
+    public class CommonTestSettings
+    {
+        public string MainSymbol { get; set; }
+        public AccountTypes AccountType { get; set; }
+        public string BalanceCurrency { get; set; }
+        public int Leverage { get; set; } = 100;
+        public double InitialBalance { get; set; } = 10000;
+        public TimeSpan ServerPing { get; set; }
+        public Dictionary<string, double> InitialAssets { get; } = new Dictionary<string, double>();
+        public Dictionary<string, SymbolEntity> Symbols { get; } = new Dictionary<string, SymbolEntity>();
+        public Dictionary<string, CurrencyEntity> Currencies { get; } = new Dictionary<string, CurrencyEntity>();
+        public TimeFrames MainTimeframe { get; set; }
+        public DateTime? EmulationPeriodStart { get; set; }
+        public DateTime? EmulationPeriodEnd { get; set; }
+        public int WarmupSize { get; set; } = 10;
+        public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
+
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(MainSymbol))
+                throw new AlgoException("MainSymbol must be specified!");
+
+            if (string.IsNullOrWhiteSpace(BalanceCurrency))
+                throw new AlgoException("BalanceCurrency must be specified!");
+
+            if (!Symbols.ContainsKey(MainSymbol))
+                throw new AlgoException("No metadata for main symbol!");
+        }
+    }
+
     internal interface IBacktesterSettings
     {
-        string MainSymbol { get; }
-        AccountTypes AccountType { get; }
-        string BalanceCurrency { get; }
-        int Leverage { get; }
-        double InitialBalance { get; }
-        TimeSpan ServerPing { get; }
-        Dictionary<string, double> InitialAssets { get; }
-        Dictionary<string, SymbolEntity> Symbols { get; }
-        Dictionary<string, CurrencyEntity> Currencies { get; }
-        TimeFrames MainTimeframe { get; }
-        DateTime? EmulationPeriodStart { get; }
-        DateTime? EmulationPeriodEnd { get; }
+        CommonTestSettings CommonSettings { get; }
         JournalOptions JournalFlags { get; }
 
         //TestDataSeriesFlags ChartDataMode { get; }
@@ -63,5 +83,15 @@ namespace TickTrader.Algo.Core
         WriteOrderModifications = 128
     }
 
-    
+    public enum EmulatorStates { WarmingUp, Running, Paused, Stopping, Stopped }
+
+    public interface ITestExecController
+    {
+        EmulatorStates State { get; }
+        event Action<EmulatorStates> StateChanged;
+        event Action<Exception> ErrorOccurred;
+        void Pause();
+        void Resume();
+        void SetExecDelay(int delayMs);
+    }
 }

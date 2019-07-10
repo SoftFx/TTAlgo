@@ -33,6 +33,11 @@ namespace TickTrader.Algo.Core
             AddFixture(ExecContext.MainSymbolCode, MainPriceType, mainSeriesFixture);
         }
 
+        protected override FeedStrategy CreateClone()
+        {
+            return new BarStrategy(MainPriceType);
+        }
+
         internal static Tuple<string, BarPriceType> GetKey(string symbol, BarPriceType priceType)
         {
             return new Tuple<string, BarPriceType>(symbol, priceType);
@@ -155,22 +160,22 @@ namespace TickTrader.Algo.Core
 
         public void MapInput<TVal>(string inputName, string symbolCode, BarPriceType priceType, Func<BarEntity, TVal> selector)
         {
-            AddSetupAction(() =>
+            AddSetupAction(fs =>
             {
-                InitSymbol(symbolCode, priceType);
+                ((BarStrategy)fs).InitSymbol(symbolCode, priceType);
                 var key = GetKey(symbolCode, priceType);
-                ExecContext.Builder.MapInput(inputName, key, selector);
+                fs.ExecContext.Builder.MapInput(inputName, key, selector);
             });
         }
 
         public void MapInput<TVal>(string inputName, string symbolCode, Func<BarEntity, BarEntity, TVal> selector)
         {
-            AddSetupAction(() =>
+            AddSetupAction(fs =>
             {
                 var key1 = GetKey(symbolCode, BarPriceType.Bid);
                 var key2 = GetKey(symbolCode, BarPriceType.Ask);
-                InitSymbol(symbolCode, BarPriceType.Ask);
-                InitSymbol(symbolCode, BarPriceType.Bid);
+                ((BarStrategy)fs).InitSymbol(symbolCode, BarPriceType.Ask);
+                ((BarStrategy)fs).InitSymbol(symbolCode, BarPriceType.Bid);
                 ExecContext.Builder.MapInput(inputName, key1, key2, selector);
             });
         }

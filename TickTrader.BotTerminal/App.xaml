@@ -80,6 +80,7 @@
                 <ResourceDictionary Source="Views.Backtester/BacktesterCurrentTradesView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/BacktesterOptimizerView.xaml" />
                 <ResourceDictionary Source="Views.Backtester/OptimizerParamSetupView.xaml" />
+                <ResourceDictionary Source="Views.Backtester/OptimizationResultsPage.xaml" />
 
                 <ResourceDictionary Source="Views.FeedStorage/SymbolManagerView.xaml" />
                 <ResourceDictionary Source="Views.FeedStorage/FeedDownloadView.xaml" />

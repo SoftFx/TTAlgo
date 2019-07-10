@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
-    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IPluginMetadata, IBacktesterSettings
+    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IPluginMetadata, IBacktesterSettings, ITestExecController
     {
         private static int IdSeed;
 
@@ -18,9 +18,6 @@ namespace TickTrader.Algo.Core
         private readonly FeedEmulator _feed;
         private readonly ExecutorHandler _executor;
         private readonly EmulationControlFixture _control;
-        private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
-        private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
-        private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
 
         public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext syncObj, DateTime? from, DateTime? to)
         {
@@ -30,17 +27,17 @@ namespace TickTrader.Algo.Core
             _executor = new ExecutorHandler(pluginRef, syncObj);
             _executor.Core.Metadata = this;
 
-            EmulationPeriodStart = from;
-            EmulationPeriodEnd = to;
+            CommonSettings.EmulationPeriodStart = from;
+            CommonSettings.EmulationPeriodEnd = to;
 
             _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
             _executor.Core.InitBarStrategy(_feed, Api.BarPriceType.Bid);
 
-            Leverage = 100;
-            InitialBalance = 10000;
-            BalanceCurrency = "USD";
-            AccountType = AccountTypes.Gross;
+            CommonSettings.Leverage = 100;
+            CommonSettings.InitialBalance = 10000;
+            CommonSettings.BalanceCurrency = "USD";
+            CommonSettings.AccountType = AccountTypes.Gross;
 
             _control.StateUpdated += s => _sync.Send(() =>
             {
@@ -49,28 +46,20 @@ namespace TickTrader.Algo.Core
             });
         }
 
+        public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
+
         public ExecutorHandler Executor => _executor;
         public PluginDescriptor PluginInfo { get; }
-        public string MainSymbol { get; set; }
-        public AccountTypes AccountType { get; set; }
-        public string BalanceCurrency { get; set; }
-        public int Leverage { get; set; }
-        public double InitialBalance { get; set; }
-        public Dictionary<string, double> InitialAssets => _initialAssets;
-        public Dictionary<string, SymbolEntity> Symbols => _symbols;
-        public Dictionary<string, CurrencyEntity> Currencies => _currencies;
-        public TimeFrames MainTimeframe { get; set; }
-        public DateTime? EmulationPeriodStart { get; }
-        public DateTime? EmulationPeriodEnd { get; }
         public int TradesCount => _control.TradeHistory.Count;
         public FeedEmulator Feed => _feed;
-        public TimeSpan ServerPing { get; set; }
-        public int WarmupSize { get; set; } = 10;
-        public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
+        //public TimeSpan ServerPing { get; set; }
+        //public int WarmupSize { get; set; } = 10;
+        //public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
         public EmulatorStates State { get; private set; }
         public event Action<EmulatorStates> StateChanged;
+        public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }
 
         public event Action<BarEntity, string, SeriesUpdateActions> OnChartUpdate
         {
@@ -101,8 +90,8 @@ namespace TickTrader.Algo.Core
         {
             _executor.Core.InitSlidingBuffering(4000);
 
-            _executor.Core.MainSymbolCode = MainSymbol;
-            _executor.Core.TimeFrame = MainTimeframe;
+            _executor.Core.MainSymbolCode = CommonSettings.MainSymbol;
+            _executor.Core.TimeFrame = CommonSettings.MainTimeframe;
             _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
@@ -128,7 +117,7 @@ namespace TickTrader.Algo.Core
             try
             {
                 if (PluginInfo.Type == AlgoTypes.Robot)
-                    _control.EmulateExecution(WarmupSize, WarmupUnits);
+                    _control.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
                 else // no warm-up for indicators
                     _control.EmulateExecution(0, WarmupUnitTypes.Bars);
             }
@@ -223,8 +212,8 @@ namespace TickTrader.Algo.Core
 
         #region IPluginMetadata
 
-        IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => _symbols.Values;
-        IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => _currencies.Values;
+        IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => CommonSettings.Symbols.Values;
+        IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => CommonSettings.Currencies.Values;
 
         #endregion
     }

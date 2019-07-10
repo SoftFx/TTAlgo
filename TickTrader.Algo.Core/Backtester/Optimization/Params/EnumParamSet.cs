@@ -6,9 +6,19 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class EnumParamSet<T> : ParamSeekSet<T>
     {
         private List<T> _selectedValues = new List<T>();
+
+        public EnumParamSet()
+        {
+        }
+
+        public EnumParamSet(IEnumerable<T> selectedValues)
+        {
+            _selectedValues.AddRange(selectedValues);
+        }
 
         public override int Size => _selectedValues.Count;
 

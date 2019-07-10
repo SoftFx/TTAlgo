@@ -14,21 +14,21 @@ namespace TickTrader.BotTerminal
     {
         public ParamSeekSetModel()
         {
-            SizeProp = AddIntProperty();
-            DescriptionProp = AddProperty<string>();
+            //SizeProp = AddIntProperty();
+            //DescriptionProp = AddProperty<string>();
         }
 
         public static ParamSeekSetModel Create(ParameterDescriptor descriptor)
         {
             var setup = CreateSetupObj(descriptor);
-            setup.Reset(descriptor.DefaultValue);
+            setup?.Reset(descriptor.DefaultValue);
             return setup;
         }
 
         private static ParamSeekSetModel CreateSetupObj(ParameterDescriptor descriptor)
         {
             if (!descriptor.IsValid)
-                return new InvalidSetModel(ErrorMsgCodes.UnknownError);
+                return null; // new InvalidSetModel(ErrorMsgCodes.UnknownError);
 
             if (descriptor.IsEnum)
                 return new EnumSetModel(descriptor.EnumValues);
@@ -44,18 +44,22 @@ namespace TickTrader.BotTerminal
                 case "System.Double": return new DoubleRangeSet();
                 //case "System.String": return new StringParamSetupModel(descriptor);
                 //case "TickTrader.Algo.Api.File": return new FileParamSetupModel(descriptor);
-                default: return new InvalidSetModel(ErrorMsgCodes.UnsupportedParameterType);
+                default: return null; // return new InvalidSetModel(ErrorMsgCodes.UnsupportedParameterType);
             }
         }
 
-        protected IntProperty SizeProp { get; }
-        protected Property<string> DescriptionProp { get; }
+        //protected IntProperty SizeProp { get; }
+        //protected Property<string> DescriptionProp { get; }
 
-        public IntVar Size => SizeProp.Var;
-        public Var<string> Description => DescriptionProp.Var;
+        public abstract int Size { get; }
+        //public Var<string> Description => DescriptionProp.Var;
+        public abstract string Description { get; }
         public abstract BoolVar IsValid { get; }
 
-        public abstract void Apply(Optimizer optimizer);
+        public abstract string EditorType { get; }
+
+        //public abstract void Apply(Optimizer optimizer);
+        public abstract ParamSeekSet GetSeekSet();
         public abstract ParamSeekSetModel Clone();
 
         protected abstract void Reset(object defaultValue);

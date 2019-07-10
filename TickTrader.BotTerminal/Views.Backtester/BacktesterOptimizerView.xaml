@@ -14,19 +14,25 @@
         <Setter Property="Margin" Value="5,0,0,5"/>
     </Style>
 
-    <DataTemplate x:Key="ParamNameTemplate">
-        <CheckBox Content="{Binding ParamName}"/>
+    <DataTemplate x:Key="CheckCellTemplate">
+        <CheckBox IsChecked="{Binding SeekEnabledProp.Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
     </DataTemplate>
 
     <DataTemplate x:Key="ParamValTemplate">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="20"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding ValueDescription.Value}" Grid.Column="0" />
-            <Button Content="..." Grid.Column="1" cal:Message.Attach="Modify" />
+            <TextBlock Margin="2,0,2,0" Text="{Binding ValueDescription.Value}" Grid.Column="0" VerticalAlignment="Center"/>
+            <Button Name="editBtn" Content="..." Grid.Column="1" cal:Message.Attach="Modify" Visibility="Hidden" Width="1"/>
         </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding SeekEnabledProp.Value}" Value="True">
+                <Setter TargetName="editBtn" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="editBtn" Property="Width" Value="Auto"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
     </DataTemplate>
 
     <!-- View Template -->
@@ -36,41 +42,46 @@
             <WrapPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                     <Label Content="Optimization:" Style="{StaticResource SettingsLabel}"/>
-                    <ComboBox Style="{StaticResource SettingsCombo}" SelectedIndex="0" Width="200" >
-                        <ComboBoxItem Content="Disabled"/>
-                        <ComboBoxItem Content="Slow algorithm (brute-force)"/>
-                        <ComboBoxItem Content="Fast algorithm (genetic)"/>
-                    </ComboBox>
+                    <ComboBox Style="{StaticResource SettingsCombo}" Width="200" IsEnabled="{Binding IsOptimizatioPossibleProp.Value}"
+                              ItemsSource="{Binding AvailableModes}" SelectedValue="{Binding ModeProp.Value}"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0" IsEnabled="{Binding VarOptimizationEnabled.Value}">
                     <Label Content="Parameter:" Style="{StaticResource SettingsLabel}"/>
                     <ComboBox SelectedIndex="0" Style="{StaticResource SettingsCombo}" Width="200">
                         <ComboBoxItem Content="Balance max" />
-                        <ComboBoxItem Content="Balance + max Profit Factor" />
+                        <!--<ComboBoxItem Content="Balance + max Profit Factor" />
                         <ComboBoxItem Content="Balance + max Except Payoff" />
-                        <ComboBoxItem Content="Balance + min Drawdown" />
+                        <ComboBoxItem Content="Balance + min Drawdown" />-->
                     </ComboBox>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0" IsEnabled="{Binding VarOptimizationEnabled.Value}">
                     <Label Content="Cores:" Style="{StaticResource SettingsLabel}"/>
-                    <ComboBox MaxWidth="80" Style="{StaticResource SettingsCombo}" SelectedIndex="3" Width="60"
-                          HorizontalAlignment="Left">
-                        <ComboBoxItem Content="1" />
-                        <ComboBoxItem Content="2" />
-                        <ComboBoxItem Content="3" />
-                        <ComboBoxItem Content="4" />
-                    </ComboBox>
+                    <ComboBox MaxWidth="80" Style="{StaticResource SettingsCombo}" SelectedIndex="3" Width="60" HorizontalAlignment="Left"
+                              ItemsSource="{Binding AvailableParallelismList}" SelectedItem="{Binding ParallelismProp.Value}"/>
                 </StackPanel>
             </WrapPanel>
 
             <!--<Label Content="Bot parameters:"/>-->
             <DataGrid AutoGenerateColumns="False" Margin="5,10,5,5" Style="{DynamicResource NoHScrollDataGrid_Style}"
-                          ItemsSource="{Binding Parameters}" CanUserReorderColumns="False" CanUserSortColumns="False">
+                      IsEnabled="{Binding VarOptimizationEnabled.Value}"
+                      ItemsSource="{Binding Parameters}" CanUserReorderColumns="False" CanUserSortColumns="False">
+                <DataGrid.Resources>
+                    <Style TargetType="{x:Type DataGridRow}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SeekEnabledProp.Value}" Value="True">
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
                 <DataGrid.Columns>
                     <!--<DataGridTextColumn Header="Property" Width="1.5*" Binding="{Binding Model.ParamName}" />-->
-                    <DataGridTemplateColumn Header="Fixed Value" Width="1.5*" CellTemplate="{StaticResource ParamNameTemplate}"/>
-                    <DataGridTemplateColumn Header="Scenario" Width="2*" CellTemplate="{StaticResource ParamValTemplate}"/>
-                    <DataGridTextColumn Header="Variants count" Width="*"/>
+                    <DataGridTemplateColumn Width="22" CanUserResize="False" CellTemplate="{StaticResource CheckCellTemplate}"/>
+                    <!--<DataGridCheckBoxColumn Width="222" CanUserResize="False" Binding="{Binding SeekEnabledProp.Value, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>-->
+                    <DataGridTextColumn Header="Parameter" Width="1*" Binding="{Binding ParamName}"/>
+                    <DataGridTemplateColumn Header="Value" Width="1.5*" CellTemplate="{StaticResource ParamValTemplate}"/>
+                    <!--<DataGridTemplateColumn Header="Scenario" Width="2*" CellTemplate="{StaticResource ParamValTemplate}"/>-->
+                    <DataGridTextColumn Header="Variants count" Binding="{Binding CaseCountProp.Value}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
 

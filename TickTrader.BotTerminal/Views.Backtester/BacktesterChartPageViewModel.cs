@@ -61,17 +61,17 @@ namespace TickTrader.BotTerminal
         public void OnStart(bool visualizing, SymbolEntity mainSymbol, PluginSetupModel setup, Backtester backtester, IEnumerable<SymbolEntity> symbols)
         {
             _visualizing = visualizing;
-            _acctype = backtester.AccountType;
-            _mainSymbol = backtester.MainSymbol;
+            _acctype = backtester.CommonSettings.AccountType;
+            _mainSymbol = backtester.CommonSettings.MainSymbol;
             _symbolMap = symbols.ToDictionary(s => s.Name);
 
             Clear();
 
-            _barVector = new ChartBarVectorWithMarkers(backtester.MainTimeframe);
+            _barVector = new ChartBarVectorWithMarkers(backtester.CommonSettings.MainTimeframe);
             _mainSeries.DataSeries = _barVector.SciChartdata;
             _markerSeries.DataSeries = _barVector.MarkersData;
 
-            ChartControlModel.SetTimeframe(backtester.MainTimeframe);
+            ChartControlModel.SetTimeframe(backtester.CommonSettings.MainTimeframe);
             ChartControlModel.SymbolInfo.Value = mainSymbol;
 
             if (visualizing)

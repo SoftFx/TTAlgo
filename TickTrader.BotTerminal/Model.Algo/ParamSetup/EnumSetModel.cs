@@ -10,26 +10,38 @@ namespace TickTrader.BotTerminal
 {
     internal class EnumSetModel : ParamSeekSetModel
     {
-        private readonly List<Item> _items;
+        private List<Item> _items;
+        private bool _initializing = true;
+        private IntProperty _size;
+        private BoolVar _isValid;
 
         public EnumSetModel(List<string> values)
         {
-            _items = values.Select(v => new Item(this, v)).ToList();
-            UpdateDescription();
+            Init(values.Select(v => new Item(this, v)));
         }
 
         protected EnumSetModel(EnumSetModel src)
         {
-            _items = src.Items.Select(i => new Item(this, i.Name, i.IsChecked.Value)).ToList();
-            UpdateDescription();
+            Init(src.Items.Select(i => new Item(this, i.Name, i.IsChecked.Value)));
+        }
+
+        private void Init(IEnumerable<Item> items)
+        {
+            _size = AddIntProperty();
+            _items = items.ToList();
+            _isValid = _size.Var > 0;
+            _initializing = false;
         }
 
         public IReadOnlyList<Item> Items => _items;
-        public override BoolVar IsValid { get; } = Var.Const(true);
+        public override BoolVar IsValid => _isValid;
+        public override string Description => string.Join(", ", Items.Where(i => i.IsChecked.Value).Select(i => i.Name));
+        public override string EditorType => "Checklist";
+        public override int Size => _size.Value;
 
-        public override void Apply(Optimizer optimizer)
+        public override ParamSeekSet GetSeekSet()
         {
-            //optimizer.SetupParameterSeek(new setSe
+            return new EnumParamSet<string>(Items.Where(i => i.IsChecked.Value).Select(i => i.Name));
         }
 
         public override ParamSeekSetModel Clone()
@@ -39,18 +51,24 @@ namespace TickTrader.BotTerminal
 
         protected override void Reset(object defaultValue)
         {
-        }
+            var enumDefValue = defaultValue as string;
 
-        private void UpdateDescription()
-        {
-            if (_items != null)
-                DescriptionProp.Value = string.Join(",", _items.Where(i => i.IsChecked.Value).Select(i => i.Name));
+            if (enumDefValue != null)
+            {
+                var defItem = Items.FirstOrDefault(i => i.Name == enumDefValue);
+                if (defItem != null)
+                {
+                    defItem.IsChecked.Set();
+                    return;
+                }
+            }
+
+            if (Items.Count > 0)
+                Items[0].IsChecked.Set();
         }
 
         public class Item : EntityBase
         {
-            //private ChecklistSeekSet _parent;
-
             public Item(EnumSetModel parent, string name, bool isChecked = false)
             {
                 //_parent = parent;
@@ -60,11 +78,9 @@ namespace TickTrader.BotTerminal
                 TriggerOnChange(IsChecked, a =>
                 {
                     if (a.New)
-                        parent.SizeProp.Increase();
-                    else
-                        parent.SizeProp.Decrease();
-
-                    parent.UpdateDescription();
+                        parent._size.Increase();
+                    else if (!parent._initializing)
+                        parent._size.Decrease();
                 });
             }
 

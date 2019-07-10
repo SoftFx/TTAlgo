@@ -48,8 +48,8 @@ namespace TickTrader.Algo.Core
         {
             Stats = new TestingStatistics();
             _startTime = DateTime.UtcNow;
-            _mainSymbol = settings.MainSymbol;
-            _mainTimeframe = settings.MainTimeframe;
+            _mainSymbol = settings.CommonSettings.MainSymbol;
+            _mainTimeframe = settings.CommonSettings.MainTimeframe;
 
             InitJournal(settings);
 
@@ -63,9 +63,9 @@ namespace TickTrader.Algo.Core
         {
             if (acc != null && acc.IsMarginType)
             {
-                Stats.InitialBalance = settings.InitialBalance;
+                Stats.InitialBalance = settings.CommonSettings.InitialBalance;
                 Stats.FinalBalance = acc.Balance;
-                Stats.AccBalanceDigits = acc.BalanceCurrencyInfo.Digits;
+                Stats.AccBalanceDigits = acc.BalanceCurrencyInfo?.Digits ?? 00;
             }
 
             var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);

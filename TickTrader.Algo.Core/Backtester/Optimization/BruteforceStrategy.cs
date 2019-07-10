@@ -6,14 +6,43 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public class BruteforceStrategy : ParamSeekStrategy
     {
-        public override void Init()
+        private IEnumerator<OptCaseConfig> _e;
+        private int _casesLeft;
+
+        public override int CaseCount => Params.Values.Aggregate(1, (s, p) => s * p.Size);
+
+        public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
-            CaseCount = Params.Values.Aggregate(1, (s, p) => s * p.Size);
+            _casesLeft = CaseCount;
+
+            if (_casesLeft <= 0)
+                return;
+
+            int firstPartSize = Math.Min(_casesLeft, degreeOfParallelism * 2);
+
+            _e = GetCases().GetEnumerator();
+
+            for (int i = 0; i < firstPartSize; i++)
+            {
+                if (!_e.MoveNext())
+                    break;
+                queue.Enqueue(_e.Current);
+            }
         }
 
-        public override IEnumerable<OptCaseConfig> GetCases()
+        public override int OnCaseCompleted(OptCaseReport report, IBacktestQueue queue)
+        {
+            if (_e.MoveNext())
+                queue.Enqueue(_e.Current);
+
+            _casesLeft--;
+            return _casesLeft;
+        }
+
+        private IEnumerable<OptCaseConfig> GetCases()
         {
             for (int i = 0; i < CaseCount; i++)
             {

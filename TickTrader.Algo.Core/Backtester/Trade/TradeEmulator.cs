@@ -42,18 +42,18 @@ namespace TickTrader.Algo.Core
             _scheduler = scheduler;
             _collector = collector;
             _settings = settings;
-            _leverage = settings.Leverage;
+            _leverage = settings.CommonSettings.Leverage;
             _history = history;
 
             _sendReports = settings.StreamExecReports;
 
             if (pluginType == AlgoTypes.Robot)
             {
-                if (_settings.AccountType == AccountTypes.Net || _settings.AccountType == AccountTypes.Gross)
+                if (_settings.CommonSettings.AccountType == AccountTypes.Net || _settings.CommonSettings.AccountType == AccountTypes.Gross)
                     _scheduler.Scheduler.AddDailyJob(b => Rollover(), 0, 0);
             }
 
-            VirtualServerPing = settings.ServerPing;
+            VirtualServerPing = settings.CommonSettings.ServerPing;
             _scheduler.RateUpdated += r =>
             {
                 //_lastRate = r;
@@ -81,20 +81,20 @@ namespace TickTrader.Algo.Core
             _acc.ResetCurrency();
             _acc.Leverage = 0;
 
-            _acc.Type = _settings.AccountType;
+            _acc.Type = _settings.CommonSettings.AccountType;
 
             if (_acc.IsMarginType)
             {
-                _acc.Balance = _settings.InitialBalance;
-                _acc.Leverage = _settings.Leverage;
-                _acc.UpdateCurrency(_settings.Currencies.GetOrStub(_settings.BalanceCurrency));
+                _acc.Balance = _settings.CommonSettings.InitialBalance;
+                _acc.Leverage = _settings.CommonSettings.Leverage;
+                _acc.UpdateCurrency(_settings.CommonSettings.Currencies.GetOrStub(_settings.CommonSettings.BalanceCurrency));
                 _opSummary.AccountCurrencyFormat = _acc.BalanceCurrencyFormat;
             }
             else if (_acc.IsCashType)
             {
                 var currencies = _context.Builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
-                foreach (var asset in _settings.InitialAssets)
+                foreach (var asset in _settings.CommonSettings.InitialAssets)
                     _acc.Assets.Update(new AssetEntity(asset.Value, asset.Key), currencies);
             }
         }
@@ -1293,8 +1293,8 @@ namespace TickTrader.Algo.Core
             if (_scheduler.IsStopPhase)
                 return;
 
-            var lastRate = _calcFixture.GetCurrentRateOrNull(_settings.MainSymbol);
-            var mainSymbol = _context.Builder.Symbols.GetOrDefault(_settings.MainSymbol);
+            var lastRate = _calcFixture.GetCurrentRateOrNull(_settings.CommonSettings.MainSymbol);
+            var mainSymbol = _context.Builder.Symbols.GetOrDefault(_settings.CommonSettings.MainSymbol);
 
             using (JournalScope())
                 _opSummary.AddStopOutAction(_acc, lastRate, mainSymbol);
