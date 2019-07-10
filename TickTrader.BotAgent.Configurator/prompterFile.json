@@ -21,6 +21,6 @@
     "EnableLogs": "Enables writing messages sent over trade server connection to logs. Only for troubleshooting, has severe impact on performance."
   },
   "MultipleAgentProvider": {
-    "AgentConfigurationPaths": "I'm agent provider"
+    "AgentConfigurationPaths": "Agent installation folder."
   }
 }

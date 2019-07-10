@@ -18,8 +18,7 @@ LangString TerminalSection2Description  ${LANG_ENGLISH} "Desktop shortcut for Bo
 LangString TerminalSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for BotTerminal"
 LangString TerminalSection4Description  ${LANG_ENGLISH} "Bots and indicators for testing several aspects of Algo API"
 
-LangString AgentSection1Description     ${LANG_ENGLISH} "BotAgent core files"
-LangString AgentSection2Description     ${LANG_ENGLISH} "Create windows service to launch BotAgent"
+LangString AgentSection1Description     ${LANG_ENGLISH} "BotAgent core files and windows service"
 
 LangString ConfiguratorSection1Description  ${LANG_ENGLISH} "BotAgent Configurator core files"
 LangString ConfiguratorSection2Description  ${LANG_ENGLISH} "Desktop shortcut for BotAgent Configurator"

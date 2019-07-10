@@ -98,7 +98,7 @@ FunctionEnd
 
 SectionGroup "Install BotTerminal" TerminalGroup
 
-Section "BotTerminal" TerminalSection1
+Section "Core files" TerminalSection1
 
     DetailPrint "Installing BotTerminal"
 
@@ -136,16 +136,12 @@ SectionGroupEnd
 
 SectionGroup "Install BotAgent" AgentGroup
 
-Section "BotAgent" AgentSection1
+Section "Core files" AgentSection1
 
     DetailPrint "Installing BotAgent"
 
     SetOutPath "$INSTDIR\${AGENT_NAME}"
     File /r "${AGENT_BINDIR}\*.*"
-
-SectionEnd
-
-Section "Windows Service" AgentSection2
 
     DetailPrint "Creating BotAgent service"
     Sleep 2000
@@ -154,7 +150,7 @@ SectionEnd
 
 SectionGroup "Install Configurator" ConfiguratorGroup
 
-Section "Configurator" ConfiguratorSection1
+Section "Core files" ConfiguratorSection1
 
     DetailPrint "Installing Configurator"
     
@@ -186,20 +182,65 @@ Section - FinishSection
 
 SectionEnd
 
+Function .onSelChange
+
+    ${if} $0 == ${TerminalGroup}
+        # MessageBox MB_OK "Terminal Group"
+        ${If} ${SectionIsSelected} ${TerminalSection1}
+            ${UnselectSection} ${TerminalSection1}
+            ${DisableSection} ${TerminalSection2}
+            ${DisableSection} ${TerminalSection3}
+            ${DisableSection} ${TerminalSection4}
+        ${Else}
+            ${SelectSection} ${TerminalSection1}
+            ${EnableSection} ${TerminalSection2}
+            ${EnableSection} ${TerminalSection3}
+            ${EnableSection} ${TerminalSection4}
+        ${EndIf}
+    ${EndIf}
+
+    ${if} $0 == ${AgentGroup}
+        # MessageBox MB_OK "Agent Group"
+        ${If} ${SectionIsSelected} ${AgentSection1}
+            ${UnselectSection} ${AgentSection1}
+            ${UnselectSection} ${ConfiguratorSection1}
+            ${ReadOnlySection} ${ConfiguratorGroup}
+            ${DisableSection} ${ConfiguratorSection2}
+            ${DisableSection} ${ConfiguratorSection3}
+        ${Else}
+            ${SelectSection} ${AgentSection1}
+            ${SelectSection} ${ConfiguratorSection1}
+            ${EnableSection} ${ConfiguratorGroup}
+            ${EnableSection} ${ConfiguratorSection2}
+            ${EnableSection} ${ConfiguratorSection3}
+        ${EndIf}
+    ${EndIf}
+
+    ${if} $0 == ${ConfiguratorGroup}
+        # MessageBox MB_OK "Configurator Group"
+        ${If} ${SectionIsSelected} ${ConfiguratorSection1}
+            ${UnselectSection} ${ConfiguratorSection1}
+            ${DisableSection} ${ConfiguratorSection2}
+            ${DisableSection} ${ConfiguratorSection3}
+        ${Else}
+            ${SelectSection} ${ConfiguratorSection1}
+            ${EnableSection} ${ConfiguratorSection2}
+            ${EnableSection} ${ConfiguratorSection3}
+        ${EndIf}
+    ${EndIf}
+
+FunctionEnd
+
 
 Function ConfigureComponents
 
-    ${ChangeSectionBoldState} ${TerminalSection1}
-    ${ChangeSectionBoldState} ${AgentSection1}
-    ${ChangeSectionBoldState} ${ConfiguratorSection1}
+    ${ReadOnlySection} ${TerminalSection1}
+    ${ReadOnlySection} ${AgentSection1}
+    ${ReadOnlySection} ${ConfiguratorSection1}
 
-    ;${ChangeSectionReadOnlyState} ${TerminalSection1}
-    ;${ChangeSectionReadOnlyState} ${AgentSection1}
-    ;${ChangeSectionReadOnlyState} ${ConfiguratorSection1}
-
-    ${ChangeSectionExpandState} ${TerminalGroup}
-    ${ChangeSectionExpandState} ${AgentGroup}
-    ${ChangeSectionExpandState} ${ConfiguratorGroup}
+    ${ExpandSection} ${TerminalGroup}
+    ${ExpandSection} ${AgentGroup}
+    ${ExpandSection} ${ConfiguratorGroup}
 
 FunctionEnd
 
@@ -208,14 +249,16 @@ FunctionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 
+    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalGroup} $(TerminalSection1Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection1} $(TerminalSection1Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection2} $(TerminalSection2Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection3} $(TerminalSection3Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection4} $(TerminalSection4Description)
 
+    !insertmacro MUI_DESCRIPTION_TEXT ${AgentGroup} $(AgentSection1Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${AgentSection1} $(AgentSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${AgentSection2} $(AgentSection2Description)
 
+    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorGroup} $(ConfiguratorSection1Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorSection1} $(ConfiguratorSection1Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorSection2} $(ConfiguratorSection2Description)
     !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorSection3} $(ConfiguratorSection3Description)
@@ -275,7 +318,6 @@ Function ConfigureInstallTypes
 
     IntOp $0 $0 ^ ${MinimalInstallBitFlag}
     ; 011001b
-    SectionSetInstTypes ${AgentSection2} $0
     SectionSetInstTypes ${ConfiguratorSection2} $0
     SectionSetInstTypes ${ConfiguratorSection3} $0
 

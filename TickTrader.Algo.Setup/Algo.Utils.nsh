@@ -105,48 +105,63 @@
 ;--------------------------------------------
 ;-----Functions to manage sections-----
 
-!define SEC_USELECTED  0
-!define SEC_SELECTED   1
-!define SEC_BOLD       8
-!define SEC_RO         16
-!define SEC_EXPAND     32
+!define SECTION_ENABLE 0xFFFFFFEF # remove read-only flag
  
-!macro SecSelectChange SecId
+!macro SecSelect SecId
     Push $0
     SectionGetFlags ${SecId} $0
-    IntOp $0 $0 ^ ${SEC_SELECTED}
+    IntOp $0 $0 | ${SF_SELECTED}
     SectionSetFlags ${SecId} $0
     Pop $0
 !macroend
 
-!macro SecBoldChange SecId
+!macro SecUnselect SecId
     Push $0
     SectionGetFlags ${SecId} $0
-    IntOp $0 $0 ^ ${SEC_BOLD}
+    IntOp $0 $0 & ${SECTION_OFF}
     SectionSetFlags ${SecId} $0
     Pop $0
 !macroend
 
-!macro SecROChange SecId
+!macro SecRO SecId
     Push $0
     SectionGetFlags ${SecId} $0
-    IntOp $0 $0 ^ ${SEC_RO}
+    IntOp $0 $0 | ${SF_RO}
     SectionSetFlags ${SecId} $0
     Pop $0
 !macroend
 
-!macro SecExpandChange SecId
+!macro SecDisable SecId
     Push $0
     SectionGetFlags ${SecId} $0
-    IntOp $0 $0 ^ ${SEC_EXPAND}
+    IntOp $0 $0 & ${SECTION_OFF}
+    IntOp $0 $0 | ${SF_RO}
+    SectionSetFlags ${SecId} $0
+    Pop $0
+!macroend
+
+!macro SecRemoveRO SecId
+    Push $0
+    SectionGetFlags ${SecId} $0
+    IntOp $0 $0 & ${SECTION_ENABLE}
+    SectionSetFlags ${SecId} $0
+    Pop $0
+!macroend
+
+!macro SecExpand SecId
+    Push $0
+    SectionGetFlags ${SecId} $0
+    IntOp $0 $0 | ${SF_EXPAND}
     SectionSetFlags ${SecId} $0
     Pop $0
 !macroend
  
 
-!define ChangeSectionSelectState '!insertmacro SecSelectChange'
-!define ChangeSectionBoldState '!insertmacro SecBoldChange'
-!define ChangeSectionReadOnlyState '!insertmacro SecROChange'
-!define ChangeSectionExpandState '!insertmacro SecExpandChange'
+!define SelectSection '!insertmacro SecSelect'
+!define UnselectSection '!insertmacro SecUnselect'
+!define ReadOnlySection '!insertmacro SecRO'
+!define DisableSection '!insertmacro SecDisable'
+!define EnableSection '!insertmacro SecRemoveRO'
+!define ExpandSection '!insertmacro SecExpand'
 
 ;---END Functions to manage sections---
