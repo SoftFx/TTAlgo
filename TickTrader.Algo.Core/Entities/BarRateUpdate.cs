@@ -32,11 +32,13 @@ namespace TickTrader.Algo.Core
 
         public BarRateUpdate(BarEntity bidBar, BarEntity askBar, string symbol)
         {
+            _openTime = bidBar.OpenTime;
+            _closeTime = bidBar.CloseTime;
             BidBar = bidBar;
             AskBar = askBar;
             _quoteCount = 1;
             Symbol = symbol;
-            _lastQuote = new QuoteEntity(symbol, bidBar.CloseTime, bidBar.Close, askBar.Close);
+            _lastQuote = new QuoteEntity(symbol, _closeTime, bidBar.Close, askBar.Close);
         }
 
         public void Append(QuoteEntity quote)
