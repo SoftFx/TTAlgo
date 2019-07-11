@@ -104,13 +104,15 @@ namespace TickTrader.Algo.Core
 
         #region Emulation
 
+        public InvokeEmulator Emulator { get; set; }
+
         public void ValidateNewOrder(OrderAccessor newOrder, OrderCalculator fCalc)
         {
             if (acc.IsMarginType)
             {
                 //fCalc.UpdateMargin(newOrder, acc);
 
-                ValidateOrderState(newOrder);
+                //ValidateOrderState(newOrder);
 
                 // Update order initial margin rate.
                 //newOrder.MarginRateInitial = newOrder.MarginRateCurrent;
@@ -120,6 +122,9 @@ namespace TickTrader.Algo.Core
                     // Check for margin
                     double newMargin;
                     var hasMargin = _marginCalc.HasSufficientMarginToOpenOrder(newOrder, out newMargin, out var error);
+
+                    if (error == CalcErrorCodes.NoCrossSymbol)
+                        throw new MisconfigException("No cross symbol to convert from " + newOrder.Symbol + " to " + Acc.BalanceCurrency + "!");
 
                     if (error != CalcErrorCodes.None)
                         throw new OrderValidationError($"Failed to calculate order margin: {error}", error.ToOrderError());
@@ -153,7 +158,7 @@ namespace TickTrader.Algo.Core
             {
                 //tempOrder.Margin = fCalc.CalculateMargin(tempOrder, this);
 
-                ValidateOrderState(order);
+                //ValidateOrderState(order);
 
                 //decimal filledAmount = order.Amount - order.RemainingAmount;
                 //decimal newRemainingAmount = newAmount - filledAmount;
@@ -163,6 +168,9 @@ namespace TickTrader.Algo.Core
                     return;
 
                 var additionalMargin = fCalc.CalculateMargin(newAmount, Acc.Leverage, order.Type.ToBoType(), order.Side.ToBoSide(), false, out var calcErro);
+
+                if (calcErro == CalcErrorCodes.NoCrossSymbol)
+                    throw new MisconfigException("No cross symbol to convert from " + order.Symbol + " to " + Acc.BalanceCurrency + "!");
 
                 if (calcErro != CalcErrorCodes.None)
                     throw new OrderValidationError("Not Enough Money.", OrderCmdResultCodes.NotEnoughMoney);
@@ -211,16 +219,16 @@ namespace TickTrader.Algo.Core
             return Acc.Assets.GetOrCreateAsset(currency.Name, out cType);
         }
 
-        private void ValidateOrderState(OrderAccessor order)
-        {
-            if (order.CalculationError != null)
-            {
-                if (order.CalculationError.Code == BL.OrderErrorCode.Misconfiguration)
-                    throw new MisconfigException(order.CalculationError.Description);
-                else
-                    throw new OrderValidationError(order.CalculationError.Description, OrderCmdResultCodes.OffQuotes);
-            }
-        }
+        //private void ValidateOrderState(OrderAccessor order)
+        //{
+        //    if (order.CalculationError != null)
+        //    {
+        //        if (order.CalculationError.Code == BL.OrderErrorCode.Misconfiguration)
+        //            throw new MisconfigException(order.CalculationError.Description);
+        //        else
+        //            throw new OrderValidationError(order.CalculationError.Description, OrderCmdResultCodes.OffQuotes);
+        //    }
+        //}
 
         //public IEnumerable<OrderAccessor> GetGrossPositions(string symbol)
         //{
@@ -239,7 +247,9 @@ namespace TickTrader.Algo.Core
                 {
                     //var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
                     //calc.UpdateMargin(newOrder, acc);
-                    return _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol.Name, type.ToBoType(), side.ToBoSide(), isHidden, out _, out var error);
+                    var result = _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol.Name, type.ToBoType(), side.ToBoSide(), isHidden, out _, out var error);
+                    HandleMarginCalcError(error, symbol.Name);
+                    return result;
                 }
                 if (cashCalc != null)
                 {
@@ -274,6 +284,8 @@ namespace TickTrader.Algo.Core
                         return false;
 
                     var newMargin = calc.CalculateMargin(newRemVolume, acc.Leverage, type, side, newIsHidden, out error);
+
+                    HandleMarginCalcError(error, symbol.Name);
 
                     if (error != CalcErrorCodes.None)
                         return false;
@@ -322,7 +334,11 @@ namespace TickTrader.Algo.Core
                 {
                     var calc = Market.GetCalculator(symbol, acc.BalanceCurrency);
                     using (calc.UsageScope())
-                        return calc?.CalculateMargin(orderVol, acc.Leverage, type.ToBoType(), side.ToBoSide(), isHidden, out var error);
+                    {
+                        var result = calc.CalculateMargin(orderVol, acc.Leverage, type.ToBoType(), side.ToBoSide(), isHidden, out var error);
+                        HandleMarginCalcError(error, symbol);
+                        return result;
+                    }
                 }
                 if (cashCalc != null)
                 {
@@ -336,7 +352,6 @@ namespace TickTrader.Algo.Core
             }
             return null;
         }
-
 
         private OrderAccessor GetOrderAccessor(OrderEntity orderEntity, SymbolAccessor symbol)
         {
@@ -371,6 +386,16 @@ namespace TickTrader.Algo.Core
                         order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
                         break;
                 }
+            }
+        }
+
+        private void HandleMarginCalcError(CalcErrorCodes code, string symbol)
+        {
+            if (code == CalcErrorCodes.NoCrossSymbol && Emulator != null)
+            {
+                var error = new MisconfigException("No cross symbol to convert from " + symbol + " to " + Acc.BalanceCurrency + "!");
+                Emulator.SetFatalError(error);
+                throw error;
             }
         }
 

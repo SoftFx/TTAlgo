@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
         {
             var clone = new OrderAccessor(new OrderEntity(_entity), _symbol, _leverage);
             clone.Calculator = Calculator;
-            clone.CalculationError = CalculationError;
+            //clone.CalculationError = CalculationError;
             return clone;
         }
 
@@ -109,9 +109,9 @@ namespace TickTrader.Algo.Core
 
         public decimal? AgentCommision => 0;
 
-        public BL.OrderError CalculationError { get; set; }
+        //public BL.OrderError CalculationError { get; set; }
         public OrderCalculator Calculator { get; set; }
-        public bool IsCalculated => CalculationError == null;
+        //public bool IsCalculated => CalculationError == null;
         public double? MarginRateCurrent { get; set; }
         public double? Swap => _entity.Swap;
         public double? Commission => _entity.Commission;

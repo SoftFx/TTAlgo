@@ -549,6 +549,7 @@ namespace TickTrader.Algo.Core
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             _builderFactory = m => new SimplifiedBuilder(m);
+            calcFixture.Emulator = fixture.InvokeEmulator;
             return fixture;
         }
 

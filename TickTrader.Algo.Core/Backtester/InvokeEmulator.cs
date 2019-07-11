@@ -210,6 +210,7 @@ namespace TickTrader.Algo.Core
             //EmulateStop();
             //EnableStopPhase();
             _stopPhase = true;
+            _fatalError = null;
             EmulateEvents();
         }
 
@@ -415,7 +416,7 @@ namespace TickTrader.Algo.Core
 
         public void SetFatalError(Exception error)
         {
-            if (_fatalError != error)
+            if (_fatalError == null)
                 _fatalError = error;
         }
 
