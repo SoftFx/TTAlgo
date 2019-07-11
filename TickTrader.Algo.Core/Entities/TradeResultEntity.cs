@@ -14,7 +14,8 @@ namespace TickTrader.Algo.Core
         {
             ResultCode = code;
             ResultingOrder = entity;
-            TransactionTime = entity?.Modified;
+            if (entity != null)
+                TransactionTime = entity.Modified ?? entity.Created;
         }
 
         public OrderCmdResultCodes ResultCode { get; private set; }
