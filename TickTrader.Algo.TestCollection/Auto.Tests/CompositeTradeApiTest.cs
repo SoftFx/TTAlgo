@@ -7,12 +7,10 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
-    [TradeBot(DisplayName = "Composite Tarde API Test", Version = "1.1", Category = "Auto Tests", SetupMainSymbol = true,
+    [TradeBot(DisplayName = "Composite Tarde API Test", Version = "1.2", Category = "Auto Tests", SetupMainSymbol = true,
         Description = "")]
     public class CompositeTradeApiTest : TradeBot
     {
-        private const int pipsDelta = 1000;
-
         private List<OrderVerifier> _tradeRepVerifiers = new List<OrderVerifier>();
         private TaskCompletionSource<object> _eventWaiter;
 
@@ -27,6 +25,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         [Parameter(DefaultValue = 0.1)]
         public double BaseOrderVolume { get; set; }
+
+        [Parameter(DefaultValue = 1000)]
+        public int PriceDelta { get; set; }
 
         protected async override void OnStart()
         {
@@ -179,7 +180,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double GetImmExecPrice(OrderSide side, OrderType type)
         {
-            var delta = pipsDelta * Symbol.Point;
+            var delta = PriceDelta * Symbol.Point;
 
             if (type == OrderType.Market)
                 return Symbol.Bid;
@@ -197,7 +198,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double GetDoNotExecPrice(OrderSide side, OrderType type)
         {
-            var delta = pipsDelta * Symbol.Point;
+            var delta = PriceDelta * Symbol.Point;
 
             if (type == OrderType.Limit)
             {
