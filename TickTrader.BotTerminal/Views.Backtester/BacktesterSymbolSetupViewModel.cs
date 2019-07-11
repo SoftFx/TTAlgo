@@ -155,6 +155,9 @@ namespace TickTrader.BotTerminal
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
+            if (precacheFrom > precacheTo)
+                return;
+
             var smb = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
 
