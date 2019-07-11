@@ -108,7 +108,7 @@ namespace TickTrader.Algo.Core
 
         internal class PositionsFixture : NetPositionList
         {
-            private Dictionary<string, PositionAccessor> _positions = new Dictionary<string, PositionAccessor>();
+            private ConcurrentDictionary<string, PositionAccessor> _positions = new ConcurrentDictionary<string, PositionAccessor>();
             private PluginBuilder _builder;
 
             public PositionsFixture(PluginBuilder builder)
@@ -145,7 +145,7 @@ namespace TickTrader.Algo.Core
 
             public bool RemovePosition(string symbol)
             {
-                return _positions.Remove(symbol);
+                return _positions.TryRemove(symbol, out _);
             }
 
             public PositionAccessor GetOrDefault(string symbol)
