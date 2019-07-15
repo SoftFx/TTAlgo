@@ -113,6 +113,7 @@ namespace TickTrader.Algo.Core
 
             if (!_control.OnStart())
             {
+                _control.Collector.AddEvent(LogSeverities.Error, "No data for requested period!");
                 _executor.StopCollection();
                 return;
             }

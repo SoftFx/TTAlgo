@@ -176,7 +176,7 @@ namespace TickTrader.Algo.Core
             {
                 if (!WarmUp(warmupValue, warmupUnits))
                 {
-                    _collector.AddEvent(LogSeverities.Error, "No data for requested period!");
+                    _collector.AddEvent(LogSeverities.Error, "There is no enough data for warm-up!");
                     return;
                 }
                 _exStartAction();
