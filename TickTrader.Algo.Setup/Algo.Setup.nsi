@@ -149,6 +149,7 @@ Section "Core files" AgentCore
     ${If} $OUTDIR == $3
         MessageBox MB_YESNO "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
+        ${StopService} "${SERVICE_NAME}" 80
         !insertmacro UninstallApp $OUTDIR
     ${EndIf}
 
@@ -157,7 +158,9 @@ UninstallAgentLabel:
     WriteUninstaller "$INSTDIR\${AGENT_NAME}\uninstall.exe"
 
     DetailPrint "Creating BotAgent service"
-    Sleep 2000
+    ${InstallService} "${SERVICE_NAME}" "${SERVICE_DISPLAY_NAME}" "16" "2" "$OUTDIR\${AGENT_EXE}" 80
+    ${ConfigureService} "${SERVICE_NAME}"
+    ${StartService} "${SERVICE_NAME}" 30
 
 SkipAgentLabel:
 
@@ -221,6 +224,9 @@ Section Uninstall
     ReadRegStr $3 HKLM "${REG_AGENT_KEY}" "Path"
     ${If} $3 == $INSTDIR
         
+        ${StopService} "${SERVICE_NAME}" 80
+        ${UninstallService} "${SERVICE_NAME}" 80
+
         ; Remove installed files, but leave generated
         !include Agent.Uninstall.nsi
         Delete "agent.ico"

@@ -64,7 +64,6 @@
         ${If} $0 != 0
             Abort "$(ServiceStopFailMessage) $0"
         ${EndIf}
-        Sleep ${Sleep}
     ${EndIf}
 !macroend
 
