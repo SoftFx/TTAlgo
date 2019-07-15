@@ -91,6 +91,8 @@ namespace TickTrader.Algo.Core
             switch (symbol.CommissionType)
             {
                 case CommissionType.Percent: return BO.CommissionValueType.Percentage;
+                case CommissionType.PerBond: return BO.CommissionValueType.Points;
+                case CommissionType.Absolute: return BO.CommissionValueType.Money;
             }
 
             throw new InvalidOperationException("Unsupported commission type: " + symbol.Commission);

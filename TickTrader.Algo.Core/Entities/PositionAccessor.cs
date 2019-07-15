@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Calc;
 using BL = TickTrader.BusinessLogic;
 
@@ -94,7 +95,7 @@ namespace TickTrader.Algo.Core
         public double Profit => CalculateProfit();
         public DateTime? Modified { get; set; }
         public string Id { get; set; }
-        public bool IsEmpty => VolumeUnits == 0;
+        public bool IsEmpty => VolumeUnits.E(0);
         public OrderCalculator Calculator { get; set; }
 
         public double VolumeUnits => (double)Math.Max(_buy.Amount, _sell.Amount);

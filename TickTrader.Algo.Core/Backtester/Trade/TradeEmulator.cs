@@ -2312,16 +2312,16 @@ namespace TickTrader.Algo.Core
 
             double minTradeAmount = smbInfo.MinTradeVolume * smbInfo.ContractSize;
             double maxTradeAmount = smbInfo.MaxTradeVolume * smbInfo.ContractSize;
-            if (amount < minTradeAmount || amount > maxTradeAmount || !CheckAmountBase(amount, smbInfo))
+            if (amount < minTradeAmount || amount > maxTradeAmount) // || !CheckAmountBase(amount, smbInfo))
                 throw new OrderValidationError("Invalid Amount", OrderCmdResultCodes.IncorrectVolume);
         }
 
-        private bool CheckAmountBase(double amount, Symbol smbInfo)
-        {
-            double minAmountStep = smbInfo.TradeVolumeStep * smbInfo.ContractSize;
-            double div = amount / minAmountStep;
-            return div.E(Math.Truncate(div));
-        }
+        //private bool CheckAmountBase(double amount, Symbol smbInfo)
+        //{
+        //    double minAmountStep = smbInfo.TradeVolumeStep * smbInfo.ContractSize;
+        //    double div = amount / minAmountStep;
+        //    return div.E(Math.Round(div));
+        //}
 
         private void EnsureOrderIsPosition(OrderAccessor order)
         {
