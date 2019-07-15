@@ -19,6 +19,16 @@ BrandingText "${PRODUCT_PUBLISHER}"
 OutFile "${OUTPUT_DIR}\${SETUP_FILENAME}"
 InstallDir ${BASE_INSTDIR}
 
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${PRODUCT_PUBLISHER}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "2019 © ${PRODUCT_PUBLISHER}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${TERMINAL_NAME} and ${AGENT_NAME} installer"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${PRODUCT_BUILD}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${PRODUCT_BUILD}"
+
+VIProductVersion "${PRODUCT_BUILD}"
+VIFileVersion "${PRODUCT_BUILD}"
+
 ;--------------------------
 ; Modern interface settings
 
@@ -40,7 +50,6 @@ InstallDir ${BASE_INSTDIR}
 ; Set languages(first is default language)
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_RESERVEFILE_LANGDLL
-
 
 ;--------------------------
 ; Installation types
@@ -102,6 +111,8 @@ UninstallTerminalLabel:
     !insertmacro RegWriteTerminal
     WriteUninstaller "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
 
+    Call CreateTerminalShortcuts
+
 SkipTerminalLabel:
 
     Pop $3
@@ -157,6 +168,8 @@ UninstallAgentLabel:
     !insertmacro RegWriteAgent
     WriteUninstaller "$INSTDIR\${AGENT_NAME}\uninstall.exe"
 
+    Call CreateAgentShortcuts
+
     DetailPrint "Creating BotAgent service"
     ${InstallService} "${SERVICE_NAME}" "${SERVICE_DISPLAY_NAME}" "16" "2" "$OUTDIR\${AGENT_EXE}" 80
     ${ConfigureService} "${SERVICE_NAME}"
@@ -211,7 +224,7 @@ Section Uninstall
         
         ; Remove installed files, but leave generated
         !include Terminal.Uninstall.nsi
-        Delete "terminal.ico"
+        Call un.DeleteTerminalShortcuts
         
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
@@ -229,7 +242,7 @@ Section Uninstall
 
         ; Remove installed files, but leave generated
         !include Agent.Uninstall.nsi
-        Delete "agent.ico"
+        Call un.DeleteAgentShortcuts
 
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
@@ -414,5 +427,46 @@ Function .onSelChange
         ${EndIf}
 
     ${EndSectionManagement}
+
+FunctionEnd
+
+;--------------------------
+; Shortcuts
+
+Function CreateTerminalShortcuts
+
+    ${If} ${SectionIsSelected} ${TerminalDesktop}
+        CreateShortcut "$DESKTOP\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${TerminalStartMenu}
+        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
+    ${EndIf}
+
+FunctionEnd
+
+Function un.DeleteTerminalShortcuts
+
+    Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk"
+
+FunctionEnd
+
+Function CreateAgentShortcuts
+
+    ${If} ${SectionIsSelected} ${ConfiguratorDesktop}
+        CreateShortcut "$DESKTOP\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${ConfiguratorStartMenu}
+        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
+    ${EndIf}
+
+FunctionEnd
+
+Function un.DeleteAgentShortcuts
+
+    Delete "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk"
 
 FunctionEnd

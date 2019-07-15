@@ -5,12 +5,6 @@
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
-        SimpleSC::StopService "${Name}" 1 ${TimeOut}
-    Pop $0
-        ${If} $0 != 0
-            Abort "$(ServiceStopFailMessage) $0"
-        ${EndIf}
-
         SimpleSC::RemoveService ${Name}
         Pop $0
         ${If} $0 != 0
@@ -59,10 +53,15 @@
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
-    SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
-    Pop $0
-        ${If} $0 != 0
-            Abort "$(ServiceStopFailMessage) $0"
+        SimpleSC::ServiceIsStopped ${Name}
+        Pop $0
+        Pop $1
+        ${If} $1 == 0
+            SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+            Pop $0
+            ${If} $0 != 0
+                Abort "$(ServiceStopFailMessage) $0"
+            ${EndIf}
         ${EndIf}
     ${EndIf}
 !macroend

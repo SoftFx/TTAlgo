@@ -50,7 +50,9 @@
     !define CONFIGURATOR_SIZE 100
 !endif
 
+!define TERMINAL_EXE "TickTrader.BotTerminal.exe"
 !define AGENT_EXE "TickTrader.BotAgent.exe"
+!define CONFIGURATOR_EXE "TickTrader.BotAgent.Configurator.exe"
 
 !define SERVICE_NAME "_sfxBotAgent"
 !define SERVICE_DISPLAY_NAME "_sfxBotAgent"
@@ -63,7 +65,6 @@
 !macro UnpackTerminal
 
     File /r "${TERMINAL_BINDIR}\*.*"
-    File "${ICONS_DIR}\terminal.ico"
     ;Sleep 3000
 
 !macroend
@@ -87,7 +88,6 @@
 !macro UnpackConfigurator
 
     ;File /r "${CONFIGURATOR_BINDIR}\*.*"
-    ;File "${ICONS_DIR}\configurator.ico"
     Sleep 1000
     
 !macroend
