@@ -8,51 +8,7 @@
 
 !include "Algo.Utils.nsh"
 !include "Resources\Resources.en.nsi"
-
-;--------------------------
-; Parameters
-
-!ifndef PRODUCT_NAME
-    !define PRODUCT_NAME "TickTrader Algo"
-!endif
-
-!ifndef PRODUCT_PUBLISHER
-    !define PRODUCT_PUBLISHER "SoftFX"
-!endif
-
-!ifndef PRODUCT_BUILD
-    !define PRODUCT_BUILD "1.0"
-!endif
-
-!ifndef LICENSE_FILE
-    !define LICENSE_FILE "license.txt"
-!endif
-
-!ifndef SETUP_FILENAME
-    !define SETUP_FILENAME "Algo ${PRODUCT_BUILD}.Setup.exe"
-!endif
-
-!define BASE_NAME "TickTrader"
-!define TERMINAL_NAME "BotTerminal"
-!define AGENT_NAME "BotAgent"
-!define CONFIGURATOR_NAME "Configurator"
-
-!define REPOSITORY_DIR "AlgoRepository"
-!define OUTPUT_DIR "..\build.ouput"
-!define ICONS_DIR "..\icons"
-
-!define TERMINAL_BINDIR "..\TickTrader.BotTerminal\bin\Release\"
-!define AGENT_BINDIR "..\TickTrader.BotAgent\bin\Release\net462\publish"
-!define CONFIGURATOR_BINDIR "..\TickTrader.BotAgent.Configurator\bin\Release\"
-
-!define AGENT_EXE "TickTrader.BotAgent.exe"
-
-!define SERVICE_NAME "_sfxBotAgent"
-!define SERVICE_DISPLAY_NAME "_sfxBotAgent"
-
-!define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
-!define TERMINAL_INSTDIR "${BASE_INSTDIR}\${TERMINAL_NAME}"
-!define AGENT_INSTDIR "${BASE_INSTDIR}\${AGENT_NAME}"
+!include "Algo.Setup.nsh"
 
 ;--------------------------
 ; Main Install settings
@@ -71,8 +27,8 @@ InstallDir ${BASE_INSTDIR}
 !define MUI_ICON "${ICONS_DIR}\softfx.ico"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
-!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -85,185 +41,6 @@ InstallDir ${BASE_INSTDIR}
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
-
-Function .onInit
-
-    Call ConfigureComponents
-    Call ConfigureInstallTypes
-
-FunctionEnd
-
-;--------------------------
-; Components
-
-SectionGroup "Install BotTerminal" TerminalGroup
-
-Section "Core files" TerminalSection1
-
-    DetailPrint "Installing BotTerminal"
-
-    SetOutPath "$INSTDIR\${TERMINAL_NAME}"
-    File /r "${TERMINAL_BINDIR}\*.*"
-
-SectionEnd
-
-Section "Desktop Shortcut" TerminalSection2
-
-    DetailPrint "Adding Desktop Shortcut"
-    Sleep 500
-
-SectionEnd
-
-Section "StartMenu Shortcut" TerminalSection3
-
-    DetailPrint "Adding StartMenu Shortcut"
-    Sleep 500
-
-SectionEnd
-
-Section "Test Collection" TerminalSection4
-
-    DetailPrint "Installing Test Collection"
-    
-    SetOutPath "$INSTDIR\${TERMINAL_NAME}\${REPOSITORY_DIR}"
-    File /r "${OUTPUT_DIR}\TickTrader.Algo.TestCollection.ttalgo"
-    File /r "${OUTPUT_DIR}\TickTrader.Algo.VersionTest.ttalgo"
-
-SectionEnd
-
-SectionGroupEnd
-
-
-SectionGroup "Install BotAgent" AgentGroup
-
-Section "Core files" AgentSection1
-
-    DetailPrint "Installing BotAgent"
-
-    SetOutPath "$INSTDIR\${AGENT_NAME}"
-    File /r "${AGENT_BINDIR}\*.*"
-
-    DetailPrint "Creating BotAgent service"
-    Sleep 2000
-
-SectionEnd
-
-SectionGroup "Install Configurator" ConfiguratorGroup
-
-Section "Core files" ConfiguratorSection1
-
-    DetailPrint "Installing Configurator"
-    
-    SetOutPath "$INSTDIR\${AGENT_NAME}\${CONFIGURATOR_NAME}"
-    File /r "${CONFIGURATOR_BINDIR}\*.*"
-
-SectionEnd
-
-Section "Desktop Shortcut" ConfiguratorSection2
-
-    DetailPrint "Adding Desktop Shortcut"
-    Sleep 500
-
-SectionEnd
-
-Section "StartMenu Shortcut" ConfiguratorSection3
-
-    DetailPrint "Adding StartMenu Shortcut"
-    Sleep 500
-
-SectionEnd
-
-SectionGroupEnd
-
-SectionGroupEnd
-
-
-Section - FinishSection
-
-SectionEnd
-
-Function .onSelChange
-
-    ${if} $0 == ${TerminalGroup}
-        # MessageBox MB_OK "Terminal Group"
-        ${If} ${SectionIsSelected} ${TerminalSection1}
-            ${UnselectSection} ${TerminalSection1}
-            ${DisableSection} ${TerminalSection2}
-            ${DisableSection} ${TerminalSection3}
-            ${DisableSection} ${TerminalSection4}
-        ${Else}
-            ${SelectSection} ${TerminalSection1}
-            ${EnableSection} ${TerminalSection2}
-            ${EnableSection} ${TerminalSection3}
-            ${EnableSection} ${TerminalSection4}
-        ${EndIf}
-    ${EndIf}
-
-    ${if} $0 == ${AgentGroup}
-        # MessageBox MB_OK "Agent Group"
-        ${If} ${SectionIsSelected} ${AgentSection1}
-            ${UnselectSection} ${AgentSection1}
-            ${UnselectSection} ${ConfiguratorSection1}
-            ${ReadOnlySection} ${ConfiguratorGroup}
-            ${DisableSection} ${ConfiguratorSection2}
-            ${DisableSection} ${ConfiguratorSection3}
-        ${Else}
-            ${SelectSection} ${AgentSection1}
-            ${SelectSection} ${ConfiguratorSection1}
-            ${EnableSection} ${ConfiguratorGroup}
-            ${EnableSection} ${ConfiguratorSection2}
-            ${EnableSection} ${ConfiguratorSection3}
-        ${EndIf}
-    ${EndIf}
-
-    ${if} $0 == ${ConfiguratorGroup}
-        # MessageBox MB_OK "Configurator Group"
-        ${If} ${SectionIsSelected} ${ConfiguratorSection1}
-            ${UnselectSection} ${ConfiguratorSection1}
-            ${DisableSection} ${ConfiguratorSection2}
-            ${DisableSection} ${ConfiguratorSection3}
-        ${Else}
-            ${SelectSection} ${ConfiguratorSection1}
-            ${EnableSection} ${ConfiguratorSection2}
-            ${EnableSection} ${ConfiguratorSection3}
-        ${EndIf}
-    ${EndIf}
-
-FunctionEnd
-
-
-Function ConfigureComponents
-
-    ${ReadOnlySection} ${TerminalSection1}
-    ${ReadOnlySection} ${AgentSection1}
-    ${ReadOnlySection} ${ConfiguratorSection1}
-
-    ${ExpandSection} ${TerminalGroup}
-    ${ExpandSection} ${AgentGroup}
-    ${ExpandSection} ${ConfiguratorGroup}
-
-FunctionEnd
-
-;--------------------------
-; Components description
-
-!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-
-    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalGroup} $(TerminalSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection1} $(TerminalSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection2} $(TerminalSection2Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection3} $(TerminalSection3Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalSection4} $(TerminalSection4Description)
-
-    !insertmacro MUI_DESCRIPTION_TEXT ${AgentGroup} $(AgentSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${AgentSection1} $(AgentSection1Description)
-
-    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorGroup} $(ConfiguratorSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorSection1} $(ConfiguratorSection1Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorSection2} $(ConfiguratorSection2Description)
-    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorSection3} $(ConfiguratorSection3Description)
-
-!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------
 ; Installation types
@@ -286,7 +63,10 @@ InstType Full
 !define AgentInstallBitFlag 8
 !define FullInstallBitFlag 16
 
-Function ConfigureInstallTypes
+;--------------------------
+; Init
+
+Function .onInit
 
     InstTypeSetText ${StandardInstall} $(StandardInstallText)
     InstTypeSetText ${MinimalInstall} $(MinimalInstallText)
@@ -294,35 +74,339 @@ Function ConfigureInstallTypes
     InstTypeSetText ${AgentInstall} $(AgentInstallText)
     InstTypeSetText ${FullInstall} $(FullInstallText)
 
+    Call ConfigureComponents
+    Call ConfigureInstallTypes
+
+FunctionEnd
+
+;--------------------------
+; Components
+
+SectionGroup "Install BotTerminal" TerminalGroup
+
+Section "Core files" TerminalCore
+
+    Push $3
+
+    DetailPrint "Installing BotTerminal"
+
+    SetOutPath "$INSTDIR\${TERMINAL_NAME}"
+    ReadRegStr $3 HKLM "${REG_TERMINAL_KEY}" "Path"
+    ${If} $OUTDIR == $3
+        MessageBox MB_YESNO "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
+UninstallTerminalLabel:
+        !insertmacro UninstallApp $OUTDIR
+    ${EndIf}
+
+    !insertmacro UnpackTerminal
+    !insertmacro RegWriteTerminal
+    WriteUninstaller "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
+
+SkipTerminalLabel:
+
+    Pop $3
+
+SectionEnd
+
+Section "Desktop Shortcut" TerminalDesktop
+
+    DetailPrint "Adding Desktop Shortcut"
+    Sleep 500
+
+SectionEnd
+
+Section "StartMenu Shortcut" TerminalStartMenu
+
+    DetailPrint "Adding StartMenu Shortcut"
+    Sleep 500
+
+SectionEnd
+
+Section "Test Collection" TerminalTestCollection
+
+    DetailPrint "Installing Test Collection"
+    
+    SetOutPath "$INSTDIR\${TERMINAL_NAME}\${REPOSITORY_DIR}"
+    !insertmacro UnpackTestCollection
+
+    Sleep 1500
+
+SectionEnd
+
+SectionGroupEnd
+
+
+SectionGroup "Install BotAgent" AgentGroup
+
+Section "Core files" AgentCore
+
+    Push $3
+
+    DetailPrint "Installing BotAgent"
+
+    SetOutPath "$INSTDIR\${AGENT_NAME}"
+    ReadRegStr $3 HKLM "${REG_AGENT_KEY}" "Path"
+    ${If} $OUTDIR == $3
+        MessageBox MB_YESNO "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
+UninstallAgentLabel:
+        !insertmacro UninstallApp $OUTDIR
+    ${EndIf}
+
+    !insertmacro UnpackAgent
+    !insertmacro RegWriteAgent
+    WriteUninstaller "$INSTDIR\${AGENT_NAME}\uninstall.exe"
+
+    DetailPrint "Creating BotAgent service"
+    Sleep 2000
+
+SkipAgentLabel:
+
+    Pop $3
+
+SectionEnd
+
+SectionGroup "Install Configurator" ConfiguratorGroup
+
+Section "Core files" ConfiguratorCore
+
+    DetailPrint "Installing Configurator"
+    
+    SetOutPath "$INSTDIR\${AGENT_NAME}\${CONFIGURATOR_NAME}"
+    !insertmacro UnpackConfigurator
+
+SectionEnd
+
+Section "Desktop Shortcut" ConfiguratorDesktop
+
+    DetailPrint "Adding Desktop Shortcut"
+    Sleep 500
+
+SectionEnd
+
+Section "StartMenu Shortcut" ConfiguratorStartMenu
+
+    DetailPrint "Adding StartMenu Shortcut"
+    Sleep 5000
+
+SectionEnd
+
+SectionGroupEnd
+
+SectionGroupEnd
+
+
+Section - FinishSection
+
+SectionEnd
+
+Section Uninstall
+
+    Push $3
+
+    ReadRegStr $3 HKLM "${REG_TERMINAL_KEY}" "Path"
+    ${If} $3 == $INSTDIR
+        
+        ; Remove installed files, but leave generated
+        !include Terminal.Uninstall.nsi
+        Delete "terminal.ico"
+        
+        ; Delete self
+        Delete "$INSTDIR\uninstall.exe"
+        
+        ; Remove registry entries
+        !insertmacro RegDeleteTerminal
+
+    ${EndIf}
+
+    ReadRegStr $3 HKLM "${REG_AGENT_KEY}" "Path"
+    ${If} $3 == $INSTDIR
+        
+        ; Remove installed files, but leave generated
+        !include Agent.Uninstall.nsi
+        Delete "agent.ico"
+
+        ; Delete self
+        Delete "$INSTDIR\uninstall.exe"
+
+        ; Remove registry entries
+        !insertmacro RegDeleteAgent
+
+    ${EndIf}
+
+    Pop $3
+
+SectionEnd
+
+;--------------------------
+; Components description
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+
+    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalGroup} $(TerminalSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalCore} $(TerminalSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalDesktop} $(TerminalSection2Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalStartMenu} $(TerminalSection3Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${TerminalTestCollection} $(TerminalSection4Description)
+
+    !insertmacro MUI_DESCRIPTION_TEXT ${AgentGroup} $(AgentSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${AgentCore} $(AgentSection1Description)
+
+    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorGroup} $(ConfiguratorSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorCore} $(ConfiguratorSection1Description)
+    !insertmacro MUI_DESCRIPTION_TEXT ${ConfiguratorDesktop} $(ConfiguratorSection2Description)
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+;--------------------------
+; Components configuration
+
+Function ConfigureComponents
+
+    ${BeginSectionManagement}
+
+        ${ReadOnlySection} ${TerminalCore}
+        ${ReadOnlySection} ${AgentCore}
+        ${ReadOnlySection} ${ConfiguratorCore}
+
+        ${ExpandSection} ${TerminalGroup}
+        ${ExpandSection} ${AgentGroup}
+        ${ExpandSection} ${ConfiguratorGroup}
+
+    ${EndSectionManagement}
+
+    ; SectionSetSize ${TerminalCore} ${TERMINAL_SIZE}
+    ; SectionSetSize ${AgentCore} ${AGENT_SIZE}
+    ; SectionSetSize ${ConfiguratorCore} ${CONFIGURATOR_SIZE}
+
+FunctionEnd
+
+Function ConfigureInstallTypes
+
     Push $0
 
     StrCpy $0 ${FullInstallBitFlag}
     ; 010000b
-    SectionSetInstTypes ${TerminalSection4} $0
+    SectionSetInstTypes ${TerminalTestCollection} $0
 
     IntOp $0 $0 | ${StandardInstallBitFlag}
     IntOp $0 $0 | ${TerminalInstallBitFlag}
     ; 010101b
-    SectionSetInstTypes ${TerminalSection2} $0
-    SectionSetInstTypes ${TerminalSection3} $0
+    SectionSetInstTypes ${TerminalDesktop} $0
+    SectionSetInstTypes ${TerminalStartMenu} $0
 
     IntOp $0 $0 | ${MinimalInstallBitFlag}
     ; 010111b
-    SectionSetInstTypes ${TerminalSection1} $0
+    SectionSetInstTypes ${TerminalCore} $0
 
     IntOp $0 $0 ^ ${TerminalInstallBitFlag}
     IntOp $0 $0 | ${AgentInstallBitFlag}
     ; 011011b
-    SectionSetInstTypes ${AgentSection1} $0
-    SectionSetInstTypes ${ConfiguratorSection1} $0
+    SectionSetInstTypes ${AgentCore} $0
+    SectionSetInstTypes ${ConfiguratorCore} $0
 
     IntOp $0 $0 ^ ${MinimalInstallBitFlag}
     ; 011001b
-    SectionSetInstTypes ${ConfiguratorSection2} $0
-    SectionSetInstTypes ${ConfiguratorSection3} $0
+    SectionSetInstTypes ${ConfiguratorDesktop} $0
+    SectionSetInstTypes ${ConfiguratorStartMenu} $0
 
     Pop $0
 
     SetCurInstType ${StandardInstall}
+
+FunctionEnd
+
+!macro DisableTerminalSections
+    ${DisableSection} ${TerminalDesktop}
+    ${DisableSection} ${TerminalStartMenu}
+    ${DisableSection} ${TerminalTestCollection}
+!macroend
+
+!macro EnableTerminalSections
+    ${EnableSection} ${TerminalDesktop}
+    ${EnableSection} ${TerminalStartMenu}
+    ${EnableSection} ${TerminalTestCollection}
+!macroend
+
+!macro DisableConfiguratorSections
+    ${DisableSection} ${ConfiguratorDesktop}
+    ${DisableSection} ${ConfiguratorStartMenu}
+!macroend
+
+!macro EnableConfiguratorSections
+    ${EnableSection} ${ConfiguratorDesktop}
+    ${EnableSection} ${ConfiguratorStartMenu}
+!macroend
+
+!macro DisableAgentSections
+    ${ReadOnlySection} ${ConfiguratorGroup}
+    !insertmacro DisableConfiguratorSections
+!macroend
+
+!macro EnableAgentSections
+    ${EnableSection} ${ConfiguratorGroup}
+    !insertmacro EnableConfiguratorSections
+!macroend
+
+Function .onSelChange
+    
+    ${BeginSectionManagement}
+
+        ${if} $0 == ${TerminalGroup}
+            ; MessageBox MB_OK "Terminal Group"
+            ${If} ${SectionIsSelected} ${TerminalCore}
+                ${UnselectSection} ${TerminalCore}
+                !insertmacro DisableTerminalSections
+            ${Else}
+                ${SelectSection} ${TerminalCore}
+                !insertmacro EnableTerminalSections
+            ${EndIf}
+        ${EndIf}
+
+        ${if} $0 == ${AgentGroup}
+            ; MessageBox MB_OK "Agent Group"
+            ${If} ${SectionIsSelected} ${AgentCore}
+                ${UnselectSection} ${AgentCore}
+                ${UnselectSection} ${ConfiguratorCore}
+                !insertmacro DisableAgentSections
+            ${Else}
+                ${SelectSection} ${ConfiguratorCore}
+                ${SelectSection} ${AgentCore}
+                ${SelectSection} ${ConfiguratorCore}
+                !insertmacro EnableAgentSections
+            ${EndIf}
+        ${EndIf}
+
+        ${if} $0 == ${ConfiguratorGroup}
+            ; MessageBox MB_OK "Configurator Group"
+            ${If} ${SectionIsSelected} ${ConfiguratorCore}
+                ${UnselectSection} ${ConfiguratorCore}
+                !insertmacro DisableConfiguratorSections
+            ${Else}
+                ${SelectSection} ${ConfiguratorCore}
+                !insertmacro EnableConfiguratorSections
+            ${EndIf}
+        ${EndIf}
+
+        ${If} $0 == -1
+            ; MessageBox MB_OK "Installation type change"
+            ${If} ${SectionIsSelected} ${TerminalCore}
+                !insertmacro EnableTerminalSections
+            ${Else}
+                !insertmacro DisableTerminalSections
+            ${EndIf}
+            ${If} ${SectionIsSelected} ${AgentCore}
+                !insertmacro EnableAgentSections
+            ${Else}
+                !insertmacro DisableAgentSections
+            ${EndIf}
+            ${If} ${SectionIsSelected} ${ConfiguratorCore}
+                !insertmacro EnableConfiguratorSections
+            ${Else}
+                !insertmacro DisableConfiguratorSections
+            ${EndIf}
+
+        ${EndIf}
+
+    ${EndSectionManagement}
 
 FunctionEnd

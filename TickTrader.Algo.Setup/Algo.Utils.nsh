@@ -72,12 +72,12 @@
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
-    SimpleSC::ServiceIsStopped ${Name}
-    Pop $0
-    Pop $1
-    ${If} $1 == 0
-            SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+        SimpleSC::ServiceIsStopped ${Name}
         Pop $0
+        Pop $1
+        ${If} $1 == 0
+            SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+            Pop $0
             ${If} $0 != 0
                 Abort "$(ServiceStopFailMessage) $0"
             ${EndIf}
@@ -106,56 +106,64 @@
 ;-----Functions to manage sections-----
 
 !define SECTION_ENABLE 0xFFFFFFEF # remove read-only flag
+!define GROUP_REMOVE 0xFFFFFFFD # remove group flag
  
 !macro SecSelect SecId
-    Push $0
-    SectionGetFlags ${SecId} $0
-    IntOp $0 $0 | ${SF_SELECTED}
-    SectionSetFlags ${SecId} $0
-    Pop $0
+    Push $7
+    SectionGetFlags ${SecId} $7
+    IntOp $7 $7 | ${SF_SELECTED}
+    SectionSetFlags ${SecId} $7
+    Pop $7
 !macroend
 
 !macro SecUnselect SecId
-    Push $0
-    SectionGetFlags ${SecId} $0
-    IntOp $0 $0 & ${SECTION_OFF}
-    SectionSetFlags ${SecId} $0
-    Pop $0
+    Push $7
+    SectionGetFlags ${SecId} $7
+    IntOp $7 $7 & ${SECTION_OFF}
+    SectionSetFlags ${SecId} $7
+    Pop $7
 !macroend
 
 !macro SecRO SecId
-    Push $0
-    SectionGetFlags ${SecId} $0
-    IntOp $0 $0 | ${SF_RO}
-    SectionSetFlags ${SecId} $0
-    Pop $0
+    Push $7
+    SectionGetFlags ${SecId} $7
+    IntOp $7 $7 | ${SF_RO}
+    SectionSetFlags ${SecId} $7
+    Pop $7
 !macroend
 
 !macro SecDisable SecId
-    Push $0
-    SectionGetFlags ${SecId} $0
-    IntOp $0 $0 & ${SECTION_OFF}
-    IntOp $0 $0 | ${SF_RO}
-    SectionSetFlags ${SecId} $0
-    Pop $0
+    Push $7
+    SectionGetFlags ${SecId} $7
+    IntOp $7 $7 & ${SECTION_OFF}
+    IntOp $7 $7 | ${SF_RO}
+    SectionSetFlags ${SecId} $7
+    Pop $7
 !macroend
 
 !macro SecRemoveRO SecId
-    Push $0
-    SectionGetFlags ${SecId} $0
-    IntOp $0 $0 & ${SECTION_ENABLE}
-    SectionSetFlags ${SecId} $0
-    Pop $0
+    Push $7
+    SectionGetFlags ${SecId} $7
+    IntOp $7 $7 & ${SECTION_ENABLE}
+    SectionSetFlags ${SecId} $7
+    Pop $7
 !macroend
 
 !macro SecExpand SecId
-    Push $0
-    SectionGetFlags ${SecId} $0
-    IntOp $0 $0 | ${SF_EXPAND}
-    SectionSetFlags ${SecId} $0
-    Pop $0
+    Push $7
+    SectionGetFlags ${SecId} $7
+    IntOp $7 $7 | ${SF_EXPAND}
+    SectionSetFlags ${SecId} $7
+    Pop $7
 !macroend
- 
+
+!macro SecManageBegin
+    Push $7
+!macroend
+
+!macro SecManageEnd
+    Pop $7
+!macroend
 
 !define SelectSection '!insertmacro SecSelect'
 !define UnselectSection '!insertmacro SecUnselect'
@@ -163,5 +171,7 @@
 !define DisableSection '!insertmacro SecDisable'
 !define EnableSection '!insertmacro SecRemoveRO'
 !define ExpandSection '!insertmacro SecExpand'
+!define BeginSectionManagement '!insertmacro SecManageBegin'
+!define EndSectionManagement '!insertmacro SecManageEnd'
 
 ;---END Functions to manage sections---
