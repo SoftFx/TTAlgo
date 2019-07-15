@@ -97,7 +97,7 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
         {
-            return _feedSeries.Values.Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
+            return _feedSeries.Values.Where(s => s.Current != null).Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
         }
 
         List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
