@@ -56,9 +56,9 @@
     </if>
 
     <call target="CreatePackages" />
-    <call target="AlgoInstaller" />
     <call target="CreateZipArtifacts" />
 
+    <call target="AlgoInstaller" />
     <call target="CreateInstallers" />
 
   </target>
@@ -329,40 +329,10 @@
       <arg value="OutFile=${SetupDir}\Configurator.Uninstall.nsi" />
     </exec>
 
-    <property name="CalcSize.Dir" value="${TerminalBinDir}" />
-    <call target="CalcSize" />
-    <property name="TerminalSize" value="${CalcSize.Result}" />
-
-    <property name="CalcSize.Dir" value="${AgentBinDir}" />
-    <call target="CalcSize" />
-    <property name="AgentSize" value="${CalcSize.Result}" />
-
-    <property name="CalcSize.Dir" value="${ConfiguratorBinDir}" />
-    <call target="CalcSize" />
-    <property name="ConfiguratorSize" value="${CalcSize.Result}" />
-
     <exec program="${NSIS_Path}\makensis.exe" >
       <arg value="/DPRODUCT_BUILD=${Build}" />
-      <arg value="/DTERMINAL_SIZE=${TerminalSize}" />
-      <arg value="/DAGENT_SIZE=${AgentSize}" />
-      <arg value="/DCONFIGURATOR_SIZE=${ConfiguratorSize}" />
       <arg value="${SourcesDir}TickTrader.Algo.Setup\Algo.Setup.nsi" />
     </exec>
-
-  </target>
-
-  <target name="CalcSize">
-
-    <property name="CalcSize.Result" value="-1" />
-    <property name="CalcSize.TmpFile" value="${SourcesDir}CalcSize.tmp" />
-    <exec program="powershell" output="${CalcSize.TmpFile}">
-      <arg value="-noprofile" />
-      <arg value="-command" />
-      <arg value="[int] ((ls ${CalcSize.Dir} -r | measure -s Length).Sum / 1024)" />
-    </exec>
-    <loadfile file="${CalcSize.TmpFile}" property="CalcSize.Result" />
-    <property name="CalcSize.Result" value="${string::trim(CalcSize.Result)}" />
-    <delete file="${CalcSize.TmpFile}" />
 
   </target>
 

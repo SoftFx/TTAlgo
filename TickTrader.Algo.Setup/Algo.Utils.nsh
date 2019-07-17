@@ -57,7 +57,7 @@
         Pop $0
         Pop $1
         ${If} $1 == 0
-            SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+            SimpleSC::StopService "${Name}" 1 ${TimeOut}
             Pop $0
             ${If} $0 != 0
                 Abort "$(ServiceStopFailMessage) $0"
@@ -74,7 +74,7 @@
         Pop $0
         Pop $1
         ${If} $1 == 0
-            SimpleSC::StopService "${SERVICE_NAME}" 1 ${TimeOut}
+            SimpleSC::StopService "${Name}" 1 ${TimeOut}
             Pop $0
             ${If} $0 != 0
                 Abort "$(ServiceStopFailMessage) $0"

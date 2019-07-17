@@ -36,6 +36,9 @@ VIFileVersion "${PRODUCT_BUILD}"
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_ICON "${ICONS_DIR}\softfx.ico"
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_UNFINISHPAGE_NOAUTOCLOSE
+
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryOnLeave
@@ -124,9 +127,8 @@ UninstallTerminalLabel:
 
     !insertmacro UnpackTerminal
     !insertmacro RegWriteTerminal
+    !insertmacro CreateTerminalShortcuts
     WriteUninstaller "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
-
-    Call CreateTerminalShortcuts
 
 SkipTerminalLabel:
 
@@ -136,15 +138,9 @@ SectionEnd
 
 Section "Desktop Shortcut" TerminalDesktop
 
-    DetailPrint "Adding Desktop Shortcut"
-    Sleep 500
-
 SectionEnd
 
 Section "StartMenu Shortcut" TerminalStartMenu
-
-    DetailPrint "Adding StartMenu Shortcut"
-    Sleep 500
 
 SectionEnd
 
@@ -154,8 +150,6 @@ Section "Test Collection" TerminalTestCollection
     
     SetOutPath "$INSTDIR\${TERMINAL_NAME}\${REPOSITORY_DIR}"
     !insertmacro UnpackTestCollection
-
-    Sleep 1500
 
 SectionEnd
 
@@ -181,13 +175,14 @@ UninstallAgentLabel:
 
     !insertmacro UnpackAgent
     !insertmacro RegWriteAgent
+    !insertmacro CreateConfiguratorShortcuts
     WriteUninstaller "$INSTDIR\${AGENT_NAME}\uninstall.exe"
-
-    Call CreateAgentShortcuts
 
     DetailPrint "Creating BotAgent service"
     ${InstallService} $AgentServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$OUTDIR\${AGENT_EXE}" 80
-    ${ConfigureService} $AgentServiceId
+    ${ConfigureService} $AgentServiceId    
+
+    DetailPrint "Starting BotAgent service"
     ${StartService} $AgentServiceId 30
 
 SkipAgentLabel:
@@ -200,24 +195,13 @@ SectionGroup "Install Configurator" ConfiguratorGroup
 
 Section "Core files" ConfiguratorCore
 
-    DetailPrint "Installing Configurator"
-    
-    SetOutPath "$INSTDIR\${AGENT_NAME}\${CONFIGURATOR_NAME}"
-    !insertmacro UnpackConfigurator
-
 SectionEnd
 
 Section "Desktop Shortcut" ConfiguratorDesktop
 
-    DetailPrint "Adding Desktop Shortcut"
-    Sleep 500
-
 SectionEnd
 
 Section "StartMenu Shortcut" ConfiguratorStartMenu
-
-    DetailPrint "Adding StartMenu Shortcut"
-    Sleep 5000
 
 SectionEnd
 
@@ -232,14 +216,12 @@ SectionEnd
 
 Section Uninstall
 
-    Push $3
-
     ${FindTerminalId} $INSTDIR
     ${If} $TerminalId != ${EMPTY_APPID}
         
         ; Remove installed files, but leave generated
-        !include Terminal.Uninstall.nsi
-        Call un.DeleteTerminalShortcuts
+        !insertmacro DeleteTerminalFiles
+        !insertmacro DeleteTerminalShortcuts
         
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
@@ -258,8 +240,8 @@ Section Uninstall
         ${UninstallService} $AgentServiceId 80
 
         ; Remove installed files, but leave generated
-        !include Agent.Uninstall.nsi
-        Call un.DeleteAgentShortcuts
+        !insertmacro DeleteConfiguratorShortcuts
+        !insertmacro DeleteAgentFiles
 
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
@@ -268,8 +250,6 @@ Section Uninstall
         !insertmacro RegDeleteAgent
 
     ${EndIf}
-
-    Pop $3
 
 SectionEnd
 
@@ -303,6 +283,7 @@ Function ConfigureComponents
         ${ReadOnlySection} ${TerminalCore}
         ${ReadOnlySection} ${AgentCore}
         ${ReadOnlySection} ${ConfiguratorCore}
+        ${ReadOnlySection} ${ConfiguratorGroup} ; configurator is always installed with agent
 
         ${ExpandSection} ${TerminalGroup}
         ${ExpandSection} ${AgentGroup}
@@ -310,9 +291,8 @@ Function ConfigureComponents
 
     ${EndSectionManagement}
 
-    ; SectionSetSize ${TerminalCore} ${TERMINAL_SIZE}
-    ; SectionSetSize ${AgentCore} ${AGENT_SIZE}
-    ; SectionSetSize ${ConfiguratorCore} ${CONFIGURATOR_SIZE}
+    SectionGetSize ${TerminalCore} $TerminalSize
+    SectionGetSize ${AgentCore} $AgentSize
 
 FunctionEnd
 
@@ -374,12 +354,12 @@ FunctionEnd
 !macroend
 
 !macro DisableAgentSections
-    ${ReadOnlySection} ${ConfiguratorGroup}
+    ; ${ReadOnlySection} ${ConfiguratorGroup}
     !insertmacro DisableConfiguratorSections
 !macroend
 
 !macro EnableAgentSections
-    ${EnableSection} ${ConfiguratorGroup}
+    ; ${EnableSection} ${ConfiguratorGroup}
     !insertmacro EnableConfiguratorSections
 !macroend
 
@@ -448,51 +428,6 @@ Function .onSelChange
 FunctionEnd
 
 ;--------------------------
-; Shortcuts
-
-Function CreateTerminalShortcuts
-
-    ${If} ${SectionIsSelected} ${TerminalDesktop}
-        CreateShortcut "$DESKTOP\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
-    ${EndIf}
-
-    ${If} ${SectionIsSelected} ${TerminalStartMenu}
-        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
-        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
-    ${EndIf}
-
-FunctionEnd
-
-Function un.DeleteTerminalShortcuts
-
-    Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk"
-    RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
-    RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\"
-
-FunctionEnd
-
-Function CreateAgentShortcuts
-
-    ${If} ${SectionIsSelected} ${ConfiguratorDesktop}
-        CreateShortcut "$DESKTOP\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
-    ${EndIf}
-
-    ${If} ${SectionIsSelected} ${ConfiguratorStartMenu}
-        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId"
-        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
-    ${EndIf}
-
-FunctionEnd
-
-Function un.DeleteAgentShortcuts
-
-    Delete "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk"
-    RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\"
-    RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\"
-
-FunctionEnd
-
-;--------------------------
 ; Callbacks
 
 Function DirectoryOnLeave
@@ -508,12 +443,32 @@ Function DirectoryOnLeave
     ${EndIf}
     !insertmacro InitAgentServiceId
 
-    MessageBox MB_OK "Terminal: $TerminalId; Agent: $AgentId"
-
 FunctionEnd
 
 Function ComponentsOnLeave
 
-    MessageBox MB_OK "DirectoryOnLeave"
+    ${If} ${SectionIsSelected} ${TerminalDesktop}
+        StrCpy $TerminalDesktopSelected 1
+    ${Else}
+        StrCpy $TerminalDesktopSelected 0
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${TerminalStartMenu}
+        StrCpy $TerminalStartMenuSelected 1
+    ${Else}
+        StrCpy $TerminalStartMenuSelected 0
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${ConfiguratorDesktop}
+        StrCpy $ConfiguratorDesktopSelected 1
+    ${Else}
+        StrCpy $ConfiguratorDesktopSelected 0
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${ConfiguratorStartMenu}
+        StrCpy $ConfiguratorStartMenuSelected 1
+    ${Else}
+        StrCpy $ConfiguratorStartMenuSelected 0
+    ${EndIf}
 
 FunctionEnd

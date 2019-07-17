@@ -1,3 +1,5 @@
+;!define DEBUG
+
 ;--------------------------
 ; Parameters
 
@@ -38,18 +40,6 @@
 !define AGENT_BINDIR "..\TickTrader.BotAgent\bin\Release\net462\publish"
 !define CONFIGURATOR_BINDIR "..\TickTrader.BotAgent.Configurator\bin\Release\"
 
-!ifndef TERMINAL_SIZE
-    !define TERMINAL_SIZE 100
-!endif
-
-!ifndef AGENT_SIZE
-    !define AGENT_SIZE 100
-!endif
-
-!ifndef CONFIGURATOR_SIZE
-    !define CONFIGURATOR_SIZE 100
-!endif
-
 !define TERMINAL_EXE "TickTrader.BotTerminal.exe"
 !define AGENT_EXE "TickTrader.BotAgent.exe"
 !define CONFIGURATOR_EXE "TickTrader.BotAgent.Configurator.exe"
@@ -66,47 +56,143 @@ var TerminalId
 var AgentId
 var AgentServiceId
 
-var TerminalCoreInstalled
-var TerminalDesktopInstalled
-var TerminalStartMenuInstalled
-var TerminalTestCollectionInstalled
+var TerminalDesktopSelected
+var TerminalStartMenuSelected
 
-var AgentCoreInstalled
-var ConfiguratorCoreInstalled
-var ConfiguratorDesktopInstalled
-var ConfiguratorStartMenuInstalled
+var ConfiguratorDesktopSelected
+var ConfiguratorStartMenuSelected
+
+var TerminalSize
+var AgentSize
 
 ;--------------------------
 ; Components files
 
 !macro UnpackTerminal
 
+!ifdef DEBUG
+    Sleep 3000
+    File "${TERMINAL_BINDIR}\${TERMINAL_EXE}"
+!else
     File /r "${TERMINAL_BINDIR}\*.*"
-    ;Sleep 3000
+!endif
+    File "${ICONS_DIR}\terminal.ico"
+
+!macroend
+
+!macro DeleteTerminalFiles
+
+!ifdef DEBUG
+    Delete "$INSTDIR\${TERMINAL_EXE}"
+!else
+    !include Terminal.Uninstall.nsi
+!endif
+    Delete "$INSTDIR\terminal.ico"
 
 !macroend
 
 !macro UnpackTestCollection
 
-    ;File /r "${OUTPUT_DIR}\TickTrader.Algo.TestCollection.ttalgo"
-    ;File /r "${OUTPUT_DIR}\TickTrader.Algo.VersionTest.ttalgo"
-    Sleep 1500
+    File /r "${OUTPUT_DIR}\TickTrader.Algo.TestCollection.ttalgo"
+    File /r "${OUTPUT_DIR}\TickTrader.Algo.VersionTest.ttalgo"
     
 !macroend
 
 !macro UnpackAgent
 
+!ifdef DEBUG
+    Sleep 5000
+    File "${AGENT_BINDIR}\${AGENT_EXE}"
+!else
     File /r "${AGENT_BINDIR}\*.*"
+!endif
     File "${ICONS_DIR}\agent.ico"
-    ;Sleep 5000
+
+!macroend
+
+!macro DeleteAgentFiles
+
+!ifdef DEBUG
+    Delete "$INSTDIR\${AGENT_EXE}"
+!else
+    !include Agent.Uninstall.nsi
+!endif
+    Delete "$INSTDIR\agent.ico"
 
 !macroend
 
 !macro UnpackConfigurator
 
-    ;File /r "${CONFIGURATOR_BINDIR}\*.*"
-    Sleep 1000
+!ifdef DEBUG
+    Sleep 1500
+    File "${CONFIGURATOR_BINDIR}\${CONFIGURATOR_EXE}"
+!else
+    File /r "${CONFIGURATOR_BINDIR}\*.*"
+!endif
+    File "${ICONS_DIR}\configurator.ico"
     
+!macroend
+
+!macro DeleteConfiguratorFiles
+
+!ifdef DEBUG
+    Delete "$INSTDIR\${CONFIGURATOR_EXE}"
+!else
+    !include Configurator.Uninstall.nsi
+!endif
+    Delete "$INSTDIR\configurator.ico"
+
+!macroend
+
+;--------------------------
+; Shortcuts
+
+!macro CreateTerminalShortcuts
+
+    ${If} $TerminalDesktopSelected == 1
+        DetailPrint "Adding Desktop Shortcut"
+        CreateShortcut "$DESKTOP\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
+    ${EndIf}
+
+    ${If} TerminalStartMenuSelected == 1
+        DetailPrint "Adding StartMenu Shortcut"
+        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
+    ${EndIf}
+
+!macroend
+
+!macro DeleteTerminalShortcuts
+
+    Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\"
+
+!macroend
+
+!macro CreateConfiguratorShortcuts
+
+    ${If} $ConfiguratorDesktopSelected == 1
+        DetailPrint "Adding Desktop Shortcut"
+        CreateShortcut "$DESKTOP\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
+    ${EndIf}
+
+    ${If} $ConfiguratorStartMenuSelected == 1
+        DetailPrint "Adding StartMenu Shortcut"
+        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
+    ${EndIf}
+
+!macroend
+
+!macro DeleteConfiguratorShortcuts
+
+    Delete "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\"
+
 !macroend
 
 ;--------------------------
@@ -123,6 +209,7 @@ var ConfiguratorStartMenuInstalled
 
 !define REG_PATH_KEY "Path"
 !define REG_VERSION_KEY "Version"
+!define REG_SERVICE_NAME "ServiceName"
 
 
 !macro RegWriteTerminal
@@ -141,7 +228,7 @@ var ConfiguratorStartMenuInstalled
     WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "DisplayVersion" "${PRODUCT_BUILD}"
     WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "NoModify" "1"
     WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "NoRepair" "1"
-    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "EstimatedSize" "${TERMINAL_SIZE}"
+    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "EstimatedSize" "$TerminalSize"
 
 !macroend
 
@@ -156,6 +243,7 @@ var ConfiguratorStartMenuInstalled
 
     WriteRegStr HKLM "${REG_AGENT_KEY}\$AgentId" "${REG_PATH_KEY}" "$INSTDIR\${AGENT_NAME}"
     WriteRegStr HKLM "${REG_AGENT_KEY}\$AgentId" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
+    WriteRegStr HKLM "${REG_AGENT_KEY}\$AgentId" "${REG_SERVICE_NAME}" "$AgentServiceId"
 
     WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "DisplayName" "${BASE_NAME} ${AGENT_NAME}"
     WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "UninstallString" "$INSTDIR\${AGENT_NAME}\uninstall.exe"
@@ -168,7 +256,7 @@ var ConfiguratorStartMenuInstalled
     WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "DisplayVersion" "${PRODUCT_BUILD}"
     WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "NoModify" "1"
     WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "NoRepair" "1"
-    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "EstimatedSize" "${AGENT_SIZE}"
+    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "EstimatedSize" "$AgentSize"
 
 !macroend
 
