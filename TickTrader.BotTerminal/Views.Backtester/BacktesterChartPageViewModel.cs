@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Axes;
@@ -20,7 +21,7 @@ using static TickTrader.BotTerminal.TransactionReport;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterChartPageViewModel : ObservableObject, IPluginDataChartModel
+    internal class BacktesterChartPageViewModel : Page, IPluginDataChartModel
     {
         private ChartBarVectorWithMarkers _barVector;
         private OhlcRenderableSeriesViewModel _mainSeries;
@@ -34,6 +35,8 @@ namespace TickTrader.BotTerminal
 
         public BacktesterChartPageViewModel()
         {
+            DisplayName = "Graph";
+
             _mainSeries = new OhlcRenderableSeriesViewModel();
             _mainSeries.StyleKey = "BarChart_OhlcStyle";
             
@@ -269,7 +272,7 @@ namespace TickTrader.BotTerminal
         ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
         bool IExecStateObservable.IsStarted => true;
 
-        event Action IExecStateObservable.StartEvent { add { } remove { } }
+        event System.Action IExecStateObservable.StartEvent { add { } remove { } }
         event AsyncEventHandler IExecStateObservable.StopEvent { add { } remove { } }
 
 

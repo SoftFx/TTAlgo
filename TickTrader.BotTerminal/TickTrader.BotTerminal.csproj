@@ -321,6 +321,7 @@
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Infrustructure\Page.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
     <Compile Include="Infrustructure\VmActions.cs" />
@@ -480,6 +481,7 @@
     <Compile Include="Views.Backtester\BacktesterJournalViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterOptimizerViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterSetupPageViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
@@ -1029,6 +1031,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterPluginSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterSetupPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

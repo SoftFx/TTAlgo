@@ -12,7 +12,7 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterOptimizerViewModel : Screen
+    internal class BacktesterOptimizerViewModel : Page
     {
         private PluginDescriptor _descriptor;
         private WindowManager _localWnd;
@@ -21,6 +21,8 @@ namespace TickTrader.BotTerminal
 
         public BacktesterOptimizerViewModel(WindowManager manager)
         {
+            DisplayName = "Optimization";
+
             _localWnd = manager;
 
             VarOptimizationEnabled = ModeProp.Var != OptimizationModes.Disabled;
@@ -75,6 +77,11 @@ namespace TickTrader.BotTerminal
                 ModeProp.Value = OptimizationModes.Disabled;
         }
 
+        public IEnumerable<ParameterDescriptor> GetSelectedParams()
+        {
+            return Parameters.Where(p => p.SeekEnabledProp.Value).Select(p => p.Descriptor);
+        }
+
         private async void OpenParamSetup(ParamSeekSetupModel setup)
         {
             var setupWndModel = new OptimizerParamSetupViewModel(setup.ParamName, setup.VarModel.Value);
@@ -101,8 +108,7 @@ namespace TickTrader.BotTerminal
             {
                 _parent = parent;
                 _setup = setup;
-                ParamId = descriptor.Id;
-                ParamName = descriptor.DisplayName;
+                Descriptor = descriptor;
                 _modelProp = AddProperty(model);
                 _descriptionProp = AddProperty<string>();
                 ValueDescription = _descriptionProp.Var;// AddProperty<string>(); // = VarModel.Ref(m => m.Description);
@@ -112,8 +118,9 @@ namespace TickTrader.BotTerminal
                 TriggerOnChange(SeekEnabledProp, a => UpdateDescriptionAndCount());
             }
 
-            public string ParamId { get; }
-            public string ParamName { get; }
+            public string ParamId => Descriptor.Id;
+            public string ParamName => Descriptor.DisplayName;
+            public ParameterDescriptor Descriptor { get; }
             public Var<string> ValueDescription { get; }
             public Var<ParamSeekSetModel> VarModel => _modelProp.Var;
             public ParamSeekSetModel Model => VarModel.Value;

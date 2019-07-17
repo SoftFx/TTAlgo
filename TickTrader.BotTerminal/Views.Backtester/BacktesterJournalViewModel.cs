@@ -1,4 +1,5 @@
-﻿using Machinarium.Var;
+﻿using Caliburn.Micro;
+using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,9 +13,14 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterJournalViewModel
+    internal class BacktesterJournalViewModel : Page
     {
         //private Property<ObservableCollection<BotLogRecord>> _journalContent = new Property<ObservableCollection<BotLogRecord>>();
+
+        public BacktesterJournalViewModel()
+        {
+            DisplayName = "Journal";
+        }
 
         public ObservableCollection<BotLogRecord> JournalRecords { get; } = new ObservableCollection<BotLogRecord>();
 

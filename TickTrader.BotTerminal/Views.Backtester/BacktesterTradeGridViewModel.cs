@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,12 +12,14 @@ using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
-    class BacktesterTradeGridViewModel
+    class BacktesterTradeGridViewModel : Page
     {
         private ObservableCollection<TransactionReport> _reports = new ObservableCollection<TransactionReport>();
 
         public BacktesterTradeGridViewModel(ProfileManager profile = null)
         {
+            DisplayName = "Trade History";
+
             GridView = new TradeHistoryGridViewModel(new List<TransactionReport>(), profile, true);
             GridView.AutoSizeColumns = false;
             GridView.ConvertTimeToLocal = false;
@@ -45,10 +48,10 @@ namespace TickTrader.BotTerminal
             observer.SetMessage("Saving trades...");
             observer.StartProgress(0, _reports.Count);
 
-            Action writeCsvAction = () => TradeReportCsvSerializer.Serialize(
+            System.Action writeCsvAction = () => TradeReportCsvSerializer.Serialize(
                 _reports, entryStream, GridView.GetAccTypeValue(), i => Interlocked.Exchange(ref progress, i));
 
-            Action updateProgressAction = () => observer.SetProgress(Interlocked.Read(ref progress));
+            System.Action updateProgressAction = () => observer.SetProgress(Interlocked.Read(ref progress));
 
             using (new UiUpdateTimer(updateProgressAction))
                 await Task.Factory.StartNew(writeCsvAction);

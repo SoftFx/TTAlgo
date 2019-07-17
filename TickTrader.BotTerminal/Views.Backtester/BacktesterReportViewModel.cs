@@ -1,4 +1,5 @@
-﻿using Machinarium.Var;
+﻿using Caliburn.Micro;
+using Machinarium.Var;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,9 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterReportViewModel : EntityBase
+    internal class BacktesterReportViewModel : Page
     {
+        private readonly VarContext _var = new VarContext();
         private Property<Dictionary<string, string>> _statProperties;
         private IntProperty _depositDigits;
         private OhlcDataSeries<DateTime, double> _equityData;
@@ -24,8 +26,10 @@ namespace TickTrader.BotTerminal
 
         public BacktesterReportViewModel()
         {
-            _statProperties = AddProperty<Dictionary<string, string>>();
-            _depositDigits = AddIntProperty(2);
+            DisplayName = "Report";
+
+            _statProperties = _var.AddProperty<Dictionary<string, string>>();
+            _depositDigits = _var.AddIntProperty(2);
         }
 
         public Var<Dictionary<string, string>> StatProperties => _statProperties.Var;

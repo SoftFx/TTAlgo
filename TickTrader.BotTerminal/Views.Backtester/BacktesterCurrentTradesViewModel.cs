@@ -1,4 +1,5 @@
-﻿using Machinarium.Qnil;
+﻿using Caliburn.Micro;
+using Machinarium.Qnil;
 using Machinarium.Var;
 using System;
 using System.Collections.Generic;
@@ -11,13 +12,16 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
-    class BacktesterCurrentTradesViewModel
+    internal class BacktesterCurrentTradesViewModel : Page
     {
         private MockClient _client;
         private MockConnection _connection = new MockConnection();
 
         public BacktesterCurrentTradesViewModel(ProfileManager profile = null)
         {
+            DisplayName = "Trades";
+            IsVisible = false;
+
             _client = new MockClient();
             Trades = new TradeInfoViewModel(_client.Acc, _client.Symbols, _client.Currencies, _connection, false, profile, true);
             Rates = new SymbolListViewModel(_client.Symbols, _client.Distributor, null, false);

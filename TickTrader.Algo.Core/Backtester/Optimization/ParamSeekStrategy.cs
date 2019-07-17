@@ -16,9 +16,9 @@ namespace TickTrader.Algo.Core
 
         protected IReadOnlyDictionary<string, ParamSeekSet> Params { get; private set; }
 
-        public abstract int CaseCount { get; }
+        public abstract long CaseCount { get; }
         public abstract void Start(IBacktestQueue queue, int degreeOfParallelism);
-        public abstract int OnCaseCompleted(OptCaseReport report, IBacktestQueue queue);
+        public abstract long OnCaseCompleted(OptCaseReport report, IBacktestQueue queue);
     }
 
     public interface IBacktestQueue

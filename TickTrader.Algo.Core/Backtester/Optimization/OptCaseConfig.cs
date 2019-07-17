@@ -11,6 +11,12 @@ namespace TickTrader.Algo.Core
     public class OptCaseConfig : IEnumerable<KeyValuePair<string, object>>
     {
         public Dictionary<string, object> Params { get; } = new Dictionary<string, object>();
+        public long Id { get; }
+
+        public OptCaseConfig(long id)
+        {
+            Id = id;
+        }
 
         public void Add(string paramId, object paramVal)
         {

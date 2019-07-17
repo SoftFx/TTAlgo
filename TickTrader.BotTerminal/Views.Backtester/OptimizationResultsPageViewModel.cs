@@ -11,29 +11,30 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    internal class OptimizationResultsPageViewModel : Screen
+    internal class OptimizationResultsPageViewModel : Page
     {
-        private readonly BoolProperty _isVisibleProp = new BoolProperty();
         private Dictionary<string, DataColumn> _idToColumnMap = new Dictionary<string, DataColumn>();
+        private DataColumn _idColumn;
         private DataColumn _metricColumn;
 
         public OptimizationResultsPageViewModel()
         {
+            DisplayName = "Optimization Results";
         }
 
-        public void Start(PluginDescriptor descriptor, Optimizer optimizer)
+        public void Start(IEnumerable<ParameterDescriptor> optParams, Optimizer optimizer)
         {
-            _isVisibleProp.Set();
+            IsVisible = true;
             Clear();
 
-            if (descriptor != null)
+            _idColumn = new DataColumn("No", typeof(long));
+            Data.Columns.Add(_idColumn);
+
+            foreach (var par in optParams)
             {
-                foreach (var par in descriptor.Parameters)
-                {
-                    var dataColumn = new DataColumn(par.DisplayName);
-                    _idToColumnMap.Add(par.Id, dataColumn);
-                    Data.Columns.Add(dataColumn);
-                }
+                var dataColumn = new DataColumn(par.DisplayName);
+                _idToColumnMap.Add(par.Id, dataColumn);
+                Data.Columns.Add(dataColumn);
             }
 
             _metricColumn = new DataColumn("Metric", typeof(double));
@@ -50,18 +51,19 @@ namespace TickTrader.BotTerminal
 
             foreach (var pair in report.Config)
             {
-                var col = _idToColumnMap[pair.Key];
-                row[col] = pair.Value;
+                if (_idToColumnMap.TryGetValue(pair.Key, out var colNo))
+                    row[colNo] = pair.Value;
             }
 
-            row[_metricColumn] = report.MetricVal;
+            row[_idColumn] = report.Config.Id;
+            row[_metricColumn] = report.Stats?.FinalBalance ?? -1;
 
             Data.Rows.Add(row);
         }
 
         public void Hide()
         {
-            _isVisibleProp.Clear();
+            IsVisible = false;
             Clear();
         }
 
@@ -73,6 +75,5 @@ namespace TickTrader.BotTerminal
         }
 
         public DataTable Data { get; } = new DataTable();
-        public BoolVar IsVisible => _isVisibleProp.Var;
     }
 }

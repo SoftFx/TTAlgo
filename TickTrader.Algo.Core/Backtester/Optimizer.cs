@@ -32,13 +32,13 @@ namespace TickTrader.Algo.Core
 
         public bool IsIsolated { get; }
         public FeedEmulator Feed => _core.Feed;
-        public int MaxCasesNo => _seekStrategy.CaseCount;
+        public long MaxCasesNo => _seekStrategy.CaseCount;
         public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
         public EmulatorStates State { get; private set; }
         public int DegreeOfParallelism { get; set; } = 1;
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred;
-        public event Action<OptCaseReport, int> CaseCompleted;
+        public event Action<OptCaseReport, long> CaseCompleted;
 
         public void SetupParamSeek(string paramId, ParamSeekSet seekSet)
         {
@@ -90,7 +90,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        private void OnReport(OptCaseReport rep, int casesLeft)
+        private void OnReport(OptCaseReport rep, long casesLeft)
         {
             _sync.Invoke(() =>
             {
@@ -177,7 +177,7 @@ namespace TickTrader.Algo.Core
             //private UpdateChannel _channel;
             private int _idSeed;
             private CancellationTokenSource _cancelSrc = new CancellationTokenSource();
-            private Action<OptCaseReport, int> _repHandler;
+            private Action<OptCaseReport, long> _repHandler;
             private TransformBlock<OptCaseConfig, OptCaseReport> _workerBlock;
             private ActionBlock<OptCaseReport> _controlBlock;
 
@@ -206,7 +206,7 @@ namespace TickTrader.Algo.Core
                 _cancelSrc.Cancel();
             }
 
-            public void Run(ParamSeekStrategy sStrategy, CommonTestSettings settings, int degreeOfP, Action<OptCaseReport, int> updateHandler)
+            public void Run(ParamSeekStrategy sStrategy, CommonTestSettings settings, int degreeOfP, Action<OptCaseReport, long> updateHandler)
             {
                 CommonSettings = settings;
                 SeekStrategy = sStrategy;
@@ -249,10 +249,10 @@ namespace TickTrader.Algo.Core
                 var emFixture = SetupEmulation();
                 caseCfg.Apply(emFixture.Executor);
 
-                if (!emFixture.OnStart())
-                    return new OptCaseReport(caseCfg, 0);
-
                 Exception execError = null;
+
+                if (!emFixture.OnStart())
+                    execError = new AlgoException("No data for specified period!");
 
                 try
                 {
@@ -267,9 +267,10 @@ namespace TickTrader.Algo.Core
                     emFixture.OnStop();
                 }
 
-                var metric = emFixture.Collector.Stats.FinalBalance;
+                emFixture.Dispose();
+                emFixture.Executor.Dispose();
 
-                return new OptCaseReport(caseCfg, metric, execError);
+                return new OptCaseReport(caseCfg, emFixture.Collector.Stats, execError);
             }
 
             private void OnCaseTested(OptCaseReport report)
