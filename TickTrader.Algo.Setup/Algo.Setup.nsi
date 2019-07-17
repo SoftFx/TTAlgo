@@ -5,6 +5,7 @@
 
 !include "LogicLib.nsh"
 !include "MUI.nsh"
+!include "x64.nsh"
 
 !include "Algo.Utils.nsh"
 !include "Resources\Resources.en.nsi"
@@ -21,7 +22,7 @@ InstallDir ${BASE_INSTDIR}
 
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${PRODUCT_PUBLISHER}"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "2019 © ${PRODUCT_PUBLISHER}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright Â© ${PRODUCT_PUBLISHER} 2019"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${TERMINAL_NAME} and ${AGENT_NAME} installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${PRODUCT_BUILD}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${PRODUCT_BUILD}"
@@ -37,7 +38,9 @@ VIFileVersion "${PRODUCT_BUILD}"
 !define MUI_ICON "${ICONS_DIR}\softfx.ico"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryOnLeave
 !insertmacro MUI_PAGE_DIRECTORY
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE ComponentsOnLeave
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -85,6 +88,18 @@ Function .onInit
 
     Call ConfigureComponents
     Call ConfigureInstallTypes
+
+    ${If} ${Runningx64}
+        SetRegView 64
+    ${EndIf}
+
+FunctionEnd
+
+Function un.onInit
+
+    ${If} ${Runningx64}
+        SetRegView 64
+    ${EndIf}
 
 FunctionEnd
 
@@ -160,7 +175,7 @@ Section "Core files" AgentCore
     ${If} $OUTDIR == $3
         MessageBox MB_YESNO "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
-        ${StopService} "${SERVICE_NAME}" 80
+        ${StopService} $AgentServiceId 80
         !insertmacro UninstallApp $OUTDIR
     ${EndIf}
 
@@ -171,9 +186,9 @@ UninstallAgentLabel:
     Call CreateAgentShortcuts
 
     DetailPrint "Creating BotAgent service"
-    ${InstallService} "${SERVICE_NAME}" "${SERVICE_DISPLAY_NAME}" "16" "2" "$OUTDIR\${AGENT_EXE}" 80
-    ${ConfigureService} "${SERVICE_NAME}"
-    ${StartService} "${SERVICE_NAME}" 30
+    ${InstallService} $AgentServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$OUTDIR\${AGENT_EXE}" 80
+    ${ConfigureService} $AgentServiceId
+    ${StartService} $AgentServiceId 30
 
 SkipAgentLabel:
 
@@ -219,8 +234,8 @@ Section Uninstall
 
     Push $3
 
-    ReadRegStr $3 HKLM "${REG_TERMINAL_KEY}" "Path"
-    ${If} $3 == $INSTDIR
+    ${FindTerminalId} $INSTDIR
+    ${If} $TerminalId != ${EMPTY_APPID}
         
         ; Remove installed files, but leave generated
         !include Terminal.Uninstall.nsi
@@ -234,11 +249,13 @@ Section Uninstall
 
     ${EndIf}
 
-    ReadRegStr $3 HKLM "${REG_AGENT_KEY}" "Path"
-    ${If} $3 == $INSTDIR
+    ${FindAgentId} $INSTDIR
+    ${If} $AgentId != ${EMPTY_APPID}
+
+        !insertmacro InitAgentServiceId
         
-        ${StopService} "${SERVICE_NAME}" 80
-        ${UninstallService} "${SERVICE_NAME}" 80
+        ${StopService} $AgentServiceId 80
+        ${UninstallService} $AgentServiceId 80
 
         ; Remove installed files, but leave generated
         !include Agent.Uninstall.nsi
@@ -440,15 +457,17 @@ Function CreateTerminalShortcuts
     ${EndIf}
 
     ${If} ${SectionIsSelected} ${TerminalStartMenu}
-        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}"
-        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
+        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
     ${EndIf}
 
 FunctionEnd
 
 Function un.DeleteTerminalShortcuts
 
-    Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk"
+    Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\"
 
 FunctionEnd
 
@@ -459,14 +478,42 @@ Function CreateAgentShortcuts
     ${EndIf}
 
     ${If} ${SectionIsSelected} ${ConfiguratorStartMenu}
-        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}"
-        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
+        CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId"
+        CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${CONFIGURATOR_NAME}\${CONFIGURATOR_EXE}"
     ${EndIf}
 
 FunctionEnd
 
 Function un.DeleteAgentShortcuts
 
-    Delete "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk"
+    Delete "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}.lnk"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$AgentId\"
+    RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\"
+
+FunctionEnd
+
+;--------------------------
+; Callbacks
+
+Function DirectoryOnLeave
+
+    ${FindTerminalId} "$INSTDIR\${TERMINAL_NAME}"
+    ${If} $TerminalId == ${EMPTY_APPID}
+        ${CreateAppId} $TerminalId
+    ${EndIf}
+
+    ${FindAgentId} "$INSTDIR\${AGENT_NAME}"
+    ${If} $AgentId == ${EMPTY_APPID}
+        ${CreateAppId} $AgentId
+    ${EndIf}
+    !insertmacro InitAgentServiceId
+
+    MessageBox MB_OK "Terminal: $TerminalId; Agent: $AgentId"
+
+FunctionEnd
+
+Function ComponentsOnLeave
+
+    MessageBox MB_OK "DirectoryOnLeave"
 
 FunctionEnd

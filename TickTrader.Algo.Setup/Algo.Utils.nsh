@@ -173,3 +173,44 @@
 !define EndSectionManagement '!insertmacro SecManageEnd'
 
 ;---END Functions to manage sections---
+
+;--------------------------------------------
+;-----Functions to manage app id-----
+
+!define EMPTY_APPID 0
+
+!macro CreateGUID RetVar
+    System::Call 'ole32::CoCreateGuid(g .s)'
+    !if ${RetVar} != no_var
+        Pop ${RetVar}
+    !endif
+!macroend
+
+!macro FindAppIdByPath LabelId RetVar AppRootKey PathSubKey InstallPath
+
+    Push $0
+    Push $1
+    Push $2
+    
+    StrCpy ${RetVar} ${EMPTY_APPID}
+    StrCpy $0 0
+    loop_${LabelId}:
+        EnumRegKey $1 HKLM "${AppRootKey}" $0
+        StrCmp $1 "" done_${LabelId}
+        IntOp $0 $0 + 1
+
+        ReadRegStr $2 HKLM "${AppRootKey}\$1" "${PathSubKey}"
+        StrCmp $2 ${InstallPath} found_${LabelId} loop_${LabelId}
+    found_${LabelId}:
+        StrCpy ${RetVar} $1
+    done_${LabelId}:
+
+    Pop $2
+    Pop $1
+    Pop $0
+
+!macroend
+
+!define CreateAppId `!insertmacro CreateGUID`
+
+;---END Functions to manage app id---

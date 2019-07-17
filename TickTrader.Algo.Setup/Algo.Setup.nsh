@@ -60,6 +60,23 @@
 !define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
 
 ;--------------------------
+; Variables
+
+var TerminalId
+var AgentId
+var AgentServiceId
+
+var TerminalCoreInstalled
+var TerminalDesktopInstalled
+var TerminalStartMenuInstalled
+var TerminalTestCollectionInstalled
+
+var AgentCoreInstalled
+var ConfiguratorCoreInstalled
+var ConfiguratorDesktopInstalled
+var ConfiguratorStartMenuInstalled
+
+;--------------------------
 ; Components files
 
 !macro UnpackTerminal
@@ -104,57 +121,74 @@
 !define REG_AGENT_KEY "${REG_KEY_BASE}\${AGENT_NAME}"
 !define REG_AGENT_UNINSTALL_KEY "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${AGENT_NAME}"
 
+!define REG_PATH_KEY "Path"
+!define REG_VERSION_KEY "Version"
+
+
 !macro RegWriteTerminal
 
-    WriteRegStr HKLM "${REG_TERMINAL_KEY}" "Path" "$INSTDIR\${TERMINAL_NAME}"
-    WriteRegStr HKLM "${REG_TERMINAL_KEY}" "Version" "${PRODUCT_BUILD}"
+    WriteRegStr HKLM "${REG_TERMINAL_KEY}\$TerminalId" "${REG_PATH_KEY}" "$INSTDIR\${TERMINAL_NAME}"
+    WriteRegStr HKLM "${REG_TERMINAL_KEY}\$TerminalId" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
 
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "DisplayName" "${BASE_NAME} ${TERMINAL_NAME}"
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "UninstallString" "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "QuietUninstallString" '"$INSTDIR\${TERMINAL_NAME}\uninstall.exe" /S'
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "DisplayName" "${BASE_NAME} ${TERMINAL_NAME}"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "UninstallString" "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "QuietUninstallString" '"$INSTDIR\${TERMINAL_NAME}\uninstall.exe" /S'
 
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "InstallLocation" "$INSTDIR\${TERMINAL_NAME}"
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\${TERMINAL_NAME}\terminal.ico"
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "URLInfoAbout" "${PRODUCT_URL}"
-    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "DisplayVersion" "${PRODUCT_BUILD}"
-    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "NoModify" "1"
-    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "NoRepair" "1"
-    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY}" "EstimatedSize" "${TERMINAL_SIZE}"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "InstallLocation" "$INSTDIR\${TERMINAL_NAME}"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "DisplayIcon" "$INSTDIR\${TERMINAL_NAME}\terminal.ico"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "Publisher" "${PRODUCT_PUBLISHER}"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "URLInfoAbout" "${PRODUCT_URL}"
+    WriteRegStr HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "DisplayVersion" "${PRODUCT_BUILD}"
+    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "NoModify" "1"
+    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "NoRepair" "1"
+    WriteRegDWORD HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId" "EstimatedSize" "${TERMINAL_SIZE}"
 
 !macroend
 
 !macro RegDeleteTerminal
 
-    DeleteRegKey HKLM "${REG_TERMINAL_KEY}"
-    DeleteRegKey HKLM "${REG_TERMINAL_UNINSTALL_KEY}"
+    DeleteRegKey HKLM "${REG_TERMINAL_KEY}\$TerminalId"
+    DeleteRegKey HKLM "${REG_TERMINAL_UNINSTALL_KEY} $TerminalId"
 
 !macroend
 
 !macro RegWriteAgent
 
-    WriteRegStr HKLM "${REG_AGENT_KEY}" "Path" "$INSTDIR\${AGENT_NAME}"
-    WriteRegStr HKLM "${REG_AGENT_KEY}" "Version" "${PRODUCT_BUILD}"
+    WriteRegStr HKLM "${REG_AGENT_KEY}\$AgentId" "${REG_PATH_KEY}" "$INSTDIR\${AGENT_NAME}"
+    WriteRegStr HKLM "${REG_AGENT_KEY}\$AgentId" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
 
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "DisplayName" "${BASE_NAME} ${AGENT_NAME}"
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "UninstallString" "$INSTDIR\${AGENT_NAME}\uninstall.exe"
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "QuietUninstallString" '"$INSTDIR\${AGENT_NAME}\uninstall.exe" \S'
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "DisplayName" "${BASE_NAME} ${AGENT_NAME}"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "UninstallString" "$INSTDIR\${AGENT_NAME}\uninstall.exe"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "QuietUninstallString" '"$INSTDIR\${AGENT_NAME}\uninstall.exe" \S'
 
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "InstallLocation" "$INSTDIR\${AGENT_NAME}"
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "DisplayIcon" "$INSTDIR\${AGENT_NAME}\agent.ico"
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "URLInfoAbout" "${PRODUCT_URL}"
-    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY}" "DisplayVersion" "${PRODUCT_BUILD}"
-    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY}" "NoModify" "1"
-    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY}" "NoRepair" "1"
-    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY}" "EstimatedSize" "${AGENT_SIZE}"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "InstallLocation" "$INSTDIR\${AGENT_NAME}"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "DisplayIcon" "$INSTDIR\${AGENT_NAME}\agent.ico"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "Publisher" "${PRODUCT_PUBLISHER}"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "URLInfoAbout" "${PRODUCT_URL}"
+    WriteRegStr HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "DisplayVersion" "${PRODUCT_BUILD}"
+    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "NoModify" "1"
+    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "NoRepair" "1"
+    WriteRegDWORD HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId" "EstimatedSize" "${AGENT_SIZE}"
 
 !macroend
 
 !macro RegDeleteAgent
 
-    DeleteRegKey HKLM "${REG_AGENT_KEY}"
-    DeleteRegKey HKLM "${REG_AGENT_UNINSTALL_KEY}"
+    DeleteRegKey HKLM "${REG_AGENT_KEY}\$AgentId"
+    DeleteRegKey HKLM "${REG_AGENT_UNINSTALL_KEY} $AgentId"
+
+!macroend
+
+;--------------------------
+; App id management
+
+!define FindTerminalId `!insertmacro FindAppIdByPath terminal_id $TerminalId ${REG_TERMINAL_KEY} ${REG_PATH_KEY}`
+!define FindAgentId `!insertmacro FindAppIdByPath agent_id $AgentId ${REG_AGENT_KEY} ${REG_PATH_KEY}`
+
+
+!macro InitAgentServiceId
+
+    StrCpy $AgentServiceId "${SERVICE_NAME}_$AgentId"
 
 !macroend
 
