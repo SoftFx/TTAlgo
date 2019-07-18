@@ -118,19 +118,22 @@ Section "Core files" TerminalCore
     DetailPrint "Installing BotTerminal"
 
     SetOutPath "$INSTDIR\${TERMINAL_NAME}"
-    ReadRegStr $3 HKLM "${REG_TERMINAL_KEY}" "Path"
+    ReadRegStr $3 HKLM "${REG_TERMINAL_KEY}\$TerminalId" "Path"
     ${If} $OUTDIR == $3
-        MessageBox MB_YESNO "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
+        MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
 UninstallTerminalLabel:
-        !insertmacro UninstallApp $OUTDIR
+        ${CheckTerminalLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
+        ${UninstallApp} $OUTDIR
     ${EndIf}
 
     !insertmacro UnpackTerminal
     !insertmacro RegWriteTerminal
     !insertmacro CreateTerminalShortcuts
     WriteUninstaller "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
-
+    Goto TerminalInstallEnd
 SkipTerminalLabel:
+    DetailPrint "Skipped BotTerminal installation"
+TerminalInstallEnd:
 
     Pop $3
 
@@ -146,7 +149,7 @@ SectionEnd
 
 Section "Test Collection" TerminalTestCollection
 
-    DetailPrint "Installing Test Collection"
+    DetailPrint "Installing TestCollection"
     
     SetOutPath "$INSTDIR\${TERMINAL_NAME}\${REPOSITORY_DIR}"
     !insertmacro UnpackTestCollection
@@ -165,12 +168,12 @@ Section "Core files" AgentCore
     DetailPrint "Installing BotAgent"
 
     SetOutPath "$INSTDIR\${AGENT_NAME}"
-    ReadRegStr $3 HKLM "${REG_AGENT_KEY}" "Path"
+    ReadRegStr $3 HKLM "${REG_AGENT_KEY}\$AgentId" "Path"
     ${If} $OUTDIR == $3
-        MessageBox MB_YESNO "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
+        MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
         ${StopService} $AgentServiceId 80
-        !insertmacro UninstallApp $OUTDIR
+        ${UninstallApp} $OUTDIR
     ${EndIf}
 
     !insertmacro UnpackAgent
@@ -184,8 +187,10 @@ UninstallAgentLabel:
 
     DetailPrint "Starting BotAgent service"
     ${StartService} $AgentServiceId 30
-
+    Goto AgentInstallEnd
 SkipAgentLabel:
+    DetailPrint "Skipped BotAgent installation"
+AgentInstallEnd:
 
     Pop $3
 
@@ -219,6 +224,9 @@ Section Uninstall
     ${FindTerminalId} $INSTDIR
     ${If} $TerminalId != ${EMPTY_APPID}
         
+    RetryUninstallTerminal:
+        ${CheckTerminalLock} $(TerminalIsRunningUninstall) RetryUninstallTerminal SkipUninstallTerminal
+
         ; Remove installed files, but leave generated
         !insertmacro DeleteTerminalFiles
         !insertmacro DeleteTerminalShortcuts
@@ -228,6 +236,10 @@ Section Uninstall
         
         ; Remove registry entries
         !insertmacro RegDeleteTerminal
+        Goto TerminalUninstallEnd
+    SkipUninstallTerminal:
+        Abort $(UninstallCanceledMessage)
+    TerminalUninstallEnd:
 
     ${EndIf}
 

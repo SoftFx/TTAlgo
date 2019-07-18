@@ -3,8 +3,13 @@
 LangString InstallationCanceledMessage  ${LANG_ENGLISH} "Installation cancelled."
 LangString InstallationAbortedMessage   ${LANG_ENGLISH} "Installation aborted. Error code:"
 
+LangString UninstallCanceledMessage     ${LANG_ENGLISH} "Uninstallation cancelled."
+
 LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader BotTerminal will be uninstalled. Continue?"
 LangString UninstallPrevAgent           ${LANG_ENGLISH} "Previous installed TickTrader BotAgent will be uninstalled. Continue?"
+
+LangString TerminalIsRunningInstall     ${LANG_ENGLISH} "TickTrader BotTerminal is running. Close it and press Retry to continue or press Cancel to skip BotTerminal installation."
+LangString TerminalIsRunningUninstall   ${LANG_ENGLISH} "TickTrader BotTerminal is running. Close it and press Retry to continue or press Cancel to stop BotTerminal uninstallation."
 
 LangString ServiceInstallFailMessage    ${LANG_ENGLISH} "Failed to install service. Error code:"
 LangString ServiceStartFailMessage      ${LANG_ENGLISH} "Failed to start service. Error code:"

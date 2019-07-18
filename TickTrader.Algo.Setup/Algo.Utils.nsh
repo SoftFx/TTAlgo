@@ -214,3 +214,42 @@
 !define CreateAppId `!insertmacro CreateGUID`
 
 ;---END Functions to manage app id---
+
+;--------------------------------------------
+;-----Utility functions-----
+
+!define FILE_NOT_LOCKED 0
+!define FILE_LOCKED 1
+
+!macro _GetFileLock RetVar FilePath
+
+    Push $9
+
+    ClearErrors
+    FileOpen $9 ${FilePath} w
+    ${If} ${Errors}
+        StrCpy ${RetVar} ${FILE_LOCKED}
+    ${Else}
+        FileClose $9
+        StrCpy ${RetVar} ${FILE_NOT_LOCKED}
+    ${EndIf}
+
+    Pop $9
+
+!macroend
+
+!macro _UninstallApp Path
+    
+    ; Copy previous uninstaller to temp location
+    CreateDirectory "${Path}\tmp"
+    CopyFiles /SILENT /FILESONLY "${Path}\uninstall.exe" "${Path}\tmp"
+    ; Run uninstaller of previous version
+    ExecWait '"${Path}\tmp\uninstall.exe" /S _?=${Path}'
+    RMDir /r "${Path}\tmp"
+
+!macroend
+
+!define GetFileLock '!insertmacro _GetFileLock'
+!define UninstallApp '!insertmacro _UninstallApp'
+
+;---END Utility functions---

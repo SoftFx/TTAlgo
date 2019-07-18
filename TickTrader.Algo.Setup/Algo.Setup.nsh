@@ -27,6 +27,8 @@
     !define PRODUCT_URL "https://www.soft-fx.com/"
 !endif
 
+!define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
+
 !define BASE_NAME "TickTrader"
 !define TERMINAL_NAME "BotTerminal"
 !define AGENT_NAME "BotAgent"
@@ -47,7 +49,7 @@
 !define SERVICE_NAME "_sfxBotAgent"
 !define SERVICE_DISPLAY_NAME "_sfxBotAgent"
 
-!define BASE_INSTDIR "$PROGRAMFILES64\${BASE_NAME}"
+!define TERMINAL_LOCK_FILE "applock"
 
 ;--------------------------
 ; Variables
@@ -154,7 +156,7 @@ var AgentSize
         CreateShortcut "$DESKTOP\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
     ${EndIf}
 
-    ${If} TerminalStartMenuSelected == 1
+    ${If} $TerminalStartMenuSelected == 1
         DetailPrint "Adding StartMenu Shortcut"
         CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\"
         CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$TerminalId\${TERMINAL_NAME} ${PRODUCT_BUILD}.lnk" "$OUTDIR\${TERMINAL_EXE}"
@@ -281,15 +283,15 @@ var AgentSize
 !macroend
 
 ;--------------------------
-; Common macros
+; Misc
 
-!macro UninstallApp Path
-    
-    ; Copy previous uninstaller to temp location
-    CreateDirectory "${Path}\tmp"
-    CopyFiles /SILENT /FILESONLY "${Path}\uninstall.exe" "${Path}\tmp"
-    ; Run uninstaller of previous version
-    ExecWait '"${Path}\tmp\uninstall.exe" /S _?=${Path}'
-    RMDir /r "${Path}\tmp"
+!macro _CheckTerminalLock Msg Retry Cancel
+
+    ${GetFileLock} $3 "$OUTDIR\${TERMINAL_LOCK_FILE}"
+    ${IF} $3 == ${FILE_LOCKED}
+        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
+    ${EndIf}
 
 !macroend
+
+!define CheckTerminalLock '!insertmacro _CheckTerminalLock'
