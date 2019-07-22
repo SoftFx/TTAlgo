@@ -42,6 +42,8 @@ namespace TickTrader.Algo.Core
         public TestingStatistics Stats { get; private set; }
         public InvokeEmulator InvokeEmulator { get; internal set; }
 
+        internal int EquityHistorySize => _equityCollector.Count;
+
         private DateTime VirtualTimepoint => InvokeEmulator.UnsafeVirtualTimePoint;
 
         public void OnStart(IBacktesterSettings settings, FeedEmulator feed)
@@ -241,6 +243,16 @@ namespace TickTrader.Algo.Core
             const int pageSize = 4000;
 
             return collection.GetCrossDomainEnumerator(pageSize);
+        }
+
+        internal IEnumerable<BarEntity> LocalGetEquityHistory(TimeFrames targeTimeframe)
+        {
+            return _equityCollector.Snapshot.Transform(targeTimeframe);
+        }
+
+        internal IEnumerable<BarEntity> LocalGetMarginHistory(TimeFrames targeTimeframe)
+        {
+            return _marginCollector.Snapshot.Transform(targeTimeframe);
         }
 
         #region Output collection

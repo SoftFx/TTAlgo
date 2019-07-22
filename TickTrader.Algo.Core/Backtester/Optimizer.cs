@@ -194,6 +194,7 @@ namespace TickTrader.Algo.Core
             public CommonTestSettings CommonSettings { get; private set; }
             public PluignExecutorFactory Factory { get; set; }
             public ParamSeekStrategy SeekStrategy { get; private set; }
+            public int EquityHistoryTargetSize { get; set; } = 500;
 
             //public void SetStrategy(ParamSeekStrategy strategy)
             //{
@@ -267,10 +268,12 @@ namespace TickTrader.Algo.Core
                     emFixture.OnStop();
                 }
 
+                var report = FilleReport(caseCfg, emFixture.Collector, execError);
+
                 emFixture.Dispose();
                 emFixture.Executor.Dispose();
 
-                return new OptCaseReport(caseCfg, emFixture.Collector.Stats, execError);
+                return report;
             }
 
             private void OnCaseTested(OptCaseReport report)
@@ -300,6 +303,21 @@ namespace TickTrader.Algo.Core
                 executor.Permissions = new PluginPermissions() { TradeAllowed = true };
 
                 return emFixture;
+            }
+
+            private OptCaseReport FilleReport(OptCaseConfig cfg, BacktesterCollector collector, Exception error)
+            {
+                var rep = new OptCaseReport(cfg, collector.Stats, error);
+
+                var equitySize = collector.EquityHistorySize;
+                var compactTimeFrame = BarExtentions.AdjustTimeframe(CommonSettings.MainTimeframe, equitySize, EquityHistoryTargetSize, out _);
+                var equity = collector.LocalGetEquityHistory(compactTimeFrame);
+                var margin = collector.LocalGetMarginHistory(compactTimeFrame);
+
+                rep.Equity = equity.ToList();
+                rep.Margin = margin.ToList();
+
+                return rep;
             }
 
             #region Setup
@@ -344,8 +362,8 @@ namespace TickTrader.Algo.Core
 
             JournalOptions IBacktesterSettings.JournalFlags => JournalOptions.Disabled;
             Dictionary<string, TestDataSeriesFlags> IBacktesterSettings.SymbolDataConfig => new Dictionary<string, TestDataSeriesFlags>();
-            TestDataSeriesFlags IBacktesterSettings.MarginDataMode => TestDataSeriesFlags.Disabled;
-            TestDataSeriesFlags IBacktesterSettings.EquityDataMode => TestDataSeriesFlags.Disabled;
+            TestDataSeriesFlags IBacktesterSettings.MarginDataMode => TestDataSeriesFlags.Snapshot;
+            TestDataSeriesFlags IBacktesterSettings.EquityDataMode => TestDataSeriesFlags.Snapshot;
             TestDataSeriesFlags IBacktesterSettings.OutputDataMode => TestDataSeriesFlags.Disabled;
             bool IBacktesterSettings.StreamExecReports => false;
 

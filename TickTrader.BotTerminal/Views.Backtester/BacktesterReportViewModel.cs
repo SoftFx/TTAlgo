@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
 
         public BacktesterReportViewModel()
         {
-            DisplayName = "Report";
+            UpdateHeader(null);
 
             _statProperties = _var.AddProperty<Dictionary<string, string>>();
             _depositDigits = _var.AddIntProperty(2);
@@ -39,6 +39,7 @@ namespace TickTrader.BotTerminal
 
         public void Clear()
         {
+            UpdateHeader(null);
             _statProperties.Value = null;
             SmallCharts.Clear();
             LargeCharts.Clear();
@@ -88,8 +89,11 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor)
+        public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor, long? id)
         {
+            IsVisible = true;
+            UpdateHeader(id);
+
             var newPropertis = new Dictionary<string, string>();
             var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(newStats.AccBalanceDigits);
 
@@ -197,6 +201,14 @@ namespace TickTrader.BotTerminal
             }
 
             return builder.ToString();
+        }
+
+        private void UpdateHeader(long? id)
+        {
+            if (id == null)
+                DisplayName = "Report";
+            else
+                DisplayName = "Report: " + id;
         }
     }
 }

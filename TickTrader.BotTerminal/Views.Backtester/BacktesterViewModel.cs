@@ -40,7 +40,8 @@ namespace TickTrader.BotTerminal
         private WindowManager _localWnd;
         private DateTime _emulteFrom;
         private DateTime _emulateTo;
-        
+        private PluginDescriptor _descriptorCache;
+
         private BoolProperty _hasDataToSave;
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
@@ -77,6 +78,15 @@ namespace TickTrader.BotTerminal
             SetupPage.PluginSelected += () =>
             {
                 OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginSetup);
+            };
+
+            OptimizationResultsPage.ShowDetailsRequested += r =>
+            {
+                ResultsPage.Clear();
+                ResultsPage.ShowReport(r.Stats, _descriptorCache, r.Config.Id);
+                ResultsPage.AddEquityChart(Convert(r.Equity));
+                ResultsPage.AddMarginChart(Convert(r.Margin));
+                ActivateItem(ResultsPage);
             };
 
             InitExecControl();
@@ -158,6 +168,8 @@ namespace TickTrader.BotTerminal
             //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
             var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Info.Key);
             //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
+
+            _descriptorCache = pluginRef.Metadata.Descriptor;
 
             //if (PluginConfig != null)
             //    pluginSetupModel.Load(PluginConfig);
@@ -334,6 +346,7 @@ namespace TickTrader.BotTerminal
             JournalPage.IsVisible = true;
             ChartPage.IsVisible = true;
             TradeHistoryPage.IsVisible = true;
+            ResultsPage.IsVisible = true;
 
             ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester, symbols);
             if (IsVisualizing.Value)
@@ -358,6 +371,7 @@ namespace TickTrader.BotTerminal
             ChartPage.IsVisible = false;
             TradesPage.IsVisible = false;
             TradeHistoryPage.IsVisible = false;
+            ResultsPage.IsVisible = false;
 
             OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams(), tester);
         }
@@ -386,7 +400,7 @@ namespace TickTrader.BotTerminal
             observer.SetMessage("Loading testing result data...");
 
             var statProperties = await Task.Factory.StartNew(() => tester.GetStats());
-            ResultsPage.ShowReport(statProperties, tester.PluginInfo);
+            ResultsPage.ShowReport(statProperties, tester.PluginInfo, null);
         }
 
         private async Task LoadChartData(Backtester backtester, IActionObserver observer)
@@ -395,7 +409,7 @@ namespace TickTrader.BotTerminal
             var timeFrame = backtester.CommonSettings.MainTimeframe;
             var count = backtester.GetSymbolHistoryBarCount(mainSymbol);
 
-            timeFrame = AdjustTimeframe(timeFrame, count, out count);
+            timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
 
             //observer.SetMessage("Loading feed chart data ...");
             //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
@@ -441,19 +455,17 @@ namespace TickTrader.BotTerminal
             });
         }
 
-        private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)
+        private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarEntity> bars)
         {
-            const int maxGraphSize = 500;
+            var chartData = new OhlcDataSeries<DateTime, double>();
 
-            for (var i = currentFrame; i > TimeFrames.MN; i--)
+            foreach (var bar in bars)
             {
-                aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, i);
-                if (aproxNewSize <= maxGraphSize)
-                    return i;
+                if (!double.IsNaN(bar.Open))
+                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
             }
 
-            aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, TimeFrames.MN);
-            return TimeFrames.MN;
+            return chartData;
         }
 
         #region Execution control

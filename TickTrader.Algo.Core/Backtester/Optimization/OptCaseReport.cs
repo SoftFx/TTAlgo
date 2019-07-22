@@ -21,5 +21,8 @@ namespace TickTrader.Algo.Core
         //public double MetricVal { get; }
         public Exception ExecError { get; }
         public TestingStatistics Stats { get; }
+
+        public List<BarEntity> Equity { get; set; }
+        public List<BarEntity> Margin { get; set; }
     }
 }

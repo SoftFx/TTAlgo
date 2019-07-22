@@ -13,14 +13,18 @@ namespace TickTrader.BotTerminal
 {
     internal class OptimizationResultsPageViewModel : Page
     {
-        private Dictionary<string, DataColumn> _idToColumnMap = new Dictionary<string, DataColumn>();
+        private readonly Dictionary<string, DataColumn> _idToColumnMap = new Dictionary<string, DataColumn>();
+        private readonly Dictionary<long, OptCaseReport> _reports = new Dictionary<long, OptCaseReport>();
         private DataColumn _idColumn;
         private DataColumn _metricColumn;
 
         public OptimizationResultsPageViewModel()
         {
             DisplayName = "Optimization Results";
+            IsVisible = false;
         }
+
+        public event Action<OptCaseReport> ShowDetailsRequested;
 
         public void Start(IEnumerable<ParameterDescriptor> optParams, Optimizer optimizer)
         {
@@ -47,6 +51,8 @@ namespace TickTrader.BotTerminal
 
         public void Update(OptCaseReport report)
         {
+            _reports[report.Config.Id] = report;
+
             var row = Data.NewRow();
 
             foreach (var pair in report.Config)
@@ -67,8 +73,21 @@ namespace TickTrader.BotTerminal
             Clear();
         }
 
+        public void ShowReport(DataRowView rowView)
+        {
+            if (rowView != null)
+            {
+                var row = rowView.Row;
+                var id = (long)row[_idColumn];
+
+                if (_reports.TryGetValue(id, out var report))
+                    ShowDetailsRequested?.Invoke(report);
+            }
+        }
+
         private void Clear()
         {
+            _reports.Clear();
             Data.Clear();
             Data.Columns.Clear();
             _idToColumnMap.Clear();
