@@ -186,7 +186,7 @@
     !endif
 !macroend
 
-!macro FindAppIdByPath LabelId RetVar AppRootKey PathSubKey InstallPath
+!macro _FindAppIdByPath LabelId RetVar AppRootKey PathSubKey InstallPath
 
     Push $0
     Push $1
@@ -211,7 +211,8 @@
 
 !macroend
 
-!define CreateAppId `!insertmacro CreateGUID`
+!define CreateAppId '!insertmacro CreateGUID'
+!define FindAppIdByPath '!insertmacro _FindAppIdByPath'
 
 ;---END Functions to manage app id---
 

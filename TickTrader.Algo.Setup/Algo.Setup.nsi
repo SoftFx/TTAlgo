@@ -1,14 +1,5 @@
-;--------------------------
-; Includes
+;!define DEBUG
 
-!addplugindir "Plugins"
-
-!include "LogicLib.nsh"
-!include "MUI.nsh"
-!include "x64.nsh"
-
-!include "Algo.Utils.nsh"
-!include "Resources\Resources.en.nsi"
 !include "Algo.Setup.nsh"
 
 ;--------------------------
@@ -41,10 +32,10 @@ VIFileVersion "${PRODUCT_BUILD}"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
-!define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryOnLeave
-!insertmacro MUI_PAGE_DIRECTORY
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE ComponentsOnLeave
 !insertmacro MUI_PAGE_COMPONENTS
+Page custom DirectoryPageCreate DirectoryPageLeave
+Page custom ShortcutPageCreate ShortcutPageLeave
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -83,6 +74,10 @@ InstType Full
 
 Function .onInit
 
+    ${If} ${Runningx64}
+        SetRegView 64
+    ${EndIf}
+
     InstTypeSetText ${StandardInstall} $(StandardInstallText)
     InstTypeSetText ${MinimalInstall} $(MinimalInstallText)
     InstTypeSetText ${TerminalInstall} $(TerminalInstallText)
@@ -92,9 +87,8 @@ Function .onInit
     Call ConfigureComponents
     Call ConfigureInstallTypes
 
-    ${If} ${Runningx64}
-        SetRegView 64
-    ${EndIf}
+    ${Terminal_Init}
+    ${Agent_Init}
 
 FunctionEnd
 
@@ -117,19 +111,18 @@ Section "Core files" TerminalCore
 
     DetailPrint "Installing BotTerminal"
 
-    SetOutPath "$INSTDIR\${TERMINAL_NAME}"
-    ReadRegStr $3 HKLM "${REG_TERMINAL_KEY}\$TerminalId" "Path"
-    ${If} $OUTDIR == $3
+    ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
+    ${If} $Terminal_InstDir == $3
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
 UninstallTerminalLabel:
-        ${CheckTerminalLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
-        ${UninstallApp} $OUTDIR
+        ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
+        ${UninstallApp} $Terminal_InstDir
     ${EndIf}
 
-    !insertmacro UnpackTerminal
-    !insertmacro RegWriteTerminal
-    !insertmacro CreateTerminalShortcuts
-    WriteUninstaller "$INSTDIR\${TERMINAL_NAME}\uninstall.exe"
+    ${Terminal_Unpack}
+    ${Terminal_RegWrite}
+    ${Terminal_CreateShortcuts}
+    WriteUninstaller "$Terminal_InstDir\uninstall.exe"
     Goto TerminalInstallEnd
 SkipTerminalLabel:
     DetailPrint "Skipped BotTerminal installation"
@@ -150,9 +143,7 @@ SectionEnd
 Section "Test Collection" TerminalTestCollection
 
     DetailPrint "Installing TestCollection"
-    
-    SetOutPath "$INSTDIR\${TERMINAL_NAME}\${REPOSITORY_DIR}"
-    !insertmacro UnpackTestCollection
+    ${TestCollection_Unpack}
 
 SectionEnd
 
@@ -167,26 +158,25 @@ Section "Core files" AgentCore
 
     DetailPrint "Installing BotAgent"
 
-    SetOutPath "$INSTDIR\${AGENT_NAME}"
-    ReadRegStr $3 HKLM "${REG_AGENT_KEY}\$AgentId" "Path"
-    ${If} $OUTDIR == $3
+    ReadRegStr $3 HKLM "$Agent_RegKey" "${REG_PATH_KEY}"
+    ${If} $Agent_InstDir == $3
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
-        ${StopService} $AgentServiceId 80
-        ${UninstallApp} $OUTDIR
+        ${StopService} $Agent_ServiceId 80
+        ${UninstallApp} $Agent_InstDir
     ${EndIf}
 
-    !insertmacro UnpackAgent
-    !insertmacro RegWriteAgent
-    !insertmacro CreateConfiguratorShortcuts
-    WriteUninstaller "$INSTDIR\${AGENT_NAME}\uninstall.exe"
+    ${Agent_Unpack}
+    ${Agent_RegWrite}
+    ${Configurator_CreateShortcuts}
+    WriteUninstaller "$Agent_InstDir\uninstall.exe"
 
     DetailPrint "Creating BotAgent service"
-    ${InstallService} $AgentServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$OUTDIR\${AGENT_EXE}" 80
-    ${ConfigureService} $AgentServiceId    
+    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80
+    ${ConfigureService} $Agent_ServiceId    
 
     DetailPrint "Starting BotAgent service"
-    ${StartService} $AgentServiceId 30
+    ${StartService} $Agent_ServiceId 30
     Goto AgentInstallEnd
 SkipAgentLabel:
     DetailPrint "Skipped BotAgent installation"
@@ -221,21 +211,21 @@ SectionEnd
 
 Section Uninstall
 
-    ${FindTerminalId} $INSTDIR
-    ${If} $TerminalId != ${EMPTY_APPID}
+    StrCpy $Terminal_InstDir $INSTDIR
+    ${Terminal_InitId} "Uninstall"
+    ${If} $Terminal_Id != ${EMPTY_APPID}
         
     RetryUninstallTerminal:
-        ${CheckTerminalLock} $(TerminalIsRunningUninstall) RetryUninstallTerminal SkipUninstallTerminal
+        ${Terminal_CheckLock} $(TerminalIsRunningUninstall) RetryUninstallTerminal SkipUninstallTerminal
 
-        ; Remove installed files, but leave generated
-        !insertmacro DeleteTerminalFiles
-        !insertmacro DeleteTerminalShortcuts
+        ${Terminal_DeleteShortcuts}
+        ${Terminal_DeleteFiles}
         
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
         
         ; Remove registry entries
-        !insertmacro RegDeleteTerminal
+        ${Terminal_RegDelete}
         Goto TerminalUninstallEnd
     SkipUninstallTerminal:
         Abort $(UninstallCanceledMessage)
@@ -243,23 +233,21 @@ Section Uninstall
 
     ${EndIf}
 
-    ${FindAgentId} $INSTDIR
-    ${If} $AgentId != ${EMPTY_APPID}
-
-        !insertmacro InitAgentServiceId
+    StrCpy $Agent_InstDir $INSTDIR
+    ${Agent_InitId} "Uninstall"
+    ${If} $Agent_Id != ${EMPTY_APPID}
         
-        ${StopService} $AgentServiceId 80
-        ${UninstallService} $AgentServiceId 80
+        ${StopService} $Agent_ServiceId 80
+        ${UninstallService} $Agent_ServiceId 80
 
-        ; Remove installed files, but leave generated
-        !insertmacro DeleteConfiguratorShortcuts
-        !insertmacro DeleteAgentFiles
+        ${Configurator_DeleteShortcuts}
+        ${Agent_DeleteFiles}
 
         ; Delete self
         Delete "$INSTDIR\uninstall.exe"
 
         ; Remove registry entries
-        !insertmacro RegDeleteAgent
+        ${Agent_RegDelete}
 
     ${EndIf}
 
@@ -303,8 +291,8 @@ Function ConfigureComponents
 
     ${EndSectionManagement}
 
-    SectionGetSize ${TerminalCore} $TerminalSize
-    SectionGetSize ${AgentCore} $AgentSize
+    SectionGetSize ${TerminalCore} $Terminal_Size
+    SectionGetSize ${AgentCore} $Agent_Size
 
 FunctionEnd
 
@@ -442,45 +430,54 @@ FunctionEnd
 ;--------------------------
 ; Callbacks
 
-Function DirectoryOnLeave
-
-    ${FindTerminalId} "$INSTDIR\${TERMINAL_NAME}"
-    ${If} $TerminalId == ${EMPTY_APPID}
-        ${CreateAppId} $TerminalId
-    ${EndIf}
-
-    ${FindAgentId} "$INSTDIR\${AGENT_NAME}"
-    ${If} $AgentId == ${EMPTY_APPID}
-        ${CreateAppId} $AgentId
-    ${EndIf}
-    !insertmacro InitAgentServiceId
-
-FunctionEnd
-
 Function ComponentsOnLeave
 
-    ${If} ${SectionIsSelected} ${TerminalDesktop}
-        StrCpy $TerminalDesktopSelected 1
+    ${If} ${SectionIsSelected} ${TerminalCore}
+        StrCpy $Terminal_CoreSelected ${TRUE}
     ${Else}
-        StrCpy $TerminalDesktopSelected 0
+        StrCpy $Terminal_CoreSelected ${FALSE}
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${TerminalDesktop}
+        StrCpy $Terminal_DesktopSelected ${TRUE}
+    ${Else}
+        StrCpy $Terminal_DesktopSelected ${FALSE}
     ${EndIf}
 
     ${If} ${SectionIsSelected} ${TerminalStartMenu}
-        StrCpy $TerminalStartMenuSelected 1
+        StrCpy $Terminal_StartMenuSelected ${TRUE}
     ${Else}
-        StrCpy $TerminalStartMenuSelected 0
+        StrCpy $Terminal_StartMenuSelected ${FALSE}
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${TerminalTestCollection}
+        StrCpy $TestCollection_Selected ${TRUE}
+    ${Else}
+        StrCpy $TestCollection_Selected ${FALSE}
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${AgentCore}
+        StrCpy $Agent_CoreSelected ${TRUE}
+    ${Else}
+        StrCpy $Agent_CoreSelected ${FALSE}
+    ${EndIf}
+
+    ${If} ${SectionIsSelected} ${ConfiguratorCore}
+        StrCpy $Configurator_CoreSelected ${TRUE}
+    ${Else}
+        StrCpy $Configurator_CoreSelected ${FALSE}
     ${EndIf}
 
     ${If} ${SectionIsSelected} ${ConfiguratorDesktop}
-        StrCpy $ConfiguratorDesktopSelected 1
+        StrCpy $Configurator_DesktopSelected ${TRUE}
     ${Else}
-        StrCpy $ConfiguratorDesktopSelected 0
+        StrCpy $Configurator_DesktopSelected ${FALSE}
     ${EndIf}
 
     ${If} ${SectionIsSelected} ${ConfiguratorStartMenu}
-        StrCpy $ConfiguratorStartMenuSelected 1
+        StrCpy $Configurator_StartMenuSelected ${TRUE}
     ${Else}
-        StrCpy $ConfiguratorStartMenuSelected 0
+        StrCpy $Configurator_StartMenuSelected ${FALSE}
     ${EndIf}
 
 FunctionEnd
