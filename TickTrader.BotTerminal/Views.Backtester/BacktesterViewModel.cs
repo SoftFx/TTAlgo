@@ -321,6 +321,9 @@ namespace TickTrader.BotTerminal
 
                     FireOnStop(optimizer);
 
+                    if (SetupPage.SaveResultsToFile.Value)
+                        await OptimizationResultsPage.SaveReportAsync(pluginSetupModel, observer);
+
                     if (execError != null)
                     {
                         if (execError is AlgoOperationCanceledException)

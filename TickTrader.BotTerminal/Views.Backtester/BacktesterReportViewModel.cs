@@ -49,9 +49,20 @@ namespace TickTrader.BotTerminal
 
         public void SaveAsText(Stream file)
         {
+            SaveProps(file, StatProperties.Value);
+        }
+
+        public static void SaveAsText(Stream file, AlgoTypes pluginType, TestingStatistics stats)
+        {
+            var props = FormatStats(pluginType, stats);
+            SaveProps(file, props);
+        }
+
+        private static void SaveProps(Stream file, Dictionary<string, string> props)
+        {
             using (var writer = new StreamWriter(file))
             {
-                foreach (var prop in StatProperties.Value)
+                foreach (var prop in props)
                 {
                     writer.Write(prop.Key);
                     writer.Write(": ");
@@ -72,21 +83,41 @@ namespace TickTrader.BotTerminal
 
         private Task SaveCsv(Stream entryStream, IActionObserver observer, string dataName, OhlcDataSeries<DateTime, double> data)
         {
-            observer.SetMessage("Saving " + dataName + "...");
-
             return Task.Factory.StartNew(() =>
             {
-                using (var writer = new StreamWriter(entryStream))
-                {
-                    writer.Write("DateTime,Open,High,Low,Close");
+                observer.SetMessage("Saving " + dataName + "...");
 
-                    for (int i = 0; i < data.Count; i++)
-                    {
-                        writer.WriteLine();
-                        writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(data.XValues[i]), data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
-                    }
-                }
+                SaveCsv(entryStream, data);
             });
+            
+        }
+
+        public static void SaveCsv(Stream entryStream, IEnumerable<BarEntity> data)
+        {
+            using (var writer = new StreamWriter(entryStream))
+            {
+                writer.Write("DateTime,Open,High,Low,Close");
+
+                foreach (var bar in data)
+                {
+                    writer.WriteLine();
+                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(bar.OpenTime), bar.Open, bar.High, bar.Low, bar.Close);
+                }
+            }
+        }
+
+        public static void SaveCsv(Stream entryStream, OhlcDataSeries<DateTime, double> data)
+        {
+            using (var writer = new StreamWriter(entryStream))
+            {
+                writer.Write("DateTime,Open,High,Low,Close");
+
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.WriteLine();
+                    writer.Write("{0},{1},{2},{3},{4}", InvariantFormat.CsvFormat(data.XValues[i]), data.OpenValues[i], data.HighValues[i], data.LowValues[i], data.CloseValues[i]);
+                }
+            }
         }
 
         public void ShowReport(TestingStatistics newStats, PluginDescriptor descriptor, long? id)
@@ -94,42 +125,9 @@ namespace TickTrader.BotTerminal
             IsVisible = true;
             UpdateHeader(id);
 
-            var newPropertis = new Dictionary<string, string>();
-            var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(newStats.AccBalanceDigits);
-
             var pluginType = descriptor.Type;
 
-            newPropertis.Add("Bars", newStats.BarsCount.ToString());
-            newPropertis.Add("Ticks", newStats.TicksCount.ToString());
-
-            if (pluginType == AlgoTypes.Robot)
-            {
-                newPropertis.Add("Initial deposit", newStats.InitialBalance.FormatPlain(balanceNumbersFormat));
-                newPropertis.Add("Final equity", newStats.FinalBalance.FormatPlain(balanceNumbersFormat));
-                newPropertis.Add("Total profit", (newStats.FinalBalance - newStats.InitialBalance).FormatPlain(balanceNumbersFormat));
-                newPropertis.Add("Gross profit", newStats.GrossProfit.FormatPlain(balanceNumbersFormat));
-                newPropertis.Add("Gross loss", newStats.GrossLoss.FormatPlain(balanceNumbersFormat));
-                newPropertis.Add("Commission", newStats.TotalComission.FormatPlain(balanceNumbersFormat));
-                newPropertis.Add("Swap", newStats.TotalSwap.FormatPlain(balanceNumbersFormat));
-            }
-
-            newPropertis.Add("Testing time", Format(newStats.Elapsed));
-
-            var tickPerSecond = "N/A";
-            if (newStats.Elapsed.TotalSeconds > 0)
-                tickPerSecond = (newStats.TicksCount / newStats.Elapsed.TotalSeconds).ToString("N0");
-
-            newPropertis.Add("Testing speed (tps)", tickPerSecond);
-
-            if (pluginType == AlgoTypes.Robot)
-            {
-                newPropertis.Add("Orders opened", newStats.OrdersOpened.ToString());
-                newPropertis.Add("Orders rejected", newStats.OrdersRejected.ToString());
-                newPropertis.Add("Order modifications", newStats.OrderModifications.ToString());
-                newPropertis.Add("Order modifications rejected", newStats.OrderModificationRejected.ToString());
-            }
-
-            _statProperties.Value = newPropertis;
+            _statProperties.Value = FormatStats(pluginType, newStats);
 
             if (pluginType == AlgoTypes.Robot)
             {
@@ -141,6 +139,44 @@ namespace TickTrader.BotTerminal
                     .AddStackedColumns(newStats.ProfitByWeekDays, ReportSeriesStyles.ProfitColumns, true)
                     .AddStackedColumns(newStats.LossByWeekDays, ReportSeriesStyles.LossColumns, true));
             }
+        }
+
+        private static Dictionary<string, string> FormatStats(AlgoTypes pluginType, TestingStatistics stats)
+        {
+            var props = new Dictionary<string, string>();
+            var balanceNumbersFormat = FormatExtentions.CreateTradeFormatInfo(stats.AccBalanceDigits);
+
+            props.Add("Bars", stats.BarsCount.ToString());
+            props.Add("Ticks", stats.TicksCount.ToString());
+
+            if (pluginType == AlgoTypes.Robot)
+            {
+                props.Add("Initial deposit", stats.InitialBalance.FormatPlain(balanceNumbersFormat));
+                props.Add("Final equity", stats.FinalBalance.FormatPlain(balanceNumbersFormat));
+                props.Add("Total profit", (stats.FinalBalance - stats.InitialBalance).FormatPlain(balanceNumbersFormat));
+                props.Add("Gross profit", stats.GrossProfit.FormatPlain(balanceNumbersFormat));
+                props.Add("Gross loss", stats.GrossLoss.FormatPlain(balanceNumbersFormat));
+                props.Add("Commission", stats.TotalComission.FormatPlain(balanceNumbersFormat));
+                props.Add("Swap", stats.TotalSwap.FormatPlain(balanceNumbersFormat));
+            }
+
+            props.Add("Testing time", Format(stats.Elapsed));
+
+            var tickPerSecond = "N/A";
+            if (stats.Elapsed.TotalSeconds > 0)
+                tickPerSecond = (stats.TicksCount / stats.Elapsed.TotalSeconds).ToString("N0");
+
+            props.Add("Testing speed (tps)", tickPerSecond);
+
+            if (pluginType == AlgoTypes.Robot)
+            {
+                props.Add("Orders opened", stats.OrdersOpened.ToString());
+                props.Add("Orders rejected", stats.OrdersRejected.ToString());
+                props.Add("Order modifications", stats.OrderModifications.ToString());
+                props.Add("Order modifications rejected", stats.OrderModificationRejected.ToString());
+            }
+
+            return props;
         }
 
         public void AddEquityChart(OhlcDataSeries<DateTime, double> bars)
