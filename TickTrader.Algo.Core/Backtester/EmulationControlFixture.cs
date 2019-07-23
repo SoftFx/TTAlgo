@@ -24,10 +24,10 @@ namespace TickTrader.Algo.Core
             remove => InvokeEmulator.StateUpdated -= value;
         }
 
-        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
+        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc, FeedEmulator fEmulator)
         {
             Settings = settings;
-            Feed = new FeedEmulator();
+            Feed = fEmulator ?? new FeedEmulator();
             Collector = new BacktesterCollector(executor);
             InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, executor.Start, executor.EmulateStop);
             TradeHistory = new TradeHistoryEmulator();

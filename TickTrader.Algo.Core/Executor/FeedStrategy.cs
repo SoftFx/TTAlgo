@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
     public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext, CustomFeedProvider
     {
         private MarketStateFixture _marketFixture;
-        private List<Action> setupActions = new List<Action>();
+        private readonly List<Action<FeedStrategy>> _setupActions = new List<Action<FeedStrategy>>();
 
         public FeedStrategy()
         {
@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
         protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
+        protected abstract FeedStrategy CreateClone();
         //protected abstract IEnumerable<Bar> QueryBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
         //protected abstract IEnumerable<Quote> QueryQuotes(string symbol, DateTime from, DateTime to, bool level2);
 
@@ -42,7 +43,7 @@ namespace TickTrader.Algo.Core
             RateDispenser.ClearUserSubscriptions();
             OnInit();
             BufferingStrategy.Init(this);
-            setupActions.ForEach(a => a());
+            _setupActions.ForEach(a => a(this));
         }
 
         internal virtual void Start()
@@ -57,14 +58,21 @@ namespace TickTrader.Algo.Core
             Feed.Sync.Invoke(StopStrategy);
         }
 
+        internal FeedStrategy Clone()
+        {
+            var copy = CreateClone();
+            copy._setupActions.AddRange(_setupActions);
+            return copy;
+        }
+
         internal void SetSubscribed(string symbol, int depth)
         {
             RateDispenser.SetUserSubscription(symbol, depth);
         }
 
-        protected void AddSetupAction(Action setupAction)
+        protected void AddSetupAction(Action<FeedStrategy> setupAction)
         {
-            setupActions.Add(setupAction);
+            _setupActions.Add(setupAction);
         }
 
         private void StartStrategy()

@@ -42,14 +42,16 @@ namespace TickTrader.Algo.Core
         public TestingStatistics Stats { get; private set; }
         public InvokeEmulator InvokeEmulator { get; internal set; }
 
+        internal int EquityHistorySize => _equityCollector.Count;
+
         private DateTime VirtualTimepoint => InvokeEmulator.UnsafeVirtualTimePoint;
 
         public void OnStart(IBacktesterSettings settings, FeedEmulator feed)
         {
             Stats = new TestingStatistics();
             _startTime = DateTime.UtcNow;
-            _mainSymbol = settings.MainSymbol;
-            _mainTimeframe = settings.MainTimeframe;
+            _mainSymbol = settings.CommonSettings.MainSymbol;
+            _mainTimeframe = settings.CommonSettings.MainTimeframe;
 
             InitJournal(settings);
 
@@ -63,9 +65,9 @@ namespace TickTrader.Algo.Core
         {
             if (acc != null && acc.IsMarginType)
             {
-                Stats.InitialBalance = settings.InitialBalance;
+                Stats.InitialBalance = settings.CommonSettings.InitialBalance;
                 Stats.FinalBalance = acc.Balance;
-                Stats.AccBalanceDigits = acc.BalanceCurrencyInfo.Digits;
+                Stats.AccBalanceDigits = acc.BalanceCurrencyInfo?.Digits ?? 00;
             }
 
             var mainVector = feed?.GetBarBuilder(_mainSymbol, _mainTimeframe, BarPriceType.Bid);
@@ -241,6 +243,16 @@ namespace TickTrader.Algo.Core
             const int pageSize = 4000;
 
             return collection.GetCrossDomainEnumerator(pageSize);
+        }
+
+        internal IEnumerable<BarEntity> LocalGetEquityHistory(TimeFrames targeTimeframe)
+        {
+            return _equityCollector.Snapshot.Transform(targeTimeframe);
+        }
+
+        internal IEnumerable<BarEntity> LocalGetMarginHistory(TimeFrames targeTimeframe)
+        {
+            return _marginCollector.Snapshot.Transform(targeTimeframe);
         }
 
         #region Output collection

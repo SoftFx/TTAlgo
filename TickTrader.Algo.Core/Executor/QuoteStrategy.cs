@@ -29,14 +29,19 @@ namespace TickTrader.Algo.Core
             return quote;
         }
 
+        protected override FeedStrategy CreateClone()
+        {
+            return new QuoteStrategy();
+        }
+
         public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)
         {
-            AddSetupAction(() =>
+            AddSetupAction(fs =>
             {
                 if (symbolCode != mainSeries.SymbolCode)
                     throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
 
-                ExecContext.Builder.MapInput(inputName, symbolCode, selector);
+                fs.ExecContext.Builder.MapInput(inputName, symbolCode, selector);
             });
         }
 

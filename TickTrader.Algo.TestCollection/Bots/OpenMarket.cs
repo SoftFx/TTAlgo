@@ -32,5 +32,10 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (!DoNotExit)
                 Exit();
         }
+
+        protected override double GetOptimizationMetric()
+        {
+            return Account.Equity / 4;
+        }
     }
 }

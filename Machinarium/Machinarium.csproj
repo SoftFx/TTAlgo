@@ -62,6 +62,8 @@
     <Compile Include="EntityModel\ObservableObject.cs" />
     <Compile Include="EntityModel\PropertyConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Validation2\Interfaces.cs" />
+    <Compile Include="Validation2\Validator.cs" />
     <Compile Include="Var.Collections\DictionaryComposition.cs" />
     <Compile Include="Var.Collections\DictionaryGrouping.cs" />
     <Compile Include="Var.Collections\DictionarySelector.cs" />
@@ -109,6 +111,7 @@
     <Compile Include="Var\Interfaces.cs" />
     <Compile Include="Var\IntVar.cs" />
     <Compile Include="Var\Operator.cs" />
+    <Compile Include="Var\RefOperator.cs" />
     <Compile Include="Var\SelectOperator.cs" />
     <Compile Include="Var\StateMachine.cs" />
     <Compile Include="Var\StateMachineBase.cs" />

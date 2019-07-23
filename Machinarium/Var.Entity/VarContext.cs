@@ -8,7 +8,7 @@ namespace Machinarium.Var
 {
     public sealed class VarContext : EntityBase
     {
-        public PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
+        public new PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
         {
             var converter = new PropConverter<TProp, T>(property, valueConverter);
             AddDisposableChild(converter);

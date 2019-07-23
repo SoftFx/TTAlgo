@@ -51,6 +51,7 @@
     <Compile Include="DictionaryTests.cs" />
     <Compile Include="ListTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelectOperatorTest.cs" />
     <Compile Include="SortedListTests.cs" />
   </ItemGroup>
   <ItemGroup>

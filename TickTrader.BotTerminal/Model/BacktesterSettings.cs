@@ -24,14 +24,19 @@ namespace TickTrader.BotTerminal
 
         public void Apply(Backtester tester)
         {
-            tester.InitialBalance = InitialBalance;
-            tester.BalanceCurrency = BalanceCurrency;
-            tester.Leverage = Leverage;
-            tester.AccountType = AccType;
-            tester.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
-            tester.WarmupSize = WarmupValue;
-            tester.WarmupUnits = WarmupUnits;
+            Apply(tester.CommonSettings);
             tester.JournalFlags = JournalSettings;
+        }
+
+        public void Apply(CommonTestSettings settings)
+        {
+            settings.InitialBalance = InitialBalance;
+            settings.BalanceCurrency = BalanceCurrency;
+            settings.Leverage = Leverage;
+            settings.AccountType = AccType;
+            settings.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
+            settings.WarmupSize = WarmupValue;
+            settings.WarmupUnits = WarmupUnits;
         }
 
         public string ToText(bool compact)

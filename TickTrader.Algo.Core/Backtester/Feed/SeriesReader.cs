@@ -14,5 +14,6 @@ namespace TickTrader.Algo.Core
         public abstract void Start();
         public abstract void Stop();
         public abstract bool MoveNext();
+        public abstract SeriesReader Clone();
     }
 }

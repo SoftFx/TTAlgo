@@ -61,7 +61,6 @@ namespace Machinarium.Var
             return property;
         }
 
-
         protected BoolProperty AddBoolProperty(bool initialValue = false, string notifyName = null)
         {
             var property = new BoolProperty();
@@ -105,6 +104,13 @@ namespace Machinarium.Var
             property.Name = notifyName;
             AddDisposableChild(property);
             return property;
+        }
+
+        protected PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
+        {
+            var converter = new PropConverter<TProp, T>(property, valueConverter);
+            AddDisposableChild(converter);
+            return converter;
         }
 
         private void RegisterPropertyNotification<T>(Property<T> property, string name)

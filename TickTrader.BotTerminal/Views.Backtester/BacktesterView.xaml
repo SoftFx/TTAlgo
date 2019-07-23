@@ -11,176 +11,55 @@
         <TextBlock Text="{l:ResxBinding Prefix=FeedEmulationModel_}"/>
     </DataTemplate>
 
-    <ControlTemplate x:Key="SetupPage.Classic">
-
-        <ControlTemplate.Resources>
-
-            <Style x:Key="SmallButtonStyle" TargetType="Button">
-                <Setter Property="Height" Value="22" />
-                <Setter Property="Width" Value="22" />
-            </Style>
-
-            <Style x:Key="SideButtonStyle" TargetType="Button">
-                <Setter Property="Height" Value="22" />
-                <Setter Property="Width" Value="22" />
-                <Setter Property="Margin" Value="4,2,3,2"/>
-            </Style>
-
-            <DataTemplate x:Key="PluginComboGroupTemplate">
-                <Grid IsEnabled="False">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Separator Grid.Column="0"/>
-                    <TextBlock Text="{Binding Name}" Grid.Column="1" Margin="4" FontStyle="Italic"/>
-                    <Separator Grid.Column="2"/>
-                </Grid>
-            </DataTemplate>
-
-            <DataTemplate x:Key="PluginComboItemTemplate">
-                <TextBlock Text="{Binding DisplayName}"/>
-            </DataTemplate>
-
-            <Style TargetType="Label">
-                <Setter Property="HorizontalAlignment" Value="Right"/>
-                <Setter Property="Margin" Value="0,0,2,0"/>
-            </Style>
-
-        </ControlTemplate.Resources>
-
-        <ScrollViewer Name="ScrollPanel" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-            <Grid Name="RootGrid" MinWidth="300" Width="{Binding ViewportWidth, ElementName=ScrollPanel}">
-                <Grid Margin="5" IsEnabled="{Binding CanSetup.Value}">
-
-                    <Grid.Resources>
-                        <CollectionViewSource x:Key="PluginsCollection" Source="{Binding Plugins}">
-                            <CollectionViewSource.GroupDescriptions>
-                                <PropertyGroupDescription PropertyName="Group"/>
-                            </CollectionViewSource.GroupDescriptions>
-                        </CollectionViewSource>
-                    </Grid.Resources>
-
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="14"/> <!-- for error indicators --> 
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <Label Grid.Column="0" Grid.Row="0" Content="Bot/Indicator:"/>
-                    <ComboBox Grid.Column="2" Grid.Row="0" ItemsSource="{Binding Source={StaticResource PluginsCollection}}"
-                      ItemTemplate="{StaticResource PluginComboItemTemplate}" SelectedValue="{Binding SelectedPlugin.Value}" >
-                        <ComboBox.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource PluginComboGroupTemplate}" />
-                        </ComboBox.GroupStyle>
-                    </ComboBox>
-
-                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="0" cal:Message.Attach="OpenPluginSetup"
-                            IsEnabled="{Binding IsPluginSelected.Value}" Style="{StaticResource SideButtonStyle}"/>
-
-                    <StackPanel Orientation="Horizontal" Grid.Column="2" Grid.Row="1">
-                        <CheckBox Content="Save results to file" IsChecked="{Binding SaveResultsToFile.Value}" Margin="25,4,0,12" />
-                        <CheckBox Content="Visualization" IsChecked="{Binding IsVisualizationEnabled.Value}" Margin="25,4,0,12" />
-                    </StackPanel>
-
-                    <Label Content="Account:" Grid.Column="0" Grid.Row="2"/>
-                    <TextBox Text="{Binding TradeSettingsSummary.Value, Mode=OneWay}" Grid.Column="2" Grid.Row="2" IsReadOnly="True"/>
-
-                    <Button Content="{DynamicResource CogwheelIcon}" Grid.Column="3" Grid.Row="2" cal:Message.Attach="OpenTradeSetup"
-                            Style="{StaticResource SideButtonStyle}"/>
-
-                    <ContentControl cal:View.Model="{Binding MainSymbolSetup}" Grid.Row="3" Grid.ColumnSpan="4"/>
-
-                    <Label Grid.Column="0" Grid.Row="4" Content="Model:"/>
-                    <ComboBox Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" ItemsSource="{Binding AvailableModels.Value}" SelectedItem="{Binding SelectedModel.Value}"
-                              ItemTemplate="{StaticResource ModelTemplate}" Margin="0,4,4,0"/>
-
-                    <ItemsControl ItemsSource="{Binding AdditionalSymbols}" Grid.ColumnSpan="4" Grid.Row="5" ItemTemplate="{StaticResource CaliburnViewTemplate}"/>
-
-                    <Label Grid.Column="0" Grid.Row="6" Content="Time range:"/>
-                    <l:WaitIndicator x:Name="RangeUpdateIndicator" Grid.Column="2" Grid.Row="6" Height="22" Content="Updating..." Margin="2" Visibility="Hidden" />
-                    <ContentControl Name="DateRangeSelector" cal:View.Model="{Binding DateRange}" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,4,4,0"
-                                    IsEnabled="{Binding IsDateRangeEnabled.Value}"/>
-                </Grid>
-            </Grid>
-        </ScrollViewer>
-
-        <ControlTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsUpdatingRange.Value}" Value="True">
-                <Setter TargetName="DateRangeSelector" Property="Visibility" Value="Hidden"/>
-                <Setter TargetName="RangeUpdateIndicator" Property="Visibility" Value="Visible"/>
-            </DataTrigger>
-        </ControlTemplate.Triggers>
-
-    </ControlTemplate>
-
     <ControlTemplate x:Key="BacktesterViewTemplate.Classic">
         <!--<l:OverlayPanel OverlayModel="{Binding ActionOverlay.Value}">-->
-            <Grid Background="{TemplateBinding Background}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>  <!-- 0 - toolbar -->
-                    <RowDefinition/>                <!-- 1 - body -->
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <Grid Background="{TemplateBinding Background}" cal:Bind.Model="{Binding}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- 0 - toolbar -->
+                <RowDefinition/>
+                <!-- 1 - body -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
-                    <Button Name="startBtn" Content="{DynamicResource PlayToolIcon}" ToolTip="Start" l:Icon.Fill="Green"
+            <ToolBar Name="toolBar" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Focusable="False" Margin="5,5,5,0">
+                <Button Name="startBtn" Content="{DynamicResource PlayToolIcon}" ToolTip="Start" l:Icon.Fill="Green"
                             Margin="3,0,0,0" Focusable="False" cal:Message.Attach="StartEmulation" IsEnabled="{Binding CanStart.Value}" />
-                    <Button Content="{DynamicResource StopToolIcon}" ToolTip="Stop" l:Icon.Fill="Red"
+                <Button Content="{DynamicResource StopToolIcon}" ToolTip="Stop" l:Icon.Fill="Red"
                             Margin="3,0,0,0" Focusable="False" cal:Message.Attach="Cancel" IsEnabled="{Binding CanCanel.Value}"/>
-                    <Separator/>
-                    <Button Content="{DynamicResource PauseToolIcon}" ToolTip="Pause" l:Icon.Fill="Green"
+                <Separator/>
+                <Button Content="{DynamicResource PauseToolIcon}" ToolTip="Pause" l:Icon.Fill="Green"
                             Margin="3,0,0,0" Focusable="False" cal:Message.Attach="PauseEmulation" IsEnabled="{Binding CanPause.Value}"/>
-                    <!--<Button Content="Resume" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="ResumeEmulation" IsEnabled="{Binding CanResume.Value}"/>-->
-                    <Slider Margin="6,0,3,0" Maximum="9" Minimum="0" Value="{Binding SelectedSpeed.Value}" VerticalAlignment="Center" Width="150"
+                <!--<Button Content="Resume" Margin="3,0,0,0" Focusable="False" cal:Message.Attach="ResumeEmulation" IsEnabled="{Binding CanResume.Value}"/>-->
+                <Slider Margin="6,0,3,0" Maximum="9" Minimum="0" Value="{Binding SelectedSpeed.Value}" VerticalAlignment="Center" Width="150"
                             IsEnabled="{Binding CanControlSpeed.Value}"/>
-                    <Separator/>
-                    <Button Content="{DynamicResource ZoomInToolIcon}" ToolTip="Zoom Chart In" l:Icon.Fill="Black"
+                <Separator/>
+                <Button Content="{DynamicResource ZoomInToolIcon}" ToolTip="Zoom Chart In" l:Icon.Fill="Black"
                             Margin="3,0,0,0" cal:Message.Attach="ZoomIn" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}" />
-                    <Button Content="{DynamicResource ZoomOutToolIcon}" ToolTip="Zoom Chart Out" l:Icon.Fill="Black"
+                <Button Content="{DynamicResource ZoomOutToolIcon}" ToolTip="Zoom Chart Out" l:Icon.Fill="Black"
                             Margin="3,0,0,0" cal:Message.Attach="ZoomOut" cal:Action.TargetWithoutContext="{Binding ChartPage.ChartControlModel}"/>
-                    <Separator/>
-                    <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
+                <Separator/>
+                <ToggleButton Content="{DynamicResource CrosshairsToolIcon}" ToolTip="Toggle Crosshairs" l:Icon.Fill="Black"
                                   Margin="3,0,0,0" IsChecked="{Binding ChartPage.ChartControlModel.IsCrosshairEnabled.Value}"/>
-                    <ToggleButton Content="{DynamicResource AutoScrollToolIcon}" ToolTip="Auto-scroll to new data" IsChecked="{Binding ChartPage.ChartControlModel.AutoScroll.Value, Mode=TwoWay}"
+                <ToggleButton Content="{DynamicResource AutoScrollToolIcon}" ToolTip="Auto-scroll to new data" IsChecked="{Binding ChartPage.ChartControlModel.AutoScroll.Value, Mode=TwoWay}"
                                   Margin="3,0,0,0" l:Icon.Fill="Black"/>
-                    </ToolBar>
+            </ToolBar>
 
-                <TabControl Name="tabBody" Grid.Row="1" Margin="5">
-                    <TabItem Header="Setup">
-                        <UserControl Template="{StaticResource SetupPage.Classic}"/>
-                    </TabItem>
-                    <TabItem Header="Journal">
-                        <UserControl cal:View.Model="{Binding JournalPage}"/>
-                    </TabItem>
-                    <TabItem Header="Trades" Visibility="{Binding IsVisualizing.Value, Converter={StaticResource BoolToVis}}">
-                        <ContentControl cal:View.Model="{Binding TradesPage}"/>
-                    </TabItem>
-                    <TabItem Header="Trade History">
-                        <ContentControl cal:View.Model="{Binding TradeHistoryPage}"/>
-                    </TabItem>
-                    <TabItem Header="Graph">
-                        <ContentControl cal:View.Model="{Binding ChartPage}"/>
-                    </TabItem>
-                    <TabItem Header="Report">
-                        <ContentControl cal:View.Model="{Binding ResultsPage}"/>
-                    </TabItem>
-                </TabControl>
+            <TabControl Name="Items" Grid.Row="1" Margin="5">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+            </TabControl>
 
-                <ContentControl Name="progressMonitor" Grid.Row="2" cal:View.Model="{Binding ProgressMonitor}" Visibility="Collapsed"/>
+            <ContentControl Name="progressMonitor" Grid.Row="2" cal:View.Model="{Binding ProgressMonitor}" Visibility="Collapsed"/>
 
-                <!--<Border Name="progressPopup" Grid.Row="1" Padding="8"
+            <!--<Border Name="progressPopup" Grid.Row="1" Padding="8"
                     VerticalAlignment="Center" Margin="15"
                     Background="LightGray" Visibility="Collapsed">
                 <Grid>
@@ -191,15 +70,15 @@
                     </Grid.ColumnDefinitions>
                     <ContentControl cal:View.Model="{Binding ProgressMonitor}" Grid.Column="0" IsEnabled="False"/>
                     -->
-                <!--<Button cal:Message.Attach="Start" Content="Start"
+            <!--<Button cal:Message.Attach="Start" Content="Start"
                         IsEnabled="{Binding CanStart.Value}" Grid.Column="1" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />-->
-                <!--
+            <!--
                     <Button cal:Message.Attach="Stop" Content="Cancel"
                         IsEnabled="{Binding CanStop.Value}" Grid.Column="2" Width="70" VerticalAlignment="Center" Margin="0,0,5,0" />
                 </Grid>
             </Border>-->
 
-            </Grid>
+        </Grid>
         <!--</l:OverlayPanel>-->
 
         <ControlTemplate.Triggers>
@@ -251,8 +130,8 @@
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
         <Setter Property="ShowInTaskbar" Value="True"/>
-        <Setter Property="Width" Value="700"/>
-        <Setter Property="Height" Value="500"/>
+        <Setter Property="Width" Value="750"/>
+        <Setter Property="Height" Value="550"/>
     </Style>
 
     <Style x:Key="BacktesterViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BacktesterViewStyle.Common}">

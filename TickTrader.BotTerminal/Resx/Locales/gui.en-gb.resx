@@ -495,4 +495,19 @@
   <data name="ShowSwap" xml:space="preserve">
     <value>Show Swap</value>
   </data>
+  <data name="OptMetric_Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="OptMetric_Equity" xml:space="preserve">
+    <value>max Balance</value>
+  </data>
+  <data name="OptMode_Bruteforce" xml:space="preserve">
+    <value>Slow algorithm (brute-force)</value>
+  </data>
+  <data name="OptMode_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OptMode_Genetic" xml:space="preserve">
+    <value>Fast algorithm (genetic)</value>
+  </data>
 </root>

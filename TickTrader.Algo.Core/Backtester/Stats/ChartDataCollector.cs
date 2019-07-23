@@ -30,6 +30,9 @@ namespace TickTrader.Algo.Core
 
         public void AppendQuote(double price)
         {
+            if (_currentBar == null)
+                return;
+
             if (_currentBar.Volume < 0)
             {
                 _currentBar.Open = price;
@@ -67,21 +70,24 @@ namespace TickTrader.Algo.Core
 
         private void Init(TestDataSeriesFlags seriesFlags, DataSeriesTypes dataType, string seriesId)
         {
-            _timeRef.BarOpened += _timeRef_BarOpened;
-            _timeRef.BarClosed += _timeRef_BarClosed;
-
-            _type = dataType;
-            _streamId = seriesId;
-
-            if (seriesFlags.HasFlag(TestDataSeriesFlags.Snapshot))
-                _snapshot = new List<BarEntity>();
-
-            if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
+            if (seriesFlags != TestDataSeriesFlags.Disabled)
             {
-                if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
-                    _sendOnUpdate = true;
-                else
-                    _sendOnClose = true;
+                _timeRef.BarOpened += _timeRef_BarOpened;
+                _timeRef.BarClosed += _timeRef_BarClosed;
+
+                _type = dataType;
+                _streamId = seriesId;
+
+                if (seriesFlags.HasFlag(TestDataSeriesFlags.Snapshot))
+                    _snapshot = new List<BarEntity>();
+
+                if (seriesFlags.HasFlag(TestDataSeriesFlags.Stream))
+                {
+                    if (seriesFlags.HasFlag(TestDataSeriesFlags.Realtime))
+                        _sendOnUpdate = true;
+                    else
+                        _sendOnClose = true;
+                }
             }
         }
 

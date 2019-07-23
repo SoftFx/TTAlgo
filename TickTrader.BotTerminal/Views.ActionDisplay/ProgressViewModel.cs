@@ -33,6 +33,18 @@ namespace TickTrader.BotTerminal
         public Property<double> Progress { get; private set; }
         public Property<string> Message { get; }
 
+        public void StartIndeterminateProgress()
+        {
+            Execute.OnUIThread(() =>
+            {
+                ProgressMin.Value = 0;
+                ProgressMax.Value = 100;
+                Progress.Value = 0;
+                IsIndeterminate.Set();
+            });
+
+        }
+
         public void StartProgress(double min, double max)
         {
             Execute.OnUIThread(() =>
@@ -42,6 +54,7 @@ namespace TickTrader.BotTerminal
 
                 ProgressMin.Value = min;
                 ProgressMax.Value = max;
+                Progress.Value = min;
                 IsIndeterminate.Clear();
             });
         }

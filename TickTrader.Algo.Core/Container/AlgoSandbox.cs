@@ -53,6 +53,11 @@ namespace TickTrader.Algo.Core.Container
             return new PluginExecutor(pluginId);
         }
 
+        public PluignExecutorFactory CreateExecutorFactory(string pluginId)
+        {
+            return new PluignExecutorFactory(pluginId);
+        }
+
         private void LoadAndInspect(string filePath)
         {
             Assembly algoAssembly = LoadAssembly(filePath);

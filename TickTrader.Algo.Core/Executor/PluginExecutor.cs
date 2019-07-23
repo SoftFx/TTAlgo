@@ -541,10 +541,15 @@ namespace TickTrader.Algo.Core
 
         #region Emulator Support
 
-        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType)
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType, FeedEmulator emulator = null, FeedStrategy fStrategy = null)
         {
-            var fixture = new EmulationControlFixture(settings, this, calcFixture);
+            var fixture = new EmulationControlFixture(settings, this, calcFixture, emulator);
             InvokeStrategy = fixture.InvokeEmulator;
+            if (fStrategy != null)
+            {
+                this.fStrategy = fStrategy;
+                feedProvider = emulator;
+            }
             _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);

@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         private DateTime _lastBarTime;
         private BarEntity _lastBid;
         private BarEntity _lastAsk;
+        private TimeFrames _baseTimeFrame;
 
         //private IBarStorage _bidStorage;
         //private IBarStorage _askStorage;
@@ -38,6 +39,8 @@ namespace TickTrader.Algo.Core
 
             if (bidSrc == null && askSrc == null)
                 throw new InvalidOperationException("Both ask and bid streams are null!");
+
+            _baseTimeFrame = baseTimeFrame;
 
             // add base builders
 
@@ -151,6 +154,11 @@ namespace TickTrader.Algo.Core
                 return TakeAskBar();
             else
                 return false;
+        }
+
+        public override SeriesReader Clone()
+        {
+            return new BarSeriesReader(_symbol, _baseTimeFrame, _bidSrc, _askSrc);
         }
 
         protected virtual RateUpdate GetCurrentRate()

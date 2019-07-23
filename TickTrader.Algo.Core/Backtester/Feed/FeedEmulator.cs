@@ -16,6 +16,19 @@ namespace TickTrader.Algo.Core
 
         ISynchronizationContext IPluginFeedProvider.Sync => this;
 
+        public FeedEmulator()
+        {
+        }
+
+        private FeedEmulator(FeedEmulator src)
+        {
+            foreach (var rec in src._feedReaders)
+            {
+                _feedReaders.Add(rec.Key, rec.Value.Clone());
+                _feedSeries.Add(rec.Key, new FeedSeriesEmulator());
+            }
+        }
+
         internal IEnumerable<RateUpdate> GetFeedStream()
         {
             var reader = new FeedReader(_feedReaders.Values);
@@ -91,6 +104,19 @@ namespace TickTrader.Algo.Core
             if (!_feedSeries.TryGetValue(symbol, out src))
                 throw new MisconfigException("No feed source for symbol " + symbol);
             return src;
+        }
+
+        internal FeedEmulator Clone()
+        {
+            return new FeedEmulator(this);
+        }
+
+        public override void Dispose()
+        {
+            foreach (var reader in _feedReaders.Values)
+                reader.Stop();
+
+            base.Dispose();
         }
 
         #region IPluginFeedProvider
