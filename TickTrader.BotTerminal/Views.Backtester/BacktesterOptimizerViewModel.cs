@@ -14,6 +14,14 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterOptimizerViewModel : Page
     {
+        private static readonly Dictionary<string, MetricProvider> MetricSelectors = new Dictionary<string, MetricProvider>();
+
+        static BacktesterOptimizerViewModel()
+        {
+            MetricSelectors.Add("Equity", new MetricProvider.Equity());
+            MetricSelectors.Add("Custom", new MetricProvider.Custom());
+        }
+
         private PluginDescriptor _descriptor;
         private WindowManager _localWnd;
 
@@ -30,6 +38,8 @@ namespace TickTrader.BotTerminal
             var maxCores = Environment.ProcessorCount;
             AvailableParallelismList = Enumerable.Range(1, maxCores);
             ParallelismProp.Value = maxCores;
+
+            SelectedMetric.Value = MetricSelectors.First();
         }
 
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
@@ -40,10 +50,13 @@ namespace TickTrader.BotTerminal
         public IntProperty ParallelismProp { get; } = new IntProperty();
         public IEnumerable<OptimizationModes> AvailableModes => EnumHelper.AllValues<OptimizationModes>();
         public Property<OptimizationModes> ModeProp { get; } = new Property<OptimizationModes>();
+        public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
+        public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
 
         public void Apply(Optimizer optimizer)
         {
             optimizer.DegreeOfParallelism = ParallelismProp.Value;
+            optimizer.MetricSelector = SelectedMetric.Value.Value;
 
             foreach (var param in Parameters)
                 param.Apply(optimizer);

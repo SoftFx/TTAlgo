@@ -18,11 +18,11 @@
             </Grid.RowDefinitions>
            
             <Label Content="From:" Grid.Row="0" Grid.Column="0"/>
-            <Label Content="Step:" Grid.Row="0" Grid.Column="1"/>
-            <Label Content="To:" Grid.Row="0" Grid.Column="2"/>
+            <Label Content="To:" Grid.Row="0" Grid.Column="1"/>
+            <Label Content="Step:" Grid.Row="0" Grid.Column="2"/>
             <TextBox Text="{l:ValidationBinding MinStr.Value}" Grid.Row="1" Grid.Column="0" Margin="2"/>
-            <TextBox Text="{l:ValidationBinding StepStr.Value}" Grid.Row="1" Grid.Column="1" Margin="2"/>
-            <TextBox Text="{l:ValidationBinding MaxStr.Value }" Grid.Row="1" Grid.Column="2" Margin="2"/>
+            <TextBox Text="{l:ValidationBinding MaxStr.Value }" Grid.Row="1" Grid.Column="1" Margin="2"/>
+            <TextBox Text="{l:ValidationBinding StepStr.Value}" Grid.Row="1" Grid.Column="2" Margin="2"/>
         </Grid>
     </DataTemplate>
 

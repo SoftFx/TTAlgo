@@ -444,4 +444,10 @@
   <data name="ShowSwap" xml:space="preserve">
     <value>##ShowSwap##</value>
   </data>
+  <data name="OptMetric_Custom" xml:space="preserve">
+    <value>##OptMetric_Custom##</value>
+  </data>
+  <data name="OptMetric_Equity" xml:space="preserve">
+    <value>##OptMetric_Equity##</value>
+  </data>
 </root>

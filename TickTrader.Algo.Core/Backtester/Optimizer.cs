@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         private readonly Dictionary<string, ParamSeekSet> _params = new Dictionary<string, ParamSeekSet>();
         private ParamSeekStrategy _seekStrategy;
         private EmulatorStates _innerState = EmulatorStates.Stopped;
+        private MetricProvider _mSelector = MetricProvider.Default;
 
         public Optimizer(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
@@ -36,6 +37,18 @@ namespace TickTrader.Algo.Core
         public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
         public EmulatorStates State { get; private set; }
         public int DegreeOfParallelism { get; set; } = 1;
+        public MetricProvider MetricSelector
+        {
+            get => _mSelector;
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("MetricSelector cannot be null!");
+
+                _mSelector = value;
+                _core.MetricSelector = value;
+            }
+        }
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred;
         public event Action<OptCaseReport, long> CaseCompleted;
@@ -194,6 +207,7 @@ namespace TickTrader.Algo.Core
             public CommonTestSettings CommonSettings { get; private set; }
             public PluignExecutorFactory Factory { get; set; }
             public ParamSeekStrategy SeekStrategy { get; private set; }
+            public MetricProvider MetricSelector { get; set; } = MetricProvider.Default;
             public int EquityHistoryTargetSize { get; set; } = 500;
 
             //public void SetStrategy(ParamSeekStrategy strategy)
@@ -268,7 +282,7 @@ namespace TickTrader.Algo.Core
                     emFixture.OnStop();
                 }
 
-                var report = FilleReport(caseCfg, emFixture.Collector, execError);
+                var report = FilleReport(caseCfg, emFixture.Executor.GetBuilder(), emFixture.Collector, execError);
 
                 emFixture.Dispose();
                 emFixture.Executor.Dispose();
@@ -305,9 +319,11 @@ namespace TickTrader.Algo.Core
                 return emFixture;
             }
 
-            private OptCaseReport FilleReport(OptCaseConfig cfg, BacktesterCollector collector, Exception error)
+            private OptCaseReport FilleReport(OptCaseConfig cfg, PluginBuilder builder, BacktesterCollector collector, Exception error)
             {
-                var rep = new OptCaseReport(cfg, collector.Stats, error);
+                var metric = MetricSelector.GetMetric(builder, collector.Stats);
+
+                var rep = new OptCaseReport(cfg, metric, collector.Stats, error);
 
                 var equitySize = collector.EquityHistorySize;
                 var compactTimeFrame = BarExtentions.AdjustTimeframe(CommonSettings.MainTimeframe, equitySize, EquityHistoryTargetSize, out _);

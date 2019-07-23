@@ -466,6 +466,24 @@ namespace TickTrader.BotTerminal.Resx.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ##OptMetric_Custom##.
+        /// </summary>
+        internal static string OptMetric_Custom {
+            get {
+                return ResourceManager.GetString("OptMetric_Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ##OptMetric_Equity##.
+        /// </summary>
+        internal static string OptMetric_Equity {
+            get {
+                return ResourceManager.GetString("OptMetric_Equity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ##Amount##.
         /// </summary>
         internal static string Order_Amount {

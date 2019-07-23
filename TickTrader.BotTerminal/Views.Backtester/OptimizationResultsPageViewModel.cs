@@ -71,7 +71,7 @@ namespace TickTrader.BotTerminal
             }
 
             row[_idColumn] = report.Config.Id;
-            row[_metricColumn] = report.Stats?.FinalBalance ?? -1;
+            row[_metricColumn] = report.MetricVal;
 
             Data.Rows.Add(row);
         }

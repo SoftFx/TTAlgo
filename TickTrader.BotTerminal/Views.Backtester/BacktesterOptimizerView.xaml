@@ -35,6 +35,14 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
+    <DataTemplate x:Key="ModeComboBoxItem">
+        <TextBlock Text="{l:ResxBinding Prefix=OptMode_}"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="MetricComboBoxItem">
+        <TextBlock Text="{l:ResxBinding Key, Prefix=OptMetric_}"/>
+    </DataTemplate>
+
     <!-- View Template -->
 
     <ControlTemplate x:Key="OptimizerPage.Classic">
@@ -43,16 +51,14 @@
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                     <Label Content="Optimization:" Style="{StaticResource SettingsLabel}"/>
                     <ComboBox Style="{StaticResource SettingsCombo}" Width="200" IsEnabled="{Binding IsOptimizatioPossibleProp.Value}"
-                              ItemsSource="{Binding AvailableModes}" SelectedValue="{Binding ModeProp.Value}"/>
+                              ItemsSource="{Binding AvailableModes}" SelectedValue="{Binding ModeProp.Value}"
+                              ItemTemplate="{StaticResource ModeComboBoxItem}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0" IsEnabled="{Binding VarOptimizationEnabled.Value}">
                     <Label Content="Parameter:" Style="{StaticResource SettingsLabel}"/>
-                    <ComboBox SelectedIndex="0" Style="{StaticResource SettingsCombo}" Width="200">
-                        <ComboBoxItem Content="Balance max" />
-                        <!--<ComboBoxItem Content="Balance + max Profit Factor" />
-                        <ComboBoxItem Content="Balance + max Except Payoff" />
-                        <ComboBoxItem Content="Balance + min Drawdown" />-->
-                    </ComboBox>
+                    <ComboBox SelectedIndex="0" Style="{StaticResource SettingsCombo}" Width="200"
+                              ItemsSource="{Binding AvailableMetrics}" SelectedItem="{Binding SelectedMetric.Value}"
+                              ItemTemplate="{StaticResource MetricComboBoxItem}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0" IsEnabled="{Binding VarOptimizationEnabled.Value}">
                     <Label Content="Cores:" Style="{StaticResource SettingsLabel}"/>

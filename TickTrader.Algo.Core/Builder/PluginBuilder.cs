@@ -49,6 +49,8 @@ namespace TickTrader.Algo.Core
 
             _indicators = new IndicatorsCollection();
 
+            GetDefaultOptMetric = GetFinalEquity;
+
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
 
@@ -81,6 +83,7 @@ namespace TickTrader.Algo.Core
         public Action<Exception> OnException { get; set; }
         public Action<Exception> OnInitFailed { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
+        public Func<double> GetDefaultOptMetric { get; set; }
         public Action OnExit { get; set; }
         public Action<int> OnInputResize { get; set; }
         public string Status { get { return statusApi.Status; } }
@@ -247,6 +250,11 @@ namespace TickTrader.Algo.Core
             _commands = adapter;
         }
 
+        internal double GetFinalEquity()
+        {
+            return Account.Equity;
+        }
+
         #endregion
 
         #region IPluginContext
@@ -331,6 +339,8 @@ namespace TickTrader.Algo.Core
         {
             OnInputResize?.Invoke(newSize);
         }
+
+        double IPluginContext.DefaultOptimizationMetric => GetDefaultOptMetric();
 
         #endregion IPluginContext
 
@@ -446,6 +456,13 @@ namespace TickTrader.Algo.Core
         internal void LogConnectionInfo(string connectionInfo)
         {
             Logger.OnConnectionInfo(connectionInfo);
+        }
+
+        internal double InvokeGetMetric(out Exception error)
+        {
+            double result = 0;
+            error = InvokeMethod<object>((b, p) => result = b.PluginProxy.InvokeGetMetric(), null);
+            return result;
         }
 
         #endregion
