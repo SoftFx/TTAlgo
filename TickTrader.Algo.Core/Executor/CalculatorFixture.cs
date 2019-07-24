@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
         bool HasEnoughMarginToOpenOrder(SymbolAccessor symbol, double orderVol, OrderType type, OrderSide side, double? price, double? stopPrice, bool isHidden);
         bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, SymbolAccessor smb, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden);
         double? GetSymbolMargin(string symbol, OrderSide side);
-        double? CalculateOrderMargin(string symbol, double orderVol, OrderType type, OrderSide side, bool isHidden);
+        double? CalculateOrderMargin(SymbolAccessor symbol, double orderVol, double? price, double? stopPrice, OrderType type, OrderSide side, bool isHidden);
     }
 
     internal class CalculatorFixture : ICalculatorApi
@@ -324,27 +324,26 @@ namespace TickTrader.Algo.Core
             return null;
         }
 
-        public double? CalculateOrderMargin(string symbol, double orderVol, OrderType type, OrderSide side, bool isHidden)
+        public double? CalculateOrderMargin(SymbolAccessor symbol, double orderVol, double? price, double? stopPrice, OrderType type, OrderSide side, bool isHidden)
         {
-            //var newOrder = GetOrderAccessor(orderEntity, symbol);
+            var boType = type.ToBoType();
+            var boSide = side.ToBoSide();
 
             try
             {
                 if (_marginCalc != null)
                 {
-                    var calc = Market.GetCalculator(symbol, acc.BalanceCurrency);
+                    var calc = Market.GetCalculator(symbol.Name, acc.BalanceCurrency);
                     using (calc.UsageScope())
                     {
-                        var result = calc.CalculateMargin(orderVol, acc.Leverage, type.ToBoType(), side.ToBoSide(), isHidden, out var error);
-                        HandleMarginCalcError(error, symbol);
+                        var result = calc.CalculateMargin(orderVol, acc.Leverage, boType, boSide, isHidden, out var error);
+                        HandleMarginCalcError(error, symbol.Name);
                         return result;
                     }
                 }
+
                 if (cashCalc != null)
-                {
-                    //return (double)BL.CashAccountCalculator.CalculateMargin(newOrder, symbol);
-                    return null;
-                }
+                    return (double)CashAccountCalculator.CalculateMargin(boType, orderVol, price, stopPrice, boSide, symbol, isHidden);
             }
             catch (Exception ex)
             {

@@ -310,10 +310,9 @@ namespace TickTrader.Algo.Core
             var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
             if (symbolAccessor != null && builder.Calculator != null)
             {
-                //var orderEntity = CreateOrderStub(symbolAccessor, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, options);
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.CalculateOrderMargin(symbol, amount, type, side, OrderEntity.IsHiddenOrder(maxVisibleVolume));
+                return builder.Calculator.CalculateOrderMargin(symbolAccessor, amount, price, stopPrice, type, side, OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
             return null;
         }
@@ -323,32 +322,11 @@ namespace TickTrader.Algo.Core
             var symbolAccessor = builder?.Symbols?.GetOrDefault(symbol);
             if (symbolAccessor != null && builder.Calculator != null)
             {
-                //var orderEntity = CreateOrderStub(symbolAccessor, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, options);
-
                 var amount = volume * symbolAccessor.ContractSize;
 
                 return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side, price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume));
             }
             return false;
         }
-
-        //private OrderEntity CreateOrderStub(SymbolAccessor symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, OrderExecOptions options)
-        //{
-        //    return new OrderEntity("-1")
-        //    {
-        //        Symbol = symbol.Name,
-        //        InitialType = type,
-        //        Type = type,
-        //        Side = side,
-        //        Price = price,
-        //        StopPrice = stopPrice,
-        //        RequestedVolume = volume * symbol.ContractSize,
-        //        RemainingVolume = volume * symbol.ContractSize,
-        //        MaxVisibleVolume = maxVisibleVolume * symbol.ContractSize,
-        //        StopLoss = sl,
-        //        TakeProfit = tp,
-        //        Options = options,
-        //    };
-        //}
     }
 }
