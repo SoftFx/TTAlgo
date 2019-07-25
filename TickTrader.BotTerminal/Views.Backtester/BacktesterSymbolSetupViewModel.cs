@@ -72,6 +72,8 @@ namespace TickTrader.BotTerminal
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
 
             SelectDefaultSymbol();
+
+            IsValid = IsSymbolSelected & Error.IsEmpty() & !IsUpdating;
         }
 
         public SymbolSetupType SetupType { get; private set; }
@@ -85,6 +87,7 @@ namespace TickTrader.BotTerminal
         public Property<Tuple<DateTime, DateTime>> AvailableRange { get; }
         public BoolVar IsUpdating { get; }
         public BoolVar CanChangePrice { get; }
+        public BoolVar IsValid { get; }
         public BoolVar IsSymbolSelected { get; }
         public Var<string> Error => _errorProp.Var;
 

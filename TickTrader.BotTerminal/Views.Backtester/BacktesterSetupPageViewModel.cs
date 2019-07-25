@@ -400,7 +400,7 @@ namespace TickTrader.BotTerminal
 
         private void UpdateSymbolsState()
         {
-            _allSymbolsValid.Value = GetAllSymbols().All(s => s.IsSymbolSelected.Value);
+            _allSymbolsValid.Value = GetAllSymbols().All(s => s.IsValid.Value);
         }
 
         public IEnumerable<BacktesterSymbolSetupViewModel> GetAllSymbols()
@@ -414,6 +414,7 @@ namespace TickTrader.BotTerminal
         private void IsUpdating_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             UpdateRangeState();
+            UpdateSymbolsState();
         }
 
         private void IsSymbolSelected_PropertyChanged(object sender, PropertyChangedEventArgs e)
