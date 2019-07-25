@@ -445,6 +445,13 @@ namespace TickTrader.BotTerminal
                     Settings.InitialBalance, Settings.BalanceCurrency, Settings.Leverage, "Default", Settings.ServerPingMs);
         }
 
+        public override void TryClose(bool? dialogResult = null)
+        {
+            base.TryClose(dialogResult);
+
+            _var.Dispose();
+        }
+
         #region IAlgoSetupMetadata
 
         IReadOnlyList<ISymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;

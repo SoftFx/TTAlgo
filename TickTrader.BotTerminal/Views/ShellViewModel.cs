@@ -397,9 +397,18 @@ namespace TickTrader.BotTerminal
         public void OpenBacktester()
         {
             if (Backtester == null)
+            {
                 Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this, storage.ProfileManager);
+                Backtester.Deactivated += Backtester_Deactivated;
+            }
 
             wndManager.OpenMdiWindow(Backtester);
+        }
+
+        private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            Backtester.Deactivated -= Backtester_Deactivated;
+            Backtester = null;
         }
 
         public void CloseChart(object chart)

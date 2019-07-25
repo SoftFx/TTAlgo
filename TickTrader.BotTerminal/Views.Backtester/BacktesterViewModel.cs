@@ -471,6 +471,18 @@ namespace TickTrader.BotTerminal
             return chartData;
         }
 
+        public override void CanClose(Action<bool> callback)
+        {
+            callback(!_isRunning.Value);
+        }
+
+        public override void TryClose(bool? dialogResult = null)
+        {
+            base.TryClose(dialogResult);
+
+            _var.Dispose();
+        }
+
         #region Execution control
 
         public async void StartEmulation()
