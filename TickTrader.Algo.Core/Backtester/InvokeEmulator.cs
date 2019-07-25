@@ -178,7 +178,6 @@ namespace TickTrader.Algo.Core
                     return;
                 }
                 _exStartAction();
-                ((SimplifiedBuilder)Builder).InitContext();
                 EmulateEvents();
                 EmulateStop();
                 StopFeedRead();

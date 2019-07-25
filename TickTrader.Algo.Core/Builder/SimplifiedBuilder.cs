@@ -11,11 +11,11 @@ namespace TickTrader.Algo.Core
 {
     internal class SimplifiedBuilder : PluginBuilder
     {
-        private SynchronizationContext _oldSyncContext;
-        private IPluginContext _oldContext;
         private bool _isInitialized;
+
         public SimplifiedBuilder(PluginMetadata descriptor) : base(descriptor)
         {
+            InitContext();
         }
 
         protected override Exception InvokeMethod<T>(Action<PluginBuilder, T> invokeAction, T param)
@@ -41,8 +41,8 @@ namespace TickTrader.Algo.Core
 
         public void InitContext()
         {
-            _oldSyncContext = SynchronizationContext.Current;
-            _oldContext = AlgoPlugin.staticContext;
+            SynchronizationContext.SetSynchronizationContext(syncContext);
+            AlgoPlugin.staticContext = this;
             _isInitialized = true;
         }
 
@@ -50,8 +50,8 @@ namespace TickTrader.Algo.Core
         {
             if (_isInitialized)
             {
-                AlgoPlugin.staticContext = _oldContext;
-                SynchronizationContext.SetSynchronizationContext(_oldSyncContext);
+                AlgoPlugin.staticContext = null;
+                SynchronizationContext.SetSynchronizationContext(null);
                 _isInitialized = false;
             }
         }
