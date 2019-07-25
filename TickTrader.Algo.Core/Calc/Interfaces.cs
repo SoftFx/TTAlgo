@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core.Calc
         //OrderTypes InitialType { get; }
         ////OrderStatuses Status { get; }
         //double Amount { get; }
-        double RemainingAmount { get; }
+        decimal RemainingAmount { get; }
         //double? MaxVisibleAmount { get; }
         //DateTime Created { get; }
         //DateTime? Modified { get; }
@@ -51,9 +51,9 @@ namespace TickTrader.Algo.Core.Calc
         //string UserTag { get; }
         //string ManagerTag { get; }
         //int Magic { get; }
-        double? Commission { get; }
+        decimal? Commission { get; }
         //double? AgentCommision { get; }
-        double? Swap { get; }
+        decimal? Swap { get; }
         //DateTime? Expired { get; }
         //double? ClosePrice { get; }
         //double? CurrentPrice { get; }
@@ -84,15 +84,15 @@ namespace TickTrader.Algo.Core.Calc
 
         event Action<OrderEssentialsChangeArgs> EssentialsChanged;
         //event Action<OrderPropArgs<decimal>> PriceChanged;
-        event Action<OrderPropArgs<double>> SwapChanged;
-        event Action<OrderPropArgs<double>> CommissionChanged;
+        event Action<OrderPropArgs<decimal>> SwapChanged;
+        event Action<OrderPropArgs<decimal>> CommissionChanged;
     }
 
     public interface IPositionModel2
     {
         string Symbol { get; }
-        double Commission { get; }
-        double Swap { get; }
+        decimal Commission { get; }
+        decimal Swap { get; }
         IPositionSide2 Long { get; } // buy
         IPositionSide2 Short { get; } //sell
         DateTime? Modified { get; }
@@ -101,15 +101,15 @@ namespace TickTrader.Algo.Core.Calc
 
     public interface IPositionSide2
     {
-        double Amount { get; }
-        double Price { get; }
-        double Margin { get; set; }
-        double Profit { get; set; }
+        decimal Amount { get; }
+        decimal Price { get; }
+        decimal Margin { get; set; }
+        decimal Profit { get; set; }
     }
 
     public struct OrderEssentialsChangeArgs
     {
-        public OrderEssentialsChangeArgs(IOrderModel2 order, double oldRemAmount, double? oldPrice, double? oldStopPrice, OrderTypes oldType, bool oldIsHidden)
+        public OrderEssentialsChangeArgs(IOrderModel2 order, decimal oldRemAmount, double? oldPrice, double? oldStopPrice, OrderTypes oldType, bool oldIsHidden)
         {
             Order = order;
             OldRemAmount = oldRemAmount;
@@ -120,7 +120,7 @@ namespace TickTrader.Algo.Core.Calc
         }
 
         public IOrderModel2 Order { get; }
-        public double OldRemAmount { get; }
+        public decimal OldRemAmount { get; }
         public double? OldPrice { get; }
         public double? OldStopPrice { get; }
         public OrderTypes OldType { get; }

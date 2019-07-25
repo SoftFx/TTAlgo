@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public double CalculateMargin(IOrderCalcInfo order, int leverage, out CalcErrorCodes error)
         {
-            return CalculateMargin(order.RemainingAmount, leverage, order.Type, order.Side, order.IsHidden, out error);
+            return CalculateMargin((double)order.RemainingAmount, leverage, order.Type, order.Side, order.IsHidden, out error);
         }
 
         public double CalculateMargin(double orderVolume, int leverage, OrderTypes ordType, OrderSides side, bool isHidden, out CalcErrorCodes error)
@@ -100,12 +100,12 @@ namespace TickTrader.Algo.Core.Calc
 
         public double CalculateProfit(IOrderCalcInfo order, out CalcErrorCodes error)
         {
-            return CalculateProfit(order.Price.Value, order.RemainingAmount, order.Side, out error);
+            return CalculateProfit(order.Price.Value, (double)order.RemainingAmount, order.Side, out error);
         }
 
         public double CalculateProfit(IOrderCalcInfo order, out double closePrice, out CalcErrorCodes error)
         {
-            return CalculateProfit(order.Price.Value, order.RemainingAmount, order.Side, out closePrice, out error);
+            return CalculateProfit(order.Price.Value, (double)order.RemainingAmount, order.Side, out closePrice, out error);
         }
 
         public double CalculateProfit(double openPrice, double volume, OrderSides side, out CalcErrorCodes error)

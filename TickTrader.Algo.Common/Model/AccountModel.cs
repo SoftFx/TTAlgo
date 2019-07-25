@@ -98,7 +98,7 @@ namespace TickTrader.Algo.Common.Model
                 this.positions.Add(fdkPosition.Symbol, new PositionModel(fdkPosition, this));
 
             foreach (var fdkOrder in orders)
-                this.orders.Add(fdkOrder.OrderId, new OrderModel(fdkOrder, this));
+                this.orders.Add(fdkOrder.Id, new OrderModel(fdkOrder, this));
 
             foreach (var fdkAsset in assets)
                 this.assets.Add(fdkAsset.Currency, new AssetModel(fdkAsset, _currencies));
@@ -324,13 +324,13 @@ namespace TickTrader.Algo.Common.Model
             }
             else if (entityAction == OrderEntityAction.Removed)
             {
-                order = Orders.GetOrDefault(report.OrderId);
-                orders.Remove(report.OrderId);
+                order = Orders.GetOrDefault(report.Id);
+                orders.Remove(report.Id);
                 order?.Update(report);
             }
             else if (entityAction == OrderEntityAction.Updated)
             {
-                order = Orders.GetOrDefault(report.OrderId);
+                order = Orders.GetOrDefault(report.Id);
 
                 bool typeChanged = order.OrderType != report.Type;
 
@@ -547,7 +547,7 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 var acc = cache.Account;
-                acc.orders.Add(Order.OrderId, new OrderModel(Order, acc));
+                acc.orders.Add(Order.Id, new OrderModel(Order, acc));
             }
         }
 

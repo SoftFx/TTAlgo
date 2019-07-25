@@ -20,6 +20,8 @@ namespace TickTrader.Algo.Core
         private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
         private TradeHistory _history;
         private bool _blEventsEnabled;
+        private decimal _balance;
+        private double _dblBalance;
 
         public AccountAccessor(PluginBuilder builder)
         {
@@ -42,7 +44,15 @@ namespace TickTrader.Algo.Core
         public TradeHistory HistoryProvider { get { return _history; } set { _history = value; } }
 
         public string Id { get; set; }
-        public double Balance { get; internal set; }
+        public decimal Balance
+        {
+            get => _balance;
+            set
+            {
+                _balance = value;
+                _dblBalance = (double)value;
+            }
+        }
         public string BalanceCurrency { get; private set; }
         public Currency BalanceCurrencyInfo { get; private set; }
         public int Leverage { get; internal set; }
@@ -54,12 +64,14 @@ namespace TickTrader.Algo.Core
         public bool IsMarginType => Type == AccountTypes.Net || Type == AccountTypes.Gross;
         public bool IsCashType => Type == AccountTypes.Cash;
 
+        double IMarginAccountInfo2.Balance => _dblBalance;
+
         public void Update(AccountEntity info, Dictionary<string, Currency> currencies)
         {
             Id = info.Id;
             Type = info.Type;
             Leverage = info.Leverage;
-            Balance = info.Balance;
+            Balance = (decimal)info.Balance;
             UpdateCurrency(currencies.GetOrStub(info.BalanceCurrency));
             Assets.Clear();
             foreach (var asset in info.Assets)
@@ -174,7 +186,7 @@ namespace TickTrader.Algo.Core
 
         long IAccountInfo2.Id => 0;
         public BO.AccountingTypes AccountingType => TickTraderToAlgo.Convert(Type);
-        double IMarginAccountInfo2.Balance => Balance;
+        //decimal IMarginAccountInfo2.Balance => Balance;
         IEnumerable<IOrderModel2> IAccountInfo2.Orders => (IEnumerable<OrderAccessor>)Orders.OrderListImpl;
         IEnumerable<IPositionModel2> IMarginAccountInfo2.Positions => NetPositions;
         IEnumerable<BL.IAssetModel> ICashAccountInfo2.Assets => Assets;
@@ -283,18 +295,18 @@ namespace TickTrader.Algo.Core
                 ?? throw new OrderValidationError("Order Not Found " + orderId, OrderCmdResultCodes.OrderNotFound);
         }
 
-        internal void IncreasePosition(string symbol, double amount, double price, OrderSide side, Func<string> idGenerator)
+        internal void IncreasePosition(string symbol, decimal amount, decimal price, OrderSide side, Func<string> idGenerator)
         {
             var pos = NetPositions.GetOrCreatePosition(symbol, idGenerator);
             pos.Increase(amount, price, side);
             OnPositionUpdated(pos);
         }
 
-        internal void IncreaseAsset(string currency, double byAmount)
+        internal void IncreaseAsset(string currency, decimal byAmount)
         {
             AssetChangeType chType;
             var asset = Assets.GetOrCreateAsset(currency, out chType);
-            asset.IncreaseBy((decimal)byAmount);
+            asset.IncreaseBy(byAmount);
             OnAssetsChanged(asset, chType);
         }
 

@@ -17,8 +17,8 @@ namespace TickTrader.Algo.Core.Calc
         private readonly OrderNetting _stopOrders;
         private readonly OrderNetting _hiddendOrders;
         //private readonly OrderNetting _marketOrders;
-        private double _netPosAmount;
-        private double _netPosPrice;
+        private decimal _netPosAmount;
+        private decimal _netPosPrice;
         //private readonly OrderNetting _hiddenLimitOrders;
         //private readonly SymbolNetting parent;
 
@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Core.Calc
 
         public bool IsEmpty => TotalAmount <= 0;
         public double Margin { get; private set; }
-        public double TotalAmount { get; private set; }
+        public decimal TotalAmount { get; private set; }
 
         public StatsChange Recalculate()
         {
@@ -154,7 +154,7 @@ namespace TickTrader.Algo.Core.Calc
             _parent.OnStatsChange(change);            
         }
 
-        private void OnAmountChanged(double delta)
+        private void OnAmountChanged(decimal delta)
         {
             TotalAmount += delta;
         }

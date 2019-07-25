@@ -10,6 +10,9 @@ namespace TickTrader.Algo.Core.Calc
 {
     internal class OrderNetting
     {
+        private double _dblMarginAmount;
+        private double _dblProfitAmount;
+
         public OrderNetting(IMarginAccountInfo2 accInfo, OrderTypes type, OrderSides side, bool isHidden)
         {
             AccountData = accInfo;
@@ -19,10 +22,10 @@ namespace TickTrader.Algo.Core.Calc
         }
 
         public bool IsEmpty => MarginAmount <= 0;
-        public double MarginAmount { get; protected set; }
-        public double ProfitAmount { get; protected set; }
+        public decimal MarginAmount { get; protected set; }
+        public decimal ProfitAmount { get; protected set; }
         public double WeightedAveragePrice { get; protected set; }
-        public double TotalWeight { get; private set; }
+        public decimal TotalWeight { get; private set; }
 
         public double Margin { get; private set; }
         public double Profit { get; private set; }
@@ -34,7 +37,7 @@ namespace TickTrader.Algo.Core.Calc
         public OrderSides Side { get; }
         public bool IsHidden { get; }
 
-        public event Action<double> AmountChanged;
+        public event Action<decimal> AmountChanged;
 
         public StatsChange Recalculate()
         {
@@ -51,18 +54,18 @@ namespace TickTrader.Algo.Core.Calc
             }
             else
             {
-                if (MarginAmount > 0)
+                if (_dblMarginAmount > 0)
                 {
-                    Margin = Calculator.CalculateMargin(MarginAmount, AccountData.Leverage, Type, Side, IsHidden, out var error);
+                    Margin = Calculator.CalculateMargin(_dblMarginAmount, AccountData.Leverage, Type, Side, IsHidden, out var error);
                     if (error != CalcErrorCodes.None)
                         ErrorCount++;
                 }
                 else
                     Margin = 0;
 
-                if (ProfitAmount > 0)
+                if (_dblProfitAmount > 0)
                 {
-                    Profit = Calculator.CalculateProfit(WeightedAveragePrice, ProfitAmount, Side, out var error);
+                    Profit = Calculator.CalculateProfit(WeightedAveragePrice, _dblProfitAmount, Side, out var error);
                     if (error != CalcErrorCodes.None)
                         ErrorCount++;
                 }
@@ -73,50 +76,49 @@ namespace TickTrader.Algo.Core.Calc
             return new StatsChange(Margin - oldMargin, Profit - oldProfit, ErrorCount - oldErros);
         }
 
-        public StatsChange AddOrder(double remAmount, double? price)
+        public StatsChange AddOrder(decimal remAmount, double? price)
         {
             AddOrderWithoutCalculation(remAmount, price);
             return Recalculate();
         }
 
-        public void AddOrderWithoutCalculation(double remAmount, double? price)
+        public void AddOrderWithoutCalculation(decimal remAmount, double? price)
         {
-            //Count++;
             ChangeMarginAmountBy(remAmount);
 
             if (Type == OrderTypes.Position)
             {
-                ProfitAmount += remAmount;
-                TotalWeight += remAmount * price.Value;
+                ChangeProfitAmountBy(remAmount);
+                TotalWeight += remAmount * (decimal)price.Value;
                 UpdateAveragePrice();
             }
         }
 
-        public void AddPositionWithoutCalculation(double posAmount, double posPrice)
+        public void AddPositionWithoutCalculation(decimal posAmount, decimal posPrice)
         {
             ChangeMarginAmountBy(posAmount);
-            ProfitAmount += posAmount;
+            ChangeProfitAmountBy(posAmount);
             TotalWeight += posAmount * posPrice;
             UpdateAveragePrice();
         }
 
-        public void RemovePositionWithoutCalculation(double posAmount, double posPrice)
+        public void RemovePositionWithoutCalculation(decimal posAmount, decimal posPrice)
         {
             ChangeMarginAmountBy(-posAmount);
-            ProfitAmount -= posAmount;
+            ChangeProfitAmountBy(-posAmount);
             TotalWeight -= posAmount * posPrice;
             UpdateAveragePrice();
         }
 
-        public StatsChange RemoveOrder(double remAmount, double? price)
+        public StatsChange RemoveOrder(decimal remAmount, double? price)
         {
             //Count--;
             ChangeMarginAmountBy(-remAmount);
 
             if (Type == OrderTypes.Position)
             {
-                ProfitAmount -= remAmount;
-                TotalWeight -= remAmount * price.Value;
+                ChangeProfitAmountBy(remAmount);
+                TotalWeight -= remAmount * (decimal)price.Value;
                 UpdateAveragePrice();
             }
 
@@ -140,16 +142,23 @@ namespace TickTrader.Algo.Core.Calc
         private void UpdateAveragePrice()
         {
             if (ProfitAmount > 0)
-                WeightedAveragePrice = TotalWeight / ProfitAmount;
+                WeightedAveragePrice = (double)(TotalWeight / ProfitAmount);
             else
                 WeightedAveragePrice = 0;
         }
 
-        public void ChangeMarginAmountBy(double delta)
+        public void ChangeMarginAmountBy(decimal delta)
         {
             MarginAmount += delta;
+            _dblMarginAmount = (double)MarginAmount;
 
             AmountChanged.Invoke(delta);
+        }
+
+        public void ChangeProfitAmountBy(decimal delta)
+        {
+            ProfitAmount += delta;
+            _dblProfitAmount = (double)ProfitAmount;
         }
 
         //private void Order_TypeAmountChanged(TypeAmountChangeArgs obj)

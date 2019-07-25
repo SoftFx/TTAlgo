@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Common.Model
 
         public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
         {
-            this.Id = record.OrderId;
+            this.Id = record.Id;
             this.clientOrderId = record.ClientOrderId;
             this.OrderId = long.Parse(Id);
             this.Symbol = record.Symbol;
@@ -457,9 +457,9 @@ namespace TickTrader.Algo.Common.Model
             return new OrderEntity(Id)
             {
                 ClientOrderId = this.clientOrderId,
-                RemainingVolume = (double)RemainingAmount,
-                RequestedVolume = (double)Amount,
-                MaxVisibleVolume = (double?)MaxVisibleVolume,
+                RemainingVolume = RemainingAmount,
+                RequestedVolume = Amount,
+                MaxVisibleVolume = MaxVisibleVolume,
                 Symbol = Symbol,
                 Type = orderType,
                 Side = Side,
@@ -476,8 +476,8 @@ namespace TickTrader.Algo.Common.Model
                 ExecVolume = ExecAmount,
                 LastFillPrice = LastFillPrice,
                 LastFillVolume = LastFillAmount,
-                Swap = (double)(Swap ?? 0),
-                Commission = (double)(Commission ?? 0),
+                Swap = (Swap ?? 0),
+                Commission = (Commission ?? 0),
                 Expiration = Expiration,
                 Options = ExecOptions
             };
@@ -485,8 +485,8 @@ namespace TickTrader.Algo.Common.Model
 
         internal void Update(OrderEntity record)
         {
-            this.Amount = (decimal)record.InitialVolume;
-            this.RemainingAmount = (decimal)record.Volume;
+            this.Amount = record.RequestedVolume;
+            this.RemainingAmount = record.RemainingVolume;
             this.OrderType = record.Type;
             this.Side = record.Side;
             this.MaxVisibleVolume = (decimal?)record.MaxVisibleVolume;

@@ -595,7 +595,7 @@ namespace TickTrader.Algo.Core
             //    Options = request.Options,
             //};
 
-            var isHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
+            var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
             if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
@@ -621,7 +621,7 @@ namespace TickTrader.Algo.Core
             //    Options = request.Options ?? oldOrder.Entity.Options,
             //};
 
-            var newIsHidden = OrderEntity.IsHiddenOrder(request.MaxVisibleVolume);
+            var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
             var newVol = request.NewVolume ?? oldOrder.RemainingVolume;
             var newPrice = request.Price ?? oldOrder.Price;

@@ -64,9 +64,9 @@ namespace TickTrader.Algo.Core
 
         public string Id => _entity.Id;
         public string Symbol => _entity.Symbol;
-        public double RequestedVolume => _entity.RequestedVolume / _lotSize;
-        public double RemainingVolume => _entity.RemainingVolume / _lotSize;
-        public double MaxVisibleVolume => _entity.MaxVisibleVolume / _lotSize ?? double.NaN;
+        public double RequestedVolume => (double)_entity.RequestedVolume / _lotSize;
+        public double RemainingVolume => (double)_entity.RemainingVolume / _lotSize;
+        public double MaxVisibleVolume => (double?)_entity.MaxVisibleVolume / _lotSize ?? double.NaN;
         public OrderType Type => _entity.Type;
         public OrderSide Side => _entity.Side;
         public double Price => _entity.Price ?? double.NaN;
@@ -95,7 +95,7 @@ namespace TickTrader.Algo.Core
 
         #region IOrderModel2
 
-        public double RemainingAmount => _entity.RemainingVolume;
+        public decimal RemainingAmount => _entity.RemainingVolume;
         bool IOrderCalcInfo.IsHidden => Entity.IsHidden;
         double? IOrderCalcInfo.Price => Entity.Price;
         double? IOrderCalcInfo.StopPrice => Entity.StopPrice;
@@ -113,11 +113,11 @@ namespace TickTrader.Algo.Core
         public OrderCalculator Calculator { get; set; }
         //public bool IsCalculated => CalculationError == null;
         public double? MarginRateCurrent { get; set; }
-        public double? Swap => _entity.Swap;
-        public double? Commission => _entity.Commission;
+        public decimal? Swap => _entity.Swap;
+        public decimal? Commission => _entity.Commission;
         public double? CurrentPrice { get; set; }
         public long OrderId => long.Parse(Id);
-        public double Amount { get => _entity.RequestedVolume; set => _entity.RequestedVolume = value; }
+        public decimal Amount { get => _entity.RequestedVolume; set => _entity.RequestedVolume = value; }
         //decimal BO.IOrder.RemainingAmount { get => (decimal)_entity.RemainingVolume; }
         //decimal? BL.IOrderModel.Profit { get => _modelProf; set => _modelProf = value; }
         //decimal? BL.IOrderModel.Margin { get => _modelMargin; set => _modelMargin = value; }
@@ -133,8 +133,8 @@ namespace TickTrader.Algo.Core
 
         //public event Action<BL.IOrderModel> EssentialParametersChanged;
         public event Action<OrderEssentialsChangeArgs> EssentialsChanged;
-        public event Action<OrderPropArgs<double>> SwapChanged;
-        public event Action<OrderPropArgs<double>> CommissionChanged;
+        public event Action<OrderPropArgs<decimal>> SwapChanged;
+        public event Action<OrderPropArgs<decimal>> CommissionChanged;
 
         #endregion
 
@@ -158,28 +158,28 @@ namespace TickTrader.Algo.Core
         public double? ClosePrice { get; set; }
         internal DateTime PositionCreated { get; set; }
 
-        internal void SetSwap(double swap)
+        internal void SetSwap(decimal swap)
         {
             var oldSwap = Entity.Swap;
             Entity.Swap = swap;
-            SwapChanged?.Invoke(new OrderPropArgs<double>(this, oldSwap, swap));
+            SwapChanged?.Invoke(new OrderPropArgs<decimal>(this, oldSwap, swap));
         }
 
-        internal void ChangeCommission(double newCommision)
+        internal void ChangeCommission(decimal newCommision)
         {
             var oldCom = Entity.Commission;
             Entity.Commission = newCommision;
-            CommissionChanged?.Invoke(new OrderPropArgs<double>(this, oldCom, newCommision));
+            CommissionChanged?.Invoke(new OrderPropArgs<decimal>(this, oldCom, newCommision));
         }
 
-        internal void ChangeRemAmount(double newAmount)
+        internal void ChangeRemAmount(decimal newAmount)
         {
             var oldAmount = Entity.RemainingVolume;
             Entity.RemainingVolume = newAmount;
             EssentialsChanged?.Invoke(new OrderEssentialsChangeArgs(this, oldAmount, Entity.Price, StopPrice, Entity.GetBlOrderType(), false));
         }
 
-        internal void ChangeEssentials(OrderType newType, double newAmount, double? newPrice, double? newStopPirce)
+        internal void ChangeEssentials(OrderType newType, decimal newAmount, double? newPrice, double? newStopPirce)
         {
             var oldPrice = Entity.Price;
             var oldType = Entity.GetBlOrderType();

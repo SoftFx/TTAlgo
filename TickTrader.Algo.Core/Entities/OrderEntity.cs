@@ -43,8 +43,8 @@ namespace TickTrader.Algo.Core
 
         public string Id { get; private set; }
         public string ClientOrderId { get; set; }
-        public double RequestedVolume { get; set; }
-        public double RemainingVolume { get; set; }
+        public decimal RequestedVolume { get; set; }
+        public decimal RemainingVolume { get; set; }
         public string Symbol { get; set; }
         public OrderType InitialType { get; set; }
         public OrderType Type { get; set; }
@@ -63,11 +63,11 @@ namespace TickTrader.Algo.Core
         public double? ExecVolume { get; set; }
         public double? LastFillPrice { get; set; }
         public double? LastFillVolume { get; set; }
-        public double Swap { get; set; }
-        public double Commission { get; set; }
+        public decimal Swap { get; set; }
+        public decimal Commission { get; set; }
         public static Order Null { get; private set; }
         public double? StopPrice { get; set; }
-        public double? MaxVisibleVolume { get; set; }
+        public decimal? MaxVisibleVolume { get; set; }
         public OrderExecOptions Options { get; set; }
         public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
         public bool IsHidden => IsHiddenOrder(MaxVisibleVolume);
@@ -77,22 +77,22 @@ namespace TickTrader.Algo.Core
         public OrderEntity Clone() => new OrderEntity(this);
 
         #region FDK compatibility
-        public string OrderId => Id;
-        public double Volume => RemainingVolume;
-        public double? InitialVolume => RequestedVolume;
+        //public string OrderId => Id;
+        //public double Volume => RemainingVolume;
+        //public double? InitialVolume => RequestedVolume;
         #endregion
 
-        public long OrderNum => long.Parse(OrderId);
+        public long OrderNum => long.Parse(Id);
+
+        public static bool IsHiddenOrder(decimal? maxVisibleVolume)
+        {
+            return maxVisibleVolume != null && maxVisibleVolume == 0;
+        }
 
         public static bool IsHiddenOrder(double? maxVisibleVolume)
         {
             return maxVisibleVolume != null && maxVisibleVolume.Value.E(0);
         }
-
-        //public static bool IsHiddenOrder(double maxVisibleVolume)
-        //{
-        //    return !double.IsNaN(maxVisibleVolume) && maxVisibleVolume.E(0);
-        //}
     }
 
     [Serializable]

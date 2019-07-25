@@ -14,8 +14,8 @@ namespace TickTrader.Algo.Core.Calc
         private MarketStateBase _market;
         private OrderCalculator _calc;
         private double _hedgeFormulPart;
-        private double _netPosSwap;
-        private double _netPosComm;
+        private decimal _netPosSwap;
+        private decimal _netPosComm;
 
         public SymbolCalc(string symbol, IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate)
         {
@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Core.Calc
             //RemoveOrder(order, GetSideCalc(order));
         }
 
-        public void UpdatePosition(IPositionModel2 pos, out double swapDelta, out double commDelta)
+        public void UpdatePosition(IPositionModel2 pos, out decimal swapDelta, out decimal commDelta)
         {
             pos.Calculator = Calc;
 

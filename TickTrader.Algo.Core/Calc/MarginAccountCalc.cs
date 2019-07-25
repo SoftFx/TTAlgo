@@ -14,6 +14,10 @@ namespace TickTrader.Algo.Core.Calc
         private readonly IDictionary<string, SymbolCalc> _bySymbolMap = new Dictionary<string, SymbolCalc>();
         private int _errorCount;
         private bool _autoUpdate;
+        private decimal _cms;
+        private decimal _swap;
+        private double _dblCms;
+        private double _dblSwap;
 
         public MarginAccountCalc(IMarginAccountInfo2 accInfo, MarketStateBase market, bool autoUpdate = false)
         {
@@ -37,12 +41,29 @@ namespace TickTrader.Algo.Core.Calc
         public bool IsCalculated => _errorCount <= 0;
         public int RoundingDigits { get; private set; }
         public double Profit { get; private set; }
-        public double Equity => Info.Balance + Profit + Commission + Swap;
+        public double Equity => Info.Balance + Profit + _dblCms + _dblSwap;
         public double Margin { get; private set; }
         public double MarginLevel => CalculateMarginLevel();
-        public double Commission { get; private set; }
-        //public decimal AgentCommission { get; private set; }
-        public double Swap { get; private set; }
+
+        public decimal Commission
+        {
+            get => _cms;
+            set
+            {
+                _cms = value;
+                _dblCms = (double)value;
+            }
+        }
+
+        public decimal Swap
+        {
+            get => _swap;
+            set
+            {
+                _swap = value;
+                _dblSwap = (double)value;
+            }
+        }
 
         public void Dispose()
         {
@@ -65,7 +86,7 @@ namespace TickTrader.Algo.Core.Calc
             var calc = netting?.Calc ?? _market.GetCalculator(order.Symbol, Info.BalanceCurrency);
             using (calc.UsageScope())
             {
-                var orderMargin = calc.CalculateMargin(order.RemainingAmount, Info.Leverage, order.Type, order.Side, order.IsHidden, out error);
+                var orderMargin = calc.CalculateMargin((double)order.RemainingAmount, Info.Leverage, order.Type, order.Side, order.IsHidden, out error);
                 return HasSufficientMarginToOpenOrder(orderMargin, netting, order.Side, out newAccountMargin);
             }
         }
@@ -250,12 +271,12 @@ namespace TickTrader.Algo.Core.Calc
             _errorCount += args.ErrorDelta;
         }
 
-        private void Order_SwapChanged(OrderPropArgs<double> args)
+        private void Order_SwapChanged(OrderPropArgs<decimal> args)
         {
             Swap += args.NewVal - args.OldVal;
         }
 
-        private void Order_CommissionChanged(OrderPropArgs<double> args)
+        private void Order_CommissionChanged(OrderPropArgs<decimal> args)
         {
             Commission += args.NewVal - args.OldVal;
         }

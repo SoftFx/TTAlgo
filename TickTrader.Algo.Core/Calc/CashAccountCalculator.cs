@@ -108,11 +108,10 @@ namespace TickTrader.Algo.Core.Calc
             return CalculateMargin(order.Type, order.RemainingAmount, order.Price, order.StopPrice, order.Side, symbol, order.IsHidden);
         }
 
-        public static decimal CalculateMargin(OrderTypes type, double remAmount, double? orderPrice, double? orderStopPrice, OrderSides side, SymbolAccessor symbol, bool isHidden)
+        public static decimal CalculateMargin(OrderTypes type, decimal amount, double? orderPrice, double? orderStopPrice, OrderSides side, SymbolAccessor symbol, bool isHidden)
         {
             decimal combinedMarginFactor = CalculateMarginFactor(type, symbol, isHidden);
 
-            decimal amount = (decimal)remAmount;
             double price = ((type == OrderTypes.Stop) || (type == OrderTypes.StopLimit)) ? orderStopPrice.Value : orderPrice.Value;
 
             if (side == OrderSides.Buy)

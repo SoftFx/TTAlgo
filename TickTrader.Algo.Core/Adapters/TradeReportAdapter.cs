@@ -65,8 +65,8 @@ namespace TickTrader.Algo.Core
             //ClientOrderId = order.ClientOrderId;
             Entity.TradeRecordType = order.Type;
             Entity.ReqOrderType = order.InitialType;
-            Entity.OpenQuantity = order.Amount;
-            Entity.RemainingQuantity = order.RemainingAmount;
+            Entity.OpenQuantity = (double)order.Amount;
+            Entity.RemainingQuantity = (double)order.RemainingAmount;
             //Entity.OrderHiddenAmount = order.HiddenAmount;
             //Entity.OrderMaxVisibleAmount = order.MaxVisibleAmount;
             Entity.Price = order.Price;
@@ -111,10 +111,10 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, double closeAmount, double closePrice, double? requestAmount, double? requestPrice, string posById)
+        public TradeReportAdapter FillClosePosData(OrderAccessor order, DateTime closeTime, decimal closeAmount, double closePrice, decimal? requestAmount, double? requestPrice, string posById)
         {
-            Entity.PositionQuantity = order.Entity.RequestedVolume;
-            Entity.PositionLeavesQuantity = order.Entity.RemainingVolume;
+            Entity.PositionQuantity = (double)order.Entity.RequestedVolume;
+            Entity.PositionLeavesQuantity = (double)order.Entity.RemainingVolume;
             Entity.CloseQuantity = (double)closeAmount;
             Entity.PositionOpened = order.PositionCreated;
             Entity.PosOpenPrice = order.Price;
@@ -138,14 +138,14 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillBalanceMovement(double balance, double movement)
+        public TradeReportAdapter FillBalanceMovement(decimal balance, decimal movement)
         {
             Entity.AccountBalance = (double)balance;
             Entity.TransactionAmount = (double)movement;
             return this;
         }
 
-        public TradeReportAdapter FillCharges(TradeChargesInfo charges, double profit, double balanceMovement)
+        public TradeReportAdapter FillCharges(TradeChargesInfo charges, decimal profit, decimal balanceMovement)
         {
             Entity.Commission +=  (double)charges.Commission;
             //Entity.AgentCommission += (double)charges.AgentCommission;
@@ -163,7 +163,7 @@ namespace TickTrader.Algo.Core
             if (!position.IsEmpty)
             {
                 //Entity.PositionQuantity = position.VolumeUnits;
-                Entity.PositionLeavesQuantity = position.VolumeUnits;
+                Entity.PositionLeavesQuantity = (double)position.VolumeUnits;
                 Entity.PosRemainingPrice = position.Price;
                 Entity.PosRemainingSide = position.Side;
                 Entity.PositionModified = position.Modified ?? DateTime.MinValue;
@@ -174,13 +174,13 @@ namespace TickTrader.Algo.Core
                 Entity.PositionLeavesQuantity = 0;
             }
 
-            Entity.PosOpenPrice = (double)openPrice;
-            Entity.OpenConversionRate = (double?)openConversionRate;
+            Entity.PosOpenPrice = openPrice;
+            Entity.OpenConversionRate = openConversionRate;
 
             return this;
         }
 
-        public TradeReportAdapter FillProfitConversionRates(string balanceCurrency, double? profit, CalculatorFixture acc)
+        public TradeReportAdapter FillProfitConversionRates(string balanceCurrency, decimal? profit, CalculatorFixture acc)
         {
             //try
             //{
@@ -202,7 +202,7 @@ namespace TickTrader.Algo.Core
             return this;
         }
 
-        public TradeReportAdapter FillAccountBalanceConversionRates(CalculatorFixture acc, string balanceCurrency, double? balance)
+        public TradeReportAdapter FillAccountBalanceConversionRates(CalculatorFixture acc, string balanceCurrency, decimal? balance)
         {
             //try
             //{

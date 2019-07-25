@@ -134,7 +134,7 @@ namespace TickTrader.Algo.Core
 
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
-                    accProxy.Balance = report.Balance;
+                    accProxy.Balance = (decimal)report.Balance;
                     context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
                     context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
                 }
@@ -326,9 +326,11 @@ namespace TickTrader.Algo.Core
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
             {
-                if (eReport.NewBalance != null && acc.Balance != eReport.NewBalance.Value)
+                var newBalance = (decimal?)eReport.NewBalance.Value;
+
+                if (eReport.NewBalance != null && acc.Balance != newBalance.Value)
                 {
-                    acc.Balance =  eReport.NewBalance.Value;
+                    acc.Balance = newBalance.Value;
                     context.EnqueueEvent(b => acc.FireBalanceUpdateEvent());
                 }
             }

@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Core
             if (acc != null && acc.IsMarginType)
             {
                 Stats.InitialBalance = settings.CommonSettings.InitialBalance;
-                Stats.FinalBalance = acc.Balance;
+                Stats.FinalBalance = (double)acc.Balance;
                 Stats.AccBalanceDigits = acc.BalanceCurrencyInfo?.Digits ?? 00;
             }
 
@@ -287,9 +287,9 @@ namespace TickTrader.Algo.Core
             Stats.TotalSwap += swap;
         }
 
-        public void OnCommisionCharged(double commission)
+        public void OnCommisionCharged(decimal commission)
         {
-            Stats.TotalComission += commission;
+            Stats.TotalComission += (double)commission;
         }
 
         public void OnOrderOpened()

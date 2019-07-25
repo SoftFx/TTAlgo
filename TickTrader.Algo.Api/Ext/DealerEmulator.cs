@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Api.Ext
         RateUpdate CurrentRate { get; }
 
         void Confirm();
-        void Confirm(double amount, double price);
+        void Confirm(decimal amount, double price);
         void Reject();
     }
 

@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Core
         public RateUpdate CurrentRate { get; }
 
         public bool Confirmed { get; private set; }
-        public double? DealerAmount { get; private set; }
+        public decimal? DealerAmount { get; private set; }
         public double? DealerPrice { get; private set; }
 
         public void Confirm()
@@ -28,7 +28,7 @@ namespace TickTrader.Algo.Core
             Confirmed = true;
         }
 
-        public void Confirm(double amount, double price)
+        public void Confirm(decimal amount, double price)
         {
             DealerAmount = amount;
             DealerPrice = price;
