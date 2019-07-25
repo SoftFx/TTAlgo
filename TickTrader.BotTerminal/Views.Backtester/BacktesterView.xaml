@@ -132,6 +132,8 @@
         <Setter Property="ShowInTaskbar" Value="True"/>
         <Setter Property="Width" Value="750"/>
         <Setter Property="Height" Value="550"/>
+        <Setter Property="MinHeight" Value="330"/>
+        <Setter Property="MinWidth" Value="360"/>
     </Style>
 
     <Style x:Key="BacktesterViewStyle.Classic" TargetType="Window" BasedOn="{StaticResource BacktesterViewStyle.Common}">
