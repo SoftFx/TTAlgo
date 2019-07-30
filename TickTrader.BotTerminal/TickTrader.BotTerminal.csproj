@@ -322,6 +322,12 @@
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
     <Compile Include="Infrustructure\Page.cs" />
+    <Compile Include="Infrustructure\Persistence\Interfaces.cs" />
+    <Compile Include="Infrustructure\Persistence\PersistManager.cs" />
+    <Compile Include="Infrustructure\Persistence\PersistNode.cs" />
+    <Compile Include="Infrustructure\Persistence\SettingConverter.cs" />
+    <Compile Include="Infrustructure\Persistence\SettingProxy.cs" />
+    <Compile Include="Infrustructure\Persistence\XmlEntities.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
     <Compile Include="Infrustructure\VmActions.cs" />
