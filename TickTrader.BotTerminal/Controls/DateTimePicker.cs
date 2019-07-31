@@ -146,7 +146,7 @@ namespace TickTrader.BotTerminal
         }
 
         public static readonly DependencyProperty FormatProperty =
-            DependencyProperty.Register(nameof(Format), typeof(string), typeof(DateTimePicker), new PropertyMetadata("dd-MM-yyyy HH:mm"));
+            DependencyProperty.Register(nameof(Format), typeof(string), typeof(DateTimePicker), new PropertyMetadata("g", OnFormatChanged));
 
         #endregion
 
@@ -207,6 +207,13 @@ namespace TickTrader.BotTerminal
             self.ApplyNewSelectedDate((DateTime?)e.NewValue);
         }
 
+        private static void OnFormatChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var self = d as DateTimePicker;
+
+            self.RefreshDisplayedDateTime();
+        }
+
         private void ApplyNewSelectedDate(DateTime? newValue)
         {
             if (!_dateTimeIsUpdating)
@@ -218,6 +225,11 @@ namespace TickTrader.BotTerminal
 
                 _dateTimeIsUpdating = false;
             }
+        }
+
+        private void RefreshDisplayedDateTime()
+        {
+            ApplyNewSelectedDate(SelectedDateTime);
         }
 
         private static object OnCoerceSelectedDateTime(DependencyObject d, object baseValue)
