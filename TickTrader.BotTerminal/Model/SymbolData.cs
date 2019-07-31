@@ -181,6 +181,7 @@ namespace TickTrader.BotTerminal
 
                     if (cancelToken.IsCancellationRequested)
                     {
+                        await tickEnumerator.Close();
                         observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
                         return;
                     }

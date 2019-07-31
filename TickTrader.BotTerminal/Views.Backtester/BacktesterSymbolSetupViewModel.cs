@@ -149,6 +149,9 @@ namespace TickTrader.BotTerminal
 
         public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit, TimeFrames timeFrameChoice)
         {
+            if (cToken.IsCancellationRequested)
+                return;
+
             //if (SetupType == SymbolSetupType.Main)
             //    return;
 
