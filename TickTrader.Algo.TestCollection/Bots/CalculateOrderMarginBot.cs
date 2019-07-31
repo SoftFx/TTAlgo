@@ -20,7 +20,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void OnQuote(Quote quote)
         {
-            Print($"Order Margin: {Account.CalculateOrderMargin(Symbol.Name, OrderTypeProp, OrderSideProp, Volume, null, null, null)}");
+            Print($"Order Margin: {Account.CalculateOrderMargin(Symbol.Name, OrderTypeProp, OrderSideProp, Volume, Ask, Ask, null)}");
         }
     }
 }

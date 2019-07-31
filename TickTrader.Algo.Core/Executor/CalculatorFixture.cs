@@ -345,7 +345,20 @@ namespace TickTrader.Algo.Core
                 }
 
                 if (cashCalc != null)
+                {
+                    if (type == OrderType.Stop || type == OrderType.StopLimit)
+                    {
+                        if (stopPrice == null)
+                            return null;
+                    }
+                    else
+                    {
+                        if (price == null)
+                            return null;
+                    }
+
                     return (double)CashAccountCalculator.CalculateMargin(boType, (decimal)orderVol, price, stopPrice, boSide, symbol, isHidden);
+                }
             }
             catch (Exception ex)
             {
