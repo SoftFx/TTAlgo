@@ -270,14 +270,14 @@ namespace TickTrader.Algo.Core
                         Type = orderToModify.Type,
                         Side = orderToModify.Side,
                         CurrentVolume = (double)orderVolume,
-                        NewVolume = (double)newOrderVolume,
+                        NewVolume = (double?)newOrderVolume,
                         Price = price,
                         StopPrice = stopPrice,
                         StopLoss = sl,
                         TakeProfit = tp,
                         Comment = comment,
                         Expiration = expiration,
-                        MaxVisibleVolume = (double)orderMaxVisibleVolume,
+                        MaxVisibleVolume = (double?)orderMaxVisibleVolume,
                         Options = options
                     };
 
