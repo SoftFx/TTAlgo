@@ -354,6 +354,7 @@
     <Compile Include="Model.Algo\Outputs\OutputSynchronizer.cs" />
     <Compile Include="Model.Algo\Outputs\OutputSeriesModel.cs" />
     <Compile Include="Model.Algo\Outputs\TesterOutputCollector.cs" />
+    <Compile Include="Model.Algo\ParamSetup\BoolSetModel.cs" />
     <Compile Include="Model.Algo\ParamSetup\EnumSetModel.cs" />
     <Compile Include="Model.Algo\ParamSetup\InvalidSetModel.cs" />
     <Compile Include="Model.Algo\ParamSetup\NumericSetModel.cs" />

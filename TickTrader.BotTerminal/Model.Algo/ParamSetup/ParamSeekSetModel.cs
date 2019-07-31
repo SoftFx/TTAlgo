@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
 
             switch (descriptor.DataType)
             {
-                //case "System.Boolean": return new BoolParamSetupModel(descriptor);
+                case "System.Boolean": return new BoolSetModel();
                 case "System.Int32": return new Int32RangeSet();
                 case "System.Double": return new DoubleRangeSet();
                 //case "System.String": return new StringParamSetupModel(descriptor);

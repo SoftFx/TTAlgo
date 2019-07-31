@@ -42,7 +42,6 @@ namespace TickTrader.BotTerminal
             _storageController.TryResolveFormatError = ProfileResolver.TryResolveProfile;
         }
 
-
         public async Task<bool> StopCurrentProfile(string server, string login)
         {
             if (Server == server && Login == login)
@@ -104,7 +103,6 @@ namespace TickTrader.BotTerminal
                 _logger.Error($"Can't save user profile at {profilePath}: {ex.Message}");
             }
         }
-
 
         private void OnProfileUpdated()
         {
