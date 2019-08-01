@@ -35,7 +35,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <DataTemplate x:Key="ModeComboBoxItem">
+    <DataTemplate x:Key="AlgorithmComboBoxItem">
         <TextBlock Text="{l:ResxBinding Prefix=OptMode_}"/>
     </DataTemplate>
 
@@ -49,18 +49,18 @@
         <StackPanel Orientation="Vertical">
             <WrapPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
-                    <Label Content="Optimization:" Style="{StaticResource SettingsLabel}"/>
-                    <ComboBox Style="{StaticResource SettingsCombo}" Width="200" IsEnabled="{Binding IsOptimizatioPossibleProp.Value}"
-                              ItemsSource="{Binding AvailableModes}" SelectedValue="{Binding ModeProp.Value}"
-                              ItemTemplate="{StaticResource ModeComboBoxItem}"/>
+                    <Label Content="Algorithm:" Style="{StaticResource SettingsLabel}"/>
+                    <ComboBox Style="{StaticResource SettingsCombo}" Width="200"
+                              ItemsSource="{Binding AvailableAlgorithms}" SelectedValue="{Binding AlgorithmProp.Value}"
+                              ItemTemplate="{StaticResource AlgorithmComboBoxItem}"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="5,5,5,0" IsEnabled="{Binding VarOptimizationEnabled.Value}">
-                    <Label Content="Parameter:" Style="{StaticResource SettingsLabel}"/>
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                    <Label Content="Metric:" Style="{StaticResource SettingsLabel}"/>
                     <ComboBox SelectedIndex="0" Style="{StaticResource SettingsCombo}" Width="200"
                               ItemsSource="{Binding AvailableMetrics}" SelectedItem="{Binding SelectedMetric.Value}"
                               ItemTemplate="{StaticResource MetricComboBoxItem}"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="5,5,5,0" IsEnabled="{Binding VarOptimizationEnabled.Value}">
+                <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                     <Label Content="Cores:" Style="{StaticResource SettingsLabel}"/>
                     <ComboBox MaxWidth="80" Style="{StaticResource SettingsCombo}" SelectedIndex="3" Width="60" HorizontalAlignment="Left"
                               ItemsSource="{Binding AvailableParallelismList}" SelectedItem="{Binding ParallelismProp.Value}"/>
@@ -69,7 +69,6 @@
 
             <!--<Label Content="Bot parameters:"/>-->
             <DataGrid AutoGenerateColumns="False" Margin="5,10,5,5" Style="{DynamicResource NoHScrollDataGrid_Style}"
-                      IsEnabled="{Binding VarOptimizationEnabled.Value}"
                       ItemsSource="{Binding Parameters}" CanUserReorderColumns="False" CanUserSortColumns="False">
                 <DataGrid.Resources>
                     <Style TargetType="{x:Type DataGridRow}">

@@ -362,6 +362,7 @@
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Algo\PluginStateHelper.cs" />
+    <Compile Include="Model.Lib\OptionalItem.cs" />
     <Compile Include="Model.Profiles\ProfileResolver.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />

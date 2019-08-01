@@ -89,6 +89,11 @@ namespace TickTrader.BotTerminal
                 ActivateItem(ResultsPage);
             };
 
+            _var.TriggerOnChange(SetupPage.ModeProp, a =>
+            {
+                OptimizationPage.IsVisible = a.New.Value == TesterModes.Optimization;
+            });
+
             InitExecControl();
 
             Items.Add(SetupPage);
@@ -178,11 +183,10 @@ namespace TickTrader.BotTerminal
             //packageRef.IncrementRef();
             //packageRef.DecrementRef();
 
-            if (OptimizationPage.IsOptimizationEnabled)
+            if (SetupPage.Mode == TesterModes.Optimization)
                 await DoOptimization(observer, cToken, pluginRef, SetupPage.PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
             else
                 await DoBacktesting(observer, cToken, pluginRef, SetupPage.PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
-
         }
 
         private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
@@ -204,7 +208,7 @@ namespace TickTrader.BotTerminal
                     backtester.Executor.LogUpdated += JournalPage.Append;
                     backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
 
-                    if (SetupPage.IsVisualizationEnabled.Value)
+                    if (SetupPage.Mode == TesterModes.Visualization)
                     {
                         _isVisualizing.Set();
 

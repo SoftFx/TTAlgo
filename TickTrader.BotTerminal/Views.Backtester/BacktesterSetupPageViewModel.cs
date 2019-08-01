@@ -33,6 +33,7 @@ namespace TickTrader.BotTerminal
         private readonly IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
         private readonly IVarSet<SymbolKey, ISymbolInfo> _symbolTokens;
         private BacktesterPluginSetupViewModel _openedPluginSetup;
+        private readonly OptionalItem<TesterModes> _optModeItem;
 
         public BacktesterSetupPageViewModel(TraderClientModel client, SymbolCatalog catalog, AlgoEnvironment env, BoolVar isRunning)
         {
@@ -78,7 +79,8 @@ namespace TickTrader.BotTerminal
             CanSetup = !isRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
-            IsVisualizationEnabled = _var.AddBoolProperty();
+            //IsVisualizationEnabled = _var.AddBoolProperty();
+            ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
 
             Plugins = env.LocalAgentVM.PluginList;
 
@@ -95,6 +97,13 @@ namespace TickTrader.BotTerminal
             var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
             _observableSymbolTokens = sortedSymbolTokens.AsObservable();
 
+            Modes = new List<OptionalItem<TesterModes>>();
+            Modes.Add(new OptionalItem<TesterModes>(TesterModes.Backtesting));
+            Modes.Add(new OptionalItem<TesterModes>(TesterModes.Visualization));
+            Modes.Add(new OptionalItem<TesterModes>(TesterModes.Optimization));
+            _optModeItem = Modes.Last();
+            ModeProp.Value = Modes[0];
+
             env.LocalAgentVM.Plugins.Updated += a =>
             {
                 if (a.Action == DLinqAction.Remove && a.OldItem.Key == SelectedPlugin.Value?.Key)
@@ -106,9 +115,9 @@ namespace TickTrader.BotTerminal
                 if (a.New != null)
                 {
                     var pluginRef = env.LocalAgent.Library.GetPluginRef(a.New.Key);
+                    UpdateOptimizationState(pluginRef.Metadata.Descriptor);
                     PluginSetup = new PluginSetupModel(pluginRef, this, this);
                     PluginSelected?.Invoke();
-                    //OptimizationPage.SetPluign(a.New.Descriptor, PluginSetup);
                 }
                 else
                     PluginSetup = null;
@@ -164,7 +173,10 @@ namespace TickTrader.BotTerminal
         public PluginSetupModel PluginSetup { get; private set; }
         //public PluginConfig PluginConfig { get; private set; }
         public Property<string> TradeSettingsSummary { get; private set; }
-        public BoolProperty IsVisualizationEnabled { get; }
+        //public BoolProperty IsVisualizationEnabled { get; }
+        public List<OptionalItem<TesterModes>> Modes { get; }
+        public Property<OptionalItem<TesterModes>> ModeProp { get; private set; }
+        public TesterModes Mode => ModeProp.Value.Value;
         public BoolProperty SaveResultsToFile { get; }
         public BoolVar IsPluginSelected { get; }
         public BoolVar IsTradeBotSelected { get; }
@@ -452,6 +464,13 @@ namespace TickTrader.BotTerminal
             _var.Dispose();
         }
 
+        private void UpdateOptimizationState(PluginDescriptor descriptor)
+        {
+            _optModeItem.IsEnabled = descriptor.Type == AlgoTypes.Robot;
+            if (ModeProp.Value == _optModeItem)
+                ModeProp.Value = Modes[0];
+        }
+
         #region IAlgoSetupMetadata
 
         IReadOnlyList<ISymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
@@ -490,5 +509,12 @@ namespace TickTrader.BotTerminal
         MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
 
         #endregion IAlgoSetupContext
+    }
+
+    public enum TesterModes
+    {
+        Backtesting,
+        Visualization,
+        Optimization
     }
 }

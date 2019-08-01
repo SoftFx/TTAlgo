@@ -25,15 +25,13 @@ namespace TickTrader.BotTerminal
         private PluginDescriptor _descriptor;
         private WindowManager _localWnd;
 
-        public enum OptimizationModes { Disabled, Bruteforce, Genetic }
+        public enum OptimizationAlgorithms { Bruteforce, Genetic }
 
         public BacktesterOptimizerViewModel(WindowManager manager)
         {
-            DisplayName = "Optimization";
+            DisplayName = "Optimization Setup";
 
             _localWnd = manager;
-
-            VarOptimizationEnabled = ModeProp.Var != OptimizationModes.Disabled;
 
             var maxCores = Environment.ProcessorCount;
             AvailableParallelismList = Enumerable.Range(1, maxCores);
@@ -43,13 +41,10 @@ namespace TickTrader.BotTerminal
         }
 
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
-        public bool IsOptimizationEnabled => VarOptimizationEnabled.Value;
-        public BoolVar VarOptimizationEnabled { get; }
-        public BoolProperty IsOptimizatioPossibleProp { get; } = new BoolProperty();
         public IEnumerable<int> AvailableParallelismList { get; }
         public IntProperty ParallelismProp { get; } = new IntProperty();
-        public IEnumerable<OptimizationModes> AvailableModes => EnumHelper.AllValues<OptimizationModes>();
-        public Property<OptimizationModes> ModeProp { get; } = new Property<OptimizationModes>();
+        public IEnumerable<OptimizationAlgorithms> AvailableAlgorithms => EnumHelper.AllValues<OptimizationAlgorithms>();
+        public Property<OptimizationAlgorithms> AlgorithmProp { get; } = new Property<OptimizationAlgorithms>();
         public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
         public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
 
@@ -70,7 +65,7 @@ namespace TickTrader.BotTerminal
 
             Parameters.Clear();
 
-            var canOptimize = false;
+            //var canOptimize = false;
 
             if (descriptor.Type == AlgoTypes.Robot)
             {
@@ -82,12 +77,12 @@ namespace TickTrader.BotTerminal
                         Parameters.Add(new ParamSeekSetupModel(this, model, p, pSetup));
                 }
 
-                canOptimize = Parameters.Count > 0;
+                //canOptimize = Parameters.Count > 0;
             }
 
-            IsOptimizatioPossibleProp.Value = canOptimize;
-            if (!canOptimize)
-                ModeProp.Value = OptimizationModes.Disabled;
+            //IsOptimizatioPossibleProp.Value = canOptimize;
+            //if (!canOptimize)
+            //    ModeProp.Value = OptimizationAlgorythm.Disabled;
         }
 
         public IEnumerable<ParameterDescriptor> GetSelectedParams()
