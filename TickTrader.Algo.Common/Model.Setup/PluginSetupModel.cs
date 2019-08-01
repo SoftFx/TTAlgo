@@ -115,8 +115,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = Permissions.Clone();
-            foreach (var property in _allProperties)
-                cfg.Properties.Add(property.Save());
+            foreach (var propertyModel in _allProperties)
+            {
+                var prop = propertyModel.Save();
+                if (prop != null)
+                    cfg.Properties.Add(prop);
+            }
             return cfg;
         }
 

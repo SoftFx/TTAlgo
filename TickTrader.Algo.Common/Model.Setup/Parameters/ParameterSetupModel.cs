@@ -71,7 +71,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             public override Property Save()
             {
-                throw new Exception("Invalid parameter cannot be saved!");
+                //throw new Exception("Invalid parameter cannot be saved!");
+                return null;
             }
 
             public override void Reset()

@@ -224,8 +224,12 @@ namespace TickTrader.BotTerminal
             cfg.Permissions = new PluginPermissions();
             cfg.Permissions.TradeAllowed = _allowTrade;
             cfg.Permissions.Isolated = _isolate;
-            foreach (var property in _allProperties)
-                cfg.Properties.Add(property.Save());
+            foreach (var propertyModel in _allProperties)
+            {
+                var prop = propertyModel.Save();
+                if (prop != null)
+                    cfg.Properties.Add(prop);
+            }
             return cfg;
         }
 

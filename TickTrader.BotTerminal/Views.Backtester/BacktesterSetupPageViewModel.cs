@@ -29,6 +29,7 @@ namespace TickTrader.BotTerminal
         private WindowManager _localWnd;
         private readonly BoolProperty _isDateRangeValid;
         private readonly BoolProperty _allSymbolsValid;
+        private readonly BoolVar _isPluginValid;
         private readonly SymbolToken _mainSymbolToken;
         private readonly IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
         private readonly IVarSet<SymbolKey, ISymbolInfo> _symbolTokens;
@@ -70,17 +71,21 @@ namespace TickTrader.BotTerminal
             AvailableModels = _var.AddProperty<List<TimeFrames>>();
             SelectedModel = _var.AddProperty<TimeFrames>(TimeFrames.M1);
 
+            ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
+            PluginErrorProp = _var.AddProperty<string>();
+
             SelectedPlugin = new Property<AlgoPluginViewModel>();
             IsPluginSelected = SelectedPlugin.Var.IsNotNull();
             IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
             //IsRunning = ActionOverlay.IsRunning;
             //IsStopping = ActionOverlay.IsCancelling;
-            IsSetupValid = !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var & _isDateRangeValid.Var;
+            _isPluginValid = PluginErrorProp.Var.IsNull();
+            IsSetupValid = !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var & _isDateRangeValid.Var & _isPluginValid;
             CanSetup = !isRunning & client.IsConnected;
             //CanStop = ActionOverlay.CanCancel;
             //CanSave = !IsRunning & _hasDataToSave.Var;
             //IsVisualizationEnabled = _var.AddBoolProperty();
-            ModeProp = _var.AddProperty<OptionalItem<TesterModes>>();
+            
 
             Plugins = env.LocalAgentVM.PluginList;
 
@@ -116,6 +121,7 @@ namespace TickTrader.BotTerminal
                 {
                     var pluginRef = env.LocalAgent.Library.GetPluginRef(a.New.Key);
                     UpdateOptimizationState(pluginRef.Metadata.Descriptor);
+                    UpdatePluginState(pluginRef.Metadata.Descriptor);
                     PluginSetup = new PluginSetupModel(pluginRef, this, this);
                     PluginSelected?.Invoke();
                 }
@@ -168,6 +174,7 @@ namespace TickTrader.BotTerminal
         public Property<List<TimeFrames>> AvailableModels { get; private set; }
         public Property<TimeFrames> SelectedModel { get; private set; }
         public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
+        public Property<string> PluginErrorProp { get; }
         public Property<TimeFrames> MainTimeFrame { get; private set; }
         public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
         public PluginSetupModel PluginSetup { get; private set; }
@@ -470,6 +477,15 @@ namespace TickTrader.BotTerminal
             if (ModeProp.Value == _optModeItem)
                 ModeProp.Value = Modes[0];
         }
+
+        private void UpdatePluginState(PluginDescriptor descriptor)
+        {
+            if (descriptor.IsValid)
+                PluginErrorProp.Value = null;
+            else
+                PluginErrorProp.Value = descriptor.Error.ToString();
+        }
+
 
         #region IAlgoSetupMetadata
 
