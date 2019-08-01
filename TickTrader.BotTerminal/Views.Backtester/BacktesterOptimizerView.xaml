@@ -75,6 +75,7 @@
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding SeekEnabledProp.Value}" Value="True">
                                 <Setter Property="FontWeight" Value="Bold" />
+                                <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action Modify]"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
