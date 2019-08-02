@@ -91,8 +91,6 @@ namespace TickTrader.Algo.Core
                 ChangedState(EmulatorStates.Running);
             }
 
-            //cToken.Register(() => _core.CancelOptimization());
-
             try
             {
                 await Task.Factory.StartNew(() => _core.Run(_seekStrategy, CommonSettings, DegreeOfParallelism, OnReport), TaskCreationOptions.LongRunning);
@@ -117,30 +115,6 @@ namespace TickTrader.Algo.Core
                 }
             });
         }
-
-        //private void MarshalUpdates(IReadOnlyList<object> updates)
-        //{
-        //    _sync.Invoke(() =>
-        //    {
-        //        for (int i = 0; i < updates.Count; i++)
-        //        {
-        //            try
-        //            {
-        //                MarshalUpdate(updates[i]);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                ErrorOccurred?.Invoke(ex);
-        //            }
-        //        }
-        //    });
-        //}
-
-        //private void MarshalUpdate(object update)
-        //{
-        //    if (update is OptCaseReport)
-        //        CaseCompleted?.Invoke((OptCaseReport)update);
-        //}
 
         public void ChangedState(EmulatorStates newState)
         {
@@ -193,6 +167,7 @@ namespace TickTrader.Algo.Core
             private Action<OptCaseReport, long> _repHandler;
             private TransformBlock<OptCaseConfig, OptCaseReport> _workerBlock;
             private ActionBlock<OptCaseReport> _controlBlock;
+            private Exception _fatalError;
 
             public void Init(PluignExecutorFactory factory)
             {
@@ -223,6 +198,7 @@ namespace TickTrader.Algo.Core
 
             public void Run(ParamSeekStrategy sStrategy, CommonTestSettings settings, int degreeOfP, Action<OptCaseReport, long> updateHandler)
             {
+                _fatalError = null;
                 CommonSettings = settings;
                 SeekStrategy = sStrategy;
                 _repHandler = updateHandler;
@@ -230,33 +206,26 @@ namespace TickTrader.Algo.Core
                 if (SeekStrategy == null)
                     throw new AlgoException("Optimization strategy is not specified!");
 
-                //_channel = new UpdateChannel();
-                //_channel.Start(true, updateHandler);
+                try
+                {
+                    Feed.InitStorages();
 
-                var workerOptions = new ExecutionDataflowBlockOptions();
-                workerOptions.MaxDegreeOfParallelism = degreeOfP;
-                workerOptions.MaxMessagesPerTask = 1;
-                workerOptions.CancellationToken = _cancelSrc.Token;
+                    CreateWorkderBlock(degreeOfP);
+                    CreateControlBlock();
 
-                _workerBlock = new TransformBlock<OptCaseConfig, OptCaseReport>((Func<OptCaseConfig, OptCaseReport>)Backtest, workerOptions);
+                    _workerBlock.LinkTo(_controlBlock, new DataflowLinkOptions() { PropagateCompletion = true });
 
-                var controlBlockOptions = new ExecutionDataflowBlockOptions();
-                controlBlockOptions.MaxDegreeOfParallelism = 1;
-                controlBlockOptions.MaxMessagesPerTask = 1;
-                controlBlockOptions.SingleProducerConstrained = true;
-                controlBlockOptions.CancellationToken = _cancelSrc.Token;
+                    SeekStrategy.Start(this, degreeOfP);
 
-                _controlBlock = new ActionBlock<OptCaseReport>((Action<OptCaseReport>)OnCaseTested, controlBlockOptions);
+                    _controlBlock.Completion.Wait();
 
-                _workerBlock.LinkTo(_controlBlock, new DataflowLinkOptions() { PropagateCompletion = true });
-
-                //foreach (var caseCfg in SeekStrategy.GetCases())
-                //optBlock.SendAsync(caseCfg);
-
-                SeekStrategy.Start(this, degreeOfP);
-
-                //optBlock.Complete();
-                _controlBlock.Completion.Wait();
+                    if (_fatalError != null)
+                        throw _fatalError;
+                }
+                finally
+                {
+                    Feed.DeinitStorages();
+                }
             }
 
             private OptCaseReport Backtest(OptCaseConfig caseCfg)
@@ -266,12 +235,15 @@ namespace TickTrader.Algo.Core
 
                 Exception execError = null;
 
-                if (!emFixture.OnStart())
-                    execError = new AlgoException("No data for specified period!");
-
                 try
                 {
-                    emFixture.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
+                    if (!emFixture.OnStart())
+                        execError = new AlgoException("No data for specified period!");
+
+                    using (_cancelSrc.Token.Register(() => emFixture.CancelEmulation()))
+                    {
+                        emFixture.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -292,6 +264,15 @@ namespace TickTrader.Algo.Core
 
             private void OnCaseTested(OptCaseReport report)
             {
+                if (report.ExecError != null)
+                {
+                    if (IsFatalError(report.ExecError) && _fatalError == null)
+                    {
+                        _fatalError = report.ExecError;
+                        _cancelSrc.Cancel();
+                    }
+                }
+
                 var casesLeft = SeekStrategy.OnCaseCompleted(report, this);
                 if (casesLeft <= 0)
                     _workerBlock.Complete();
@@ -334,6 +315,32 @@ namespace TickTrader.Algo.Core
                 rep.Margin = margin.ToList();
 
                 return rep;
+            }
+
+            private void CreateWorkderBlock(int degreeOfP)
+            {
+                var workerOptions = new ExecutionDataflowBlockOptions();
+                workerOptions.MaxDegreeOfParallelism = degreeOfP;
+                workerOptions.MaxMessagesPerTask = 1;
+                workerOptions.CancellationToken = _cancelSrc.Token;
+
+                _workerBlock = new TransformBlock<OptCaseConfig, OptCaseReport>((Func<OptCaseConfig, OptCaseReport>)Backtest, workerOptions);
+            }
+
+            private void CreateControlBlock()
+            {
+                var controlBlockOptions = new ExecutionDataflowBlockOptions();
+                controlBlockOptions.MaxDegreeOfParallelism = 1;
+                controlBlockOptions.MaxMessagesPerTask = 1;
+                controlBlockOptions.SingleProducerConstrained = true;
+                //controlBlockOptions.CancellationToken = _cancelSrc.Token;
+
+                _controlBlock = new ActionBlock<OptCaseReport>((Action<OptCaseReport>)OnCaseTested, controlBlockOptions);
+            }
+
+            private bool IsFatalError(Exception ex)
+            {
+                return !(ex is StopOutException);
             }
 
             #region Setup

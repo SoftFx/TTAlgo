@@ -100,23 +100,23 @@ namespace TickTrader.Algo.Core
 
             _executor.StartCollection(isRealtime);
 
-            if (!_control.OnStart())
-            {
-                _control.Collector.AddEvent(LogSeverities.Error, "No data for requested period!");
-                _executor.StopCollection();
-                return;
-            }
-
-            //if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
-            //{
-            //    if (!_control.WarmUp(WarmupSize, WarmupUnits))
-            //        return;
-            //}
-
-            //_executor.Core.Start();
-
             try
             {
+                if (!_control.OnStart())
+                {
+                    _control.Collector.AddEvent(LogSeverities.Error, "No data for requested period!");
+                    return;
+                }
+
+                //if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
+                //{
+                //    if (!_control.WarmUp(WarmupSize, WarmupUnits))
+                //        return;
+                //}
+
+                //_executor.Core.Start();
+
+
                 if (PluginInfo.Type == AlgoTypes.Robot)
                     _control.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
                 else // no warm-up for indicators

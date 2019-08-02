@@ -7,12 +7,18 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
-    public interface ITickStorage
+    public interface IFeedStorage
+    {
+        void Start();
+        void Stop();
+    }
+
+    public interface ITickStorage : IFeedStorage
     {
         IEnumerable<QuoteEntity> GetQuoteStream();
     }
 
-    public interface IBarStorage
+    public interface IBarStorage : IFeedStorage
     {
         IEnumerable<BarEntity> GrtBarStream();
     }

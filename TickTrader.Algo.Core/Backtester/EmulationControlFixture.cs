@@ -39,6 +39,8 @@ namespace TickTrader.Algo.Core
         {
             try
             {
+                Feed.InitStorages();
+
                 Collector.OnStart(Settings, Feed);
 
                 return InvokeEmulator.StartFeedRead();
@@ -51,6 +53,8 @@ namespace TickTrader.Algo.Core
 
         public void OnStop()
         {
+            Feed.DeinitStorages();
+
             var builder = Executor.GetBuilder();
             //var tradeEmulator = (TradeEmulator)Executor.GetTradeFixute();
 

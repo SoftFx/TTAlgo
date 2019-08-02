@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Core
     public class FeedEmulator : CrossDomainObject, IPluginFeedProvider, ISynchronizationContext
     {
         //private FeedReader _reader;
+        private List<IFeedStorage> _storages = new List<IFeedStorage>();
         private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
         private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
 
@@ -27,6 +28,32 @@ namespace TickTrader.Algo.Core
                 _feedReaders.Add(rec.Key, rec.Value.Clone());
                 _feedSeries.Add(rec.Key, new FeedSeriesEmulator());
             }
+        }
+
+        internal void InitStorages()
+        {
+            foreach (var storage in _storages)
+                storage.Start();
+        }
+
+        internal void DeinitStorages()
+        {
+            var exceptions = new List<Exception>();
+
+            foreach (var storage in _storages)
+            {
+                try
+                {
+                    storage.Stop();
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(ex);
+                }
+            }
+
+            //if (exceptions.Count > 0)
+            //    throw new AggregateException(exceptions);
         }
 
         internal IEnumerable<RateUpdate> GetFeedStream()
@@ -84,6 +111,8 @@ namespace TickTrader.Algo.Core
 
             _feedReaders.Add(symbol, new TickSeriesReader(symbol, storage));
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
+
+            _storages.Add(storage);
         }
 
         public void AddSource(string symbol, TimeFrames timeFrame, IEnumerable<BarEntity> bidStream, IEnumerable<BarEntity> askStream)
@@ -96,6 +125,9 @@ namespace TickTrader.Algo.Core
         {
             _feedReaders.Add(symbol, new BarSeriesReader(symbol, timeFrame, bidStream, askStream));
             _feedSeries.Add(symbol, new FeedSeriesEmulator());
+
+            _storages.Add(bidStream);
+            _storages.Add(askStream);
         }
 
         private FeedSeriesEmulator GetFeedSrcOrThrow(string symbol)
