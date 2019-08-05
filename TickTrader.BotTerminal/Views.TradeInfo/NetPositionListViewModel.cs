@@ -40,6 +40,7 @@ namespace TickTrader.BotTerminal
         }
 
         public ViewModelStorageEntry StateProvider { get; private set; }
+        public bool AutoSizeColumns { get; set; }
 
         protected override bool SupportsAccount(AccountTypes accType)
         {

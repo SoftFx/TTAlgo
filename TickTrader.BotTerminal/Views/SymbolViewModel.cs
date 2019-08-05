@@ -52,6 +52,7 @@ namespace TickTrader.BotTerminal
         public string Group { get { return "Forex"; } }
         public int Color { get; private set; }
         public bool ShowLocalTime { get; }
+        public bool CanOpenChart => _shell != null;
 
         public RateDirectionTracker Bid { get; private set; }
         public RateDirectionTracker Ask { get; private set; }
@@ -138,7 +139,7 @@ namespace TickTrader.BotTerminal
 
         public void OpenChart()
         {
-            _shell.OpenChart(SymbolName);
+            _shell?.OpenChart(SymbolName);
         }
 
         public void Close()

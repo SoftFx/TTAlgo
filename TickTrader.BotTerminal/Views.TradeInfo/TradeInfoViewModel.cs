@@ -28,6 +28,8 @@ namespace TickTrader.BotTerminal
             AccountStats = new AccountStatsViewModel(accModel, connectionInfo);
 
             Orders.AutoSizeColumns = autoSizeColumns;
+            Positions.Gross.AutoSizeColumns = autoSizeColumns;
+            Positions.Net.AutoSizeColumns = autoSizeColumns;
         }
 
         public OrderListViewModel Orders { get; }

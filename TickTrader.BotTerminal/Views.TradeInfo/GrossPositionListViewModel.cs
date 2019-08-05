@@ -31,6 +31,7 @@ namespace TickTrader.BotTerminal
         }
 
         public IObservableList<OrderViewModel> Positions { get; private set; }
+        public bool AutoSizeColumns { get; set; }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

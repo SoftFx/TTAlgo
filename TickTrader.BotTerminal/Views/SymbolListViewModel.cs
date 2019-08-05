@@ -22,6 +22,8 @@ namespace TickTrader.BotTerminal
             Symbols = viewModelCollection.AsObservable();
             SelectedSymbol = AddProperty<SymbolViewModel>();
 
+            CanOpenChart = shell != null;
+
             TriggerOnChange(SelectedSymbol.Var, a =>
             {
                 if (a.Old != null) a.Old.IsSelected = false;
@@ -31,6 +33,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<SymbolViewModel> Symbols { get; }
         public Property<SymbolViewModel> SelectedSymbol { get; }
+        public bool CanOpenChart { get; }
 
         public void OpenChart(object o)
         {

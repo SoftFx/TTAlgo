@@ -146,7 +146,11 @@
         <Setter Property="Template" Value="{StaticResource SymbolListView.Classic}"/>
         <Style.Resources>
             <Style TargetType="{x:Type DataGridRow}">
-                <Setter Property="ContextMenu" Value="{StaticResource RowContextmenu.Classic}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding CanOpenChart}" Value="True">
+                        <Setter Property="ContextMenu" Value="{StaticResource RowContextmenu.Classic}"/>
+                    </DataTrigger>
+                </Style.Triggers>
             </Style>
         </Style.Resources>
     </Style>
