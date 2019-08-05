@@ -9,6 +9,7 @@
             </Grid.Resources>
             <DataGrid Name="netGrid"  ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}"
                        SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
+                      l:DataGridExt.AutoSize="{Binding AutoSizeColumns}"
                        Visibility="{Binding Data.IsNetAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                 <DataGrid.Resources>
                     <l:DataGridColumnHide x:Key="SlippageShow" Provider="{Binding StateProvider}" ColumnKey="Slippage" IsColumnEnabled="{Binding IsSlippageSupported}"/>
@@ -461,15 +462,6 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
-        <ControlTemplate.Triggers>
-            <!--<DataTrigger Binding="{Binding AutoSizeColumns}" Value="False">
-                <Setter TargetName="netGrid" Property="HorizontalAlignment" Value="Left"/>
-                --><!--<Setter TargetName="netGrid" Property="Width" Value="Auto"/>--><!--
-                <Setter TargetName="grossGrid" Property="HorizontalAlignment" Value="Left"/>
-                <Setter TargetName="grossGrid" Property="Width" Value="Auto"/>
-                <Setter TargetName="cashGrid" Property="HorizontalAlignment" Value="Left"/>
-            </DataTrigger>-->
-        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <Style x:Key="TradeHistoryGridViewStyle.Classic" TargetType="UserControl">

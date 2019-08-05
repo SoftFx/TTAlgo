@@ -29,7 +29,7 @@ namespace TickTrader.BotTerminal
             IsMarginAccount = IsGrossAccount | IsNetAccount;
             IsAccTypeSet = AccType.Var.IsNotNull();
 
-            AutoSizeColumns = true;
+            AutoSizeColumns = !isBacktester;
             ConvertTimeToLocal = false;
 
             _profileManager = profile;
@@ -53,7 +53,7 @@ namespace TickTrader.BotTerminal
         public BoolVar IsAccTypeSet { get; }
 
         public bool IsSlippageSupported { get; set; } = true;
-        public bool AutoSizeColumns { get; set; }
+        public bool AutoSizeColumns { get; private set; }
         public bool ConvertTimeToLocal { get; set; }
 
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;

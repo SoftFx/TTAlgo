@@ -252,6 +252,7 @@
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\CustomDockManager.cs" />
+    <Compile Include="Controls\DataGridExt.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
     <Compile Include="Controls\DropDownMenuButton.cs" />
