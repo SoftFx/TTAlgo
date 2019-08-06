@@ -114,7 +114,7 @@ namespace TickTrader.BotTerminal
 
             var smb = SelectedSymbol.Value;
 
-            if (smb != null)
+            if (smb != null && smb.IsDataAvailable)
             {
                 _requestsCount.Value++;
 
