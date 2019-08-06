@@ -43,11 +43,11 @@ namespace TickTrader.SeriesStorage.Lmdb
 
                 _env.Open(flags);
             }
-            catch
+            catch(Exception ex)
             {
                 _env.Dispose();
                 _env = null;
-                throw;
+                throw LmdbException.Convert(ex);
             }
         }
 

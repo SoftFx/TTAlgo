@@ -42,10 +42,32 @@ namespace TickTrader.Algo.Common.Model
 
         public IEnumerable<QuoteEntity> GetQuoteStream()
         {
-            var series = _db.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(_key), b => b.Time, _key.ToCodeString(), true);
+            SeriesStorage<DateTime, QuoteEntity> series = null;
 
-            foreach (var tick in series.Iterate(_from, _to))
-                yield return tick;
+            try
+            {
+                series = _db.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(_key), b => b.Time, _key.ToCodeString(), true);
+            }
+            catch (DbMissingException)
+            {
+            }
+
+            if (series != null)
+            {
+                var e = series.Iterate(_from, _to).GetEnumerator();
+
+                while (true)
+                {
+                    try
+                    {
+                        if (!e.MoveNext())
+                            break;
+                    }
+                    catch (DbMissingException) { break; }
+
+                    yield return e.Current;
+                }
+            }
         }   
     }
 }

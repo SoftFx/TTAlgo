@@ -13,7 +13,6 @@ namespace TickTrader.Algo.Common.Model
     [Serializable]
     internal class BarCrossDomainReader : IBarStorage
     {
-        private object _sync = new object();
         private string _baseFolder;
         private FeedCacheKey _key;
         private DateTime _from;
@@ -45,10 +44,32 @@ namespace TickTrader.Algo.Common.Model
 
         public IEnumerable<BarEntity> GrtBarStream()
         {
-            var series = _db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString(), false);
+            SeriesStorage<DateTime, BarEntity> series = null;
 
-            foreach (var bar in series.Iterate(_from, _to))
-                yield return bar;
+            try
+            {
+                series = _db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString(), false);
+            }
+            catch (DbMissingException)
+            {
+            }
+
+            if (series != null)
+            {
+                var e = series.Iterate(_from, _to).GetEnumerator();
+
+                while (true)
+                {
+                    try
+                    {
+                        if (!e.MoveNext())
+                            break;
+                    }
+                    catch (DbMissingException) { break; }
+
+                    yield return e.Current;
+                }
+            }
         }
     }
 }
