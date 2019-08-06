@@ -326,7 +326,7 @@ namespace TickTrader.Algo.Core
 
             if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
             {
-                var newBalance = (decimal?)eReport.NewBalance.Value;
+                var newBalance = (decimal?)eReport.NewBalance;
 
                 if (eReport.NewBalance != null && acc.Balance != newBalance.Value)
                 {
