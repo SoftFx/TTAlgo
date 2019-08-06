@@ -8,9 +8,9 @@
                 <l:BindingProxy x:Key="ProxyContext" Data="{Binding}" />
             </Grid.Resources>
             <DataGrid Name="netGrid"  ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}"
-                       SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
+                      SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
                       l:DataGridExt.AutoSize="{Binding AutoSizeColumns}"
-                       Visibility="{Binding Data.IsNetAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
+                      Visibility="{Binding Data.IsNetAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
                 <DataGrid.Resources>
                     <l:DataGridColumnHide x:Key="SlippageShow" Provider="{Binding StateProvider}" ColumnKey="Slippage" IsColumnEnabled="{Binding IsSlippageSupported}"/>
                     <l:DataGridColumnHide x:Key="ReqVolumeShow" Provider="{Binding StateProvider}" ColumnKey="ReqVolume"/>
@@ -95,17 +95,17 @@
                     </Style>
                 </DataGrid.RowStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Width="*" Binding="{Binding UniqueId}"/>
+                    <DataGridTextColumn Header="ID" Width="100" Binding="{Binding UniqueId}"/>
 
-                    <DataGridTextColumn Header="Time" Width="1.3*" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+                    <DataGridTextColumn Header="Time" Width="130" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
 
-                    <DataGridTextColumn Header="Type" Width="*" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
+                    <DataGridTextColumn Header="Type" Width="100" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
 
-                    <DataGridTextColumn Header="Symbol" Width="*" Binding="{Binding Symbol}" />
+                    <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
 
-                    <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Volume}"/>
+                    <DataGridTextColumn Header="Volume" Width="100" Binding="{Binding Volume}"/>
 
-                    <DataGridTextColumn Header="Price" Width="*" SortMemberPath="OpenPrice">
+                    <DataGridTextColumn Header="Price" Width="100" SortMemberPath="OpenPrice">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="OpenPrice"/>
@@ -114,7 +114,7 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Slippage" Width="*" Visibility="{Binding Visibility, Source={StaticResource SlippageShow}}">
+                    <DataGridTextColumn Header="Slippage" Width="100" Visibility="{Binding Visibility, Source={StaticResource SlippageShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="Slippage"/>
@@ -123,9 +123,9 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Req Volume" Width="*" Binding="{Binding ReqQuantity}" Visibility="{Binding Visibility, Source={StaticResource ReqVolumeShow}}"/>
+                    <DataGridTextColumn Header="Req Volume" Width="100" Binding="{Binding ReqQuantity}" Visibility="{Binding Visibility, Source={StaticResource ReqVolumeShow}}"/>
 
-                    <DataGridTextColumn Header="Pos Close Price" Width="*" SortMemberPath="ClosePrice" Visibility="{Binding Visibility, Source={StaticResource PosClosePriceShow}}">
+                    <DataGridTextColumn Header="Pos Close Price" Width="100" SortMemberPath="ClosePrice" Visibility="{Binding Visibility, Source={StaticResource PosClosePriceShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
                                 <Binding Path="ClosePrice"/>
@@ -134,9 +134,9 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Pos Close Volume" Width="*" Binding="{Binding CloseQuantity}" Visibility="{Binding Visibility, Source={StaticResource PosCloseVolumeShow}}"/>
+                    <DataGridTextColumn Header="Pos Close Volume" Width="100" Binding="{Binding CloseQuantity}" Visibility="{Binding Visibility, Source={StaticResource PosCloseVolumeShow}}"/>
 
-                    <DataGridTextColumn Header="Commission" Width="*" SortMemberPath="Commission" Visibility="{Binding Visibility, Source={StaticResource CommissionShow}}">
+                    <DataGridTextColumn Header="Commission" Width="100" SortMemberPath="Commission" Visibility="{Binding Visibility, Source={StaticResource CommissionShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Commission"/>
@@ -151,7 +151,7 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Swap" Width="*" SortMemberPath="Swap" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}">
+                    <DataGridTextColumn Header="Swap" Width="100" SortMemberPath="Swap" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Swap"/>
@@ -166,7 +166,7 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Net P/L" Width="*" SortMemberPath="NetProfitLoss">
+                    <DataGridTextColumn Header="Net P/L" Width="100" SortMemberPath="NetProfitLoss">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="NetProfitLoss"/>
@@ -181,14 +181,15 @@
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+                    <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
 
-                    <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
+                    <DataGridTextColumn Header="Comment" Width="100" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
             </DataGrid>
             <DataGrid Name="grossGrid"  ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" Style="{DynamicResource DataGrid_Style}"
-                       SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
-                       Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}">
+                      SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
+                      Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"
+                      l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
@@ -317,7 +318,7 @@
                   Visibility="{Binding Data.IsCachAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"
                   Style="{DynamicResource DataGrid_Style}"
                   ClipboardCopyMode="IncludeHeader"
-                  SelectionMode="Extended">
+                  SelectionMode="Extended" l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>

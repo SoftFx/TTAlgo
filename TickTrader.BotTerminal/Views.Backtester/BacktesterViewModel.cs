@@ -361,6 +361,8 @@ namespace TickTrader.BotTerminal
                 TradesPage.IsVisible = true;
                 TradesPage.Start(tester, currecnies, symbols);
             }
+            else
+                TradesPage.IsVisible = false;
 
             OptimizationResultsPage.Hide();
         }
