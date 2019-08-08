@@ -26,6 +26,7 @@ using LB = TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core.Lib;
+using System.Globalization;
 
 namespace TickTrader.BotTerminal
 {
@@ -585,7 +586,7 @@ namespace TickTrader.BotTerminal
         private async Task SaveResults(PluginSetupModel pluginSetup, IActionObserver observer)
         {
             var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
-            var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
+            var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture) + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 
             using (var stream = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
