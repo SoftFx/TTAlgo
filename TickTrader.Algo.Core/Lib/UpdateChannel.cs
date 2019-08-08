@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Core.Lib
         /// <summary>
         /// Can be only called by producer thread!
         /// </summary>
-        public void CompleteWrite()
+        public void Close()
         {
             _worker.CompleteWrite();
         }

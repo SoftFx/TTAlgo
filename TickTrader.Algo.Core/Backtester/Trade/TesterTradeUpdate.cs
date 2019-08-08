@@ -22,11 +22,13 @@ namespace TickTrader.Algo.Core
         public AssetEntity Asset2Update { get; }
         public double? Balance { get; private set; }
 
-        internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, FillInfo fillInfo, double balance)
+        internal static TesterTradeTransaction OnOpenOrder(OrderAccessor order, bool isInstantOrder, FillInfo fillInfo, double balance)
         {
             var update = new TesterTradeTransaction();
             update.OrderExecAction = OrderExecAction.Opened;
-            if (order.RemainingAmount > 0)
+            if (isInstantOrder)
+                update.OnInstantOrderOpened(order);
+            else if (order.RemainingAmount > 0)
                 update.OnOrderAdded(order);
             else
                 update.OrderUpdate = order.Entity;
@@ -110,6 +112,12 @@ namespace TickTrader.Algo.Core
             var update = new TesterTradeTransaction();
             update.OnPositionChanged(pos);
             return update;
+        }
+
+        private void OnInstantOrderOpened(OrderAccessor order)
+        {
+            OrderEntityAction = OrderEntityAction.None;
+            OrderUpdate = order.Entity;
         }
 
         private void OnOrderAdded(OrderAccessor order)

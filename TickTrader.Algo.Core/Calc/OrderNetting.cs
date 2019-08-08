@@ -117,7 +117,7 @@ namespace TickTrader.Algo.Core.Calc
 
             if (Type == OrderTypes.Position)
             {
-                ChangeProfitAmountBy(remAmount);
+                ChangeProfitAmountBy(-remAmount);
                 TotalWeight -= remAmount * (decimal)price.Value;
                 UpdateAveragePrice();
             }

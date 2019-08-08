@@ -53,6 +53,8 @@ namespace TickTrader.Algo.Core
 
         public void OnStop()
         {
+            Executor.WaitStop();
+
             Feed.DeinitStorages();
 
             var builder = Executor.GetBuilder();

@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                _channel.CompleteWrite();
+                _channel.Close();
             }
             catch (Exception ex)
             {

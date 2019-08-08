@@ -564,8 +564,16 @@ namespace TickTrader.Algo.Core
 
         internal void EmulateStop()
         {
-            ChangeState(States.Stopping);
-            stopTask = DoStop(false);
+            if (state == States.Running)
+            {
+                ChangeState(States.Stopping);
+                stopTask = DoStop(false);
+            }
+        }
+
+        internal void WaitStop()
+        {
+            stopTask.Wait();
         }
 
         #endregion
