@@ -63,6 +63,7 @@
 ;--------------------------
 ; Common variables
 var Void
+var OffsetY
 
 
 ;--------------------------
@@ -81,6 +82,16 @@ Var Agent_DirText
 
 Function DirectoryPageCreate
 
+    ${If} $Terminal_DesktopSelected == ${FALSE}
+    ${AndIf} $Terminal_StartMenuSelected == ${FALSE}
+    ${AndIf} $Configurator_DesktopSelected == ${FALSE}
+    ${AndIf} $Configurator_StartMenuSelected == ${FALSE}
+
+        GetDlgItem $Void $HWNDPARENT 1
+        SendMessage $Void ${WM_SETTEXT} 0 "STR:&Install"
+
+    ${EndIf}
+
     !insertmacro MUI_HEADER_TEXT "Choose Install Localtion" "Choose folders in which to install selected components"
 
     nsDialogs::Create 1018
@@ -89,30 +100,45 @@ Function DirectoryPageCreate
     ${If} $Void == error
         Abort
     ${EndIf}
-    
+
     ${NSD_CreateLabel} 0% 0u 100% 24u "Setup will install selected components in the following folders. To install in a different folder, click Browse and select another folder. Click Next to continue."
     Pop $Void
 
-    ${NSD_CreateGroupBox} 0 36u 100% 36u "${TERMINAL_NAME} Folder"
-    Pop $Void
+    StrCpy $OffsetY "36"
+    
+    ${If} $Terminal_CoreSelected == ${TRUE}
 
-    ${NSD_CreateDirRequest} 3% 50u 71% 13u "$Terminal_InstDir"
-    Pop $Terminal_DirText
+        ${NSD_CreateGroupBox} 0 "$OffsetYu" 100% 36u "${TERMINAL_NAME} Folder"
+        Pop $Void
 
-    ${NSD_CreateBrowseButton} 77% 50u 20% 14u "Browse..."
-    Pop $Void
-    ${NSD_OnClick} $Void Terminal_OnDirBrowse
+        IntOp $OffsetY $OffsetY + 14
 
-    ${NSD_CreateGroupBox} 0 84u 100% 36u "${AGENT_NAME} Folder"
-    Pop $Void
+        ${NSD_CreateDirRequest} 3% "$OffsetYu" 71% 13u "$Terminal_InstDir"
+        Pop $Terminal_DirText
 
-    ${NSD_CreateDirRequest} 3% 98u 71% 13u "$Agent_InstDir"
-    Pop $Agent_DirText
+        ${NSD_CreateBrowseButton} 77% "$OffsetYu" 20% 14u "Browse..."
+        Pop $Void
+        ${NSD_OnClick} $Void Terminal_OnDirBrowse
 
-    ${NSD_CreateBrowseButton} 77% 98u 20% 14u "Browse..."
-    Pop $Void
-    ${NSD_OnClick} $Void Agent_OnDirBrowse
+        IntOp $OffsetY $OffsetY + 34
 
+    ${EndIf}
+
+    ${If} $Agent_CoreSelected == ${TRUE}
+
+        ${NSD_CreateGroupBox} 0 "$OffsetYu" 100% 36u "${AGENT_NAME} Folder"
+        Pop $Void
+
+        IntOp $OffsetY $OffsetY + 14
+
+        ${NSD_CreateDirRequest} 3% "$OffsetYu" 71% 13u "$Agent_InstDir"
+        Pop $Agent_DirText
+
+        ${NSD_CreateBrowseButton} 77% "$OffsetYu" 20% 14u "Browse..."
+        Pop $Void
+        ${NSD_OnClick} $Void Agent_OnDirBrowse
+
+    ${EndIf}
 
     nsDialogs::Show
 
@@ -138,12 +164,20 @@ FunctionEnd
 
 Function DirectoryPageLeave
 
-    ${NSD_GetText} $Terminal_DirText $Terminal_InstDir
-    ${NSD_GetText} $Agent_DirText $Agent_InstDir
+    ${If} $Terminal_CoreSelected == ${TRUE}
 
-    ${Terminal_InitId} "Install"
-    ${Agent_InitId} "Install"
-    StrCpy $Configurator_InstDir "$Agent_InstDir\${CONFIGURATOR_NAME}"
+        ${NSD_GetText} $Terminal_DirText $Terminal_InstDir
+        ${Terminal_InitId} "Install"
+
+    ${EndIf}
+
+    ${If} $Agent_CoreSelected == ${TRUE}
+
+        ${NSD_GetText} $Agent_DirText $Agent_InstDir
+        ${Agent_InitId} "Install"
+        StrCpy $Configurator_InstDir "$Agent_InstDir\${CONFIGURATOR_NAME}"
+
+    ${EndIf}
 
 FunctionEnd
 
@@ -156,36 +190,71 @@ var Configurator_ShortcutText
 
 Function ShortcutPageCreate
 
-    !insertmacro MUI_HEADER_TEXT "Choose Shortcut Name" "Choose components shortcut names"
+    ${If} $Terminal_DesktopSelected == ${TRUE}
+    ${OrIf} $Terminal_StartMenuSelected == ${TRUE}
+    ${OrIf} $Configurator_DesktopSelected == ${TRUE}
+    ${OrIf} $Configurator_StartMenuSelected == ${TRUE}
 
-    nsDialogs::Create 1018
-    Pop $Void
+        !insertmacro MUI_HEADER_TEXT "Choose Shortcut Name" "Choose components shortcut names"
 
-    ${If} $Void == error
-        Abort
+        nsDialogs::Create 1018
+        Pop $Void
+
+        ${If} $Void == error
+            Abort
+        ${EndIf}
+
+        StrCpy $OffsetY "0"
+        
+        ${If} $Terminal_DesktopSelected == ${TRUE}
+        ${OrIf} $Terminal_StartMenuSelected == ${TRUE}
+
+            ${NSD_CreateLabel} 0% "$OffsetYu" 100% 12u "Enter name of ${TERMINAL_NAME} shortcut"
+            Pop $Void
+
+            IntOp $OffsetY $OffsetY + 13
+
+            ${NSD_CreateText} 0% "$OffsetYu" 100% 13u "$Terminal_ShortcutName"
+            Pop $Terminal_ShortcutText
+
+            IntOp $OffsetY $OffsetY + 22
+
+        ${EndIf}
+
+        ${If} $Configurator_DesktopSelected == ${TRUE}
+        ${OrIf} $Configurator_StartMenuSelected == ${TRUE}
+
+            ${NSD_CreateLabel} 0% "$OffsetYu" 100% 12u "Enter name of ${CONFIGURATOR_DISPLAY_NAME} shortcut"
+            Pop $Void
+
+            IntOp $OffsetY $OffsetY + 13
+
+            ${NSD_CreateText} 0% "$OffsetYu" 100% 13u "$Configurator_ShortcutName"
+            Pop $Configurator_ShortcutText
+
+        ${EndIf}
+
+        nsDialogs::Show
+
     ${EndIf}
-    
-    ${NSD_CreateLabel} 0% 0u 100% 12u "Enter name of ${TERMINAL_NAME} shortcut"
-    Pop $Void
-
-    ${NSD_CreateText} 0% 13u 100% 13u "$Terminal_ShortcutName"
-    Pop $Terminal_ShortcutText
-
-    ${NSD_CreateLabel} 0% 35u 100% 12u "Enter name of ${AGENT_NAME} shortcut"
-    Pop $Void
-
-    ${NSD_CreateText} 0% 48u 100% 13u "$Configurator_ShortcutName"
-    Pop $Configurator_ShortcutText
-
-
-    nsDialogs::Show
 
 FunctionEnd
 
 Function ShortcutPageLeave
 
-    ${NSD_GetText} $Terminal_ShortcutText $Terminal_ShortcutName
-    ${NSD_GetText} $Configurator_ShortcutText $Configurator_ShortcutName
+    ${If} $Terminal_DesktopSelected == ${TRUE}
+    ${OrIf} $Terminal_StartMenuSelected == ${TRUE}
+
+        ${NSD_GetText} $Terminal_ShortcutText $Terminal_ShortcutName
+
+    ${EndIf}
+
+    ${If} $Configurator_DesktopSelected == ${TRUE}
+    ${OrIf} $Configurator_StartMenuSelected == ${TRUE}
+
+        ${NSD_GetText} $Configurator_ShortcutText $Configurator_ShortcutName
+
+    ${EndIf}
 
 FunctionEnd
 

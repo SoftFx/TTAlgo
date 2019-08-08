@@ -10,6 +10,7 @@
 !define SERVICE_DISPLAY_NAME "_sfxBotAgent"
 
 !define CONFIGURATOR_NAME "Configurator"
+!define CONFIGURATOR_DISPLAY_NAME "${AGENT_NAME} ${CONFIGURATOR_NAME}"
 !define CONFIGURATOR_EXE "TickTrader.BotAgent.Configurator.exe"
 !define CONFIGURATOR_LOCK_FILE "applock"
 
