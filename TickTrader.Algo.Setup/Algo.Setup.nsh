@@ -294,13 +294,27 @@ Function FinishPageCreate
     Pop $Void
     SetCtlColors $Void "" "ffffff"
 
-    ${NSD_CreateCheckBox} 120u 90u 80u 12u "Run ${TERMINAL_NAME}"
-    Pop $Terminal_RunCheckBox
-    SetCtlColors $Terminal_RunCheckBox "" "ffffff"
+    StrCpy $OffsetY "90"
 
-    ${NSD_CreateCheckBox} 120u 110u 80u 12u "Run ${CONFIGURATOR_NAME}"
-    Pop $Configurator_RunCheckBox
-    SetCtlColors $Configurator_RunCheckBox "" "ffffff"
+    ${If} $Terminal_Installed == ${TRUE}
+
+        ${NSD_CreateCheckBox} 120u "$OffsetYu" 80u 12u "Run ${TERMINAL_NAME}"
+        Pop $Terminal_RunCheckBox
+        SetCtlColors $Terminal_RunCheckBox "" "ffffff"
+        ${NSD_Check} $Terminal_RunCheckBox
+
+        IntOp $OffsetY $OffsetY + 20
+
+    ${EndIf}
+
+    ${If} $Configurator_Installed == ${TRUE}
+
+        ${NSD_CreateCheckBox} 120u "$OffsetYu" 80u 12u "Run ${CONFIGURATOR_NAME}"
+        Pop $Configurator_RunCheckBox
+        SetCtlColors $Configurator_RunCheckBox "" "ffffff"
+        ${NSD_Check} $Configurator_RunCheckBox
+
+    ${EndIf}
 
     nsDialogs::Show
 
@@ -309,5 +323,23 @@ Function FinishPageCreate
 FunctionEnd
 
 Function FinishPageLeave
+
+    ${If} $Terminal_Installed == ${TRUE}
+
+        ${NSD_GetState} $Terminal_RunCheckBox $Void
+        ${If} $Void == ${BST_CHECKED}
+            Exec "$Terminal_InstDir\${TERMINAL_EXE}"
+        ${EndIf}
+
+    ${EndIf}
+
+    ${If} $Configurator_Installed == ${TRUE}
+
+        ${NSD_GetState} $Configurator_RunCheckBox $Void
+        ${If} $Void == ${BST_CHECKED}
+            Exec "$Configurator_InstDir\${CONFIGURATOR_EXE}"
+        ${EndIf}
+
+    ${EndIf}
 
 FunctionEnd

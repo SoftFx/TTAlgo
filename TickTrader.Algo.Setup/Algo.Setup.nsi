@@ -1,4 +1,4 @@
-!define DEBUG
+;!define DEBUG
 
 !include "Algo.Setup.nsh"
 
@@ -129,6 +129,9 @@ UninstallTerminalLabel:
     ${Terminal_RegWrite}
     ${Terminal_CreateShortcuts}
     WriteUninstaller "$Terminal_InstDir\uninstall.exe"
+
+    StrCpy $Terminal_Installed ${TRUE}
+
     Goto TerminalInstallEnd
 SkipTerminalLabel:
     DetailPrint "Skipped BotTerminal installation"
@@ -181,6 +184,9 @@ UninstallAgentLabel:
     DetailPrint "Creating BotAgent service"
     ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80
     ${ConfigureService} $Agent_ServiceId    
+
+    StrCpy $Agent_Installed ${TRUE}
+    StrCpy $Configurator_Installed ${TRUE}
 
     DetailPrint "Starting BotAgent service"
     ${StartService} $Agent_ServiceId 30

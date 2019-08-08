@@ -22,6 +22,7 @@ var Terminal_InstDir
 var Terminal_ShortcutName
 var Terminal_RegKey
 var Terminal_UninstallRegKey
+var Terminal_Installed
 
 var TestCollection_Selected
 
@@ -42,6 +43,8 @@ var TestCollection_Selected
     StrCpy $Terminal_CoreSelected ${FALSE}
     StrCpy $Terminal_DesktopSelected ${FALSE}
     StrCpy $Terminal_StartMenuSelected ${FALSE}
+
+    StrCpy $Terminal_Installed ${FALSE}
 
 !macroend
 

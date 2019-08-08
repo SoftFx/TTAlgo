@@ -25,12 +25,14 @@ var Agent_CoreSelected
 var Agent_InstDir
 var Agent_RegKey
 var Agent_UninstallRegKey
+var Agent_Installed
 
 var Configurator_CoreSelected
 var Configurator_DesktopSelected
 var Configurator_StartMenuSelected
 var Configurator_InstDir
 var Configurator_ShortcutName
+var Configurator_Installed
 
 
 ;--------------------------
@@ -48,12 +50,16 @@ var Configurator_ShortcutName
 
     StrCpy $Agent_CoreSelected ${FALSE}
 
+    StrCpy $Agent_Installed ${FALSE}
+
     StrCpy $Configurator_InstDir "$Agent_InstDir\${CONFIGURATOR_NAME}"
     StrCpy $Configurator_ShortcutName "${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}"
 
     StrCpy $Configurator_CoreSelected ${FALSE}
     StrCpy $Configurator_DesktopSelected ${FALSE}
     StrCpy $Configurator_StartMenuSelected ${FALSE}
+
+    StrCpy $Configurator_Installed ${FALSE}
 
 !macroend
 
