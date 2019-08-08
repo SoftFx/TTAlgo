@@ -33,3 +33,7 @@ LangString MinimalInstallText           ${LANG_ENGLISH} "Minimal installation"
 LangString TerminalInstallText          ${LANG_ENGLISH} "Only BotTerminal"
 LangString AgentInstallText             ${LANG_ENGLISH} "Only BotAgent"
 LangString FullInstallText              ${LANG_ENGLISH} "Full installation"
+
+LangString FinishPageTitle              ${LANG_ENGLISH} "Completing TickTrader Algo Setup"
+LangString FinishPageDescription1       ${LANG_ENGLISH} "TickTrader Algo has been installed on your computer."
+LangString FinishPageDescription2       ${LANG_ENGLISH} "Click Finish to close Setup."

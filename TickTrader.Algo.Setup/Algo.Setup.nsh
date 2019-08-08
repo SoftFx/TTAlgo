@@ -4,9 +4,10 @@
 !addplugindir "Plugins"
 
 !include "LogicLib.nsh"
-!include "MUI.nsh"
+!include "MUI2.nsh"
 !include "x64.nsh"
 !include "nsDialogs.nsh"
+!include "WinMessages.nsh"
 
 !include "Algo.Utils.nsh"
 !include "Resources\Resources.en.nsi"
@@ -44,6 +45,8 @@
 
 !define OUTPUT_DIR "..\build.ouput"
 !define ICONS_DIR "..\icons"
+!define BANNER_PATH "banner.bmp"
+!define BANNER_TMP_PATH "$PLUGINSDIR\banner.bmp"
 
 !define REG_KEY_BASE "Software\${BASE_NAME}"
 !define REG_UNINSTALL_KEY_BASE "Software\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -165,16 +168,14 @@ Function ShortcutPageCreate
     ${NSD_CreateLabel} 0% 0u 100% 12u "Enter name of ${TERMINAL_NAME} shortcut"
     Pop $Void
 
-    ${NSD_CreateText} 0% 13u 100% 13u "${TERMINAL_NAME} ${PRODUCT_BUILD}"
+    ${NSD_CreateText} 0% 13u 100% 13u "$Terminal_ShortcutName"
     Pop $Terminal_ShortcutText
-    ${NSD_SetText} $Terminal_ShortcutText $Terminal_ShortcutName
 
     ${NSD_CreateLabel} 0% 35u 100% 12u "Enter name of ${AGENT_NAME} shortcut"
     Pop $Void
 
-    ${NSD_CreateText} 0% 48u 100% 13u "${AGENT_NAME} ${PRODUCT_BUILD}"
+    ${NSD_CreateText} 0% 48u 100% 13u "$Configurator_ShortcutName"
     Pop $Configurator_ShortcutText
-    ${NSD_SetText} $Configurator_ShortcutText $Configurator_ShortcutName
 
 
     nsDialogs::Show
@@ -185,5 +186,59 @@ Function ShortcutPageLeave
 
     ${NSD_GetText} $Terminal_ShortcutText $Terminal_ShortcutName
     ${NSD_GetText} $Configurator_ShortcutText $Configurator_ShortcutName
+
+FunctionEnd
+
+
+;--------------------------
+; Finish page
+
+var BannerImage
+var TitleFont
+var Terminal_RunCheckBox
+var Configurator_RunCheckBox
+
+Function FinishPageCreate
+
+    GetDlgItem $Void $HWNDPARENT 1
+    SendMessage $Void ${WM_SETTEXT} 0 "STR:&Finish"
+    CreateFont $TitleFont "$(^Font)" "12" "700"
+
+    nsDialogs::Create 1044
+    Pop $Void
+    SetCtlColors $Void "" "ffffff"
+
+    ${NSD_CreateBitmap} 0u 0u 109u 193u ""
+    Pop $Void
+    ${NSD_SetStretchedImage} $Void ${BANNER_TMP_PATH} $BannerImage
+
+    ${NSD_CreateLabel} 120u 10u -130u 30u "$(FinishPageTitle)"
+    Pop $Void
+    SetCtlColors $Void "" "ffffff"
+    SendMessage $Void ${WM_SETFONT} $TitleFont 1
+
+    ${NSD_CreateLabel} 120u 45u -130u 12u "$(FinishPageDescription1)"
+    Pop $Void
+    SetCtlColors $Void "" "ffffff"
+
+    ${NSD_CreateLabel} 120u 60u -130u 12u "$(FinishPageDescription2)"
+    Pop $Void
+    SetCtlColors $Void "" "ffffff"
+
+    ${NSD_CreateCheckBox} 120u 90u 80u 12u "Run ${TERMINAL_NAME}"
+    Pop $Terminal_RunCheckBox
+    SetCtlColors $Terminal_RunCheckBox "" "ffffff"
+
+    ${NSD_CreateCheckBox} 120u 110u 80u 12u "Run ${CONFIGURATOR_NAME}"
+    Pop $Configurator_RunCheckBox
+    SetCtlColors $Configurator_RunCheckBox "" "ffffff"
+
+    nsDialogs::Show
+
+    ${NSD_FreeImage} $BannerImage
+
+FunctionEnd
+
+Function FinishPageLeave
 
 FunctionEnd
