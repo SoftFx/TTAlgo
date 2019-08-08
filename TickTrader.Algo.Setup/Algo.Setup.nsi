@@ -1,4 +1,4 @@
-;!define DEBUG
+!define DEBUG
 
 !include "Algo.Setup.nsh"
 
@@ -118,6 +118,7 @@ Section "Core files" TerminalCore
 
     ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
     ${If} $Terminal_InstDir == $3
+    ${AndIf} ${FileExists} "$Terminal_InstDir\uninstall.exe"
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
 UninstallTerminalLabel:
         ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
@@ -165,6 +166,7 @@ Section "Core files" AgentCore
 
     ReadRegStr $3 HKLM "$Agent_RegKey" "${REG_PATH_KEY}"
     ${If} $Agent_InstDir == $3
+    ${AndIf} ${FileExists} "$Agent_InstDir\uninstall.exe"
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
         ${StopService} $Agent_ServiceId 80
@@ -254,6 +256,11 @@ Section Uninstall
         ; Remove registry entries
         ${Agent_RegDelete}
 
+    ${EndIf}
+
+    ${If} $Terminal_Id == ${EMPTY_APPID}
+    ${AndIf} $Agent_Id == ${EMPTY_APPID}
+        Abort "$(UninstallUnknownPathMessage)"
     ${EndIf}
 
 SectionEnd

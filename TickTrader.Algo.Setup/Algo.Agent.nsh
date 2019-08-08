@@ -210,9 +210,11 @@ var Configurator_ShortcutName
 
 !macro _CheckConfiguratorLock Msg Retry Cancel
 
-    ${GetFileLock} $3 "$Configurator_InstDir\${CONFIGURATOR_LOCK_FILE}"
-    ${IF} $3 == ${FILE_LOCKED}
-        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
+    ${If} ${FileExists} "$Configurator_InstDir\*"
+        ${GetFileLock} $3 "$Configurator_InstDir\${CONFIGURATOR_LOCK_FILE}"
+        ${IF} $3 == ${FILE_LOCKED}
+            MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
+        ${EndIf}
     ${EndIf}
 
 !macroend
