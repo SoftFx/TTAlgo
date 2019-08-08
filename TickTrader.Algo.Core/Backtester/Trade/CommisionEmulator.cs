@@ -23,7 +23,8 @@ namespace TickTrader.Algo.Core
 
         public static void OnGrossPositionOpened(OrderAccessor position, SymbolAccessor cfg, CalculatorFixture calc)
         {
-            position.Entity.Commission = CalculateMarginCommission(position.Calculator, position.Amount, cfg, calc, position.IsReducedOpenCommission());
+            var commis = CalculateMarginCommission(position.Calculator, position.Amount, cfg, calc, position.IsReducedOpenCommission());
+            position.ChangeCommission(commis);
         }
 
         public static void OnGrossPositionClosed(OrderAccessor position, decimal closeAmount, SymbolAccessor cfg, TradeChargesInfo charges, CalculatorFixture calc)

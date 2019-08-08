@@ -68,7 +68,15 @@ namespace TickTrader.SeriesStorage
             public void Close()
             {
                 lock (_accessLock)
+                {
                     _isClosed = true;
+
+                    if (Storage != null)
+                    {
+                        Storage.Dispose();
+                        Storage = null;
+                    }
+                }
             }
 
             public override long GetSize()

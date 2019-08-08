@@ -75,13 +75,19 @@ namespace TickTrader.Algo.Core
         private void MoveBid()
         {
             if (!_bidE.MoveNext())
+            {
+                _bidE.Dispose();
                 _bidE = null;
+            }
         }
 
         private void MoveAsk()
         {
             if (!_askE.MoveNext())
+            {
+                _askE.Dispose();
                 _askE = null;
+            }
         }
 
         private void UpdateBars(IEnumerable<BarVector> collection, BarEntity bar)

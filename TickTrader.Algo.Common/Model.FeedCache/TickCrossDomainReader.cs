@@ -54,18 +54,19 @@ namespace TickTrader.Algo.Common.Model
 
             if (series != null)
             {
-                var e = series.Iterate(_from, _to).GetEnumerator();
-
-                while (true)
+                using (var e = series.Iterate(_from, _to).GetEnumerator())
                 {
-                    try
+                    while (true)
                     {
-                        if (!e.MoveNext())
-                            break;
-                    }
-                    catch (DbMissingException) { break; }
+                        try
+                        {
+                            if (!e.MoveNext())
+                                break;
+                        }
+                        catch (DbMissingException) { break; }
 
-                    yield return e.Current;
+                        yield return e.Current;
+                    }
                 }
             }
         }   
