@@ -573,7 +573,7 @@ namespace TickTrader.Algo.Core
 
         internal void WaitStop()
         {
-            stopTask.Wait();
+            stopTask?.Wait();
         }
 
         #endregion
