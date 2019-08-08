@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
             SetupPage = new BacktesterSetupPageViewModel(client, catalog, env, IsRunning);
             TradesPage = new BacktesterCurrentTradesViewModel(profile);
             TradeHistoryPage = new BacktesterTradeGridViewModel(profile);
-            OptimizationPage = new BacktesterOptimizerViewModel(_localWnd);
+            OptimizationPage = new BacktesterOptimizerViewModel(_localWnd, IsRunning);
             ChartPage = new BacktesterChartPageViewModel();
             ResultsPage = new BacktesterReportViewModel();
 

@@ -46,7 +46,7 @@
     <!-- View Template -->
 
     <ControlTemplate x:Key="OptimizerPage.Classic">
-        <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Vertical" IsEnabled="{Binding CanSetup.Value}">
             <WrapPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                     <Label Content="Algorithm:" Style="{StaticResource SettingsLabel}"/>
@@ -62,7 +62,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                     <Label Content="Cores:" Style="{StaticResource SettingsLabel}"/>
-                    <ComboBox MaxWidth="80" Style="{StaticResource SettingsCombo}" SelectedIndex="3" Width="60" HorizontalAlignment="Left"
+                    <ComboBox MaxWidth="80" Style="{StaticResource SettingsCombo}" Width="60" HorizontalAlignment="Left"
                               ItemsSource="{Binding AvailableParallelismList}" SelectedItem="{Binding ParallelismProp.Value}"/>
                 </StackPanel>
             </WrapPanel>

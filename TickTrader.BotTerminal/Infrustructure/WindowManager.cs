@@ -153,7 +153,7 @@ namespace TickTrader.BotTerminal
                     setupAction?.Invoke(wnd);
                     _windows.Add(rootModel, wnd);
 
-                    wnd.Closing += (s, e) =>
+                    wnd.Closed += (s, e) =>
                     {
                         var window = (Window)s;
                         window.Owner?.Activate();

@@ -27,7 +27,7 @@ namespace TickTrader.BotTerminal
 
         public enum OptimizationAlgorithms { Bruteforce, Genetic }
 
-        public BacktesterOptimizerViewModel(WindowManager manager)
+        public BacktesterOptimizerViewModel(WindowManager manager, BoolVar isRunning)
         {
             DisplayName = "Optimization Setup";
 
@@ -38,6 +38,8 @@ namespace TickTrader.BotTerminal
             ParallelismProp.Value = maxCores;
 
             SelectedMetric.Value = MetricSelectors.First();
+
+            CanSetup = !isRunning;
         }
 
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
@@ -47,6 +49,7 @@ namespace TickTrader.BotTerminal
         public Property<OptimizationAlgorithms> AlgorithmProp { get; } = new Property<OptimizationAlgorithms>();
         public Dictionary<string, MetricProvider> AvailableMetrics => MetricSelectors;
         public Property<KeyValuePair<string, MetricProvider>> SelectedMetric { get; } = new Property<KeyValuePair<string, MetricProvider>>();
+        public BoolVar CanSetup { get; }
 
         public void Apply(Optimizer optimizer)
         {
