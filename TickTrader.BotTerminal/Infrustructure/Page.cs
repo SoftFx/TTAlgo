@@ -20,7 +20,20 @@ namespace TickTrader.BotTerminal
                 {
                     _isVisible = value;
                     NotifyOfPropertyChange(nameof(IsVisible));
+
+                    if (!_isVisible)
+                        TryDeactivate();
                 }
+            }
+        }
+
+        private void TryDeactivate()
+        {
+            var conductor = Parent as Conductor<Page>.Collection.OneActive;
+            if (conductor != null && conductor.ActiveItem == this)
+            {
+                var switchToPage = conductor.Items.FirstOrDefault(i => i.IsVisible);
+                conductor.ActivateItem(switchToPage);
             }
         }
     }
