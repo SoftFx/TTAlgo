@@ -103,9 +103,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Infrastructure\AsyncCommand.cs" />
+    <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
     <Compile Include="Infrastructure\Dependencies\UpdateNewProperty.cs" />
     <Compile Include="Infrastructure\Dependencies\ViewPanelProperty.cs" />
+    <Compile Include="Infrastructure\ViewModelErrorCounter\ModelErrorCounter.cs" />
     <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
     <Compile Include="Helpers\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
@@ -148,7 +149,7 @@
     <Compile Include="Infrastructure\Exceptions.cs" />
     <Compile Include="Infrastructure\Validations.cs" />
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
-    <Compile Include="Infrastructure\DelegateCommand.cs" />
+    <Compile Include="Infrastructure\Commands\DelegateCommand.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\LogsViewModel.cs" />

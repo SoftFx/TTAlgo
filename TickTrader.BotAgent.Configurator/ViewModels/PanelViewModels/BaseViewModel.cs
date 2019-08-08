@@ -5,6 +5,13 @@ namespace TickTrader.BotAgent.Configurator
 {
     public abstract class BaseViewModel : INotifyPropertyChanged
     {
+        public ModelErrorCounter ErrorCounter { get; }
+
+        public BaseViewModel()
+        {
+            ErrorCounter = new ModelErrorCounter();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void OnPropertyChanged([CallerMemberName]string prop = "")

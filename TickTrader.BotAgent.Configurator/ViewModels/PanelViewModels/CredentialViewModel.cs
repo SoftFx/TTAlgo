@@ -1,4 +1,7 @@
-﻿namespace TickTrader.BotAgent.Configurator
+﻿using System;
+using System.ComponentModel;
+
+namespace TickTrader.BotAgent.Configurator
 {
     public class CredentialViewModel : BaseViewModel, IContentViewModel
     {
@@ -29,11 +32,14 @@
                 if (_model.Login == value)
                     return;
 
+                _model.Login = value;
+
+                ErrorCounter.CheckStringLength(value, 3, nameof(Login));
+
+                _refreshManager?.Refresh();
                 _logger.Info(GetChangeMessage($"{_model.Name}{nameof(Login)}", _model.Login, value));
 
-                _model.Login = value;
-                _refreshManager?.Refresh();
-
+                ErrorCounter.DeleteError(nameof(Login));
                 OnPropertyChanged(nameof(Login));
             }
         }
@@ -48,8 +54,12 @@
                     return;
 
                 _model.Password = value;
+
+                ErrorCounter.CheckStringLength(Password, 5, nameof(Login));
+
                 _refreshManager?.Refresh();
 
+                ErrorCounter.DeleteError(nameof(Password));
                 OnPropertyChanged(nameof(Password));
             }
         }

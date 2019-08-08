@@ -23,8 +23,8 @@
             <TextBox.Text>
                 <Binding Path="File" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                     <Binding.ValidationRules>
-                        <ExceptionValidationRule ValidatesOnTargetUpdated="True"/>
-                        <local:StringLengthValidationRule MinLength="1" ValidatesOnTargetUpdated="True"/>
+                        <!--<ExceptionValidationRule ValidatesOnTargetUpdated="True"/>
+                        <local:StringLengthValidationRule MinLength="1" ValidatesOnTargetUpdated="True"/>-->
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>
@@ -33,8 +33,8 @@
             <TextBox.Text>
                 <Binding Path="Password" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                     <Binding.ValidationRules>
-                        <ExceptionValidationRule ValidatesOnTargetUpdated="True"/>
-                        <local:StringLengthValidationRule MinLength="6" ValidatesOnTargetUpdated="True"/>
+                        <!--<ExceptionValidationRule ValidatesOnTargetUpdated="True"/>
+                        <local:StringLengthValidationRule MinLength="6" ValidatesOnTargetUpdated="True"/>-->
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>

@@ -1,4 +1,6 @@
-﻿namespace TickTrader.BotAgent.Configurator
+﻿using System;
+
+namespace TickTrader.BotAgent.Configurator
 {
     public class ProtocolViewModel : BaseViewModel, IContentViewModel
     {
@@ -13,20 +15,37 @@
             _refreshManager = refManager;
         }
 
-        public int ListeningPort
+        public string ListeningPort
         {
-            get => _model.ListeningPort;
+            get => _model.ListeningPort.ToString();
 
             set
             {
-                if (_model.ListeningPort == value)
+                if (_model.ListeningPort.ToString() == value)
                     return;
+
+                try
+                {
+                    int listeningPort = int.Parse(value);
+                    _model.ListeningPort = listeningPort;
+
+                    ErrorCounter.CheckNumberRange(listeningPort, nameof(ListeningPort), max: 1 << 16);
+
+                    _model.CheckPort(listeningPort);
+
+                    ErrorCounter.DeleteError(nameof(ListeningPort));
+                }
+                catch (Exception ex)
+                {
+                    ErrorCounter.AddError(nameof(ListeningPort));
+                    throw ex;
+                }
 
                 _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(ListeningPort)}", _model.ListeningPort.ToString(), value.ToString()));
 
-                _model.ListeningPort = value;
                 _refreshManager?.Refresh();
 
+                ErrorCounter.DeleteError(nameof(ListeningPort));
                 OnPropertyChanged(nameof(ListeningPort));
             }
         }
@@ -40,11 +59,14 @@
                 if (_model.DirectoryName == value)
                     return;
 
+                _model.DirectoryName = value;
+
+                ErrorCounter.CheckStringLength(DirectoryName, 1, nameof(DirectoryName));
+
+                _refreshManager?.Refresh();
                 _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(DirectoryName)}", _model.DirectoryName, value));
 
-                _model.DirectoryName = value;
-                _refreshManager?.Refresh();
-
+                ErrorCounter.DeleteError(nameof(DirectoryName));
                 OnPropertyChanged(nameof(DirectoryName));
             }
         }
@@ -80,11 +102,6 @@
             OnPropertyChanged(nameof(ListeningPort));
             OnPropertyChanged(nameof(DirectoryName));
             OnPropertyChanged(nameof(LogMessage));
-        }
-
-        public void CheckPort(int port = -1)
-        {
-            _model.CheckPort(port == -1 ? ListeningPort : port);
         }
     }
 }

@@ -57,4 +57,20 @@ namespace TickTrader.BotAgent.Configurator
             throw new NotImplementedException();
         }
     }
+
+    public class NotIntToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int number && number == 0)
+                return true;
+
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

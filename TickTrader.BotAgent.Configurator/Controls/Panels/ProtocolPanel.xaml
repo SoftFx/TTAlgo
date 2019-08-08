@@ -24,30 +24,11 @@
         <TextBlock Grid.Row="0" Text="Listening Port: "/>
         <TextBlock Grid.Row="3" Text="Directory Name: "/>
 
-        <TextBox Grid.Row="1" Validation.ErrorTemplate="{StaticResource validationFailed}">
-            <TextBox.Text>
-                <Binding Path="ListeningPort" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" Delay="500">
-                    <Binding.ValidationRules>
-                        <ExceptionValidationRule ValidatesOnTargetUpdated="True"/>
-                        <local:RangeNumberValidationRule MaxValue="65536" ValidatesOnTargetUpdated="True"/>
-                        <local:FreePortValidationRule ValidatesOnTargetUpdated="True"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+        <TextBox Grid.Row="1" Text="{Binding ListeningPort, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=500, ValidatesOnExceptions=True, NotifyOnValidationError=True}"/>
 
         <Separator Grid.Row="2" Grid.ColumnSpan="2"/>
 
-        <TextBox Grid.Row="4">
-            <TextBox.Text>
-                <Binding Path="DirectoryName" NotifyOnValidationError="True" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                    <Binding.ValidationRules>
-                        <local:StringLengthValidationRule MinLength="1" ValidatesOnTargetUpdated="True"/>
-                        <ExceptionValidationRule/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+        <TextBox Grid.Row="4" Text="{Binding DirectoryName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=500, ValidatesOnExceptions=True, NotifyOnValidationError=True}"/>
 
         <Separator Grid.Row="5" Grid.ColumnSpan="2"/>
 

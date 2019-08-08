@@ -3,6 +3,8 @@
                     xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
                     xmlns:fa="http://schemas.fontawesome.io/icons/">
 
+    <local:ModelErrorCounter x:Key="ErrorCounter"/>
+
     <Style TargetType="TextBlock">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -122,6 +124,18 @@
         <Setter Property="IsEnabled" Value="False"/>
     </Style>
 
+    <Style x:Key="ToolBarSaveButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}" Value="true"/>
+                    <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="IsEnabled" Value="True"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="ToolBarAgentStartButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
         <Style.Triggers>
             <DataTrigger Binding="{Binding ElementName=mainTabControl, UpdateSourceTrigger=PropertyChanged, Path=(Validation.Errors).Count}" Value="0">
@@ -129,7 +143,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
     <Style x:Key="ToolBarIcon" TargetType="{x:Type fa:ImageAwesome}">
         <Setter Property="Width" Value="25"/>
         <Setter Property="Height" Value="20"/>
@@ -200,24 +214,69 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ErrorTabItem" TargetType="TextBlock">
+    <Style x:Key="TabName" TargetType="TextBlock">
         <Setter Property="Foreground" Value="Red"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=docCred, Path=(Validation.Errors).Count, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                <Setter Property="Foreground" Value="Black"/>
-            </DataTrigger>
-        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="TabIcon" TargetType="fa:ImageAwesome">
+        <Setter Property="Foreground" Value="Red"/>
+        <Setter Property="Width" Value="23"/>
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="Margin" Value="0 0 10 0"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="MainTabControl" TargetType="TabControl">
         <Setter Property="TabStripPlacement" Value="Left"/>
         <Setter Property="SelectedIndex" Value="0"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=startAgentSpinner, Path=Visibility}" Value="Visible">
+            <!--<DataTrigger Binding="{Binding ElementName=startAgentSpinner, Path=Visibility}" Value="Visible">
                 <Setter Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>-->
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="TabNameErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource TabName}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0">
+                <Setter Property="Foreground" Value="Black"/>
             </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="TabIconErrorStyle" TargetType="fa:ImageAwesome" BasedOn="{StaticResource TabIcon}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0">
+                <Setter Property="Foreground" Value="Black"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="UserTabItemErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource TabName}">
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding AdminModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                    <Condition Binding="{Binding DealerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                    <Condition Binding="{Binding ViewerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Foreground" Value="Black"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="UserTabIconErrorStyle" TargetType="fa:ImageAwesome" BasedOn="{StaticResource TabIcon}">
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding AdminModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                    <Condition Binding="{Binding DealerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                    <Condition Binding="{Binding ViewerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Foreground" Value="Black"/>
+            </MultiDataTrigger>
         </Style.Triggers>
     </Style>
 

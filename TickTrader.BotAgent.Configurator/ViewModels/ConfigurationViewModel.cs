@@ -149,7 +149,7 @@ namespace TickTrader.BotAgent.Configurator
                 }
 
                 _logger.Info($"The application has been restarted!");
-                System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+                Process.Start(Application.ResourceAssembly.Location);
                 Application.Current.Shutdown();
             }));
 
@@ -264,7 +264,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool SaveChangesQuestion()
         {
-            if (WasUpdate)
+            if (WasUpdate && ModelErrorCounter.TotalErrorCount == 0)
             {
                 var result = MessageBoxManager.YesNoBoxQuestion("The model has been changed. Save changes?");
 

@@ -4,4 +4,5 @@
 
     <local:ServiceStateToColorConverter x:Key="stateToColorConverter"/>
     <local:BoolToVisibilityConverter x:Key="boolToVis"/>
+    <local:NotIntToBoolConverter x:Key="notIntToBool"/>
 </ResourceDictionary>
