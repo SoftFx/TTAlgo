@@ -3,6 +3,7 @@
 LangString InstallationCanceledMessage  ${LANG_ENGLISH} "Installation cancelled."
 LangString InstallationAbortedMessage   ${LANG_ENGLISH} "Installation aborted. Error code:"
 
+LangString UninstallUnknownPathMessage  ${LANG_ENGLISH} "Provided path is not registered as BotTerminal or BotAgent installation."
 LangString UninstallCanceledMessage     ${LANG_ENGLISH} "Uninstallation cancelled."
 
 LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader BotTerminal will be uninstalled. Continue?"
@@ -33,3 +34,7 @@ LangString MinimalInstallText           ${LANG_ENGLISH} "Minimal installation"
 LangString TerminalInstallText          ${LANG_ENGLISH} "Only BotTerminal"
 LangString AgentInstallText             ${LANG_ENGLISH} "Only BotAgent"
 LangString FullInstallText              ${LANG_ENGLISH} "Full installation"
+
+LangString FinishPageTitle              ${LANG_ENGLISH} "Completing TickTrader Algo Setup"
+LangString FinishPageDescription1       ${LANG_ENGLISH} "TickTrader Algo has been installed on your computer."
+LangString FinishPageDescription2       ${LANG_ENGLISH} "Click Finish to close Setup."

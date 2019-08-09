@@ -22,6 +22,7 @@ var Terminal_InstDir
 var Terminal_ShortcutName
 var Terminal_RegKey
 var Terminal_UninstallRegKey
+var Terminal_Installed
 
 var TestCollection_Selected
 
@@ -42,6 +43,8 @@ var TestCollection_Selected
     StrCpy $Terminal_CoreSelected ${FALSE}
     StrCpy $Terminal_DesktopSelected ${FALSE}
     StrCpy $Terminal_StartMenuSelected ${FALSE}
+
+    StrCpy $Terminal_Installed ${FALSE}
 
 !macroend
 
@@ -212,9 +215,11 @@ var TestCollection_Selected
 
 !macro _CheckTerminalLock Msg Retry Cancel
 
-    ${GetFileLock} $3 "$Terminal_InstDir\${TERMINAL_LOCK_FILE}"
-    ${IF} $3 == ${FILE_LOCKED}
-        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
+    ${If} ${FileExists} "$Terminal_InstDir\*"
+        ${GetFileLock} $3 "$Terminal_InstDir\${TERMINAL_LOCK_FILE}"
+        ${IF} $3 == ${FILE_LOCKED}
+            MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
+        ${EndIf}
     ${EndIf}
 
 !macroend

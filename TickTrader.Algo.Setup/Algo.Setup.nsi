@@ -14,7 +14,7 @@ InstallDir ${BASE_INSTDIR}
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${PRODUCT_PUBLISHER}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright © ${PRODUCT_PUBLISHER} 2019"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${TERMINAL_NAME} and ${AGENT_NAME} installer"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${PRODUCT_NAME} installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductVersion" "${PRODUCT_BUILD}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${PRODUCT_BUILD}"
 
@@ -29,6 +29,8 @@ VIFileVersion "${PRODUCT_BUILD}"
 !define MUI_ICON "${ICONS_DIR}\softfx.ico"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
+!define MUI_WELCOMEFINISHPAGE_BITMAP ${BANNER_PATH}
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP ${BANNER_PATH}
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
@@ -37,7 +39,7 @@ VIFileVersion "${PRODUCT_BUILD}"
 Page custom DirectoryPageCreate DirectoryPageLeave
 Page custom ShortcutPageCreate ShortcutPageLeave
 !insertmacro MUI_PAGE_INSTFILES
-!insertmacro MUI_PAGE_FINISH
+Page custom FinishPageCreate FinishPageLeave
 
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -78,6 +80,9 @@ Function .onInit
         SetRegView 64
     ${EndIf}
 
+    InitPluginsDir
+    File /oname=${BANNER_TMP_PATH} "${BANNER_PATH}"
+
     InstTypeSetText ${StandardInstall} $(StandardInstallText)
     InstTypeSetText ${MinimalInstall} $(MinimalInstallText)
     InstTypeSetText ${TerminalInstall} $(TerminalInstallText)
@@ -113,6 +118,7 @@ Section "Core files" TerminalCore
 
     ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
     ${If} $Terminal_InstDir == $3
+    ${AndIf} ${FileExists} "$Terminal_InstDir\uninstall.exe"
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
 UninstallTerminalLabel:
         ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
@@ -123,6 +129,9 @@ UninstallTerminalLabel:
     ${Terminal_RegWrite}
     ${Terminal_CreateShortcuts}
     WriteUninstaller "$Terminal_InstDir\uninstall.exe"
+
+    StrCpy $Terminal_Installed ${TRUE}
+
     Goto TerminalInstallEnd
 SkipTerminalLabel:
     DetailPrint "Skipped BotTerminal installation"
@@ -160,6 +169,7 @@ Section "Core files" AgentCore
 
     ReadRegStr $3 HKLM "$Agent_RegKey" "${REG_PATH_KEY}"
     ${If} $Agent_InstDir == $3
+    ${AndIf} ${FileExists} "$Agent_InstDir\uninstall.exe"
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
         ${StopService} $Agent_ServiceId 80
@@ -174,6 +184,9 @@ UninstallAgentLabel:
     DetailPrint "Creating BotAgent service"
     ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80
     ${ConfigureService} $Agent_ServiceId    
+
+    StrCpy $Agent_Installed ${TRUE}
+    StrCpy $Configurator_Installed ${TRUE}
 
     DetailPrint "Starting BotAgent service"
     ${StartService} $Agent_ServiceId 30
@@ -249,6 +262,11 @@ Section Uninstall
         ; Remove registry entries
         ${Agent_RegDelete}
 
+    ${EndIf}
+
+    ${If} $Terminal_Id == ${EMPTY_APPID}
+    ${AndIf} $Agent_Id == ${EMPTY_APPID}
+        Abort "$(UninstallUnknownPathMessage)"
     ${EndIf}
 
 SectionEnd
