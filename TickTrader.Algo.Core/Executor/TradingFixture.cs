@@ -109,11 +109,13 @@ namespace TickTrader.Algo.Core
         private OrderAccessor ApplyOrderEntity(OrderExecReport eReport, OrdersCollection collection)
         {
             var accProxy = context.Builder.Account;
+            var orderType = eReport.OrderCopy.Type;
+            var instantOrder = orderType == OrderType.Market || (orderType == OrderType.Limit && eReport.OrderCopy.ImmediateOrCancel);
 
-            if (eReport.OrderCopy.Type == OrderType.Market && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
+            if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
                 eReport.OrderCopy.Type = OrderType.Position;
-                eReport.Action = OrderEntityAction.Updated;
+                eReport.Action = OrderEntityAction.Added;
             }
 
             if (eReport.Action == OrderEntityAction.Added)
