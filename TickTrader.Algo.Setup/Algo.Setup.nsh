@@ -298,7 +298,7 @@ Function FinishPageCreate
 
     ${If} $Terminal_Installed == ${TRUE}
 
-        ${NSD_CreateCheckBox} 120u "$OffsetYu" 80u 12u "Run ${TERMINAL_NAME}"
+        ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${TERMINAL_NAME}"
         Pop $Terminal_RunCheckBox
         SetCtlColors $Terminal_RunCheckBox "" "ffffff"
         ${NSD_Check} $Terminal_RunCheckBox
@@ -307,12 +307,29 @@ Function FinishPageCreate
 
     ${EndIf}
 
-    ${If} $Configurator_Installed == ${TRUE}
+    ${If} $Agent_ServiceError != ${NO_ERR_MSG}
 
-        ${NSD_CreateCheckBox} 120u "$OffsetYu" 80u 12u "Run ${CONFIGURATOR_NAME}"
+        ${NSD_CreateLabel} 120u "$OffsetYu" -130u 12u $Agent_ServiceError
+        Pop $Void
+        SetCtlColors $Void "ff0000" "ffffff"
+
+        IntOp $OffsetY $OffsetY + 20
+
+    ${EndIf}
+
+    ${If} $Agent_ServiceCreated == ${TRUE}
+    ${AndIf} $Configurator_Installed == ${TRUE}
+
+        ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${CONFIGURATOR_DISPLAY_NAME}"
         Pop $Configurator_RunCheckBox
         SetCtlColors $Configurator_RunCheckBox "" "ffffff"
-        ${NSD_Check} $Configurator_RunCheckBox
+
+        ${If} $Agent_ServiceFailed == ${FALSE}
+        ${AndIf} $Agent_StartService == ${TRUE}
+            ; no need to run configurator if update went fine
+        ${Else}
+            ${NSD_Check} $Configurator_RunCheckBox
+        ${EndIf}
 
     ${EndIf}
 

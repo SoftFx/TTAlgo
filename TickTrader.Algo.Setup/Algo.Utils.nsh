@@ -1,7 +1,10 @@
 ;--------------------------------------------
 ;-----Functions to manage window service-----
 
-!macro _InstallService Name DisplayName ServiceType StartType BinPath TimeOut
+!define NO_ERR_MSG "no_error"
+
+!macro _InstallService Name DisplayName ServiceType StartType BinPath TimeOut ErrMsg
+    StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
@@ -11,7 +14,8 @@
             Push $0
             SimpleSC::GetErrorMessage
             Pop $1
-            Abort "$(ServiceUninstallFailMessage) $0 $1"
+            StrCpy ${ErrMsg} "$(ServiceUninstallFailMessage) $0 $1"
+            Goto _InstallServiceEnd
         ${EndIf}
     ${EndIf}
     
@@ -21,35 +25,41 @@
         Push $0
         SimpleSC::GetErrorMessage
         Pop $1
-        Abort "$(ServiceInstallFailMessage) $0 $1"
+        StrCpy ${ErrMsg} "$(ServiceInstallFailMessage) $0 $1"
     ${EndIf}
+
+_InstallServiceEnd:
+
 !macroend
 
-!macro _ConfigureService Name
+!macro _ConfigureService Name ErrMsg
+    StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
         SimpleSC::SetServiceFailure ${Name} 0 "" "" 1 60000 1 60000 0 60000
         Pop $0
         ${If} $0 != 0
-            Abort "$(ServiceConfigFailMessage) $0"
+            StrCpy ${ErrMsg} "$(ServiceConfigFailMessage) $0"
         ${EndIf}
     ${EndIf}
 !macroend
 
-!macro _StartService Name TimeOut
+!macro _StartService Name TimeOut ErrMsg
+    StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
         SimpleSC::StartService "${Name}" "" ${TimeOut}
     Pop $0
         ${If} $0 != 0
-            Abort "$(ServiceStartFailMessage) $0"
+            StrCpy ${ErrMsg} "$(ServiceStartFailMessage) $0"
         ${EndIf}
     ${EndIf}
 !macroend
 
-!macro _StopService Name TimeOut
+!macro _StopService Name TimeOut ErrMsg
+    StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
@@ -60,13 +70,14 @@
             SimpleSC::StopService "${Name}" 1 ${TimeOut}
             Pop $0
             ${If} $0 != 0
-                Abort "$(ServiceStopFailMessage) $0"
+                StrCpy ${ErrMsg} "$(ServiceStopFailMessage) $0"
             ${EndIf}
         ${EndIf}
     ${EndIf}
 !macroend
 
-!macro _UninstallService Name TimeOut
+!macro _UninstallService Name TimeOut ErrMsg
+    StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
@@ -77,7 +88,8 @@
             SimpleSC::StopService "${Name}" 1 ${TimeOut}
             Pop $0
             ${If} $0 != 0
-                Abort "$(ServiceStopFailMessage) $0"
+                StrCpy ${ErrMsg} "$(ServiceStopFailMessage) $0"
+                Goto _UninstallServiceEnd
             ${EndIf}
         ${EndIf}
      
@@ -87,9 +99,12 @@
             Push $0
             SimpleSC::GetErrorMessage
             Pop $1
-            Abort "$(ServiceUninstallFailMessage) $0 $1"
+            StrCpy ${ErrMsg} "$(ServiceUninstallFailMessage) $0 $1"
         ${EndIf}
     ${EndIf}
+
+_UninstallServiceEnd:
+
 !macroend
 
 !define InstallService '!insertmacro "_InstallService"'
@@ -254,3 +269,36 @@
 !define UninstallApp '!insertmacro _UninstallApp'
 
 ;---END Utility functions---
+
+;--------------------------------------------
+;-----Logging functions-----
+
+var LogFile
+
+!macro _SetLogFile Path
+
+    ${If} ${FileExists} ${Path}
+        Delete ${Path}
+    ${EndIf}
+    StrCpy $LogFile ${Path}
+
+!macroend
+
+!macro _Print Msg
+
+    nsislog::log $LogFile "${Msg}"
+    DetailPrint "${Msg}"
+
+!macroend
+
+!macro _Log Msg
+
+    nsislog::log $LogFile "${Msg}"
+
+!macroend
+
+!define SetLogFile '!insertmacro _SetLogFile'
+!define Print '!insertmacro _Print'
+!define Log '!insertmacro _Log'
+
+;---END Logging functions---

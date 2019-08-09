@@ -33,7 +33,7 @@ var TestCollection_Selected
 !macro _InitTerminal
 
     StrCpy $Terminal_InstDir "${BASE_INSTDIR}\${TERMINAL_NAME}"
-    StrCpy $Terminal_ShortcutName "${TERMINAL_NAME} ${PRODUCT_BUILD}"
+    StrCpy $Terminal_ShortcutName "${TERMINAL_DISPLAY_NAME}"
 
     StrCpy $Terminal_RegKey "${REG_KEY_BASE}\${TERMINAL_NAME}"
     StrCpy $Terminal_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${TERMINAL_NAME}"
@@ -57,6 +57,7 @@ var TestCollection_Selected
 
 !macro _UnpackTerminal
 
+    ${Log} "Unpacking BotTerminal files to $Terminal_InstDir"
     SetOutPath $Terminal_InstDir
 !ifdef DEBUG
     Sleep 3000
@@ -70,6 +71,7 @@ var TestCollection_Selected
 
 !macro _DeleteTerminalFiles
 
+    ${Log} "Removing BotTerminal files to $Terminal_InstDir"
     StrCpy $INSTDIR $Terminal_InstDir
 !ifdef DEBUG
     Delete "$INSTDIR\${TERMINAL_EXE}"
@@ -83,6 +85,7 @@ var TestCollection_Selected
 
 !macro _UnpackTestCollection
 
+    ${Log} "Unpacking TestCollection files to $Terminal_InstDir"
     SetOutPath "$Terminal_InstDir\${REPOSITORY_DIR}"
     File "${OUTPUT_DIR}\TickTrader.Algo.TestCollection.ttalgo"
     File "${OUTPUT_DIR}\TickTrader.Algo.VersionTest.ttalgo"
@@ -108,13 +111,14 @@ var TestCollection_Selected
 
 !macro _CreateTerminalShortcuts
 
+    ${Log} "Shortcut name: $Terminal_ShortcutName"
     ${If} $Terminal_DesktopSelected == ${TRUE}
-        DetailPrint "Adding Desktop Shortcut"
+        ${Print} "Adding Desktop Shortcut"
         CreateShortcut "$DESKTOP\$Terminal_ShortcutName.lnk" "$Terminal_InstDir\${TERMINAL_EXE}"
     ${EndIf}
 
     ${If} $Terminal_StartMenuSelected == ${TRUE}
-        DetailPrint "Adding StartMenu Shortcut"
+        ${Print} "Adding StartMenu Shortcut"
         CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\"
         CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\$Terminal_ShortcutName.lnk" "$Terminal_InstDir\${TERMINAL_EXE}"
     ${EndIf}
@@ -123,6 +127,7 @@ var TestCollection_Selected
 
 !macro _DeleteTerminalShortcuts
 
+    ${Log} "Deleting BotTerminal shortcuts with name: $Terminal_ShortcutName"
     Delete "$DESKTOP\$Terminal_ShortcutName.lnk"
     Delete "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\$Terminal_ShortcutName.lnk"
     RMDir "$SMPROGRAMS\${BASE_NAME}\${TERMINAL_NAME}\$Terminal_Id\"
@@ -154,6 +159,8 @@ var TestCollection_Selected
 
 !macro _RegWriteTerminal
 
+    ${Log} "Writing registry keys"
+
     WriteRegStr HKLM "$Terminal_RegKey" "${REG_PATH_KEY}" "$Terminal_InstDir"
     WriteRegStr HKLM "$Terminal_RegKey" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
     WriteRegStr HKLM "$Terminal_RegKey" "${REG_SHORTCUT_NAME}" "$Terminal_ShortcutName"
@@ -174,6 +181,8 @@ var TestCollection_Selected
 !macroend
 
 !macro _RegDeleteTerminal
+
+    ${Log} "Deleting registry keys"
 
     DeleteRegKey HKLM "$Terminal_RegKey"
     DeleteRegKey HKLM "$Terminal_UninstallRegKey"
@@ -198,8 +207,10 @@ var TestCollection_Selected
         ${If} ${Mode} == "Install"
             ${CreateAppId} $Terminal_Id
             ${Terminal_InitRegKeys}
+            ${Log} "Created BotTerminal Id: $Terminal_Id"
         ${EndIf}
     ${Else}
+        ${Log} "Found BotTerminal Id: $Terminal_Id"
         ${Terminal_InitRegKeys}
         ${Terminal_RegRead}
     ${EndIf}
@@ -216,6 +227,7 @@ var TestCollection_Selected
 !macro _CheckTerminalLock Msg Retry Cancel
 
     ${If} ${FileExists} "$Terminal_InstDir\*"
+        ${Log} "BotTerminal is running"
         ${GetFileLock} $3 "$Terminal_InstDir\${TERMINAL_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
