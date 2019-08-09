@@ -20,7 +20,7 @@
 
     <ControlTemplate x:Key="OptimizationResultsPageTemplate.Classic">
 
-        <DataGrid ItemsSource="{Binding Data}" AutoGenerateColumns="True" Style="{DynamicResource DataGrid_Style}"
+        <DataGrid ItemsSource="{Binding DataView}" AutoGenerateColumns="True" Style="{DynamicResource DataGrid_Style}"
                   SelectionMode="Extended" ClipboardCopyMode="IncludeHeader" ColumnWidth="*" HorizontalScrollBarVisibility="Disabled"
                   RowStyle="{StaticResource ReportRowStyle}"/>
     </ControlTemplate>

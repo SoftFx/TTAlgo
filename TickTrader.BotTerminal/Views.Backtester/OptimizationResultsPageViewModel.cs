@@ -27,9 +27,12 @@ namespace TickTrader.BotTerminal
         {
             DisplayName = "Optimization Results";
             IsVisible = false;
+
+            DataView = Data.AsDataView();
         }
 
         public DataTable Data { get; } = new DataTable();
+        public DataView DataView { get; }
 
         public event Action<OptCaseReport> ShowDetailsRequested;
 
@@ -50,8 +53,10 @@ namespace TickTrader.BotTerminal
                 Data.Columns.Add(dataColumn);
             }
 
-            _metricColumn = new DataColumn("Metric", typeof(double));
+            _metricColumn = new DataColumn("Metric", typeof(MetricView));
             Data.Columns.Add(_metricColumn);
+
+            DataView.Sort = _metricColumn.ColumnName + " DESC";
         }
 
         public void Stop(Optimizer optimizer)
@@ -71,7 +76,11 @@ namespace TickTrader.BotTerminal
             }
 
             row[_idColumn] = report.Config.Id;
-            row[_metricColumn] = report.MetricVal;
+
+            if (report.ExecError is StopOutException)
+                row[_metricColumn] = new MetricView(report.MetricVal, "Stop Out");
+            else
+                row[_metricColumn] = new MetricView(report.MetricVal);
 
             Data.Rows.Add(row);
         }
@@ -160,10 +169,52 @@ namespace TickTrader.BotTerminal
 
         private void Clear()
         {
+            DataView.Sort = "";
             _reports.Clear();
             Data.Clear();
             Data.Columns.Clear();
             _idToColumnMap.Clear();
         }
+    }
+
+    public class MetricView : IComparable
+    {
+        private bool _hasError;
+        private string _displayVal;
+        private double _metric;
+
+        public MetricView(double metric, string error = null)
+        {
+            _metric = metric;
+
+            if (error != null)
+            {
+                _hasError = true;
+                _displayVal = error;
+            }
+            else
+                _displayVal = metric.ToString("g");
+        }
+
+        public int CompareTo(object obj)
+        {
+            var other = (MetricView)obj;
+            if (_hasError)
+            {
+                if (other._hasError)
+                    return _metric.CompareTo(other._metric);
+                else
+                    return -1;
+            }
+            else
+            {
+                if (other._hasError)
+                    return 1;
+                else
+                    return _metric.CompareTo(other._metric);
+            }
+        }
+
+        public override string ToString() => _displayVal;
     }
 }
