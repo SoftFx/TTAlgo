@@ -71,7 +71,7 @@
                                         <TextBlock Text="{Binding MaxVisibleVolume}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOption, Converter={StaticResource NullOrEmptyToVis}}">
-                                        <TextBlock Text="Order Execution Option: " VerticalAlignment="Center" />
+                                        <TextBlock Text="Option: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding OrderExecutionOption}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding PosRemainingPrice, Converter={StaticResource NullOrEmptyToVis}}">

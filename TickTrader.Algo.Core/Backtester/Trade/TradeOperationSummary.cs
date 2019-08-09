@@ -215,11 +215,11 @@ namespace TickTrader.Algo.Core
         private void PrintOrderDescription(OrderAccessor order)
         {
             _builder.Append(" #").Append(order.Id)
-                .Append(' ').Append(order.Type)
-                .Append(' ').Append(order.Symbol)
+                .Append(' ').Append(order.Type);
+            if (order.HasOption(OrderExecOptions.ImmediateOrCancel))
+                _builder.Append(" IoC");
+            _builder.Append(' ').Append(order.Symbol)
                 .Append(' ').Append(order.Side);
-
-            //_builder.Append(order.RemainingVolume);
         }
 
         private void PrintComment(OrderAccessor order)
