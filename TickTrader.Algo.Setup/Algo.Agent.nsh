@@ -10,7 +10,7 @@
 !define SERVICE_DISPLAY_NAME "_sfxBotAgent"
 
 !define CONFIGURATOR_NAME "Configurator"
-!define CONFIGURATOR_DISPLAY_NAME "${AGENT_NAME} ${CONFIGURATOR_NAME}"
+!define CONFIGURATOR_DISPLAY_NAME "${AGENT_NAME} config tool"
 !define CONFIGURATOR_EXE "TickTrader.BotAgent.Configurator.exe"
 !define CONFIGURATOR_LOCK_FILE "applock"
 
@@ -26,6 +26,10 @@ var Agent_InstDir
 var Agent_RegKey
 var Agent_UninstallRegKey
 var Agent_Installed
+var Agent_StartService
+var Agent_ServiceCreated
+var Agent_ServiceFailed
+var Agent_ServiceError
 
 var Configurator_CoreSelected
 var Configurator_DesktopSelected
@@ -52,8 +56,13 @@ var Configurator_Installed
 
     StrCpy $Agent_Installed ${FALSE}
 
+    StrCpy $Agent_StartService ${FALSE}
+    StrCpy $Agent_ServiceCreated ${FALSE}
+    StrCpy $Agent_ServiceFailed ${FALSE}
+    StrCpy $Agent_ServiceError ${FALSE}
+
     StrCpy $Configurator_InstDir "$Agent_InstDir\${CONFIGURATOR_NAME}"
-    StrCpy $Configurator_ShortcutName "${AGENT_NAME} ${CONFIGURATOR_NAME} ${PRODUCT_BUILD}"
+    StrCpy $Configurator_ShortcutName "${CONFIGURATOR_DISPLAY_NAME}"
 
     StrCpy $Configurator_CoreSelected ${FALSE}
     StrCpy $Configurator_DesktopSelected ${FALSE}
@@ -72,6 +81,7 @@ var Configurator_Installed
 
 !macro _UnpackAgent
 
+    ${Log} "Unpacking BotAgent files to $Agent_InstDir"
     SetOutPath $Agent_InstDir
 !ifdef DEBUG
     Sleep 5000
@@ -85,6 +95,7 @@ var Configurator_Installed
 
 !macro _DeleteAgentFiles
 
+    ${Log} "Removing BotAgent files from $Agent_InstDir"
     StrCpy $INSTDIR $Agent_InstDir
 !ifdef DEBUG
     Delete "$INSTDIR\${AGENT_EXE}"
@@ -106,13 +117,14 @@ var Configurator_Installed
 
 !macro _CreateConfiguratorShortcuts
 
+    ${Log} "Shortcut name: $Configurator_ShortcutName"
     ${If} $Configurator_DesktopSelected == ${TRUE}
-        DetailPrint "Adding Desktop Shortcut"
+        ${Print} "Adding Desktop Shortcut"
         CreateShortcut "$DESKTOP\$Configurator_ShortcutName.lnk" "$Configurator_InstDir\${CONFIGURATOR_EXE}"
     ${EndIf}
 
     ${If} $Configurator_StartMenuSelected == ${TRUE}
-        DetailPrint "Adding StartMenu Shortcut"
+        ${Print} "Adding StartMenu Shortcut"
         CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$Agent_Id"
         CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$Agent_Id\$Configurator_ShortcutName.lnk" "$Configurator_InstDir\${CONFIGURATOR_EXE}"
     ${EndIf}
@@ -121,6 +133,7 @@ var Configurator_Installed
 
 !macro _DeleteConfiguratorShortcuts
     
+    ${Log} "Deleting Configurator shortcuts with name: $Configurator_ShortcutName"
     Delete "$DESKTOP\$Configurator_ShortcutName.lnk"
     Delete "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$Agent_Id\$Configurator_ShortcutName.lnk"
     RMDir "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$Agent_Id\"
@@ -152,6 +165,8 @@ var Configurator_Installed
 
 !macro _RegWriteAgent
 
+    ${Log} "Writing registry keys"
+
     WriteRegStr HKLM "$Agent_RegKey" "${REG_PATH_KEY}" "$Agent_InstDir"
     WriteRegStr HKLM "$Agent_RegKey" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
     WriteRegStr HKLM "$Agent_RegKey" "${REG_SERVICE_ID}" "$Agent_ServiceId"
@@ -173,6 +188,8 @@ var Configurator_Installed
 !macroend
 
 !macro _RegDeleteAgent
+
+    ${Log} "Deleting registry keys"
 
     DeleteRegKey HKLM "$Agent_RegKey"
     DeleteRegKey HKLM "$Agent_UninstallRegKey"
@@ -197,8 +214,10 @@ var Configurator_Installed
         ${If} ${Mode} == "Install"
             ${CreateAppId} $Agent_Id
             ${Agent_InitRegKeys}
+            ${Log} "Created BotAgent Id: $Agent_Id"
         ${EndIf}
     ${Else}
+        ${Log} "Found BotAgent Id: $Agent_Id"
         ${Agent_InitRegKeys}
         ${Agent_RegRead}
     ${EndIf}
@@ -209,7 +228,72 @@ var Configurator_Installed
 
 
 !define Agent_InitId '!insertmacro _InitAgentId'
-!define Agent_FindId '!insertmacro FindAppIdByPath agent_id $Agent_Id "${REG_KEY_BASE}\${AGENT_NAME}" ${REG_PATH_KEY}'
+
+
+;--------------------------
+; Service management
+
+!macro _CreateAgentService
+
+    ${Print} "Creating BotAgent service"
+    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80 $Agent_ServiceError
+    ${If} $Agent_ServiceError == ${NO_ERR_MSG}
+        ${ConfigureService} $Agent_ServiceId $Agent_ServiceError
+        ${If} $Agent_ServiceError == ${NO_ERR_MSG}
+            ${Log} "Created BotAgent service"
+            StrCpy $Agent_ServiceCreated ${TRUE}
+        ${Else}
+            ${Log} $Agent_ServiceError
+        ${EndIf}
+    ${Else}
+        ${Log} $Agent_ServiceError
+    ${EndIf}
+
+!macroend
+
+!macro _StartAgentService
+
+    ${Print} "Starting BotAgent service"
+    ${StartService} $Agent_ServiceId 30 $Agent_ServiceError
+    ${If} $Agent_ServiceError != ${NO_ERR_MSG}
+        StrCpy $Agent_ServiceFailed ${TRUE}
+        ${Log} $Agent_ServiceError
+    ${Else}
+        ${Log} "Started BotAgent service"
+    ${EndIf}
+
+!macroend
+
+!macro _StopAgentService Retry Cancel
+
+    ${Print} "Stopping BotAgent service"
+    ${StopService} $Agent_ServiceId 80 $Agent_ServiceError
+    ${If} $Agent_ServiceError != ${NO_ERR_MSG}
+        ${Log} $Agent_ServiceError
+        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION $Agent_ServiceError IDRETRY ${Retry} IDCANCEL ${Cancel}
+    ${Else}
+        ${Log} "Stopped BotAgent service"
+    ${EndIf}
+
+!macroend
+
+!macro _DeleteAgentService
+
+    ${Print} "Deleting BotAgent service"
+    ${UninstallService} $Agent_ServiceId 80 $Agent_ServiceError
+    ${If} $Agent_ServiceError != ${NO_ERR_MSG}
+        ${Log} $Agent_ServiceError
+    ${Else}
+        ${Log} "Deleted BotAgent service"
+    ${EndIf}
+
+!macroend
+
+
+!define Agent_CreateService '!insertmacro _CreateAgentService'
+!define Agent_StartService '!insertmacro _StartAgentService'
+!define Agent_StopService '!insertmacro _StopAgentService'
+!define Agent_DeleteService '!insertmacro _DeleteAgentService'
 
 
 ;--------------------------
@@ -218,6 +302,7 @@ var Configurator_Installed
 !macro _CheckConfiguratorLock Msg Retry Cancel
 
     ${If} ${FileExists} "$Configurator_InstDir\*"
+        ${Log} "Configurator is running"
         ${GetFileLock} $3 "$Configurator_InstDir\${CONFIGURATOR_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}

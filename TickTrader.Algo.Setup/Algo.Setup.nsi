@@ -76,6 +76,8 @@ InstType Full
 
 Function .onInit
 
+    ${SetLogFile} "$TEMP\install.log"
+
     ${If} ${Runningx64}
         SetRegView 64
     ${EndIf}
@@ -99,6 +101,8 @@ FunctionEnd
 
 Function un.onInit
 
+    ${SetLogFile} "$TEMP\uninstall.log"
+
     ${If} ${Runningx64}
         SetRegView 64
     ${EndIf}
@@ -114,11 +118,15 @@ Section "Core files" TerminalCore
 
     Push $3
 
-    DetailPrint "Installing BotTerminal"
+    CreateDirectory $Terminal_InstDir
+    ${SetLogFile} "$Terminal_InstDir\install.log"
+    ${Print} "Installing BotTerminal"
+    ${Log} "BotTerminal Id: $Terminal_Id"
 
     ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
     ${If} $Terminal_InstDir == $3
     ${AndIf} ${FileExists} "$Terminal_InstDir\uninstall.exe"
+        ${Log} "Previous installation found"
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
 UninstallTerminalLabel:
         ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
@@ -134,7 +142,7 @@ UninstallTerminalLabel:
 
     Goto TerminalInstallEnd
 SkipTerminalLabel:
-    DetailPrint "Skipped BotTerminal installation"
+    ${Print} "Skipped BotTerminal installation"
 TerminalInstallEnd:
 
     Pop $3
@@ -151,7 +159,7 @@ SectionEnd
 
 Section "Test Collection" TerminalTestCollection
 
-    DetailPrint "Installing TestCollection"
+    ${Print} "Installing TestCollection"
     ${TestCollection_Unpack}
 
 SectionEnd
@@ -165,14 +173,19 @@ Section "Core files" AgentCore
 
     Push $3
 
-    DetailPrint "Installing BotAgent"
+    CreateDirectory $Agent_InstDir
+    ${SetLogFile} "$Agent_InstDir\install.log"
+    ${Print} "Installing BotAgent"
+    ${Log} "BotAgent Id: $Terminal_Id"
 
     ReadRegStr $3 HKLM "$Agent_RegKey" "${REG_PATH_KEY}"
     ${If} $Agent_InstDir == $3
     ${AndIf} ${FileExists} "$Agent_InstDir\uninstall.exe"
+        ${Log} "Previous installation found"
         MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
-        ${StopService} $Agent_ServiceId 80
+        ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAgentLabel SkipAgentLabel
+        ${Agent_StopService} UninstallAgentLabel SkipAgentLabel
         ${UninstallApp} $Agent_InstDir
     ${EndIf}
 
@@ -181,25 +194,24 @@ UninstallAgentLabel:
     ${Configurator_CreateShortcuts}
     WriteUninstaller "$Agent_InstDir\uninstall.exe"
 
-    DetailPrint "Creating BotAgent service"
-    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80
-    ${ConfigureService} $Agent_ServiceId    
-
-    StrCpy $Agent_Installed ${TRUE}
     StrCpy $Configurator_Installed ${TRUE}
 
-    DetailPrint "Starting BotAgent service"
-    ${StartService} $Agent_ServiceId 30
+    ${Agent_CreateService}
+    ${If} $Agent_ServiceCreated == ${TRUE}
+        StrCpy $Agent_Installed ${TRUE}
+        ${Agent_StartService}
+    ${EndIf}
+
     Goto AgentInstallEnd
 SkipAgentLabel:
-    DetailPrint "Skipped BotAgent installation"
+    ${Print} "Skipped BotAgent installation"
 AgentInstallEnd:
 
     Pop $3
 
 SectionEnd
 
-SectionGroup "Install Configurator" ConfiguratorGroup
+SectionGroup "Install ${CONFIGURATOR_DISPLAY_NAME}" ConfiguratorGroup
 
 Section "Core files" ConfiguratorCore
 
@@ -224,10 +236,12 @@ SectionEnd
 
 Section Uninstall
 
+    ${SetLogFile} "$INSTDIR\uninstall.log"
     StrCpy $Terminal_InstDir $INSTDIR
     ${Terminal_InitId} "Uninstall"
     ${If} $Terminal_Id != ${EMPTY_APPID}
-        
+
+        ${Log} "Uninstalling BotTerminal"
     RetryUninstallTerminal:
         ${Terminal_CheckLock} $(TerminalIsRunningUninstall) RetryUninstallTerminal SkipUninstallTerminal
 
@@ -241,6 +255,7 @@ Section Uninstall
         ${Terminal_RegDelete}
         Goto TerminalUninstallEnd
     SkipUninstallTerminal:
+        ${Log} $(UninstallCanceledMessage)
         Abort $(UninstallCanceledMessage)
     TerminalUninstallEnd:
 
@@ -250,8 +265,11 @@ Section Uninstall
     ${Agent_InitId} "Uninstall"
     ${If} $Agent_Id != ${EMPTY_APPID}
         
-        ${StopService} $Agent_ServiceId 80
-        ${UninstallService} $Agent_ServiceId 80
+        ${Log} "Uninstalling BotAgent"
+    RetryUninstallAgent:
+        ${Configurator_CheckLock} $(ConfiguratorIsRunningUninstall) RetryUninstallAgent SkipUninstallAgent
+        ${Agent_StopService} RetryUninstallAgent SkipUninstallAgent
+        ${Agent_DeleteService}
 
         ${Configurator_DeleteShortcuts}
         ${Agent_DeleteFiles}
@@ -261,12 +279,18 @@ Section Uninstall
 
         ; Remove registry entries
         ${Agent_RegDelete}
+        Goto AgentUninstallEnd
+    SkipUninstallAgent:
+        ${Log} $(UninstallCanceledMessage)
+        Abort $(UninstallCanceledMessage)
+    AgentUninstallEnd:
 
     ${EndIf}
 
     ${If} $Terminal_Id == ${EMPTY_APPID}
     ${AndIf} $Agent_Id == ${EMPTY_APPID}
-        Abort "$(UninstallUnknownPathMessage)"
+        ${Log} $(UninstallUnknownPathMessage)
+        Abort $(UninstallUnknownPathMessage)
     ${EndIf}
 
 SectionEnd

@@ -25,9 +25,12 @@ LangString TerminalSection4Description  ${LANG_ENGLISH} "Bots and indicators for
 
 LangString AgentSection1Description     ${LANG_ENGLISH} "BotAgent core files and windows service"
 
-LangString ConfiguratorSection1Description  ${LANG_ENGLISH} "BotAgent Configurator core files"
-LangString ConfiguratorSection2Description  ${LANG_ENGLISH} "Desktop shortcut for BotAgent Configurator"
-LangString ConfiguratorSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for BotAgent Configurator"
+LangString ConfiguratorSection1Description  ${LANG_ENGLISH} "BotAgent config tool core files"
+LangString ConfiguratorSection2Description  ${LANG_ENGLISH} "Desktop shortcut for BotAgent config tool"
+LangString ConfiguratorSection3Description  ${LANG_ENGLISH} "StartMenu shortcut for BotAgent config tool"
+
+LangString ConfiguratorIsRunningInstall     ${LANG_ENGLISH} "BotAgent config tool is running. Close it and press Retry to continue or press Cancel to skip BotAgent installation."
+LangString ConfiguratorIsRunningUninstall   ${LANG_ENGLISH} "BotAgent config tool is running. Close it and press Retry to continue or press Cancel to stop BotAgent uninstallation."
 
 LangString StandardInstallText          ${LANG_ENGLISH} "Standard installation"
 LangString MinimalInstallText           ${LANG_ENGLISH} "Minimal installation"
