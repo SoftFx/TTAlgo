@@ -137,10 +137,15 @@
     </Style>
 
     <Style x:Key="ToolBarAgentStartButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
+        <Setter Property="IsEnabled" Value="False"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=mainTabControl, UpdateSourceTrigger=PropertyChanged, Path=(Validation.Errors).Count}" Value="0">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                    <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                </MultiDataTrigger.Conditions>
                 <Setter Property="IsEnabled" Value="True"/>
-            </DataTrigger>
+            </MultiDataTrigger>
         </Style.Triggers>
     </Style>
 

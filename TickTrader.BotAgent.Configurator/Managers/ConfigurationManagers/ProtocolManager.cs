@@ -35,6 +35,7 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             SetDefaultModelValues();
+            UpdateCurrentModelValues();
         }
 
         public void SaveConfigurationModels(JObject root)
@@ -48,13 +49,16 @@ namespace TickTrader.BotAgent.Configurator
         {
             ProtocolModel.SetDefaultValues();
         }
+
+        public void UpdateCurrentModelValues()
+        {
+            ProtocolModel.UpdateCurrentFields();
+        }
     }
 
     public class ProtocolModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
-        private const int MaxPort = 1 << 16;
 
         private readonly PortsManager _portManager;
 
@@ -68,9 +72,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public int ListeningPort { get; set; }
 
+        public int CurrentListeningPort { get; set; }
+
         public string DirectoryName { get; set; }
 
+        public string CurrentDirectoryName { get; set; }
+
         public bool LogMessage { get; set; }
+
+        public bool CurrentLogMessage { get; set; }
 
         public void SetDefaultValues()
         {
@@ -81,33 +91,16 @@ namespace TickTrader.BotAgent.Configurator
                 ListeningPort = DefaultPort;
         }
 
+        public void UpdateCurrentFields()
+        {
+            CurrentDirectoryName = DirectoryName;
+            CurrentListeningPort = ListeningPort;
+            CurrentLogMessage = LogMessage;
+        }
+
         public void CheckPort(int port)
         {
-            try
-            {
-                _portManager?.CheckPortOpen(port);
-            }
-            catch (WarningException ex)
-            {
-                string freePortMassage = string.Empty;
-
-                for (int i = (port + 1) % MaxPort; i != port;)
-                {
-                    if (_portManager.CheckPortOpen(i, exception: false))
-                    {
-                        freePortMassage = $"Port {i} is free";
-                        break;
-                    }
-
-                    i = (i + 1) % MaxPort;
-                }
-
-                if (string.IsNullOrEmpty(freePortMassage))
-                    freePortMassage = "Free ports not found";
-
-                _logger.Error(ex);
-                throw new WarningException($"{ex.Message}. {freePortMassage}");
-            }
+            _portManager.CheckPort(port);
         }
     }
 }

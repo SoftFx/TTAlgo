@@ -43,6 +43,10 @@ namespace TickTrader.BotAgent.Configurator
         {
             SslModel.SetDefaultValues();
         }
+
+        public void UpdateCurrentModelValues()
+        {
+        }
     }
 
     public class SslModel

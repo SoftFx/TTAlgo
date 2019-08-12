@@ -3,13 +3,17 @@ using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public abstract class BaseViewModel : INotifyPropertyChanged
+    public abstract class BaseViewModel : INotifyPropertyChanged, IDataErrorInfo
     {
         public ModelErrorCounter ErrorCounter { get; }
 
-        public BaseViewModel()
+        public string Error { get; }
+
+        public virtual string this[string columnName] => throw new System.NotImplementedException();
+
+        public BaseViewModel(string key = "")
         {
-            ErrorCounter = new ModelErrorCounter();
+            ErrorCounter = new ModelErrorCounter(key);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

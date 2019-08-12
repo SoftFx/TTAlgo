@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -11,6 +12,8 @@ namespace TickTrader.BotAgent.Configurator
     public class ConfigurationViewModel : IDisposable
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private List<BaseViewModel> _viewModels;
 
         private Window _mainWindow;
 
@@ -107,6 +110,8 @@ namespace TickTrader.BotAgent.Configurator
 
                 StateServiceModel = new StateServiceViewModel(_model.Settings[AppProperties.ServiceName]);
 
+                _viewModels = new List<BaseViewModel>() { AdminModel, DealerModel, ViewerModel, SslModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+
                 RefreshManager.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
                 RefreshManager.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
 
@@ -124,29 +129,30 @@ namespace TickTrader.BotAgent.Configurator
         }
 
         public DelegateCommand StartAgent => _startAgent ?? (
-            _startAgent = new DelegateCommand( obj =>
+            _startAgent = new DelegateCommand(obj =>
             {
-                if (SaveChangesQuestion())
+                if (WasUpdate)
                 {
-                    if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.YesNoBoxQuestion("The process is already running, restart it?"))
+                    if (MessageBoxManager.OkCancelBoxQuestion("To start the agent, you need to save the new settings. Continue?", "Restart"))
+                        SaveModelChanges();
+                    else
                         return;
-
-                    Spinner.Run = true;
-
-                    ThreadPool.QueueUserWorkItem(StartAgentMethod);
                 }
+
+                if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.OkCancelBoxQuestion("The current process will be restarted. Continue?", "Restart"))
+                    return;
+
+                Spinner.Run = true;
+                ThreadPool.QueueUserWorkItem(StartAgentMethod);
             }));
 
         public DelegateCommand RestartApplication => _restartApplication ?? (
             _restartApplication = new DelegateCommand(obj =>
             {
-                _mainWindow.Closing -= MainWindow_Closing;
-
-                if (!SaveChangesMethod())
-                {
-                    _mainWindow.Closing += MainWindow_Closing;
+                if (SaveChangesMethod() == MessageBoxResult.Cancel)
                     return;
-                }
+
+                _mainWindow.Closing -= MainWindow_Closing;
 
                 _logger.Info($"The application has been restarted!");
                 Process.Start(Application.ResourceAssembly.Location);
@@ -160,7 +166,7 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     _model.SaveChanges();
                     RefreshManager.DropRefresh();
-                    MessageBoxManager.OKBox("Saving configuration successfully!");
+                    MessageBoxManager.OKBox("Configuration saved successfully!");
                     _logger.Info($"Changes have been saved.");
                 }
                 catch (Exception ex)
@@ -173,14 +179,16 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand CancelChanges => _cancelChanges ?? (
             _cancelChanges = new DelegateCommand(obj =>
             {
-                if (MessageBoxManager.YesNoBoxQuestion("The model has been changed. Сancel changes?"))
+                if (MessageBoxManager.OkCancelBoxQuestion("Changes will be reset. Continue?", "Reset changes"))
                 {
                     try
                     {
                         _model.LoadConfiguration();
                         RefreshManager.DropRefresh();
+
+                        DropAllErrors();
                         RefreshModels();
-                        _logger.Info($"Changes have been canceled.");
+                        _logger.Info($"Changes have been reset.");
                     }
                     catch (Exception ex)
                     {
@@ -218,6 +226,32 @@ namespace TickTrader.BotAgent.Configurator
             _runnignApplication = false;
         }
 
+        private void StartAgentMethod(object obj)
+        {
+            try
+            {
+                _model.StartAgent();
+
+                Spinner.Run = false;
+                MessageBoxManager.OKBox("Agent has been started!");
+                _logger.Info($"Agent has been started!");
+            }
+            catch (WarningException ex)
+            {
+                _logger.Error(ex);
+                MessageBoxManager.WarningBox(ex.Message);
+            }
+            catch (Exception exx)
+            {
+                _logger.Error(exx);
+                MessageBoxManager.ErrorBox(exx.Message);
+            }
+            finally
+            {
+                Spinner.Run = false;
+            }
+        }
+
         private async void RefreshServiceState(object obj)
         {
             try
@@ -244,17 +278,34 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        private bool SaveChangesMethod()
+        private void SaveModelChanges()
+        {
+            if (!WasUpdate)
+                return;
+
+            _model.SaveChanges();
+            RefreshManager.DropRefresh();
+        }
+
+        private MessageBoxResult SaveChangesMethod()
         {
             try
             {
-                return SaveChangesQuestion();
+                if (!WasUpdate || ModelErrorCounter.TotalErrorCount != 0)
+                    return MessageBoxResult.No;
+
+                var result = MessageBoxManager.YesNoCancelQuestion("Save new changes for current agent?", "New changes");
+
+                if (result == MessageBoxResult.Yes)
+                    SaveModelChanges();
+
+                return result;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                MessageBoxManager.ErrorBox("Saving settings was failed");
-                return false;
+                MessageBoxManager.ErrorBox("Saved settings was failed");
+                return MessageBoxResult.No;
             }
             finally
             {
@@ -262,91 +313,71 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        private bool SaveChangesQuestion()
-        {
-            if (WasUpdate && ModelErrorCounter.TotalErrorCount == 0)
-            {
-                var result = MessageBoxManager.YesNoBoxQuestion("The model has been changed. Save changes?");
-
-                if (result)
-                {
-                    _model.SaveChanges();
-                    RefreshManager.DropRefresh();
-                }
-
-                return result;
-            }
-
-            return !WasUpdate;
-        }
-
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
-            SaveChangesMethod();
+            if (SaveChangesMethod() == MessageBoxResult.Cancel)
+                e.Cancel = true;
         }
 
-        private void StartAgentMethod(object obj)
+        private void DropAllErrors()
         {
-            try
+            foreach (var model in _viewModels)
             {
-                _model.StartAgent();
-
-                Spinner.Run = false;
-                MessageBoxManager.OKBox("Agent has been started!");
-                _logger.Info($"Agent has been started!");
-            }
-            catch (WarningException ex)
-            {
-                _logger.Error(ex);
-                MessageBoxManager.WarningBox(ex.Message);
-            }
-            catch (Exception exx)
-            {
-                _logger.Error(exx);
-                MessageBoxManager.ErrorBox(exx.Message);
-            }
-            finally
-            {
-                Spinner.Run = false;
+                model.ErrorCounter.DropAll();
             }
         }
     }
 
     public class RefreshManager : BaseViewModel
     {
-        private bool _update;
+        private SortedSet<string> _updatedFields;
 
         public delegate void ConfigurationStateChanged();
 
         public event ConfigurationStateChanged NewValuesEvent;
         public event ConfigurationStateChanged SaveValuesEvent;
 
-        public bool Update
+        public bool Update => _updatedFields.Count > 0;
+
+        public RefreshManager()
         {
-            get => _update;
-
-            private set
-            {
-                if (_update == value)
-                    return;
-
-                _update = value;
-                OnPropertyChanged(nameof(Update));
-            }
+            _updatedFields = new SortedSet<string>();
         }
 
-        public void Refresh()
+        public void CheckUpdate(string newValue, string oldValue, string field)
         {
-            Update = true;
+            if (newValue != oldValue)
+                AddUpdate(field);
+            else
+                DeleteUpdate(field);
+        }
+
+        public void AddUpdate(string field)
+        {
+            if (!_updatedFields.Contains(field))
+                _updatedFields.Add(field);
 
             NewValuesEvent?.Invoke();
+            OnPropertyChanged(nameof(Update));
+        }
+
+        public void DeleteUpdate(string field)
+        {
+            if (_updatedFields.Contains(field))
+                _updatedFields.Remove(field);
+
+            if (_updatedFields.Count == 0)
+                DropRefresh();
+
+            OnPropertyChanged(nameof(Update));
         }
 
         public void DropRefresh()
         {
-            Update = false;
+            _updatedFields.Clear();
 
             SaveValuesEvent?.Invoke();
+            OnPropertyChanged(nameof(Update));
         }
     }
 

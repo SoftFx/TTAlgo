@@ -38,7 +38,7 @@
                         <TextBlock Text="Save Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button Style="{StaticResource ToolBarButton}" Command="{Binding StartAgent}" IsEnabled="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, Converter={StaticResource notIntToBool}, UpdateSourceTrigger=PropertyChanged}">
+                <Button Style="{StaticResource ToolBarAgentStartButton}" Command="{Binding StartAgent}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Play" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>

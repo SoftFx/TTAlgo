@@ -57,13 +57,11 @@ namespace TickTrader.BotAgent.Configurator
             SslManager = new SslManager(SectionNames.Ssl);
             ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
             FdkManager = new FdkManager(SectionNames.Fdk);
-            ServerManager = new ServerManager();
+            ServerManager = new ServerManager(_portsManager);
 
             _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 
             LoadConfiguration(false);
-
-            ServiceManager.ServicePort = ProtocolManager.ProtocolModel.ListeningPort;
         }
 
         public void StartAgent()
@@ -109,6 +107,7 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             _configManager.SaveChanges();
+            UpdateCurrentModelValues();
         }
 
         private void UploadModel(IUploaderModels model)
@@ -130,6 +129,14 @@ namespace TickTrader.BotAgent.Configurator
                     throw new Exception("Unable to load settings");
             }
         }
+
+        private void UpdateCurrentModelValues()
+        {
+            foreach (var model in _uploaderModels)
+            {
+                model.UpdateCurrentModelValues();
+            }
+        }
     }
 
 
@@ -142,6 +149,8 @@ namespace TickTrader.BotAgent.Configurator
         void SetDefaultModelValues();
 
         void SaveConfigurationModels(JObject root);
+
+        void UpdateCurrentModelValues();
     }
 
     public interface IBotAgentConfigPathHolder

@@ -7,7 +7,7 @@
         private SslModel _model;
         private RefreshManager _refreshManager;
 
-        public SslViewModel(SslModel model, RefreshManager refManager = null)
+        public SslViewModel(SslModel model, RefreshManager refManager = null) : base(nameof(ServerViewModel))
         {
             _model = model;
             _refreshManager = refManager;
@@ -25,7 +25,7 @@
                 _logger.Info(GetChangeMessage($"{nameof(SslViewModel)} {nameof(File)}", _model.File, value));
 
                 _model.File = value;
-                _refreshManager?.Refresh();
+                //_refreshManager?.Refresh();
 
                 OnPropertyChanged(nameof(File));
             }
@@ -43,7 +43,7 @@
                 _logger.Info(GetChangeMessage($"{nameof(SslViewModel)} {nameof(Password)}", _model.Password, value));
 
                 _model.Password = value;
-                _refreshManager?.Refresh();
+                //_refreshManager?.Refresh();
 
                 OnPropertyChanged(nameof(Password));
             }

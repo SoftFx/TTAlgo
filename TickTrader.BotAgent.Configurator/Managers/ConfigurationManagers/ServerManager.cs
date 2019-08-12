@@ -12,9 +12,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public ServerModel ServerModel { get; }
 
-        public ServerManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
+        public ServerManager(PortsManager manager, SectionNames sectionName = SectionNames.None) : base(sectionName)
         {
-            ServerModel = new ServerModel();
+            ServerModel = new ServerModel(manager);
         }
 
         public void UploadModels(List<JProperty> serverProp)
@@ -45,6 +45,10 @@ namespace TickTrader.BotAgent.Configurator
         {
             ServerModel.SetDefaultValues();
         }
+
+        public void UpdateCurrentModelValues()
+        {
+        }
     }
 
     public class ServerModel
@@ -52,6 +56,15 @@ namespace TickTrader.BotAgent.Configurator
         private const string DefaultUrls = "https://localhost:50000/";
 
         public List<Uri> Urls { get; private set; }
+
+        public PortsManager PortsManager { get; }
+
+        public ServerModel(PortsManager portsManager)
+        {
+            Urls = new List<Uri>();
+
+            PortsManager = portsManager;
+        }
 
         public string UrlsStr
         {
@@ -66,11 +79,6 @@ namespace TickTrader.BotAgent.Configurator
         }
 
         public string SecretKey { get; set; }
-
-        public ServerModel()
-        {
-            Urls = new List<Uri>();
-        }
 
         public void SetDefaultValues()
         {

@@ -81,6 +81,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceProcess" />
@@ -103,6 +104,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\ManagedIpHelper.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
     <Compile Include="Infrastructure\Dependencies\UpdateNewProperty.cs" />
     <Compile Include="Infrastructure\Dependencies\ViewPanelProperty.cs" />
@@ -147,7 +149,6 @@
     <Compile Include="Managers\ConfigurationManagers\SslManager.cs" />
     <Compile Include="Infrastructure\Converters.cs" />
     <Compile Include="Infrastructure\Exceptions.cs" />
-    <Compile Include="Infrastructure\Validations.cs" />
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
     <Compile Include="Infrastructure\Commands\DelegateCommand.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />

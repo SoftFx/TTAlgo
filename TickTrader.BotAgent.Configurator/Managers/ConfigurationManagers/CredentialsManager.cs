@@ -43,6 +43,7 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             SetDefaultModelValues();
+            UpdateCurrentModelValues();
         }
 
         public void SetDefaultModelValues()
@@ -50,6 +51,13 @@ namespace TickTrader.BotAgent.Configurator
             Admin.SetDefaultValues();
             Dealer.SetDefaultValues();
             Viewer.SetDefaultValues();
+        }
+
+        public void UpdateCurrentModelValues()
+        {
+            Admin.UpdateCurrentFields();
+            Dealer.UpdateCurrentFields();
+            Viewer.UpdateCurrentFields();
         }
 
         public void SaveConfigurationModels(JObject obj)
@@ -76,6 +84,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public string Password { get; set; }
 
+        public string CurrentLogin { get; set; }
+
+        public string CurrentPassword { get; set; }
 
         public CredentialModel(string name)
         {
@@ -89,6 +100,12 @@ namespace TickTrader.BotAgent.Configurator
 
             if (string.IsNullOrEmpty(Password))
                 Password = Name;
+        }
+
+        public void UpdateCurrentFields()
+        {
+            CurrentLogin = Login;
+            CurrentPassword = Password;
         }
 
         public void GeneratePassword()

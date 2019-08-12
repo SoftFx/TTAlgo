@@ -4,13 +4,17 @@
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private FdkModel _model;
-        private RefreshManager _refreshManager;
+        private readonly RefreshManager _refreshManager;
+        private readonly string _keyLogs;
 
-        public FdkViewModel(FdkModel model, RefreshManager refManager = null)
+        private FdkModel _model;
+
+        public FdkViewModel(FdkModel model, RefreshManager refManager = null) : base(nameof(FdkViewModel))
         {
             _model = model;
             _refreshManager = refManager;
+
+            _keyLogs = $"{nameof(FdkViewModel)} {nameof(EnableLogs)}";
         }
 
         public bool EnableLogs
@@ -21,10 +25,10 @@
                 if (_model.EnableLogs == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(FdkViewModel)} {nameof(EnableLogs)}", _model.EnableLogs.ToString(), value.ToString()));
-
                 _model.EnableLogs = value;
-                _refreshManager?.Refresh();
+
+                _refreshManager?.CheckUpdate(value.ToString(), _model.CurrentEnableLogs.ToString(), _keyLogs);
+                _logger.Info(GetChangeMessage(_keyLogs, _model.EnableLogs.ToString(), value.ToString()));
 
                 OnPropertyChanged(nameof(EnableLogs));
             }

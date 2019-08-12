@@ -3,20 +3,25 @@ using System.ComponentModel;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialViewModel : BaseViewModel, IContentViewModel
+    public class CredentialViewModel : BaseViewModel, IContentViewModel, IDataErrorInfo
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private readonly string _keyLogin, _keyPassword;
+        private readonly RefreshManager _refreshManager;
+
         private CredentialModel _model;
-        private RefreshManager _refreshManager;
 
         private DelegateCommand _generateLogin;
         private DelegateCommand _generatePassword;
 
-        public CredentialViewModel(CredentialModel model, RefreshManager refManager = null)
+        public CredentialViewModel(CredentialModel model, RefreshManager refManager = null) : base(nameof(CredentialViewModel))
         {
             _model = model;
             _refreshManager = refManager;
+
+            _keyLogin = $"{_model.Name}{nameof(Login)}";
+            _keyPassword = $"{_model.Name}{nameof(Password)}";
         }
 
         public string ModelDescription { get; set; }
@@ -33,13 +38,11 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Login = value;
+                _refreshManager?.CheckUpdate(value, _model.CurrentLogin, _keyLogin);
 
-                ErrorCounter.CheckStringLength(value, 3, nameof(Login));
+                _logger.Info(GetChangeMessage(_keyLogin, _model.Login, value));
 
-                _refreshManager?.Refresh();
-                _logger.Info(GetChangeMessage($"{_model.Name}{nameof(Login)}", _model.Login, value));
-
-                ErrorCounter.DeleteError(nameof(Login));
+                ErrorCounter.DeleteError(_keyLogin);
                 OnPropertyChanged(nameof(Login));
             }
         }
@@ -54,13 +57,36 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Password = value;
+                _refreshManager?.CheckUpdate(value, _model.CurrentPassword, _keyPassword);
 
-                ErrorCounter.CheckStringLength(Password, 5, nameof(Login));
-
-                _refreshManager?.Refresh();
-
-                ErrorCounter.DeleteError(nameof(Password));
+                ErrorCounter.DeleteError(_keyPassword);
                 OnPropertyChanged(nameof(Password));
+            }
+        }
+
+        public override string this[string columnName]
+        {
+            get
+            {
+                var msg = "";
+                try
+                {
+                    switch (columnName)
+                    {
+                        case "Login":
+                            ErrorCounter.CheckStringLength(Login, 3, _keyLogin);
+                            break;
+                        case "Password":
+                            ErrorCounter.CheckStringLength(Password, 5, _keyPassword);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    msg = ex.Message;
+                }
+
+                return msg;
             }
         }
 
@@ -68,7 +94,7 @@ namespace TickTrader.BotAgent.Configurator
             _generatePassword = new DelegateCommand(obj =>
             {
                 _model.GeneratePassword();
-                _refreshManager?.Refresh();
+                _refreshManager?.AddUpdate(_keyPassword);
 
                 OnPropertyChanged(nameof(Password));
             }));
@@ -77,7 +103,7 @@ namespace TickTrader.BotAgent.Configurator
             _generateLogin = new DelegateCommand(obj =>
             {
                 _model.GenerateNewLogin();
-                _refreshManager?.Refresh();
+                _refreshManager?.AddUpdate(_keyLogin);
 
                 OnPropertyChanged(nameof(Login));
             }));

@@ -15,14 +15,12 @@
     <Style x:Key="BaseTextBoxStyle" TargetType="TextBox">
         <Setter Property="Height" Value="22"/>
         <Setter Property="FontSize" Value="14"/>
-        <Style.Triggers>
+        <!--<Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip"
-                Value="{Binding RelativeSource={RelativeSource Self},
-                    Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
                 <Setter Property="Foreground" Value="Red" />
             </Trigger>
-        </Style.Triggers>
+        </Style.Triggers>-->
     </Style>
 
     <Style x:Key="PortTextBoxStyle" BasedOn="{StaticResource BaseTextBoxStyle}" TargetType="TextBox">
@@ -30,17 +28,24 @@
         <Setter Property="Height" Value="24"/>
     </Style>
 
-    <Style TargetType="Button">
+    <Style x:Key="DefaultButton" TargetType="Button">
         <Setter Property="Height" Value="30"/>
-        <Setter Property="Width" Value="100"/>
-        <Setter Property="Margin" Value="0 0 0 10"/>
-        <Setter Property="Content" Value="Save"/>
+        <Setter Property="Width" Value="80"/>
+        <Setter Property="Margin" Value="5 0 5 10"/>
+        <Setter Property="Content" Value="Cancel"/>
+    </Style>
+
+    <Style x:Key="AddAndOkButton" TargetType="Button" BasedOn="{StaticResource DefaultButton}">
+        <Setter Property="Content" Value="Ok"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=newPort}" Value="True">
                 <Setter Property="IsEnabled" Value="False"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=newHost}" Value="True">
                 <Setter Property="IsEnabled" Value="False"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Path=CurrentUri.OldUri}" Value="{x:Null}">
+                <Setter Property="Content" Value="Add"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -61,11 +66,15 @@
         <Setter Property="IsEditable" Value="true"/>
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip"
-                Value="{Binding RelativeSource={RelativeSource Self},
-                    Path=(Validation.Errors)[0].ErrorContent}" />
-                <Setter Property="Foreground" Value="Red" />
+                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="Foreground" Value="Red"/>
             </Trigger>
+
+            <DataTrigger Binding="{Binding ElementName=newPort, Path=(Validation.HasError)}" Value="True">
+                <Setter Property="ToolTip" Value="{Binding ElementName=newPort, Path=(Validation.Errors)[0].ErrorContent}" />
+                <Setter Property="Foreground" Value="Red"/>
+
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 </ResourceDictionary>

@@ -11,7 +11,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public static void OKBox(string message)
         {
-            MessageBox.Show(message, "", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(message, "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         public static bool YesNoBoxError(string message)
@@ -21,11 +21,23 @@ namespace TickTrader.BotAgent.Configurator
             return result == MessageBoxResult.Yes;
         }
 
-        public static bool YesNoBoxQuestion(string message)
+        public static bool YesNoBoxQuestion(string message, string header = "")
         {
-            var result = MessageBox.Show(message, "", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show(message, header, MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             return result == MessageBoxResult.Yes;
+        }
+
+        public static bool OkCancelBoxQuestion(string message, string header = "")
+        {
+            var result = MessageBox.Show(message, header, MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+            return result == MessageBoxResult.OK;
+        }
+
+        public static MessageBoxResult YesNoCancelQuestion(string message, string header = "")
+        {
+            return MessageBox.Show(message, header, MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
         }
 
         public static void WarningBox(string message)
