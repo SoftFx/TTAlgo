@@ -56,9 +56,6 @@
 !define REG_SERVICE_ID "ServiceId"
 !define REG_SHORTCUT_NAME "ShortcutName"
 
-!define FALSE 0
-!define TRUE 1
-
 
 ;--------------------------
 ; Common variables
@@ -325,7 +322,7 @@ Function FinishPageCreate
         SetCtlColors $Configurator_RunCheckBox "" "ffffff"
 
         ${If} $Agent_ServiceFailed == ${FALSE}
-        ${AndIf} $Agent_StartService == ${TRUE}
+        ${AndIf} $Agent_LaunchService == ${TRUE}
             ; no need to run configurator if update went fine
         ${Else}
             ${NSD_Check} $Configurator_RunCheckBox

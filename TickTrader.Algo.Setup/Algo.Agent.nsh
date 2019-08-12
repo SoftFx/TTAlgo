@@ -26,7 +26,7 @@ var Agent_InstDir
 var Agent_RegKey
 var Agent_UninstallRegKey
 var Agent_Installed
-var Agent_StartService
+var Agent_LaunchService
 var Agent_ServiceCreated
 var Agent_ServiceFailed
 var Agent_ServiceError
@@ -56,10 +56,10 @@ var Configurator_Installed
 
     StrCpy $Agent_Installed ${FALSE}
 
-    StrCpy $Agent_StartService ${FALSE}
+    StrCpy $Agent_LaunchService ${FALSE}
     StrCpy $Agent_ServiceCreated ${FALSE}
     StrCpy $Agent_ServiceFailed ${FALSE}
-    StrCpy $Agent_ServiceError ${FALSE}
+    StrCpy $Agent_ServiceError ${NO_ERR_MSG}
 
     StrCpy $Configurator_InstDir "$Agent_InstDir\${CONFIGURATOR_NAME}"
     StrCpy $Configurator_ShortcutName "${CONFIGURATOR_DISPLAY_NAME}"
@@ -166,6 +166,8 @@ var Configurator_Installed
 !macro _RegWriteAgent
 
     ${Log} "Writing registry keys"
+    ${Log} "Main registry keys location: $Agent_RegKey"
+    ${Log} "Uninstall registry keys location: $Agent_UninstallRegKey"
 
     WriteRegStr HKLM "$Agent_RegKey" "${REG_PATH_KEY}" "$Agent_InstDir"
     WriteRegStr HKLM "$Agent_RegKey" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
@@ -235,7 +237,8 @@ var Configurator_Installed
 
 !macro _CreateAgentService
 
-    ${Print} "Creating BotAgent service"
+    DetailPrint "Creating BotAgent service"
+    ${Log} "Creating BotAgent service $Agent_ServiceId"
     ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80 $Agent_ServiceError
     ${If} $Agent_ServiceError == ${NO_ERR_MSG}
         ${ConfigureService} $Agent_ServiceId $Agent_ServiceError
@@ -253,38 +256,53 @@ var Configurator_Installed
 
 !macro _StartAgentService
 
-    ${Print} "Starting BotAgent service"
+    DetailPrint "Starting BotAgent service"
+    ${Log} "Starting BotAgent service $Agent_ServiceId"
     ${StartService} $Agent_ServiceId 30 $Agent_ServiceError
     ${If} $Agent_ServiceError != ${NO_ERR_MSG}
         StrCpy $Agent_ServiceFailed ${TRUE}
         ${Log} $Agent_ServiceError
     ${Else}
-        ${Log} "Started BotAgent service"
+        ${Log} "Started BotAgent service $Agent_ServiceId"
     ${EndIf}
 
 !macroend
 
 !macro _StopAgentService Retry Cancel
 
-    ${Print} "Stopping BotAgent service"
+    DetailPrint "Stopping BotAgent service"
+    ${Log} "Stopping BotAgent service $Agent_ServiceId"
     ${StopService} $Agent_ServiceId 80 $Agent_ServiceError
     ${If} $Agent_ServiceError != ${NO_ERR_MSG}
         ${Log} $Agent_ServiceError
         MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION $Agent_ServiceError IDRETRY ${Retry} IDCANCEL ${Cancel}
     ${Else}
-        ${Log} "Stopped BotAgent service"
+        ${Log} "Stopped BotAgent service $Agent_ServiceId"
     ${EndIf}
 
 !macroend
 
 !macro _DeleteAgentService
 
-    ${Print} "Deleting BotAgent service"
+    DetailPrint "Deleting BotAgent service"
+    ${Log} "Deleting BotAgent service $Agent_ServiceId"
     ${UninstallService} $Agent_ServiceId 80 $Agent_ServiceError
     ${If} $Agent_ServiceError != ${NO_ERR_MSG}
         ${Log} $Agent_ServiceError
     ${Else}
-        ${Log} "Deleted BotAgent service"
+        ${Log} "Deleted BotAgent service $Agent_ServiceId"
+    ${EndIf}
+
+!macroend
+
+!macro _RememberAgentServiceState
+
+    ${Log} "Checking if BotAgent service $Agent_ServiceId is running"
+    ${IsServiceRunning} $Agent_ServiceId $Agent_LaunchService
+    ${If} $Agent_LaunchService == ${TRUE}
+        ${Log} "BotAgent service $Agent_ServiceId was running"
+    ${Else}
+        ${Log} "BotAgent service $Agent_ServiceId wasn't running"
     ${EndIf}
 
 !macroend
@@ -294,6 +312,7 @@ var Configurator_Installed
 !define Agent_StartService '!insertmacro _StartAgentService'
 !define Agent_StopService '!insertmacro _StopAgentService'
 !define Agent_DeleteService '!insertmacro _DeleteAgentService'
+!define Agent_RememberServiceState '!insertmacro _RememberAgentServiceState'
 
 
 ;--------------------------
@@ -302,9 +321,9 @@ var Configurator_Installed
 !macro _CheckConfiguratorLock Msg Retry Cancel
 
     ${If} ${FileExists} "$Configurator_InstDir\*"
-        ${Log} "Configurator is running"
         ${GetFileLock} $3 "$Configurator_InstDir\${CONFIGURATOR_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
+            ${Log} "Configurator is running ($Configurator_InstDir)"
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
         ${EndIf}
     ${EndIf}

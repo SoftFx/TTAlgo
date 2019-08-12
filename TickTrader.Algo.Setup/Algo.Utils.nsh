@@ -1,4 +1,12 @@
 ;--------------------------------------------
+;-----Bool constants-----
+
+!define FALSE 0
+!define TRUE 1
+
+;-----Bool constants-----
+
+;--------------------------------------------
 ;-----Functions to manage window service-----
 
 !define NO_ERR_MSG "no_error"
@@ -107,11 +115,30 @@ _UninstallServiceEnd:
 
 !macroend
 
-!define InstallService '!insertmacro "_InstallService"'
-!define StartService '!insertmacro "_StartService"'
-!define StopService '!insertmacro "_StopService"'
-!define UninstallService '!insertmacro "_UninstallService"'
-!define ConfigureService '!insertmacro "_ConfigureService"'
+!macro _ServiceIsRunning Name RetVar
+
+    StrCpy ${RetVar} ${FALSE}
+    SimpleSC::ExistsService ${Name}
+    Pop $0
+    ${If} $0 == 0
+        SimpleSC::ServiceIsRunning ${Name}
+        Pop $0
+        Pop $1
+        ${If} $1 == 1
+            StrCpy ${RetVar} ${TRUE}
+        ${EndIf}
+    ${EndIf}
+
+
+!macroend
+
+
+!define InstallService '!insertmacro _InstallService'
+!define StartService '!insertmacro _StartService'
+!define StopService '!insertmacro _StopService'
+!define UninstallService '!insertmacro _UninstallService'
+!define ConfigureService '!insertmacro _ConfigureService'
+!define IsServiceRunning '!insertmacro _ServiceIsRunning'
 
 ;---END Functions to manage window service---
 

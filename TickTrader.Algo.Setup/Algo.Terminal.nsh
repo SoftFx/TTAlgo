@@ -94,6 +94,7 @@ var TestCollection_Selected
 
 !macro _DeleteTestCollectionFiles
 
+    ${Log} "Deleting TestCollection files from $Terminal_InstDir"
     Delete "$Terminal_InstDir\${REPOSITORY_DIR}\TickTrader.Algo.TestCollection.ttalgo"
     Delete "$Terminal_InstDir\{REPOSITORY_DIR}\TickTrader.Algo.VersionTest.ttalgo"
 
@@ -160,6 +161,8 @@ var TestCollection_Selected
 !macro _RegWriteTerminal
 
     ${Log} "Writing registry keys"
+    ${Log} "Main registry keys location: $Terminal_RegKey"
+    ${Log} "Uninstall registry keys location: $Terminal_UninstallRegKey"
 
     WriteRegStr HKLM "$Terminal_RegKey" "${REG_PATH_KEY}" "$Terminal_InstDir"
     WriteRegStr HKLM "$Terminal_RegKey" "${REG_VERSION_KEY}" "${PRODUCT_BUILD}"
@@ -227,9 +230,9 @@ var TestCollection_Selected
 !macro _CheckTerminalLock Msg Retry Cancel
 
     ${If} ${FileExists} "$Terminal_InstDir\*"
-        ${Log} "BotTerminal is running"
         ${GetFileLock} $3 "$Terminal_InstDir\${TERMINAL_LOCK_FILE}"
         ${IF} $3 == ${FILE_LOCKED}
+            ${Log} "BotTerminal is running ($Terminal_InstDir)"
             MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION ${Msg} IDRETRY ${Retry} IDCANCEL ${Cancel}
         ${EndIf}
     ${EndIf}
