@@ -24,7 +24,6 @@ namespace TickTrader.Algo.Core
         private DateTime _timePoint;
         private long _safeTimePoint;
         private FeedEventSeries _feedReader;
-        private volatile bool _checkStateFlag;
         private volatile int _execDelay;
         private BacktesterCollector _collector;
         private bool _normalStopFlag;
@@ -69,7 +68,8 @@ namespace TickTrader.Algo.Core
 
         public override void EnqueueCustomInvoke(Action<PluginBuilder> a)
         {
-            _eventQueue.Enqueue(a);
+            lock (_syncState)
+                _eventQueue.Enqueue(a);
         }
 
         public override void EnqueueEvent(Action<PluginBuilder> a)
@@ -89,7 +89,8 @@ namespace TickTrader.Algo.Core
 
         public override void ProcessNextTrade()
         {
-            var item = DequeueNextTrade();
+            object item = null;
+            lock (_syncState) item = DequeueNextTrade();
 
             if (item == null)
                 throw new Exception("Detected empty queue while ProcessNextTrade()!");
@@ -125,7 +126,6 @@ namespace TickTrader.Algo.Core
                 {
                     _canelRequested = true;
                     _pauseRequested = false;
-                    _checkStateFlag = true;
                     Monitor.Pulse(_syncState);
                 }
             }
@@ -138,7 +138,6 @@ namespace TickTrader.Algo.Core
                 if (State != EmulatorStates.Running || _canelRequested)
                     return;
                 _pauseRequested = true;
-                _checkStateFlag = true;
             }
         }
 
@@ -147,7 +146,6 @@ namespace TickTrader.Algo.Core
             lock (_syncState)
             {
                 _pauseRequested = false;
-                _checkStateFlag = false;
                 Monitor.Pulse(_syncState);
             }
         }
@@ -215,8 +213,6 @@ namespace TickTrader.Algo.Core
         {
             lock (_syncState)
             {
-                _checkStateFlag = false;
-
                 if (State != EmulatorStates.Stopping && _canelRequested)
                 {
                     _canelRequested = false;
@@ -232,28 +228,27 @@ namespace TickTrader.Algo.Core
             {
                 while (!_normalStopFlag)
                 {
-                    if (_checkStateFlag)
-                    {
-                        lock (_syncState)
-                        {
-                            if (_pauseRequested)
-                            {
-                                ChangeState(EmulatorStates.Paused);
-                                while (_pauseRequested)
-                                    Monitor.Wait(_syncState);
-                                if (!_canelRequested)
-                                    ChangeState(EmulatorStates.Running);
-                            }
+                    object nextItem = null;
 
-                            if (_canelRequested)
-                                throw new OperationCanceledException("Canceled.");
+                    lock (_syncState)
+                    {
+                        if (_pauseRequested)
+                        {
+                            ChangeState(EmulatorStates.Paused);
+                            while (_pauseRequested)
+                                Monitor.Wait(_syncState);
+                            if (!_canelRequested)
+                                ChangeState(EmulatorStates.Running);
                         }
+
+                        if (_canelRequested)
+                            throw new OperationCanceledException("Canceled.");
+
+                        nextItem = DequeueNext();
                     }
 
                     if (_fatalError != null)
                         throw _fatalError;
-
-                    var nextItem = DequeueNext();
 
                     if (nextItem == null)
                         return;
