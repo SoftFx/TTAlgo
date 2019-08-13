@@ -5,6 +5,7 @@ LangString InstallationAbortedMessage   ${LANG_ENGLISH} "Installation aborted. E
 
 LangString UninstallUnknownPathMessage  ${LANG_ENGLISH} "Provided path is not registered as BotTerminal or BotAgent installation."
 LangString UninstallCanceledMessage     ${LANG_ENGLISH} "Uninstallation cancelled."
+LangString UninstallBrokenMessage       ${LANG_ENGLISH} "Unable to find uninstall.exe of previous version"
 
 LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader BotTerminal will be uninstalled. Continue?"
 LangString UninstallPrevAgent           ${LANG_ENGLISH} "Previous installed TickTrader BotAgent will be uninstalled. Continue?"

@@ -6,13 +6,16 @@
 !define AGENT_BINDIR "..\TickTrader.BotAgent\bin\Release\net462\publish"
 !define AGENT_EXE "TickTrader.BotAgent.exe"
 
-!define SERVICE_NAME "_sfxBotAgent"
+!define SERVICE_NAME_BASE "_sfxBotAgent"
 !define SERVICE_DISPLAY_NAME "_sfxBotAgent"
 
 !define CONFIGURATOR_NAME "Configurator"
 !define CONFIGURATOR_DISPLAY_NAME "${AGENT_NAME} config tool"
 !define CONFIGURATOR_EXE "TickTrader.BotAgent.Configurator.exe"
 !define CONFIGURATOR_LOCK_FILE "applock"
+
+!define AGENT_LEGACY_REG_KEY "Software\TickTrader Bot Agent"
+!define AGENT_LEGACY_SERVICE_NAME "_sfxBotAgent"
 
 
 ;--------------------------
@@ -50,7 +53,7 @@ var Configurator_Installed
     StrCpy $Agent_UninstallRegKey "${REG_UNINSTALL_KEY_BASE}\${BASE_NAME} ${AGENT_NAME}"
 
     StrCpy $Agent_Id ${EMPTY_APPID}
-    StrCpy $Agent_ServiceId "${SERVICE_NAME}_$Agent_Id"
+    StrCpy $Agent_ServiceId "${SERVICE_NAME_BASE}_$Agent_Id"
 
     StrCpy $Agent_CoreSelected ${FALSE}
 
@@ -224,7 +227,7 @@ var Configurator_Installed
         ${Agent_RegRead}
     ${EndIf}
     
-    StrCpy $Agent_ServiceId "${SERVICE_NAME}_$Agent_Id"
+    StrCpy $Agent_ServiceId "${SERVICE_NAME_BASE}_$Agent_Id"
 
 !macroend
 
@@ -307,12 +310,27 @@ var Configurator_Installed
 
 !macroend
 
+!macro _StopLegacyAgentService Retry Cancel
+
+    DetailPrint "Stopping BotAgent service"
+    ${Log} "Stopping legacy BotAgent service ${AGENT_LEGACY_SERVICE_NAME}"
+    ${StopService} ${AGENT_LEGACY_SERVICE_NAME} 80 $Agent_ServiceError
+    ${If} $Agent_ServiceError != ${NO_ERR_MSG}
+        ${Log} $Agent_ServiceError
+        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION $Agent_ServiceError IDRETRY ${Retry} IDCANCEL ${Cancel}
+    ${Else}
+        ${Log} "Stopped legacy BotAgent service $Agent_ServiceId"
+    ${EndIf}
+
+!macroend
+
 
 !define Agent_CreateService '!insertmacro _CreateAgentService'
 !define Agent_StartService '!insertmacro _StartAgentService'
 !define Agent_StopService '!insertmacro _StopAgentService'
 !define Agent_DeleteService '!insertmacro _DeleteAgentService'
 !define Agent_RememberServiceState '!insertmacro _RememberAgentServiceState'
+!define Agent_StopLegacyService '!insertmacro _StopLegacyAgentService'
 
 
 ;--------------------------

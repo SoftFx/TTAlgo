@@ -131,12 +131,17 @@ Section "Core files" TerminalCore
 
     ReadRegStr $3 HKLM "$Terminal_RegKey" "${REG_PATH_KEY}"
     ${If} $Terminal_InstDir == $3
-    ${AndIf} ${FileExists} "$Terminal_InstDir\uninstall.exe"
-        ${Log} "Previous installation found"
-        MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
+        ${If} ${FileExists} "$Terminal_InstDir\uninstall.exe"
+            ${Log} "Previous installation found"
+            MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevTerminal)" IDYES UninstallTerminalLabel IDNO SkipTerminalLabel
 UninstallTerminalLabel:
-        ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
-        ${UninstallApp} $Terminal_InstDir
+            ${Terminal_CheckLock} $(TerminalIsRunningInstall) UninstallTerminalLabel SkipTerminalLabel
+            ${UninstallApp} $Terminal_InstDir
+        ${Else}
+            ${Log} "Unable to find uninstall.exe for previous installation"
+            MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
+            Goto SkipTerminalLabel
+        ${EndIf}
     ${EndIf}
 
     ${Terminal_Unpack}
@@ -191,14 +196,36 @@ Section "Core files" AgentCore
 
     ReadRegStr $3 HKLM "$Agent_RegKey" "${REG_PATH_KEY}"
     ${If} $Agent_InstDir == $3
-    ${AndIf} ${FileExists} "$Agent_InstDir\uninstall.exe"
         ${Log} "Previous installation found"
-        ${Agent_RememberServiceState}
-        MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
+        ${If} ${FileExists} "$Agent_InstDir\uninstall.exe"
+            ${Agent_RememberServiceState}
+            MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallAgentLabel IDNO SkipAgentLabel
 UninstallAgentLabel:
-        ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAgentLabel SkipAgentLabel
-        ${Agent_StopService} UninstallAgentLabel SkipAgentLabel
-        ${UninstallApp} $Agent_InstDir
+            ${Configurator_CheckLock} $(ConfiguratorIsRunningInstall) UninstallAgentLabel SkipAgentLabel
+            ${Agent_StopService} UninstallAgentLabel SkipAgentLabel
+            ${UninstallApp} $Agent_InstDir
+        ${Else}
+            ${Log} "Unable to find uninstall.exe for previous installation"
+            MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
+            Goto SkipAgentLabel
+        ${EndIf}
+    ${Else}
+        SetRegView 32
+        ReadRegStr $3 HKLM "${AGENT_LEGACY_REG_KEY}" ""
+        ${If} $Agent_InstDir == $3
+            ${Log} "Legacy installation found"
+            ${If} ${FileExists} "$Agent_InstDir\uninstall.exe"
+                MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallLegacyAgentLabel IDNO SkipAgentLabel
+UninstallLegacyAgentLabel:
+                ${Agent_StopLegacyService} UninstallLegacyAgentLabel SkipAgentLabel
+                ${UninstallApp} $Agent_InstDir
+            ${Else}
+                ${Log} "Unable to find uninstall.exe for legacy installation"
+                MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
+                Goto SkipAgentLabel
+            ${EndIf}
+        ${EndIf}
+        SetRegView 64
     ${EndIf}
 
     ${Agent_Unpack}
