@@ -97,6 +97,8 @@ Function .onInit
     ${Terminal_Init}
     ${Agent_Init}
 
+    StrCpy $Framework_Checked ${FALSE}
+
 FunctionEnd
 
 Function un.onInit
@@ -120,6 +122,10 @@ Section "Core files" TerminalCore
 
     CreateDirectory $Terminal_InstDir
     ${SetLogFile} "$Terminal_InstDir\install.log"
+
+    ${Framework_Check}
+    ${Framework_Install}
+
     ${Print} "Installing BotTerminal"
     ${Log} "BotTerminal Id: $Terminal_Id"
 
@@ -176,6 +182,10 @@ Section "Core files" AgentCore
 
     CreateDirectory $Agent_InstDir
     ${SetLogFile} "$Agent_InstDir\install.log"
+
+    ${Framework_Check}
+    ${Framework_Install}
+
     ${Print} "Installing BotAgent"
     ${Log} "BotAgent Id: $Agent_Id"
 
