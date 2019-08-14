@@ -10,6 +10,8 @@ LangString UninstallBrokenMessage       ${LANG_ENGLISH} "Unable to find uninstal
 LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader BotTerminal will be uninstalled. Continue?"
 LangString UninstallPrevAgent           ${LANG_ENGLISH} "Previous installed TickTrader BotAgent will be uninstalled. Continue?"
 
+LangString CopyLegacyInstallConfig      ${LANG_ENGLISH} "Copy configuration from old installation directory?"
+
 LangString TerminalIsRunningInstall     ${LANG_ENGLISH} "TickTrader BotTerminal is running. Close it and press Retry to continue or press Cancel to skip BotTerminal installation."
 LangString TerminalIsRunningUninstall   ${LANG_ENGLISH} "TickTrader BotTerminal is running. Close it and press Retry to continue or press Cancel to stop BotTerminal uninstallation."
 

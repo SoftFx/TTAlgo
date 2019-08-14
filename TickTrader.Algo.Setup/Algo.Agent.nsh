@@ -348,4 +348,18 @@ var Configurator_Installed
 
 !macroend
 
+!macro _CopyAgentConfig SrcDir DstDir
+
+    CreateDirectory "${DstDir}\AlgoData"
+    CreateDirectory "${DstDir}\AlgoRepository"
+    CreateDirectory "${DstDir}\WebAdmin"
+
+    CopyFiles "${SrcDir}\AlgoData\*.*" "${DstDir}\AlgoData"
+    CopyFiles "${SrcDir}\AlgoRepository\*.ttalgo" "${DstDir}\AlgoRepository"
+    CopyFiles "${SrcDir}\WebAdmin\appsettings.json" "${DstDir}\WebAdmin"
+    CopyFiles "${SrcDir}\server.config.xml" "${DstDir}\server.config.xml"
+
+!macroend
+
 !define Configurator_CheckLock '!insertmacro _CheckConfiguratorLock'
+!define Agent_CopyConfig '!insertmacro _CopyAgentConfig'

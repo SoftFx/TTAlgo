@@ -219,6 +219,12 @@ UninstallAgentLabel:
 UninstallLegacyAgentLabel:
                 ${Agent_StopLegacyService} UninstallLegacyAgentLabel SkipAgentLabel
                 ${UninstallApp} $3
+                ${If} $Agent_InstDir != $3
+                    MessageBox MB_YESNO|MB_ICONQUESTION "$(CopyLegacyInstallConfig)" IDYES CopyFilesFromLegacyVersion IDNO IgnoreFilesFromLegacyVersion
+CopyFilesFromLegacyVersion:
+                    ${Agent_CopyConfig} $3 $Agent_InstDir
+IgnoreFilesFromLegacyVersion:
+                ${EndIf}
             ${Else}
                 ${Log} "Unable to find uninstall.exe for legacy installation"
                 MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"
