@@ -59,7 +59,6 @@
     <call target="CreateZipArtifacts" />
 
     <call target="AlgoInstaller" />
-    <call target="CreateInstallers" />
 
   </target>
 
@@ -294,20 +293,6 @@
       <arg value="project=${SourcesDir}${Package.Name}\${Package.Name}.csproj" />
       <arg value="workspace=${SolutionFile}" />
       <arg value="output=${OutputFolder}" />
-    </exec>
-
-  </target>
-
-  <target name="CreateInstallers">
-      
-    <exec program="${SetupUtilExe}">
-      <arg value="AppDir=${AgentBinDir}" />
-      <arg value="OutFile=${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.Uninstall.nsi" />
-    </exec>
-      
-    <exec program="${NSIS_Path}\makensis.exe" >
-      <arg value="/DPRODUCT_BUILD=${Build}" />
-      <arg value="${SourcesDir}TickTrader.BotAgent.Setup\BA.Setup.nsi" />
     </exec>
 
   </target>
