@@ -212,13 +212,13 @@ UninstallAgentLabel:
     ${Else}
         SetRegView 32
         ReadRegStr $3 HKLM "${AGENT_LEGACY_REG_KEY}" ""
-        ${If} $Agent_InstDir == $3
+        ${If} $3 != ""
             ${Log} "Legacy installation found"
-            ${If} ${FileExists} "$Agent_InstDir\uninstall.exe"
+            ${If} ${FileExists} "$3\uninstall.exe"
                 MessageBox MB_YESNO|MB_ICONQUESTION "$(UninstallPrevAgent)" IDYES UninstallLegacyAgentLabel IDNO SkipAgentLabel
 UninstallLegacyAgentLabel:
                 ${Agent_StopLegacyService} UninstallLegacyAgentLabel SkipAgentLabel
-                ${UninstallApp} $Agent_InstDir
+                ${UninstallApp} $3
             ${Else}
                 ${Log} "Unable to find uninstall.exe for legacy installation"
                 MessageBox MB_OK|MB_ICONEXCLAMATION "$(UninstallBrokenMessage)"

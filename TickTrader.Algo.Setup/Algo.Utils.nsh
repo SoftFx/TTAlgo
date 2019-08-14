@@ -40,12 +40,17 @@ _InstallServiceEnd:
 
 !macroend
 
-!macro _ConfigureService Name ErrMsg
+!macro _ConfigureService Name Description ErrMsg
     StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
         SimpleSC::SetServiceFailure ${Name} 0 "" "" 1 60000 1 60000 0 60000
+        Pop $0
+        ${If} $0 != 0
+            StrCpy ${ErrMsg} "$(ServiceConfigFailMessage) $0"
+        ${EndIf}
+        SimpleSC::SetServiceDescription ${Name} "${Description}"
         Pop $0
         ${If} $0 != 0
             StrCpy ${ErrMsg} "$(ServiceConfigFailMessage) $0"

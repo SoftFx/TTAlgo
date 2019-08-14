@@ -242,9 +242,9 @@ var Configurator_Installed
 
     DetailPrint "Creating BotAgent service"
     ${Log} "Creating BotAgent service $Agent_ServiceId"
-    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80 $Agent_ServiceError
+    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME} ${PRODUCT_BUILD}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80 $Agent_ServiceError
     ${If} $Agent_ServiceError == ${NO_ERR_MSG}
-        ${ConfigureService} $Agent_ServiceId $Agent_ServiceError
+        ${ConfigureService} $Agent_ServiceId "${AGENT_DISPLAY_NAME} ${PRODUCT_BUILD} $Agent_InstDir" $Agent_ServiceError
         ${If} $Agent_ServiceError == ${NO_ERR_MSG}
             ${Log} "Created BotAgent service"
             StrCpy $Agent_ServiceCreated ${TRUE}
