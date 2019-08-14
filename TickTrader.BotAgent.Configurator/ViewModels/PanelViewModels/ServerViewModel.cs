@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ServerViewModel : BaseViewModel
+    public class ServerViewModel : BaseContentViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly RefreshManager _refreshManager;
+        private readonly RefreshCounter _refreshManager;
 
         private NewUrlWindow _urlWindow;
 
@@ -28,7 +28,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool ModifyWindow { get; private set; }
 
-        public ServerViewModel(ServerModel model, RefreshManager refManager = null) : base(nameof(ServerViewModel))
+        public ServerViewModel(ServerModel model, RefreshCounter refManager = null) : base(nameof(ServerViewModel))
         {
             _model = model;
             _refreshManager = refManager;
@@ -134,7 +134,7 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public class UriViewModel : BaseViewModel
+    public class UriViewModel : BaseContentViewModel
     {
         private const string specialSymbols = "$-_.+ !*'()";
 

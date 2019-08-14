@@ -106,8 +106,7 @@
     </ApplicationDefinition>
     <Compile Include="Helpers\ManagedIpHelper.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
-    <Compile Include="Infrastructure\Dependencies\ViewPanelProperty.cs" />
-    <Compile Include="Infrastructure\ViewModelErrorCounter\ModelErrorCounter.cs" />
+    <Compile Include="ViewModels\InfrastructureViewModels\ModelErrorCounter.cs" />
     <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
     <Compile Include="Helpers\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
@@ -156,6 +155,7 @@
     <Compile Include="Models\ConfigurationModels\ServerModel.cs" />
     <Compile Include="Models\ConfigurationModels\SslModel.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
+    <Compile Include="ViewModels\InfrastructureViewModels\RefreshManager.cs" />
     <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\LogsViewModel.cs" />
     <Compile Include="Windows\NewUrlWindow.xaml.cs">

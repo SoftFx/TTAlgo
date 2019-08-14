@@ -22,7 +22,7 @@
 
         <ToolBarTray>
             <ToolBar Height="33">
-                <Button Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                <Button Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshCounter.Update, UpdateSourceTrigger=PropertyChanged}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Share" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>

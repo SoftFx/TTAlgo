@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class AdvancedViewModel : BaseViewModel
+    public class AdvancedViewModel : BaseContentViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly RefreshManager _refreshManager;
+        private readonly RefreshCounter _refreshManager;
         private readonly string _keyPath;
 
         private string _selectPath;
@@ -16,7 +16,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool NewCurrentAgent { get; private set; } = false;
 
-        public AdvancedViewModel(RegistryManager registry, RefreshManager _refManager = null) : base(nameof(AdvancedViewModel))
+        public AdvancedViewModel(RegistryManager registry, RefreshCounter _refManager = null) : base(nameof(AdvancedViewModel))
         {
             _registry = registry;
             _refreshManager = _refManager;

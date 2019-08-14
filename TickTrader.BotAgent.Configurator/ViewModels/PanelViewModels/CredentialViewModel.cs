@@ -1,21 +1,20 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialViewModel : BaseViewModel, IDataErrorInfo
+    public class CredentialViewModel : BaseContentViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly string _keyLogin, _keyPassword;
-        private readonly RefreshManager _refreshManager;
+        private readonly RefreshCounter _refreshManager;
 
         private CredentialModel _model;
 
         private DelegateCommand _generateLogin;
         private DelegateCommand _generatePassword;
 
-        public CredentialViewModel(CredentialModel model, RefreshManager refManager = null) : base(nameof(CredentialViewModel))
+        public CredentialViewModel(CredentialModel model, RefreshCounter refManager = null) : base(nameof(CredentialViewModel))
         {
             _model = model;
             _refreshManager = refManager;

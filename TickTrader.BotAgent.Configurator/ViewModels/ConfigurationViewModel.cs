@@ -9,11 +9,11 @@ using System.Windows;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ConfigurationViewModel : BaseViewModel, IDisposable
+    public class ConfigurationViewModel : BaseContentViewModel, IDisposable
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private List<BaseViewModel> _viewModels;
+        private List<BaseContentViewModel> _viewModels;
 
         private Window _mainWindow;
 
@@ -48,11 +48,11 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsViewModel LogsModel { get; set; }
 
-        public RefreshManager RefreshManager { get; }
+        public RefreshCounter RefreshCounter { get; }
 
         public SpinnerViewModel Spinner { get; }
 
-        public bool WasUpdate => RefreshManager.Update;
+        public bool WasUpdate => RefreshCounter.Update;
 
         public bool IsDeveloperVersion => _model != null ? bool.Parse(_model?.Settings[AppProperties.DeveloperVersion]) : false;
 
@@ -65,13 +65,13 @@ namespace TickTrader.BotAgent.Configurator
                 _runnignApplication = true;
                 _model = new ConfigurationModel();
 
-                RefreshManager = new RefreshManager();
+                RefreshCounter = new RefreshCounter();
                 Spinner = new SpinnerViewModel();
 
                 SetNewViewModels();
 
-                RefreshManager.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
-                RefreshManager.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
+                RefreshCounter.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
+                RefreshCounter.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
 
                 _mainWindow.Title = $"BotAgent Configurator: {_versionManager.FullVersion}";
                 _mainWindow.Closing += MainWindow_Closing;
@@ -88,49 +88,49 @@ namespace TickTrader.BotAgent.Configurator
         {
             _versionManager = new AgentVersionManager(_model.CurrentAgent.Path, _model.Settings[AppProperties.ApplicationName]);
 
-            AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshManager)
+            AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshCounter)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Admin.Name)
             };
 
-            DealerModel = new CredentialViewModel(_model.CredentialsManager.Dealer, RefreshManager)
+            DealerModel = new CredentialViewModel(_model.CredentialsManager.Dealer, RefreshCounter)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Dealer.Name)
             };
 
-            ViewerModel = new CredentialViewModel(_model.CredentialsManager.Viewer, RefreshManager)
+            ViewerModel = new CredentialViewModel(_model.CredentialsManager.Viewer, RefreshCounter)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Viewer.Name)
             };
 
-            //SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshManager);
+            //SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshCounter);
 
-            ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshManager)
+            ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshCounter)
             {
                 ListeningPortDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.PortNameProperty),
                 DirectoryNameDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.DirectoryNameProperty),
                 LogMessageDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.UseLogNameProperty),
             };
 
-            ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshManager)
+            ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshCounter)
             {
                 UrlsDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.UrlsNameProperty),
                 SecretKeyDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.SecretKeyNameProperty),
             };
 
-            FdkModel = new FdkViewModel(_model.FdkManager.FdkModel, RefreshManager)
+            FdkModel = new FdkViewModel(_model.FdkManager.FdkModel, RefreshCounter)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.Fdk, FdkManager.EnableLogsNameProperty),
             };
 
-            AdvancedModel = new AdvancedViewModel(_model.RegistryManager, RefreshManager)
+            AdvancedModel = new AdvancedViewModel(_model.RegistryManager, RefreshCounter)
             {
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, RegistryManager.AgentPathNameProperty),
             };
 
             StateServiceModel = new StateServiceViewModel(_model.CurrentAgent.ServiceId);
 
-            _viewModels = new List<BaseViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+            _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
 
             ThreadPool.QueueUserWorkItem(RefreshServiceState);
         }
@@ -172,7 +172,7 @@ namespace TickTrader.BotAgent.Configurator
                 try
                 {
                     _model.SaveChanges();
-                    RefreshManager.DropRefresh();
+                    RefreshCounter.DropRefresh();
                     MessageBoxManager.OKBox("Configuration saved successfully!");
                     _logger.Info($"Changes have been saved.");
                 }
@@ -191,7 +191,7 @@ namespace TickTrader.BotAgent.Configurator
                     try
                     {
                         _model.LoadConfiguration();
-                        RefreshManager.DropRefresh();
+                        RefreshCounter.DropRefresh();
 
                         DropAllErrors();
 
@@ -291,7 +291,7 @@ namespace TickTrader.BotAgent.Configurator
                 return;
 
             _model.SaveChanges();
-            RefreshManager.DropRefresh();
+            RefreshCounter.DropRefresh();
         }
 
         private MessageBoxResult SaveChangesMethod()
@@ -334,65 +334,5 @@ namespace TickTrader.BotAgent.Configurator
                 model.RefreshModel();
             }
         }
-    }
-
-    public class RefreshManager : BaseViewModel
-    {
-        private SortedSet<string> _updatedFields;
-
-        public delegate void ConfigurationStateChanged();
-
-        public event ConfigurationStateChanged NewValuesEvent;
-        public event ConfigurationStateChanged SaveValuesEvent;
-
-        public bool Update => _updatedFields.Count > 0;
-
-        public RefreshManager()
-        {
-            _updatedFields = new SortedSet<string>();
-        }
-
-        public void CheckUpdate(string newValue, string oldValue, string field)
-        {
-            if (newValue != oldValue)
-                AddUpdate(field);
-            else
-                DeleteUpdate(field);
-        }
-
-        public void AddUpdate(string field)
-        {
-            if (!_updatedFields.Contains(field))
-                _updatedFields.Add(field);
-
-            NewValuesEvent?.Invoke();
-            OnPropertyChanged(nameof(Update));
-        }
-
-        public void DeleteUpdate(string field)
-        {
-            if (_updatedFields.Contains(field))
-                _updatedFields.Remove(field);
-
-            if (_updatedFields.Count == 0)
-                DropRefresh();
-
-            OnPropertyChanged(nameof(Update));
-        }
-
-        public void DropRefresh()
-        {
-            _updatedFields.Clear();
-
-            SaveValuesEvent?.Invoke();
-            OnPropertyChanged(nameof(Update));
-        }
-    }
-
-    public interface IContentViewModel
-    {
-        string ModelDescription { get; set; }
-
-        void RefreshModel();
     }
 }

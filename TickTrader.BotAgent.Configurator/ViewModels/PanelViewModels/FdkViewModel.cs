@@ -1,15 +1,15 @@
 ﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class FdkViewModel : BaseViewModel
+    public class FdkViewModel : BaseContentViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly RefreshManager _refreshManager;
+        private readonly RefreshCounter _refreshManager;
         private readonly string _keyLogs;
 
         private FdkModel _model;
 
-        public FdkViewModel(FdkModel model, RefreshManager refManager = null) : base(nameof(FdkViewModel))
+        public FdkViewModel(FdkModel model, RefreshCounter refManager = null) : base(nameof(FdkViewModel))
         {
             _model = model;
             _refreshManager = refManager;

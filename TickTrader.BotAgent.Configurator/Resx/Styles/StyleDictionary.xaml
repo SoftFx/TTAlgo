@@ -128,7 +128,7 @@
         <Style.Triggers>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}" Value="true"/>
+                    <Condition Binding="{Binding RefreshCounter.Update, UpdateSourceTrigger=PropertyChanged}" Value="true"/>
                     <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="IsEnabled" Value="True"/>

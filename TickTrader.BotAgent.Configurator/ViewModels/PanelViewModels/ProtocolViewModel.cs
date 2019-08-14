@@ -2,16 +2,16 @@
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolViewModel : BaseViewModel
+    public class ProtocolViewModel : BaseContentViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly RefreshManager _refreshManager;
+        private readonly RefreshCounter _refreshManager;
         private readonly string _keyPort, _keyDirectory, _keyLog;
 
         private ProtocolModel _model;
 
-        public ProtocolViewModel(ProtocolModel model, RefreshManager refManager = null) : base(nameof(ProtocolViewModel))
+        public ProtocolViewModel(ProtocolModel model, RefreshCounter refManager = null) : base(nameof(ProtocolViewModel))
         {
             _model = model;
             _refreshManager = refManager;
