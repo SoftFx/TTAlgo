@@ -56,9 +56,6 @@
 !define REG_SERVICE_ID "ServiceId"
 !define REG_SHORTCUT_NAME "ShortcutName"
 
-!define FALSE 0
-!define TRUE 1
-
 
 ;--------------------------
 ; Common variables
@@ -266,6 +263,7 @@ var BannerImage
 var TitleFont
 var Terminal_RunCheckBox
 var Configurator_RunCheckBox
+var RebootNowRadioButton
 
 Function FinishPageCreate
 
@@ -296,39 +294,73 @@ Function FinishPageCreate
 
     StrCpy $OffsetY "90"
 
-    ${If} $Terminal_Installed == ${TRUE}
+    ${If} $Framework_Installed == ${FALSE}
 
-        ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${TERMINAL_NAME}"
-        Pop $Terminal_RunCheckBox
-        SetCtlColors $Terminal_RunCheckBox "" "ffffff"
-        ${NSD_Check} $Terminal_RunCheckBox
-
-        IntOp $OffsetY $OffsetY + 20
-
-    ${EndIf}
-
-    ${If} $Agent_ServiceError != ${NO_ERR_MSG}
-
-        ${NSD_CreateLabel} 120u "$OffsetYu" -130u 12u $Agent_ServiceError
+        ${NSD_CreateLabel} 120u "$OffsetYu" -130u -100u "$(FrameworkManualInstall)"
         Pop $Void
         SetCtlColors $Void "ff0000" "ffffff"
 
-        IntOp $OffsetY $OffsetY + 20
+    ${Else}
 
-    ${EndIf}
+        ${If} $Framework_RebootNeeded == ${TRUE}
 
-    ${If} $Agent_ServiceCreated == ${TRUE}
-    ${AndIf} $Configurator_Installed == ${TRUE}
+            ${NSD_CreateLabel} 120u "$OffsetYu" -130u 24u "$(FinishPageRebootNeeded)"
+            Pop $Void
+            SetCtlColors $Void "" "ffffff"
 
-        ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${CONFIGURATOR_DISPLAY_NAME}"
-        Pop $Configurator_RunCheckBox
-        SetCtlColors $Configurator_RunCheckBox "" "ffffff"
+            IntOp $OffsetY $OffsetY + 30
 
-        ${If} $Agent_ServiceFailed == ${FALSE}
-        ${AndIf} $Agent_StartService == ${TRUE}
-            ; no need to run configurator if update went fine
+            ${NSD_CreateRadioButton} 120u "$OffsetYu" -130u 12u "$(FinishPageRebootNow)"
+            Pop $RebootNowRadioButton
+            SetCtlColors $RebootNowRadioButton "" "ffffff"
+            ${NSD_AddStyle} $RebootNowRadioButton ${WS_GROUP}
+            ${NSD_Check} $RebootNowRadioButton
+
+            IntOp $OffsetY $OffsetY + 15
+
+            ${NSD_CreateRadioButton} 120u "$OffsetYu" -130u 12u "$(FinishPageRebootLater)"
+            Pop $Void
+            SetCtlColors $Void "" "ffffff"
+
         ${Else}
-            ${NSD_Check} $Configurator_RunCheckBox
+
+            ${If} $Terminal_Installed == ${TRUE}
+
+                ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${TERMINAL_NAME}"
+                Pop $Terminal_RunCheckBox
+                SetCtlColors $Terminal_RunCheckBox "" "ffffff"
+                ${NSD_Check} $Terminal_RunCheckBox
+
+                IntOp $OffsetY $OffsetY + 15
+
+            ${EndIf}
+
+            ${If} $Agent_ServiceCreated == ${TRUE}
+            ${AndIf} $Configurator_Installed == ${TRUE}
+
+                ${NSD_CreateCheckBox} 120u "$OffsetYu" -130u 12u "Run ${CONFIGURATOR_DISPLAY_NAME}"
+                Pop $Configurator_RunCheckBox
+                SetCtlColors $Configurator_RunCheckBox "" "ffffff"
+
+                ${If} $Agent_ServiceFailed == ${FALSE}
+                ${AndIf} $Agent_LaunchService == ${TRUE}
+                    ; no need to run configurator if update went fine
+                ${Else}
+                    ${NSD_Check} $Configurator_RunCheckBox
+                ${EndIf}
+
+                IntOp $OffsetY $OffsetY + 15
+
+            ${EndIf}
+
+            ${If} $Agent_ServiceError != ${NO_ERR_MSG}
+
+                ${NSD_CreateLabel} 120u "$OffsetYu" -130u -100u $Agent_ServiceError
+                Pop $Void
+                SetCtlColors $Void "ff0000" "ffffff"
+
+            ${EndIf}
+
         ${EndIf}
 
     ${EndIf}
@@ -340,6 +372,15 @@ Function FinishPageCreate
 FunctionEnd
 
 Function FinishPageLeave
+
+    ${If} $Framework_RebootNeeded == ${TRUE}
+
+        ${NSD_GetState} $RebootNowRadioButton $Void
+        ${If} $Void == ${BST_CHECKED}
+            Reboot
+        ${EndIf}
+
+    ${EndIf}
 
     ${If} $Terminal_Installed == ${TRUE}
 

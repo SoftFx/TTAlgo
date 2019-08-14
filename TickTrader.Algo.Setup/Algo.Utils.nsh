@@ -1,4 +1,12 @@
 ;--------------------------------------------
+;-----Bool constants-----
+
+!define FALSE 0
+!define TRUE 1
+
+;-----Bool constants-----
+
+;--------------------------------------------
 ;-----Functions to manage window service-----
 
 !define NO_ERR_MSG "no_error"
@@ -32,12 +40,17 @@ _InstallServiceEnd:
 
 !macroend
 
-!macro _ConfigureService Name ErrMsg
+!macro _ConfigureService Name Description ErrMsg
     StrCpy ${ErrMsg} ${NO_ERR_MSG}
     SimpleSC::ExistsService ${Name}
     Pop $0
     ${If} $0 == 0
         SimpleSC::SetServiceFailure ${Name} 0 "" "" 1 60000 1 60000 0 60000
+        Pop $0
+        ${If} $0 != 0
+            StrCpy ${ErrMsg} "$(ServiceConfigFailMessage) $0"
+        ${EndIf}
+        SimpleSC::SetServiceDescription ${Name} "${Description}"
         Pop $0
         ${If} $0 != 0
             StrCpy ${ErrMsg} "$(ServiceConfigFailMessage) $0"
@@ -107,11 +120,30 @@ _UninstallServiceEnd:
 
 !macroend
 
-!define InstallService '!insertmacro "_InstallService"'
-!define StartService '!insertmacro "_StartService"'
-!define StopService '!insertmacro "_StopService"'
-!define UninstallService '!insertmacro "_UninstallService"'
-!define ConfigureService '!insertmacro "_ConfigureService"'
+!macro _ServiceIsRunning Name RetVar
+
+    StrCpy ${RetVar} ${FALSE}
+    SimpleSC::ExistsService ${Name}
+    Pop $0
+    ${If} $0 == 0
+        SimpleSC::ServiceIsRunning ${Name}
+        Pop $0
+        Pop $1
+        ${If} $1 == 1
+            StrCpy ${RetVar} ${TRUE}
+        ${EndIf}
+    ${EndIf}
+
+
+!macroend
+
+
+!define InstallService '!insertmacro _InstallService'
+!define StartService '!insertmacro _StartService'
+!define StopService '!insertmacro _StopService'
+!define UninstallService '!insertmacro _UninstallService'
+!define ConfigureService '!insertmacro _ConfigureService'
+!define IsServiceRunning '!insertmacro _ServiceIsRunning'
 
 ;---END Functions to manage window service---
 
@@ -302,3 +334,80 @@ var LogFile
 !define Log '!insertmacro _Log'
 
 ;---END Logging functions---
+
+;--------------------------------------------
+;-----.NET Framework installation-----
+
+!define FRAMEWORK_LINK "http://go.microsoft.com/fwlink/?linkid=780596"
+
+var Framework_InstallNeeded
+var Framework_Installed
+var Framework_Checked
+var Framework_RebootNeeded
+
+!macro _CheckFramework
+
+    ${If} $Framework_Checked == ${FALSE}
+
+        Push $7
+
+        StrCpy $Framework_InstallNeeded ${FALSE}
+        StrCpy $Framework_Installed ${TRUE}
+        StrCpy $Framework_Checked ${TRUE}
+
+        StrCpy $7 "not found"
+        ReadRegDWORD $7 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" "Release"
+        ${Log} "Installed .NET Framework build $7"
+        ${If} $7 >= 394802
+            ${Log} "No need to install new .NET Framework"
+        ${Else}
+            ${Log} ".NET Framework 4.6.2 should be installed"
+            StrCpy $Framework_InstallNeeded ${TRUE}
+            StrCpy $Framework_Installed ${FALSE}
+        ${EndIf}
+
+        Pop $7
+
+    ${EndIf}
+
+!macroend
+
+!macro _InstallFramework
+
+    ${If} $Framework_InstallNeeded == ${TRUE}
+
+        Push $7
+
+        DetailPrint "Installing .NET Framework"
+        StrCpy $Framework_InstallNeeded ${FALSE}
+        StrCpy $Framework_Installed ${FALSE}
+        StrCpy $Framework_RebootNeeded ${FALSE}
+        NSISdl::download ${FRAMEWORK_LINK} "$TEMP\dotNET462Web.exe"
+        ${If} ${FileExists} "$TEMP\dotNET462Web.exe"
+            ${Log} ".NET installation loaded successfully"
+            StrCpy $Framework_Installed ${TRUE}
+            ${If} ${Silent}
+                ExecWait "$TEMP\dotNET462Web.exe /q /norestart" $7
+            ${Else}
+                ExecWait "$TEMP\dotNET462Web.exe /showrmui /passive /norestart" $7
+            ${EndIf}
+            ${Log} ".NET installation exit code $7"
+            ${If} $7 == 1641
+            ${OrIf} $7 == 3010
+                StrCpy $Framework_RebootNeeded ${TRUE}
+            ${EndIf}
+        ${Else}
+            ${Log} "Unable to load .NET installation. Installing app without framework"
+            MessageBox MB_OK|MB_ICONEXCLAMATION $(FrameworkInstallFailure)
+        ${EndIf}
+
+        Pop $7
+
+    ${EndIf}
+
+!macroend
+
+!define Framework_Check '!insertmacro _CheckFramework'
+!define Framework_Install '!insertmacro _InstallFramework'
+
+;-----.NET Framework installation-----

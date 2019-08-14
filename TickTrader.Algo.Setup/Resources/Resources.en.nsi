@@ -5,6 +5,7 @@ LangString InstallationAbortedMessage   ${LANG_ENGLISH} "Installation aborted. E
 
 LangString UninstallUnknownPathMessage  ${LANG_ENGLISH} "Provided path is not registered as BotTerminal or BotAgent installation."
 LangString UninstallCanceledMessage     ${LANG_ENGLISH} "Uninstallation cancelled."
+LangString UninstallBrokenMessage       ${LANG_ENGLISH} "Unable to find uninstall.exe of previous version"
 
 LangString UninstallPrevTerminal        ${LANG_ENGLISH} "Previous installed TickTrader BotTerminal will be uninstalled. Continue?"
 LangString UninstallPrevAgent           ${LANG_ENGLISH} "Previous installed TickTrader BotAgent will be uninstalled. Continue?"
@@ -41,3 +42,9 @@ LangString FullInstallText              ${LANG_ENGLISH} "Full installation"
 LangString FinishPageTitle              ${LANG_ENGLISH} "Completing TickTrader Algo Setup"
 LangString FinishPageDescription1       ${LANG_ENGLISH} "TickTrader Algo has been installed on your computer."
 LangString FinishPageDescription2       ${LANG_ENGLISH} "Click Finish to close Setup."
+LangString FinishPageRebootNeeded       ${LANG_ENGLISH} "Your computer should be restarted in order to finish setup. Do you want to restart now?"
+LangString FinishPageRebootNow          ${LANG_ENGLISH} "Reboot now"
+LangString FinishPageRebootLater        ${LANG_ENGLISH} "I will manually reboot later"
+
+LangString FrameworkInstallFailure      ${LANG_ENGLISH} "Unable to download .NET Framework. App will be installed, but will not function without the Framework!"
+LangString FrameworkManualInstall       ${LANG_ENGLISH} "Setup was unable to download and install .NET Framework. You will need to install .NET Framework 4.6.2 manually."

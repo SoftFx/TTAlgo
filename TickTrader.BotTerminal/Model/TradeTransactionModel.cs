@@ -63,12 +63,12 @@ namespace TickTrader.BotTerminal
             StopLoss = GetStopLoss(transaction);
             TakeProfit = GetTakeProfit(transaction);
             MaxVisibleVolume = GetMaxVisibleVolume(transaction);
-            Volume = GetVolume(transaction);
             ReqQuantity = GetReqQuantity(transaction);
             PosRemainingPrice = GetPosRemainingPrice(transaction);
             OrderExecutionOption = GetOrderExecutionOption(transaction);
             InitialType = GetInitialOrderType(transaction);
             Reason = GetReason(transaction);
+            Volume = GetVolume(transaction);
             Slippage = GetSlippage(transaction);
             Tag = GetTag(transaction);
             PosQuantity = GetPosQuantity(transaction);
@@ -268,7 +268,10 @@ namespace TickTrader.BotTerminal
 
         protected virtual double? GetVolume(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? transaction.TransactionAmount : (transaction.OrderLastFillAmount / LotSize);
+            if (IsBalanceTransaction)
+                return transaction.TransactionAmount;
+
+            return (OrderWasCanceled() ? transaction.RemainingQuantity  : transaction.OrderLastFillAmount) / LotSize;
         }
 
         protected virtual double? GetSlippage(TradeReportEntity transaction)
