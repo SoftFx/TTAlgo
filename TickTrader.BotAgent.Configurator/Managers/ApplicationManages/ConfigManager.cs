@@ -22,10 +22,10 @@ namespace TickTrader.BotAgent.Configurator
 
             _defaultProperties = new ConfigurationProperies(new Dictionary<string, string>()
             {
-                { "AppSettings", "WebAdmin/appsettings.json" },
+                { "AppSettings", "WebAdmin\\appsettings.json" },
                 { "ApplicationName", "TickTrader.BotAgent" },
-                { "RegistryAppName", "TickTrader Bot Agent" },
-                { "LogsPath", "Logs/agent.log" },
+                { "RegistryAppName", "TickTrader\\BotAgent" },
+                { "LogsPath", "Logs\\agent.log" },
                 { "DeveloperVersion", "false" }
             });
 
@@ -47,6 +47,7 @@ namespace TickTrader.BotAgent.Configurator
 
             Properties.Clone(_defaultProperties);
 
+            CheckValues();
             SaveChanges();
         }
 
@@ -67,6 +68,12 @@ namespace TickTrader.BotAgent.Configurator
                 _logger.Error(ex);
             }
         }
+
+        private void CheckValues()
+        {
+            if (!bool.TryParse(Properties[AppProperties.DeveloperVersion], out bool status))
+                Properties[AppProperties.DeveloperVersion] = "false";
+        }
     }
 
 
@@ -76,7 +83,12 @@ namespace TickTrader.BotAgent.Configurator
 
         public string this[string key] => _properties.ContainsKey(key) ? _properties[key] : null;
 
-        public string this[AppProperties key] => this[key.ToString()];
+        public string this[AppProperties key]
+        {
+            get => this[key.ToString()];
+
+            set => _properties[key.ToString()] = value;
+        }
 
         public ConfigurationProperies(Dictionary<string, string> properties = null)
         {

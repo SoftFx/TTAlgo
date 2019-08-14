@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -48,52 +46,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public void UpdateCurrentModelValues()
         {
-        }
-    }
-
-    public class ServerModel
-    {
-        private const string DefaultUrls = "https://localhost:5001/;http://localhost:5000";
-
-        public List<Uri> Urls { get; private set; }
-
-        public PortsManager PortsManager { get; }
-
-        public ServerModel(PortsManager portsManager)
-        {
-            Urls = new List<Uri>();
-
-            PortsManager = portsManager;
-        }
-
-        public string UrlsStr
-        {
-            get => string.Join(";", Urls.Select(u => u.ToString()));
-            set
-            {
-                if (UrlsStr == value)
-                    return;
-
-                Urls = value.Split(';').Select(u => new Uri(u)).ToList();
-            }
-        }
-
-        public string SecretKey { get; set; }
-
-        public void SetDefaultValues()
-        {
-            if (string.IsNullOrEmpty(UrlsStr))
-                UrlsStr = DefaultUrls;
-
-            if (string.IsNullOrEmpty(SecretKey))
-            {
-                GenerateSecretKey();
-            }
-        }
-
-        public void GenerateSecretKey()
-        {
-            SecretKey = CryptoManager.GetNewPassword(128);
         }
     }
 }

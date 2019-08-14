@@ -41,16 +41,4 @@ namespace TickTrader.BotAgent.Configurator
             FdkModel.UpdateCurrentFields();
         }
     }
-
-    public class FdkModel
-    {
-        public bool EnableLogs { get; set; }
-
-        public bool CurrentEnableLogs { get; set; }
-
-        public void UpdateCurrentFields()
-        {
-            CurrentEnableLogs = EnableLogs;
-        }
-    }
 }

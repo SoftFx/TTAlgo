@@ -48,19 +48,4 @@ namespace TickTrader.BotAgent.Configurator
         {
         }
     }
-
-    public class SslModel
-    {
-        private const string DefaultFile = "certificate.ptx";
-
-        public string File { get; set; }
-
-        public string Password { get; set; }
-
-        public void SetDefaultValues()
-        {
-            if (string.IsNullOrEmpty(File))
-                File = DefaultFile;
-        }
-    }
 }

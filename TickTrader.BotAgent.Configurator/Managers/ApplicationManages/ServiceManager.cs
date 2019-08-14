@@ -11,21 +11,13 @@ namespace TickTrader.BotAgent.Configurator
         private readonly string _serviceName;
 
         private ServiceController _serviceController;
-        private int _serviceId;
 
         public bool IsServiceRunning => _serviceController?.Status == ServiceControllerStatus.Running;
 
         public ServiceControllerStatus ServiceStatus => _serviceController.Status;
 
-        public int ServiceId
-        {
-            get => _serviceId;
-            set
-            {
-                if (IsServiceRunning && _serviceId != value)
-                    _serviceId = value;
-            }
-        }
+        public int ServiceId { get; private set; }
+
 
         public ServiceManager(string serviceName)
         {
@@ -58,7 +50,7 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public void ServiceStop()
+        private void ServiceStop()
         {
             if (_serviceController.Status == ServiceControllerStatus.Stopped)
                 throw new Exception("Service alredy stopped");
@@ -75,7 +67,7 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public void GetServiceId()
+        private void GetServiceId()
         {
             if (!IsServiceRunning)
                 return;
@@ -87,7 +79,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 foreach (var obj in searcher.Get())
                 {
-                    _serviceId = (int)obj["ProcessId"];
+                    ServiceId = (int)obj["ProcessId"];
                     break;
                 }
             }

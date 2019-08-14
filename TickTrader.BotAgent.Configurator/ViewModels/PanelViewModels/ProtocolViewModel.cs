@@ -99,8 +99,8 @@ namespace TickTrader.BotAgent.Configurator
                     switch (columnName)
                     {
                         case "ListeningPort":
-                            ErrorCounter.CheckNumberRange(_model.ListeningPort, _keyPort, max: 1 << 16);
-                            _model.CheckPort(_model.ListeningPort);
+                            ErrorCounter.CheckNumberRange(_model.ListeningPort.Value, _keyPort, max: 1 << 16);
+                            _model.CheckPort(_model.ListeningPort.Value);
                             break;
                         case "DirectoryName":
                             ErrorCounter.CheckStringLength(DirectoryName, 1, _keyDirectory);

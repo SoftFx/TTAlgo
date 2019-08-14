@@ -14,10 +14,11 @@ namespace TickTrader.BotAgent.Configurator
 
         private ConfigManager _configManager;
         private PortsManager _portsManager;
-
         private JObject _configurationObject;
 
         private List<IWorkingManager> _workingModels;
+
+        public RegistryNode CurrentAgent => RegistryManager?.CurrentAgent;
 
         public RegistryManager RegistryManager { get; }
 
@@ -39,7 +40,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; private set; }
 
-        public RegistryNode CurrentAgent => RegistryManager?.CurrentAgent;
 
         public ConfigurationModel()
         {
@@ -80,7 +80,7 @@ namespace TickTrader.BotAgent.Configurator
 
             _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(CurrentAgent.Path, $"{Settings[AppProperties.ApplicationName]}.exe"), ports);
 
-            ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort);
+            ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
         }
 
         public void LoadConfiguration()
@@ -100,6 +100,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveChanges()
         {
+            _configurationObject = _configurationObject ?? new JObject();
+
             foreach (var model in _workingModels)
             {
                 model.SaveConfigurationModels(_configurationObject);
