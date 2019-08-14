@@ -27,7 +27,7 @@ namespace TickTrader.Algo.Core
         private volatile int _execDelay;
         private BacktesterCollector _collector;
         private bool _normalStopFlag;
-        private bool _canelRequested;
+        private bool _cancelRequested;
         private bool _pauseRequested;
         private bool _stopPhase;
         private Exception _fatalError;
@@ -120,11 +120,11 @@ namespace TickTrader.Algo.Core
             lock (_syncState)
             {
                 if (State == EmulatorStates.Stopped) // can be canceled prior to execution due to CancellationToken
-                    _canelRequested = true;
+                    _cancelRequested = true;
 
                 if (State == EmulatorStates.Running || State == EmulatorStates.WarmingUp || State == EmulatorStates.Paused)
                 {
-                    _canelRequested = true;
+                    _cancelRequested = true;
                     _pauseRequested = false;
                     Monitor.Pulse(_syncState);
                 }
@@ -135,7 +135,7 @@ namespace TickTrader.Algo.Core
         {
             lock (_syncState)
             {
-                if (State != EmulatorStates.Running || _canelRequested)
+                if (State != EmulatorStates.Running || _cancelRequested)
                     return;
                 _pauseRequested = true;
             }
@@ -213,9 +213,9 @@ namespace TickTrader.Algo.Core
         {
             lock (_syncState)
             {
-                if (State != EmulatorStates.Stopping && _canelRequested)
+                if (State != EmulatorStates.Stopping && _cancelRequested)
                 {
-                    _canelRequested = false;
+                    _cancelRequested = false;
                     ChangeState(EmulatorStates.Stopping);
                     throw new OperationCanceledException("Canceled.");
                 }
@@ -237,12 +237,16 @@ namespace TickTrader.Algo.Core
                             ChangeState(EmulatorStates.Paused);
                             while (_pauseRequested)
                                 Monitor.Wait(_syncState);
-                            if (!_canelRequested)
+                            if (!_cancelRequested)
                                 ChangeState(EmulatorStates.Running);
                         }
 
-                        if (_canelRequested)
+                        if (_cancelRequested)
+                        {
+                            _cancelRequested = false;
+                            ChangeState(EmulatorStates.Stopping);
                             throw new OperationCanceledException("Canceled.");
+                        }
 
                         nextItem = DequeueNext();
                     }
