@@ -9,7 +9,7 @@ using System.Windows;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ConfigurationViewModel : IDisposable
+    public class ConfigurationViewModel : BaseViewModel, IDisposable
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -54,6 +54,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool WasUpdate => RefreshManager.Update;
 
+        public bool IsDeveloperVersion => _model != null ? bool.Parse(_model?.Settings[AppProperties.DeveloperVersion]) : false;
+
         public ConfigurationViewModel()
         {
             try
@@ -66,56 +68,10 @@ namespace TickTrader.BotAgent.Configurator
                 RefreshManager = new RefreshManager();
                 Spinner = new SpinnerViewModel();
 
-                _versionManager = new AgentVersionManager(_model.BotAgentHolder.BotAgentPath, _model.Settings[AppProperties.ApplicationName]);
-
-                AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshManager)
-                {
-                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Admin.Name)
-                };
-
-                DealerModel = new CredentialViewModel(_model.CredentialsManager.Dealer, RefreshManager)
-                {
-                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Dealer.Name)
-                };
-
-                ViewerModel = new CredentialViewModel(_model.CredentialsManager.Viewer, RefreshManager)
-                {
-                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Viewer.Name)
-                };
-
-                SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshManager);
-
-                ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshManager)
-                {
-                    ListeningPortDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.PortNameProperty),
-                    DirectoryNameDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.DirectoryNameProperty),
-                    LogMessageDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.UseLogNameProperty),
-                };
-
-                ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshManager)
-                {
-                    UrlsDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.UrlsNameProperty),
-                    SecretKeyDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.SecretKeyNameProperty),
-                };
-
-                FdkModel = new FdkViewModel(_model.FdkManager.FdkModel, RefreshManager)
-                {
-                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.Fdk, FdkManager.EnableLogsNameProperty),
-                };
-
-                AdvancedModel = new AdvancedViewModel(_model.Settings, RefreshManager)
-                {
-                    ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, MultipleAgentConfigurator.AgentCongPathsNameSection),
-                };
-
-                StateServiceModel = new StateServiceViewModel(_model.Settings[AppProperties.ServiceName]);
-
-                _viewModels = new List<BaseViewModel>() { AdminModel, DealerModel, ViewerModel, SslModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+                SetNewViewModels();
 
                 RefreshManager.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
                 RefreshManager.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
-
-                ThreadPool.QueueUserWorkItem(RefreshServiceState);
 
                 _mainWindow.Title = $"BotAgent Configurator: {_versionManager.FullVersion}";
                 _mainWindow.Closing += MainWindow_Closing;
@@ -126,6 +82,57 @@ namespace TickTrader.BotAgent.Configurator
                 MessageBoxManager.ErrorBox(ex.Message);
                 Application.Current.Shutdown();
             }
+        }
+
+        private void SetNewViewModels()
+        {
+            _versionManager = new AgentVersionManager(_model.CurrentAgent.Path, _model.Settings[AppProperties.ApplicationName]);
+
+            AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshManager)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Admin.Name)
+            };
+
+            DealerModel = new CredentialViewModel(_model.CredentialsManager.Dealer, RefreshManager)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Dealer.Name)
+            };
+
+            ViewerModel = new CredentialViewModel(_model.CredentialsManager.Viewer, RefreshManager)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Credentials, _model.CredentialsManager.Viewer.Name)
+            };
+
+            //SslModel = new SslViewModel(_model.SslManager.SslModel, RefreshManager);
+
+            ProtocolModel = new ProtocolViewModel(_model.ProtocolManager.ProtocolModel, RefreshManager)
+            {
+                ListeningPortDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.PortNameProperty),
+                DirectoryNameDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.DirectoryNameProperty),
+                LogMessageDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.UseLogNameProperty),
+            };
+
+            ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshManager)
+            {
+                UrlsDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.UrlsNameProperty),
+                SecretKeyDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.SecretKeyNameProperty),
+            };
+
+            FdkModel = new FdkViewModel(_model.FdkManager.FdkModel, RefreshManager)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.Fdk, FdkManager.EnableLogsNameProperty),
+            };
+
+            AdvancedModel = new AdvancedViewModel(_model.RegistryManager, RefreshManager)
+            {
+                ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, RegistryManager.AgentPathNameProperty),
+            };
+
+            StateServiceModel = new StateServiceViewModel(_model.CurrentAgent.ServiceId);
+
+            _viewModels = new List<BaseViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+
+            ThreadPool.QueueUserWorkItem(RefreshServiceState);
         }
 
         public DelegateCommand StartAgent => _startAgent ?? (
@@ -152,11 +159,11 @@ namespace TickTrader.BotAgent.Configurator
                 if (SaveChangesMethod() == MessageBoxResult.Cancel)
                     return;
 
-                _mainWindow.Closing -= MainWindow_Closing;
+                _model.RefreshModel(AdvancedModel.SelectPath);
+                SetNewViewModels();
 
+                RefreshModels();
                 _logger.Info($"The application has been restarted!");
-                Process.Start(Application.ResourceAssembly.Location);
-                Application.Current.Shutdown();
             }));
 
         public DelegateCommand SaveChanges => _saveChanges ?? (
@@ -187,7 +194,7 @@ namespace TickTrader.BotAgent.Configurator
                         RefreshManager.DropRefresh();
 
                         DropAllErrors();
-                        RefreshModels();
+
                         _logger.Info($"Changes have been reset.");
                     }
                     catch (Exception ex)
@@ -207,16 +214,16 @@ namespace TickTrader.BotAgent.Configurator
 
         public void RefreshModels()
         {
-            ServerModel.ResetSetting();
+            OnPropertyChanged(nameof(AdminModel));
+            OnPropertyChanged(nameof(DealerModel));
+            OnPropertyChanged(nameof(ViewerModel));
 
-            AdminModel.RefreshModel();
-            DealerModel.RefreshModel();
-            ViewerModel.RefreshModel();
+            OnPropertyChanged(nameof(ProtocolModel));
+            OnPropertyChanged(nameof(ServerModel));
+            OnPropertyChanged(nameof(FdkModel));
+            OnPropertyChanged(nameof(AdvancedModel));
 
-            SslModel.RefreshModel();
-            ProtocolModel.RefreshModel();
-            ServerModel.RefreshModel();
-            FdkModel.RefreshModel();
+            OnPropertyChanged(nameof(StateServiceModel));
 
             _logger.Info($"Models have been updated.");
         }
@@ -324,6 +331,7 @@ namespace TickTrader.BotAgent.Configurator
             foreach (var model in _viewModels)
             {
                 model.ErrorCounter.DropAll();
+                model.RefreshModel();
             }
         }
     }

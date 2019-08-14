@@ -1,32 +1,71 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class RegistryManager : IBotAgentConfigPathHolder
+    public class RegistryManager
     {
-        private const string ApplicationPathKey = "";
+        private readonly RegistryKey _base64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
 
-        private readonly string _appSettings, _registryAppName, _botAgentConfigPath;
+        public const string AgentPathNameProperty = "AgentConfigurationPaths";
 
-        private RegistryKey _baseKey = Registry.LocalMachine.OpenSubKey("SOFTWARE");
-        
-        public string BotAgentPath { get; }
+        public List<RegistryNode> AgentNodes { get; }
 
-        public string BotAgentConfigPath => File.Exists(_botAgentConfigPath) ? _botAgentConfigPath : throw new Exception($"File not found {_botAgentConfigPath}");
+        public RegistryNode CurrentAgent { get; private set; }
 
+        public RegistryNode OldAgent { get; private set; }
 
         public RegistryManager(string registryApplicationName, string appSettings)
         {
-            _registryAppName = registryApplicationName;
-            _appSettings = appSettings;
+            AgentNodes = new List<RegistryNode>();
 
-            var applicationKey = _baseKey.OpenSubKey(_registryAppName) ?? throw new Exception($"{_registryAppName} not found");
+            var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", registryApplicationName));
 
-            BotAgentPath = applicationKey.GetValue(ApplicationPathKey) as string ?? throw new Exception($"{_registryAppName} path not found");
+            foreach (var agentName in agentFolder.GetSubKeyNames())
+            {
+                var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings);
 
-            _botAgentConfigPath = Path.Combine(BotAgentPath, _appSettings);
+                if (Environment.CurrentDirectory.Contains(node.Path))
+                    CurrentAgent = node;
+
+                AgentNodes.Add(node);
+            }
+
+            if (CurrentAgent == null)
+                CurrentAgent = AgentNodes.Count > 0 ? AgentNodes[0] : throw new Exception("Please, install TickTrader BotAgent!");
+
+            OldAgent = CurrentAgent;
+        }
+
+        public void ChangeCurrentAgent(string path)
+        {
+            if (path == null)
+                return;
+
+            CurrentAgent = AgentNodes.Find(n => n.Path == path);
+            OldAgent = CurrentAgent;
+        }
+    }
+
+    public class RegistryNode
+    {
+        public string Path { get; }
+
+        public string ServiceId { get; }
+
+        public string Version { get; }
+
+        public string AppSettingPath { get; }
+
+        public RegistryNode(RegistryKey key, string appSetting)
+        {
+            Path = key.GetValue(nameof(Path)).ToString();
+            ServiceId = key.GetValue(nameof(ServiceId)).ToString();
+            Version = key.GetValue(nameof(Version)).ToString();
+
+            AppSettingPath = System.IO.Path.Combine(Path, appSetting);
         }
     }
 }

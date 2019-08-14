@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialViewModel : BaseViewModel, IContentViewModel, IDataErrorInfo
+    public class CredentialViewModel : BaseViewModel, IDataErrorInfo
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -24,8 +24,6 @@ namespace TickTrader.BotAgent.Configurator
             _keyPassword = $"{_model.Name}{nameof(Password)}";
         }
 
-        public string ModelDescription { get; set; }
-
         public string Name => _model.Name;
 
         public string Login
@@ -33,7 +31,7 @@ namespace TickTrader.BotAgent.Configurator
             get => _model.Login;
 
             set
-            {
+           {
                 if (_model.Login == value)
                     return;
 
@@ -108,7 +106,7 @@ namespace TickTrader.BotAgent.Configurator
                 OnPropertyChanged(nameof(Login));
             }));
 
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(Login));
             OnPropertyChanged(nameof(Password));

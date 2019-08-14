@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -10,41 +11,37 @@ namespace TickTrader.BotAgent.Configurator
         private readonly RefreshManager _refreshManager;
         private readonly string _keyPath;
 
-        private ConfigurationProperies _settings;
+        private string _selectPath;
 
-        public AdvancedViewModel(ConfigurationProperies settings, RefreshManager _refManager = null) : base(nameof(AdvancedViewModel))
+        private RegistryManager _registry;
+
+        public bool NewCurrentAgent { get; private set; } = false;
+
+        public AdvancedViewModel(RegistryManager registry, RefreshManager _refManager = null) : base(nameof(AdvancedViewModel))
         {
-            _settings = settings;
+            _registry = registry;
             _refreshManager = _refManager;
-
-            InitialSelectedPath = _settings.MultipleAgentProvider.BotAgentPath;
-            OldValue = InitialSelectedPath;
+            _selectPath = registry.CurrentAgent.Path;
 
             _keyPath = $"{nameof(AdvancedViewModel)} {nameof(SelectPath)}";
         }
 
-        public string InitialSelectedPath { get; }
-
-        public string OldValue { get; set; }
-
-        public List<string> AgentPaths => _settings.MultipleAgentProvider.BotAgentPaths;
+        public IEnumerable<string> AgentPaths => _registry.AgentNodes.Select(n => n.Path);
 
         public string SelectPath
         {
-            get => _settings.MultipleAgentProvider.BotAgentPath;
+            get => _selectPath;
 
             set
             {
-                if (_settings.MultipleAgentProvider.BotAgentPath == value)
-                    return;
+                _logger.Info(GetChangeMessage(_keyPath, _selectPath, value));
+                _selectPath = value;
 
-                _settings.MultipleAgentProvider.BotAgentPath = value;
+                _refreshManager?.CheckUpdate(value, _registry.OldAgent.Path, _keyPath);
 
-                _refreshManager?.AddUpdate(_keyPath);
-                _logger.Info(GetChangeMessage(_keyPath, _settings.MultipleAgentProvider.BotAgentConfigPath, value));
+                NewCurrentAgent = _registry.OldAgent.Path != value;
+                OnPropertyChanged(nameof(NewCurrentAgent));
             }
         }
-
-        public string ModelDescription { get; set; }
     }
 }

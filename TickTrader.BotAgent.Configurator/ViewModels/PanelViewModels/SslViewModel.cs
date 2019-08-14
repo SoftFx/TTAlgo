@@ -1,6 +1,6 @@
 ﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class SslViewModel : BaseViewModel, IContentViewModel
+    public class SslViewModel : BaseViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -49,9 +49,7 @@
             }
         }
 
-        public string ModelDescription { get; set; }
-
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(File));
             OnPropertyChanged(nameof(Password));

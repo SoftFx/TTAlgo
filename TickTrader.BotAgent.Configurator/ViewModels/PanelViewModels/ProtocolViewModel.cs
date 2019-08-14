@@ -2,7 +2,7 @@
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolViewModel : BaseViewModel, IContentViewModel
+    public class ProtocolViewModel : BaseViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -121,15 +121,13 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public string ModelDescription { get; set; }
-
         public string ListeningPortDescription { get; set; }
 
         public string DirectoryNameDescription { get; set; }
 
         public string LogMessageDescription { get; set; }
 
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(ListeningPort));
             OnPropertyChanged(nameof(DirectoryName));

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ServerManager : ContentManager, IUploaderModels
+    public class ServerManager : ContentManager, IWorkingManager
     {
         public const string UrlsNameProperty = "server.urls";
         public const string SecretKeyNameProperty = "SecretKey";
@@ -53,7 +53,7 @@ namespace TickTrader.BotAgent.Configurator
 
     public class ServerModel
     {
-        private const string DefaultUrls = "https://localhost:50000/";
+        private const string DefaultUrls = "https://localhost:5001/;http://localhost:5000";
 
         public List<Uri> Urls { get; private set; }
 

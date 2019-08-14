@@ -3,8 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public abstract class BaseViewModel : INotifyPropertyChanged, IDataErrorInfo
+    public abstract class BaseViewModel : INotifyPropertyChanged, IDataErrorInfo, IContentViewModel
     {
+        public string ModelDescription { get; set; }
+
         public ModelErrorCounter ErrorCounter { get; }
 
         public string Error { get; }
@@ -27,5 +29,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             return $"{category} was changed: {oldVal} to {newVal}";
         }
+
+        public virtual void RefreshModel() { }
     }
 }

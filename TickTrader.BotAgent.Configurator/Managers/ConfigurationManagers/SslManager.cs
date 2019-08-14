@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class SslManager : ContentManager, IUploaderModels
+    public class SslManager : ContentManager, IWorkingManager
     {
         public SslModel SslModel { get; }
 

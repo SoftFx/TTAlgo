@@ -37,6 +37,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public void ServiceStart(int listeningPort)
         {
+            if (IsServiceRunning)
+                ServiceStop();
+
             _serviceController = new ServiceController(_serviceName);
 
             if (_serviceController.Status == ServiceControllerStatus.Running)

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ServerViewModel : BaseViewModel, IContentViewModel
+    public class ServerViewModel : BaseViewModel
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -33,15 +33,13 @@ namespace TickTrader.BotAgent.Configurator
             _model = model;
             _refreshManager = refManager;
 
-            ResetSetting();
+            RefreshModel();
         }
 
         public ObservableCollection<Uri> Urls { get; private set; }
         public ObservableCollection<string> Hosts => new ObservableCollection<string>(Urls.Select(u => u.Host).Distinct());
 
         public string SecretKey => _model.SecretKey;
-
-        public string ModelDescription { get; set; }
 
         public string UrlsDescription { get; set; }
 
@@ -116,14 +114,11 @@ namespace TickTrader.BotAgent.Configurator
                 _urlWindow.Close();
             }));
 
-        public void ResetSetting()
+        public override void RefreshModel()
         {
             CurrentUri = new UriViewModel(_model.PortsManager);
             Urls = new ObservableCollection<Uri>(_model.Urls);
-        }
 
-        public void RefreshModel()
-        {
             OnPropertyChanged(nameof(Urls));
             OnPropertyChanged(nameof(SecretKey));
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolManager : ContentManager, IUploaderModels
+    public class ProtocolManager : ContentManager, IWorkingManager
     {
         public const string PortNameProperty = "ListeningPort";
         public const string DirectoryNameProperty = "LogDirectoryName";
@@ -63,7 +63,7 @@ namespace TickTrader.BotAgent.Configurator
         private readonly PortsManager _portManager;
 
         private const string DefaultDirectoryName = "Logs";
-        private const int DefaultPort = 58443;
+        private const int DefaultPort = 8443;
 
         public ProtocolModel(PortsManager manager)
         {

@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class FdkManager : ContentManager, IUploaderModels
+    public class FdkManager : ContentManager, IWorkingManager
     {
         public const string EnableLogsNameProperty = "EnableLogs";
 

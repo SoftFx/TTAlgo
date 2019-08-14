@@ -106,7 +106,6 @@
     </ApplicationDefinition>
     <Compile Include="Helpers\ManagedIpHelper.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
-    <Compile Include="Infrastructure\Dependencies\UpdateNewProperty.cs" />
     <Compile Include="Infrastructure\Dependencies\ViewPanelProperty.cs" />
     <Compile Include="Infrastructure\ViewModelErrorCounter\ModelErrorCounter.cs" />
     <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
