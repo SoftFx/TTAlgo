@@ -271,9 +271,8 @@ namespace TickTrader.Algo.Core
             var side = oldOrder.Entity.GetBlOrderSide();
             var type = oldOrder.Entity.GetBlOrderType();
 
-            var newVolDec = (decimal)newVolume;
-            var volumeDelta = newVolDec - oldOrder.Entity.RequestedVolume;
-            var newRemVolume = newVolDec + volumeDelta;
+            // OrderReplaceRequest with InFlightMitigation == false asks server to set RemainingVolume to specified value
+            var newRemVolume = (decimal)newVolume;
 
             if (_marginCalc != null)
             {
