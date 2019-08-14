@@ -7,7 +7,7 @@
         xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="BotAgent Configurator" 
+        Title="{Binding Title}"
         Height="600" Width="1000"
         MinHeight="640" MinWidth="1000"
         WindowStartupLocation="CenterScreen">
@@ -49,7 +49,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <!--<fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>-->
+        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
 
         <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}">
             <TabControl.Resources>

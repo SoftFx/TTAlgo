@@ -21,5 +21,11 @@
 
             OnPropertyChanged(nameof(Messages));
         }
+
+        public void DropLog()
+        {
+            _manager.DropLog();
+            OnPropertyChanged(nameof(Messages));
+        }
     }
 }

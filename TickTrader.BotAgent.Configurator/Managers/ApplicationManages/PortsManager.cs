@@ -1,5 +1,6 @@
 ﻿using NetFwTypeLib;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -15,14 +16,17 @@ namespace TickTrader.BotAgent.Configurator
         private readonly ServiceManager _serviceManager;
         private readonly INetFwPolicy2 _firewallPolicy;
 
-        public PortsManager(ServiceManager service)
+        private RegistryNode _currentAgent;
+
+        public PortsManager(ServiceManager service, RegistryNode agent)
         {
             _serviceManager = service;
+            _currentAgent = agent;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
 
-        public void CheckPort(int port, string hostname = "localhost", int nativePort = -1)
+        public void CheckPort(int port, string hostname = null, int nativePort = -1)
         {
             if (port == nativePort)
                 return;
@@ -54,16 +58,21 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool CheckPortOpen(int port, string hostname)
         {
-            if (hostname.ToLower().Trim('/') == "localhost")
+            if (hostname != null && hostname.ToLower().Trim('/') == "localhost")
                 hostname = IPAddress.Loopback.ToString();
 
             foreach (var tcp in ManagedIpHelper.GetExtendedTcpTable(true))
             {
-                if (tcp.LocalEndPoint.Address.ToString() == hostname && tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp.State) && !IsAgentService(tcp.ProcessId))
+                if (CheckAdress(tcp, hostname) && tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp.State) && !IsAgentService(tcp.ProcessId))
                     return false;
             }
 
             return true;
+        }
+
+        private bool CheckAdress(TcpRow tcp, string hostname)
+        {
+            return hostname != null ? tcp.LocalEndPoint.Address.ToString() == hostname : true;
         }
 
         private bool CheckActiveServiceState(TcpState state)
@@ -73,7 +82,9 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool IsAgentService(int id)
         {
-            return _serviceManager.IsServiceRunning && id == _serviceManager.ServiceId;
+            var service = Process.GetProcessById(id);
+
+            return _serviceManager.IsServiceRunning && service.MainModule.FileName == _currentAgent.ExePath;
         }
 
         public void RegisterRuleInFirewall(string nameApp, string application, string porst)

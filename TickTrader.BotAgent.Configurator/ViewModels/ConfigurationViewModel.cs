@@ -9,24 +9,37 @@ using System.Windows;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ConfigurationViewModel : BaseContentViewModel, IDisposable
+    public class ConfigurationViewModel : BaseViewModel, IDisposable
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private List<BaseContentViewModel> _viewModels;
 
         private Window _mainWindow;
-
-        private AgentVersionManager _versionManager;
         private ConfigurationModel _model;
 
         private bool _runnignApplication;
+        private string _title;
 
         private DelegateCommand _startAgent;
         private DelegateCommand _restartApplication;
         private DelegateCommand _saveChanges;
         private DelegateCommand _cancelChanges;
         private DelegateCommand _openLogsFolder;
+
+        public string Title
+        {
+            get => _title;
+
+            set
+            {
+                if (_title == value)
+                    return;
+
+                _title = $"BotAgent Configurator: {value}";
+                OnPropertyChanged(nameof(Title));
+            }
+        }
 
         public CredentialViewModel AdminModel { get; set; }
 
@@ -54,18 +67,17 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool WasUpdate => RefreshCounter.Update;
 
-        public bool IsDeveloperVersion => _model != null ? bool.Parse(_model?.Settings[AppProperties.DeveloperVersion]) : false;
+        public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
 
         public ConfigurationViewModel()
         {
             try
             {
                 _mainWindow = Application.Current.MainWindow;
-
-                _runnignApplication = true;
                 _model = new ConfigurationModel();
 
                 RefreshCounter = new RefreshCounter();
+                StateServiceModel = new StateServiceViewModel();
                 Spinner = new SpinnerViewModel();
 
                 SetNewViewModels();
@@ -73,7 +85,6 @@ namespace TickTrader.BotAgent.Configurator
                 RefreshCounter.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
                 RefreshCounter.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
 
-                _mainWindow.Title = $"BotAgent Configurator: {_versionManager.FullVersion}";
                 _mainWindow.Closing += MainWindow_Closing;
             }
             catch (Exception ex)
@@ -86,7 +97,8 @@ namespace TickTrader.BotAgent.Configurator
 
         private void SetNewViewModels()
         {
-            _versionManager = new AgentVersionManager(_model.CurrentAgent.Path, _model.Settings[AppProperties.ApplicationName]);
+            Title = _model.CurrentAgent.FullVersion;
+            LogsModel = new LogsViewModel(_model.Logs);
 
             AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshCounter)
             {
@@ -128,9 +140,8 @@ namespace TickTrader.BotAgent.Configurator
                 ModelDescription = _model.Prompts.GetPrompt(SectionNames.MultipleAgentProvider, RegistryManager.AgentPathNameProperty),
             };
 
-            StateServiceModel = new StateServiceViewModel(_model.CurrentAgent.ServiceId);
-
             _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
+            _runnignApplication = true;
 
             ThreadPool.QueueUserWorkItem(RefreshServiceState);
         }
@@ -149,7 +160,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.OkCancelBoxQuestion("The current process will be restarted. Continue?", "Restart"))
                     return;
 
-                Spinner.Run = true;
+                Spinner.Start();
                 ThreadPool.QueueUserWorkItem(StartAgentMethod);
             }));
 
@@ -159,11 +170,20 @@ namespace TickTrader.BotAgent.Configurator
                 if (SaveChangesMethod() == MessageBoxResult.Cancel)
                     return;
 
+                Spinner.Start();
+
+                DropAllErrors();
+                RefreshCounter.DropRefresh();
+                LogsModel.DropLog();
+
                 _model.RefreshModel(AdvancedModel.SelectPath);
                 SetNewViewModels();
 
                 RefreshModels();
                 _logger.Info($"The application has been restarted!");
+
+                Spinner.Stop();
+                MessageBoxManager.OKBox($"Agent {AdvancedModel.SelectPath} has been loaded");
             }));
 
         public DelegateCommand SaveChanges => _saveChanges ?? (
@@ -190,10 +210,12 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     try
                     {
-                        _model.LoadConfiguration();
+                        DropAllErrors();
                         RefreshCounter.DropRefresh();
 
-                        DropAllErrors();
+                        _model.LoadConfiguration();
+
+                        RefreshAllViewModels();
 
                         _logger.Info($"Changes have been reset.");
                     }
@@ -223,6 +245,7 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(FdkModel));
             OnPropertyChanged(nameof(AdvancedModel));
 
+            OnPropertyChanged(nameof(LogsModel));
             OnPropertyChanged(nameof(StateServiceModel));
 
             _logger.Info($"Models have been updated.");
@@ -239,7 +262,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _model.StartAgent();
 
-                Spinner.Run = false;
+                Spinner.Stop();
                 MessageBoxManager.OKBox("Agent has been started!");
                 _logger.Info($"Agent has been started!");
             }
@@ -255,7 +278,7 @@ namespace TickTrader.BotAgent.Configurator
             }
             finally
             {
-                Spinner.Run = false;
+                Spinner.Stop();
             }
         }
 
@@ -263,13 +286,11 @@ namespace TickTrader.BotAgent.Configurator
         {
             try
             {
-                LogsModel = new LogsViewModel(_model.Logs);
-
                 int sec = 0;
 
                 while (_runnignApplication)
                 {
-                    StateServiceModel.RefreshService(_model.ServiceManager.ServiceStatus);
+                    StateServiceModel.RefreshService(_model.ServiceManager.ServiceDisplayName, _model.ServiceManager.ServiceStatus);
 
                     sec = sec == 5 ? 0 : sec + 1;
 
@@ -331,6 +352,13 @@ namespace TickTrader.BotAgent.Configurator
             foreach (var model in _viewModels)
             {
                 model.ErrorCounter.DropAll();
+            }
+        }
+
+        private void RefreshAllViewModels()
+        {
+            foreach (var model in _viewModels)
+            {
                 model.RefreshModel();
             }
         }

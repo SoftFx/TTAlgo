@@ -16,10 +16,10 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool NewCurrentAgent { get; private set; } = false;
 
-        public AdvancedViewModel(RegistryManager registry, RefreshCounter _refManager = null) : base(nameof(AdvancedViewModel))
+        public AdvancedViewModel(RegistryManager registry, RefreshCounter refManager = null) : base(nameof(AdvancedViewModel))
         {
             _registry = registry;
-            _refreshManager = _refManager;
+            _refreshManager = refManager;
             _selectPath = registry.CurrentAgent.Path;
 
             _keyPath = $"{nameof(AdvancedViewModel)} {nameof(SelectPath)}";
@@ -35,8 +35,6 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _logger.Info(GetChangeMessage(_keyPath, _selectPath, value));
                 _selectPath = value;
-
-                _refreshManager?.CheckUpdate(value, _registry.OldAgent.Path, _keyPath);
 
                 NewCurrentAgent = _registry.OldAgent.Path != value;
                 OnPropertyChanged(nameof(NewCurrentAgent));

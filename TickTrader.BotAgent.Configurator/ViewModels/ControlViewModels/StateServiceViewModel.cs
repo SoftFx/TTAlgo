@@ -4,21 +4,15 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class StateServiceViewModel : BaseViewModel
     {
-        private readonly string _serviceName;
+        private string _serviceName;
 
         private bool _visibleRestartMessage;
-        private string _state;
 
         public string RestartMessage => "To apply the new settings, restart the service.";
 
-        public string ServiceState => $"{_serviceName} is {_state}";
+        public string ServiceState => $"{_serviceName} is {Status.ToString()}";
 
         public ServiceControllerStatus Status { get; private set; }
-
-        public StateServiceViewModel(string serviceName)
-        {
-            _serviceName = serviceName;
-        }
 
         public bool VisibleRestartMessage
         {
@@ -34,9 +28,9 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public void RefreshService(ServiceControllerStatus currentState)
+        public void RefreshService(string serviceName, ServiceControllerStatus currentState)
         {
-            _state = currentState.ToString();
+            _serviceName = serviceName;
 
             Status = currentState;
 

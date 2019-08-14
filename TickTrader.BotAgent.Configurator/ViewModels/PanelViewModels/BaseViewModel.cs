@@ -5,14 +5,7 @@ namespace TickTrader.BotAgent.Configurator
 {
     public abstract class BaseViewModel : INotifyPropertyChanged
     {
-        public static event PropertyChangedEventHandler StaticPropertyChanged;
-
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public static void NotifyStaticPropertyChanged([CallerMemberName] string name = null)
-        {
-            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(name));
-        }
 
         public void OnPropertyChanged([CallerMemberName]string prop = "")
         {

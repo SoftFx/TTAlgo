@@ -47,7 +47,7 @@ namespace TickTrader.BotAgent.Configurator
 
             Settings = _configManager.Properties;
             Prompts = new PrompterManager();
-            RegistryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
+            RegistryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings], Settings.IsDeveloper, Settings[AppProperties.ApplicationName]);
 
             RefreshModel();
         }
@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.Configurator
 
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
 
-            _portsManager = new PortsManager(ServiceManager);
+            _portsManager = new PortsManager(ServiceManager, RegistryManager.CurrentAgent);
             _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);

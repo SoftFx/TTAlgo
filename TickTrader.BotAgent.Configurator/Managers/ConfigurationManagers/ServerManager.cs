@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -35,7 +36,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, UrlsNameProperty, ServerModel.UrlsStr);
+            SaveProperty(root, UrlsNameProperty, string.Join(";", ServerModel.Urls.Select(u => u.ToString()).ToArray()));
             SaveProperty(root, SecretKeyNameProperty, ServerModel.SecretKey);
         }
 

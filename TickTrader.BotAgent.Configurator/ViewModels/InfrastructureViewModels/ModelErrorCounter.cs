@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ModelErrorCounter : BaseViewModel
+    public class ModelErrorCounter : BaseViewModel, INotifyPropertyChanged
     {
         private readonly string _validationKey = string.Empty;
 
@@ -124,6 +126,13 @@ namespace TickTrader.BotAgent.Configurator
             else
             if (_damagedFields.Contains(key))
                 DeleteError(key);
+        }
+
+        public static event PropertyChangedEventHandler StaticPropertyChanged;
+
+        public static void NotifyStaticPropertyChanged([CallerMemberName] string name = null)
+        {
+            StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(name));
         }
     }
 }

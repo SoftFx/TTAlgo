@@ -39,6 +39,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -107,7 +108,6 @@
     <Compile Include="Helpers\ManagedIpHelper.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
     <Compile Include="ViewModels\InfrastructureViewModels\ModelErrorCounter.cs" />
-    <Compile Include="Managers\ApplicationManages\AgentVersionManager.cs" />
     <Compile Include="Helpers\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
     <Compile Include="Managers\ApplicationManages\PrompterManager.cs" />

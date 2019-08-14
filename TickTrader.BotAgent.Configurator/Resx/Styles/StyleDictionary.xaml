@@ -237,9 +237,9 @@
         <Setter Property="TabStripPlacement" Value="Left"/>
         <Setter Property="SelectedIndex" Value="0"/>
         <Style.Triggers>
-            <!--<DataTrigger Binding="{Binding ElementName=startAgentSpinner, Path=Visibility}" Value="Visible">
+            <DataTrigger Binding="{Binding ElementName=startAgentSpinner, Path=Visibility}" Value="Visible">
                 <Setter Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>-->
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 

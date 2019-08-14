@@ -12,6 +12,8 @@ namespace TickTrader.BotAgent.Configurator
 
         private ServiceController _serviceController;
 
+        public string ServiceDisplayName => _serviceController.DisplayName;
+
         public bool IsServiceRunning => _serviceController?.Status == ServiceControllerStatus.Running;
 
         public ServiceControllerStatus ServiceStatus => _serviceController.Status;
@@ -23,8 +25,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             _serviceName = serviceName;
             _serviceController = new ServiceController(_serviceName);
-
-            GetServiceId();
         }
 
         public void ServiceStart(int listeningPort)
@@ -41,7 +41,6 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _serviceController.Start();
                 _serviceController.WaitForStatus(ServiceControllerStatus.Running);
-                GetServiceId();
             }
             catch (Exception ex)
             {
@@ -65,28 +64,6 @@ namespace TickTrader.BotAgent.Configurator
                 _logger.Error(ex);
                 throw new Exception($"Cannot stopped Windows Service {_serviceName}");
             }
-        }
-
-        private void GetServiceId()
-        {
-            if (!IsServiceRunning)
-                return;
-
-            try
-            {
-                var query = $"SELECT ProcessId FROM Win32_Service WHERE Name='{_serviceName}'";
-                var searcher = new ManagementObjectSearcher(query);
-
-                foreach (var obj in searcher.Get())
-                {
-                    ServiceId = (int)obj["ProcessId"];
-                    break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            };
         }
     }
 }

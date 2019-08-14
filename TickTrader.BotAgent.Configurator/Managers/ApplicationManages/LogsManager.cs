@@ -30,6 +30,11 @@ namespace TickTrader.BotAgent.Configurator
 
         public string LogsStr => string.Join("", _messages);
 
+        public void DropLog()
+        {
+            _messages.Clear();
+        }
+
         public void LoadLog()
         {
             if (!File.Exists(LogsFilePath))
