@@ -7,11 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Markup;
 using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
@@ -26,6 +22,7 @@ namespace TickTrader.BotTerminal
         private AppInstanceRestrictor _instanceRestrictor = new AppInstanceRestrictor();
         private SimpleContainer _container = new SimpleContainer();
         private ShellViewModel _shell;
+        private bool _hasWriteAccess;
 
         public AppBootstrapper()
         {
@@ -38,9 +35,13 @@ namespace TickTrader.BotTerminal
 
             Initialize();
 
-            ConfigureCaliburn();
-            ConfigurateLogger();
-            ConfigureGlobalExceptionHandling();
+            _hasWriteAccess = HasWriteAccess();
+            if (_hasWriteAccess)
+            {
+                ConfigureCaliburn();
+                ConfigurateLogger();
+                ConfigureGlobalExceptionHandling();
+            }
         }
 
         public static AutoViewManager AutoViewLocator => autoViewLocator;
@@ -212,6 +213,12 @@ namespace TickTrader.BotTerminal
 
         protected async override void OnStartup(object sender, StartupEventArgs e)
         {
+            if (!_hasWriteAccess || EnvService.Instance.InitFailed)
+            {
+                Application.Current.Shutdown();
+                return;
+            }
+
             if (!_instanceRestrictor.EnsureSingleInstace())
                 Application.Current.Shutdown();
             else
@@ -253,6 +260,30 @@ namespace TickTrader.BotTerminal
                 _instanceRestrictor.Dispose();
                 App.Current.Shutdown();
             }
+        }
+
+        private bool HasWriteAccess()
+        {
+            try
+            {
+                using (var file = new FileStream(EnvService.Instance.AppLockFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read)) { }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                var res = AppAccessRightsElevator.ElevateToAdminRights();
+                switch (res)
+                {
+                    case AccessElevationStatus.AlreadyThere:
+                        MessageBox.Show($"Don't have access to write in directory {Directory.GetCurrentDirectory()}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return false;
+                    case AccessElevationStatus.Launched:
+                    case AccessElevationStatus.UserCancelled:
+                    default:
+                        return false;
+                }
+            }
+            catch (IOException) { /* Ignore locked files */ }
+            return true;
         }
     }
 }

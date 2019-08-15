@@ -304,10 +304,10 @@ Section Uninstall
         ; Remove registry entries
         ${Terminal_RegDelete}
 
-        ${Log} "Finished BotAgent uninstallation"
+        ${Log} "Finished BotTerminal uninstallation"
         Goto TerminalUninstallEnd
     SkipUninstallTerminal:
-        ${Log} "Skipped BotAgent uninstallation"
+        ${Log} "Skipped BotTerminal uninstallation"
         Abort $(UninstallCanceledMessage)
     TerminalUninstallEnd:
 

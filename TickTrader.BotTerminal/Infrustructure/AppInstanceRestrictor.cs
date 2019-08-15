@@ -21,7 +21,7 @@ namespace TickTrader.BotTerminal
                 var lockId = TryReadProcessId();
                 if (lockId != null)
                 {
-                    var result = MessageBox.Show("Another instance of BotTerminal is running. Terminate?", "Error", MessageBoxButton.YesNo);
+                    var result = MessageBox.Show("Another instance of BotTerminal is running. Terminate?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
                     if (result == MessageBoxResult.Yes)
                     {
                         var process = System.Diagnostics.Process.GetProcessById(lockId.Value);
@@ -30,7 +30,7 @@ namespace TickTrader.BotTerminal
                             process.Kill();
                             if (!process.WaitForExit(5000))
                             {
-                                MessageBox.Show("Failed to terminate another instance of BotTerminal!", "Error", MessageBoxButton.OK);
+                                MessageBox.Show("Failed to terminate another instance of BotTerminal!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                                 return false;
                             }
                             else continue; // go for another try

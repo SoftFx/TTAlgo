@@ -316,6 +316,7 @@
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
     <Compile Include="Extensions\ValidationBinding.cs" />
+    <Compile Include="Infrustructure\AppAccessRightsElevator.cs" />
     <Compile Include="Infrustructure\AppInstanceRestrictor.cs" />
     <Compile Include="Infrustructure\AutoViewManager.cs" />
     <Compile Include="Infrustructure\NonBlockingFileCompressor.cs" />
