@@ -28,11 +28,6 @@ namespace TickTrader.BotAgent.Configurator
             ErrorCounter = new ModelErrorCounter(key);
         }
 
-        public static string GetChangeMessage(string category, string oldVal, string newVal)
-        {
-            return $"{category} was changed: {oldVal} to {newVal}";
-        }
-
         public virtual void RefreshModel() { }
     }
 

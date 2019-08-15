@@ -26,51 +26,62 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="Width" Value="170"/>
+        <!--<Setter Property="BorderBrush" Value="Gray"/>-->
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}"
+                            BorderBrush="{TemplateBinding Border.BorderBrush}"
+                            Background="{TemplateBinding Panel.Background}"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                               VerticalScrollBarVisibility="Hidden"
+                               Name="PART_ContentHost"
+                               Focusable="False" />
+                    </Border>
+                    <!--<ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsEnabled" Value="False">
+                            <Setter Property="UIElement.Opacity" TargetName="border" Value="0.56"/>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                            <Setter Property="Border.BorderBrush" TargetName="border" Value="#FF7EB4EA"/>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsKeyboardFocused" Value="True">
+                            <Setter Property="Border.BorderBrush" TargetName="border" Value="Black"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>-->
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
                 <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
                 <Setter Property="Foreground" Value="Red"/>
+                <Setter Property="BorderBrush" Value="Red"/>
             </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsMouseOver" Value="True"/>
+                    <Condition Property="Validation.HasError" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="Red"/>
+                <Setter Property="BorderBrush" Value="DarkRed"/>
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsFocused" Value="True"/>
+                    <Condition Property="Validation.HasError" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="Red"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </MultiTrigger>
         </Style.Triggers>
     </Style>
-
-    <ControlTemplate x:Key="validationFailed">
-        <Border BorderBrush="Red" BorderThickness="1">
-            <AdornedElementPlaceholder />
-        </Border>
-    </ControlTemplate>
-
-    <!--<ControlTemplate x:Key="rdButton" TargetType="Button">
-        <Border x:Name="buttonBorder" CornerRadius="5"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="2"
-                Background="White"
-                Height="50"
-                Width="100" >
-            <ContentControl
-                    Margin="{TemplateBinding Padding}"
-                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                    Content="{TemplateBinding Content}" />
-        </Border>
-        <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="true">
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="BorderBrush" Value="Black"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="true">
-                <Setter Property="FontWeight" Value="Normal"/>
-                <Setter TargetName="buttonBorder" Property="Background" Value="#FFEEF5FD" />
-            </Trigger>
-            <Trigger Property="IsEnabled" Value="false">
-                <Setter Property="Foreground" Value="Gray"/>
-                <Setter TargetName="buttonBorder" Property="Background" Value="LightGray"/>
-                <Setter TargetName="buttonBorder" Property="BorderBrush" Value="SlateGray"/>
-            </Trigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>-->
 
     <Style x:Key="StateButton" TargetType="Button">
         <Setter Property="Margin" Value="20 0"/>
@@ -143,6 +154,7 @@
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
                     <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                    <Condition Binding="{Binding Spinner.Run}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="IsEnabled" Value="True"/>
             </MultiDataTrigger>

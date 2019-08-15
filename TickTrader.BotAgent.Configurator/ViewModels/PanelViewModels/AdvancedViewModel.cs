@@ -5,8 +5,6 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class AdvancedViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly RefreshCounter _refreshManager;
         private readonly string _keyPath;
 
@@ -33,7 +31,6 @@ namespace TickTrader.BotAgent.Configurator
 
             set
             {
-                _logger.Info(GetChangeMessage(_keyPath, _selectPath, value));
                 _selectPath = value;
 
                 NewCurrentAgent = _registry.OldAgent.Path != value;

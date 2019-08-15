@@ -4,8 +4,6 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ProtocolViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly RefreshCounter _refreshManager;
         private readonly string _keyPort, _keyDirectory, _keyLog;
 
@@ -43,7 +41,6 @@ namespace TickTrader.BotAgent.Configurator
                 }
 
                 _refreshManager?.CheckUpdate(value, _model.CurrentListeningPort.ToString(), _keyPort);
-                _logger.Info(GetChangeMessage(_keyPort, _model.ListeningPort.ToString(), value));
 
                 ErrorCounter.DeleteError(_keyPort);
                 ErrorCounter.DeleteWarning(_keyPort);
@@ -61,9 +58,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.DirectoryName = value;
-
                 _refreshManager?.CheckUpdate(value, _model.CurrentDirectoryName, _keyDirectory);
-                _logger.Info(GetChangeMessage(_keyDirectory, _model.DirectoryName, value));
 
                 ErrorCounter.DeleteError(_keyDirectory);
                 OnPropertyChanged(nameof(DirectoryName));
@@ -80,9 +75,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.LogMessage = value;
-
                 _refreshManager?.CheckUpdate(value.ToString(), _model.CurrentLogMessage.ToString(), _keyLog);
-                _logger.Info(GetChangeMessage(_keyLog, _model.LogMessage.ToString(), value.ToString()));
 
                 OnPropertyChanged(nameof(LogMessage));
             }

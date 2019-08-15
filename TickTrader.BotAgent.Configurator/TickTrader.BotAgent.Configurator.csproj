@@ -149,11 +149,11 @@
     <Compile Include="Infrastructure\Exceptions.cs" />
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
     <Compile Include="Infrastructure\Commands\DelegateCommand.cs" />
-    <Compile Include="Models\ConfigurationModels\CredentialModel.cs" />
-    <Compile Include="Models\ConfigurationModels\FdkModel.cs" />
-    <Compile Include="Models\ConfigurationModels\ProtocolModel.cs" />
-    <Compile Include="Models\ConfigurationModels\ServerModel.cs" />
-    <Compile Include="Models\ConfigurationModels\SslModel.cs" />
+    <Compile Include="Models\ManagerModels\CredentialModel.cs" />
+    <Compile Include="Models\ManagerModels\FdkModel.cs" />
+    <Compile Include="Models\ManagerModels\ProtocolModel.cs" />
+    <Compile Include="Models\ManagerModels\ServerModel.cs" />
+    <Compile Include="Models\ManagerModels\SslModel.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
     <Compile Include="ViewModels\InfrastructureViewModels\RefreshManager.cs" />
     <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />

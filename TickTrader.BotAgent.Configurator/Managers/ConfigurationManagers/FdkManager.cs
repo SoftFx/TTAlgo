@@ -5,6 +5,8 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class FdkManager : ContentManager, IWorkingManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public const string EnableLogsNameProperty = "EnableLogs";
 
         public FdkModel FdkModel { get; }
@@ -31,7 +33,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, EnableLogsNameProperty, FdkModel.EnableLogs);
+            SaveProperty(root, EnableLogsNameProperty, FdkModel.EnableLogs, FdkModel.CurrentEnableLogs, _logger);
         }
 
         public void SetDefaultModelValues() { }

@@ -193,8 +193,8 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     _model.SaveChanges();
                     RefreshCounter.DropRefresh();
-                    MessageBoxManager.OKBox("Configuration saved successfully!");
                     _logger.Info($"Changes have been saved.");
+                    MessageBoxManager.OKBox("Configuration saved successfully!");
                 }
                 catch (Exception ex)
                 {
@@ -263,8 +263,8 @@ namespace TickTrader.BotAgent.Configurator
                 _model.StartAgent();
 
                 Spinner.Stop();
-                MessageBoxManager.OKBox("Agent has been started!");
                 _logger.Info($"Agent has been started!");
+                MessageBoxManager.OKBox("Agent has been started!");
             }
             catch (WarningException ex)
             {

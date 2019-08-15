@@ -2,8 +2,6 @@
 {
     public class FdkViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly RefreshCounter _refreshManager;
         private readonly string _keyLogs;
 
@@ -26,9 +24,7 @@
                     return;
 
                 _model.EnableLogs = value;
-
                 _refreshManager?.CheckUpdate(value.ToString(), _model.CurrentEnableLogs.ToString(), _keyLogs);
-                _logger.Info(GetChangeMessage(_keyLogs, _model.EnableLogs.ToString(), value.ToString()));
 
                 OnPropertyChanged(nameof(EnableLogs));
             }

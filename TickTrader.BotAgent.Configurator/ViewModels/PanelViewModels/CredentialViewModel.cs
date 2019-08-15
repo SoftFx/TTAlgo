@@ -4,8 +4,6 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class CredentialViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly string _keyLogin, _keyPassword;
         private readonly RefreshCounter _refreshManager;
 
@@ -36,8 +34,6 @@ namespace TickTrader.BotAgent.Configurator
 
                 _model.Login = value;
                 _refreshManager?.CheckUpdate(value, _model.CurrentLogin, _keyLogin);
-
-                _logger.Info(GetChangeMessage(_keyLogin, _model.Login, value));
 
                 ErrorCounter.DeleteError(_keyLogin);
                 OnPropertyChanged(nameof(Login));

@@ -72,13 +72,12 @@ namespace TickTrader.BotAgent.Configurator
 
                 if (!Urls.Contains(uri))
                 {
-                    Urls.Add(uri);
-                    _model.Urls.Add(uri);
-
-                    RemoveUri(CurrentUri.OldUri);
+                    if (CurrentUri.OldUri != null)
+                        ModifyUriMethod();
+                    else
+                        AddUriMethod(CurrentUri.GetUri());
 
                     _refreshManager?.AddUpdate(nameof(SaveUri));
-                    _logger.Info($"{nameof(ServerViewModel)}: new url was added: {uri}");
                 }
                 else
                     if (CurrentUri.OldUri == null)
@@ -94,7 +93,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 foreach (Uri u in ((IList<object>)obj).ToList())
-                    RemoveUri(u);
+                    RemoveUriMethod(u);
 
                 _refreshManager?.AddUpdate(nameof(RemoveUrls));
             }));
@@ -123,14 +122,33 @@ namespace TickTrader.BotAgent.Configurator
             OnPropertyChanged(nameof(SecretKey));
         }
 
-        private void RemoveUri(Uri uri)
+        private void AddUriMethod(Uri uri)
+        {
+            Urls.Add(uri);
+            _model.Urls.Add(uri);
+
+            _logger.Info($"New url was added: {uri}");
+        }
+
+        private void RemoveUriMethod(Uri uri)
         {
             if (uri == null)
                 return;
 
             Urls.Remove(uri);
             _model.Urls.Remove(uri);
-            _logger.Info($"{nameof(ServerViewModel)}: url was removed: {uri.ToString()}");
+
+            _logger.Info($"Url was removed: {uri.ToString()}");
+        }
+
+        private void ModifyUriMethod()
+        {
+            var index = Urls.IndexOf(CurrentUri.OldUri);
+
+            Urls[index] = CurrentUri.GetUri();
+            _model.Urls[index] = CurrentUri.GetUri();
+
+            _logger.Info($"Url was changed {CurrentUri.OldUri.ToString()} to {CurrentUri.GetUri()}");
         }
     }
 

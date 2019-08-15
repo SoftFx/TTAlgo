@@ -6,6 +6,8 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class SslManager : ContentManager, IWorkingManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public SslModel SslModel { get; }
 
         public SslManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
@@ -35,8 +37,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, "File", SslModel.File);
-            SaveProperty(root, "Password", SslModel.Password);
+            //SaveProperty(root, "File", SslModel.File);
+            //SaveProperty(root, "Password", SslModel.Password);
         }
 
         public void SetDefaultModelValues()
