@@ -21,12 +21,8 @@ namespace TickTrader.BotAgent.Configurator
         private DelegateCommand _closeWindow;
 
         private ServerModel _model;
+        private readonly string _urlsKey = $"{nameof(Urls)}";
 
-        public UriViewModel CurrentUri { get; set; }
-
-        public string Title => CurrentUri?.OldUri != null ? "Modify URL" : "Add URL";
-
-        public bool ModifyWindow { get; private set; }
 
         public ServerViewModel(ServerModel model, RefreshCounter refManager = null) : base(nameof(ServerViewModel))
         {
@@ -36,14 +32,23 @@ namespace TickTrader.BotAgent.Configurator
             RefreshModel();
         }
 
-        public ObservableCollection<Uri> Urls { get; private set; }
+        //public List<int> BusyPorts => _model?.Urls.Select(u => u.Port).ToList() ?? new List<int>();
+
         public ObservableCollection<string> Hosts => new ObservableCollection<string>(Urls.Select(u => u.Host).Distinct());
+
+        public string Title => CurrentUri?.OldUri != null ? "Modify URL" : "Add URL";
 
         public string SecretKey => _model.SecretKey;
 
         public string UrlsDescription { get; set; }
 
         public string SecretKeyDescription { get; set; }
+
+        public bool ModifyWindow { get; private set; }
+
+        public UriViewModel CurrentUri { get; private set; }
+
+        public ObservableCollection<UriWithValidation> Urls { get; private set; }
 
         public DelegateCommand ModifyUri => _openModifyUrlWindow ?? (
             _openModifyUrlWindow = new DelegateCommand(obj =>
@@ -54,14 +59,14 @@ namespace TickTrader.BotAgent.Configurator
                     return;
                 }
 
-                CurrentUri = new UriViewModel((Uri)obj, _model.PortsManager);
+                CurrentUri = new UriViewModel((UriWithValidation)obj, _model.PortsManager, _model.Urls);
                 (_urlWindow = new NewUrlWindow(this)).ShowDialog();
             }));
 
         public DelegateCommand AddUri => _openNewUrlWindow ?? (
             _openNewUrlWindow = new DelegateCommand(obj =>
             {
-                CurrentUri = new UriViewModel(_model.PortsManager);
+                CurrentUri = new UriViewModel(_model.PortsManager, _model.Urls);
                 (_urlWindow = new NewUrlWindow(this)).ShowDialog();
             }));
 
@@ -78,6 +83,7 @@ namespace TickTrader.BotAgent.Configurator
                         AddUriMethod(CurrentUri.GetUri());
 
                     _refreshManager?.AddUpdate(nameof(SaveUri));
+                    CheckFreePorts();
                 }
                 else
                     if (CurrentUri.OldUri == null)
@@ -96,6 +102,7 @@ namespace TickTrader.BotAgent.Configurator
                     RemoveUriMethod(u);
 
                 _refreshManager?.AddUpdate(nameof(RemoveUrls));
+                CheckFreePorts();
             }));
 
         public DelegateCommand GenerateSecretKey => _generateSecretKey ?? (
@@ -115,8 +122,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public override void RefreshModel()
         {
-            CurrentUri = new UriViewModel(_model.PortsManager);
-            Urls = new ObservableCollection<Uri>(_model.Urls);
+            CurrentUri = new UriViewModel(_model.PortsManager, _model.Urls);
+            Urls = new ObservableCollection<UriWithValidation>(_model.Urls.Select(u => new UriWithValidation(u, _model.PortsManager)));
+            CheckFreePorts();
 
             OnPropertyChanged(nameof(Urls));
             OnPropertyChanged(nameof(SecretKey));
@@ -124,7 +132,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private void AddUriMethod(Uri uri)
         {
-            Urls.Add(uri);
+            Urls.Add(new UriWithValidation(uri, _model.PortsManager));
             _model.Urls.Add(uri);
 
             _logger.Info($"New url was added: {uri}");
@@ -135,7 +143,7 @@ namespace TickTrader.BotAgent.Configurator
             if (uri == null)
                 return;
 
-            Urls.Remove(uri);
+            Urls.Remove(new UriWithValidation(uri, _model.PortsManager));
             _model.Urls.Remove(uri);
 
             _logger.Info($"Url was removed: {uri.ToString()}");
@@ -145,37 +153,73 @@ namespace TickTrader.BotAgent.Configurator
         {
             var index = Urls.IndexOf(CurrentUri.OldUri);
 
-            Urls[index] = CurrentUri.GetUri();
+            Urls[index] = new UriWithValidation(CurrentUri.GetUri(), _model.PortsManager);
             _model.Urls[index] = CurrentUri.GetUri();
 
             _logger.Info($"Url was changed {CurrentUri.OldUri.ToString()} to {CurrentUri.GetUri()}");
         }
+
+        private void CheckFreePorts()
+        {
+            int busyPortsCount = Urls.Where(u => u.HasError).Count();
+
+            if (busyPortsCount != 0)
+                ErrorCounter.AddWarning(_urlsKey);
+            else
+                ErrorCounter.DeleteWarning(_urlsKey);
+        }
     }
 
-    public class UriViewModel : BaseContentViewModel
+    public class UriWithValidation : Uri
+    {
+        public bool HasError { get; private set; }
+
+        public string Error { get; private set; }
+
+        public UriWithValidation(Uri uri, PortsManager manager) : this(uri.ToString(), manager)
+        { }
+
+        public UriWithValidation(string str, PortsManager manager) : base(str)
+        {
+            try
+            {
+                manager.CheckPort(Port, Port, Host);
+            }
+            catch (WarningException ex)
+            {
+                HasError = true;
+                Error = ex.Message;
+            }
+        }
+    }
+
+    public class UriViewModel : BaseViewModel
     {
         private const string specialSymbols = "$-_.+ !*'()";
 
-        private PortsManager _portsManager;
+        private readonly List<Uri> _urls;
+        private readonly PortsManager _portsManager;
 
         private string _host = "localhost";
         private int _port;
 
         public List<string> TypesOfScheme { get; } = new List<string>() { "https", "http" };
 
-        public Uri OldUri { get; private set; }
+        public UriWithValidation OldUri { get; private set; }
 
-        public UriViewModel(PortsManager manager)
+        public bool IsFreePort { get; private set; } = true;
+
+        public string WarningMessage { get; private set; }
+
+        public UriViewModel(PortsManager manager, List<Uri> urls)
         {
             _portsManager = manager;
+            _urls = urls;
         }
 
-        public UriViewModel(Uri old, PortsManager manager)
+        public UriViewModel(UriWithValidation old, PortsManager manager, List<Uri> urls) : this(manager, urls)
         {
-            _portsManager = manager;
-
             OldUri = old;
-
             Scheme = old.Scheme;
             Host = old.Host;
             Port = old.Port;
@@ -199,6 +243,8 @@ namespace TickTrader.BotAgent.Configurator
                         throw new ArgumentException($"An invalid character {c} was found");
                 }
 
+                ExistanceCheck();
+
                 Port = _port;
 
                 OnPropertyChanged(nameof(Host));
@@ -213,11 +259,34 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _port = value;
 
+                IsFreePort = true;
+
                 if (value < 0 || value > (1 << 16))
                     throw new ArgumentException($"Port must be between {0} to {1 << 16}");
 
-                _portsManager.CheckPort(value, Host, OldUri?.Port ?? -1);
+                ExistanceCheck();
+
+                try
+                {
+                    _portsManager.CheckPort(value, OldUri?.Port ?? -1, Host);
+                }
+                catch (WarningException ex)
+                {
+                    IsFreePort = false;
+                    WarningMessage = ex.Message;
+                }
+
+                OnPropertyChanged(nameof(Port));
+                OnPropertyChanged(nameof(IsFreePort));
             }
+        }
+
+        private void ExistanceCheck()
+        {
+            bool status = OldUri != null ? GetUri() != OldUri : true;
+
+            if (status && _urls.Contains(GetUri()))
+                throw new Exception("This url already exists");
         }
 
         public Uri GetUri() => new UriBuilder(Scheme, Host, Port).Uri;

@@ -10,7 +10,7 @@
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
 
-        <ListView x:Name="urlsListView" Style="{StaticResource UrlsListViewStyle}" ItemsSource="{Binding Path=Urls}">
+        <ListView x:Name="urlsListView" Style="{StaticResource UrlsListViewStyle}" ItemsSource="{Binding Path=Urls}" ItemContainerStyle="{StaticResource UrlItemStyle}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Scheme}" Width="80" Header="Scheme"/>

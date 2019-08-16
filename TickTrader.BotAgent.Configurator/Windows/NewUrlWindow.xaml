@@ -30,10 +30,15 @@
         <TextBlock Grid.Column="2" Text="Port" Style="{StaticResource HeaderStyle}"/>
 
         <ComboBox Grid.Row="1" ItemsSource="{Binding Path=CurrentUri.TypesOfScheme}" SelectedItem="{Binding Path=CurrentUri.Scheme}" Style="{StaticResource ComboBoxScheme}"/>
-        <ComboBox Grid.Column="1" Grid.Row="1" x:Name="newHost" ItemsSource="{Binding Path=Hosts}" Style="{StaticResource ComboBoxHost}"
-                  Text="{Binding Path=CurrentUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
 
-        <TextBox Grid.Column="2" Grid.Row="1" x:Name="newPort" Text="{Binding Path=CurrentUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, Mode=TwoWay}" Style="{StaticResource PortTextBoxStyle}" Validation.ErrorTemplate="{x:Null}"/>
+        <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource ErrorHostBorder}">
+            <ComboBox  x:Name="newHost" ItemsSource="{Binding Path=Hosts}" Style="{StaticResource ComboBoxHost}"
+                  Text="{Binding Path=CurrentUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        </Border>
+
+        <Border Grid.Column="2" Grid.Row="1" Style="{StaticResource ErrorPortBorder}">
+            <TextBox  x:Name="newPort" Text="{Binding Path=CurrentUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, Mode=TwoWay, Delay=200}" Style="{StaticResource PortTextBoxStyle}"/>
+        </Border>
 
         <StackPanel Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Style="{StaticResource AddAndOkButton}" Command="{Binding SaveUri}"/>

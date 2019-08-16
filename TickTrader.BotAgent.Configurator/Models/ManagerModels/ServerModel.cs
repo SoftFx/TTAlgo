@@ -10,9 +10,9 @@ namespace TickTrader.BotAgent.Configurator
 
         private string _urlsString;
 
-        public List<Uri> Urls { get; private set; }
-
         public PortsManager PortsManager { get; }
+
+        public List<Uri> Urls { get; private set; }
 
         public ServerModel(PortsManager portsManager)
         {
@@ -30,7 +30,8 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _urlsString = value;
-                Urls = value.Split(';').Select(u => new Uri(u)).ToList();
+
+                Urls = !string.IsNullOrEmpty(value) ? value.Split(';').Select(u => new Uri(u)).ToList() : new List<Uri>();
             }
         }
 
@@ -49,6 +50,9 @@ namespace TickTrader.BotAgent.Configurator
             SecretKey = CryptoManager.GetNewPassword(128);
         }
 
-        public void UpdateCurrentFields() { }
+        public void UpdateCurrentFields()
+        {
+            UrlsStr = string.Join(";", Urls);
+        }
     }
 }

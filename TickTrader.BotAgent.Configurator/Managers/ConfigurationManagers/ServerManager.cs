@@ -49,6 +49,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void UpdateCurrentModelValues()
         {
+            ServerModel.UpdateCurrentFields();
         }
     }
 }

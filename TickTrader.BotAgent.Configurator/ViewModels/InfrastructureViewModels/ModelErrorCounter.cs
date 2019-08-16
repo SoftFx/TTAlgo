@@ -15,9 +15,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public static int TotalWarningCount { get; private set; }
 
-        public int ModelErrorCount => _damagedFields?.Count ?? 0;
+        public bool HasModelErrorCount => _damagedFields?.Count > 0;
 
-        public int ModelWarningCount => _warningFields?.Count ?? 0;
+        public bool HasModelWarningCount => _warningFields?.Count > 0;
 
         public ModelErrorCounter() { _damagedFields = new SortedSet<string>(); }
 
@@ -36,7 +36,7 @@ namespace TickTrader.BotAgent.Configurator
             TotalErrorCount++;
             _damagedFields.Add(field);
 
-            OnPropertyChanged(nameof(ModelErrorCount));
+            OnPropertyChanged(nameof(HasModelErrorCount));
             NotifyStaticPropertyChanged(nameof(TotalErrorCount));
         }
 
@@ -48,7 +48,7 @@ namespace TickTrader.BotAgent.Configurator
             TotalErrorCount--;
             _damagedFields.Remove(field);
 
-            OnPropertyChanged(nameof(ModelErrorCount));
+            OnPropertyChanged(nameof(HasModelErrorCount));
             NotifyStaticPropertyChanged(nameof(TotalErrorCount));
         }
 
@@ -57,7 +57,7 @@ namespace TickTrader.BotAgent.Configurator
             TotalErrorCount -= _damagedFields.Count;
             _damagedFields.Clear();
 
-            OnPropertyChanged(nameof(ModelErrorCount));
+            OnPropertyChanged(nameof(HasModelErrorCount));
             NotifyStaticPropertyChanged(nameof(TotalErrorCount));
         }
 
@@ -69,7 +69,7 @@ namespace TickTrader.BotAgent.Configurator
             TotalWarningCount++;
             _warningFields.Add(field);
 
-            OnPropertyChanged(nameof(ModelWarningCount));
+            OnPropertyChanged(nameof(HasModelWarningCount));
             NotifyStaticPropertyChanged(nameof(TotalWarningCount));
         }
 
@@ -81,7 +81,7 @@ namespace TickTrader.BotAgent.Configurator
             TotalWarningCount--;
             _warningFields.Remove(field);
 
-            OnPropertyChanged(nameof(ModelWarningCount));
+            OnPropertyChanged(nameof(HasModelWarningCount));
             NotifyStaticPropertyChanged(nameof(TotalWarningCount));
         }
 
@@ -90,7 +90,7 @@ namespace TickTrader.BotAgent.Configurator
             TotalWarningCount -= _warningFields.Count;
             _warningFields.Clear();
 
-            OnPropertyChanged(nameof(ModelWarningCount));
+            OnPropertyChanged(nameof(HasModelWarningCount));
             NotifyStaticPropertyChanged(nameof(TotalWarningCount));
         }
 

@@ -22,7 +22,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
     </Style>
 
-    <Style TargetType="TextBox">
+    <Style x:Key="DefaultTextBoxStyle" TargetType="TextBox">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="Width" Value="170"/>
@@ -34,7 +34,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}"
+                    <Border Name="Border"
+                            BorderThickness="{TemplateBinding Border.BorderThickness}"
                             BorderBrush="{TemplateBinding Border.BorderBrush}"
                             Background="{TemplateBinding Panel.Background}"
                             SnapsToDevicePixels="True">
@@ -82,6 +83,8 @@
             </MultiTrigger>
         </Style.Triggers>
     </Style>
+
+    <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}"/>
 
     <Style x:Key="StateButton" TargetType="Button">
         <Setter Property="Margin" Value="20 0"/>
@@ -206,6 +209,12 @@
         <Setter Property="Height" Value="25"/>
         <Setter Property="Margin" Value="0 0 10 0"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                <Setter Property="Foreground" Value="Red"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style TargetType="{x:Type TabItem}">
@@ -225,6 +234,24 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="LightBlue" />
                         </Trigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsSelected}" Value="False"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="False"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="Yellow"/>
+                        </MultiDataTrigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsSelected}" Value="True"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="False"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="Orange"/>
+                        </MultiDataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -232,9 +259,15 @@
     </Style>
 
     <Style x:Key="TabName" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="Red"/>
+        <Setter Property="Foreground" Value="Black"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                <Setter Property="Foreground" Value="Red"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="TabIcon" TargetType="fa:ImageAwesome">
@@ -255,29 +288,18 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="TabNameErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource TabName}">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                <Setter Property="Foreground" Value="Black"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-
-    <Style x:Key="TabIconErrorStyle" TargetType="fa:ImageAwesome" BasedOn="{StaticResource TabIcon}">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                <Setter Property="Foreground" Value="Black"/>
-            </DataTrigger>
-        </Style.Triggers>
+    <Style x:Key="TabWarningStyle" TargetType="TabItem">
+        <Setter Property="Background" Value="Yellow"/>
     </Style>
 
     <Style x:Key="UserTabItemErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource TabName}">
+        <Setter Property="Foreground" Value="Red"/>
         <Style.Triggers>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding AdminModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
-                    <Condition Binding="{Binding DealerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
-                    <Condition Binding="{Binding ViewerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                    <Condition Binding="{Binding AdminModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding DealerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding ViewerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="Foreground" Value="Black"/>
             </MultiDataTrigger>
@@ -288,9 +310,9 @@
         <Style.Triggers>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding AdminModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
-                    <Condition Binding="{Binding DealerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
-                    <Condition Binding="{Binding ViewerModel.ErrorCounter.ModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="0"/>
+                    <Condition Binding="{Binding AdminModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding DealerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding ViewerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="Foreground" Value="Black"/>
             </MultiDataTrigger>

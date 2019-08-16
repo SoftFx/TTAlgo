@@ -155,7 +155,7 @@
     <Compile Include="Models\ManagerModels\ServerModel.cs" />
     <Compile Include="Models\ManagerModels\SslModel.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
-    <Compile Include="ViewModels\InfrastructureViewModels\RefreshManager.cs" />
+    <Compile Include="ViewModels\InfrastructureViewModels\RefreshCounter.cs" />
     <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\PanelViewModels\LogsViewModel.cs" />
     <Compile Include="Windows\NewUrlWindow.xaml.cs">

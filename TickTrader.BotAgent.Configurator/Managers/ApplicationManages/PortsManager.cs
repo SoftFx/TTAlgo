@@ -26,18 +26,15 @@ namespace TickTrader.BotAgent.Configurator
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
 
-        public void CheckPort(int port, string hostname = null, int nativePort = -1)
+        public void CheckPort(int port, int nativePort, string hostname = null)
         {
-            if (port == nativePort)
-                return;
-
-            if (!CheckPortOpen(port, hostname))
+            if (!CheckPortOpen(port, hostname, nativePort))
             {
                 string freePortMassage = string.Empty;
 
                 for (int i = (port + 1) % MaxPort; i != port;)
                 {
-                    if (CheckPortOpen(i, hostname))
+                    if (CheckPortOpen(i, hostname, nativePort))
                     {
                         freePortMassage = $"Port {i} is free";
                         break;
@@ -56,7 +53,7 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        private bool CheckPortOpen(int port, string hostname)
+        private bool CheckPortOpen(int port, string hostname, int nativePort)
         {
             if (hostname != null && hostname.ToLower().Trim('/') == "localhost")
                 hostname = IPAddress.Loopback.ToString();

@@ -95,6 +95,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 UploadModel(model);
                 model.SetDefaultModelValues();
+                model.UpdateCurrentModelValues();
             }
         }
 

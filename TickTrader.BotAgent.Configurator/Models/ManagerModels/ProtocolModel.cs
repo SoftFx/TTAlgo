@@ -43,7 +43,7 @@
 
         public void CheckPort(int port)
         {
-            _portManager.CheckPort(port);
+            _portManager.CheckPort(port,  CurrentListeningPort);
         }
     }
 }
