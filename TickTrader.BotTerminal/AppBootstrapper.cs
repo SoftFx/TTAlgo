@@ -264,6 +264,9 @@ namespace TickTrader.BotTerminal
 
         private bool HasWriteAccess()
         {
+            if (Execute.InDesignMode)
+                return true;
+
             try
             {
                 using (var file = new FileStream(EnvService.Instance.AppLockFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read)) { }
