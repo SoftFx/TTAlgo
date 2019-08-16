@@ -83,6 +83,11 @@ namespace TickTrader.BotAgent.Configurator
             ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
         }
 
+        public void StopAgent()
+        {
+            ServiceManager.ServiceStop();
+        }
+
         public void LoadConfiguration()
         {
             if (File.Exists(CurrentAgent.AppSettingPath))

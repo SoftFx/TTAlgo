@@ -131,7 +131,7 @@
     </Style>
 
     <Style x:Key="ToolBarButton" TargetType="Button">
-        <Setter Property="Margin" Value="10 0"/>
+        <Setter Property="Margin" Value="7 0"/>
         <Setter Property="Height" Value="25"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Padding" Value="0"/>
@@ -152,7 +152,11 @@
 
     <Style x:Key="ToolBarAgentStartButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
         <Setter Property="IsEnabled" Value="False"/>
+        <Setter Property="ToolTip" Value="Start Agent"/>
         <Style.Triggers>
+            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+                <Setter Property="ToolTip" Value="Restart Agent"/>
+            </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
@@ -164,12 +168,31 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="ToolBarStopButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
+        <Setter Property="IsEnabled" Value="False"/>
+        <Setter Property="ToolTip" Value="Stop Agent"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+                <Setter Property="IsEnabled" Value="True"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="ToolBarIcon" TargetType="{x:Type fa:ImageAwesome}">
         <Setter Property="Width" Value="25"/>
         <Setter Property="Height" Value="20"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}, Path=IsEnabled}" Value="False">
                 <Setter Property="Foreground" Value="LightGray"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="StartAndRestartToolBarIcon" TargetType="{x:Type fa:ImageAwesome}" BasedOn="{StaticResource ToolBarIcon}">
+        <Setter Property="Icon" Value="Play"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+                <Setter Property="Icon" Value="Refresh"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

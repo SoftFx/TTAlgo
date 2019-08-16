@@ -40,16 +40,19 @@
                 </Button>
                 <Button Style="{StaticResource ToolBarAgentStartButton}" Command="{Binding StartAgent}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Play" Style="{StaticResource ToolBarIcon}"/>
+                        <fa:ImageAwesome Style="{StaticResource StartAndRestartToolBarIcon}"/>
                     </Button.Content>
-                    <Button.ToolTip>
-                        <TextBlock Text="Start Agent"/>
-                    </Button.ToolTip>
+                </Button>
+
+                <Button Style="{StaticResource ToolBarStopButton}" Command="{Binding StopAgent}">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Stop" Style="{StaticResource ToolBarIcon}"/>
+                    </Button.Content>
                 </Button>
             </ToolBar>
         </ToolBarTray>
 
-        <!--<fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>-->
+        <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
 
         <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}">
             <TabControl.Resources>

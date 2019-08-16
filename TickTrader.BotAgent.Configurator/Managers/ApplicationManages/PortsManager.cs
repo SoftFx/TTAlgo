@@ -26,31 +26,66 @@ namespace TickTrader.BotAgent.Configurator
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
 
+        public void RegisterRuleInFirewall(string nameApp, string application, string porst)
+        {
+            string name = $"{nameApp} Access";
+
+            INetFwRule firewallRule = null;
+
+            bool newRule = false;
+
+            try
+            {
+                firewallRule = _firewallPolicy.Rules.Item(name);
+            }
+            catch (Exception ex)
+            {
+                firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
+                firewallRule.Name = name;
+                newRule = true;
+                _logger.Error(ex);
+            }
+
+            firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
+            firewallRule.Profiles = 7; // Profiles == ALL
+            firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
+            firewallRule.Description = "Bot Agent Custom Rules";
+            firewallRule.LocalPorts = porst;
+            firewallRule.Enabled = true;
+            firewallRule.ApplicationName = application;
+
+            if (newRule)
+                _firewallPolicy.Rules.Add(firewallRule);
+        }
+
         public void CheckPort(int port, int nativePort, string hostname = null)
         {
             if (!CheckPortOpen(port, hostname, nativePort))
+                FindFreePort(port, nativePort, hostname);
+        }
+
+        private void FindFreePort(int port, int nativePort, string hostname)
+        {
+            string freePortMassage = string.Empty;
+
+            for (int i = (port + 1) % MaxPort; i != port;)
             {
-                string freePortMassage = string.Empty;
-
-                for (int i = (port + 1) % MaxPort; i != port;)
+                if (CheckPortOpen(i, hostname, nativePort))
                 {
-                    if (CheckPortOpen(i, hostname, nativePort))
-                    {
-                        freePortMassage = $"Port {i} is free";
-                        break;
-                    }
-
-                    i = (i + 1) % MaxPort;
+                    freePortMassage = $"Port {i} is free";
+                    break;
                 }
 
-                if (string.IsNullOrEmpty(freePortMassage))
-                    freePortMassage = "Free ports not found";
-
-                var mes = $"Port {port} is not available. {freePortMassage}";
-
-                _logger.Error(mes);
-                throw new WarningException(mes);
+                i = (i + 1) % MaxPort;
             }
+
+            if (string.IsNullOrEmpty(freePortMassage))
+                freePortMassage = "Free ports not found";
+
+            var mes = $"Port {port} is not available. {freePortMassage}";
+
+            _logger.Error(mes);
+            throw new WarningException(mes);
         }
 
         private bool CheckPortOpen(int port, string hostname, int nativePort)
@@ -82,38 +117,6 @@ namespace TickTrader.BotAgent.Configurator
             var service = Process.GetProcessById(id);
 
             return _serviceManager.IsServiceRunning && service.MainModule.FileName == _currentAgent.ExePath;
-        }
-
-        public void RegisterRuleInFirewall(string nameApp, string application, string porst)
-        {
-            string name = $"{nameApp} Access";
-
-            INetFwRule firewallRule = null;
-
-            bool newRule = false;
-
-            try
-            {
-                firewallRule = _firewallPolicy.Rules.Item(name);
-            }
-            catch (Exception ex)
-            {
-                firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
-                firewallRule.Name = name;
-                newRule = true;
-                _logger.Error(ex);
-            }
-
-            firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;
-            firewallRule.Profiles = 7; // Profiles == ALL
-            firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_ALLOW;
-            firewallRule.Description = "Bot Agent Custom Rules";
-            firewallRule.LocalPorts = porst;
-            firewallRule.Enabled = true;
-            firewallRule.ApplicationName = application;
-
-            if (newRule)
-                _firewallPolicy.Rules.Add(firewallRule);
         }
     }
 }

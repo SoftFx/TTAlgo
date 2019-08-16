@@ -49,7 +49,7 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        private void ServiceStop()
+        public void ServiceStop()
         {
             if (_serviceController.Status == ServiceControllerStatus.Stopped)
                 throw new Exception("Service alredy stopped");

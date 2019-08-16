@@ -22,6 +22,7 @@ namespace TickTrader.BotAgent.Configurator
         private string _title;
 
         private DelegateCommand _startAgent;
+        private DelegateCommand _stopAgent;
         private DelegateCommand _restartApplication;
         private DelegateCommand _saveChanges;
         private DelegateCommand _cancelChanges;
@@ -68,6 +69,8 @@ namespace TickTrader.BotAgent.Configurator
         public bool WasUpdate => RefreshCounter.Update;
 
         public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
+
+        public bool ServiceRunning => _model?.ServiceManager.IsServiceRunning ?? false;
 
         public ConfigurationViewModel()
         {
@@ -160,8 +163,16 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.OkCancelBoxQuestion("The current process will be restarted. Continue?", "Restart"))
                     return;
 
-                Spinner.Start();
-                ThreadPool.QueueUserWorkItem(StartAgentMethod);
+                ThreadPool.QueueUserWorkItem(StartAndStopAgentMethod, true);
+            }));
+
+        public DelegateCommand StopAgent => _stopAgent ?? (
+            _stopAgent = new DelegateCommand(obj =>
+            {
+                if (ServiceRunning && MessageBoxManager.OkCancelBoxQuestion("The current agent will be stopped. Continue?", "Stop"))
+                {
+                    ThreadPool.QueueUserWorkItem(StartAndStopAgentMethod, false);
+                }
             }));
 
         public DelegateCommand RestartApplication => _restartApplication ?? (
@@ -247,6 +258,7 @@ namespace TickTrader.BotAgent.Configurator
 
             OnPropertyChanged(nameof(LogsModel));
             OnPropertyChanged(nameof(StateServiceModel));
+            OnPropertyChanged(nameof(ServiceRunning));
 
             _logger.Info($"Models have been updated.");
         }
@@ -256,15 +268,25 @@ namespace TickTrader.BotAgent.Configurator
             _runnignApplication = false;
         }
 
-        private void StartAgentMethod(object obj)
+        private void StartAndStopAgentMethod(object start)
         {
             try
             {
-                _model.StartAgent();
+                Spinner.Start();
+
+                if ((bool)start)
+                    _model.StartAgent();
+                else
+                    _model.StopAgent();
+
+                var mes = (bool)start ? $"Agent has been started!" : $"Agent has been stopped!";
+
+                _logger.Info(mes);
 
                 Spinner.Stop();
-                _logger.Info($"Agent has been started!");
-                MessageBoxManager.OKBox("Agent has been started!");
+                OnPropertyChanged(nameof(ServiceRunning));
+
+                MessageBoxManager.OKBox(mes);
             }
             catch (WarningException ex)
             {
