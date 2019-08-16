@@ -95,14 +95,13 @@ namespace TickTrader.BotAgent.BA.Models
 
             #region Account Management
 
-            public void AddAccount(AccountKey key, string password, bool useNewProtocol) => CallActorFlatten(a => a.AddAccount(key, password, useNewProtocol));
-            public void ChangeAccount(AccountKey key, string password, bool useNewProtocol) => CallActorFlatten(a => a.ChangeAccount(key, password, useNewProtocol));
+            public void AddAccount(AccountKey key, string password) => CallActorFlatten(a => a.AddAccount(key, password));
+            public void ChangeAccount(AccountKey key, string password) => CallActorFlatten(a => a.ChangeAccount(key, password));
             public void ChangeAccountPassword(AccountKey key, string password) => CallActorFlatten(a => a.ChangeAccountPassword(key, password));
-            public void ChangeAccountProtocol(AccountKey key) => CallActorFlatten(a => a.ChangeAccountProtocol(key));
             public List<AccountModelInfo> GetAccounts() => CallActorFlatten(a => a._accounts.GetInfoCopy());
             public void RemoveAccount(AccountKey key) => CallActorFlatten(a => a.RemoveAccount(key));
             public ConnectionErrorInfo TestAccount(AccountKey accountId) => CallActorFlatten(a => a.GetAccountOrThrow(accountId).TestConnection());
-            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol) => CallActorFlatten(a => a.TestCreds(accountId, password, useNewProtocol));
+            public ConnectionErrorInfo TestCreds(AccountKey accountId, string password) => CallActorFlatten(a => a.TestCreds(accountId, password));
 
             public event Action<AccountModelInfo, ChangeAction> AccountChanged
             {
@@ -172,16 +171,16 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<AccountModelInfo, ChangeAction> AccountChanged;
         public event Action<AccountModelInfo> AccountStateChanged;
 
-        public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password, bool useNewProtocol)
+        public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password)
         {
-            var acc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
+            var acc = new ClientModel(accountId.Server, accountId.Login, password);
             await acc.Init(_packageStorage, _fdkOptionsProvider);
 
             var testResult = await acc.TestConnection();
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
             {
-                _logger.Error($"Can't stop test connection to {accountId.Server} - {accountId.Login} via {(useNewProtocol ? "SFX" : "FIX")}");
+                _logger.Error($"Can't stop test connection to {accountId.Server} - {accountId.Login}");
             }
 
             return testResult;
@@ -200,7 +199,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        public async Task AddAccount(AccountKey accountId, string password, bool useNewProtocol)
+        public async Task AddAccount(AccountKey accountId, string password)
         {
             Validate(accountId.Login, accountId.Server, password);
 
@@ -209,7 +208,7 @@ namespace TickTrader.BotAgent.BA.Models
                 throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
             else
             {
-                var newAcc = new ClientModel(accountId.Server, accountId.Login, password, useNewProtocol);
+                var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
                 _accounts.Add(newAcc);
                 AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
 
@@ -246,13 +245,13 @@ namespace TickTrader.BotAgent.BA.Models
             AccountChanged?.Invoke(acc.GetInfoCopy(), ChangeAction.Removed);
 
             if (!await acc.ShutdownAsync().WaitAsync(5000))
-                throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username} via {(acc.UseNewProtocol ? "SFX" : "FIX")}");
+                throw new BAException($"Can't stop connection to {acc.Address} - {acc.Username}");
         }
 
-        public void ChangeAccount(AccountKey key, string password, bool useNewProtocol)
+        public void ChangeAccount(AccountKey key, string password)
         {
             var acc = GetAccountOrThrow(key);
-            acc.ChangeConnectionSettings(password, useNewProtocol);
+            acc.ChangeConnectionSettings(password);
         }
 
         public void ChangeAccountPassword(AccountKey key, string password)
@@ -261,12 +260,6 @@ namespace TickTrader.BotAgent.BA.Models
 
             var acc = GetAccountOrThrow(key);
             acc.ChangePassword(password);
-        }
-
-        public void ChangeAccountProtocol(AccountKey key)
-        {
-            var acc = GetAccountOrThrow(key);
-            acc.ChangeProtocol();
         }
 
         private ClientModel FindAccount(string login, string server)

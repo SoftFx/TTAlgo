@@ -109,11 +109,11 @@ namespace TickTrader.Algo.Common.Model
         public States State => _stateControl.Current;
         public bool IsReconnecting { get; private set; }
 
-        public Task<ConnectionErrorInfo> Connect(string username, string password, string address, bool useSfxProtocol)
+        public Task<ConnectionErrorInfo> Connect(string username, string password, string address)
         {
             ContextCheck();
 
-            var request = new ConnectRequest(username, password, address, useSfxProtocol);
+            var request = new ConnectRequest(username, password, address);
 
             _stateControl.ModifyConditions(() =>
             {
@@ -211,7 +211,7 @@ namespace TickTrader.Algo.Common.Model
 
             CurrentLogin = request.Usermame;
             CurrentServer = request.Address;
-            CurrentProtocol = request.UseSfx ? "SFX" : "FIX";
+            CurrentProtocol = "SFX";
 
             try
             {
@@ -414,9 +414,9 @@ namespace TickTrader.Algo.Common.Model
                 });
             }
 
-            public Task<ConnectionErrorInfo> Connect(string userName, string password, string address, bool useSfxProtocol, CancellationToken cToken)
+            public Task<ConnectionErrorInfo> Connect(string userName, string password, string address, CancellationToken cToken)
             {
-                return Actor.Call(a => a.Connect(userName, password, address, useSfxProtocol));
+                return Actor.Call(a => a.Connect(userName, password, address));
             }
 
             public Task Disconnect()
@@ -481,20 +481,16 @@ namespace TickTrader.Algo.Common.Model
 
         private class ConnectRequest : Request
         {
-            public ConnectRequest(string username, string password, string address, bool useSfxProtocol)
+            public ConnectRequest(string username, string password, string address)
             {
                 Usermame = username;
                 Password = password;
                 Address = address;
-                UseSfx = useSfxProtocol;
-                //CancelToken = cToken;
             }
 
             public string Usermame { get; }
             public string Password { get; }
             public string Address { get; }
-            public bool UseSfx { get; }
-            //public CancellationToken CancelToken { get; }
         }
 
         private class StateInfo

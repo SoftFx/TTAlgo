@@ -920,7 +920,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                _botAgent.AddAccount(request.Account.Convert(), request.Password, request.UseNewProtocol);
+                _botAgent.AddAccount(request.Account.Convert(), request.Password);
             }
             catch (Exception ex)
             {
@@ -966,7 +966,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                _botAgent.ChangeAccount(request.Account.Convert(), request.Password, request.UseNewProtocol);
+                _botAgent.ChangeAccount(request.Account.Convert(), request.Password);
             }
             catch (Exception ex)
             {
@@ -1012,7 +1012,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                res.ErrorInfo = _botAgent.TestAccountCreds(request.Account.Convert(), request.Password, request.UseNewProtocol).Convert();
+                res.ErrorInfo = _botAgent.TestAccountCreds(request.Account.Convert(), request.Password).Convert();
             }
             catch (Exception ex)
             {

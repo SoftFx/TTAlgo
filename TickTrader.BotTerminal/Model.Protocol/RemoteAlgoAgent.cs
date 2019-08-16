@@ -149,9 +149,9 @@ namespace TickTrader.BotTerminal
             return _protocolClient.ChangeBotConfig(instanceId, newConfig);
         }
 
-        public Task AddAccount(AccountKey account, string password, bool useNewProtocol)
+        public Task AddAccount(AccountKey account, string password)
         {
-            return _protocolClient.AddAccount(account, password, useNewProtocol);
+            return _protocolClient.AddAccount(account, password);
         }
 
         public Task RemoveAccount(AccountKey account)
@@ -159,9 +159,9 @@ namespace TickTrader.BotTerminal
             return _protocolClient.RemoveAccount(account);
         }
 
-        public Task ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        public Task ChangeAccount(AccountKey account, string password)
         {
-            return _protocolClient.ChangeAccount(account, password, useNewProtocol);
+            return _protocolClient.ChangeAccount(account, password);
         }
 
         public Task<ConnectionErrorInfo> TestAccount(AccountKey account)
@@ -169,9 +169,9 @@ namespace TickTrader.BotTerminal
             return _protocolClient.TestAccount(account);
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
         {
-            return _protocolClient.TestAccountCreds(account, password, useNewProtocol);
+            return _protocolClient.TestAccountCreds(account, password);
         }
 
         public async Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener)

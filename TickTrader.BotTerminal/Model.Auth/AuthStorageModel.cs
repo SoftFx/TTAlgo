@@ -58,7 +58,6 @@ namespace TickTrader.BotTerminal
             {
                 var toUpdate = _accounts[index];
                 toUpdate.Password = account.Password;
-                toUpdate.UseSfxProtocol = account.UseSfxProtocol;
             }
         }
     }

@@ -180,7 +180,7 @@ namespace TickTrader.BotTerminal
             return Task.FromResult(this);
         }
 
-        public Task AddAccount(AccountKey account, string password, bool useNewProtocol)
+        public Task AddAccount(AccountKey account, string password)
         {
             throw new NotSupportedException();
         }
@@ -190,7 +190,7 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        public Task ChangeAccount(AccountKey account, string password)
         {
             throw new NotSupportedException();
         }
@@ -200,7 +200,7 @@ namespace TickTrader.BotTerminal
             throw new NotSupportedException();
         }
 
-        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        public Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
         {
             throw new NotSupportedException();
         }
@@ -338,7 +338,6 @@ namespace TickTrader.BotTerminal
                     Key = accountKey,
                     ConnectionState = ClientModel.Connection.State.ToInfo(),
                     LastError = ClientModel.Connection.LastError,
-                    UseNewProtocol = ClientModel.Connection.CurrentProtocol == "SFX",
                 };
                 _accounts.Add(accountKey, account);
             }

@@ -902,7 +902,7 @@ namespace TickTrader.Algo.Protocol.Grpc
             return new Lib.AccountModelInfo
             {
                 Key = account.Key.Convert(),
-                UseNewProtocol = account.UseNewProtocol,
+                UseNewProtocol = true,
                 ConnectionState = account.ConnectionState.Convert(),
                 LastError = account.LastError.Convert(),
             };

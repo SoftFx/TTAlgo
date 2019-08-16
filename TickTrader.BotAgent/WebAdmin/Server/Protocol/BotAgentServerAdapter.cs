@@ -128,9 +128,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.ChangeBotConfig(botId, newConfig);
         }
 
-        public void AddAccount(AccountKey account, string password, bool useNewProtocol)
+        public void AddAccount(AccountKey account, string password)
         {
-            _botAgent.AddAccount(account, password, useNewProtocol);
+            _botAgent.AddAccount(account, password);
         }
 
         public void RemoveAccount(AccountKey account)
@@ -138,9 +138,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             _botAgent.RemoveAccount(account);
         }
 
-        public void ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        public void ChangeAccount(AccountKey account, string password)
         {
-            _botAgent.ChangeAccount(account, password, useNewProtocol);
+            _botAgent.ChangeAccount(account, password);
         }
 
         public ConnectionErrorInfo TestAccount(AccountKey account)
@@ -148,9 +148,9 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.TestAccount(account);
         }
 
-        public ConnectionErrorInfo TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        public ConnectionErrorInfo TestAccountCreds(AccountKey account, string password)
         {
-            return _botAgent.TestCreds(account, password, useNewProtocol);
+            return _botAgent.TestCreds(account, password);
         }
 
         public void RemovePackage(PackageKey package)

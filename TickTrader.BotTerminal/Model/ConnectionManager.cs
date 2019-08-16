@@ -89,7 +89,7 @@ namespace TickTrader.BotTerminal
 
         internal void RemoveAccount(AccountAuthEntry entry)
         {
-            authStorage.Remove(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address, entry.UseSfxProtocol));
+            authStorage.Remove(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.Save();
         }
 
@@ -118,15 +118,15 @@ namespace TickTrader.BotTerminal
             if (!entry.HasPassword)
                 throw new InvalidOperationException("TriggerConnect() can be called only for accounts with saved password!");
 
-            Connect(entry.Login, entry.Password, entry.Server.Address, entry.UseSfxProtocol, true, CancellationToken.None).Forget();
+            Connect(entry.Login, entry.Password, entry.Server.Address, true, CancellationToken.None).Forget();
         }
 
-        public async Task<ConnectionErrorInfo> Connect(string login, string password, string server, bool useSfx, bool savePwd, CancellationToken cToken)
+        public async Task<ConnectionErrorInfo> Connect(string login, string password, string server, bool savePwd, CancellationToken cToken)
         {
             logger.Debug("Connect to {0}, {1}", login, server);
 
             string entryPassword = savePwd ? password : null;
-            var newCreds = CreateEntry(login, entryPassword, server, useSfx);
+            var newCreds = CreateEntry(login, entryPassword, server);
 
             Creds = newCreds;
             CredsChanged();
@@ -135,7 +135,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                var result = await Connection.Connect(login, password, server, useSfx, cToken);
+                var result = await Connection.Connect(login, password, server, cToken);
 
                 if (result.Code == ConnectionErrorCodes.None)
                 {
@@ -191,7 +191,7 @@ namespace TickTrader.BotTerminal
 
         private void SaveLogin(AccountAuthEntry entry)
         {
-            authStorage.Update(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address, entry.UseSfxProtocol));
+            authStorage.Update(new AccountStorageEntry(entry.Login, entry.Password, entry.Server.Address));
             authStorage.UpdateLast(entry.Login, entry.Server.Address);
             authStorage.Save();
         }
@@ -212,9 +212,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public AccountAuthEntry CreateEntry(string login, string password, string server, bool useSfx)
+        public AccountAuthEntry CreateEntry(string login, string password, string server)
         {
-            return CreateEntry(new AccountStorageEntry(login, password, server, useSfx));
+            return CreateEntry(new AccountStorageEntry(login, password, server));
         }
 
         private AccountAuthEntry CreateEntry(AccountStorageEntry record)

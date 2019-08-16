@@ -647,9 +647,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Accounts.Select(ToAlgo.Convert).ToList();
         }
 
-        public override async Task AddAccount(AccountKey account, string password, bool useNewProtocol)
+        public override async Task AddAccount(AccountKey account, string password)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddAccountInternal, new Lib.AddAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            var response = await ExecuteUnaryRequestAuthorized(AddAccountInternal, new Lib.AddAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = true });
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -659,9 +659,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             FailForNonSuccess(response.ExecResult);
         }
 
-        public override async Task ChangeAccount(AccountKey account, string password, bool useNewProtocol)
+        public override async Task ChangeAccount(AccountKey account, string password)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeAccountInternal, new Lib.ChangeAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            var response = await ExecuteUnaryRequestAuthorized(ChangeAccountInternal, new Lib.ChangeAccountRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = true });
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -672,9 +672,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.ErrorInfo.Convert();
         }
 
-        public override async Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol)
+        public override async Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password)
         {
-            var response = await ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, new Lib.TestAccountCredsRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = useNewProtocol });
+            var response = await ExecuteUnaryRequestAuthorized(TestAccountCredsInternal, new Lib.TestAccountCredsRequest { Account = account.Convert(), Password = ToGrpc.Convert(password), UseNewProtocol = true });
             FailForNonSuccess(response.ExecResult);
             return response.ErrorInfo.Convert();
         }

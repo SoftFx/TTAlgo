@@ -57,15 +57,15 @@ namespace TickTrader.BotTerminal
 
         Task ChangeBotConfig(string botId, PluginConfig newConfig);
 
-        Task AddAccount(AccountKey account, string password, bool useNewProtocol);
+        Task AddAccount(AccountKey account, string password);
 
         Task RemoveAccount(AccountKey account);
 
-        Task ChangeAccount(AccountKey account, string password, bool useNewProtocol);
+        Task ChangeAccount(AccountKey account, string password);
 
         Task<ConnectionErrorInfo> TestAccount(AccountKey account);
 
-        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+        Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
 
         Task UploadPackage(string fileName, string srcFilePath, IFileProgressListener progressListener);
 

@@ -69,15 +69,15 @@ namespace TickTrader.Algo.Protocol
 
         void ChangeBotConfig(string botId, PluginConfig newConfig);
 
-        void AddAccount(AccountKey account, string password, bool useNewProtocol);
+        void AddAccount(AccountKey account, string password);
 
         void RemoveAccount(AccountKey account);
 
-        void ChangeAccount(AccountKey account, string password, bool useNewProtocol);
+        void ChangeAccount(AccountKey account, string password);
 
         ConnectionErrorInfo TestAccount(AccountKey account);
 
-        ConnectionErrorInfo TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+        ConnectionErrorInfo TestAccountCreds(AccountKey account, string password);
 
         void RemovePackage(PackageKey package);
 

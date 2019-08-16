@@ -13,7 +13,6 @@ namespace TickTrader.BotAgent.Extensions
             return new AccountModelInfo
             {
                 Key = new AccountKey(acc.Address, acc.Username),
-                UseNewProtocol = acc.UseNewProtocol,
                 ConnectionState = acc.ConnectionState,
                 LastError = acc.LastError ?? ConnectionErrorInfo.Ok,
             };

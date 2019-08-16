@@ -13,8 +13,6 @@
     {
         public AccountKey Key { get; set; }
 
-        public bool UseNewProtocol { get; set; }
-
         public ConnectionStates ConnectionState { get; set; }
 
         public ConnectionErrorInfo LastError { get; set; }

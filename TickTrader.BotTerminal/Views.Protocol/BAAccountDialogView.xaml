@@ -58,8 +58,6 @@
         <ComboBox Grid.Row="8" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Servers}" SelectedItem="{Binding SelectedServer}" TextSearch.TextPath="Address"
                   IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding CanChangeAccountKey}"/>
-        <CheckBox Grid.Row="10" Content="Use new protocol" Margin="0,0,0,4" 
-                  IsChecked="{Binding UseSfxProtocol}" IsEnabled="{Binding IsEditable}"/>
         <TextBlock Grid.Row="11" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>

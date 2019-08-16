@@ -277,15 +277,15 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<List<AccountModelInfo>> GetAccountList();
 
-        public abstract Task AddAccount(AccountKey account, string password, bool useNewProtocol);
+        public abstract Task AddAccount(AccountKey account, string password);
 
         public abstract Task RemoveAccount(AccountKey account);
 
-        public abstract Task ChangeAccount(AccountKey account, string password, bool useNewProtocol);
+        public abstract Task ChangeAccount(AccountKey account, string password);
 
         public abstract Task<ConnectionErrorInfo> TestAccount(AccountKey account);
 
-        public abstract Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password, bool useNewProtocol);
+        public abstract Task<ConnectionErrorInfo> TestAccountCreds(AccountKey account, string password);
 
         public abstract Task<List<PackageInfo>> GetPackageList();
 

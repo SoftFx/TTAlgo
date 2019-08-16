@@ -62,7 +62,7 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
         {
             try
             {
-                _botAgent.AddAccount(new AccountKey(account.Server, account.Login), account.Password, account.UseNewProtocol);
+                _botAgent.AddAccount(new AccountKey(account.Server, account.Login), account.Password);
             }
             catch (BAException dsex)
             {
@@ -105,30 +105,14 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Controllers
             return Ok();
         }
 
-        [HttpPatch("[action]")]
-        public IActionResult ChangeProtocol([FromBody] AccountDto account)
-        {
-            try
-            {
-                _botAgent.ChangeAccountProtocol(new AccountKey(account.Server, account.Login));
-            }
-            catch (BAException dsex)
-            {
-                _logger.LogError(dsex.Message);
-                return BadRequest(dsex.ToBadResult());
-            }
-
-            return Ok();
-        }
-
         [HttpGet("[action]")]
-        public IActionResult Test(string login, string server, string password, bool useNewProtocol)
+        public IActionResult Test(string login, string server, string password)
         {
             try
             {
                 var testResult = string.IsNullOrWhiteSpace(password) ?
                     _botAgent.TestAccount(new AccountKey(server, login)) :
-                    _botAgent.TestCreds(new AccountKey(server, login), password, useNewProtocol);
+                    _botAgent.TestCreds(new AccountKey(server, login), password);
 
                 return Ok(testResult);
             }

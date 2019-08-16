@@ -34,14 +34,13 @@ namespace TickTrader.BotAgent.BA
         // -------- Account Management --------
 
         List<AccountModelInfo> GetAccounts();
-        void AddAccount(AccountKey key, string password, bool useNewProtocol);
+        void AddAccount(AccountKey key, string password);
         void RemoveAccount(AccountKey key);
-        void ChangeAccount(AccountKey key, string password, bool useNewProtocol);
+        void ChangeAccount(AccountKey key, string password);
         void ChangeAccountPassword(AccountKey key, string password);
-        void ChangeAccountProtocol(AccountKey key);
         ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info);
         ConnectionErrorInfo TestAccount(AccountKey accountId);
-        ConnectionErrorInfo TestCreds(AccountKey accountId, string password, bool useNewProtocol);
+        ConnectionErrorInfo TestCreds(AccountKey accountId, string password);
 
         event Action<AccountModelInfo, ChangeAction> AccountChanged;
         event Action<AccountModelInfo> AccountStateChanged;

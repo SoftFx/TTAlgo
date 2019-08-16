@@ -175,14 +175,8 @@ export class ApiService {
             .catch(err => this.handleServerError(err));
     }
 
-    ChangeAccountProtocol(acc: AccountModel) {
-        return this._http
-            .patch(`${this._accountsUrl}/ChangeProtocol`, acc, { headers: this.headers })
-            .catch(err => this.handleServerError(err));
-    }
-
     TestAccount(acc: AccountModel) {
-        return this._http.get(`${this._accountsUrl}/Test/?` + $.param({ login: acc.Login, server: acc.Server, password: acc.Password, useNewProtocol: acc.UseNewProtocol }), { headers: this.headers })
+        return this._http.get(`${this._accountsUrl}/Test/?` + $.param({ login: acc.Login, server: acc.Server, password: acc.Password }), { headers: this.headers })
             .map(res => new ConnectionTestResult(res.json()))
             .catch(err => this.handleServerError(err));
     }
