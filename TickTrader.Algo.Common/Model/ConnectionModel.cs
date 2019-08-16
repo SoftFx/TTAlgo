@@ -218,10 +218,7 @@ namespace TickTrader.Algo.Common.Model
                 CheckValidType(_options);
 
                 var options = _options.WithNewLogsFolder(Path.Combine(_options.LogsFolder, CurrentProtocol, $"{request.Address} - {request.Usermame}"));
-                if (request.UseSfx)
-                    _interop = new SfxInterop(options);
-                else
-                    _interop = new FdkInterop(options);
+                _interop = new SfxInterop(options);
 
                 _interop.Disconnected += _interop_Disconnected;
 

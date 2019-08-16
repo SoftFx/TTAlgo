@@ -38,12 +38,6 @@
     <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.4.0\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
-    <Reference Include="SoftFX.Extended.Net, Version=1.36.13.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.35.1500\lib\net40\SoftFX.Extended.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="SoftFX.Lrp, Version=1.17.0.0, Culture=neutral, PublicKeyToken=4233fb54369c191f, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoftFX.FDK.1.35.1500\lib\net40\SoftFX.Lrp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -140,8 +134,6 @@
     <Compile Include="Model.FeedCache\TickCrossDomainReader.cs" />
     <Compile Include="Model.FeedCache\TickSerializer.cs" />
     <Compile Include="Model.FeedCache\BarCrossDomainReader.cs" />
-    <Compile Include="Model.Interop\FdkAsyncExecutor.cs" />
-    <Compile Include="Model.Interop\FdkInterop.cs" />
     <Compile Include="Model.Interop\OrderInteropResult.cs" />
     <Compile Include="Model.Interop\SfxTaskAdapter.cs" />
     <Compile Include="Model.Interop\TimeSlicer.cs" />
@@ -167,8 +159,6 @@
     <Compile Include="Entities\ExecutionReport.cs" />
     <Compile Include="Model\CsvSerializer.cs" />
     <Compile Include="Model\EntityCache.cs" />
-    <Compile Include="Model\FdkExtension.cs" />
-    <Compile Include="Model.Interop\FdkCovertor.cs" />
     <Compile Include="Model.FeedCache\FeedCache.cs" />
     <Compile Include="Model\FeedHistoryProvider.cs" />
     <Compile Include="Model\Interfaces.cs" />

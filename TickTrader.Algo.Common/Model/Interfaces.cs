@@ -1,14 +1,6 @@
 ﻿using Machinarium.Qnil;
-using SoftFX.Extended;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Api;
 using TickTrader.Algo.Core;
-using TickTrader.SeriesStorage;
-using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Lib;
 using Machinarium.Var;
 
