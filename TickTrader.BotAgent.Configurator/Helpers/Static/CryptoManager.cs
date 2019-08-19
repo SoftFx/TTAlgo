@@ -1,4 +1,3 @@
-
 using TickTrader.BotAgent.Common;
 
 namespace TickTrader.BotAgent.Configurator

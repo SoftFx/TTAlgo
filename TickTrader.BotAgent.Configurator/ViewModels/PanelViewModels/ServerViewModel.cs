@@ -32,8 +32,6 @@ namespace TickTrader.BotAgent.Configurator
             RefreshModel();
         }
 
-        //public List<int> BusyPorts => _model?.Urls.Select(u => u.Port).ToList() ?? new List<int>();
-
         public ObservableCollection<string> Hosts => new ObservableCollection<string>(Urls.Select(u => u.Host).Distinct());
 
         public string Title => CurrentUri?.OldUri != null ? "Modify URL" : "Add URL";

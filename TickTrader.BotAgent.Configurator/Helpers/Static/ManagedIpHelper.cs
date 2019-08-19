@@ -5,7 +5,6 @@ using System.Net.NetworkInformation;
 using System.Net;
 using System.Collections;
 
-
 namespace TickTrader.BotAgent.Configurator
 {
 

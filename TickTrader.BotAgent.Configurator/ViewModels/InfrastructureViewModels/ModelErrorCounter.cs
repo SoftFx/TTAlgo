@@ -19,13 +19,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public static int TotalWarningCount { get; private set; }
 
-        public ModelErrorCounter() { _damagedFields = new SortedSet<string>(); }
-
-        public ModelErrorCounter(string key)
+        public ModelErrorCounter()
         {
-            _validationKey = key;
             _damagedFields = new SortedSet<string>();
             _warningFields = new SortedSet<string>();
+        }
+
+        public ModelErrorCounter(string key) : this()
+        {
+            _validationKey = key;
         }
 
         public void AddError(string field)
