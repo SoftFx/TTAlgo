@@ -64,18 +64,25 @@ namespace TickTrader.Algo.Core
             {
                 foreach (var rate in reader)
                 {
-                    FeedSeriesEmulator series;
-                    if (_feedSeries.TryGetValue(rate.Symbol, out series))
-                        series.Update(rate);
                     yield return rate;
                 }
             }
 
-            foreach (var series in _feedSeries.Values)
-                series.Close();
-
             if (reader.HasFailed)
                 throw new Exception("Failed to read feed stream! " + reader.Fault.Message, reader.Fault);
+        }
+
+        internal void UpdateHistory(RateUpdate rate)
+        {
+            FeedSeriesEmulator series;
+            if (_feedSeries.TryGetValue(rate.Symbol, out series))
+                series.Update(rate);
+        }
+
+        internal void CloseHistory()
+        {
+            foreach (var series in _feedSeries.Values)
+                series.Close();
         }
 
         internal BarVector GetBarBuilder(string symbol, TimeFrames timeframe, BarPriceType price)

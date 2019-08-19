@@ -343,6 +343,8 @@ namespace TickTrader.Algo.Core
                     return false;
                 }
 
+                _feed.UpdateHistory(nextTick);
+
                 UpdateVirtualTimepoint(nextTick.Time);
                 _collector.OnRateUpdate(nextTick);
 
@@ -441,6 +443,8 @@ namespace TickTrader.Algo.Core
 
         public void StopFeedRead()
         {
+            _feed.CloseHistory();
+
             if (_feedReader != null)
             {
                 _feedReader.Dispose();
@@ -463,6 +467,8 @@ namespace TickTrader.Algo.Core
 
         private void EmulateRateUpdate(RateUpdate rate)
         {
+            _feed.UpdateHistory(rate);
+
             DelayExecution();
 
             var bufferUpdate = OnFeedUpdate(rate, out var node);
