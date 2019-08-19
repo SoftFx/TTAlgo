@@ -105,10 +105,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Helpers\ManagedIpHelper.cs" />
+    <Compile Include="Helpers\Instance\AppInstanceRestrictor.cs" />
+    <Compile Include="Helpers\Static\ManagedIpHelper.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
+    <Compile Include="Helpers\Static\IoHelper.cs" />
     <Compile Include="ViewModels\InfrastructureViewModels\ModelErrorCounter.cs" />
-    <Compile Include="Helpers\CryptoManager.cs" />
+    <Compile Include="Helpers\Static\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />
     <Compile Include="Managers\ApplicationManages\PrompterManager.cs" />
     <Compile Include="Managers\ApplicationManages\ServiceManager.cs" />
@@ -140,13 +142,13 @@
     </Compile>
     <Compile Include="Managers\ConfigurationManagers\ContentManager.cs" />
     <Compile Include="Managers\ConfigurationManagers\CredentialsManager.cs" />
-    <Compile Include="Helpers\MessageBoxManager.cs" />
+    <Compile Include="Helpers\Static\MessageBoxManager.cs" />
     <Compile Include="Managers\ConfigurationManagers\ProtocolManager.cs" />
     <Compile Include="Managers\ApplicationManages\RegistryManager.cs" />
     <Compile Include="Managers\ConfigurationManagers\ServerManager.cs" />
     <Compile Include="Managers\ConfigurationManagers\SslManager.cs" />
-    <Compile Include="Infrastructure\Converters.cs" />
-    <Compile Include="Infrastructure\Exceptions.cs" />
+    <Compile Include="Infrastructure\Converters\ServiceStateToColorConverter.cs" />
+    <Compile Include="Infrastructure\Exceptions\WarningException.cs" />
     <Compile Include="Managers\ApplicationManages\PortsManager.cs" />
     <Compile Include="Infrastructure\Commands\DelegateCommand.cs" />
     <Compile Include="Models\ManagerModels\CredentialModel.cs" />

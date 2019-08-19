@@ -55,7 +55,7 @@ namespace TickTrader.BotAgent.Configurator
             {
                 if (obj == null)
                 {
-                    MessageBoxManager.ErrorBox("Please select an url to modify");
+                    MessageBoxManager.OkError("Please select an url to modify");
                     return;
                 }
 

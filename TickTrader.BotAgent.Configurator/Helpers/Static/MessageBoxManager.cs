@@ -4,7 +4,7 @@ namespace TickTrader.BotAgent.Configurator
 {
     static public class MessageBoxManager
     {
-        public static void ErrorBox(string message)
+        public static void OkError(string message)
         {
             MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }

@@ -17,6 +17,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private Window _mainWindow;
         private ConfigurationModel _model;
+        private AppInstanceRestrictor _appRestrictor = new AppInstanceRestrictor();
 
         private bool _runnignApplication;
         private string _title;
@@ -76,6 +77,9 @@ namespace TickTrader.BotAgent.Configurator
         {
             try
             {
+                if (!_appRestrictor.EnsureSingleInstace())
+                    Application.Current.Shutdown();
+
                 _mainWindow = Application.Current.MainWindow;
                 _model = new ConfigurationModel();
 
@@ -93,7 +97,11 @@ namespace TickTrader.BotAgent.Configurator
             catch (Exception ex)
             {
                 _logger.Fatal(ex);
-                MessageBoxManager.ErrorBox(ex.Message);
+                MessageBoxManager.OkError(ex.Message);
+
+                _appRestrictor.Dispose();
+                Dispose();
+
                 Application.Current.Shutdown();
             }
         }
@@ -209,7 +217,7 @@ namespace TickTrader.BotAgent.Configurator
                 }
                 catch (Exception ex)
                 {
-                    MessageBoxManager.ErrorBox(ex.Message);
+                    MessageBoxManager.OkError(ex.Message);
                     _logger.Error(ex);
                 }
             }));
@@ -233,7 +241,7 @@ namespace TickTrader.BotAgent.Configurator
                     catch (Exception ex)
                     {
                         _logger.Fatal(ex);
-                        MessageBoxManager.ErrorBox(ex.Message);
+                        MessageBoxManager.OkError(ex.Message);
                         Application.Current.Shutdown();
                     }
                 }
@@ -296,7 +304,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (Exception exx)
             {
                 _logger.Error(exx);
-                MessageBoxManager.ErrorBox(exx.Message);
+                MessageBoxManager.OkError(exx.Message);
             }
             finally
             {
@@ -354,7 +362,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                MessageBoxManager.ErrorBox("Saved settings was failed");
+                MessageBoxManager.OkError("Saved settings was failed");
                 return MessageBoxResult.No;
             }
             finally
