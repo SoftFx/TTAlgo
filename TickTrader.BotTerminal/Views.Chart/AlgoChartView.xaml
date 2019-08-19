@@ -201,7 +201,7 @@
             <ScrollBar Name="ChartScrollBar" Grid.Row="1" Orientation="Horizontal" IsEnabled="True" Visibility="Collapsed"
                        DataContext="{Binding ElementName=scrollBindProxy}"
                        ViewportSize="{Binding ViewportSize.Value}" Value="{Binding Position.Value}"
-                       Minimum="{Binding Minimum.Value}" Maximum="{Binding Maximum.Value}"/>
+                       Minimum="{Binding Minimum.Value}" Maximum="{Binding Maximum.Value}" SmallChange="1"/>
 
             <!--<s:SciChartSurface x:Name="OverviewSurface" Margin="0" Grid.Row="1"
                                Background="{TemplateBinding Background}"
