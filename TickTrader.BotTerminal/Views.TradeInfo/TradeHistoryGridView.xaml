@@ -326,14 +326,7 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Order" Width="90" Binding="{Binding UniqueId}" />
-                    <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
-                                <Binding Path="OpenTime"/>
-                                <Binding Path="Data.ConvertTimeToLocal" Source="{StaticResource ProxyContext}"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}"/>
                     <DataGridTextColumn Header="Type" Width="70" Binding="{Binding Type}"/>
                     <DataGridTextColumn Header="Action" Width="100" Binding="{Binding ActionType}" />
                     <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
@@ -359,14 +352,7 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Exec Time" Width="130" SortMemberPath="CloseTime">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
-                                <Binding Path="CloseTime"/>
-                                <Binding Path="Data.ConvertTimeToLocal" Source="{StaticResource ProxyContext}"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Exec Time" Width="130" SortMemberPath="CloseTime" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}"/>
                     <DataGridTextColumn Header="Exec Quantity" Width="70" SortMemberPath="CloseQuantity" >
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
