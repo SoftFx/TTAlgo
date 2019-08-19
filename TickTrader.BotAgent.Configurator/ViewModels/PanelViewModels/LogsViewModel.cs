@@ -17,8 +17,6 @@
         {
             _manager.UpdateLog();
 
-            //_logger.Info("Log was updated");
-
             OnPropertyChanged(nameof(Messages));
         }
 

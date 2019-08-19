@@ -12,6 +12,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public PortsManager PortsManager { get; }
 
+        public string SecretKey { get; set; }
+
         public List<Uri> Urls { get; private set; }
 
         public ServerModel(PortsManager portsManager)
@@ -34,8 +36,6 @@ namespace TickTrader.BotAgent.Configurator
                 Urls = !string.IsNullOrEmpty(value) ? value.Split(';').Select(u => new Uri(u)).ToList() : new List<Uri>();
             }
         }
-
-        public string SecretKey { get; set; }
 
         public void SetDefaultValues()
         {

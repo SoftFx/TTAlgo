@@ -15,13 +15,13 @@ namespace TickTrader.BotAgent.Configurator
 
     public abstract class BaseContentViewModel : BaseViewModel, IDataErrorInfo, IContentViewModel
     {
-        public string ModelDescription { get; set; }
-
         public ModelErrorCounter ErrorCounter { get; }
 
         public string Error { get; }
 
         public virtual string this[string columnName] => throw new System.NotImplementedException();
+
+        public string ModelDescription { get; set; }
 
         public BaseContentViewModel(string key = "")
         {

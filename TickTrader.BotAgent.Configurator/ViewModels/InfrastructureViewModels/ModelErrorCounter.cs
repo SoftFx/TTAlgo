@@ -11,13 +11,13 @@ namespace TickTrader.BotAgent.Configurator
 
         private SortedSet<string> _damagedFields, _warningFields;
 
-        public static int TotalErrorCount { get; private set; }
-
-        public static int TotalWarningCount { get; private set; }
-
         public bool HasModelErrorCount => _damagedFields?.Count > 0;
 
         public bool HasModelWarningCount => _warningFields?.Count > 0;
+
+        public static int TotalErrorCount { get; private set; }
+
+        public static int TotalWarningCount { get; private set; }
 
         public ModelErrorCounter() { _damagedFields = new SortedSet<string>(); }
 

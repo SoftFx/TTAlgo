@@ -12,6 +12,8 @@ namespace TickTrader.BotAgent.Configurator
 
         private RegistryManager _registry;
 
+        public IEnumerable<string> AgentPaths => _registry.AgentNodes.Select(n => n.Path);
+
         public bool NewCurrentAgent { get; private set; } = false;
 
         public AdvancedViewModel(RegistryManager registry, RefreshCounter refManager = null) : base(nameof(AdvancedViewModel))
@@ -22,8 +24,6 @@ namespace TickTrader.BotAgent.Configurator
 
             _keyPath = $"{nameof(AdvancedViewModel)} {nameof(SelectPath)}";
         }
-
-        public IEnumerable<string> AgentPaths => _registry.AgentNodes.Select(n => n.Path);
 
         public string SelectPath
         {
