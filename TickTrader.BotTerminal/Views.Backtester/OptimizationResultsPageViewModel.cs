@@ -76,13 +76,21 @@ namespace TickTrader.BotTerminal
             }
 
             row[_idColumn] = report.Config.Id;
-
-            if (report.ExecError is StopOutException)
-                row[_metricColumn] = new MetricView(report.MetricVal, "Stop Out");
-            else
-                row[_metricColumn] = new MetricView(report.MetricVal);
+            row[_metricColumn] = new MetricView(report.MetricVal, GetErrorMessage(report.ExecError));
 
             Data.Rows.Add(row);
+        }
+
+        private string GetErrorMessage(Exception ex)
+        {
+            if (ex == null)
+                return null;
+            else if (ex is StopOutException)
+                return "Stop Out";
+            else if (ex is NotEnoughDataException)
+                return "Not Enough Data";
+
+            return "Error";
         }
 
         public void Hide()

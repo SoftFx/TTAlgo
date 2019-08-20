@@ -168,14 +168,18 @@ namespace TickTrader.Algo.Core
 
         public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
         {
+            bool wasStarted = false;
+
             try
             {
                 if (!WarmUp(warmupValue, warmupUnits))
                 {
-                    _collector.AddEvent(LogSeverities.Error, "There is no enough data for warm-up!");
-                    return;
+                    var msg = "There is no enough data for warm-up!";
+                    _collector.AddEvent(LogSeverities.Error, msg);
+                    throw new NotEnoughDataException(msg);
                 }
                 _exStartAction();
+                wasStarted = true;
                 EmulateEvents();
                 EmulateStop();
                 StopFeedRead();
@@ -184,13 +188,15 @@ namespace TickTrader.Algo.Core
             {
                 _collector.AddEvent(LogSeverities.Error, "Testing canceled!");
                 StopFeedRead();
-                EmulateStop();
+                if (wasStarted)
+                    EmulateStop();
                 throw;
             }
             catch (Exception)
             {
                 StopFeedRead();
-                EmulateStop();
+                if (wasStarted)
+                    EmulateStop();
                 throw;
             }
             finally

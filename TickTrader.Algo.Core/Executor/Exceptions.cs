@@ -45,4 +45,17 @@ namespace TickTrader.Algo.Core
         {
         }
     }
+
+    [Serializable]
+    public class NotEnoughDataException : AlgoException
+    {
+        public NotEnoughDataException(string msg) : base(msg)
+        {
+        }
+
+        protected NotEnoughDataException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
 }

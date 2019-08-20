@@ -302,7 +302,10 @@ namespace TickTrader.Algo.Core
 
             private OptCaseReport FilleReport(OptCaseConfig cfg, PluginBuilder builder, BacktesterCollector collector, Exception error)
             {
-                var metric = MetricSelector.GetMetric(builder, collector.Stats);
+                var metric = 0d;
+
+                if (builder != null)
+                    metric = MetricSelector.GetMetric(builder, collector.Stats);
 
                 var rep = new OptCaseReport(cfg, metric, collector.Stats, error);
 
