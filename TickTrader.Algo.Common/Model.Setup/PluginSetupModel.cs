@@ -143,7 +143,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata.Descriptor);
             Permissions = new PluginPermissions();
 
-            _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
                 p.Reset();
 

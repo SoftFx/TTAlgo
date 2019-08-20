@@ -30,9 +30,9 @@ namespace TickTrader.BotTerminal
                 if (typedUpdate != null)
                 {
                     if (typedUpdate.Action == SeriesUpdateActions.Append)
-                        Appended(typedUpdate.Value);
+                        Appended?.Invoke(typedUpdate.Value);
                     else if (typedUpdate.Action == SeriesUpdateActions.Update)
-                        Updated(typedUpdate.Value);
+                        Updated?.Invoke(typedUpdate.Value);
                 }
             }
         }
@@ -43,8 +43,8 @@ namespace TickTrader.BotTerminal
 
         public event Action<OutputFixture<T>.Point> Appended;
         public event Action<OutputFixture<T>.Point> Updated;
-        public event Action<OutputFixture<T>.Point[]> SnapshotAppended;
-        public event Action<int> Truncated;
+        public event Action<OutputFixture<T>.Point[]> SnapshotAppended { add { } remove { } }
+        public event Action<int> Truncated { add { } remove { } }
 
         public void Dispose()
         {

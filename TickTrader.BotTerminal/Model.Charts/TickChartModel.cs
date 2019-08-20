@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
             bidData.Clear();
         }
 
-        protected override async Task LoadData(CancellationToken cToken)
+        protected override Task LoadData(CancellationToken cToken)
         {
             lastSeriesQuote = null;
 
@@ -94,6 +94,8 @@ namespace TickTrader.BotTerminal
                     InitBoundaries(tickArray.Length, start, end);
                 }
             }
+
+            return Task.FromResult(this);
         }
 
         protected override void ApplyUpdate(QuoteEntity update)
