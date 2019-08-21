@@ -271,7 +271,7 @@ namespace TickTrader.BotTerminal
             if (IsBalanceTransaction)
                 return transaction.TransactionAmount;
 
-            return (OrderWasCanceled() ? transaction.RemainingQuantity  : transaction.OrderLastFillAmount) / LotSize;
+            return (OrderWasCanceled() ? transaction.RemainingQuantity : transaction.OrderLastFillAmount) / LotSize;
         }
 
         protected virtual double? GetSlippage(TradeReportEntity transaction)
@@ -383,8 +383,7 @@ namespace TickTrader.BotTerminal
 
         protected string GetTag(TradeReportEntity transaction)
         {
-            CompositeTag.TryParse(transaction.Tag, out CompositeTag tag);
-            return tag?.Tag ?? transaction.Tag;
+            return CompositeTag.TryParse(transaction.Tag, out CompositeTag tag) ? tag?.Tag : transaction.Tag;
         }
 
         protected string GetSortedNumber()
