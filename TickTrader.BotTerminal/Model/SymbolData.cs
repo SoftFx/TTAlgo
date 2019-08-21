@@ -62,12 +62,12 @@ namespace TickTrader.BotTerminal
 
         public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
         {
-            _storage.Put(Name, frame, priceType, from, to, values);
+            _storage.Put(Name, frame, priceType, from, to, values).Wait();
         }
 
         public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
         {
-            _storage.Put(Name, timeFrame, from, to, values);
+            _storage.Put(Name, timeFrame, from, to, values).Wait();
         }
 
         public BlockingChannel<Slice<DateTime, BarEntity>> ReadCachedBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
