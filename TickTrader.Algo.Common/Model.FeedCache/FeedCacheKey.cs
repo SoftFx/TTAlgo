@@ -19,7 +19,10 @@ namespace TickTrader.Algo.Common.Model
         {
             Symbol = symbol;
             Frame = timeFrame;
-            PriceType = priceType;
+            if (Frame == TimeFrames.Ticks || Frame == TimeFrames.TicksLevel2)
+                PriceType = null;
+            else
+                PriceType = priceType;
         }
 
         internal string ToCodeString()

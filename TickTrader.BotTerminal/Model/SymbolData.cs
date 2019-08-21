@@ -221,7 +221,7 @@ namespace TickTrader.BotTerminal
         public override bool IsCustom => true;
         public override string Description => _symbolInfo.Description;
         public override string Security => "";
-        public override SymbolEntity InfoEntity => new SymbolEntity(Name) { IsTradeAllowed = true, SwapEnabled = false, MinAmount = 0.001, MaxAmount = 100000 };
+        public override SymbolEntity InfoEntity => GetInfo();
         public override bool IsDataAvailable => true;
 
         public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
@@ -242,6 +242,21 @@ namespace TickTrader.BotTerminal
         public override SymbolToken ToSymbolToken()
         {
             return new SymbolToken(Name, SymbolOrigin.Custom);
+        }
+
+        private SymbolEntity GetInfo()
+        {
+            return new SymbolEntity(Name)
+            {
+                IsTradeAllowed = true,
+                SwapEnabled = false,
+                MinAmount = 0.001,
+                MaxAmount = 100000,
+                AmountStep = 0.001,
+                LotSize = 100000,
+                BaseCurrencyCode = Entity.BaseCurr,
+                CounterCurrencyCode = Entity.ProfitCurr,
+            };
         }
     }
 

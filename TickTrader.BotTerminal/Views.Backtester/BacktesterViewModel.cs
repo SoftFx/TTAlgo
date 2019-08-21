@@ -47,6 +47,7 @@ namespace TickTrader.BotTerminal
         private BoolProperty _isRunning;
         private BoolProperty _isVisualizing;
         private ITestExecController _tester;
+        private Dictionary<string, SymbolEntity> _testingSymbols;
         private Property<EmulatorStates> _stateProp;
         private BoolProperty _pauseRequestedProp;
         private BoolProperty _resumeRequestedProp;
@@ -229,6 +230,8 @@ namespace TickTrader.BotTerminal
                             SetupPage.Apply(backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
                             backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 
+                            _testingSymbols = backtester.CommonSettings.Symbols;
+
                             FireOnStart(chartSymbol, pluginSetupModel, backtester);
 
                             _hasDataToSave.Set();
@@ -287,6 +290,8 @@ namespace TickTrader.BotTerminal
                         SetupPage.Apply(optimizer, _emulteFrom, _emulateTo);
 
                         optimizer.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+
+                        _testingSymbols = optimizer.CommonSettings.Symbols;
 
                         // setup params
                         OptimizationPage.Apply(optimizer);
@@ -398,7 +403,9 @@ namespace TickTrader.BotTerminal
 
         private void Executor_TradeHistoryUpdated(TradeReportEntity record)
         {
-            var symbols = _client.Symbols;
+            var currencies = _client.Currencies;
+            var symbols = _testingSymbols.Select(kv => new SymbolModel(kv.Value, currencies)).ToDictionary(m => m.Name);
+
             var accType = SetupPage.Settings.AccType;
             var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
