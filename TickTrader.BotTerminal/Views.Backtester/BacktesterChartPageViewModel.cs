@@ -97,6 +97,8 @@ namespace TickTrader.BotTerminal
             ChartControlModel.OutputGroups.Add(outputGroup);
 
             _actionIdSeed = 0;
+
+            _postponedMarkers.Clear();
         }
 
         public void OnStop(Backtester backtester)
@@ -109,7 +111,10 @@ namespace TickTrader.BotTerminal
         private void Backtester_OnChartUpdate(BarEntity bar, string symbol, SeriesUpdateActions action)
         {
             if (action == SeriesUpdateActions.Append)
+            {
                 _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+                ApplyPostponedMarkers();
+            }
         }
 
         private void Executor_SymbolRateUpdated(Algo.Api.RateUpdate update)
@@ -129,6 +134,8 @@ namespace TickTrader.BotTerminal
                     if (bar != null)
                         _barVector.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
                 }
+
+                ApplyPostponedMarkers();
             }
         }
 
@@ -248,9 +255,41 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private Queue<MarkerInfo> _postponedMarkers = new Queue<MarkerInfo>();
+
         private void AddMarker(PosMarkerKey key, DateTime pointTime, bool isBuy, string description)
         {
-            var index = _barVector.Ref.BinarySearch(pointTime, BinarySearchTypes.NearestLower);
+            var markerInfo = new MarkerInfo(key, pointTime, isBuy, description);
+
+            if (_barVector.Count == 0 || _barVector.Last().CloseTime < pointTime)
+                _postponedMarkers.Enqueue(markerInfo);
+            else
+                PlaceMarker(markerInfo);
+        }
+
+        private void ApplyPostponedMarkers()
+        {
+            if (_barVector.Count > 0)
+            {
+                var timeEdge = _barVector.Last().CloseTime;
+
+                while (_postponedMarkers.Count > 0)
+                {
+                    var info = _postponedMarkers.Peek();
+
+                    if (info.Timestamp < timeEdge)
+                    {
+                        _postponedMarkers.Dequeue();
+                        PlaceMarker(info);
+                    }
+                    else break;
+                }
+            }
+        }
+
+        private void PlaceMarker(MarkerInfo info)
+        {
+            var index = _barVector.Ref.BinarySearch(info.Timestamp, BinarySearchTypes.NearestHigher);
             if (index > 0)
             {
                 var bar = _barVector[index];
@@ -259,11 +298,11 @@ namespace TickTrader.BotTerminal
 
                 if (existingMeta != null)
                 {
-                    if (!existingMeta.HasRecordFor(key))
-                        existingMeta.AddRecord(key, description, isBuy);
+                    if (!existingMeta.HasRecordFor(info.Key))
+                        existingMeta.AddRecord(info.Key, info.Description, info.IsBuy);
                 }
                 else
-                    _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(key, description, isBuy);
+                    _barVector.MarkersData.Metadata[index] = new PositionMarkerMetadatda(info.Key, info.Description, info.IsBuy);
             }
         }
 
@@ -282,6 +321,22 @@ namespace TickTrader.BotTerminal
         }
 
         #endregion
+
+        private struct MarkerInfo
+        {
+            public MarkerInfo(PosMarkerKey key, DateTime time, bool isBuy, string description)
+            {
+                Key = key;
+                Timestamp = time;
+                IsBuy = isBuy;
+                Description = description;
+            }
+
+            public PosMarkerKey Key { get; set; }
+            public DateTime Timestamp { get; set; }
+            public bool IsBuy { get; set; }
+            public string Description { get; set; }
+        }
     }
 
     internal class BacktesterChartPaneModel
