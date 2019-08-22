@@ -32,11 +32,19 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        // Empty quote can't be indicative. Indicative quote should always have price
         public QuoteEntity(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks)
+            : this(symbol, time, bids, asks, bids?.Length > 0 ? bids[0].Volume <= 0 : false, asks?.Length > 0 ? asks[0].Volume <= 0 : false)
+        {
+        }
+
+        public QuoteEntity(string symbol, DateTime time, BookEntry[] bids, BookEntry[] asks, bool isBidIndicative, bool isAskIndicative)
         {
             Symbol = symbol;
             Time = time;
-            
+            IsBidIndicative = isBidIndicative;
+            IsAskIndicative = isAskIndicative;
+
             bids = bids ?? new BookEntry[0];
             asks = asks ?? new BookEntry[0];
 
@@ -89,6 +97,8 @@ namespace TickTrader.Algo.Core
         public double Bid => _bid ?? double.NaN;
         public BookEntry[] BidList { get; private set; }
         public BookEntry[] AskList { get; private set; }
+        public bool IsAskIndicative { get; private set; }
+        public bool IsBidIndicative { get; private set; }
 
         public BookEntry[] BidBook { get { return BidList; } }
         public BookEntry[] AskBook { get { return AskList; } }
@@ -108,7 +118,7 @@ namespace TickTrader.Algo.Core
         double RateUpdate.BidLow => Bid;
         double RateUpdate.BidOpen => Bid;
         int RateUpdate.NumberOfQuotes => 1;
-        
+
         Quote RateUpdate.LastQuote => this;
 
         #endregion

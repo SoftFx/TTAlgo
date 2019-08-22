@@ -961,7 +961,9 @@ namespace TickTrader.Algo.Common.Model
 
         private static QuoteEntity Convert(SFX.Quote fdkTick)
         {
-            return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
+            return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks),
+                fdkTick.TickType == SFX.TickTypes.IndicativeBid || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
+                fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk);
         }
 
         public static Core.TradeTransactionReason Convert(SFX.TradeTransactionReason reason)
