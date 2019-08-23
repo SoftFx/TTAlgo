@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core
 {
@@ -20,12 +21,10 @@ namespace TickTrader.Algo.Core
 
         public static BufferUpdateResult operator +(BufferUpdateResult x, BufferUpdateResult y)
         {
-            bool isLastUpdated = x.IsLastUpdated || (x.ExtendedBy == 0 && y.IsLastUpdated);
-
             return new BufferUpdateResult()
             {
-                IsLastUpdated = isLastUpdated,
-                ExtendedBy = x.ExtendedBy + y.ExtendedBy
+                IsLastUpdated = x.IsLastUpdated || y.IsLastUpdated,
+                ExtendedBy = Math.Max(x.ExtendedBy, y.ExtendedBy)
             };
         }
     }
@@ -52,6 +51,7 @@ namespace TickTrader.Algo.Core
     public interface ISynchronizationContext
     {
         void Invoke(Action action);
+        void Send(Action action);
     }
 
     public interface ILinkOutput<T> : IDisposable
@@ -75,9 +75,11 @@ namespace TickTrader.Algo.Core
     internal interface IFixtureContext
     {
         PluginBuilder Builder { get; }
+        AlgoMarketState MarketData { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         PluginLoggerAdapter Logger { get; }
+        bool IsGlobalUpdateMarshalingEnabled { get; }
 
         void EnqueueQuote(QuoteEntity update);
         void EnqueueTradeUpdate(Action<PluginBuilder> action);
@@ -85,6 +87,8 @@ namespace TickTrader.Algo.Core
         void EnqueueCustomInvoke(Action<PluginBuilder> action);
         void ProcessNextOrderUpdate();
         void OnInternalException(Exception ex);
+
+        void SendExtUpdate(object update);
 
         IPluginFeedProvider FeedProvider { get; }
         SubscriptionManager Dispenser { get; }
@@ -105,10 +109,18 @@ namespace TickTrader.Algo.Core
         void Restart();
     }
 
+    internal class NullExecFixture : IExecutorFixture
+    {
+        public void Dispose() { }
+        public void Restart() { }
+        public void Start() { }
+        public void Stop() { }
+    }
+
     //internal interface IFeedFixtureContext
     //{
     //    IFixtureContext ExecContext { get; }
-        
+
     //    //void Add(IRateSubscription subscriber);
     //    //void Remove(IRateSubscription subscriber);
     //}

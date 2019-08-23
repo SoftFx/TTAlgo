@@ -12,7 +12,7 @@ namespace TickTrader.Algo.Core
         private BarSampler sampler;
         private BarSeriesFixture mainSeriesFixture;
         private List<BarEntity> mainSeries;
-        private Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture> fixtures;
+        private Dictionary<string, BarSeriesFixture[]> fixtures;
 
         public BarStrategy(BarPriceType mainPirceTipe)
         {
@@ -26,11 +26,16 @@ namespace TickTrader.Algo.Core
         internal override void OnInit()
         {
             sampler = BarSampler.Get(ExecContext.TimeFrame);
-            fixtures = new Dictionary<Tuple<string, BarPriceType>, BarSeriesFixture>();
+            fixtures = new Dictionary<string, BarSeriesFixture[]>();
             mainSeriesFixture = new BarSeriesFixture(ExecContext.MainSymbolCode, MainPriceType, ExecContext, mainSeries);
             ExecContext.Builder.MainBufferId = GetKey(ExecContext.MainSymbolCode, MainPriceType);
 
-            fixtures.Add(GetKey(ExecContext.MainSymbolCode, MainPriceType), mainSeriesFixture);
+            AddFixture(ExecContext.MainSymbolCode, MainPriceType, mainSeriesFixture);
+        }
+
+        protected override FeedStrategy CreateClone()
+        {
+            return new BarStrategy(MainPriceType);
         }
 
         internal static Tuple<string, BarPriceType> GetKey(string symbol, BarPriceType priceType)
@@ -38,31 +43,64 @@ namespace TickTrader.Algo.Core
             return new Tuple<string, BarPriceType>(symbol, priceType);
         }
 
-        private void InitSymbol(Tuple<string, BarPriceType> key)
+        private void InitSymbol(string symbol, BarPriceType priceType)
         {
-            BarSeriesFixture fixture;
-            if (!fixtures.TryGetValue(key, out fixture))
+            BarSeriesFixture fixture = GetFixutre(symbol, priceType);
+            if (fixture == null)
             {
-                fixture = new BarSeriesFixture(key.Item1, key.Item2, ExecContext, null, mainSeriesFixture);
-                fixtures.Add(key, fixture);
+                fixture = new BarSeriesFixture(symbol, priceType, ExecContext, null, mainSeriesFixture);
+                AddFixture(symbol, priceType, fixture);
                 BufferingStrategy.InitBuffer(fixture);
             }
         }
 
         private BarSeriesFixture GetFixutre(string smbCode, BarPriceType priceType)
         {
-            BarSeriesFixture fixture;
-            fixtures.TryGetValue(GetKey(smbCode, priceType), out fixture);
-            return fixture;
+            BarSeriesFixture[] fixturePair;
+            if (fixtures.TryGetValue(smbCode, out fixturePair))
+            {
+                if (priceType == BarPriceType.Bid)
+                    return fixturePair[0];
+                else
+                    return fixturePair[1];
+            }
+            return null;
+        }
+
+        private bool GetBothFixtures(string smbCode, out BarSeriesFixture bid, out BarSeriesFixture ask)
+        {
+            BarSeriesFixture[] fixturePair;
+            if (fixtures.TryGetValue(smbCode, out fixturePair))
+            {
+                bid = fixturePair[0];
+                ask = fixturePair[1];
+                return true;
+            }
+            bid = null;
+            ask = null;
+            return false;
+        }
+
+        private void AddFixture(string smbCode, BarPriceType priceType, BarSeriesFixture fixture)
+        {
+            BarSeriesFixture[] fixturePair;
+            if (!fixtures.TryGetValue(smbCode, out fixturePair))
+            {
+                fixturePair = new BarSeriesFixture[2];
+                fixtures.Add(smbCode, fixturePair);
+            }
+
+            if (priceType == BarPriceType.Bid)
+                fixturePair[0] = fixture;
+            else
+                fixturePair[1] = fixture;
         }
 
         protected override BufferUpdateResult UpdateBuffers(RateUpdate update)
         {
             var overallResult = new BufferUpdateResult();
-            //var aggregation = update as BarRateUpdate;
 
-            var askFixture = GetFixutre(update.Symbol, BarPriceType.Ask);
-            var bidFixture = GetFixutre(update.Symbol, BarPriceType.Bid);
+            GetBothFixtures(update.Symbol, out var bidFixture, out var askFixture);
 
             if (askFixture != null)
             {
@@ -77,7 +115,7 @@ namespace TickTrader.Algo.Core
                 var bidResult = bidFixture.Update(update);
                 if (update.Symbol != mainSeriesFixture.SymbolCode || MainPriceType != BarPriceType.Bid)
                     bidResult.ExtendedBy = 0;
-                overallResult = bidResult;
+                overallResult += bidResult;
             }
 
             if (overallResult.ExtendedBy > 0)
@@ -106,7 +144,7 @@ namespace TickTrader.Algo.Core
 
         protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
         {
-            InitSymbol(GetKey(symbol, side));
+            InitSymbol(symbol, side);
             var fixture = GetFixutre(symbol, side);
             var proxyBuffer = new ProxyBuffer<BarEntity, Api.Bar>(b => b) { SrcBuffer = fixture.Buffer };
             return new BarSeriesProxy() { Buffer = proxyBuffer };
@@ -122,22 +160,22 @@ namespace TickTrader.Algo.Core
 
         public void MapInput<TVal>(string inputName, string symbolCode, BarPriceType priceType, Func<BarEntity, TVal> selector)
         {
-            AddSetupAction(() =>
+            AddSetupAction(fs =>
             {
+                ((BarStrategy)fs).InitSymbol(symbolCode, priceType);
                 var key = GetKey(symbolCode, priceType);
-                InitSymbol(key);
-                ExecContext.Builder.MapInput(inputName, key, selector);
+                fs.ExecContext.Builder.MapInput(inputName, key, selector);
             });
         }
 
         public void MapInput<TVal>(string inputName, string symbolCode, Func<BarEntity, BarEntity, TVal> selector)
         {
-            AddSetupAction(() =>
+            AddSetupAction(fs =>
             {
                 var key1 = GetKey(symbolCode, BarPriceType.Bid);
                 var key2 = GetKey(symbolCode, BarPriceType.Ask);
-                InitSymbol(key1);
-                InitSymbol(key2);
+                ((BarStrategy)fs).InitSymbol(symbolCode, BarPriceType.Ask);
+                ((BarStrategy)fs).InitSymbol(symbolCode, BarPriceType.Bid);
                 ExecContext.Builder.MapInput(inputName, key1, key2, selector);
             });
         }

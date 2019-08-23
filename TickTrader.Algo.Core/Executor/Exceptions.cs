@@ -32,4 +32,30 @@ namespace TickTrader.Algo.Core
         {
         }
     }
+
+    [Serializable]
+    public class AlgoOperationCanceledException : AlgoException
+    {
+        public AlgoOperationCanceledException(string msg) : base(msg)
+        {
+        }
+
+        protected AlgoOperationCanceledException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
+
+    [Serializable]
+    public class NotEnoughDataException : AlgoException
+    {
+        public NotEnoughDataException(string msg) : base(msg)
+        {
+        }
+
+        protected NotEnoughDataException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
 }

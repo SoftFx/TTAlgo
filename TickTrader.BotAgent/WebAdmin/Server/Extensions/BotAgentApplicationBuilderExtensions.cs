@@ -3,9 +3,9 @@ using TickTrader.BotAgent.BA;
 using Microsoft.Extensions.DependencyInjection;
 using TickTrader.BotAgent.BA.Models;
 using System;
-using Microsoft.AspNetCore.SignalR.Infrastructure;
 using TickTrader.BotAgent.WebAdmin.Server.Hubs;
 using TickTrader.Algo.Common.Info;
+using Microsoft.AspNetCore.SignalR;
 
 namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
 {
@@ -13,12 +13,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
     {
         private static IServiceProvider _services;
 
-        private static Microsoft.AspNetCore.SignalR.IHubContext Hub
+        private static IHubContext<BAFeed, IBAFeed> Hub
         {
             get
             {
-                var signalRConnectionManager = _services.GetService<IConnectionManager>();
-                var _hub = signalRConnectionManager.GetHubContext<BAFeed>();
+                var _hub = _services.GetRequiredService<IHubContext<BAFeed, IBAFeed>>();
                 return _hub;
             }
         }

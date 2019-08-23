@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 
 namespace TickTrader.Algo.Core.UnitTest
 {
@@ -76,6 +77,10 @@ namespace TickTrader.Algo.Core.UnitTest
         public IAccountInfoProvider AccInfoProvider => throw new NotImplementedException();
         public ITradeExecutor TradeExecutor => throw new NotImplementedException();
 
+        public bool IsGlobalUpdateMarshalingEnabled => false;
+
+        public AlgoMarketState MarketData { get; } = new AlgoMarketState();
+
         public void EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
         }
@@ -103,6 +108,10 @@ namespace TickTrader.Algo.Core.UnitTest
         public void EnqueueUserCallback(Action<PluginBuilder> action)
         {
             throw new NotImplementedException();
+        }
+
+        public void SendExtUpdate(object update)
+        {
         }
     }
 }

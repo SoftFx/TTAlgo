@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,30 +12,32 @@ using TickTrader.Algo.Common.Model;
 
 namespace TickTrader.BotTerminal
 {
-    class BacktesterTradeGridViewModel
+    class BacktesterTradeGridViewModel : Page
     {
-        private List<TransactionReport> _reports;
+        private ObservableCollection<TransactionReport> _reports = new ObservableCollection<TransactionReport>();
 
-        public BacktesterTradeGridViewModel()
+        public BacktesterTradeGridViewModel(ProfileManager profile = null)
         {
-            GridView = new TradeHistoryGridViewModel(new List<TransactionReport>());
-            GridView.AutoSizeColumns = false;
+            DisplayName = "Trade History";
+
+            GridView = new TradeHistoryGridViewModel(new List<TransactionReport>(), profile, true);
             GridView.ConvertTimeToLocal = false;
+            GridView.IsSlippageSupported = false;
             GridView.AccType.Value = Algo.Api.AccountTypes.Gross;
+            GridView.SetCollection(_reports);
         }
 
         public TradeHistoryGridViewModel GridView { get; }
 
-        public void Clear(AccountTypes newAccType)
+        public void OnTesterStart(AccountTypes newAccType)
         {
-            GridView.SetCollection(new List<TransactionReport>());
+            _reports.Clear();
             GridView.AccType.Value = newAccType;
         }
 
-        public void Fill(List<TransactionReport> reports)
+        public void Append(TransactionReport report)
         {
-            _reports = reports;
-            GridView.SetCollection(reports);
+            _reports.Add(report);
         }
 
         public async Task SaveAsCsv(Stream entryStream, IActionObserver observer)
@@ -44,10 +47,10 @@ namespace TickTrader.BotTerminal
             observer.SetMessage("Saving trades...");
             observer.StartProgress(0, _reports.Count);
 
-            Action writeCsvAction = () => TradeReportCsvSerializer.Serialize(
+            System.Action writeCsvAction = () => TradeReportCsvSerializer.Serialize(
                 _reports, entryStream, GridView.GetAccTypeValue(), i => Interlocked.Exchange(ref progress, i));
 
-            Action updateProgressAction = () => observer.SetProgress(Interlocked.Read(ref progress));
+            System.Action updateProgressAction = () => observer.SetProgress(Interlocked.Read(ref progress));
 
             using (new UiUpdateTimer(updateProgressAction))
                 await Task.Factory.StartNew(writeCsvAction);

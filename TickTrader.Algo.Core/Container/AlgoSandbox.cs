@@ -23,8 +23,8 @@ namespace TickTrader.Algo.Core.Container
 
             try
             {
-                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+                //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+                //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
                 src.Init();
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core.Container
 
         public IEnumerable<PluginMetadata> AlgoMetadata { get; private set; }
 
-        internal T Activate<T>() where T : MarshalByRefObject, new()
+        public T Activate<T>() where T : MarshalByRefObject, new()
         {
             return new T();
         }
@@ -51,6 +51,11 @@ namespace TickTrader.Algo.Core.Container
         public PluginExecutor CreateExecutor(string pluginId)
         {
             return new PluginExecutor(pluginId);
+        }
+
+        public PluignExecutorFactory CreateExecutorFactory(string pluginId)
+        {
+            return new PluignExecutorFactory(pluginId);
         }
 
         private void LoadAndInspect(string filePath)

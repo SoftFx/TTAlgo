@@ -12,72 +12,72 @@ namespace TickTrader.Algo.Core.UnitTest
     public class MathTest
     {
         [TestMethod]
-        public void TestDecimalFloorBy_d0()
+        public void TestFloorBy_d0()
         {
             var decimals = 0;
 
-            Assert.AreEqual(0M, Rounding.FloorBy(0.25M, decimals));
-            Assert.AreEqual(-1M, Rounding.FloorBy(-0.37M, decimals));
-            Assert.AreEqual(1M, Rounding.FloorBy(1, decimals));
-            Assert.AreEqual(1M, Rounding.FloorBy(1.2M, decimals));
-            Assert.AreEqual(1M, Rounding.FloorBy(1.99M, decimals));
-            Assert.AreEqual(1M, Rounding.FloorBy(1.9999999999999M, decimals));
-            Assert.AreEqual(1234M, Rounding.FloorBy(1234.5M, decimals));
-            Assert.AreEqual(-1M, Rounding.FloorBy(-1, decimals));
-            Assert.AreEqual(-2M, Rounding.FloorBy(-1.9M, decimals));
-            Assert.AreEqual(-2M, Rounding.FloorBy(-1.9999999999999M, decimals));
+            Assert.AreEqual(0, Rounding.FloorBy(0.25, decimals));
+            Assert.AreEqual(-1, Rounding.FloorBy(-0.37, decimals));
+            Assert.AreEqual(1, Rounding.FloorBy(1d, decimals));
+            Assert.AreEqual(1, Rounding.FloorBy(1.2, decimals));
+            Assert.AreEqual(1, Rounding.FloorBy(1.99, decimals));
+            Assert.AreEqual(1, Rounding.FloorBy(1.9999999999999, decimals));
+            Assert.AreEqual(1234, Rounding.FloorBy(1234.5, decimals));
+            Assert.AreEqual(-1, Rounding.FloorBy(-1d, decimals));
+            Assert.AreEqual(-2, Rounding.FloorBy(-1.9, decimals));
+            Assert.AreEqual(-2, Rounding.FloorBy(-1.9999999999999, decimals));
         }
 
         [TestMethod]
-        public void TestDecimalFloorBy_d1()
+        public void TestFloorBy_d1()
         {
             var decimals = 1;
 
-            Assert.AreEqual(0.2M, Rounding.FloorBy(0.25M, decimals));
-            Assert.AreEqual(-0.4M, Rounding.FloorBy(-0.37M, decimals));
-            Assert.AreEqual(1M, Rounding.FloorBy(1, decimals));
-            Assert.AreEqual(1.2M, Rounding.FloorBy(1.2M, decimals));
-            Assert.AreEqual(1.9M, Rounding.FloorBy(1.99M, decimals));
-            Assert.AreEqual(1.9M, Rounding.FloorBy(1.9999999999999M, decimals));
-            Assert.AreEqual(1234.5M, Rounding.FloorBy(1234.5M, decimals));
-            Assert.AreEqual(-1M, Rounding.FloorBy(-1, decimals));
-            Assert.AreEqual(-1.9M, Rounding.FloorBy(-1.9M, decimals));
-            Assert.AreEqual(-2M, Rounding.FloorBy(-1.9999999999999M, decimals));
+            Assert.AreEqual(0.2, Rounding.FloorBy(0.25, decimals));
+            Assert.AreEqual(-0.4, Rounding.FloorBy(-0.37, decimals));
+            Assert.AreEqual(1, Rounding.FloorBy(1d, decimals));
+            Assert.AreEqual(1.2, Rounding.FloorBy(1.2, decimals));
+            Assert.AreEqual(1.9, Rounding.FloorBy(1.99, decimals));
+            Assert.AreEqual(1.9, Rounding.FloorBy(1.9999999999999, decimals));
+            Assert.AreEqual(1234.5, Rounding.FloorBy(1234.5, decimals));
+            Assert.AreEqual(-1, Rounding.FloorBy(-1d, decimals));
+            Assert.AreEqual(-1.9, Rounding.FloorBy(-1.9, decimals));
+            Assert.AreEqual(-2, Rounding.FloorBy(-1.9999999999999, decimals));
         }
 
         [TestMethod]
-        public void TestDecimalCeilBy_d0()
+        public void TestCeilBy_d0()
         {
             var decimals = 0;
 
-            Assert.AreEqual(1M, Rounding.CeilBy(0.25M, decimals));
-            Assert.AreEqual(0M, Rounding.CeilBy(-0.37M, decimals));
-            Assert.AreEqual(1M, Rounding.CeilBy(1, decimals));
-            Assert.AreEqual(2M, Rounding.CeilBy(1.2M, decimals));
-            Assert.AreEqual(2M, Rounding.CeilBy(1.99M, decimals));
-            Assert.AreEqual(2M, Rounding.CeilBy(1.9999999999999M, decimals));
-            Assert.AreEqual(1235M, Rounding.CeilBy(1234.5M, decimals));
-            Assert.AreEqual(-1M, Rounding.CeilBy(-1, decimals));
-            Assert.AreEqual(-1M, Rounding.CeilBy(-1.9M, decimals));
-            Assert.AreEqual(-1M, Rounding.CeilBy(-1.9999999999999M, decimals));
+            Assert.AreEqual(1, Rounding.CeilBy(0.25, decimals));
+            Assert.AreEqual(0, Rounding.CeilBy(-0.37, decimals));
+            Assert.AreEqual(1, Rounding.CeilBy(1d, decimals));
+            Assert.AreEqual(2, Rounding.CeilBy(1.2, decimals));
+            Assert.AreEqual(2, Rounding.CeilBy(1.99, decimals));
+            Assert.AreEqual(2, Rounding.CeilBy(1.9999999999999, decimals));
+            Assert.AreEqual(1235, Rounding.CeilBy(1234.5, decimals));
+            Assert.AreEqual(-1, Rounding.CeilBy(-1d, decimals));
+            Assert.AreEqual(-1, Rounding.CeilBy(-1.9, decimals));
+            Assert.AreEqual(-1, Rounding.CeilBy(-1.9999999999999, decimals));
         }
 
         [TestMethod]
-        public void TestDecimalCeilBy_d1()
+        public void TestCeilBy_d1()
         {
             var decimals = 1;
 
-            Assert.AreEqual(0.3M, Rounding.CeilBy(0.25M, decimals));
-            Assert.AreEqual(-0.3M, Rounding.CeilBy(-0.37M, decimals));
-            Assert.AreEqual(1M, Rounding.CeilBy(1, decimals));
-            Assert.AreEqual(1.2M, Rounding.CeilBy(1.2M, decimals));
-            Assert.AreEqual(2M, Rounding.CeilBy(1.99M, decimals));
-            Assert.AreEqual(2M, Rounding.CeilBy(1.9999999999999M, decimals));
-            Assert.AreEqual(3.3M, Rounding.CeilBy(3.246M, decimals));
-            Assert.AreEqual(1234.5M, Rounding.CeilBy(1234.5M, decimals));
-            Assert.AreEqual(-1M, Rounding.CeilBy(-1, decimals));
-            Assert.AreEqual(-1.9M, Rounding.CeilBy(-1.9M, decimals));
-            Assert.AreEqual(-1.9M, Rounding.CeilBy(-1.9999999999999M, decimals));
+            Assert.AreEqual(0.3, Rounding.CeilBy(0.25, decimals));
+            Assert.AreEqual(-0.3, Rounding.CeilBy(-0.37, decimals));
+            Assert.AreEqual(1, Rounding.CeilBy(1d, decimals));
+            Assert.AreEqual(1.2, Rounding.CeilBy(1.2, decimals));
+            Assert.AreEqual(2, Rounding.CeilBy(1.99, decimals));
+            Assert.AreEqual(2, Rounding.CeilBy(1.9999999999999, decimals));
+            Assert.AreEqual(3.3, Rounding.CeilBy(3.246, decimals));
+            Assert.AreEqual(1234.5, Rounding.CeilBy(1234.5, decimals));
+            Assert.AreEqual(-1, Rounding.CeilBy(-1d, decimals));
+            Assert.AreEqual(-1.9, Rounding.CeilBy(-1.9, decimals));
+            Assert.AreEqual(-1.9, Rounding.CeilBy(-1.9999999999999, decimals));
         }
     }
 }

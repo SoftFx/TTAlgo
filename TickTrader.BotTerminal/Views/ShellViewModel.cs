@@ -61,19 +61,19 @@ namespace TickTrader.BotTerminal
             algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 
             AlgoList = new AlgoListViewModel(algoEnv);
-            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this);
+            SymbolList = new SymbolListViewModel(clientModel.Symbols, commonClient.Distributor, this, false);
 
-            Trade = new TradeInfoViewModel(clientModel, cManager);
+            ProfileManager = new ProfileManagerViewModel(this, storage);
+
+            Trade = new TradeInfoViewModel(clientModel, cManager, storage.ProfileManager);
 
             _symbolsData = new SymbolCatalog(customFeedStorage, clientModel);
 
-            TradeHistory = new TradeHistoryViewModel(clientModel, cManager);
+            TradeHistory = new TradeHistoryViewModel(clientModel, cManager, storage.ProfileManager);
 
             Notifications = new NotificationsViewModel(notificationCenter, clientModel.Account, cManager, storage);
 
             Charts = new ChartCollectionViewModel(clientModel, this, algoEnv);
-
-            ProfileManager = new ProfileManagerViewModel(this, storage);
 
             BotList = new BotListViewModel(algoEnv);
 
@@ -397,9 +397,18 @@ namespace TickTrader.BotTerminal
         public void OpenBacktester()
         {
             if (Backtester == null)
-                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this);
+            {
+                Backtester = new BacktesterViewModel(algoEnv, clientModel, _symbolsData, this, storage.ProfileManager);
+                Backtester.Deactivated += Backtester_Deactivated;
+            }
 
             wndManager.OpenMdiWindow(Backtester);
+        }
+
+        private void Backtester_Deactivated(object sender, DeactivationEventArgs e)
+        {
+            Backtester.Deactivated -= Backtester_Deactivated;
+            Backtester = null;
         }
 
         public void CloseChart(object chart)

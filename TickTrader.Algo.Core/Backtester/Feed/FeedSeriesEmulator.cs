@@ -4,19 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal abstract class FeedSeriesEmulator
+    internal class FeedSeriesEmulator
     {
         protected readonly Dictionary<TimeFrames, BarVector> _bidBars = new Dictionary<TimeFrames, BarVector>();
         protected readonly Dictionary<TimeFrames, BarVector> _askBars = new Dictionary<TimeFrames, BarVector>();
 
-        public RateUpdate Current { get; protected set; }
+        public RateUpdate Current { get; private set; }
 
-        public abstract void Start();
-        public abstract void Stop();
-        public abstract bool MoveNext();
+        public event Action<RateUpdate> RateUpdated;
 
         public IEnumerable<BarEntity> QueryBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
@@ -66,7 +65,7 @@ namespace TickTrader.Algo.Core
 
                 int resultSize = Math.Min(index + 1, -size);
 
-                for (int i = index; i > index - resultSize; i--)
+                for (int i = index - resultSize + 1; i <= index; i++)
                     yield return vector[i];
             }
         }
@@ -91,6 +90,23 @@ namespace TickTrader.Algo.Core
             return GetOrAddBuilder(price, timeframe);
         }
 
+        public void Update(RateUpdate rate)
+        {
+            if (rate is BarRateUpdate)
+                UpdateBars((BarRateUpdate)rate);
+            else
+                UpdateBars(rate);
+
+            Current = rate;
+            RateUpdated?.Invoke(rate);
+        }
+
+        public void Close()
+        {
+            foreach (var rec in _bidBars.Values)
+                rec.Close();
+        }
+
         protected BarVector GetOrAddBuilder(BarPriceType priceType, TimeFrames timeframe)
         {
             // TO DO : build-up series data basing on data from other time frames
@@ -110,6 +126,35 @@ namespace TickTrader.Algo.Core
                 collection.Add(timeframe, builder);
             }
             return builder;
+        }
+
+        private void UpdateBars(BarRateUpdate barUpdate)
+        {
+            //if (barUpdate.BidBar.Volume != 0) // skip filler
+                UpdateBars(_bidBars.Values, barUpdate.BidBar);
+            //if (barUpdate.AskBar.Volume != 0) // skip filler
+                UpdateBars(_askBars.Values, barUpdate.AskBar);
+        }
+
+        private void UpdateBars(IEnumerable<BarVector> collection, BarEntity bar)
+        {
+            foreach (var rec in collection)
+                rec.AppendBarPart(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume);
+        }
+
+        private void UpdateBars(RateUpdate quote)
+        {
+            if (quote.HasBid)
+            {
+                foreach (var rec in _bidBars.Values)
+                    rec.AppendQuote(quote.Time, quote.Bid, 1);
+            }
+
+            if (quote.HasAsk)
+            {
+                foreach (var rec in _askBars.Values)
+                    rec.AppendQuote(quote.Time, quote.Ask, 1);
+            }
         }
     }
 }

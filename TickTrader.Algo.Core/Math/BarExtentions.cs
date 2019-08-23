@@ -52,5 +52,18 @@ namespace TickTrader.Algo.Core
 
             return (int)(((double)srcCount * srcWeight) / targetWeight );
         }
+
+        public static TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, int requiredSize, out int aproxNewSize)
+        {
+            for (var i = currentFrame; i > TimeFrames.MN; i--)
+            {
+                aproxNewSize = GetApproximateTransformSize(currentFrame, currentSize, i);
+                if (aproxNewSize <= requiredSize)
+                    return i;
+            }
+
+            aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, TimeFrames.MN);
+            return TimeFrames.MN;
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Api
             DefaultColor = Colors.Auto;
             Target = OutputTargets.Overlay;
             Precision = -1;
+            Visibility = true;
         }
 
         public string DisplayName { get; set; }
@@ -27,6 +28,7 @@ namespace TickTrader.Algo.Api
         public PlotType PlotType { get; set; }
         public OutputTargets Target { get; set; }
         public int Precision { get; set; }
+        public bool Visibility { get; set; }
         /// <summary>
         /// Used to set the bottom of a column in histogram
         /// </summary>

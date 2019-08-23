@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Common.Model
         private FeedCacheKey _key;
         private DateTime _from;
         private DateTime _to;
+        private ISeriesDatabase _db;
 
         public BarCrossDomainReader(string dbFolder, FeedCacheKey key, DateTime from, DateTime to)
         {
@@ -26,16 +27,49 @@ namespace TickTrader.Algo.Common.Model
             _to = to;
         }
 
-        public IEnumerable<BarEntity> GrtBarStream()
+        public void Start()
         {
             var poolManager = new SeriesStorage.Lmdb.LmdbManager(_baseFolder, true);
+            _db = SeriesDatabase.Create(poolManager);
+        }
 
-            using (var db = SeriesDatabase.Create(poolManager))
+        public void Stop()
+        {
+            if (_db != null)
             {
-                var series = db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString(), false);
+                _db.Dispose();
+                _db = null;
+            }
+        }
 
-                foreach (var bar in series.Iterate(_from, _to))
-                    yield return bar;
+        public IEnumerable<BarEntity> GrtBarStream()
+        {
+            SeriesStorage<DateTime, BarEntity> series = null;
+
+            try
+            {
+                series = _db.GetSeries(new DateTimeKeySerializer(), new BarSerializer(_key.Frame), b => b.OpenTime, _key.ToCodeString(), false);
+            }
+            catch (DbMissingException)
+            {
+            }
+
+            if (series != null)
+            {
+                using (var e = series.Iterate(_from, _to).GetEnumerator())
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!e.MoveNext())
+                                break;
+                        }
+                        catch (DbMissingException) { break; }
+
+                        yield return e.Current;
+                    }
+                }
             }
         }
     }

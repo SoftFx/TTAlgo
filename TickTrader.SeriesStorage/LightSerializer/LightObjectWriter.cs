@@ -66,6 +66,12 @@ namespace TickTrader.SeriesStorage.LightSerializer
             }
         }
 
+        public void Write(byte value)
+        {
+            var offset = EnlargeBy(1);
+            stream[offset++] = value;
+        }
+
         public void Write(int value)
         {
             var offset = EnlargeBy(4);
@@ -86,7 +92,17 @@ namespace TickTrader.SeriesStorage.LightSerializer
 
         public void Write(DateTime value)
         {
-            Write(value.Ticks);
+            Write(ToUtc(value).Ticks);
+        }
+
+        private static DateTime ToUtc(DateTime dateTime)
+        {
+            if (dateTime.Kind == DateTimeKind.Utc)
+                return dateTime;
+            else if (dateTime.Kind == DateTimeKind.Unspecified)
+                return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            else
+                return dateTime.ToUniversalTime();
         }
 
         public int Count { get; private set; }

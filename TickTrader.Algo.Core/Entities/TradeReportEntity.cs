@@ -73,7 +73,7 @@ namespace TickTrader.Algo.Core
         public double? SrcAssetMovement { get; set; }
         public double? SrcAssetAmount { get; set; }
         public DateTime PositionClosed { get; set; }
-        public double PositionClosePrice { get; set; }
+        public double PositionClosePrice => ClosePrice;
         public double PositionCloseRequestedPrice { get; set; }
         public double PositionLeavesQuantity { get; set; }
         public OrderSide TradeRecordSide { get; set; }
@@ -87,12 +87,12 @@ namespace TickTrader.Algo.Core
         public string TransactionCurrency { get; set; }
         public double TransactionAmount { get; set; }
         public double AccountBalance { get; set; }
-        //public TradeTransactionReason TradeTransactionReason { get; set; }
+        public TradeTransactionReason TradeTransactionReason { get; set; }
         public string Tag { get; set; }
         public string MinCommissionCurrency { get; set; }
         public int? Magic { get; set; }
         public bool IsReducedCloseCommission { get; set; }
-        public double PositionLastQuantity { get; set; }
+        public double PositionLastQuantity => CloseQuantity;
         public double PositionQuantity { get; set; }
         public double PosOpenPrice { get; set; }
         public double PosOpenReqPrice { get; set; }
@@ -109,7 +109,22 @@ namespace TickTrader.Algo.Core
         public bool ImmediateOrCancel { get; set; }
         public bool IsReducedOpenCommission { get; set; }
         public double? MinCommissionConversionRate { get; set; }
-
+        public OrderType ReqOrderType { get; set; }
         #endregion
+    }
+
+    public enum TradeTransactionReason
+    {
+        None = -1,
+        ClientRequest = 0,
+        PendingOrderActivation = 1,
+        StopOut = 2,
+        StopLossActivation = 3,
+        TakeProfitActivation = 4,
+        DealerDecision = 5,
+        Rollover = 6,
+        DeleteAccount = 7,
+        Expired = 8,
+        TransferMoney = 9
     }
 }

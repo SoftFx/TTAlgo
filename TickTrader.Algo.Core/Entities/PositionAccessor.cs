@@ -4,36 +4,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
+using TickTrader.Algo.Core.Calc;
 using BL = TickTrader.BusinessLogic;
 
 namespace TickTrader.Algo.Core
 {
-    public class PositionAccessor : NetPosition, BL.IPositionModel
+    public class PositionAccessor : NetPosition, IPositionModel2
     {
         private readonly SideProxy _buy = new SideProxy();
         private readonly SideProxy _sell = new SideProxy();
         private readonly Symbol _symbol;
         private readonly double _lotSize;
+        private readonly int _leverage;
+        private double _volUnitsSlim;
 
-        internal PositionAccessor(PositionEntity entity, Func<string, Symbol> symbolProvider)
-            : this(entity, symbolProvider(entity.Symbol))
+        internal PositionAccessor(PositionEntity entity, int leverage, Func<string, Symbol> symbolProvider)
+            : this(entity, symbolProvider(entity.Symbol), leverage)
         {
         }
 
-        internal PositionAccessor(Symbol symbol)
+        internal PositionAccessor(Symbol symbol, int leverage)
         {
             _symbol = symbol;
             _lotSize = symbol?.ContractSize ?? 1;
+            _leverage = leverage;
         }
 
-        internal PositionAccessor(PositionEntity entity, Symbol symbol)
-            : this(symbol)
+        internal PositionAccessor(PositionEntity entity, Symbol symbol, int leverage)
+            : this(symbol, leverage)
         {
             Update(entity ?? throw new ArgumentNullException("entity"));
         }
 
         internal PositionAccessor(PositionAccessor src)
-            : this(src._symbol)
+            : this(src._symbol, src._leverage)
         {
             _buy.Update(src._buy.Amount, src._buy.Price);
             _sell.Update(src._sell.Amount, src._sell.Price);
@@ -42,6 +47,9 @@ namespace TickTrader.Algo.Core
             Swap = src.Swap;
             Modified = src.Modified;
             Commission = src.Commission;
+            Id = src.Id;
+
+            Calculator = src.Calculator;
         }
 
         internal void Update(PositionEntity entity)
@@ -59,20 +67,15 @@ namespace TickTrader.Algo.Core
 
             SettlementPrice = entity.SettlementPrice;
             Swap = (decimal)entity.Swap;
-            Commission = entity.Commission;
+            Commission = (decimal)entity.Commission;
             Modified = entity.Modified;
-
-            FireChanged();
+            Id = entity.Id;
+            OnChanged();
         }
 
-        internal void Remove()
+        internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider, int leverage)
         {
-            Removed?.Invoke(this);
-        }
-
-        internal static PositionAccessor CreateEmpty(string symbol)
-        {
-            return new PositionAccessor(new PositionEntity { Symbol = symbol }, (Symbol)null);
+            return new PositionAccessor(new PositionEntity(symbol), leverage, symbolInfoProvider);
         }
 
         public PositionAccessor Clone()
@@ -82,37 +85,45 @@ namespace TickTrader.Algo.Core
 
         internal bool IsBuySided => _buy.Amount > _sell.Amount;
 
-        public double Volume => VolumeUnits / _lotSize;
-        public double Commission { get; internal set; }
+        public double Volume { get; private set; }
+        public decimal Commission { get; internal set; }
         public double Price => (double)(IsBuySided? _buy.Price : _sell.Price);
         public double SettlementPrice { get; internal set; }
         public OrderSide Side => IsBuySided ? OrderSide.Buy : OrderSide.Sell;
         public decimal Swap { get; internal set; }
         public string Symbol => _symbol.Name;
-        public double Margin => (double)(IsBuySided ? _buy.Margin : _sell.Margin);
-        public double Profit => (double)(IsBuySided ? _buy.Profit : _sell.Profit);
+        public double Margin => CalculateMargin();
+        public double Profit => CalculateProfit();
         public DateTime? Modified { get; set; }
+        public string Id { get; set; }
         public bool IsEmpty => VolumeUnits == 0;
-        public BL.OrderCalculator Calculator { get; set; }
+        public OrderCalculator Calculator { get; set; }
 
-        public double VolumeUnits => (double)Math.Max(_buy.Amount, _sell.Amount);
+        public decimal VolumeUnits => Math.Max(_buy.Amount, _sell.Amount);
         public SideProxy Long => _buy;
         public SideProxy Short => _sell;
 
         double NetPosition.Swap => (double)Swap;
+        double NetPosition.Commission => (double)Commission;
 
-        decimal BL.IPositionModel.Commission => (decimal)Commission;
-        decimal BL.IPositionModel.AgentCommission => 0;
-        decimal BL.IPositionModel.Swap => Swap;
-        BL.IPositionSide BL.IPositionModel.Long => _buy;
-        BL.IPositionSide BL.IPositionModel.Short => _sell;
+        //decimal IPositionModel.Commission => (decimal)Commission;
+        //decimal IPositionModel.AgentCommission => 0;
+        //decimal IPositionModel.Swap => Swap;
+        IPositionSide2 IPositionModel2.Long => _buy;
+        IPositionSide2 IPositionModel2.Short => _sell;
 
         internal event Action<PositionAccessor> Changed;
-        internal event Action<PositionAccessor> Removed;
 
-        private void FireChanged()
+        private void OnChanged()
         {
+            UpdateCache();
             Changed?.Invoke(this);
+        }
+
+        private void UpdateCache()
+        {
+            _volUnitsSlim = (double)VolumeUnits;
+            Volume = _volUnitsSlim / _lotSize;
         }
 
         #region Emulator
@@ -124,17 +135,17 @@ namespace TickTrader.Algo.Core
             else
                 Short.Increase(amount, price);
 
-            FireChanged();
+            OnChanged();
         }
 
         internal void DecreaseBothSides(decimal byAmount)
         {
             Long.Decrease(byAmount);
             Short.Decrease(byAmount);
-            FireChanged();
+            OnChanged();
         }
 
-        private static decimal CalculatePositionAvgPrice(BL.IPositionSide position, decimal price2, decimal amount2)
+        private static decimal CalculatePositionAvgPrice(IPositionSide2 position, decimal price2, decimal amount2)
         {
             return CalculatePositionAvgPrice(position.Price, position.Amount, price2, amount2);
         }
@@ -150,9 +161,23 @@ namespace TickTrader.Algo.Core
             return (price1 * amount1 + price2 * amount2) / (amount1 + amount2);
         }
 
+        internal PositionEntity GetEntityCopy()
+        {
+            return new PositionEntity(Symbol)
+            {
+                Volume = _volUnitsSlim,
+                Price = Price,
+                Side = Side,
+                Swap = (double)Swap,
+                Commission = (double)Commission,
+                Modified = Modified,
+                Id = Id,
+            };
+        }
+
         #endregion
 
-        public class SideProxy : BL.IPositionSide
+        public class SideProxy : IPositionSide2
         {
             public SideProxy()
             {
@@ -181,6 +206,32 @@ namespace TickTrader.Algo.Core
             public decimal Price { get; private set; }
             public decimal Margin { get; set; }
             public decimal Profit { get; set; }
+        }
+
+        private double CalculateMargin()
+        {
+            var calc = Calculator;
+            if (calc != null)
+            {
+                var margin = calc.CalculateMargin(_volUnitsSlim, _leverage, BusinessObjects.OrderTypes.Position, Side.ToBoSide(), false, out var error);
+                if (error != CalcErrorCodes.None)
+                    return double.NaN;
+                return margin;
+            }
+            return double.NaN;
+        }
+
+        private double CalculateProfit()
+        {
+            var calc = Calculator;
+            if (calc != null)
+            {
+                var prof = calc.CalculateProfit(Price, _volUnitsSlim, Side.ToBoSide(), out _, out var error);
+                if (error != CalcErrorCodes.None)
+                    return double.NaN;
+                return prof;
+            }
+            return double.NaN;
         }
     }
 }

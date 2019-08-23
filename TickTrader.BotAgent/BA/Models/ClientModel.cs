@@ -51,7 +51,7 @@ namespace TickTrader.BotAgent.BA.Models
             UseNewProtocol = useNewProtocol;
         }
 
-        public async Task Init(PackageStorage packageProvider)
+        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider)
         {
             try
             {
@@ -86,9 +86,9 @@ namespace TickTrader.BotAgent.BA.Models
                 foreach (var bot in toRemove)
                     _bots.Remove(bot);
 
-                var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder };
+                var options = new ConnectionOptions() { EnableLogs = false, LogsFolder = ServerModel.Environment.LogFolder, Type = AppType.BotAgent };
 
-                _core = new Algo.Common.Model.ClientModel.ControlHandler2(options,
+                _core = new Algo.Common.Model.ClientModel.ControlHandler2(fdkOptionsProvider.GetConnectionOptions(),
                     ServerModel.Environment.FeedHistoryCacheFolder, FeedHistoryFolderOptions.ServerClientHierarchy);
 
                 await _core.OpenHandler();
@@ -101,6 +101,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 PluginTradeApi = await _core.CreateTradeApi();
                 PluginTradeInfo = await _core.CreateTradeProvider();
+                PluginTradeHistory = await _core.CreateTradeHistory();
 
                 _isInitialized = true;
 
@@ -116,6 +117,7 @@ namespace TickTrader.BotAgent.BA.Models
         public ConnectionErrorInfo LastError => _lastError;
         public PluginTradeApiProvider.Handler PluginTradeApi { get; private set; }
         public PluginTradeInfoProvider PluginTradeInfo { get; private set; }
+        public TradeHistoryProvider.Handler PluginTradeHistory { get; private set; }
 
         public int RunningBotsCount => _startedBotsCount;
         public bool HasRunningBots => _startedBotsCount > 0;

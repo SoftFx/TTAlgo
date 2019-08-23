@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -25,6 +26,8 @@ namespace TickTrader.BotTerminal
     internal class TradeHistoryViewModel : PropertyChangedBase
     {
         private const int CleanUpDelay = 2000;
+        private const string StorageDateTimeFormat = "dd-MM-yyyy HH:mm:ss";
+        private const DateTimeStyles StorageDateTimeStyle = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
 
         private static readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -47,15 +50,18 @@ namespace TickTrader.BotTerminal
         private bool _skipCancel;
         private bool _clearFlag;
         private CancellationTokenSource _cancelUpdateSrc;
+        private ProfileManager _profileManager;
+        private ViewModelStorageEntry _viewPropertyStorage;
 
-        public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager)
+        public TradeHistoryViewModel(TraderClientModel tradeClient, ConnectionManager cManager, ProfileManager profileManager = null)
         {
             _period = TimePeriod.LastHour;
             TradeDirectionFilter = TradeDirection.All;
             _skipCancel = true;
+            _profileManager = profileManager;
 
             _tradesList = new ObservableCollection<TransactionReport>();
-            GridView = new TradeHistoryGridViewModel(_tradesList);
+            GridView = new TradeHistoryGridViewModel(_tradesList, profileManager);
             GridView.Filter = new Predicate<object>(FilterTradesList);
 
             _tradeClient = tradeClient;
@@ -70,12 +76,18 @@ namespace TickTrader.BotTerminal
 
             cManager.LoggedOut += ClearHistory;
 
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
+
             RefreshHistory();
             CleanupLoop();
         }
 
         #region Properties
-        
+
         public TradeDirection TradeDirectionFilter
         {
             get { return _tradeDirectionFilter; }
@@ -98,6 +110,10 @@ namespace TickTrader.BotTerminal
                 if (_period != value)
                 {
                     _period = value;
+
+                    if (_profileManager != null)
+                        _viewPropertyStorage.ChangeProperty(nameof(Period), value.ToString());
+
                     NotifyOfPropertyChange(nameof(Period));
                     NotifyOfPropertyChange(nameof(CanEditPeriod));
                     RefreshHistory();
@@ -107,13 +123,17 @@ namespace TickTrader.BotTerminal
 
         public DateTime From
         {
-            get { return _from; }
+            get { return DateTime.SpecifyKind(_from, DateTimeKind.Utc); }
             set
             {
                 if (_from == value)
                     return;
 
                 _from = value;
+
+                if (_profileManager != null)
+                    _viewPropertyStorage.ChangeProperty(nameof(From), value.ToString(StorageDateTimeFormat));
+
                 NotifyOfPropertyChange(nameof(From));
                 RefreshHistory();
             }
@@ -121,13 +141,17 @@ namespace TickTrader.BotTerminal
 
         public DateTime To
         {
-            get { return _to; }
+            get { return DateTime.SpecifyKind(_to, DateTimeKind.Utc); }
             set
             {
                 if (_to == value)
                     return;
 
                 _to = value;
+
+                if (_profileManager != null)
+                    _viewPropertyStorage.ChangeProperty(nameof(To), value.ToString(StorageDateTimeFormat));
+
                 NotifyOfPropertyChange(nameof(To));
                 RefreshHistory();
             }
@@ -142,6 +166,10 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _skipCancel = value;
+
+                if (_profileManager != null)
+                    _viewPropertyStorage.ChangeProperty(nameof(SkipCancel), value.ToString());
+
                 NotifyOfPropertyChange(nameof(SkipCancel));
                 RefreshHistory();
             }
@@ -333,7 +361,7 @@ namespace TickTrader.BotTerminal
 
         private void CalculateTimeBoundaries(out DateTime? from, out DateTime? to)
         {
-            var now = DateTime.Now; // fix time point
+            var now = DateTime.UtcNow; // fix time point
 
             switch (Period)
             {
@@ -350,12 +378,12 @@ namespace TickTrader.BotTerminal
                     to = null;
                     break;
                 case TimePeriod.CurrentMonth:
-                    from = new DateTime(now.Year, now.Month, 1);
+                    from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     to = null;
                     break;
                 case TimePeriod.PreviousMonth:
-                    from = new DateTime(now.Year, now.Month, 1).AddMonths(-1);
-                    to = new DateTime(now.Year, now.Month, 1);
+                    from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
+                    to = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     break;
                 case TimePeriod.Today:
                     from = now.Date;
@@ -383,7 +411,7 @@ namespace TickTrader.BotTerminal
 
         private void RefreshCollection()
         {
-            GridView?.Refresh();
+            GridView?.RefreshItems();
         }
 
         private bool FilterTradesList(object o)
@@ -421,14 +449,14 @@ namespace TickTrader.BotTerminal
         {
             int count = 0;
 
-            while(_tradesList.Count > 0)
+            while (_tradesList.Count > 0)
             {
                 if (++count % 400 == 0)
                     await Dispatcher.Yield(DispatcherPriority.DataBind);
 
                 var lastIndex = _tradesList.Count - 1;
 
-                if (_tradesList[lastIndex].CloseTime.ToLocalTime() >= from)
+                if (_tradesList[lastIndex].CloseTime.ToUniversalTime() >= from)
                     break;
 
                 _tradesList.RemoveAt(lastIndex);
@@ -444,6 +472,33 @@ namespace TickTrader.BotTerminal
 
                 await Task.Delay(CleanUpDelay);
             }
+        }
+
+        private void UpdateProvider()
+        {
+            _viewPropertyStorage = _profileManager?.CurrentProfile?.GetViewModelStorage(ViewModelStorageKeys.History);
+
+            var skipProp = _viewPropertyStorage.GetProperty(nameof(SkipCancel));
+            if (!bool.TryParse(skipProp?.State, out _skipCancel))
+                _skipCancel = true;
+
+            var periodProp = _viewPropertyStorage.GetProperty(nameof(Period));
+            if (!Enum.TryParse(periodProp?.State, out _period))
+                _period = TimePeriod.LastHour;
+
+            var fromProp = _viewPropertyStorage.GetProperty(nameof(From));
+            if (!DateTime.TryParseExact(fromProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _from))
+                _from = DateTime.UtcNow.Date;
+
+            var toProp = _viewPropertyStorage.GetProperty(nameof(To));
+            if (!DateTime.TryParseExact(toProp?.State, StorageDateTimeFormat, CultureInfo.InvariantCulture, StorageDateTimeStyle, out _to))
+                _to = DateTime.UtcNow.Date.AddDays(1);
+
+            NotifyOfPropertyChange(nameof(SkipCancel));
+            NotifyOfPropertyChange(nameof(Period));
+            NotifyOfPropertyChange(nameof(CanEditPeriod));
+            NotifyOfPropertyChange(nameof(From));
+            NotifyOfPropertyChange(nameof(To));
         }
     }
 }

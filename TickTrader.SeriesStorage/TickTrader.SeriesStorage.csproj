@@ -59,6 +59,7 @@
     <Compile Include="LightSerializer\LightObjectReader.cs" />
     <Compile Include="LightSerializer\LightObjectWriter.cs" />
     <Compile Include="Lib\Extentions.cs" />
+    <Compile Include="SeriesDbException.cs" />
     <Compile Include="Transactions\AutoTransactionScope.cs" />
     <Compile Include="SeriesDatabase.cs" />
     <Compile Include="TopLayer\SeriesStorageNoMetadata.cs" />

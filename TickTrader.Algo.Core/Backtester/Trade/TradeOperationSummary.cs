@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -31,7 +32,7 @@ namespace TickTrader.Algo.Core
     internal struct FillInfo
     {
         public decimal FillAmount { get; set; }
-        public decimal FillPrice { get; set; }
+        public double FillPrice { get; set; }
         public OrderAccessor Position { get; set; }
         public NetPositionOpenInfo NetPos { get; set; }
         public SymbolAccessor SymbolInfo { get; set; }
@@ -74,7 +75,7 @@ namespace TickTrader.Algo.Core
             PrintComment(order);
         }
 
-        public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, double amountLots, OrderCmdResultCodes error, AccountAccessor acc)
+        public void AddOpenFailAction(OrderType type, string symbol, OrderSide side, decimal amountLots, OrderCmdResultCodes error, AccountAccessor acc)
         {
             var currFormat = acc.BalanceCurrencyFormat;
 
@@ -116,6 +117,15 @@ namespace TickTrader.Algo.Core
             PrintCharges(charges);
         }
 
+        public void AddCancelAction(OrderAccessor order)
+        {
+            StartNewAction();
+
+            _builder.Append("Canceled order ");
+            PrintOrderDescription(order);
+            PrintAmountAndPrice(order);
+        }
+
         public void AddStopLimitActivationAction(OrderAccessor order, decimal price)
         {
             StartNewAction();
@@ -127,7 +137,7 @@ namespace TickTrader.Algo.Core
             //return _builder.ToString();
         }
 
-        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, decimal price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
+        public void AddGrossCloseAction(OrderAccessor pos, decimal profit, double price, TradeChargesInfo charges, CurrencyEntity balanceCurrInf)
         {
             var priceFormat = pos.SymbolInfo.PriceFormat;
             var profitFormat = balanceCurrInf.Format;
@@ -162,7 +172,7 @@ namespace TickTrader.Algo.Core
 
         public void AddNetPositionNotification(PositionAccessor pos, SymbolAccessor smbInfo)
         {
-            if (pos.Volume == 0)
+            if (pos.Volume.E(0))
                 return;
 
             StartNewAction();
@@ -205,11 +215,11 @@ namespace TickTrader.Algo.Core
         private void PrintOrderDescription(OrderAccessor order)
         {
             _builder.Append(" #").Append(order.Id)
-                .Append(' ').Append(order.Type)
-                .Append(' ').Append(order.Symbol)
+                .Append(' ').Append(order.Type);
+            if (order.HasOption(OrderExecOptions.ImmediateOrCancel))
+                _builder.Append(" IoC");
+            _builder.Append(' ').Append(order.Symbol)
                 .Append(' ').Append(order.Side);
-
-            //_builder.Append(order.RemainingVolume);
         }
 
         private void PrintComment(OrderAccessor order)

@@ -15,6 +15,7 @@ namespace TickTrader.Algo.Common.Model
         private FeedCacheKey _key;
         private DateTime _from;
         private DateTime _to;
+        private ISeriesDatabase _db;
 
         public TickCrossDomainReader(string dbFolder, FeedCacheKey key, DateTime from, DateTime to)
         {
@@ -24,17 +25,50 @@ namespace TickTrader.Algo.Common.Model
             _to = to;
         }
 
-        public IEnumerable<QuoteEntity> GetQuoteStream()
+        public void Start()
         {
             var poolManager = new SeriesStorage.Lmdb.LmdbManager(_baseFolder, true);
+            _db = SeriesDatabase.Create(poolManager);
+        }
 
-            using (var db = SeriesDatabase.Create(poolManager))
+        public void Stop()
+        {
+            if (_db != null)
             {
-                var series = db.GetSeries(new DateTimeKeySerializer(), new TickSerializer(_key.Symbol), b => b.Time, _key.ToCodeString(), true);
-
-                foreach (var tick in series.Iterate(_from, _to))
-                    yield return tick;
+                _db.Dispose();
+                _db = null;
             }
         }
+
+        public IEnumerable<QuoteEntity> GetQuoteStream()
+        {
+            SeriesStorage<DateTime, QuoteEntity> series = null;
+
+            try
+            {
+                series = _db.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(_key), b => b.Time, _key.ToCodeString(), true);
+            }
+            catch (DbMissingException)
+            {
+            }
+
+            if (series != null)
+            {
+                using (var e = series.Iterate(_from, _to).GetEnumerator())
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!e.MoveNext())
+                                break;
+                        }
+                        catch (DbMissingException) { break; }
+
+                        yield return e.Current;
+                    }
+                }
+            }
+        }   
     }
 }

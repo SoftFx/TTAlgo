@@ -10,7 +10,7 @@ namespace Machinarium.Var
     public interface IProperty<T>
     {
         Var<T> Var { get; }
-        T Value { get; }
+        T Value { get; set; }
     }
 
     public class PropertyBase<TVar, T> : IProperty<T>, INotifyPropertyChanged, IDisposable

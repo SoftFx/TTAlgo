@@ -24,26 +24,51 @@ namespace TickTrader.BotTerminal
 
         public void Apply(Backtester tester)
         {
-            tester.InitialBalance = InitialBalance;
-            tester.BalanceCurrency = BalanceCurrency;
-            tester.Leverage = Leverage;
-            tester.AccountType = AccType;
-            tester.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
-            tester.WarmupSize = WarmupValue;
-            tester.WarmupUnits = WarmupUnits;
+            Apply(tester.CommonSettings);
             tester.JournalFlags = JournalSettings;
         }
 
-        public void SaveAsText(StreamWriter writer)
+        public void Apply(CommonTestSettings settings)
         {
-            writer.WriteLine("Account: {0}", AccType);
-            if (AccType == AccountTypes.Net || AccType == AccountTypes.Gross)
+            settings.InitialBalance = InitialBalance;
+            settings.BalanceCurrency = BalanceCurrency;
+            settings.Leverage = Leverage;
+            settings.AccountType = AccType;
+            settings.ServerPing = TimeSpan.FromMilliseconds(ServerPingMs);
+            settings.WarmupSize = WarmupValue;
+            settings.WarmupUnits = WarmupUnits;
+        }
+
+        public string ToText(bool compact)
+        {
+            var writer = new StringBuilder();
+
+            if (compact)
             {
-                writer.WriteLine("Initial balance: {0} {1}", InitialBalance, BalanceCurrency);
-                writer.WriteLine("Leverage: {0}", Leverage);
+                writer.Append("Account: type=").Append(AccType);
+                if (AccType == AccountTypes.Net || AccType == AccountTypes.Gross)
+                {
+                    writer
+                        .Append(", balance=").Append(InitialBalance).Append(' ').Append(BalanceCurrency)
+                        .Append(", leverage=").Append(Leverage);
+                }
+                writer.AppendLine();
+                writer.AppendFormat("warmup={0} {1}", WarmupValue, WarmupUnits);
+                writer.AppendFormat(", ping={0}ms", ServerPingMs);
             }
-            writer.WriteLine("Emulated ping: {0}ms", ServerPingMs);
-            writer.WriteLine("Warmup: {0} {1}", WarmupValue, WarmupUnits);
+            else
+            {
+                writer.AppendFormat("Account: {0}", AccType).AppendLine();
+                if (AccType == AccountTypes.Net || AccType == AccountTypes.Gross)
+                {
+                    writer.AppendFormat("Initial balance: {0} {1}", InitialBalance, BalanceCurrency).AppendLine();
+                    writer.AppendFormat("Leverage: {0}", Leverage).AppendLine();
+                }
+                writer.AppendFormat("Emulated ping: {0}ms", ServerPingMs).AppendLine();
+                writer.AppendFormat("Warmup: {0} {1}", WarmupValue, WarmupUnits).AppendLine();
+            }
+
+            return writer.ToString();
         }
     }
 }

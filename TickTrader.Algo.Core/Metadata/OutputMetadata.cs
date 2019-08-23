@@ -61,6 +61,7 @@ namespace TickTrader.Algo.Core.Metadata
             Descriptor.Target = attribute.Target;
             Descriptor.Precision = attribute.Precision;
             Descriptor.ZeroLine = attribute.ZeroLine;
+            Descriptor.Visibility = attribute.Visibility;
         }
 
 

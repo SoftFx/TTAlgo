@@ -8,7 +8,7 @@ namespace Machinarium.Var
 {
     public sealed class VarContext : EntityBase
     {
-        public PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
+        public new PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
         {
             var converter = new PropConverter<TProp, T>(property, valueConverter);
             AddDisposableChild(converter);
@@ -55,24 +55,24 @@ namespace Machinarium.Var
             return base.AddBoolValidable(initialValue, notifyName);
         }
 
-        public new void TriggerOn(BoolVar condition, Action action)
+        public new IDisposable TriggerOn(BoolVar condition, Action action)
         {
-            base.TriggerOn(condition, action, null);
+            return base.TriggerOn(condition, action, null);
         }
 
-        public new void TriggerOn(BoolVar condition, Action onTrue, Action onFalse)
+        public new IDisposable TriggerOn(BoolVar condition, Action onTrue, Action onFalse)
         {
-            base.TriggerOn(condition, onTrue, onFalse);
+            return base.TriggerOn(condition, onTrue, onFalse);
         }
 
-        public new void TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
+        public new IDisposable TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
         {
-            base.TriggerOnChange(var, changeHandler);
+            return base.TriggerOnChange(var, changeHandler);
         }
 
-        public new void TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
+        public new IDisposable TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
         {
-            base.TriggerOnChange(property.Var, changeHandler);
+            return base.TriggerOnChange(property.Var, changeHandler);
         }
     }
 }

@@ -33,6 +33,11 @@ namespace TickTrader.Algo.Core
             throw new NotImplementedException("Unsupported change type: " + cType);
         }
 
+        public static BO.OrderTypes ToBoType(this OrderType type)
+        {
+            return Convert(type);
+        }
+
         public static BO.OrderTypes GetBlOrderType(this OrderEntity order)
         {
             return Convert(order.Type);
@@ -49,6 +54,11 @@ namespace TickTrader.Algo.Core
                 case OrderType.Stop: return BO.OrderTypes.Stop;
                 default: throw new NotImplementedException("Unknown order type: " + apiType);
             }
+        }
+
+        public static BO.OrderSides ToBoSide(this OrderSide side)
+        {
+            return Convert(side);
         }
 
         public static BO.OrderSides GetBlOrderSide(this OrderEntity order)
@@ -81,6 +91,8 @@ namespace TickTrader.Algo.Core
             switch (symbol.CommissionType)
             {
                 case CommissionType.Percent: return BO.CommissionValueType.Percentage;
+                case CommissionType.PerUnit: return BO.CommissionValueType.Points;
+                case CommissionType.Absolute: return BO.CommissionValueType.Money;
             }
 
             throw new InvalidOperationException("Unsupported commission type: " + symbol.Commission);

@@ -70,7 +70,7 @@ namespace TickTrader.BotTerminal
 
         public override void Reset()
         {
-            IsEnabled = !HasError;
+            IsEnabled = !HasError && Descriptor.Visibility;
             InitColor();
             InitThickness();
         }

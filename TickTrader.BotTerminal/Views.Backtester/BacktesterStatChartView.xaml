@@ -47,6 +47,25 @@
         <Setter Property="Fill" Value="#F15923"/>
     </Style>
 
+    <Style x:Key="BaseOhlcStyle" TargetType="s:FastOhlcRenderableSeries">
+        <!--<Setter Property="DataPointWidth" Value="0.6"/>
+        <Setter Property="StrokeThickness" Value="0"/>
+        <Setter Property="Stroke" Value="Black"/>
+        <Setter Property="ZeroLineY" Value="-1"/>-->
+    </Style>
+
+    <Style x:Key="EquityStyle" TargetType="s:FastOhlcRenderableSeries" BasedOn="{StaticResource BaseOhlcStyle}">
+        <Setter Property="StrokeUp" Value="#4d40f9"/>
+        <Setter Property="StrokeDown" Value="#352baf"/>
+    </Style>
+
+    <Style x:Key="MarginStyle" TargetType="s:FastOhlcRenderableSeries" BasedOn="{StaticResource BaseOhlcStyle}">
+        <Setter Property="StrokeUp" Value="#c23afc"/>
+        <Setter Property="StrokeDown" Value="#7d23a3"/>
+    </Style>
+
+    <!-- CategoryHistogram -->
+
     <ControlTemplate x:Key="CategoryHistogram.Classic">
 
         <Grid Margin="{TemplateBinding Margin}"
@@ -66,7 +85,7 @@
                 </s:SciChartSurface.YAxis>
 
                 <s:SciChartSurface.XAxis>
-                    <s:NumericAxis Style="{StaticResource AxisBaseStyle}" AutoRange="Always"
+                    <s:NumericAxis Name="xAxis" Style="{StaticResource AxisBaseStyle}" AutoRange="Always"
                                    MinorDelta="1" MajorDelta="1" AutoTicks="False"/>
                 </s:SciChartSurface.XAxis>
 
@@ -81,6 +100,53 @@
             
         </Grid>
 
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding XAxisDayNames}" Value="True">
+                <Setter TargetName="xAxis" Property="LabelProvider">
+                    <Setter.Value>
+                        <l:DayNameLabelProvider/>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+
+    </ControlTemplate>
+
+    <!-- CategoryDatetime -->
+
+    <ControlTemplate x:Key="CategoryDatetime.Classic">
+
+        <Grid Margin="{TemplateBinding Margin}"
+              Background="{TemplateBinding Background}"
+              Height="{TemplateBinding Height}" >
+
+            <s:SciChartSurface RenderableSeries="{s:SeriesBinding SeriesList}" ChartTitle="{Binding Title}"
+                               FontSize="12" Margin="4"
+                               Background="{TemplateBinding Background}"
+                               Foreground="Black">
+
+                <s:SciChartSurface.YAxis>
+                    <s:NumericAxis Style="{StaticResource AxisBaseStyle}" MaxAutoTicks="6"
+                                   AxisAlignment="Left" AutoRange="Always" DrawMajorGridLines="True">
+                    </s:NumericAxis>
+                </s:SciChartSurface.YAxis>
+
+                <s:SciChartSurface.XAxis>
+                    <s:CategoryDateTimeAxis Style="{StaticResource AxisBaseStyle}" AutoRange="Always"
+                                   MinorDelta="1" MajorDelta="1" AutoTicks="False"/>
+                </s:SciChartSurface.XAxis>
+
+                <!--<s:SciChartSurface.ChartModifier>
+                <s:ModifierGroup>
+                    <s:RubberBandXyZoomModifier/>
+                    <s:ZoomExtentsModifier ExecuteOn="MouseDoubleClick"/>
+                </s:ModifierGroup>
+            </s:SciChartSurface.ChartModifier>-->
+
+            </s:SciChartSurface>
+
+        </Grid>
+
     </ControlTemplate>
 
     <Style x:Key="BacktesterStatChartViewStyle.Classic" TargetType="UserControl">
@@ -90,6 +156,9 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding Style}" Value="CategoryHistogram">
                 <Setter Property="Template" Value="{StaticResource CategoryHistogram.Classic}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Style}" Value="CategoryDatetime">
+                <Setter Property="Template" Value="{StaticResource CategoryDatetime.Classic}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

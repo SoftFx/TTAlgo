@@ -18,85 +18,83 @@ namespace TickTrader.Algo.Core
         public TradeHistoryEmulator TradeHistory { get; }
         public IBacktesterSettings Settings { get; }
 
-        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc)
+        public event Action<EmulatorStates> StateUpdated
+        {
+            add => InvokeEmulator.StateUpdated += value;
+            remove => InvokeEmulator.StateUpdated -= value;
+        }
+
+        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc, FeedEmulator fEmulator)
         {
             Settings = settings;
-            Feed = new FeedEmulator();
+            Feed = fEmulator ?? new FeedEmulator();
             Collector = new BacktesterCollector(executor);
-            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed);
+            InvokeEmulator = new InvokeEmulator(settings, Collector, Feed, executor.Start, executor.EmulateStop);
             TradeHistory = new TradeHistoryEmulator();
+            TradeHistory.OnReportAdded += TradeHistory_OnReportAdded;
             Executor = executor;
         }
 
-        public void OnStart()
+        public bool OnStart()
         {
-            Collector.OnStart(Settings);
-        }
-
-        public bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
-        {
-            if (warmupValue <= 0)
-                return true;
-
             try
             {
-                if (warmupUnits == WarmupUnitTypes.Days)
-                    return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
-                else if (warmupUnits == WarmupUnitTypes.Hours)
-                    return InvokeEmulator.WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
-                else if (warmupUnits == WarmupUnitTypes.Bars)
-                    return InvokeEmulator.WarmupByBars(warmupValue);
-                else if (warmupUnits == WarmupUnitTypes.Ticks)
-                    return InvokeEmulator.WarmupByQuotes(warmupValue);
-                else
-                    return false;
+                Feed.InitStorages();
+
+                Collector.OnStart(Settings, Feed);
+
+                return InvokeEmulator.StartFeedRead();
             }
             catch (Exception ex)
             {
                 throw WrapException(ex);
             }
-        }
-
-        public void EmulateExecution()
-        {
-            try
-            {
-                InvokeEmulator.EmulateEventsWithFeed();
-                EmulateStop();
-            }
-            catch (OperationCanceledException)
-            {
-                Collector.AddEvent(LogSeverities.Error, "Testing canceled!");
-                EmulateStop();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                EmulateStop();
-                throw WrapException(ex);
-            }
-        }
-
-        private void EmulateStop()
-        {
-            Executor.EmulateStop();
-            InvokeEmulator.EnableStopPhase();
-            InvokeEmulator.EmulateEvents();
         }
 
         public void OnStop()
         {
+            Executor.WaitStop();
+
+            Feed.DeinitStorages();
+
             var builder = Executor.GetBuilder();
             //var tradeEmulator = (TradeEmulator)Executor.GetTradeFixute();
 
             //tradeEmulator.Stop();
 
-            Collector.OnStop(Settings, builder.Account);
+            Collector.OnStop(Settings, builder?.Account, Feed);
+        }
+
+        public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
+        {
+            try
+            {
+                InvokeEmulator.EmulateExecution(warmupValue, warmupUnits);
+            }
+            catch (Exception ex)
+            {
+                throw WrapException(ex);
+            }
         }
 
         public void CancelEmulation()
         {
             InvokeEmulator.Cancel();
+        }
+
+        public void Pause()
+        {
+            InvokeEmulator.Pause();
+        }
+
+        public void Resume()
+        {
+            InvokeEmulator.Resume();
+        }
+
+        public void SetExecDelay(int delayMs)
+        {
+            InvokeEmulator.SetExecDelay(delayMs);
         }
 
         public override void Dispose()
@@ -107,10 +105,18 @@ namespace TickTrader.Algo.Core
             base.Dispose();
         }
 
+        private void TradeHistory_OnReportAdded(TradeReportAdapter rep)
+        {
+            Executor.OnUpdate(rep.Entity);
+        }
+
         private Exception WrapException(Exception ex)
         {
             if (ex is AlgoException)
                 return ex;
+
+            if (ex is OperationCanceledException || ex is TaskCanceledException)
+                return new AlgoOperationCanceledException(ex.Message);
 
             return new AlgoException(ex.GetType().Name + ": " + ex.Message);
         }

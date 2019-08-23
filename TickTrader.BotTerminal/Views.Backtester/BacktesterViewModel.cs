@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using Machinarium.Var;
 using Microsoft.Win32;
+using NLog;
 using SciChart.Charting.Model.DataSeries;
 using System;
 using System.Collections.Generic;
@@ -21,232 +22,137 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
+using LB = TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Core.Lib;
+using System.Globalization;
 
 namespace TickTrader.BotTerminal
 {
-    internal class BacktesterViewModel : Screen, IWindowModel, IAlgoSetupMetadata, IPluginIdProvider, IAlgoSetupContext
+    internal class BacktesterViewModel : Conductor<Page>.Collection.OneActive, IWindowModel
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoEnvironment _env;
         private IShell _shell;
-        private SymbolCatalog _catalog;
-        private Property<List<BotLogRecord>> _journalContent = new Property<List<BotLogRecord>>();
-        private SymbolToken _mainSymbolToken;
-        private IVarList<ISymbolInfo> _symbolTokens;
-        private IReadOnlyList<ISymbolInfo> _observableSymbolTokens;
         private VarContext _var = new VarContext();
         private TraderClientModel _client;
         private WindowManager _localWnd;
         private DateTime _emulteFrom;
         private DateTime _emulateTo;
-        private BacktesterSettings _settings = new BacktesterSettings();
-        private BoolProperty _allSymbolsValid;
+        private PluginDescriptor _descriptorCache;
+
         private BoolProperty _hasDataToSave;
         private BoolProperty _isRunning;
+        private BoolProperty _isVisualizing;
+        private ITestExecController _tester;
+        private Dictionary<string, SymbolEntity> _testingSymbols;
+        private Property<EmulatorStates> _stateProp;
+        private BoolProperty _pauseRequestedProp;
+        private BoolProperty _resumeRequestedProp;
+        
+        private static readonly int[] SpeedToDelayMap = new int[] { 256, 128, 64, 32, 16, 8, 4, 2, 1, 0 };
 
-        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell)
+        public BacktesterViewModel(AlgoEnvironment env, TraderClientModel client, SymbolCatalog catalog, IShell shell, ProfileManager profile)
         {
             DisplayName = "Backtester";
 
             _env = env ?? throw new ArgumentNullException("env");
-            _catalog = catalog ?? throw new ArgumentNullException("catalog");
             _shell = shell ?? throw new ArgumentNullException("shell");
             _client = client;
 
-            _allSymbolsValid = _var.AddBoolProperty();
             _hasDataToSave = _var.AddBoolProperty();
             _isRunning = _var.AddBoolProperty();
+            _isVisualizing = _var.AddBoolProperty();
 
             _localWnd = new WindowManager(this);
 
-            ActionOverlay = new Property<ActionOverlayViewModel>();
-            AdditionalSymbols = new ObservableCollection<BacktesterSymbolSetupViewModel>();
-
-            DateRange = new DateRangeSelectionViewModel(false);
-            IsUpdatingRange = new BoolProperty();
-            MainTimeFrame = new Property<TimeFrames>();
-            
-            TradesPage = new BacktesterTradeGridViewModel();
-
-            MainTimeFrame.Value = TimeFrames.M1;
-
-            SaveResultsToFile = new BoolProperty();
-            SaveResultsToFile.Set();
-
-            //_availableSymbols = env.Symbols;
-
-            MainSymbolSetup = CreateSymbolSetupModel(SymbolSetupType.Main);
-            UpdateSymbolsState();
-
-            AvailableModels = _var.AddProperty<List<TimeFrames>>();
-            SelectedModel = _var.AddProperty<TimeFrames>(TimeFrames.M1);
-
-            SelectedPlugin = new Property<AlgoPluginViewModel>();
-            IsPluginSelected = SelectedPlugin.Var.IsNotNull();
-            IsTradeBotSelected = SelectedPlugin.Var.Check(p => p != null && p.Descriptor.Type == AlgoTypes.Robot);
-            //IsRunning = ActionOverlay.IsRunning;
-            //IsStopping = ActionOverlay.IsCancelling;
-            CanStart = !IsRunning & client.IsConnected & !IsUpdatingRange.Var & IsPluginSelected & _allSymbolsValid.Var;
-            CanSetup = !IsRunning & client.IsConnected;
-            //CanStop = ActionOverlay.CanCancel;
-            //CanSave = !IsRunning & _hasDataToSave.Var;
-
-            Plugins = env.LocalAgentVM.PluginList;
-
-            _mainSymbolToken = SpecialSymbols.MainSymbolPlaceholder;
-            var predefinedSymbolTokens = new VarList<ISymbolInfo>(new ISymbolInfo[] { _mainSymbolToken });
-            var existingSymbolTokens = _catalog.AllSymbols.Select(s => (ISymbolInfo)s.ToSymbolToken());
-            _symbolTokens = VarCollection.Combine<ISymbolInfo>(predefinedSymbolTokens, existingSymbolTokens);
-            _observableSymbolTokens = _symbolTokens.AsObservable();
-
-            env.LocalAgentVM.Plugins.Updated += a =>
-            {
-                if (a.Action == DLinqAction.Remove && a.OldItem.Key == SelectedPlugin.Value?.Key)
-                    SelectedPlugin.Value = null;
-            };
-
+            SetupPage = new BacktesterSetupPageViewModel(client, catalog, env, IsRunning);
+            TradesPage = new BacktesterCurrentTradesViewModel(profile);
+            TradeHistoryPage = new BacktesterTradeGridViewModel(profile);
+            OptimizationPage = new BacktesterOptimizerViewModel(_localWnd, IsRunning);
             ChartPage = new BacktesterChartPageViewModel();
             ResultsPage = new BacktesterReportViewModel();
 
-            _var.TriggerOnChange(SelectedPlugin, a =>
-            {
-                if (a.New != null)
-                {
-                    PluginConfig = null;
-                }
-            });
+            CanStart = !IsRunning & client.IsConnected & SetupPage.IsSetupValid;
 
-            _var.TriggerOnChange(MainSymbolSetup.SelectedTimeframe, a =>
+            SetupPage.PluginSelected += () =>
             {
-                AvailableModels.Value = EnumHelper.AllValues<TimeFrames>().Where(t => t >= a.New).ToList();
-
-                if (SelectedModel.Value < a.New)
-                    SelectedModel.Value = a.New;
-            });
-
-            _var.TriggerOnChange(SelectedModel, a =>
-            {
-                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
-            });
-
-            _var.TriggerOnChange(MainSymbolSetup.SelectedSymbol, a =>
-            {
-                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
-            });
-
-            client.Connected += () =>
-            {
-                GetAllSymbols().Foreach(s => s.Reset());
-                MainSymbolSetup.UpdateAvailableRange(SelectedModel.Value);
+                OptimizationPage.SetPluign(SetupPage.SelectedPlugin.Value.Descriptor, SetupPage.PluginSetup);
             };
+
+            OptimizationResultsPage.ShowDetailsRequested += r =>
+            {
+                ResultsPage.Clear();
+                ResultsPage.ShowReport(r.Stats, _descriptorCache, r.Config.Id);
+                ResultsPage.AddEquityChart(Convert(r.Equity));
+                ResultsPage.AddMarginChart(Convert(r.Margin));
+                ActivateItem(ResultsPage);
+            };
+
+            _var.TriggerOnChange(SetupPage.ModeProp, a =>
+            {
+                OptimizationPage.IsVisible = a.New.Value == TesterModes.Optimization;
+            });
+
+            InitExecControl();
+
+            Items.Add(SetupPage);
+            Items.Add(OptimizationPage);
+            Items.Add(JournalPage);
+            Items.Add(TradesPage);
+            Items.Add(TradeHistoryPage);
+            Items.Add(ChartPage);
+            Items.Add(OptimizationResultsPage);
+            Items.Add(ResultsPage);
         }
 
-        public Property<ActionOverlayViewModel> ActionOverlay { get; private set; }
-        public IObservableList<AlgoPluginViewModel> Plugins { get; private set; }
-        public Property<List<TimeFrames>> AvailableModels { get; private set; }
-        public Property<TimeFrames> SelectedModel { get; private set; }
-        public Property<AlgoPluginViewModel> SelectedPlugin { get; private set; }
-        public Property<TimeFrames> MainTimeFrame { get; private set; }
-        public BacktesterSymbolSetupViewModel MainSymbolSetup { get; private set; }
-        public BoolProperty SaveResultsToFile { get; }
-        public BoolVar IsPluginSelected { get; }
-        public BoolVar IsTradeBotSelected { get; }
+        //public Property<ActionOverlayViewModel> ActionOverlay { get; private set; }
+        public ActionViewModel ProgressMonitor { get; } = new ActionViewModel();
+        
         public BoolVar IsRunning => _isRunning.Var;
+        public BoolVar IsVisualizing => _isVisualizing.Var;
         //public BoolVar IsStopping { get; }
-        public BoolVar CanSetup { get; }
         public BoolVar CanStart { get; }
-        //public BoolVar CanStop { get; }
-        public BoolProperty IsUpdatingRange { get; private set; }
-        public DateRangeSelectionViewModel DateRange { get; }
-        public ObservableCollection<BacktesterSymbolSetupViewModel> AdditionalSymbols { get; private set; }
+        public BoolVar CanPause { get; private set; }
+        public BoolVar CanResume { get; private set; }
+        public BoolVar CanStop { get; private set; }
+        public BoolVar CanCanel { get; private set; }
+        public BoolVar CanControlSpeed { get; private set; }
+        public IntProperty SelectedSpeed { get; private set; }
         //public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
-        public Var<List<BotLogRecord>> JournalRecords => _journalContent.Var;
+
+        public BacktesterSetupPageViewModel SetupPage { get; }
+        public BacktesterJournalViewModel JournalPage { get; } = new BacktesterJournalViewModel();
         public BacktesterReportViewModel ResultsPage { get; }
         public BacktesterChartPageViewModel ChartPage { get; }
-        public BacktesterTradeGridViewModel TradesPage { get; }
-        public PluginConfig PluginConfig { get; private set; }
-
-        public void OpenPluginSetup()
-        {
-            var setup = PluginConfig == null
-                ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo())
-                : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginConfig);
-            _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
-            setup.Closed += PluginSetupClosed;
-            //_shell.ToolWndManager.OpenMdiWindow("AlgoSetupWindow", setup);
-        }
-
-        public async void OpenTradeSetup()
-        {
-            var setup = new BacktesterTradeSetupViewModel(_settings, _client.SortedCurrenciesNames);
-
-            _localWnd.OpenMdiWindow("SetupAuxWnd", setup);
-
-            if (await setup.Result)
-                _settings = setup.GetSettings();
-        }
-
-        public async void StartEmulation()
-        {
-            //ProgressMonitor.Start(DoEmulation);
-            //var actionObserver = new ActionViewModel();
-            ///yield return OverlayPanel.ShowDialog(null);
-            ///
-            
-            var observer = new ActionOverlayViewModel(DoEmulation);
-
-            ActionOverlay.Value = observer;
-            IsRunning.Set();
-            await observer.Completed;
-
-            IsRunning.Unset();
-            ActionOverlay.Value = null;
-        }
-
-        //public void Stop()
-        //{
-        //    ActionOverlay.Cancel();
-        //}
-
-        [Conditional("DEBUG")]
-        public void PrintCacheData()
-        {
-            MainSymbolSetup.PrintCacheData(SelectedModel.Value);
-        }
-
-        public void SaveResults()
-        {
-        }
-
-        private void PluginSetupClosed(BacktesterPluginSetupViewModel setup, bool dlgResult)
-        {
-            if (dlgResult)
-                PluginConfig = setup.GetConfig();
-
-            setup.Closed -= PluginSetupClosed;
-        }
+        public BacktesterTradeGridViewModel TradeHistoryPage { get; }
+        public BacktesterCurrentTradesViewModel TradesPage { get; private set; }
+        public BacktesterOptimizerViewModel OptimizationPage { get; }
+        public OptimizationResultsPageViewModel OptimizationResultsPage { get; } = new OptimizationResultsPageViewModel();
 
         private async Task DoEmulation(IActionObserver observer, CancellationToken cToken)
         {
             try
             {
+                _isVisualizing.Clear();
                 ChartPage.Clear();
                 ResultsPage.Clear();
-                _journalContent.Value = null;
-                TradesPage.Clear(_settings.AccType);
+                JournalPage.Clear();
+                TradeHistoryPage.OnTesterStart(SetupPage.Settings.AccType);
                 _hasDataToSave.Clear();
+                TradesPage.Clear();
 
-                CheckDuplicateSymbols();
+                SetupPage.CheckDuplicateSymbols();
 
-                _emulteFrom = DateTime.SpecifyKind(DateRange.From, DateTimeKind.Utc);
-                _emulateTo = DateTime.SpecifyKind(DateRange.To, DateTimeKind.Utc);
+                _emulteFrom = DateTime.SpecifyKind(SetupPage.DateRange.From, DateTimeKind.Utc);
+                _emulateTo = DateTime.SpecifyKind(SetupPage.DateRange.To, DateTimeKind.Utc);
 
                 if (_emulteFrom == _emulateTo)
                     throw new Exception("Zero range!");
 
-                await PrecacheData(observer, cToken);
+                await SetupPage.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
 
                 cToken.ThrowIfCancellationRequested();
 
@@ -258,175 +164,289 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private async Task PrecacheData(IActionObserver observer, CancellationToken cToken)
-        {
-            await MainSymbolSetup.PrecacheData(observer, cToken, _emulteFrom, _emulateTo, SelectedModel.Value);
-
-            foreach (var symbolSetup in AdditionalSymbols)
-                await symbolSetup.PrecacheData(observer, cToken, _emulteFrom, _emulateTo);
-        }
-
         private async Task SetupAndRunBacktester(IActionObserver observer, CancellationToken cToken)
         {
-            var chartSymbol = MainSymbolSetup.SelectedSymbol.Value;
-            var chartTimeframe = MainSymbolSetup.SelectedTimeframe.Value;
+            var chartSymbol = SetupPage.MainSymbolSetup.SelectedSymbol.Value;
+            var chartTimeframe = SetupPage.MainSymbolSetup.SelectedTimeframe.Value;
             var chartPriceLayer = BarPriceType.Bid;
 
-            var progressMin = _emulteFrom.GetAbsoluteDay();
+            SetupPage.InitToken();
 
-            _mainSymbolToken.Id = chartSymbol.Name;
+            //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
+            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Info.Key);
+            //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
-            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
-            observer.SetMessage("Emulating...");
+            _descriptorCache = pluginRef.Metadata.Descriptor;
 
-            var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SelectedPlugin.Value.Info.Key);
-            var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
-
-            if (PluginConfig != null)
-                pluginSetupModel.Load(PluginConfig);
-            pluginSetupModel.MainSymbolPlaceholder.Id = chartSymbol.Name;
+            //if (PluginConfig != null)
+            //    pluginSetupModel.Load(PluginConfig);
 
             // TODO: place correctly to avoid domain unload during backtester run
             //packageRef.IncrementRef();
             //packageRef.DecrementRef();
 
-            using (var tester = new Backtester(pluginRef, _emulteFrom, _emulateTo))
+            if (SetupPage.Mode == TesterModes.Optimization)
+                await DoOptimization(observer, cToken, pluginRef, SetupPage.PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
+            else
+                await DoBacktesting(observer, cToken, pluginRef, SetupPage.PluginSetup, chartSymbol, chartTimeframe, chartPriceLayer);
+        }
+
+        private async Task DoBacktesting(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
+            SymbolData chartSymbol, TimeFrames chartTimeframe, BarPriceType chartPriceLayer)
+        {
+            var progressMin = _emulteFrom.GetAbsoluteDay();
+
+            observer.StartProgress(progressMin, _emulateTo.GetAbsoluteDay());
+            observer.SetMessage("Emulating...");
+
+            using (var backtester = new Backtester(pluginRef, new DispatcherSync(), _emulteFrom, _emulateTo))
             {
-                pluginSetupModel.Apply(tester);
+                OnStartTesting(backtester);
 
-                foreach (var outputSetup in pluginSetupModel.Outputs)
+                try
                 {
-                    if (outputSetup is ColoredLineOutputSetupModel)
-                        tester.InitOutputCollection<double>(outputSetup.Id);
-                    else if (outputSetup is MarkerSeriesOutputSetupModel)
-                        tester.InitOutputCollection<Marker>(outputSetup.Id);
+                    pluginSetupModel.Apply(backtester);
+
+                    backtester.Executor.LogUpdated += JournalPage.Append;
+                    backtester.Executor.TradeHistoryUpdated += Executor_TradeHistoryUpdated;
+
+                    if (SetupPage.Mode == TesterModes.Visualization)
+                    {
+                        _isVisualizing.Set();
+
+                        var delay = SpeedToDelayMap[SelectedSpeed.Value];
+                        backtester.SetExecDelay(delay);
+                        backtester.StreamExecReports = true;
+                    }
+
+                    Exception execError = null;
+
+                    System.Action updateProgressAction = () => observer.SetProgress(backtester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
+
+                    using (new UiUpdateTimer(updateProgressAction))
+                    {
+                        try
+                        {
+                            SetupPage.Apply(backtester, _emulteFrom, _emulateTo, _isVisualizing.Value);
+                            backtester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+
+                            _testingSymbols = backtester.CommonSettings.Symbols;
+
+                            FireOnStart(chartSymbol, pluginSetupModel, backtester);
+
+                            _hasDataToSave.Set();
+
+                            await Task.Run(() => backtester.Run(cToken));
+
+                            observer.SetProgress(_emulateTo.GetAbsoluteDay());
+                        }
+                        catch (Exception ex)
+                        {
+                            execError = ex;
+                        }
+
+                        FireOnStop(backtester);
+                    }
+
+                    await LoadStats(observer, backtester);
+                    await LoadChartData(backtester, observer);
+
+                    if (SetupPage.SaveResultsToFile.Value)
+                        await SaveResults(pluginSetupModel, observer);
+
+                    if (execError != null)
+                    {
+                        if (execError is AlgoOperationCanceledException)
+                            observer.SetMessage("Canceled by user!");
+                        else
+                            throw execError; //observer.SetMessage(execError.Message);
+                    }
+                    else
+                        observer.SetMessage("Done.");
                 }
-
-                Exception execError = null;
-
-                System.Action updateProgressAction = () => observer.SetProgress(tester.CurrentTimePoint?.GetAbsoluteDay() ?? progressMin);
-
-                using (new UiUpdateTimer(updateProgressAction))
+                finally
                 {
+                    OnStopTesting();
+                    //backtester = null;
+                }
+            }
+        }
+
+        private async Task DoOptimization(IActionObserver observer, CancellationToken cToken, AlgoPluginRef pluginRef, PluginSetupModel pluginSetupModel,
+            SymbolData chartSymbol, TimeFrames chartTimeframe, BarPriceType chartPriceLayer)
+        {
+            using (var optimizer = new Optimizer(pluginRef, new DispatcherSync()))
+            {
+                OnStartTesting(optimizer);
+
+                try
+                {
+                    pluginSetupModel.Apply(optimizer);
+
+                    Exception execError = null;
+
                     try
                     {
-                        MainSymbolSetup.Apply(tester, _emulteFrom, _emulateTo, SelectedModel.Value);
+                        SetupPage.Apply(optimizer, _emulteFrom, _emulateTo);
 
-                        foreach (var symbolSetup in AdditionalSymbols)
-                            symbolSetup.Apply(tester, _emulteFrom, _emulateTo);
+                        optimizer.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
 
-                        tester.Feed.AddBarBuilder(chartSymbol.Name, chartTimeframe, chartPriceLayer);
+                        _testingSymbols = optimizer.CommonSettings.Symbols;
 
-                        foreach (var rec in _client.Currencies.Snapshot)
-                            tester.Currencies.Add(rec.Key, rec.Value);
+                        // setup params
+                        OptimizationPage.Apply(optimizer);
 
-                        //foreach (var rec in _client.Symbols.Snapshot)
-                        //    tester.Symbols.Add(rec.Key, rec.Value.Descriptor);
-
-                        _settings.Apply(tester);
+                        FireOnStart(pluginRef, optimizer);
 
                         _hasDataToSave.Set();
 
-                        await Task.Run(() => tester.Run(cToken));
+                        var maxProgress = optimizer.MaxCasesNo;
 
-                        observer.SetProgress(DateRange.To.GetAbsoluteDay());
+                        observer.StartProgress(0, maxProgress);
+                        observer.SetMessage(GetOptimizationProgressMessage(maxProgress, 0));
+
+                        Action<OptCaseReport, long> repHandler = (r, cl) =>
+                        {
+                            var progress = maxProgress - cl;
+                            observer.SetProgress(progress);
+                            observer.SetMessage(GetOptimizationProgressMessage(maxProgress, progress));
+                            OptimizationResultsPage.Update(r);
+                        };
+
+                        optimizer.CaseCompleted += repHandler;
+
+                        try
+                        {
+                            await Task.Run(() => optimizer.Run(cToken));
+                        }
+                        finally
+                        {
+                            optimizer.CaseCompleted -= repHandler;
+                        }
                     }
                     catch (Exception ex)
                     {
                         execError = ex;
                     }
+
+                    FireOnStop(optimizer);
+
+                    if (SetupPage.SaveResultsToFile.Value)
+                        await OptimizationResultsPage.SaveReportAsync(pluginSetupModel, observer);
+
+                    if (execError != null)
+                    {
+                        if (execError is AlgoOperationCanceledException)
+                            observer.SetMessage("Canceled by user!");
+                        else
+                            throw execError; //observer.SetMessage(execError.Message);
+                    }
+                    else
+                        observer.SetMessage("Done.");
                 }
-
-                await CollectEvents(tester, observer);
-                await LoadTradeHistory(tester, observer);
-                await LoadStats(observer, tester);
-                await LoadChartData(tester, observer, tester);
-
-                if (SaveResultsToFile.Value)
-                    await SaveResults(pluginSetupModel, observer);
-
-                if (execError != null)
-                    throw execError; //observer.SetMessage(execError.Message);
-                else
-                    observer.SetMessage("Done.");
+                finally
+                {
+                    OnStopTesting();
+                }
             }
         }
 
-        private async Task CollectEvents(Backtester tester, IActionObserver observer)
+        private void FireOnStart(SymbolData mainSymbol, PluginSetupModel setup, Backtester tester)
         {
-            var totalCount = tester.EventsCount;
+            var symbols = SetupPage.GetAllSymbols().Select(ss => ss.SelectedSymbol.Value.InfoEntity).ToList();
+            var currecnies = _client.Currencies.Snapshot.Values.ToList();
 
-            observer.StartProgress(0, totalCount);
-            observer.SetMessage("Updating journal...");
+            JournalPage.IsVisible = true;
+            ChartPage.IsVisible = true;
+            TradeHistoryPage.IsVisible = true;
+            ResultsPage.IsVisible = true;
 
-            _journalContent.Value = await Task.Run(() =>
+            ChartPage.OnStart(IsVisualizing.Value, mainSymbol.InfoEntity, setup, tester, symbols);
+            if (IsVisualizing.Value)
             {
-                var events = new List<BotLogRecord>(totalCount);
+                TradesPage.IsVisible = true;
+                TradesPage.Start(tester, currecnies, symbols);
+            }
+            else
+                TradesPage.IsVisible = false;
 
-                using (var cde = tester.GetEvents())
-                {
-                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
-                        events.Add(record);
-
-                    return events;
-                }
-            });
+            OptimizationResultsPage.Hide();
         }
 
-        private async Task LoadTradeHistory(Backtester tester, IActionObserver observer)
+        private void FireOnStop(Backtester tester)
         {
-            var totalCount = tester.TradesCount;
+            ChartPage.OnStop(tester);
+            if (IsVisualizing.Value)
+                TradesPage.Stop(tester);
+        }
 
-            observer.StartProgress(0, totalCount);
-            observer.SetMessage("Loading trades...");
+        private void FireOnStart(AlgoPluginRef pluginRef, Optimizer tester)
+        {
+            JournalPage.IsVisible = false;
+            ChartPage.IsVisible = false;
+            TradesPage.IsVisible = false;
+            TradeHistoryPage.IsVisible = false;
+            ResultsPage.IsVisible = false;
 
-            var items = await Task.Run(() =>
-            {
-                var trades = new List<TransactionReport>(totalCount);
+            OptimizationResultsPage.Start(OptimizationPage.GetSelectedParams(), tester);
+        }
 
-                using (var cde = tester.GetTradeHistory())
-                {
-                    var symbols = _client.Symbols;
-                    var accType = tester.AccountType;
+        private void FireOnStop(Optimizer tester)
+        {
+            OptimizationResultsPage.Stop(tester);
+        }
 
-                    foreach (var record in cde.JoinPages(i => observer.SetProgress(i)))
-                        trades.Add(TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol)));
+        private BotLogRecord CreateInfoRecord(uint no, string message)
+        {
+            return new BotLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
+        }
 
-                    return trades;
-                }
-            });
+        private void Executor_TradeHistoryUpdated(TradeReportEntity record)
+        {
+            var currencies = _client.Currencies;
+            var symbols = _testingSymbols.Select(kv => new SymbolModel(kv.Value, currencies)).ToDictionary(m => m.Name);
 
-
-            TradesPage.Fill(items);
+            var accType = SetupPage.Settings.AccType;
+            var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
+            TradeHistoryPage.Append(trRep);
+            ChartPage.Append(accType, trRep);
         }
 
         private async Task LoadStats(IActionObserver observer, Backtester tester)
         {
             observer.SetMessage("Loading testing result data...");
 
-            ResultsPage.Stats = await Task.Factory.StartNew(() => tester.GetStats());
+            var statProperties = await Task.Factory.StartNew(() => tester.GetStats());
+            ResultsPage.ShowReport(statProperties, tester.PluginInfo, null);
         }
 
-        private async Task LoadChartData(Backtester tester, IActionObserver observer, Backtester backtester)
+        private async Task LoadChartData(Backtester backtester, IActionObserver observer)
         {
-            var timeFrame = backtester.MainTimeframe;
-            var count = backtester.BarHistoryCount;
+            var mainSymbol = backtester.CommonSettings.MainSymbol;
+            var timeFrame = backtester.CommonSettings.MainTimeframe;
+            var count = backtester.GetSymbolHistoryBarCount(mainSymbol);
 
-            timeFrame = AdjustTimeframe(timeFrame, count, out count);
+            timeFrame = BarExtentions.AdjustTimeframe(timeFrame, count, 500, out count);
 
-            observer.SetMessage("Loading feed chart data ...");
-            var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
+            //observer.SetMessage("Loading feed chart data ...");
+            //var feedChartData = await LoadBarSeriesAsync(tester.GetMainSymbolHistory(timeFrame), observer, timeFrame, count);
 
-            observer.SetMessage("Loading equity chart data...");
-            var equityChartData = await LoadBarSeriesAsync(tester.GetEquityHistory(timeFrame), observer, timeFrame, count);
+            if (backtester.PluginInfo.Type == AlgoTypes.Robot)
+            {
+                observer.SetMessage("Loading equity chart data...");
+                var equityChartData = await LoadBarSeriesAsync(backtester.GetEquityHistory(timeFrame), observer, timeFrame, count);
 
-            observer.SetMessage("Loading margin chart data...");
-            var marginChartData = await LoadBarSeriesAsync(tester.GetMarginHistory(timeFrame), observer, timeFrame, count);
+                ResultsPage.AddEquityChart(equityChartData);
 
-            ChartPage.SetFeedSeries(feedChartData);
-            ChartPage.SetEquitySeries(equityChartData);
-            ChartPage.SetMarginSeries(marginChartData);
+                observer.SetMessage("Loading margin chart data...");
+                var marginChartData = await LoadBarSeriesAsync(backtester.GetMarginHistory(timeFrame), observer, timeFrame, count);
+
+                ResultsPage.AddMarginChart(marginChartData);
+            }
+
+            //ChartPage.SetFeedSeries(feedChartData);
+            //ChartPage.SetEquitySeries(equityChartData);
+            //ChartPage.SetMarginSeries(marginChartData);
         }
 
         private Task<OhlcDataSeries<DateTime, double>> LoadBarSeriesAsync(IPagedEnumerator<BarEntity> src, IActionObserver observer, TimeFrames timeFrame, int totalCount)
@@ -440,7 +460,10 @@ namespace TickTrader.BotTerminal
                     var chartData = new OhlcDataSeries<DateTime, double>();
 
                     foreach (var bar in src.JoinPages(i => observer.SetProgress(i)))
-                        chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    {
+                        if (!double.IsNaN(bar.Open))
+                            chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+                    }
 
                     observer.SetProgress(totalCount);
 
@@ -449,12 +472,128 @@ namespace TickTrader.BotTerminal
             });
         }
 
+        private OhlcDataSeries<DateTime, double> Convert(IEnumerable<BarEntity> bars)
+        {
+            var chartData = new OhlcDataSeries<DateTime, double>();
+
+            foreach (var bar in bars)
+            {
+                if (!double.IsNaN(bar.Open))
+                    chartData.Append(bar.OpenTime, bar.Open, bar.High, bar.Low, bar.Close);
+            }
+
+            return chartData;
+        }
+
+        public override void CanClose(Action<bool> callback)
+        {
+            callback(!_isRunning.Value);
+        }
+
+        public override void TryClose(bool? dialogResult = null)
+        {
+            base.TryClose(dialogResult);
+
+            _var.Dispose();
+        }
+
+        #region Execution control
+
+        public async void StartEmulation()
+        {
+            //var actionObserver = new ActionViewModel();
+            ///yield return OverlayPanel.ShowDialog(null);
+            ///
+
+            //var observer = new ActionOverlayViewModel(DoEmulation);
+
+            SetupPage.CloseSetupDialog();
+
+            //ActionOverlay.Value = observer;
+            _isRunning.Set();
+            ProgressMonitor.Start(DoEmulation);
+            await ProgressMonitor.Completion;
+
+            _isRunning.Clear();
+            //ActionOverlay.Value = null;
+        }
+
+        public void Cancel()
+        {
+            ProgressMonitor.Cancel();
+        }
+
+        public void PauseEmulation()
+        {
+            _tester?.Pause();
+        }
+
+        public void ResumeEmulation()
+        {
+            _pauseRequestedProp.Set();
+            _tester?.Resume();
+        }
+
+        private void InitExecControl()
+        {
+            _stateProp = _var.AddProperty<EmulatorStates>();
+            _resumeRequestedProp = _var.AddBoolProperty();
+            _pauseRequestedProp = _var.AddBoolProperty();
+
+            CanPause = _isVisualizing.Var & _stateProp.Var == EmulatorStates.Running & !_pauseRequestedProp.Var;
+            CanResume = _stateProp.Var == EmulatorStates.Paused & !_pauseRequestedProp.Var;
+            CanCanel = ProgressMonitor.CanCancel;
+            CanControlSpeed = _isVisualizing.Var;
+            SelectedSpeed = _var.AddIntProperty();
+            _var.TriggerOnChange(SelectedSpeed, a =>
+            {
+                if (IsVisualizing.Value)
+                {
+                    var delay = SpeedToDelayMap[a.New];
+                    _tester?.SetExecDelay(delay);
+                }
+            });
+
+            _var.TriggerOnChange(_stateProp, a =>
+            {
+                _pauseRequestedProp.Clear();
+                _resumeRequestedProp.Clear();
+            });
+        }
+
+        private void OnStartTesting(ITestExecController tester)
+        {
+            _tester = tester;
+            _tester.StateChanged += _backtester_StateChanged;
+            _tester.ErrorOccurred += Executor_ErrorOccurred;
+        }
+
+        private void OnStopTesting()
+        {
+            _tester.StateChanged -= _backtester_StateChanged;
+            _tester.ErrorOccurred -= Executor_ErrorOccurred;
+            _stateProp.Value = EmulatorStates.Stopped;
+            _tester = null;
+        }
+
+        private void _backtester_StateChanged(EmulatorStates state)
+        {
+            _stateProp.Value = state;
+        }
+
+        private void Executor_ErrorOccurred(Exception ex)
+        {
+            _logger.Error(ex, "Error occurred in backtester!");
+        }
+
+        #endregion
+
         #region Results saving
 
         private async Task SaveResults(PluginSetupModel pluginSetup, IActionObserver observer)
         {
             var dPlugin = pluginSetup.PluginRef.Metadata.Descriptor;
-            var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-dd-M HH-mm-ss") + ".zip";
+            var fileName = dPlugin.DisplayName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss", CultureInfo.InvariantCulture) + ".zip";
             var filePath = System.IO.Path.Combine(EnvService.Instance.BacktestResultsFolder, fileName);
 
             using (var stream = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None))
@@ -464,11 +603,11 @@ namespace TickTrader.BotTerminal
                     var jounralEntry = archive.CreateEntry("journal.txt", CompressionLevel.Optimal);
 
                     using (var entryStream = jounralEntry.Open())
-                        await SaveJournalTo(entryStream, observer);
+                        await JournalPage.SaveToFile(entryStream, observer);
 
                     var tradeReportsEntry = archive.CreateEntry("trades.csv", CompressionLevel.Optimal);
                     using (var entryStream = tradeReportsEntry.Open())
-                        await TradesPage.SaveAsCsv(entryStream, observer);
+                        await TradeHistoryPage.SaveAsCsv(entryStream, observer);
 
                     observer.SetMessage("Saving report...");
 
@@ -478,246 +617,27 @@ namespace TickTrader.BotTerminal
 
                     var setupEntry = archive.CreateEntry("setup.txt", CompressionLevel.Optimal);
                     using (var entryStream = setupEntry.Open())
-                        await Task.Run(() => SaveTestSetupAsText(pluginSetup, entryStream));
+                        await Task.Run(() => SetupPage.SaveTestSetupAsText(pluginSetup, entryStream, _emulteFrom, _emulateTo));
+
+                    if (pluginSetup.Metadata.Descriptor.Type == AlgoTypes.Robot)
+                    {
+                        var equityEntry = archive.CreateEntry("equity.csv", CompressionLevel.Optimal);
+                        using (var entryStream = equityEntry.Open())
+                            await Task.Run(() => ResultsPage.SaveEquityCsv(entryStream, observer));
+
+                        var marginEntry = archive.CreateEntry("margin.csv", CompressionLevel.Optimal);
+                        using (var entryStream = marginEntry.Open())
+                            await Task.Run(() => ResultsPage.SaveMarginCsv(entryStream, observer));
+                    }
                 }
             }
         }
 
-        private async Task SaveJournalTo(System.IO.Stream stream, IActionObserver observer)
-        {
-            var records = JournalRecords.Value;
-
-            long progress = 0;
-
-            observer.SetMessage("Saving journal...");
-            observer.StartProgress(0, records.Count);
-
-            using (new UiUpdateTimer(() => observer.SetProgress(Interlocked.Read(ref progress))))
-            {
-                await Task.Run(() =>
-                {
-                    using (var writer = new System.IO.StreamWriter(stream))
-                    {
-                        for (int i = 0; i < records.Count; i++)
-                        {
-                            var record = records[i];
-                            var sevString = TxtFormat(record.Severity);
-
-                            writer.Write(record.Time.Timestamp.ToString(FullDateTimeConverter.Format));
-                            writer.Write(" [{0}] ", sevString);
-
-                            var nextLineSpaceSize = FullDateTimeConverter.FormatFixedLength + 4 + sevString.Length;
-                            var msgLines = SplitIntoLines(record.Message);
-                            writer.WriteLine(msgLines[0]);
-                            for (int j = 1; j < msgLines.Length; j++)
-                            {
-                                writer.Write(new string(' ', nextLineSpaceSize));
-                                writer.WriteLine(msgLines[j]);
-                            }
-
-                            if (i % 10 == 0)
-                                Interlocked.Exchange(ref progress, i);
-                        }
-                    }
-                });
-            }
-
-            observer.StartProgress(0, records.Count);
-        }
-
-        private void SaveTestSetupAsText(PluginSetupModel setup, System.IO.Stream stream)
-        {
-            var dPlugin = setup.Metadata.Descriptor;
-
-            using (var writer = new System.IO.StreamWriter(stream))
-            {
-                SaveFeedSetupAsText(setup, writer);
-                writer.WriteLine();
-                SaveTradeSetupAsText(writer);
-                writer.WriteLine();
-                SavePluginSetupAsText(setup, writer);
-            }
-        }
-
-        private void SaveFeedSetupAsText(PluginSetupModel setup, System.IO.StreamWriter writer)
-        {
-            writer.WriteLine("Main symbol: " + MainSymbolSetup.AsText());
-            writer.WriteLine("Model: based on " + SelectedModel.Value);
-            foreach (var addSymbols in AdditionalSymbols)
-                writer.WriteLine("+Symbol " + MainSymbolSetup.AsText());
-
-            writer.WriteLine("Period: from {0} to {1}", _emulteFrom.ToShortDateString(), _emulateTo.ToShortDateString());
-        }
-
-        private void SaveTradeSetupAsText(System.IO.StreamWriter writer)
-        {
-            _settings.SaveAsText(writer);
-        }
-
-        private void SavePluginSetupAsText(PluginSetupModel setup, System.IO.StreamWriter writer)
-        {
-            var dPlugin = setup.Metadata.Descriptor;
-
-            if (dPlugin.Type == AlgoTypes.Indicator)
-                writer.WriteLine("Indicator: {0} v{1}", dPlugin.DisplayName , dPlugin.Version);
-            else if (dPlugin.Type == AlgoTypes.Robot)
-                writer.WriteLine("Trade Bot: {0} v{1}", dPlugin.DisplayName, dPlugin.Version);
-
-            foreach (var param in setup.Parameters)
-                writer.WriteLine("{0} = {1}", param.DisplayName, param.ValueAsText);
-
-            foreach (var input in setup.Inputs)
-                writer.WriteLine("{0} = {1}", input.DisplayName, input.ValueAsText);
-        }
-
-        private string TxtFormat(LogSeverities severity)
-        {
-            switch (severity)
-            {
-                case LogSeverities.TradeSuccess: return "Trade";
-                default: return severity.ToString();
-            }
-        }
-
-        private string[] SplitIntoLines(string message)
-        {
-            return message.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-        }
-
         #endregion
 
-        private TimeFrames AdjustTimeframe(TimeFrames currentFrame, int currentSize, out int aproxNewSize)
+        private string GetOptimizationProgressMessage(long max, long progress)
         {
-            const int maxGraphSize = 1000;
-
-            for (var i = currentFrame; i > TimeFrames.MN; i--)
-            {
-                aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, i);
-                if (aproxNewSize <= maxGraphSize)
-                    return i;
-            }
-
-            aproxNewSize = BarExtentions.GetApproximateTransformSize(currentFrame, currentSize, TimeFrames.MN);
-            return TimeFrames.MN;
+            return string.Format("Optimizing... {0}/{1}", progress, max);
         }
-
-        private void AddSymbol()
-        {
-            AdditionalSymbols.Add(CreateSymbolSetupModel(SymbolSetupType.Additional));
-            UpdateSymbolsState();
-        }
-
-        private BacktesterSymbolSetupViewModel CreateSymbolSetupModel(SymbolSetupType type, Var<SymbolData> symbolSrc = null)
-        {
-            var smb = new BacktesterSymbolSetupViewModel(type, _catalog.ObservableSymbols, symbolSrc);
-            smb.Removed += Smb_Removed;
-            smb.OnAdd += AddSymbol;
-
-            smb.IsUpdating.PropertyChanged += IsUpdating_PropertyChanged;
-            smb.IsSymbolSelected.PropertyChanged += IsSymbolSelected_PropertyChanged;
-
-            return smb;
-        }
-
-        private void Smb_Removed(BacktesterSymbolSetupViewModel smb)
-        {
-            AdditionalSymbols.Remove(smb);
-            smb.IsUpdating.PropertyChanged -= IsUpdating_PropertyChanged;
-            smb.IsSymbolSelected.PropertyChanged -= IsSymbolSelected_PropertyChanged;
-            smb.Removed -= Smb_Removed;
-
-            UpdateRangeState();
-            UpdateSymbolsState();
-        }
-
-        private void UpdateRangeState()
-        {
-            var allSymbols = GetAllSymbols();
-
-            IsUpdatingRange.Value = allSymbols.Any(s => s.IsUpdating.Value);
-
-            var max = allSymbols.Max(s => s.AvailableRange.Value?.Item2);
-            var min = allSymbols.Min(s => s.AvailableRange.Value?.Item1);
-
-            bool wasEmpty = DateRange.From == DateTime.MinValue;
-
-            DateRange.UpdateBoundaries(min ?? DateTime.MinValue, max ?? DateTime.MaxValue);
-
-            if (wasEmpty)
-                DateRange.ResetSelectedRange();
-        }
-
-        private void UpdateSymbolsState()
-        {
-            _allSymbolsValid.Value = GetAllSymbols().All(s => s.IsSymbolSelected.Value);
-        }
-
-        private IEnumerable<BacktesterSymbolSetupViewModel> GetAllSymbols()
-        {
-            yield return MainSymbolSetup;
-
-            foreach (var smb in AdditionalSymbols)
-                yield return smb;
-        }
-
-        private void IsUpdating_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            UpdateRangeState();
-        }
-
-        private void IsSymbolSelected_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            UpdateSymbolsState();
-        }
-
-        private void CheckDuplicateSymbols()
-        {
-            var unique = new HashSet<string>();
-            unique.Add(MainSymbolSetup.SelectedSymbol.Value.Name);
-
-            foreach (var smb in AdditionalSymbols)
-            {
-                var name = smb.SelectedSymbol.Value.Name;
-
-                if (unique.Contains(name))
-                    throw new Exception("Duplicate symbol: " + name);
-
-                unique.Add(name);
-            }
-        }
-
-        #region IAlgoSetupMetadata
-
-        IReadOnlyList<ISymbolInfo> IAlgoSetupMetadata.Symbols => _observableSymbolTokens;
-
-        MappingCollection IAlgoSetupMetadata.Mappings => _env.LocalAgent.Mappings;
-
-        IPluginIdProvider IAlgoSetupMetadata.IdProvider => this;
-
-        #endregion
-
-        #region IPluginIdProvider
-
-        string IPluginIdProvider.GeneratePluginId(PluginDescriptor descriptor)
-        {
-            return descriptor.DisplayName;
-        }
-
-        bool IPluginIdProvider.IsValidPluginId(AlgoTypes pluginType, string pluginId)
-        {
-            return true;
-        }
-
-        #endregion IPluginIdProvider
-
-        #region IAlgoSetupContext
-
-        TimeFrames IAlgoSetupContext.DefaultTimeFrame => MainTimeFrame.Value;
-
-        ISymbolInfo IAlgoSetupContext.DefaultSymbol => _mainSymbolToken;
-
-        MappingKey IAlgoSetupContext.DefaultMapping => new MappingKey(MappingCollection.DefaultFullBarToBarReduction);
-
-        #endregion IAlgoSetupContext
     }
 }

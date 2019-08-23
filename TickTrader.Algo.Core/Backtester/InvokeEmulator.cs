@@ -12,39 +12,50 @@ namespace TickTrader.Algo.Core
 {
     internal class InvokeEmulator : InvokeStartegy
     {
-        private object _sync = new object();
+        private object _syncState = new object();
         private FeedQueue _feedQueue;
-        private IPriorityQueue<EmulatedAction> _delayedQueue = new C5.IntervalHeap<EmulatedAction>();
+        private DelayedEventsQueue _delayedQueue = new DelayedEventsQueue();
         private Queue<Action<PluginBuilder>> _tradeQueue = new Queue<Action<PluginBuilder>>();
         private Queue<Action<PluginBuilder>> _eventQueue = new Queue<Action<PluginBuilder>>();
         private FeedEmulator _feed;
+        private TimeSeriesAggregator _eventAggr = new TimeSeriesAggregator();
         private IBacktesterSettings _settings;
         private long _feedCount;
         private DateTime _timePoint;
         private long _safeTimePoint;
-        private IEnumerator<RateUpdate> _eFeed;
-        private volatile bool _canceled;
+        private FeedEventSeries _feedReader;
+        private volatile int _execDelay;
         private BacktesterCollector _collector;
-        private bool _stopFlag;
+        private bool _normalStopFlag;
+        private bool _cancelRequested;
+        private bool _pauseRequested;
+        private bool _stopPhase;
         private Exception _fatalError;
+        private Action _exStartAction;
+        private Action _extStopAction;
 
-        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed)
+        public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, Action exStartAction, Action extStopAction)
         {
             _settings = settings;
             _collector = collector;
             _collector.InvokeEmulator = this;
             _feed = feed;
-            //var eventComparer = Comparer<EmulatedAction>.Create((x, y) => x.Time.CompareTo(y.Time));
-            //_delayedQueue = new  C5.IntervalHeap<EmulatedAction>(eventComparer);
+            _exStartAction = exStartAction;
+            _extStopAction = extStopAction;
         }
 
         public DateTime UnsafeVirtualTimePoint { get { return _timePoint; } }
-        public DateTime SafeVirtualTimePoint { get { lock (_sync) return _timePoint; } }
+        public DateTime SafeVirtualTimePoint => _timePoint;
         public DateTime SlimUpdateVirtualTimePoint => new DateTime(Interlocked.Read(ref _safeTimePoint));
         public override int FeedQueueSize => 0;
-        public bool IsStopPhase { get; private set; }
+        internal bool IsStopPhase => State == EmulatorStates.Stopping;
+        public ScheduleEmulator Scheduler { get; } = new ScheduleEmulator();
+        public EmulatorStates State { get; private set; }
 
-        public event Action<RateUpdate> RateUpdated;
+        public event Action<AlgoMarketNode> RateUpdated;
+        public event Action<EmulatorStates> StateUpdated;
+
+        #region InvokeStartegy implementation
 
         protected override void OnInit()
         {
@@ -57,7 +68,8 @@ namespace TickTrader.Algo.Core
 
         public override void EnqueueCustomInvoke(Action<PluginBuilder> a)
         {
-            _eventQueue.Enqueue(a);
+            lock (_syncState)
+                _eventQueue.Enqueue(a);
         }
 
         public override void EnqueueEvent(Action<PluginBuilder> a)
@@ -77,7 +89,8 @@ namespace TickTrader.Algo.Core
 
         public override void ProcessNextTrade()
         {
-            var item = DequeueNextTrade();
+            object item = null;
+            lock (_syncState) item = DequeueNextTrade();
 
             if (item == null)
                 throw new Exception("Detected empty queue while ProcessNextTrade()!");
@@ -87,60 +100,233 @@ namespace TickTrader.Algo.Core
 
         public override void Start()
         {
-            IsStopPhase = false;
+            //IsStopPhase = false;
+            _eventAggr.Add(_delayedQueue);
+            _eventAggr.Add(_feedReader);
+
+            if (Scheduler.HasJobs)
+            {
+                Scheduler.Init(_timePoint);
+                _eventAggr.Add(Scheduler);
+            }
         }
 
-        public void EmulateEventsWithFeed()
+        #endregion
+
+        #region State Control
+
+        public void Cancel()
         {
+            lock (_syncState)
+            {
+                if (State == EmulatorStates.Stopped) // can be canceled prior to execution due to CancellationToken
+                    _cancelRequested = true;
+
+                if (State == EmulatorStates.Running || State == EmulatorStates.WarmingUp || State == EmulatorStates.Paused)
+                {
+                    _cancelRequested = true;
+                    _pauseRequested = false;
+                    Monitor.Pulse(_syncState);
+                }
+            }
+        }
+
+        public void Pause()
+        {
+            lock (_syncState)
+            {
+                if (State != EmulatorStates.Running || _cancelRequested)
+                    return;
+                _pauseRequested = true;
+            }
+        }
+
+        public void Resume()
+        {
+            lock (_syncState)
+            {
+                _pauseRequested = false;
+                Monitor.Pulse(_syncState);
+            }
+        }
+
+        public void SetExecDelay(int delay)
+        {
+            _execDelay = delay;
+        }
+
+        private void ChangeState(EmulatorStates newState)
+        {
+            if (State != newState)
+            {
+                State = newState;
+                StateUpdated?.Invoke(newState);
+            }
+        }
+
+        #endregion
+
+        public void EmulateExecution(int warmupValue, WarmupUnitTypes warmupUnits)
+        {
+            bool wasStarted = false;
+
             try
             {
-                StartFeedRead();
+                if (!WarmUp(warmupValue, warmupUnits))
+                {
+                    var msg = "There is no enough data for warm-up!";
+                    _collector.AddEvent(LogSeverities.Error, msg);
+                    throw new NotEnoughDataException(msg);
+                }
+                _exStartAction();
+                wasStarted = true;
                 EmulateEvents();
+                EmulateStop();
+                StopFeedRead();
+            }
+            catch (OperationCanceledException)
+            {
+                _collector.AddEvent(LogSeverities.Error, "Testing canceled!");
+                StopFeedRead();
+                if (wasStarted)
+                    EmulateStop();
+                throw;
+            }
+            catch (Exception)
+            {
+                StopFeedRead();
+                if (wasStarted)
+                    EmulateStop();
+                throw;
             }
             finally
             {
-                StopFeedRead();
+                ((SimplifiedBuilder)Builder)?.DeinitContext();
             }
         }
 
-        public void EmulateEvents()
+        private void EmulateStop()
         {
-            _canceled = false;
-
-            while (!_stopFlag)
-            {
-                if (_canceled)
-                    throw new OperationCanceledException("Canceled.");
-
-                if (_fatalError != null)
-                    throw _fatalError;
-
-                var nextItem = DequeueNext();
-
-                if (nextItem == null)
-                    return;
-
-                ExecItem(nextItem);
-            }
-        }
-
-        public void EnableStopPhase()
-        {
+            _extStopAction();
+            //EmulateStop();
+            //EnableStopPhase();
+            _stopPhase = true;
             _fatalError = null;
-            IsStopPhase = true;
+            EmulateEvents();
         }
 
-        public bool WarmupByBars(int barCount)
+        private void EmulateEvents()
+        {
+            lock (_syncState)
+            {
+                if (State != EmulatorStates.Stopping && _cancelRequested)
+                {
+                    _cancelRequested = false;
+                    ChangeState(EmulatorStates.Stopping);
+                    throw new OperationCanceledException("Canceled.");
+                }
+
+                if (State == EmulatorStates.Stopped || State == EmulatorStates.WarmingUp)
+                    ChangeState(EmulatorStates.Running);
+            }
+
+            try
+            {
+                while (!_normalStopFlag)
+                {
+                    object nextItem = null;
+
+                    lock (_syncState)
+                    {
+                        if (_pauseRequested)
+                        {
+                            ChangeState(EmulatorStates.Paused);
+                            while (_pauseRequested)
+                                Monitor.Wait(_syncState);
+                            if (!_cancelRequested)
+                                ChangeState(EmulatorStates.Running);
+                        }
+
+                        if (_cancelRequested)
+                        {
+                            _cancelRequested = false;
+                            ChangeState(EmulatorStates.Stopping);
+                            throw new OperationCanceledException("Canceled.");
+                        }
+
+                        nextItem = DequeueNext();
+                    }
+
+                    if (_fatalError != null)
+                        throw _fatalError;
+
+                    if (nextItem == null)
+                        return;
+
+                    ExecItem(nextItem);
+                }
+            }
+            catch (Exception)
+            {
+                lock (_syncState)
+                {
+                    if (State == EmulatorStates.Stopping)
+                        ChangeState(EmulatorStates.Stopped);
+                    else
+                        ChangeState(EmulatorStates.Stopping);
+                }
+                throw;
+            }
+        }
+
+        //public void EnableStopPhase()
+        //{
+        //    _fatalError = null;
+        //    IsStopPhase = true;
+        //}
+
+        private void DelayExecution()
+        {
+            var delay = _execDelay;
+
+            if (delay <= 0)
+                return;
+
+            Thread.Sleep(delay);
+        }
+
+        #region Warm-Up
+
+        private bool WarmUp(int warmupValue, WarmupUnitTypes warmupUnits)
+        {
+            if (warmupValue <= 0)
+                return true;
+
+            lock (_syncState) ChangeState(EmulatorStates.WarmingUp);
+
+            if (warmupUnits == WarmupUnitTypes.Days)
+                return WarmupByTimePeriod(TimeSpan.FromDays(warmupValue));
+            else if (warmupUnits == WarmupUnitTypes.Hours)
+                return WarmupByTimePeriod(TimeSpan.FromHours(warmupValue));
+            else if (warmupUnits == WarmupUnitTypes.Bars)
+                return WarmupByBars(warmupValue);
+            else if (warmupUnits == WarmupUnitTypes.Ticks)
+                return WarmupByQuotes(warmupValue);
+            else
+                throw new Exception("Unsupported warmup units: " + warmupUnits);
+        }
+
+        private bool WarmupByBars(int barCount)
         {
             return Warmup((q, b, f, t) => b < barCount);
         }
 
-        public bool WarmupByTimePeriod(TimeSpan period)
+        private bool WarmupByTimePeriod(TimeSpan period)
         {
             return Warmup((q, b, f, t) => t <= f + period);
         }
 
-        public bool WarmupByQuotes(int quoteCount)
+        private bool WarmupByQuotes(int quoteCount)
         {
             return Warmup((q, b, f, t) => q < quoteCount);
         }
@@ -150,7 +336,7 @@ namespace TickTrader.Algo.Core
             StartFeedRead();
 
             var warmupStart = _timePoint;
-            var buider = _feed.GetBarBuilder(_settings.MainSymbol, _settings.MainTimeframe, BarPriceType.Bid);
+            var buider = _feed.GetBarBuilder(_settings.CommonSettings.MainSymbol, _settings.CommonSettings.MainTimeframe, BarPriceType.Bid);
             var tickCount = 1;
 
             while (true)
@@ -163,7 +349,10 @@ namespace TickTrader.Algo.Core
                     return false;
                 }
 
+                _feed.UpdateHistory(nextTick);
+
                 UpdateVirtualTimepoint(nextTick.Time);
+                _collector.OnRateUpdate(nextTick);
 
                 if (tickCount == 1)
                 {
@@ -198,18 +387,18 @@ namespace TickTrader.Algo.Core
             _collector.AddEvent(LogSeverities.Info, string.Format("Warmup completed. Loaded {0} bars ({1} quotes) during warmup.", barCount, tickCount));
         }
 
+        #endregion
+
         private void ExecItem(object item)
         {
-            var action = item as Action<PluginBuilder>;
-            if (action != null)
-                action(Builder);
+            var rate = item as RateUpdate;
+            if (rate != null)
+                EmulateRateUpdate(rate);
             else
-                EmulateRateUpdate((RateUpdate)item);
-        }
-
-        public void Cancel()
-        {
-            _canceled = true;
+            {
+                var action = (Action<PluginBuilder>)item;
+                action(Builder);
+            }
         }
 
         public void EmulateDelayedInvoke(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTradeAction)
@@ -231,51 +420,47 @@ namespace TickTrader.Algo.Core
 
         public void SetFatalError(Exception error)
         {
-            lock (_sync)
-            {
-                if (_fatalError != error)
-                    _fatalError = error;
-            }
+            if (_fatalError == null)
+                _fatalError = error;
         }
 
-        private void StartFeedRead()
+        public bool StartFeedRead()
         {
-            lock (_sync)
-            {
-                if (_eFeed == null)
-                {
-                    _eFeed = _feed.GetFeedStream().GetEnumerator();
-                    if (!_eFeed.MoveNext())
-                        StopFeedRead();
-                }
-            }
+            if (_feedReader == null)
+                _feedReader = new FeedEventSeries(_feed);
+            if (_feedReader.IsCompeted)
+                return false;
+            UpdateVirtualTimepoint(_feedReader.NextOccurrance.Date);
+            return true;
         }
 
         private bool ReadNextFeed(out RateUpdate update)
         {
-            if (_eFeed == null)
+            if (_feedReader.IsCompeted)
             {
-                update = null;
+                update = default(RateUpdate);
                 return false;
             }
 
-            update = _eFeed.Current;
-
-            if (!_eFeed.MoveNext())
-                StopFeedRead();
+            update = _feedReader.Take();
 
             return true;
         }
 
-        private void StopFeedRead()
+        public void StopFeedRead()
         {
-            _eFeed?.Dispose();
-            _eFeed = null;
+            _feed.CloseHistory();
+
+            if (_feedReader != null)
+            {
+                _feedReader.Dispose();
+                _feedReader = null;
+            }
         }
 
         private void EmulateDelayed(TimeSpan delay, Action<PluginBuilder> invokeAction, bool isTrade)
         {
-            _delayedQueue.Add(new EmulatedAction { Action = invokeAction, Time = _timePoint + delay, IsTrade = isTrade });
+            _delayedQueue.Add(new TimeEvent(_timePoint + delay, isTrade, invokeAction));
         }
 
         private void UpdateVirtualTimepoint(DateTime newVal)
@@ -284,41 +469,17 @@ namespace TickTrader.Algo.Core
 
             if (++_feedCount % 50 == 0)
                 Interlocked.Exchange(ref _safeTimePoint, newVal.Ticks);
-
-            // enqueue triggered delays
-            while (_delayedQueue.Count > 0 && newVal < _delayedQueue.FindMin().Time)
-            {
-                var delayedItem = _delayedQueue.DeleteMin();
-                if (delayedItem.IsTrade)
-                    _tradeQueue.Enqueue(delayedItem.Action);
-                else
-                    _eventQueue.Enqueue(delayedItem.Action);
-            }
         }
-
-        //private IEnumerable<QuoteEntity> ReadFeedStream()
-        //{
-        //    var e = _feed.GetFeedStream();
-
-        //    while (true)
-        //    {
-        //        var page = e.GetNextPage();
-        //        if (page.Count == 0)
-        //            yield break;
-
-        //        foreach (var q in page)
-        //            yield return q;
-        //    }
-        //}
 
         private void EmulateRateUpdate(RateUpdate rate)
         {
-            var bufferUpdate = OnFeedUpdate(rate);
-            RateUpdated?.Invoke(rate);
-            _collector.OnRateUpdate(rate);
+            _feed.UpdateHistory(rate);
 
-            if (bufferUpdate.ExtendedBy > 0)
-                _collector.OnBufferExtended(bufferUpdate.ExtendedBy);
+            DelayExecution();
+
+            var bufferUpdate = OnFeedUpdate(rate, out var node);
+            RateUpdated?.Invoke(node);
+            _collector.OnRateUpdate(rate);
 
             var acc = Builder.Account;
             if (acc.IsMarginType)
@@ -332,7 +493,7 @@ namespace TickTrader.Algo.Core
             _eventQueue.Enqueue(b =>
             {
                 b.InvokeOnStop();
-                _stopFlag = true;
+                _normalStopFlag = true;
                 stopEvent.SetResult(this);
             });
 
@@ -341,90 +502,56 @@ namespace TickTrader.Algo.Core
 
         private object DequeueNextTrade()
         {
-            lock (_sync)
+            while (true)
             {
-                while (true)
-                {
-                    if (_tradeQueue.Count > 0)
-                        return _tradeQueue.Dequeue();
+                if (_tradeQueue.Count > 0)
+                    return _tradeQueue.Dequeue();
 
-                    bool isTrade;
-                    var next = DequeueUpcoming(out isTrade);
+                bool isTrade;
+                var next = DequeueUpcoming(out isTrade, true);
 
-                    if(next == null)
-                        return null;
+                if (next == null)
+                    return null;
 
-                    if (isTrade)
-                        return next;
+                if (isTrade)
+                    return next;
 
-                    // if next item is not trade update just queue it
+                // if next item is not trade update just queue it
 
-                    if (next is Action<PluginBuilder>)
-                        _eventQueue.Enqueue((Action<PluginBuilder>)next);
-                    else
-                        _feedQueue.Enqueue((RateUpdate)next);
-                }
+                if (next is Action<PluginBuilder>)
+                    _eventQueue.Enqueue((Action<PluginBuilder>)next);
+                else
+                    _feedQueue.Enqueue((RateUpdate)next);
             }
         }
 
         private object DequeueNext()
         {
-            lock (_sync)
-            {
-                if (_eventQueue.Count > 0)
-                    return _eventQueue.Dequeue();
-                else if (_tradeQueue.Count > 0)
-                    return _tradeQueue.Dequeue();
-                else if (_feedQueue.Count > 0)
-                    return _feedQueue.Dequeue();
-                else
-                    return DequeueUpcoming(out _);
-            }
+            if (_eventQueue.Count > 0)
+                return _eventQueue.Dequeue();
+            else if (_tradeQueue.Count > 0)
+                return _tradeQueue.Dequeue();
+            else if (_feedQueue.Count > 0)
+                return _feedQueue.Dequeue();
+            else
+                return DequeueUpcoming(out _, false);
         }
 
-        private object DequeueUpcoming(out bool isTrade)
+        private object DequeueUpcoming(out bool isTrade, bool syncOp)
         {
-            var delayed = DequeueDelayed(out isTrade);
-            if (delayed != null)
-                return delayed;
-
-            isTrade = false;
-
-            RateUpdate feedTick;
-
-            if (!ReadNextFeed(out feedTick))
-                return DequeueDelayed(out isTrade);
-
-            UpdateVirtualTimepoint(feedTick.Time);
-            return feedTick;
-        }
-
-        private object DequeueDelayed(out bool isTrade)
-        {
-            if (_delayedQueue.Count > 0)
+            if (_feedReader.IsCompeted)
             {
-                if (_eFeed == null || _eFeed.Current.Time >= _delayedQueue.FindMin().Time)
+                if ((!_stopPhase && !syncOp) || _delayedQueue.IsEmpty)
                 {
-                    var delayed = _delayedQueue.DeleteMin();
-                    UpdateVirtualTimepoint(delayed.Time);
-                    isTrade = delayed.IsTrade;
-                    return delayed.Action;
+                    isTrade = false;
+                    return null;
                 }
             }
-            isTrade = false;
-            return null;
-        }
-    }
 
-    internal struct EmulatedAction : IComparable<EmulatedAction>
-    {
-        public DateTime Time { get; set; }
-        public bool IsTrade { get; set; }
-        public Action<PluginBuilder> Action { get; set; }
-
-        public int CompareTo(EmulatedAction other)
-        {
-            return Time.CompareTo(other.Time);
+            var next = _eventAggr.Dequeue();
+            UpdateVirtualTimepoint(next.Time);
+            isTrade = next.IsTrade;
+            return next.Content;
         }
     }
 }

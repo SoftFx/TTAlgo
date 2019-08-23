@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
 
         private EnvService()
         {
-            
+
             ApplicationName = "BotTrader";
 
             AppFolder = AppDomain.CurrentDomain.BaseDirectory;
@@ -60,30 +60,40 @@ namespace TickTrader.BotTerminal
                 BacktestResultsFolder = Path.Combine(AppFolder, "Backtest Results");
             }
 
-            EnsureFolder(AlgoRepositoryFolder);
-            EnsureFolder(AlgoExtFolder);
-            EnsureFolder(AlgoCommonRepositoryFolder);
-            EnsureFolder(AlgoWorkingFolder);
-            EnsureFolder(BotLogFolder);
-            EnsureFolder(LogFolder);
-            EnsureFolder(JournalFolder);
-            EnsureFolder(FeedHistoryCacheFolder);
-            EnsureFolder(AppDataFolder);
-            EnsureFolder(UserProfilesFolder);
-            EnsureFolder(ProfilesCacheFolder);
-            EnsureFolder(BacktestResultsFolder);
+            try
+            {
+                EnsureFolder(AlgoRepositoryFolder);
+                EnsureFolder(AlgoExtFolder);
+                EnsureFolder(AlgoCommonRepositoryFolder);
+                EnsureFolder(AlgoWorkingFolder);
+                EnsureFolder(BotLogFolder);
+                EnsureFolder(LogFolder);
+                EnsureFolder(JournalFolder);
+                EnsureFolder(FeedHistoryCacheFolder);
+                EnsureFolder(AppDataFolder);
+                EnsureFolder(UserProfilesFolder);
+                EnsureFolder(ProfilesCacheFolder);
+                EnsureFolder(BacktestResultsFolder);
 
-            // This is required for normal Algo plugin execution. Do not change working folder elsewhere!
-            Directory.SetCurrentDirectory(AlgoWorkingFolder);
+                // This is required for normal Algo plugin execution. Do not change working folder elsewhere!
+                Directory.SetCurrentDirectory(AlgoWorkingFolder);
 
-            UserDataStorage = new XmlObjectStorage(new FolderBinStorage(AppDataFolder));
-            ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder)));
-            ProfilesCacheStorage = new XmlObjectStorage(new FolderBinStorage(ProfilesCacheFolder));
+                UserDataStorage = new XmlObjectStorage(new FolderBinStorage(AppDataFolder));
+                ProtectedUserDataStorage = new XmlObjectStorage(new SecureStorageLayer(new FolderBinStorage(AppDataFolder)));
+                ProfilesCacheStorage = new XmlObjectStorage(new FolderBinStorage(ProfilesCacheFolder));
+
+                InitFailed = false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                InitFailed = true;
+            }
         }
 
         private static EnvService instance = new EnvService();
         public static EnvService Instance { get { return instance; } }
 
+        public bool InitFailed { get; private set; }
         public string AppFolder { get; private set; }
         public string RedistFolder { get { return Path.Combine(AppFolder, "Redist"); } }
         public string FeedHistoryCacheFolder { get; private set; }

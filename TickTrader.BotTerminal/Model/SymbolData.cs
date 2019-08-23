@@ -38,10 +38,11 @@ namespace TickTrader.BotTerminal
         public abstract string Security { get; }
         public abstract bool IsCustom { get; }
         public abstract SymbolEntity InfoEntity { get; }
+        public abstract bool IsDataAvailable { get; }
 
         public IVarSet<SymbolStorageSeries> SeriesCollection { get; }
 
-        public abstract Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null);
+        public abstract Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null);
         public abstract Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken,
             TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to);
 
@@ -61,12 +62,12 @@ namespace TickTrader.BotTerminal
 
         public void WriteSlice(TimeFrames frame, BarPriceType priceType, DateTime from, DateTime to, BarEntity[] values)
         {
-            _storage.Put(Name, frame, priceType, from, to, values);
+            _storage.Put(Name, frame, priceType, from, to, values).Wait();
         }
 
         public void WriteSlice(TimeFrames timeFrame, DateTime from, DateTime to, QuoteEntity[] values)
         {
-            _storage.Put(Name, timeFrame, from, to, values);
+            _storage.Put(Name, timeFrame, from, to, values).Wait();
         }
 
         public BlockingChannel<Slice<DateTime, BarEntity>> ReadCachedBars(TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
@@ -106,8 +107,9 @@ namespace TickTrader.BotTerminal
         public override string Description => _symbolInfo.Description;
         public override string Security => _symbolInfo.Descriptor.Security;
         public override SymbolEntity InfoEntity => _symbolInfo.Descriptor;
+        public override bool IsDataAvailable => _client.IsConnected.Value;
 
-        public override Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
+        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
         {
             return _client.FeedHistory.GetAvailableRange(_symbolInfo.Name, priceType ?? BarPriceType.Bid, timeFrame);
         }
@@ -181,6 +183,7 @@ namespace TickTrader.BotTerminal
 
                     if (cancelToken.IsCancellationRequested)
                     {
+                        await tickEnumerator.Close();
                         observer.SetMessage("Canceled! " + downloadedCount + " ticks were downloaded.");
                         return;
                     }
@@ -218,26 +221,49 @@ namespace TickTrader.BotTerminal
         public override bool IsCustom => true;
         public override string Description => _symbolInfo.Description;
         public override string Security => "";
-        public override SymbolEntity InfoEntity => new SymbolEntity(Name) { IsTradeAllowed = true, SwapEnabled = false, MinAmount = 0.001, MaxAmount = 100000 };
+        public override SymbolEntity InfoEntity => GetInfo();
+        public override bool IsDataAvailable => true;
 
-        public override Task<Tuple<DateTime, DateTime>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
+        public override Task<Tuple<DateTime?, DateTime?>> GetAvailableRange(TimeFrames timeFrame, BarPriceType? priceType = null)
         {
             return _storage.GetRange(new FeedCacheKey(_symbolInfo.Name, timeFrame, priceType));
         }
 
         public override Task DownloadToStorage(IActionObserver observer, bool showStats, CancellationToken cancelToken, TimeFrames timeFrame, BarPriceType priceType, DateTime from, DateTime to)
         {
-            return null;
+            return CompletedTask.Default;
         }
 
         public override Task Remove()
         {
-            throw new NotImplementedException();
+            return _storage.Remove(_symbolInfo.Name);
         }
 
         public override SymbolToken ToSymbolToken()
         {
             return new SymbolToken(Name, SymbolOrigin.Custom);
+        }
+
+        private SymbolEntity GetInfo()
+        {
+            const int cSize = 100000;
+
+            return new SymbolEntity(Name)
+            {
+                Description = Entity.Description,
+                IsTradeAllowed = true,
+                SwapEnabled = false,
+                MinAmount = 0.001,
+                MaxAmount = 100000,
+                AmountStep = 0.001,
+                LotSize = cSize,
+                ContractSizeFractional = cSize,
+                Digits = Entity.Digits,
+                BaseCurrencyCode = Entity.BaseCurr,
+                CounterCurrencyCode = Entity.ProfitCurr,
+                MarginHedged = 0.5,
+                MarginFactorFractional = 1,
+            };
         }
     }
 
@@ -268,6 +294,11 @@ namespace TickTrader.BotTerminal
         internal Channel<Slice<DateTime, BarEntity>> IterateBarCache(DateTime from, DateTime to)
         {
             return _storage.IterateBarCacheAsync(Key, from, to);
+        }
+
+        internal Channel<Slice<DateTime, QuoteEntity>> IterateTickCache(DateTime from, DateTime to)
+        {
+            return _storage.IterateTickCacheAsync(Key, from, to);
         }
     }
 }

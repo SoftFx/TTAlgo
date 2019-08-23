@@ -7,7 +7,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Buffer Print Bot", Version = "1.1", Category = "Test Plugin Info",
+    [TradeBot(DisplayName = "[T] Buffer Print Bot", Version = "1.2", Category = "Test Plugin Info",
        Description = "Prints data from feed collections.")]
     public class BufferPrintBot : TradeBot
     {
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 PrintDoubles("Double Input", DoubleInput);
 
             if (Mode == BuffPrintModes.BarInput || Mode == BuffPrintModes.All)
-                PrintBars("Bar Input", Bars);
+                PrintBars("Bar Input", BarInput);
 
             Exit();
         }

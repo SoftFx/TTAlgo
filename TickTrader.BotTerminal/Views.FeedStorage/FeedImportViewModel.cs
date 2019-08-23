@@ -108,38 +108,35 @@ namespace TickTrader.BotTerminal
             }
             else
             {
-                var tickVector = new List<QuoteEntity>();
+                var page = new List<QuoteEntity>();
+                QuoteEntity lastTick = null;
 
                 foreach (var tick in importer.ImportQuotes())
                 {
-                    tickVector.Add(tick);
-                    count++;
-
-                    if (tickVector.Count >= pageSize + 1)
+                    if (page.Count >= pageSize)
                     {
-                        var page = RemoveFromStart(tickVector, pageSize);
-                        symbol.WriteSlice(timeFrame, page.First().Time, tickVector.Last().Time, page);
-                        observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
+                        // we cannot put ticks with same time into different chunks
+                        if (lastTick.Time != tick.Time)
+                        {
+                            symbol.WriteSlice(timeFrame, page.First().Time, tick.Time, page.ToArray());
+                            observer.SetMessage(string.Format("Importing...  {0} ticks are imported.", count));
+                            page.Clear();
+                        }
                     }
+
+                    lastTick = tick;
+                    page.Add(tick);
+                    count++;
                 }
 
-                if (tickVector.Count > 0)
+                if (page.Count > 0)
                 {
-                    var page = tickVector.ToArray();
                     var toCorrected = page.Last().Time + TimeSpan.FromTicks(1);
-                    symbol.WriteSlice(timeFrame, page.First().Time, toCorrected, page);
+                    symbol.WriteSlice(timeFrame, page.First().Time, toCorrected, page.ToArray());
                 }
 
                 observer.SetMessage(string.Format("Done importing. {0} ticks were imported.", count));
             }
-        }
-
-        private static T[] RemoveFromStart<T>(List<T> list, int pageSize)
-        {
-            var removedPart = new T[pageSize];
-            list.CopyTo(0, removedPart, 0, pageSize);
-            list.RemoveRange(0, pageSize);
-            return removedPart;
         }
 
         public void Cancel()
@@ -238,10 +235,10 @@ namespace TickTrader.BotTerminal
                     for (int i = 1; i < parts.Length; i += 4)
                     {
                         if (!string.IsNullOrEmpty(parts[i + 0]))
-                            bids.Add(new BookEntryEntity(double.Parse(parts[i + 0]), double.Parse(parts[i + 1])));
+                            bids.Add(new BookEntry(double.Parse(parts[i + 0]), double.Parse(parts[i + 1])));
 
                         if (!string.IsNullOrEmpty(parts[i + 2]))
-                            asks.Add(new BookEntryEntity(double.Parse(parts[i + 2]), double.Parse(parts[i + 3])));
+                            asks.Add(new BookEntry(double.Parse(parts[i + 2]), double.Parse(parts[i + 3])));
                     }
 
                     yield return new QuoteEntity("", time, bids.ToArray(), asks.ToArray());

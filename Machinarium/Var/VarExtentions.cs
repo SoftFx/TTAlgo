@@ -17,6 +17,16 @@ namespace Machinarium.Var
         {
             property.Value = false;
         }
+
+        public static void Increase(this IntProperty property)
+        {
+            property.Value += 1;
+        }
+
+        public static void Decrease(this IntProperty property)
+        {
+            property.Value -= 1;
+        }
     }
 
     public struct VarChangeEventArgs<T>

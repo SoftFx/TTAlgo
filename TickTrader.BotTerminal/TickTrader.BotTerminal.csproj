@@ -77,7 +77,10 @@
     <ManifestKeyFile>bot-terminal-sign.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>softfx.ico</ApplicationIcon>
+    <ApplicationIcon>terminal.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Caliburn.Micro, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
@@ -150,10 +153,12 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="TickTrader.BusinessLogic">
+    <Reference Include="TickTrader.BusinessLogic, Version=1.36.4.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.BusinessObjects">
+    <Reference Include="TickTrader.BusinessObjects, Version=1.37.3.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
     </Reference>
     <Reference Include="TickTrader.Common">
@@ -189,7 +194,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resx\Sounds\Negative1.wav" />
+    <Resource Include="terminal.ico" />
     <None Include="bot-terminal-sign.pfx" />
+    <None Include="move.directory.bat" />
     <None Include="Resx\Sounds\Woosh.wav" />
     <None Include="Resx\Sounds\SharpEcho.wav" />
     <None Include="Resx\Sounds\Save.wav" />
@@ -210,6 +217,7 @@
     <Compile Include="AppBootstrapper.cs" />
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
+    <Compile Include="Behaviors\DataGridColumnHide.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
@@ -227,8 +235,19 @@
     <Compile Include="Behaviors\TreeBindingBehavior.cs" />
     <Compile Include="Controls.Chart\ActualSizePropertyProxy.cs" />
     <Compile Include="Controls.Chart\AlgoPointMarker.cs" />
-    <Compile Include="Controls.Chart\CustomViewPortManager.cs" />
+    <Compile Include="Controls.Chart\AutoScrollModifier.cs" />
+    <Compile Include="Controls.Chart\AxisModifierBase.cs" />
+    <Compile Include="Controls.Chart\DayNameLabelProvider.cs" />
+    <Compile Include="Controls.Chart\PixelTickModifier.cs" />
+    <Compile Include="Controls.Chart\PositionMarker.cs" />
+    <Compile Include="Controls.Chart\ScrollBindingModifier.cs" />
+    <Compile Include="Controls.Chart\StockLabelProvider.cs" />
+    <Compile Include="Controls.Chart\StockLabelModifier.cs" />
+    <Compile Include="Controls.Chart\XDragModifier.cs" />
+    <Compile Include="Controls.Chart\ViewportManager.cs" />
+    <Compile Include="Controls.Chart\ZoomControl.cs" />
     <Compile Include="Controls.Chart\SciChartBehavior.cs" />
+    <Compile Include="Controls\AdaptiveGrid.cs" />
     <Compile Include="Controls\AutoColumnsGrid.cs" />
     <Compile Include="Controls\AutoDictionary.cs" />
     <Compile Include="Controls\AvalonDockTemplateSelector.cs" />
@@ -237,10 +256,14 @@
     <Compile Include="Controls\ComboBoxItemTemplateSelector.cs" />
     <Compile Include="Controls\CoordinatePicker.cs" />
     <Compile Include="Controls\CustomDockManager.cs" />
+    <Compile Include="Controls\DataGridExt.cs" />
     <Compile Include="Controls\DialogPageControl.cs" />
     <Compile Include="Controls\DateTimePicker.cs" />
+    <Compile Include="Controls\DropDownMenuButton.cs" />
+    <Compile Include="Controls\ErrorIndicator.cs" />
     <Compile Include="Controls\FlatButton.cs" />
     <Compile Include="Controls\HoverComboBox.cs" />
+    <Compile Include="Controls\Icon.cs" />
     <Compile Include="Controls\KeyValueLabel.cs" />
     <Compile Include="Controls\LocaleSelector.cs" />
     <Compile Include="Controls.Chart\MarkerAnnotation.xaml.cs">
@@ -279,11 +302,13 @@
     <Compile Include="Converters\LineStyleToDashArrayConverter.cs" />
     <Compile Include="Converters\DoubleCmpConverter.cs" />
     <Compile Include="Converters\NotNullConverter.cs" />
+    <Compile Include="Converters\NullToBoolConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\NumericalComparative.cs" />
     <Compile Include="Converters\ResxSwicthConverter.cs" />
     <Compile Include="Converters\NumberConverter.cs" />
+    <Compile Include="Converters\PascalCaseSplitConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
-    <Compile Include="Extensions\AssemblyExtension.cs" />
     <Compile Include="Extensions\ChartExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
@@ -295,17 +320,28 @@
     <Compile Include="Extensions\ResxFormatExtension.cs" />
     <Compile Include="Extensions\SettingExtension.cs" />
     <Compile Include="Extensions\ValidationBinding.cs" />
+    <Compile Include="Infrustructure\AppAccessRightsElevator.cs" />
     <Compile Include="Infrustructure\AppInstanceRestrictor.cs" />
     <Compile Include="Infrustructure\AutoViewManager.cs" />
     <Compile Include="Infrustructure\NonBlockingFileCompressor.cs" />
     <Compile Include="Infrustructure\ObjectPersistController.cs" />
     <Compile Include="Infrustructure\ObjectStorage.cs" />
     <Compile Include="Infrustructure\ObservableObject.cs" />
+    <Compile Include="Infrustructure\Page.cs" />
+    <Compile Include="Infrustructure\Persistence\Interfaces.cs" />
+    <Compile Include="Infrustructure\Persistence\PersistManager.cs" />
+    <Compile Include="Infrustructure\Persistence\PersistNode.cs" />
+    <Compile Include="Infrustructure\Persistence\SettingConverter.cs" />
+    <Compile Include="Infrustructure\Persistence\SettingProxy.cs" />
+    <Compile Include="Infrustructure\Persistence\XmlEntities.cs" />
     <Compile Include="Infrustructure\SettingsStorage.cs" />
     <Compile Include="Infrustructure\StorageModel.cs" />
+    <Compile Include="Infrustructure\VmActions.cs" />
     <Compile Include="Infrustructure\WindowStorageModel.cs" />
     <Compile Include="Infrustructure\WindowManager.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="Lib\ChartBarVectorWithMarkers.cs" />
+    <Compile Include="Lib\DialogModel.cs" />
     <Compile Include="Lib\GenericCommand.cs" />
     <Compile Include="Lib\AppSounds.cs" />
     <Compile Include="Lib\HsvColor.cs" />
@@ -313,20 +349,32 @@
     <Compile Include="Lib\ObservableComposer.cs" />
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
-    <Compile Include="Lib\TaskExtensions.cs" />
+    <Compile Include="Lib\ChartBarVector.cs" />
     <Compile Include="Lib\UiUpdateTimer.cs" />
-    <Compile Include="Model.Algo\OutputModels.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
+    <Compile Include="Model.Algo\Outputs\DoubleSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\MarkerSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\OutputCollector.cs" />
+    <Compile Include="Model.Algo\Outputs\OutputSynchronizer.cs" />
+    <Compile Include="Model.Algo\Outputs\OutputSeriesModel.cs" />
+    <Compile Include="Model.Algo\Outputs\TesterOutputCollector.cs" />
+    <Compile Include="Model.Algo\ParamSetup\BoolSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\EnumSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\InvalidSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\NumericSetModel.cs" />
+    <Compile Include="Model.Algo\ParamSetup\ParamSeekSetModel.cs" />
     <Compile Include="Model.Algo\PluginIdProvider.cs" />
     <Compile Include="Model.Algo\PluginModel.cs" />
     <Compile Include="Model.Algo\PluginStateHelper.cs" />
+    <Compile Include="Model.Lib\OptionalItem.cs" />
     <Compile Include="Model.Profiles\ProfileResolver.cs" />
     <Compile Include="Model.Profiles\ProfileStorageModel.cs" />
     <Compile Include="Model.Profiles\Version1\ChartStorageEntry.cs" />
     <Compile Include="Model.Profiles\Version1\PluginStorageEntry.cs" />
     <Compile Include="Model.Profiles\Version1\ProfileResolver.cs" />
+    <Compile Include="Model.Profiles\ViewModelStorageEntry.cs" />
     <Compile Include="Model.Protocol\BotAgentConnectionManager.cs" />
     <Compile Include="Model.Protocol\BotAgentManager.cs" />
     <Compile Include="Model.Protocol\BotAgentServerEntry.cs" />
@@ -347,21 +395,22 @@
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
+    <Compile Include="Model\BacktesterAdapter.cs" />
     <Compile Include="Model\BacktesterSettings.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
     <Compile Include="Model\BotsWarden.cs" />
     <Compile Include="Model\DispatcherSync.cs" />
+    <Compile Include="Model\FileHistory.cs" />
     <Compile Include="Model\LoggerHelper.cs" />
     <Compile Include="Model\ModelExtentions.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
+    <Compile Include="Model\NumberGenerator.cs" />
     <Compile Include="Model\PathHelper.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
-    <Compile Include="Model.Algo\TickChartFeedAdapter.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
     <Compile Include="Model.Auth\AuthConfigSection.cs" />
-    <Compile Include="Model.Charts\BarVector.cs" />
     <Compile Include="Model\TradeReportCsvSerializer.cs" />
     <Compile Include="Model\TradeReportKey.cs" />
     <Compile Include="Model\TradeTransactionModel.cs" />
@@ -395,7 +444,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Lib\Activity.cs" />
-    <Compile Include="Lib\AsyncEvent.cs" />
     <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
@@ -443,13 +491,21 @@
     <Compile Include="Views.ActionDisplay\DateRangeSelectionViewModel.cs" />
     <Compile Include="Views.ActionDisplay\ActionViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterChartPageViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterCurrentTradesViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterJournalViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterOptimizerViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterPluginSetupViewModel.cs" />
+    <Compile Include="Views.Backtester\BacktesterSetupPageViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterStatChartViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterReportViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterSymbolSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeGridViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterTradeSetupViewModel.cs" />
     <Compile Include="Views.Backtester\BacktesterViewModel.cs" />
+    <Compile Include="Views.Backtester\OptimizationResultsPageViewModel.cs" />
+    <Compile Include="Views.Backtester\OptimizerParamSetupViewModel.cs" />
+    <Compile Include="Views.Chart\AlgoChartViewModel.cs" />
+    <Compile Include="Views.Chart\BotListOverlayViewModel.cs" />
     <Compile Include="Views.Chart\OutputGroupViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedDownloadViewModel.cs" />
     <Compile Include="Views.FeedStorage\FeedExportViewModel.cs" />
@@ -688,6 +744,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\DropDownMenuButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\OverlayPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -700,7 +760,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Resx\Images\Images.xaml">
+    <Page Include="Resx\Images\Paths.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -733,6 +793,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resx\Styles.Classic\Ellipse.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resx\Styles.Classic\ErrorIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -968,7 +1032,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views.Backtester\BacktesterCurrentTradesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterJournalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterOptimizerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views.Backtester\BacktesterPluginSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\BacktesterSetupPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -993,6 +1073,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views.Backtester\BacktesterView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\OptimizationResultsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Backtester\OptimizerParamSetupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\AlgoChartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views.Chart\BotListOverlayView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1253,9 +1349,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="softfx.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resx\Images\softfx.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -1266,6 +1359,12 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>rem moving BotTerminal and Avalon dock resource files
+rmdir /s /q $(TargetDir)\Resources
+for %25%25i in (en-gb, ru-ru, de, es, fr, hu, it, pt-BR, ro, ru, sv, zh-Hans) do call "$(ProjectDir)\move.directory.bat" $(TargetDir)\%25%25i $(TargetDir)\Resources\%25%25i
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

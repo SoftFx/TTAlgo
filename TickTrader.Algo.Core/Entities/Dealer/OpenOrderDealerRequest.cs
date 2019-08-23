@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
 {
     internal class OpenOrderDealerRequest: Api.Ext.OpenOrderRequest
     {
-        public OpenOrderDealerRequest(OrderAccessor order, Quote currentRate)
+        public OpenOrderDealerRequest(OrderAccessor order, RateUpdate currentRate)
         {
             Order = order;
             CurrentRate = currentRate;
@@ -17,18 +17,18 @@ namespace TickTrader.Algo.Core
         }
 
         public Order Order { get; }
-        public Quote CurrentRate { get; }
+        public RateUpdate CurrentRate { get; }
 
         public bool Confirmed { get; private set; }
         public decimal? DealerAmount { get; private set; }
-        public decimal? DealerPrice { get; private set; }
+        public double? DealerPrice { get; private set; }
 
         public void Confirm()
         {
             Confirmed = true;
         }
 
-        public void Confirm(decimal amount, decimal price)
+        public void Confirm(decimal amount, double price)
         {
             DealerAmount = amount;
             DealerPrice = price;

@@ -52,6 +52,12 @@ namespace TickTrader.Algo.Core
             // Do nothing. Indicators does not have OnQuote() method
         }
 
+        public override double InvokeGetMetric()
+        {
+            // Do nothing. Indicators cannot be optimized
+            return -1;
+        }
+
         public override string ToString()
         {
             return "Indicator: " + Metadata.Descriptor.DisplayName;

@@ -10,84 +10,133 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
-    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IPluginMetadata, IBacktesterSettings
+    public class Backtester : CrossDomainObject, IDisposable, IPluginSetupTarget, IPluginMetadata, IBacktesterSettings, ITestExecController
     {
         private static int IdSeed;
 
-        //private AlgoPluginRef _pluginRef;
+        private ISynchronizationContext _sync;
         private readonly FeedEmulator _feed;
-        private readonly PluginExecutor _executor;
-        private EmulationControlFixture _control;
-        private Dictionary<string, double> _initialAssets = new Dictionary<string, double>();
-        private Dictionary<string, SymbolEntity> _symbols = new Dictionary<string, SymbolEntity>();
-        private Dictionary<string, CurrencyEntity> _currencies = new Dictionary<string, CurrencyEntity>();
+        private readonly ExecutorHandler _executor;
+        private readonly EmulationControlFixture _control;
 
-        public Backtester(AlgoPluginRef pluginRef, DateTime? from, DateTime? to)
+        public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext syncObj, DateTime? from, DateTime? to)
         {
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
-            _executor = pluginRef.CreateExecutor();
-            _executor.Metadata = this;
+            PluginInfo = pluginRef.Metadata.Descriptor;
+            _sync = syncObj;
+            _executor = new ExecutorHandler(pluginRef, syncObj);
+            _executor.Core.Metadata = this;
 
-            EmulationPeriodStart = from;
-            EmulationPeriodEnd = to;
+            CommonSettings.EmulationPeriodStart = from;
+            CommonSettings.EmulationPeriodEnd = to;
 
-            _control = _executor.InitEmulation(this);
+            _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
-            _executor.InitBarStrategy(_feed, Api.BarPriceType.Bid);
+            _executor.Core.InitBarStrategy(_feed, Api.BarPriceType.Bid);
 
-            Leverage = 100;
-            InitialBalance = 10000;
-            BalanceCurrency = "USD";
-            AccountType = AccountTypes.Gross;
+            CommonSettings.Leverage = 100;
+            CommonSettings.InitialBalance = 10000;
+            CommonSettings.BalanceCurrency = "USD";
+            CommonSettings.AccountType = AccountTypes.Gross;
+
+            _control.StateUpdated += s => _sync.Send(() =>
+            {
+                State = s;
+                StateChanged?.Invoke(s);
+            });
         }
 
-        public string MainSymbol { get; set; }
-        public AccountTypes AccountType { get; set; }
-        public string BalanceCurrency { get; set; }
-        public int Leverage { get; set; }
-        public double InitialBalance { get; set; }
-        public Dictionary<string, double> InitialAssets => _initialAssets;
-        public Dictionary<string, SymbolEntity> Symbols => _symbols;
-        public Dictionary<string, CurrencyEntity> Currencies => _currencies;
-        public TimeFrames MainTimeframe { get; set; }
-        public DateTime? EmulationPeriodStart { get; }
-        public DateTime? EmulationPeriodEnd { get; }
-        public int EventsCount => _control.Collector.EventsCount;
+        public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
+
+        public ExecutorHandler Executor => _executor;
+        public PluginDescriptor PluginInfo { get; }
         public int TradesCount => _control.TradeHistory.Count;
-        public int BarHistoryCount => _control.Collector.BarCount;
         public FeedEmulator Feed => _feed;
-        public TimeSpan ServerPing { get; set; }
-        public int WarmupSize { get; set; } = 10;
-        public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
+        //public TimeSpan ServerPing { get; set; }
+        //public int WarmupSize { get; set; } = 10;
+        //public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
         public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
+        public EmulatorStates State { get; private set; }
+        public event Action<EmulatorStates> StateChanged;
+        public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }
 
-        public void Run(CancellationToken cToken)
+        public event Action<BarEntity, string, SeriesUpdateActions> OnChartUpdate
+        {
+            add { Executor.ChartBarUpdated += value; }
+            remove { Executor.ChartBarUpdated -= value; }
+        }
+
+        public event Action<IDataSeriesUpdate> OnOutputUpdate
+        {
+            add { Executor.OutputUpdate += value; }
+            remove { Executor.OutputUpdate -= value; }
+        }
+
+        public Dictionary<string, TestDataSeriesFlags> SymbolDataConfig { get; } = new Dictionary<string, TestDataSeriesFlags>();
+        public TestDataSeriesFlags MarginDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags EquityDataMode { get; set; } = TestDataSeriesFlags.Snapshot;
+        public TestDataSeriesFlags OutputDataMode { get; set; } = TestDataSeriesFlags.Disabled;
+        public bool StreamExecReports { get; set; }
+
+        public async Task Run(CancellationToken cToken)
         {
             cToken.Register(() => _control.CancelEmulation());
 
-            _executor.InitSlidingBuffering(4000);
+            await Task.Factory.StartNew(SetupAndRun, TaskCreationOptions.LongRunning);
+        }
 
-            _executor.MainSymbolCode = MainSymbol;
-            _executor.TimeFrame = MainTimeframe;
-            _executor.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
-            _executor.Permissions = new PluginPermissions() { TradeAllowed = true };
+        private void SetupAndRun()
+        {
+            _executor.Core.InitSlidingBuffering(4000);
 
-            _control.OnStart();
+            _executor.Core.MainSymbolCode = CommonSettings.MainSymbol;
+            _executor.Core.TimeFrame = CommonSettings.MainTimeframe;
+            _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
+            _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
-            if (!_control.WarmUp(WarmupSize, WarmupUnits))
-                return;
+            bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
+                | OutputDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | SymbolDataConfig.Any(s => s.Value.IsFlagSet(TestDataSeriesFlags.Realtime));
 
-            _executor.Start();
+            _executor.StartCollection(isRealtime);
 
             try
             {
-                _control.EmulateExecution();
+                if (!_control.OnStart())
+                {
+                    _control.Collector.AddEvent(LogSeverities.Error, "No data for requested period!");
+                    return;
+                }
+
+                //if (PluginInfo.Type == AlgoTypes.Robot) // no warm-up for indicators
+                //{
+                //    if (!_control.WarmUp(WarmupSize, WarmupUnits))
+                //        return;
+                //}
+
+                //_executor.Core.Start();
+
+
+                if (PluginInfo.Type == AlgoTypes.Robot)
+                    _control.EmulateExecution(CommonSettings.WarmupSize, CommonSettings.WarmupUnits);
+                else // no warm-up for indicators
+                    _control.EmulateExecution(0, WarmupUnitTypes.Bars);
             }
             finally
             {
                 _control.OnStop();
+                _executor.StopCollection();
             }
+        }
+
+        public void Pause()
+        {
+            _control.Pause();
+        }
+
+        public void Resume()
+        {
+            _control.Resume();
         }
 
         public void CancelTesting()
@@ -95,14 +144,19 @@ namespace TickTrader.Algo.Core
             _control.CancelEmulation();
         }
 
-        public IPagedEnumerator<BotLogRecord> GetEvents()
+        public void SetExecDelay(int delayMs)
         {
-            return _control.Collector.GetEvents();
+            _control.SetExecDelay(delayMs);
         }
 
-        public IPagedEnumerator<BarEntity> GetMainSymbolHistory(TimeFrames timeFrame)
+        public int GetSymbolHistoryBarCount(string symbol)
         {
-            return _control.Collector.GetMainSymbolHistory(timeFrame);
+            return _control.Collector.GetSymbolHistoryBarCount(symbol);
+        }
+
+        public IPagedEnumerator<BarEntity> GetSymbolHistory(string symbol, TimeFrames timeFrame)
+        {
+            return _control.Collector.GetSymbolHistory(symbol, timeFrame);
         }
 
         public IPagedEnumerator<BarEntity> GetEquityHistory(TimeFrames timeFrame)
@@ -120,14 +174,9 @@ namespace TickTrader.Algo.Core
             return _control.TradeHistory.Marshal();
         }
 
-        public void InitOutputCollection<T>(string id)
+        public IPagedEnumerator<T> GetOutputData<T>(string id)
         {
-            _control.Collector.InitOutputCollection<T>(id);
-        }
-
-        public List<T> GetOutputBuffer<T>(string id)
-        {
-            return _control.Collector.GetOutputBuffer<T>(id);
+            return _control.Collector.GetOutputData<T>(id);
         }
 
         public override void Dispose()
@@ -135,8 +184,7 @@ namespace TickTrader.Algo.Core
             base.Dispose();
 
             _executor?.Dispose();
-            _control?.Dispose();
-            _control = null;
+            _control.Dispose();
         }
 
         public TestingStatistics GetStats()
@@ -148,25 +196,25 @@ namespace TickTrader.Algo.Core
 
         void IPluginSetupTarget.SetParameter(string id, object value)
         {
-            _executor.SetParameter(id, value);
+            _executor.Core.SetParameter(id, value);
         }
 
         T IPluginSetupTarget.GetFeedStrategy<T>()
         {
-            return _executor.GetFeedStrategy<T>();
+            return _executor.Core.GetFeedStrategy<T>();
         }
 
         void IPluginSetupTarget.MapInput(string inputName, string symbolCode, Mapping mapping)
         {
-            _executor.MapInput(inputName, symbolCode, mapping);
+            _executor.Core.MapInput(inputName, symbolCode, mapping);
         }
 
         #endregion
 
         #region IPluginMetadata
 
-        IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => _symbols.Values;
-        IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => _currencies.Values;
+        IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => CommonSettings.Symbols.Values;
+        IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => CommonSettings.Currencies.Values;
 
         #endregion
     }

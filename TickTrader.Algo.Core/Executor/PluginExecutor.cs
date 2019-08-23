@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Calc;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
@@ -24,12 +25,14 @@ namespace TickTrader.Algo.Core
         private readonly SubscriptionManager dispenser;
         private InvokeStartegy iStrategy;
         private readonly CalculatorFixture calcFixture;
+        private readonly MarketStateFixture _marketFixture;
         private IExecutorFixture accFixture;
         private IExecutorFixture _timerFixture;
         private StatusFixture statusFixture;
         private IAccountInfoProvider _externalAccData;
         private ITradeExecutor _externalTradeApi;
         private string mainSymbol;
+        private Func<PluginMetadata, PluginBuilder> _builderFactory = m => new PluginBuilder(m);
         private PluginBuilder builder;
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
@@ -51,6 +54,7 @@ namespace TickTrader.Algo.Core
             statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
             dispenser = new SubscriptionManager(this);
+            _marketFixture = new MarketStateFixture(this);
             _timerFixture = new TimerFixture(this);
             //if (builderFactory == null)
             //    throw new ArgumentNullException("builderFactory");
@@ -223,8 +227,13 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        internal bool IsGlobalmarshalingenabled { get; set; }
+        internal Action<object> OnUpdate { get; set; }
+
         public event Action<PluginExecutor> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
+
+        internal event Action Stopped;
 
         #endregion
 
@@ -242,7 +251,7 @@ namespace TickTrader.Algo.Core
 
                     // Setup builder
 
-                    builder = new PluginBuilder(descriptor);
+                    builder = _builderFactory(descriptor);
                     builder.MainSymbol = MainSymbolCode;
                     builder.TimeFrame = TimeFrame;
                     InitMetadata();
@@ -263,8 +272,9 @@ namespace TickTrader.Algo.Core
 
                     // Setup strategy
 
+                    _marketFixture.Start();
                     iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
-                    fStrategy.Init(this, bStrategy, ApplyNewRate);
+                    fStrategy.Init(this, bStrategy, _marketFixture);
                     fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
@@ -396,10 +406,19 @@ namespace TickTrader.Algo.Core
                 statusFixture.Stop();
                 _timerFixture.Stop();
 
-                builder.PluginProxy.Coordinator.Clear();
+                //builder.PluginProxy.Coordinator.Clear();
                 builder.PluginProxy.Dispose();
                 accFixture.Dispose();
                 fStrategy.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnException(ex);
+            }
+
+            try
+            {
+                Stopped?.Invoke();
             }
             catch (Exception ex)
             {
@@ -522,33 +541,44 @@ namespace TickTrader.Algo.Core
 
         #region Emulator Support
 
-        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings)
+        internal EmulationControlFixture InitEmulation(IBacktesterSettings settings, AlgoTypes pluginType, FeedEmulator emulator = null, FeedStrategy fStrategy = null)
         {
-            var fixture = new EmulationControlFixture(settings, this, calcFixture);
+            var fixture = new EmulationControlFixture(settings, this, calcFixture, emulator);
             InvokeStrategy = fixture.InvokeEmulator;
-            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory);
+            if (fStrategy != null)
+            {
+                this.fStrategy = fStrategy;
+                feedProvider = emulator;
+            }
+            _tradeFixtureFactory = c => new TradeEmulator(c, settings, calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
+            _builderFactory = m => new SimplifiedBuilder(m);
+            calcFixture.Emulator = fixture.InvokeEmulator;
             return fixture;
         }
 
         internal PluginBuilder GetBuilder() => builder;
+        internal PluginDescriptor GetDescriptor() => descriptor.Descriptor;
         internal IExecutorFixture GetTradeFixute() => accFixture;
 
         internal void EmulateStop()
         {
-            ChangeState(States.Stopping);
-            stopTask = DoStop(false);
+            if (state == States.Running)
+            {
+                ChangeState(States.Stopping);
+                stopTask = DoStop(false);
+            }
         }
 
-        #endregion
-
-        #endregion
-
-        private void ApplyNewRate(RateUpdate quote)
+        internal void WaitStop()
         {
-            calcFixture.UpdateRate(quote);
+            stopTask?.Wait();
         }
+
+        #endregion
+
+        #endregion
 
         private void Validate()
         {
@@ -668,9 +698,11 @@ namespace TickTrader.Algo.Core
         SubscriptionManager IFixtureContext.Dispenser => dispenser;
         FeedBufferStrategy IFixtureContext.BufferingStrategy => fStrategy.BufferingStrategy;
         string IFixtureContext.MainSymbolCode => mainSymbol;
+        AlgoMarketState IFixtureContext.MarketData => _marketFixture.Market;
         TimeFrames IFixtureContext.TimeFrame => timeframe;
         PluginBuilder IFixtureContext.Builder => builder;
         PluginLoggerAdapter IFixtureContext.Logger => builder.LogAdapter;
+        bool IFixtureContext.IsGlobalUpdateMarshalingEnabled => IsGlobalmarshalingenabled;
 
         void IFixtureContext.EnqueueTradeUpdate(Action<PluginBuilder> action)
         {
@@ -706,6 +738,8 @@ namespace TickTrader.Algo.Core
         {
             OnInternalException(ex);
         }
+
+        void IFixtureContext.SendExtUpdate(object update) => OnUpdate(update);
 
         #endregion
 

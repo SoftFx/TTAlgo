@@ -63,7 +63,7 @@ namespace TickTrader.BotTerminal
                 var pointMetadata = metadata[index] as AlgoMarkerMetadata;
                 if (pointMetadata == null)
                 {
-                    _logger.Error($"{RenderableSeries.DataSeries.SeriesName}: No metadata at {index}");
+                    //_logger.Error($"{RenderableSeries.DataSeries.SeriesName}: No metadata at {index}");
                     continue;
                 }
                 var fillColor = Algo.Common.Model.Setup.Convert.ToWindowsColor(pointMetadata.MarkerEntity.Color, Stroke);

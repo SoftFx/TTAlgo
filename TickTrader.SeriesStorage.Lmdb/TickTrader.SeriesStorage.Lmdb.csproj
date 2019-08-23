@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LmdbCursor.cs" />
+    <Compile Include="LmdbException.cs" />
     <Compile Include="LmdbManager.cs" />
     <Compile Include="LmdbStorage.cs" />
     <Compile Include="LmdbTransaction.cs" />

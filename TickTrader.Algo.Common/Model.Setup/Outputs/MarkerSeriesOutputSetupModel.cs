@@ -27,6 +27,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public override void Reset()
         {
+            base.Reset();
+
             MarkerSize = MarkerSizes.Medium;
         }
 

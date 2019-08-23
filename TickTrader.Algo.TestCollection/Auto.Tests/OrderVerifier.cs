@@ -9,12 +9,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
     internal class OrderVerifier
     {
-        public OrderVerifier(string orderId, AccountTypes accType, OrderType initialType, OrderSide side, double volume, double? price, double? stopPrice)
-            : this(orderId, accType, initialType, initialType, side, volume, volume, price, stopPrice, TradeExecActions.None, DateTime.MinValue)
+        public OrderVerifier(string orderId, AccountTypes accType, OrderType initialType, OrderSide side, double volume, double? price, double? stopPrice, DateTime trTimestamp)
+            : this(orderId, accType, initialType, initialType, side, volume, volume, price, stopPrice, TradeExecActions.None, trTimestamp)
         {
         }
 
-        private OrderVerifier(string orderId, AccountTypes accType, OrderType initialType, OrderType currentType, OrderSide side,
+        public OrderVerifier(string orderId, AccountTypes accType, OrderType initialType, OrderType currentType, OrderSide side,
             double reqVolume, double remVolume, double? price, double? stopPrice, TradeExecActions trAction, DateTime trTimestamp)
         {
             OrderId = orderId;
@@ -22,11 +22,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             InitialType = initialType;
             CurrentType = currentType;
             Side = side;
-            ReqVolume = ReqVolume;
-            RemVolume = RemVolume;
+            ReqVolume = reqVolume;
+            RemVolume = remVolume;
             Price = price;
             StopPrice = stopPrice;
             TradeReportAction = trAction;
+            TradeReportTimestamp = trTimestamp;
         }
 
         public string OrderId { get; }
@@ -43,17 +44,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         #region Order lifetime tracking
 
-        public OrderVerifier Fill()
+        public OrderVerifier Fill(DateTime execTime)
         {
             if (AccType == AccountTypes.Gross)
-                return Clone(OrderType.Position, ReqVolume);
+                return Clone(OrderType.Position, ReqVolume, TradeExecActions.OrderFilled, execTime);
             else
-                return Clone(CurrentType, 0, TradeExecActions.OrderFilled);
+                return Clone(CurrentType, 0, TradeExecActions.OrderFilled, execTime);
         }
 
         public OrderVerifier Close(DateTime execTime)
         {
-            return Clone(CurrentType, 0, TradeExecActions.PositionClosed);
+            return Clone(CurrentType, 0, TradeExecActions.PositionClosed, execTime);
         }
 
         public OrderVerifier Close(double amount, DateTime execTime)
@@ -62,9 +63,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             return Clone(CurrentType, newVolume, TradeExecActions.PositionClosed, execTime);
         }
 
-        public OrderVerifier Cancel()
+        public OrderVerifier Cancel(DateTime execTime)
         {
-            return Clone(CurrentType, RemVolume, TradeExecActions.OrderCanceled);
+            return Clone(CurrentType, RemVolume, TradeExecActions.OrderCanceled, execTime);
         }
 
         public OrderVerifier Expire(DateTime execTime)
@@ -72,7 +73,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             return Clone(CurrentType, RemVolume, TradeExecActions.OrderExpired, execTime);
         }
 
-        private OrderVerifier Clone(OrderType newType, double newRemVolume, TradeExecActions action = TradeExecActions.None, DateTime trTimestamp = default(DateTime))
+        private OrderVerifier Clone(OrderType newType, double newRemVolume, TradeExecActions action, DateTime trTimestamp)
         {
             return new OrderVerifier(OrderId, AccType, InitialType, newType, Side, ReqVolume, newRemVolume, Price, StopPrice, action, trTimestamp);
         }
@@ -83,30 +84,37 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public void VerifyOrder(AccountDataProvider acc)
         {
+            // TO DO
         }
 
         public void VerifyOrder(Order order)
         {
+            // TO DO
         }
 
         public void VerifyEvent(OrderOpenedEventArgs args)
         {
+            // TO DO
         }
 
         public void VerifyEvent(OrderFilledEventArgs args)
         {
+            // TO DO
         }
 
         public void VerifyEvent(OrderClosedEventArgs args)
         {
+            // TO DO
         }
 
         public void VerifyEvent(OrderCanceledEventArgs args)
         {
+            // TO DO
         }
 
         public void VerifyEvent(OrderExpiredEventArgs args)
         {
+            // TO DO
         }
 
         public void VerifyTradeReport(TradeReport report)

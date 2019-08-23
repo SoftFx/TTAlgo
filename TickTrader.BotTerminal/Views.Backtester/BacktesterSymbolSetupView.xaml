@@ -18,24 +18,26 @@
 
         </ControlTemplate.Resources>
 
-        <Grid>
+        <Grid Margin="0,0,3,0">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="14"/>
                 <ColumnDefinition />
                 <ColumnDefinition MaxWidth="70"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Label Name="SymbolLabel" Content="Symbol:" Grid.Column="0" HorizontalAlignment="Right" Margin="0,0,5,0" />
-            <ComboBox Name="SymbolCombo" Grid.Column="1" Margin="0" ItemsSource="{Binding AvailableSymbols}" SelectedItem="{l:ValidationBinding SelectedSymbol.Value}"
+            <Label Name="SymbolLabel" Content="Symbol:" Grid.Column="0" HorizontalAlignment="Right" Margin="0,0,2,0" />
+            <l:ErrorIndicator Grid.Column="1" Error="{Binding Error.Value}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <ComboBox Name="SymbolCombo" Grid.Column="2" Margin="0" ItemsSource="{Binding AvailableSymbols}" SelectedItem="{l:ValidationBinding SelectedSymbol.Value}"
                       ItemTemplate="{StaticResource SymbolTemplate}"/>
-            <ComboBox Grid.Column="2" ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeframe.Value}"/>
+            <ComboBox Grid.Column="3" ItemsSource="{Binding AvailableTimeFrames}" SelectedItem="{Binding SelectedTimeframe.Value}"/>
             <!--<ComboBox Name="PriceTypeCombo" Grid.Column="3" ItemsSource="{Binding AvailablePriceTypes}" SelectedItem="{Binding SelectedPriceType.Value}"
                       IsEnabled="{Binding CanChangePrice.Value}"/>-->
-            <Button Name="RemoveBtn" Content="-" Style="{DynamicResource TinyButton}" cal:Message.Attach="Remove" Grid.Column="3" Margin="4,0,0,0" />
-            <Button Name="AddBtn" Content="+" Style="{DynamicResource TinyButton}" cal:Message.Attach="Add" Grid.Column="3" Visibility="Hidden" Margin="4,0,0,0" />
+            <Button Name="RemoveBtn" Content="-" Style="{DynamicResource TinyButton}" cal:Message.Attach="Remove" Grid.Column="4" Margin="4,0,0,0" />
+            <Button Name="AddBtn" Content="+" Style="{DynamicResource TinyButton}" cal:Message.Attach="Add" Grid.Column="4" Visibility="Hidden" Margin="4,0,0,0" />
         </Grid>
 
         <ControlTemplate.Triggers>

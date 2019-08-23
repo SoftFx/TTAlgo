@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
         private volatile bool isStopped;
         private StatusApiImpl statusApi = new StatusApiImpl();
         private PluginLoggerAdapter logAdapter = new PluginLoggerAdapter();
-        private SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
+        internal SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
         private TradeApiAdapter _tradeApater;
         private TradeCommands _commands;
         private bool _isolated;
@@ -48,6 +48,8 @@ namespace TickTrader.Algo.Core
             _permissions = new PluginPermissions();
 
             _indicators = new IndicatorsCollection();
+
+            GetDefaultOptMetric = GetFinalEquity;
 
             //OnException = ex => Logger.OnError("Exception: " + ex.Message, ex.ToString());
         }
@@ -81,6 +83,7 @@ namespace TickTrader.Algo.Core
         public Action<Exception> OnException { get; set; }
         public Action<Exception> OnInitFailed { get; set; }
         public Action<Action> OnAsyncAction { get; set; }
+        public Func<double> GetDefaultOptMetric { get; set; }
         public Action OnExit { get; set; }
         public Action<int> OnInputResize { get; set; }
         public string Status { get { return statusApi.Status; } }
@@ -247,6 +250,11 @@ namespace TickTrader.Algo.Core
             _commands = adapter;
         }
 
+        internal double GetFinalEquity()
+        {
+            return Account.Equity;
+        }
+
         #endregion
 
         #region IPluginContext
@@ -332,27 +340,36 @@ namespace TickTrader.Algo.Core
             OnInputResize?.Invoke(newSize);
         }
 
+        double IPluginContext.DefaultOptimizationMetric => GetDefaultOptMetric();
+
         #endregion IPluginContext
 
         #region Invoke
 
-        private void OnBeforeInvoke()
+        protected void OnBeforeInvoke()
         {
         }
 
-        private void OnAfterInvoke()
+        protected void OnAfterInvoke()
         {
             statusApi.Apply();
         }
 
-        internal void InvokePluginMethod(Action invokeAction, bool initMethod = false)
+        internal void InvokePluginMethod(Action<PluginBuilder, object> invokeAction, bool initMethod = false)
         {
-            var ex = InvokeMethod(invokeAction);
+            var ex = InvokeMethod<object>(invokeAction, null);
             if (ex != null)
                 OnPluginException(ex, initMethod);
         }
 
-        private Exception InvokeMethod(Action invokeAction)
+        internal void InvokePluginMethod<T>(Action<PluginBuilder, T> invokeAction, T param, bool initMethod = false)
+        {
+            var ex = InvokeMethod(invokeAction, param);
+            if (ex != null)
+                OnPluginException(ex, initMethod);
+        }
+
+        protected virtual Exception InvokeMethod<T>(Action<PluginBuilder, T> invokeAction, T param)
         {
             Exception pluginException = null;
 
@@ -363,7 +380,7 @@ namespace TickTrader.Algo.Core
             SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
-                invokeAction();
+                invokeAction(this, param);
             }
             catch (ThreadAbortException) { }
             catch (Exception ex)
@@ -379,41 +396,41 @@ namespace TickTrader.Algo.Core
 
         internal void InvokeCalculate(bool isUpdate)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeCalculate(isUpdate), false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeCalculate(p), isUpdate, false);
         }
 
         internal void InvokeOnStart()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStart, true);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnStart(), true);
             Logger.OnStart();
         }
 
         internal void InvokeOnStop()
         {
-            InvokePluginMethod(PluginProxy.InvokeOnStop, false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeOnStop(), false);
             Logger.OnStop();
         }
 
         internal void InvokeInit()
         {
-            InvokePluginMethod(PluginProxy.InvokeInit, true);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeInit(), true);
             Logger.OnInitialized();
         }
 
         internal void InvokeOnQuote(Quote quote)
         {
-            InvokePluginMethod(() => PluginProxy.InvokeOnQuote(quote), false);
+            InvokePluginMethod((b, q) => b.PluginProxy.InvokeOnQuote(q), quote, false);
         }
 
         internal void InvokeAsyncAction(Action asyncAction)
         {
-            InvokePluginMethod(asyncAction, false);
+            InvokePluginMethod((b, p) => asyncAction(), false);
         }
 
         internal async Task InvokeAsyncStop()
         {
             Task result = null;
-            InvokePluginMethod(() => result = PluginProxy.InvokeAsyncStop(), false);
+            InvokePluginMethod((b, p) => result = b.PluginProxy.InvokeAsyncStop(), false);
             try
             {
                 await result;
@@ -426,19 +443,26 @@ namespace TickTrader.Algo.Core
 
         internal void FireConnectedEvent()
         {
-            InvokePluginMethod(()=> PluginProxy.InvokeConnectedEvent(), false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeConnectedEvent(), false);
             Logger.OnConnected();
         }
 
         internal void FireDisconnectedEvent()
         {
-            InvokePluginMethod(() => PluginProxy.InvokeDisconnectedEvent(), false);
+            InvokePluginMethod((b, p) => b.PluginProxy.InvokeDisconnectedEvent(), false);
             Logger.OnDisconnected();
         }
 
         internal void LogConnectionInfo(string connectionInfo)
         {
             Logger.OnConnectionInfo(connectionInfo);
+        }
+
+        internal double InvokeGetMetric(out Exception error)
+        {
+            double result = 0;
+            error = InvokeMethod<object>((b, p) => result = b.PluginProxy.InvokeGetMetric(), null);
+            return result;
         }
 
         #endregion
@@ -482,7 +506,7 @@ namespace TickTrader.Algo.Core
 
         BookEntry IHelperApi.CreateBookEntry(double price, double volume)
         {
-            return new BookEntryEntity() { Price = price, Volume = volume };
+            return new BookEntry(price, volume);
         }
 
         IEnumerable<BookEntry> IHelperApi.CreateBook(IEnumerable<double> prices, IEnumerable<double> volumes)
@@ -490,7 +514,7 @@ namespace TickTrader.Algo.Core
             if (prices == null || volumes == null)
                 return new BookEntry[0];
 
-            return prices.Zip(volumes, (p, v) => new BookEntryEntity() { Price = p, Volume = v });
+            return prices.Zip(volumes, (p, v) => new BookEntry(p,v));
         }
 
         double IHelperApi.RoundVolumeDown(double volume, Symbol symbolInfo)

@@ -1,12 +1,24 @@
 ﻿using NLog;
 using System;
+using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Protocol
 {
     public enum ServerStates { Started, Stopped, Faulted }
 
 
-    public abstract class ProtocolServer
+    public interface IProtocolServer
+    {
+        ServerStates State { get; }
+
+
+        Task Start();
+
+        Task Stop();
+    }
+
+
+    public abstract class ProtocolServer : IProtocolServer
     {
         protected ILogger Logger { get; }
 
@@ -31,7 +43,7 @@ namespace TickTrader.Algo.Protocol
         }
 
 
-        public void Start()
+        public async Task Start()
         {
             try
             {
@@ -42,7 +54,7 @@ namespace TickTrader.Algo.Protocol
                 Logger.Info("Server started");
                 Logger.Info($"Server current version: {VersionSpec.CurrentVersionStr}");
 
-                StartServer();
+                await StartServer();
 
                 State = ServerStates.Started;
             }
@@ -53,7 +65,7 @@ namespace TickTrader.Algo.Protocol
             }
         }
 
-        public void Stop()
+        public async Task Stop()
         {
             try
             {
@@ -61,7 +73,7 @@ namespace TickTrader.Algo.Protocol
                 {
                     State = ServerStates.Stopped;
 
-                    StopServer();
+                    await StopServer();
 
                     Logger.Info("Server stopped");
                 }
@@ -73,9 +85,9 @@ namespace TickTrader.Algo.Protocol
         }
 
 
-        protected abstract void StartServer();
+        protected abstract Task StartServer();
 
-        protected abstract void StopServer();
+        protected abstract Task StopServer();
 
 
         #region Update listeners

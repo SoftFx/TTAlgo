@@ -10,9 +10,8 @@ namespace TickTrader.Algo.Core
 {
     public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext, CustomFeedProvider
     {
-        private Action<RateUpdate> _rateUpdateCallback;
-
-        private List<Action> setupActions = new List<Action>();
+        private MarketStateFixture _marketFixture;
+        private readonly List<Action<FeedStrategy>> _setupActions = new List<Action<FeedStrategy>>();
 
         public FeedStrategy()
         {
@@ -31,19 +30,20 @@ namespace TickTrader.Algo.Core
         protected abstract RateUpdate Aggregate(RateUpdate last, QuoteEntity quote);
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
+        protected abstract FeedStrategy CreateClone();
         //protected abstract IEnumerable<Bar> QueryBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
         //protected abstract IEnumerable<Quote> QueryQuotes(string symbol, DateTime from, DateTime to, bool level2);
 
-        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, Action<RateUpdate> rateUpdateCallback)
+        internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, MarketStateFixture marketFixture)
         {
             ExecContext = executor;
-            _rateUpdateCallback = rateUpdateCallback;
+            _marketFixture = marketFixture;
             Feed = executor.FeedProvider;
             BufferingStrategy = bStrategy;
             RateDispenser.ClearUserSubscriptions();
             OnInit();
             BufferingStrategy.Init(this);
-            setupActions.ForEach(a => a());
+            _setupActions.ForEach(a => a(this));
         }
 
         internal virtual void Start()
@@ -58,14 +58,21 @@ namespace TickTrader.Algo.Core
             Feed.Sync.Invoke(StopStrategy);
         }
 
+        internal FeedStrategy Clone()
+        {
+            var copy = CreateClone();
+            copy._setupActions.AddRange(_setupActions);
+            return copy;
+        }
+
         internal void SetSubscribed(string symbol, int depth)
         {
             RateDispenser.SetUserSubscription(symbol, depth);
         }
 
-        protected void AddSetupAction(Action setupAction)
+        protected void AddSetupAction(Action<FeedStrategy> setupAction)
         {
-            setupActions.Add(setupAction);
+            _setupActions.Add(setupAction);
         }
 
         private void StartStrategy()
@@ -75,10 +82,7 @@ namespace TickTrader.Algo.Core
 
             // apply snapshot
             foreach (var quote in Feed.GetSnapshot())
-            {
-                ExecContext.Builder.Symbols.SetRate(quote);
-                _rateUpdateCallback(quote);
-            }
+                _marketFixture.UpdateRate(quote);
 
             ExecContext.Builder.CustomFeedProvider = this;
         }
@@ -112,11 +116,9 @@ namespace TickTrader.Algo.Core
                 ExecContext.EnqueueQuote(update);
         }
 
-        internal BufferUpdateResult ApplyUpdate(RateUpdate update)
+        internal BufferUpdateResult ApplyUpdate(RateUpdate update, out AlgoMarketNode node)
         {
-            var lastQuote = update.LastQuote;
-
-            ExecContext.Builder.Symbols.SetRate(lastQuote);
+            node = _marketFixture.UpdateRate(update);
 
             var result = UpdateBuffers(update);
 
@@ -129,8 +131,7 @@ namespace TickTrader.Algo.Core
                 ExecContext.Builder.InvokeCalculate(false);
             }
 
-            _rateUpdateCallback((QuoteEntity)lastQuote);
-            RateDispenser.OnUpdateEvent(lastQuote);
+            RateDispenser.OnUpdateEvent(node);
 
             return result;
         }

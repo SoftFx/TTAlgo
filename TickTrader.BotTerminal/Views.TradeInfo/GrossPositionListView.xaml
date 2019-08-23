@@ -8,14 +8,15 @@
              d:DesignHeight="300" d:DesignWidth="300">
     
     <Grid>
-        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended">
+        <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended"
+                  l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                    <MenuItem Header="{l:Resx Copy}" Command="ApplicationCommands.Copy"></MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Width="*" Binding="{Binding Order.Id}">
+                <DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Style.Triggers>
@@ -27,11 +28,11 @@
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Exec Time" Width="*" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
-                <DataGridTextColumn Header="Side" Width="*" Binding="{Binding Order.Side}"/>
+                <DataGridTextColumn Header="{l:Resx Order_ExecutionTime}" Width="100" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
+                <DataGridTextColumn Header="{l:Resx Order_Side}" Width="100" Binding="{Binding Order.Side}"/>
                 <DataGridTextColumn Header="{l:Resx Order_Volume}" Binding="{Binding Order.RemainingAmount}"/>
-                <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="*" Binding="{Binding Order.Symbol}" />
-                <DataGridTextColumn Header="{l:Resx Order_Price}" Width="*">
+                <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="100" Binding="{Binding Order.Symbol}" />
+                <DataGridTextColumn Header="{l:Resx Order_Price}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="Order.Price"/>
@@ -39,9 +40,9 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="S/L" Width="*" Binding="{Binding Order.StopLoss}" />
-                <DataGridTextColumn Header="T/P" Width="*" Binding="{Binding Order.TakeProfit}" />
-                <DataGridTextColumn Header="Current Price" Width="*">
+                <DataGridTextColumn Header="{l:Resx Order_S_L}" Width="100" Binding="{Binding Order.StopLoss}" />
+                <DataGridTextColumn Header="{l:Resx Order_T_P}" Width="100" Binding="{Binding Order.TakeProfit}" />
+                <DataGridTextColumn Header="{l:Resx Order_CurrentPrice}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="CurrentPrice.Rate"/>
@@ -49,7 +50,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="P/L" Width="*">
+                <DataGridTextColumn Header="{l:Resx Order_P_L}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Order.Profit"/>
@@ -63,7 +64,7 @@
                         </MultiBinding>
                     </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Commission" Width="*">
+                <DataGridTextColumn Header="{l:Resx Order_Commission}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Order.Commission"/>
@@ -77,8 +78,8 @@
                         </MultiBinding>
                     </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Swap" Width="*" Binding="{Binding Order.Swap}" />
-                <DataGridTextColumn Header="Net P/L" Width="*">
+                <DataGridTextColumn Header="{l:Resx Order_Swap}" Width="100" Binding="{Binding Order.Swap}" />
+                <DataGridTextColumn Header="{l:Resx Order_Net_P_L}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Order.NetProfit"/>
@@ -92,9 +93,9 @@
                         </MultiBinding>
                     </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Comment" Width="*" Binding="{Binding Order.Comment}" />
-                <DataGridTextColumn Header="Tag" Width="*" Binding="{Binding Order.Tag}" />
-                <DataGridTextColumn Header="Instance Id" Width="*" Binding="{Binding Order.InstanceId}" />
+                <DataGridTextColumn Header="{l:Resx Order_Comment}" Width="100" Binding="{Binding Order.Comment}" />
+                <DataGridTextColumn Header="{l:Resx Order_Tag}" Width="100" Binding="{Binding Order.Tag}" />
+                <DataGridTextColumn Header="{l:Resx Order_InstanceId}" Width="100" Binding="{Binding Order.InstanceId}" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

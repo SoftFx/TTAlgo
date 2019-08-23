@@ -20,6 +20,11 @@ namespace TickTrader.BotAgent.BA.Models
         {
             return true;
         }
+
+        public void RegisterPluginId(string pluginId)
+        {
+            return;
+        }
     }
 
 
@@ -32,7 +37,7 @@ namespace TickTrader.BotAgent.BA.Models
         public string Id => Name;
 
 
-        public StubSymbolInfo(SymbolInfo symbolInfo)
+        public StubSymbolInfo(SymbolKey symbolInfo)
         {
             Name = symbolInfo.Name;
             Origin = SymbolOrigin.Online;
@@ -49,7 +54,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         public IPluginIdProvider IdProvider { get; }
 
-        public SetupMetadata(IEnumerable<SymbolInfo> symbols)
+        public SetupMetadata(IEnumerable<SymbolKey> symbols)
         {
             //Extentions = new ExtCollection();
             Symbols = symbols.Select(s => new StubSymbolInfo(s)).ToList();

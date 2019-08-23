@@ -11,20 +11,19 @@ namespace TickTrader.Algo.Core
     public class AssetAccessor : Api.Asset, BusinessLogic.IAssetModel
     {
         private decimal _margin;
-        private decimal _volume;
 
         internal AssetAccessor(AssetEntity entity, Func<string, Currency> currencyInfoProvider)
         {
             Currency = entity.Currency;
-            _volume = (decimal)entity.Volume;
+            Volume = (decimal)entity.Volume;
             CurrencyInfo = currencyInfoProvider(Currency) ?? new NullCurrency(Currency);
         }
 
         internal bool Update(decimal newVol)
         {
-            if (_volume != newVol)
+            if (Volume != newVol)
             {
-                _volume = newVol;
+                Volume = newVol;
                 return true;
             }
             return false;
@@ -32,19 +31,22 @@ namespace TickTrader.Algo.Core
 
         internal void IncreaseBy(decimal amount)
         {
-            _volume += amount;
+            Volume += amount;
         }
 
         public Currency CurrencyInfo { get; }
         public string Currency { get; private set; }
-        public double Volume => (double)_volume;
+        public decimal Volume { get; private set; }
         public double LockedVolume => (double)_margin;
-        public double FreeVolume => Volume - LockedVolume;
+        public decimal FreeVolume => Volume - _margin;
         public bool IsNull => false;
-        public bool IsEmpty => _volume == 0;
+        public bool IsEmpty => Volume == 0;
 
-        decimal IAssetModel.Amount => _volume;
-        decimal IAssetModel.FreeAmount => _volume - _margin;
+        double Api.Asset.Volume => (double) Volume;
+        double Api.Asset.FreeVolume => (double)FreeVolume;
+
+        decimal IAssetModel.Amount => Volume;
+        decimal IAssetModel.FreeAmount => Volume - _margin;
         decimal IAssetModel.LockedAmount => _margin;
         decimal IAssetModel.Margin { get => _margin; set => _margin = value; }
     }

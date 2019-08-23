@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
 
-        protected override void StartServer()
+        protected override Task StartServer()
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
             _impl = new BotAgentServerImpl(AgentServer, _jwtProvider, Logger, Settings.ProtocolSettings.LogMessages);
@@ -41,12 +41,14 @@ namespace TickTrader.Algo.Protocol.Grpc
                 Ports = { new ServerPort("0.0.0.0", Settings.ProtocolSettings.ListeningPort, creds) },
             };
             _server.Start();
+
+            return Task.FromResult(this);
         }
 
-        protected override void StopServer()
+        protected override async Task StopServer()
         {
             _impl.DisconnectAllClients();
-            _server.ShutdownAsync().Wait();
+            await _server.ShutdownAsync();
         }
     }
 
@@ -75,6 +77,10 @@ namespace TickTrader.Algo.Protocol.Grpc
             _botAgent.AccountStateUpdated += OnAccountStateUpdate;
             _botAgent.BotUpdated += OnBotUpdate;
             _botAgent.BotStateUpdated += OnBotStateUpdate;
+
+            _botAgent.AdminCredsChanged += OnAdminCredsChanged;
+            _botAgent.DealerCredsChanged += OnDealerCredsChanged;
+            _botAgent.ViewerCredsChanged += OnViewerCredsChanged;
         }
 
 
@@ -306,6 +312,39 @@ namespace TickTrader.Algo.Protocol.Grpc
         }
 
         #endregion Grpc request handlers overrides
+
+
+        #region Credentials handlers
+
+        private void DisconnectAllClients(AccessLevels accessLevel)
+        {
+            lock (_sessions)
+            {
+                var sessionsToRemove = _sessions.Values.Where(s => s.AccessManager.Level == accessLevel).ToList();
+                foreach (var session in sessionsToRemove)
+                {
+                    session.CancelUpdateStream();
+                    _sessions.Remove(session.SessionId);
+                }
+            }
+        }
+
+        private void OnAdminCredsChanged()
+        {
+            DisconnectAllClients(AccessLevels.Admin);
+        }
+
+        private void OnDealerCredsChanged()
+        {
+            DisconnectAllClients(AccessLevels.Dealer);
+        }
+
+        private void OnViewerCredsChanged()
+        {
+            DisconnectAllClients(AccessLevels.Viewer);
+        }
+
+        #endregion
 
 
         private async Task<TResponse> ExecuteUnaryRequest<TRequest, TResponse>(

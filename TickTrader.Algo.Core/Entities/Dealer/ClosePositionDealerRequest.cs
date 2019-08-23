@@ -21,14 +21,14 @@ namespace TickTrader.Algo.Core
         public Quote CurrentRate { get; }
 
         public bool Confirmed { get; private set; }
-        public decimal? DealerPrice { get; private set; }
+        public double? DealerPrice { get; private set; }
 
         public void Confirm()
         {
             Confirmed = true;
         }
 
-        public void Confirm(decimal price)
+        public void Confirm(double price)
         {
             DealerPrice = price;
             Confirmed = true;

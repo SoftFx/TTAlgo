@@ -61,7 +61,6 @@ namespace Machinarium.Var
             return property;
         }
 
-
         protected BoolProperty AddBoolProperty(bool initialValue = false, string notifyName = null)
         {
             var property = new BoolProperty();
@@ -107,33 +106,43 @@ namespace Machinarium.Var
             return property;
         }
 
+        protected PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
+        {
+            var converter = new PropConverter<TProp, T>(property, valueConverter);
+            AddDisposableChild(converter);
+            return converter;
+        }
+
         private void RegisterPropertyNotification<T>(Property<T> property, string name)
         {
             if (!string.IsNullOrWhiteSpace(name))
                 property.PropertyChanged += (s, a) => OnPropertyChanged(name);
         }
 
-        protected void TriggerOn(BoolVar condition, Action action)
+        protected IDisposable TriggerOn(BoolVar condition, Action action)
         {
-            TriggerOn(condition, action, null);
+            return TriggerOn(condition, action, null);
         }
 
-        protected void TriggerOn(BoolVar condition, Action onTrue, Action onFalse)
+        protected IDisposable TriggerOn(BoolVar condition, Action onTrue, Action onFalse)
         {
             var trigger = new BoolEvent(condition, onTrue, onFalse);
             AddDisposableChild(trigger);
+            return trigger;
         }
 
-        protected void TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
+        protected IDisposable TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
         {
             var trigger = new ChangeEvent<T>(var, changeHandler);
             AddDisposableChild(trigger);
+            return trigger;
         }
 
-        protected void TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
+        protected IDisposable TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
         {
             var trigger = new ChangeEvent<T>(property.Var, changeHandler);
             AddDisposableChild(trigger);
+            return trigger;
         }
     }
 }

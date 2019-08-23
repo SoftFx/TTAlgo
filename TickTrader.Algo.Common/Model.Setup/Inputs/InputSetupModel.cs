@@ -74,7 +74,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             public override Property Save()
             {
-                throw new Exception("Cannot save invalid input!");
+                //throw new Exception("Cannot save invalid input!");
+                return null;
             }
 
             public override void Reset()

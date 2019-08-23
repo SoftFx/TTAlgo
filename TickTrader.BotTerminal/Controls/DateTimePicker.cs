@@ -48,7 +48,7 @@ namespace TickTrader.BotTerminal
 
         public static readonly DependencyProperty IsDropDownOpenProperty =
             DependencyProperty.Register(nameof(IsDropDownOpen), typeof(bool), typeof(DateTimePicker), new UIPropertyMetadata(false));
-      
+
         public bool CanIncrease
         {
             get { return (bool)GetValue(CanIncreaseProperty); }
@@ -146,7 +146,7 @@ namespace TickTrader.BotTerminal
         }
 
         public static readonly DependencyProperty FormatProperty =
-            DependencyProperty.Register(nameof(Format), typeof(string), typeof(DateTimePicker), new PropertyMetadata("dd-MM-yyyy HH:mm"));
+            DependencyProperty.Register(nameof(Format), typeof(string), typeof(DateTimePicker), new PropertyMetadata("g", OnFormatChanged));
 
         #endregion
 
@@ -207,6 +207,13 @@ namespace TickTrader.BotTerminal
             self.ApplyNewSelectedDate((DateTime?)e.NewValue);
         }
 
+        private static void OnFormatChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var self = d as DateTimePicker;
+
+            self.RefreshDisplayedDateTime();
+        }
+
         private void ApplyNewSelectedDate(DateTime? newValue)
         {
             if (!_dateTimeIsUpdating)
@@ -218,6 +225,11 @@ namespace TickTrader.BotTerminal
 
                 _dateTimeIsUpdating = false;
             }
+        }
+
+        private void RefreshDisplayedDateTime()
+        {
+            ApplyNewSelectedDate(SelectedDateTime);
         }
 
         private static object OnCoerceSelectedDateTime(DependencyObject d, object baseValue)
@@ -291,9 +303,9 @@ namespace TickTrader.BotTerminal
                 case Key.Down:
                     OnUpDown(Direction.Down);
                     break;
-                //case Key.Enter:
-                //    DisplayedDateTime = datePickerTextBox.Text;
-                //    break;
+                    //case Key.Enter:
+                    //    DisplayedDateTime = datePickerTextBox.Text;
+                    //    break;
             }
         }
 
@@ -308,7 +320,7 @@ namespace TickTrader.BotTerminal
             {
                 ApplyNewSelectedDate(SelectedDateTime);
                 DateTextIsWrong = false;
-            }       
+            }
         }
 
         #endregion
@@ -317,7 +329,7 @@ namespace TickTrader.BotTerminal
 
         private string GetFormattedDateTimeString(DateTime? value, string format)
         {
-            return value.HasValue ? value.Value.ToString(format, CultureInfo.InvariantCulture) : null;
+            return value.HasValue ? value.Value.ToString(format, AppBootstrapper.CultureCache) : null;
         }
 
         private DateTime SmartUpdateDateTime(int direction)
@@ -347,13 +359,10 @@ namespace TickTrader.BotTerminal
             return dt;
         }
 
-        private DateTime? ParseDateTimeText(string value, string format, bool flexible = true)
+        private DateTime? ParseDateTimeText(string value, string format)
         {
-            DateTime datetime;
-
-            if (!DateTime.TryParseExact(value, format, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out datetime))
-                //if (!DateTime.TryParse(value, out datetime))
-                    return null;
+            if (!DateTime.TryParseExact(value, format, AppBootstrapper.CultureCache, DateTimeStyles.AllowWhiteSpaces, out var datetime))
+                return null;
 
             return datetime;
         }

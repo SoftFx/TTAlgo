@@ -22,6 +22,7 @@ namespace TickTrader.Algo.Core
         public int Count { get { return buffer.Count; } }
         public bool IsLoaded { get; private set; }
         public int LastIndex => buffer.Count - 1;
+        public DateTime OpenTime => buffer[0].Time;
 
         public event Action Appended { add { } remove { } }
 
@@ -49,6 +50,16 @@ namespace TickTrader.Algo.Core
         {
             var data = Context.FeedProvider.QueryTicks(SymbolCode, from, size, false);
             AppendData(data);
+        }
+
+        public void LoadFeedFrom(DateTime from)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SyncByTime()
+        {
+            throw new NotSupportedException("Synchronization by time is not supported for quote series!");
         }
 
         public BufferUpdateResult Update(Api.Quote quote)

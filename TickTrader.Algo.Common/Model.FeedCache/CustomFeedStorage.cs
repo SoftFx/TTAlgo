@@ -1,10 +1,12 @@
 ﻿using ActorSharp;
+using ActorSharp.Lib;
 using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
 using TickTrader.SeriesStorage;
@@ -17,22 +19,80 @@ namespace TickTrader.Algo.Common.Model
     {
         private ICollectionStorage<Guid, CustomSymbol> _metadataStorage;
         private VarDictionary<string, CustomSymbol> _symbols = new VarDictionary<string, CustomSymbol>();
+        private ActorEvent<EntityUpdateArgs<CustomSymbol>> _symbolChangeListeners = new ActorEvent<EntityUpdateArgs<CustomSymbol>>();
+
+        public CustomFeedStorage()
+        {
+            _symbols.Updated += a =>
+            {
+                if (a.Action == DLinqAction.Insert)
+                    _symbolChangeListeners.FireAndForget(new EntityUpdateArgs<CustomSymbol>(a.NewItem, EntityUpdateActions.Add));
+                else if(a.Action == DLinqAction.Remove)
+                    _symbolChangeListeners.FireAndForget(new EntityUpdateArgs<CustomSymbol>(a.OldItem, EntityUpdateActions.Remove));
+                else if(a.Action == DLinqAction.Replace)
+                    _symbolChangeListeners.FireAndForget(new EntityUpdateArgs<CustomSymbol>(a.NewItem, EntityUpdateActions.Replace));
+            };
+        }
 
         public new class Handler : FeedCache.Handler
         {
             private Ref<CustomFeedStorage> _ref;
-            private VarDictionary<string, CustomSymbol> _symbols = new VarDictionary<string, CustomSymbol>();
+            private VarDictionary<SymbolKey, CustomSymbol> _symbols = new VarDictionary<SymbolKey, CustomSymbol>();
+            private ActorCallback<EntityUpdateArgs<CustomSymbol>> _smbChangedCallback;
 
             public Handler(Ref<CustomFeedStorage> actorRef) : base(actorRef.Cast<CustomFeedStorage, FeedCache>())
             {
                 _ref = actorRef;
             }
 
-            public IVarSet<string, CustomSymbol> Symbols => _symbols;
+            public async override Task SyncData()
+            {
+                _symbols.Clear();
+
+                await base.SyncData();
+
+                _smbChangedCallback = ActorCallback.Create<EntityUpdateArgs<CustomSymbol>>(u =>
+                {
+                    if (u.Action == EntityUpdateActions.Add)
+                        _symbols.Add(GetKey(u.Entity), u.Entity);
+                    else if (u.Action == EntityUpdateActions.Remove)
+                        _symbols.Remove(GetKey(u.Entity));
+                    else if (u.Action == EntityUpdateActions.Replace)
+                        _symbols[GetKey(u.Entity)] = u.Entity;
+                });
+
+                var snapshot = await _ref.Call(a =>
+                {
+                    a._symbolChangeListeners.Add(_smbChangedCallback);
+                    return a._symbols.Values.ToList();
+                });
+
+                foreach (var smb in snapshot)
+                    _symbols.Add(GetKey(smb), smb);
+            }
+
+            public override void Dispose()
+            {
+                if (_smbChangedCallback != null)
+                {
+                    _symbols.Clear();
+                    _ref.Send(a => a._symbolChangeListeners.Remove(_smbChangedCallback));
+                    _smbChangedCallback = null;
+                }
+
+                base.Dispose();
+            }
+
+            public IVarSet<SymbolKey, CustomSymbol> Symbols => _symbols;
 
             public Task Add(CustomSymbol newSymbol) => _ref.Call(a => a.Add(newSymbol));
             public Task Remove(string symbol) => _ref.Call(a => a.Remove(symbol));
             public Task Update(CustomSymbol symbolCfg) => _ref.Call(a => a.Update(symbolCfg));
+
+            private SymbolKey GetKey(CustomSymbol smb)
+            {
+                return new SymbolKey(smb.Name, SymbolOrigin.Custom);
+            }
         }
 
         protected override void Start(string dbFolder)
@@ -85,6 +145,8 @@ namespace TickTrader.Algo.Common.Model
             newSymbol.StorageId = Guid.NewGuid();
             _metadataStorage.Write(newSymbol.StorageId, newSymbol);
             _symbols.Add(newSymbol.Name, newSymbol);
+
+
         }
 
         private void Update(CustomSymbol symbolCfg)

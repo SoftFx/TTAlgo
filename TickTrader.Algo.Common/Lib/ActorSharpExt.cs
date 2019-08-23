@@ -51,6 +51,9 @@ namespace TickTrader.Algo.Common.Lib
 
             public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
                 => CallActor(a => syncFunc(args));
+
+            public void Send(Action asyncAction)
+                => ActorSend(a => asyncAction());
         }
 
         private class CrossDomainAdapter<T> : CrossDomainObject, IAsyncCrossDomainEnumerator<T>

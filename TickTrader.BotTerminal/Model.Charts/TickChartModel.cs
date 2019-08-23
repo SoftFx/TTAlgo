@@ -33,12 +33,13 @@ namespace TickTrader.BotTerminal
             Support(SelectableChartTypes.DigitalLine);
             Support(SelectableChartTypes.Scatter);
 
-            Navigator = new RealTimeChartNavigator();
+            TimeFrame = TimeFrames.Ticks;
 
+            Navigator = new RealTimeChartNavigator();
             SelectedChartType = SelectableChartTypes.Scatter;
         }
 
-        public override TimeFrames TimeFrame { get { return TimeFrames.Ticks; } }
+        public override ITimeVectorRef TimeSyncRef => null;
 
         public new void Activate()
         {
@@ -51,7 +52,7 @@ namespace TickTrader.BotTerminal
             bidData.Clear();
         }
 
-        protected override async Task LoadData(CancellationToken cToken)
+        protected override Task LoadData(CancellationToken cToken)
         {
             lastSeriesQuote = null;
 
@@ -93,6 +94,8 @@ namespace TickTrader.BotTerminal
                     InitBoundaries(tickArray.Length, start, end);
                 }
             }
+
+            return Task.FromResult(this);
         }
 
         protected override void ApplyUpdate(QuoteEntity update)

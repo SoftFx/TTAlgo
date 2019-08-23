@@ -50,28 +50,24 @@ namespace TickTrader.BotTerminal
         void UnsubscribeFromLogs();
     }
 
-
     internal class TradeBotModel : PluginModel, IBotWriter, ITradeBot
     {
         private BotListenerProxy _botListener;
-
 
         public bool IsRemote => false;
         public string Status { get; private set; }
         public BotJournal Journal { get; }
         public AccountKey Account { get; }
 
-
         public event Action<ITradeBot> StatusChanged = delegate { };
         public event Action<ITradeBot> StateChanged = delegate { };
         public event Action<ITradeBot> Updated = delegate { };
-
 
         public TradeBotModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext, AccountKey account)
             : base(config, agent, host, setupContext)
         {
             Account = account;
-            Journal = new BotJournal(InstanceId);
+            Journal = new BotJournal(InstanceId, true);
             host.Connected += Host_Connected;
             host.Disconnected += Host_Disconnected;
         }
@@ -105,7 +101,6 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Stopped);
             }
         }
-
 
         protected override PluginExecutor CreateExecutor()
         {
@@ -161,6 +156,11 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
+        protected override IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel outputSetup)
+        {
+            return new CachingOutputCollector<T>(fixture, outputSetup);
+        }
+
         private void Host_Connected()
         {
             if (State == PluginStates.Reconnecting)
@@ -210,7 +210,6 @@ namespace TickTrader.BotTerminal
             });
         }
 
-
         #region ITradeBot stubs
 
         public void SubscribeToStatus() { }
@@ -222,7 +221,6 @@ namespace TickTrader.BotTerminal
         public void UnsubscribeFromLogs() { }
 
         #endregion
-
 
         #region IBotWriter implementation
 

@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<BarEntity> BarOpened;
         public event Action<BarEntity> BarClosed;
+        public event Action<BarEntity> BarUpdated;
         public BarSampler Sampler => _sampler;
         public TimeFrames TimeFrame => _timeframe;
         public DateTime? TimeEdge => _currentBar?.OpenTime;
@@ -52,23 +53,27 @@ namespace TickTrader.Algo.Core
 
         public BarEntity AppendQuote(DateTime time, double price, double volume)
         {
+            //if (_currentBar != null && _currentBar.OpenTime > time)
+            //    throw new ArgumentException("Invalid time sequnce!");
+
+            if (_currentBar != null)
+            {
+                if (time < _currentBar.OpenTime)
+                    throw new ArgumentException("Invalid time sequnce!");
+
+                if (time < _currentBar.CloseTime)
+                {
+                    // append last bar
+                    _currentBar.Append(price, volume);
+                    BarUpdated?.Invoke(_currentBar);
+                    return null; ;
+                }
+            }
+
+            // add new bar
             var boundaries = _sampler.GetBar(time);
-
-            if (_currentBar != null && _currentBar.OpenTime > boundaries.Open)
-                throw new ArgumentException("Invalid time sequnce!");
-
-            if (_currentBar != null && _currentBar.OpenTime == boundaries.Open)
-            {
-                // append last bar
-                _currentBar.AppendNanProof(price, volume);
-            }
-            else
-            {
-                // add new bar
-                var newBar = new BarEntity(boundaries.Open, boundaries.Close, price, volume);
-                return Append(newBar);
-            }
-            return null;
+            var newBar = new BarEntity(boundaries.Open, boundaries.Close, price, volume);
+            return Append(newBar);
         }
 
         public BarEntity AppendBarPart(DateTime time, double open, double high, double low, double close, double volume)
@@ -81,7 +86,8 @@ namespace TickTrader.Algo.Core
             if (_currentBar != null && _currentBar.OpenTime == boundaries.Open)
             {
                 // join
-                _currentBar = UpdateBar(_currentBar, open, high, low, close, volume);
+                _currentBar.AppendPart(open, high, low, close, volume);
+                BarUpdated?.Invoke(_currentBar);
             }
             else
             {
@@ -105,6 +111,7 @@ namespace TickTrader.Algo.Core
             BarEntity closedBar = null;
             if (_currentBar != null)
             {
+                BarClosed?.Invoke(_currentBar);
                 closedBar = _currentBar;
                 _currentBar = null;
                 
@@ -128,19 +135,6 @@ namespace TickTrader.Algo.Core
         protected void OnBarOpened(BarEntity newBar)
         {
             BarOpened?.Invoke(newBar);
-        }
-
-        private static BarEntity UpdateBar(BarEntity bar, double open, double high, double low, double close, double volume)
-        {
-            var entity = new BarEntity();
-            entity.OpenTime = bar.OpenTime;
-            entity.CloseTime = bar.CloseTime;
-            entity.Open = bar.Open;
-            entity.High = System.Math.Max(bar.High, high);
-            entity.Low = System.Math.Min(bar.Low, low);
-            entity.Close = close;
-            entity.Volume = bar.Volume + volume;
-            return entity;
         }
 
         [Serializable]

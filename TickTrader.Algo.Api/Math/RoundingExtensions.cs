@@ -161,6 +161,12 @@
             return FractionToDouble(numerator, denominator);
         }
 
+        public static decimal FloorToStep(this decimal val, decimal step)
+        {
+            var dv = System.Math.Floor(val / step);
+            return dv * step;
+        }
+
         /// <summary>
         /// Ceils value to a certain step
         /// </summary>

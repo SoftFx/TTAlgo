@@ -8,6 +8,7 @@ namespace TickTrader.Algo.Api
         protected virtual void OnStart() { }
         protected virtual void OnStop() { }
         protected virtual Task AsyncStop() { return Task.FromResult(this); }
+        protected virtual double GetOptimizationMetric() { return context.DefaultOptimizationMetric; }
 
         /// <summary>
         /// Override this method to react on rate updates.
@@ -53,6 +54,11 @@ namespace TickTrader.Algo.Api
         internal void InvokeRateUpdate(RateUpdate update)
         {
             OnRateUpdate(update);
+        }
+
+        internal double InvokeGetMetric()
+        {
+            return GetOptimizationMetric();
         }
 
         #region Logger

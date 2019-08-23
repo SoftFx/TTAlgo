@@ -8,11 +8,11 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.BotAgent.BA.Exceptions;
 using TickTrader.BotAgent.BA.Repository;
-using TickTrader.BotAgent.Extensions;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -195,6 +195,12 @@ namespace TickTrader.BotAgent.BA.Models
             if (State == PluginStates.Stopped || State == PluginStates.Faulted)
                 return Task.CompletedTask;
 
+            if (State == PluginStates.Starting && (_startedEvent == null || _startedEvent.Task.IsCompleted))
+            {
+                ChangeState(PluginStates.Stopped);
+                return Task.CompletedTask; // acc can't connect at bot start, also bot might be launched before
+            }
+
             if (State == PluginStates.Running || State == PluginStates.Reconnecting || State == PluginStates.Starting)
             {
                 ChangeState(PluginStates.Stopping);
@@ -232,8 +238,6 @@ namespace TickTrader.BotAgent.BA.Models
 
                 var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());
                 setupModel.Load(Config);
-                setupModel.SetWorkingFolder(AlgoData.Folder);
-                setupModel.Apply(executor);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.InitBarStrategy(feedAdapter, Algo.Api.BarPriceType.Bid);
@@ -245,12 +249,15 @@ namespace TickTrader.BotAgent.BA.Models
                 executor.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;
                 executor.TradeExecutor = _client.PluginTradeApi;
-                //executor.TradeHistoryProvider =  new TradeHistoryProvider(_client.Connection);
+                executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
                 executor.BotWorkingFolder = AlgoData.Folder;
                 executor.WorkingFolder = AlgoData.Folder;
                 executor.InstanceId = Id;
                 executor.Permissions = Permissions;
                 _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
+
+                setupModel.SetWorkingFolder(AlgoData.Folder);
+                setupModel.Apply(executor);
 
                 executor.Start();
                 _botListener.Start();

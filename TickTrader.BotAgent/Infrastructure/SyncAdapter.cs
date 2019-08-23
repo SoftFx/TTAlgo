@@ -34,5 +34,10 @@ namespace TickTrader.BotAgent.Infrastructure
         {
             lock (_sync) return syncFunc(args);
         }
+
+        public void Send(Action asyncAction)
+        {
+            lock (_sync) asyncAction();
+        }
     }
 }

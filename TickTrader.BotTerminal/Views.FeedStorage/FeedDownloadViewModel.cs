@@ -49,7 +49,7 @@ namespace TickTrader.BotTerminal
             DisplayName = "Pre-download symbol";
         }
 
-        public IEnumerable<TimeFrames> AvailableTimeFrames => EnumHelper.AllValues<TimeFrames>();
+        public IEnumerable<TimeFrames> AvailableTimeFrames => TimeFrameModel.AllTimeFrames;
         public IEnumerable<BarPriceType> AvailablePriceTypes => EnumHelper.AllValues<BarPriceType>();
         public IObservableList<SymbolData> Symbols { get; }
         public DateRangeSelectionViewModel DateRange { get; }
@@ -111,7 +111,16 @@ namespace TickTrader.BotTerminal
 
                 if (SelectedSymbol.Value == smb)
                 {
-                    DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
+                    DateTime from = DateTime.UtcNow.Date;
+                    DateTime to = from;
+
+                    if (range.Item1 != null && range.Item2 != null)
+                    {
+                        from = range.Item1.Value;
+                        to = range.Item2.Value;
+                    }
+
+                    DateRange.UpdateBoundaries(from, to);
                     IsRangeLoaded.Value = true;
                 }
             }

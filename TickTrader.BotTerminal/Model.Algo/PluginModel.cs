@@ -3,21 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
-using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class PluginModel : CrossDomainObject
+    internal class PluginModel : Algo.Core.Lib.CrossDomainObject, IPluginModel
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private PluginExecutor _executor;
-        private Dictionary<string, OutputSeriesModel> _outputs;
+        private Dictionary<string, IOutputCollector> _outputs;
 
 
         public PluginConfig Config { get; private set; }
@@ -38,16 +38,13 @@ namespace TickTrader.BotTerminal
 
         public PluginStates State { get; protected set; }
 
-        public IDictionary<string, OutputSeriesModel> Outputs => _outputs;
-
+        public IDictionary<string, IOutputCollector> Outputs => _outputs;
 
         protected LocalAlgoAgent Agent { get; }
 
         protected IAlgoSetupContext SetupContext { get; }
 
-
         public event Action OutputsChanged;
-
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
         {
@@ -57,7 +54,7 @@ namespace TickTrader.BotTerminal
             Host = host;
             SetupContext = setupContext;
 
-            _outputs = new Dictionary<string, OutputSeriesModel>();
+            _outputs = new Dictionary<string, IOutputCollector>();
 
             UpdateRefs();
 
@@ -229,15 +226,9 @@ namespace TickTrader.BotTerminal
                 foreach (var outputSetup in Setup.Outputs)
                 {
                     if (outputSetup is ColoredLineOutputSetupModel)
-                    {
-                        var seriesModel = new DoubleSeriesModel(executor, (ColoredLineOutputSetupModel)outputSetup);
-                        _outputs.Add(seriesModel.Id, seriesModel);
-                    }
+                        CreateOuput<double>(outputSetup.Id, executor, outputSetup);
                     else if (outputSetup is MarkerSeriesOutputSetupModel)
-                    {
-                        var seriesModel = new MarkerSeriesModel(executor, (MarkerSeriesOutputSetupModel)outputSetup);
-                        _outputs.Add(seriesModel.Id, seriesModel);
-                    }
+                        CreateOuput<Marker>(outputSetup.Id, executor, outputSetup);
                 }
                 OutputsChanged?.Invoke();
             }
@@ -247,10 +238,23 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void CreateOuput<T>(string id, PluginExecutor executor, OutputSetupModel setup)
+        {
+            var fixture = executor.GetOutput<T>(id);
+            var collector = CreateOutputCollector<T>(id, fixture, setup);
+            _outputs.Add(id, collector);
+        }
+
+        protected virtual IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel setup)
+        {
+            return new OutputCollector<T>(fixture, setup);
+        }
+
         private void ClearOutputs()
         {
             try
             {
+                _outputs.Values.Foreach(o => o.Dispose());
                 _outputs.Clear();
                 OutputsChanged?.Invoke();
             }

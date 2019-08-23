@@ -41,5 +41,10 @@ namespace TickTrader.Algo.Core
         {
             return ((TradeBot)PluginInstance).InvokeAsyncStop();
         }
+
+        public override double InvokeGetMetric()
+        {
+            return ((TradeBot)PluginInstance).InvokeGetMetric();
+        }
     }
 }

@@ -9,14 +9,14 @@ namespace TickTrader.Algo.Core
         void Update(OutputFixture<T>.Point point);
 
         void CopyAll(OutputFixture<T>.Point[] points);
-    }
 
+        void TruncateBy(int truncateSize);
+    }
 
     public class OutputAdapter<T> : CrossDomainObject
     {
         private OutputFixture<T> _fixture;
         private IOutputListener<T> _listener;
-
 
         public OutputAdapter(OutputFixture<T> fixture, IOutputListener<T> listener)
         {
@@ -25,9 +25,9 @@ namespace TickTrader.Algo.Core
 
             _fixture.Appended += OnAppend;
             _fixture.Updated += OnUpdate;
-            _fixture.AllUpdated += OnCopyAll;
+            _fixture.RangeAppended += OnCopyAll;
+            _fixture.Truncated += OnTruncate;
         }
-
 
         private void OnAppend(OutputFixture<T>.Point point)
         {
@@ -42,6 +42,21 @@ namespace TickTrader.Algo.Core
         private void OnCopyAll(OutputFixture<T>.Point[] points)
         {
             _listener.CopyAll(points);
+        }
+
+        private void OnTruncate(int truncateSize)
+        {
+            _listener.TruncateBy(truncateSize);
+        }
+
+        public override void Dispose()
+        {
+            _fixture.Appended -= OnAppend;
+            _fixture.Updated -= OnUpdate;
+            _fixture.RangeAppended -= OnCopyAll;
+            _fixture.Truncated -= OnTruncate;
+
+            base.Dispose();
         }
     }
 }

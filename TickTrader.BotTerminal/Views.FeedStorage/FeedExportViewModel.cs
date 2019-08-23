@@ -170,14 +170,15 @@ namespace TickTrader.BotTerminal
                         }
                         else
                         {
-                            throw new NotImplementedException();
-                            //foreach (var slice in _storage.IterateTickCache(_key, from, to))
-                            //{
-                            //    exporter.ExportSlice(slice.From, slice.To, slice.Content);
-                            //    ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
-                            //}
-                        }
+                            var i = _series.IterateTickCache(from, to);
 
+                            while (await i.ReadNext())
+                            {
+                                var slice = i.Current;
+                                exporter.ExportSlice(slice.From, slice.To, slice.Content);
+                                ExportObserver.SetProgress(slice.To.GetAbsoluteDay());
+                            }
+                        }
                     }
                     finally
                     {
@@ -203,9 +204,19 @@ namespace TickTrader.BotTerminal
             IsRangeLoaded = false;
             DateRange.Reset();
 
-            var range = await _series.Symbol.GetAvailableRange(Algo.Api.TimeFrames.M1);
+            var key = _series.Key;
+            var range = await _series.Symbol.GetAvailableRange(key.Frame, key.PriceType);
 
-            DateRange.UpdateBoundaries(range.Item1.Date, range.Item2.Date);
+            DateTime from = DateTime.UtcNow.Date;
+            DateTime to = from;
+
+            if (range.Item1 != null && range.Item2 != null)
+            {
+                from = range.Item1.Value;
+                to = range.Item2.Value;
+            }
+
+            DateRange.UpdateBoundaries(from, to);
             IsRangeLoaded = true;
         }
     }

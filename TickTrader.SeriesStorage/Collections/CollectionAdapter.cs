@@ -56,23 +56,26 @@ namespace TickTrader.SeriesStorage
             OnStartAccess();
             try
             {
-                using (var dbIterator = Storage.CreateCursor(transaction))
+                using (var trScope = new AutoTransactionScope(transaction, StartTransaction))
                 {
-                    if (reversed)
-                        dbIterator.SeekToLast();
-                    else
-                        dbIterator.SeekToFirst();
-
-                    while (dbIterator.IsValid)
-                    {                        
-                        TKey key = GetTypedKey(dbIterator.GetKey());
-
-                        yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
-
+                    using (var dbIterator = Storage.CreateCursor(trScope.Transaction))
+                    {
                         if (reversed)
-                            dbIterator.MoveToPrev();
+                            dbIterator.SeekToLast();
                         else
-                            dbIterator.MoveToNext();
+                            dbIterator.SeekToFirst();
+
+                        while (dbIterator.IsValid)
+                        {
+                            TKey key = GetTypedKey(dbIterator.GetKey());
+
+                            yield return new KeyValuePair<TKey, ArraySegment<byte>>(key, new ArraySegment<byte>(dbIterator.GetValue()));
+
+                            if (reversed)
+                                dbIterator.MoveToPrev();
+                            else
+                                dbIterator.MoveToNext();
+                        }
                     }
                 }
             }

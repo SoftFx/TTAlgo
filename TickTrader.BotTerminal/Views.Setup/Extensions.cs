@@ -9,20 +9,22 @@ namespace TickTrader.BotTerminal
 {
     public static class AccountMetadataInfoExtensions
     {
-        public static IReadOnlyList<SymbolInfo> GetAvaliableSymbols(this AccountMetadataInfo metadata, SymbolInfo defaultSymbol)
+        public static IReadOnlyList<SymbolKey> GetAvaliableSymbols(this AccountMetadataInfo metadata, SymbolKey defaultSymbol)
         {
             var symbols = metadata?.Symbols;
             if ((symbols?.Count ?? 0) == 0)
-                symbols = new List<SymbolInfo> { defaultSymbol };
+                symbols = new List<SymbolKey> { defaultSymbol };
             return symbols;
         }
 
-        public static SymbolInfo GetSymbolOrDefault(this IReadOnlyList<SymbolInfo> availableSymbols, SymbolConfig config)
+        public static SymbolKey GetSymbolOrDefault(this IReadOnlyList<SymbolKey> availableSymbols, SymbolConfig config)
         {
-            return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
+            if (config != null)
+                return availableSymbols.FirstOrDefault(s => s.Origin == config.Origin && s.Name == config.Name);
+            return null;
         }
 
-        public static SymbolInfo GetSymbolOrAny(this IReadOnlyList<SymbolInfo> availableSymbols, SymbolInfo info)
+        public static SymbolKey GetSymbolOrAny(this IReadOnlyList<SymbolKey> availableSymbols, SymbolKey info)
         {
             return availableSymbols.FirstOrDefault(s => s.Origin == info.Origin && s.Name == info.Name)
                 ?? availableSymbols.First();
@@ -32,7 +34,7 @@ namespace TickTrader.BotTerminal
 
     public static class SymbolInfoExtensions
     {
-        public static SymbolConfig ToConfig(this SymbolInfo info)
+        public static SymbolConfig ToConfig(this SymbolKey info)
         {
             return new SymbolConfig { Name = info.Name, Origin = info.Origin };
         }

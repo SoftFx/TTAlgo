@@ -7,7 +7,7 @@ using TickTrader.Algo.Core;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class QuoteDistributor : ActorPart
+    public class QuoteDistributor
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("QuoteDistributor");
 

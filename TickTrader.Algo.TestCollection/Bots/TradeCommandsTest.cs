@@ -7,12 +7,16 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] All Trade Commands Test", Version = "1.0", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] All Trade Commands Test", Version = "1.1", Category = "Test Orders",
         Description = "Performs all possible order operations depedning on account type and verifies results. Uses both sync and async order commands.")]
     public class TradeCommandsTest : TradeBot
     {
         [Parameter(DefaultValue = 0.1)]
         public double Volume { get; set; }
+
+        [Parameter(DefaultValue = 100)]
+        public int PriceDelta { get; set; }
+
         private double _defaultVolume;
 
         private int _testCount;
@@ -38,128 +42,132 @@ namespace TickTrader.Algo.TestCollection.Bots
             types.Add(OrderType.StopLimit);
         }
 
-        private double[] GetPrices(OrderType orderType, OrderSide orderSide)
+        private void GetPrices(OrderType orderType, OrderSide orderSide, OrderExecOptions options, out double? price, out double? stopPrice,
+            out double? modifyPrice, out double? modifyStopPrice)
         {
-            double price;
-            double secondPrice;
-            double newPrice;
+            bool isIoc = orderType == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel;
+            bool isInstantOrder = orderType == OrderType.Market || isIoc;
+
+            price = stopPrice = modifyPrice = modifyStopPrice = null;
 
             if (orderSide == OrderSide.Buy)
             {
-                price = secondPrice = newPrice = Symbol.Ask;
+                var basePrice = Symbol.Ask;
 
-                if (orderType == OrderType.Limit)
-                {
-                    price -= _diff * 3;
-                    secondPrice -= _diff * 2;
-                    newPrice -= _diff;
-                }
+                if (isInstantOrder)
+                    price = Symbol.Ask + _diff;
                 else
                 {
-                    price += _diff * 3;
-                    secondPrice += _diff * 2;
-                    newPrice += _diff;
-                }
+                    if (orderType == OrderType.Limit)
+                    {
+                        price = Symbol.Ask - _diff * 3;
+                        modifyPrice = Symbol.Ask - _diff;
+                    }
+                    if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                    {
+                        stopPrice = Symbol.Bid + _diff * 2;
+                        modifyStopPrice = Symbol.Bid + _diff;
+                    }
+                    if (orderType == OrderType.StopLimit)
+                    {
+                        price = Symbol.Bid + _diff * 3;
+                        modifyPrice = Symbol.Bid + _diff * 4;
+                    }
+                }   
             }
             else
             {
-                price = secondPrice = newPrice = Symbol.Bid;
-
-                if (orderType == OrderType.Limit)
-                {
-                    price += _diff * 3;
-                    secondPrice += _diff * 2;
-                    newPrice += _diff;
-                }
+                if (isInstantOrder)
+                    price = Symbol.Bid - _diff;
                 else
                 {
-                    price -= _diff * 3;
-                    secondPrice -= _diff * 2;
-                    newPrice -= _diff;
+                    if (orderType == OrderType.Limit)
+                    {
+                        price = Symbol.Bid + _diff * 3;
+                        modifyPrice = Symbol.Bid + _diff;
+                    }
+                    if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
+                    {
+                        stopPrice = Symbol.Ask - _diff * 2;
+                        modifyStopPrice = Symbol.Ask - _diff;
+                    }
+                    if (orderType == OrderType.StopLimit)
+                    {
+                        price = Symbol.Ask - _diff * 3;
+                        modifyPrice = Symbol.Ask - _diff * 4;
+                    }
                 }
-
             }
-            double[] result = { price, secondPrice, newPrice };
-            return result;
         }
 
         private async Task PerfomOrder(OrderType orderType, OrderSide orderSide, bool isAsync, OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
-            var prices = GetPrices(orderType, orderSide);
+            bool isMarket = orderType == OrderType.Market;
+            bool isIoc = orderType == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel;
+            bool isInstantOrder = isMarket || isIoc;
+
+            GetPrices(orderType, orderSide, options, out var price, out var stopPrice, out var newPrice, out var newStopPrice);
             var title = (isAsync) ? "Async test: " : "Test: ";
             var postTitle = (tag == null) ? "" : " with tag";
             postTitle += (options == OrderExecOptions.ImmediateOrCancel) ? " with IoC" : "";
-            double? price = null;
-            double? secondPrice = null;
-            var newPrice = prices[2];
-            if (orderType != OrderType.Stop && orderType != OrderType.Market)
-                price = prices[0];
-            Order someOrder = null;
-
-            if (orderType != OrderType.Limit && orderType != OrderType.Market)
-                secondPrice = prices[1];
-            if (options == OrderExecOptions.ImmediateOrCancel)
-                price = (orderSide == OrderSide.Sell) ? Symbol.Bid - _diff : Symbol.Ask + _diff;
+            Order accOrder = null;
 
             try
             {
                 _testCount++;
                 Print(title + "open " + orderSide + " " + orderType + " order" + postTitle);
-                someOrder = (isAsync)
+                accOrder = (isAsync)
                     ? ThrowOnError(await OpenOrderAsync(Symbol.Name, orderType, orderSide, Volume, null, price,
-                        secondPrice, null, null, null, options, tag))
-                    : ThrowOnError(OpenOrder(Symbol.Name, orderType, orderSide, Volume, null, price, secondPrice, null,
+                        stopPrice, null, null, null, options, tag))
+                    : ThrowOnError(OpenOrder(Symbol.Name, orderType, orderSide, Volume, null, price, stopPrice, null,
                         null, null, options, tag));
 
-                var realOrderType = (Account.Type == AccountTypes.Cash && orderType == OrderType.Stop)
-                    ? OrderType.StopLimit
-                    : orderType;
-                realOrderType = (orderType == OrderType.Market) ? OrderType.Position : realOrderType;
+                var realOrderType = orderType;
+                if (Account.Type == AccountTypes.Cash && orderType == OrderType.Stop)
+                    realOrderType = OrderType.StopLimit;
+                else if (Account.Type == AccountTypes.Gross && isInstantOrder)
+                    realOrderType = OrderType.Position;
 
-                if (options == OrderExecOptions.ImmediateOrCancel && OrderType.Limit == orderType)
-                {
-                    someOrder = null;
-                    return;
-                }
+                if (!isInstantOrder || Account.Type == AccountTypes.Gross)
+                    VerifyOrder(accOrder.Id, realOrderType, orderSide, Volume, price, isInstantOrder, stopPrice, null, null, null, null, tag);
 
-                VerifyOrder(someOrder.Id, realOrderType, orderSide, Volume, price, secondPrice, null, null, null, null, tag);
-
-                if (orderType != OrderType.Market && orderType != OrderType.Position)
+                if (!isInstantOrder)
                 {
                     Volume *= 2;
-                    await TestModifyVolume(someOrder.Id, isAsync, Volume, postTitle);
+                    await TestModifyVolume(accOrder.Id, isAsync, Volume, postTitle);
                 }
 
-                if (Account.Type == AccountTypes.Gross || orderType != OrderType.Market)
-                    await TestAddModifyComment(someOrder.Id, isAsync, postTitle);
+                if (!isInstantOrder || Account.Type == AccountTypes.Gross)
+                    await TestAddModifyComment(accOrder.Id, isAsync, postTitle);
 
                 if (Account.Type == AccountTypes.Gross)
                 {
-                    await TestAddModifyStopLoss(someOrder.Id, isAsync, postTitle);
-                    await TestAddModifyTakeProfit(someOrder.Id, isAsync, postTitle);
+                    await TestAddModifyStopLoss(accOrder.Id, isAsync, postTitle);
+                    await TestAddModifyTakeProfit(accOrder.Id, isAsync, postTitle);
                 }
 
-                if (orderType != OrderType.Market)
+                if (!isInstantOrder)
                 {
-                    await TestAddModifyExpiration(someOrder.Id, isAsync);
+                    await TestAddModifyExpiration(accOrder.Id, isAsync);
 
                     if (orderType != OrderType.Stop)
                     {
-                        await TestAddModifyMaxVisibleVolume(someOrder.Id, isAsync, postTitle);
-                        await TestModifyLimitPrice(someOrder.Id, newPrice, secondPrice, isAsync, postTitle);
+                        await TestAddModifyMaxVisibleVolume(accOrder.Id, isAsync, postTitle);
+                        await TestModifyLimitPrice(accOrder.Id, newPrice.Value, stopPrice, isAsync, postTitle);
                     }
 
                     if (orderType != OrderType.Limit)
-                        await TestModifyStopPrice(someOrder.Id, price, newPrice, isAsync, postTitle);
+                        await TestModifyStopPrice(accOrder.Id, price, newStopPrice.Value, isAsync, postTitle);
 
-                    if (someOrder != null)
-                        await TestCancelOrder(someOrder.Id, orderSide, orderType, tag, false, isAsync);
+                    if (accOrder != null)
+                        await TestCancelOrder(accOrder.Id, orderSide, orderType, tag, false, isAsync);
                 }
             }
             catch (Exception e)
             {
                 _errorCount++;
                 _errorTextList.Add(e.Message + " in " + title + orderSide + " " + orderType + " order" + postTitle);
+                PrintError(e.Message);
             }
             finally
             {
@@ -177,7 +185,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             bool[] asyncModes = { false, true };
             string[] tags = { null, tag };
             _errorTextList = new List<string>();
-            _diff = Math.Ceiling((Symbol.Ask / Symbol.Point) / 100) * Symbol.Point * 2;
+            _diff = PriceDelta * Symbol.Point;
 
 
             foreach (var orderSide in sides)
@@ -202,12 +210,17 @@ namespace TickTrader.Algo.TestCollection.Bots
                 stringBuilder.AppendLine(str);
 
             if (_errorCount == 0)
-                Status.WriteLine("Test success: " + _testCount + " passed");
-
+            {
+                var msg = "Test success: " + _testCount + " passed";
+                Status.WriteLine(msg);
+                Print(msg);
+            }
             else
             {
-                Status.WriteLine("Test failed: " + _errorCount + " errors in " + _testCount + " tests");
+                var msg = "Test failed: " + _errorCount + " errors in " + _testCount + " tests";
+                Status.WriteLine(msg);
                 Status.WriteLine(stringBuilder.ToString());
+                PrintError(msg);
             }
         }
 
@@ -310,7 +323,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, comment));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, comment));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, comment);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, comment);
 
             _testCount++;
             Print(title + "modify comment " + order.Side + " " + order.Type + " order " + postTitle);
@@ -318,7 +331,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, newComment));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, newComment));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, newComment);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, newComment);
 
         }
 
@@ -339,7 +352,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, expiration));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, expiration));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, null, null, null, expiration);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, null, null, null, null, expiration);
 
             _testCount++;
             Print(title + "modify expiration " + order.Side + " " + order.Type + " order " + postTitle);
@@ -347,7 +360,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, newExpiration));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, newExpiration));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, null, null, null, newExpiration);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, null, null, null, null, newExpiration);
 
         }
 
@@ -364,7 +377,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, maxVisibleVolume, null, null, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, maxVisibleVolume, null, null, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, maxVisibleVolume);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, maxVisibleVolume);
 
             order = Account.Orders[orderId];
 
@@ -374,7 +387,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, newMaxVisibleVolume, null, null, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, newMaxVisibleVolume, null, null, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, newMaxVisibleVolume);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, newMaxVisibleVolume);
 
         }
 
@@ -391,7 +404,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, takeProfit, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, takeProfit, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, takeProfit);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, null, takeProfit);
 
             _testCount++;
             Print(title + "modify takeProfit " + order.Side + " " + order.Type + " order " + postTitle);
@@ -399,7 +412,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, newTakeProfit, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, newTakeProfit, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, newTakeProfit);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, null, newTakeProfit);
 
         }
 
@@ -416,7 +429,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, stopLoss, null, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, stopLoss, null, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, null, stopLoss);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, null, null, stopLoss);
 
             _testCount++;
             Print(title + "modify stopLoss " + order.Side + " " + order.Type + " order " + postTitle);
@@ -424,7 +437,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, newStopLoss, null, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, newStopLoss, null, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, null, null, null, null, newStopLoss);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, null, false, null, null, null, null, newStopLoss);
 
         }
 
@@ -439,7 +452,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, null, newVolume));
             else
                 ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, null, newVolume));
-            VerifyOrder(order.Id, order.Type, order.Side, newVolume, null, null);
+            VerifyOrder(order.Id, order.Type, order.Side, newVolume, null, false, null);
         }
 
         private async Task TestModifyLimitPrice(string orderId, double newPrice, double? stopPrice, bool isAsync, string postTitle = "")
@@ -453,7 +466,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, newPrice, stopPrice, null, null, null, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, newPrice, stopPrice, null, null, null, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, newPrice, stopPrice);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, newPrice, false, stopPrice);
         }
 
         private async Task TestModifyStopPrice(string orderId, double? price, double newStopPrice, bool isAsync, string postTittle = "")
@@ -467,7 +480,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 ThrowOnError(await ModifyOrderAsync(order.Id, price, newStopPrice, null, null, null, null));
             else
                 ThrowOnError(ModifyOrder(order.Id, price, newStopPrice, null, null, null, null));
-            VerifyOrder(order.Id, order.Type, order.Side, Volume, price, newStopPrice);
+            VerifyOrder(order.Id, order.Type, order.Side, Volume, price, false, newStopPrice);
         }
 
         private async Task TestCancelOrder(string orderId, OrderSide orderSide, OrderType orderType, string tag, bool isIoc, bool isAsync)
@@ -515,6 +528,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             OrderSide side,
             double? orderVolume = null,
             double? price = null,
+            bool isInstantOrder = false,
             double? stopPrice = null,
             string comment = null,
             double? maxVisibleVolume = null,
@@ -541,7 +555,7 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (orderVolume != null && !order.RemainingVolume.E(orderVolume.Value))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong volume");
 
-            if (price != null && !EqualPrices(order.Price, price.Value))
+            if (price != null && !CheckPrice(price.Value, order.Price, side, isInstantOrder))
                 throw new ApplicationException("Verification failed - order #" + orderId + " has wrong price: required = " + price + ", current = " + order.Price);
 
             if (stopPrice != null && !EqualPrices(order.StopPrice, stopPrice.Value))
@@ -569,6 +583,19 @@ namespace TickTrader.Algo.TestCollection.Bots
         private bool EqualPrices(double a, double b)
         {
             return Math.Abs(a - b) <= Symbol.Point;
+        }
+
+        private bool CheckPrice(double expectedPrice, double actualPrice, OrderSide side, bool isInstantOrder)
+        {
+            if (isInstantOrder)
+            {
+                if (side == OrderSide.Buy)
+                    return actualPrice.Lte(expectedPrice);
+                else
+                    return actualPrice.Gte(expectedPrice);
+            }
+            else
+                return EqualPrices(expectedPrice, actualPrice);
         }
 
         private void VerifyOrderDeleted(string orderId)

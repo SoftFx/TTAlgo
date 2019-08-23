@@ -12,10 +12,11 @@ using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using Machinarium.Var;
+using TickTrader.Algo.Common.Lib;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TraderClientModel : EntityBase
+    internal class TraderClientModel : EntityBase, IConnectionStatusInfo
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         private ClientModel.Data _core;
@@ -69,7 +70,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected.Set();
+                _isConnected.Set();
                 Connected?.Invoke();
             }
             catch (Exception ex)
@@ -82,7 +83,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                IsConnected.Unset();
+                _isConnected.Clear();
                 Disconnected?.Invoke();
             }
             catch (Exception ex)

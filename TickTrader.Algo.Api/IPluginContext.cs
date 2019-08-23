@@ -28,6 +28,7 @@ namespace TickTrader.Algo.Api
         void BeginOnPluginThread(Action action);
         Task OnPluginThreadAsync(Action action);
         void SetFeedBufferSize(int newSize);
+        double DefaultOptimizationMetric { get; }
     }
 
     internal interface IHelperApi

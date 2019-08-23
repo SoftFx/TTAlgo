@@ -37,11 +37,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
             return configuration.GetSection(nameof(AppSettings.Credentials)).Get<ServerCredentials>();
         }
 
-        public static string GetJwtKey(this IConfiguration configuration)
-        {
-            return $"{configuration.GetSecretKey()}{configuration.GetCredentials().AdminPassword}";
-        }
-
         public static SslSettings GetSslSettings(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(AppSettings.Ssl)).Get<SslSettings>();
@@ -50,6 +45,11 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
         public static ProtocolSettings GetProtocolSettings(this IConfiguration configuration)
         {
             return configuration.GetSection(nameof(AppSettings.Protocol)).Get<ProtocolSettings>();
+        }
+
+        public static FdkSettings GetFdkSettings(this IConfiguration configuration)
+        {
+            return configuration.GetSection(nameof(AppSettings.Fdk)).Get<FdkSettings>();
         }
 
         public static X509Certificate2 GetCertificate(this IConfiguration config, string contentRoot)

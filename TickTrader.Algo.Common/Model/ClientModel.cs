@@ -155,9 +155,17 @@ namespace TickTrader.Algo.Common.Model
                 var apiRef = await Actor.Call(a => a._tradeApi.GetRef());
                 return new PluginTradeApiProvider.Handler(apiRef);
             }
+
+            public async Task<TradeHistoryProvider.Handler> CreateTradeHistory()
+            {
+                var apiRef = await Actor.Call(a => a._tradeHistory.GetRef());
+                var provider = new TradeHistoryProvider.Handler(apiRef);
+                await provider.Init();
+                return provider;
+            }
         }
 
-        public class Data : Handler<ClientModel>, IQuoteDistributorSource
+        public class Data : Handler<ClientModel>, IQuoteDistributorSource, IMarketDataProvider
         {
             public Data(Ref<ClientModel> actorRef) : base(actorRef)
             {
@@ -184,6 +192,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 Cache.Account.StartCalculator(this);
             }
+
+            public IFeedSubscription SubscribeAll() => Distributor.SubscribeAll();
 
             public void ClearCache()
             {

@@ -10,44 +10,58 @@ using System.Windows.Media;
 namespace TickTrader.BotTerminal
 {
     [ValueConversion(typeof(DateTime?), typeof(string))]
-    public class FullDateTimeConverter : IValueConverter
+    public class DateTimeConverter : IValueConverter
     {
-        public const string Format = "yyyy.MM.dd HH:mm:ss.fff";
-        public const int FormatFixedLength = 23;
-
-        public FullDateTimeConverter()
-        {
-            ConvertToLocal = true;
-        }
-
-        public bool ConvertToLocal { get; set; }
+        public string Format { get; set; } = "g";
+        public bool ConvertToLocal { get; set; } = true;
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (ConvertToLocal)
-                return ((DateTime?)value)?.ToLocalTime().ToString(Format);
+                return FormatDateTime(Format, ((DateTime?)value)?.ToLocalTime());
             else
-                return ((DateTime?)value)?.ToString(Format);
+                return FormatDateTime(Format, (DateTime?)value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();
         }
+
+        public static string FormatDateTime(string format, DateTime? dateTime)
+        {
+            if (dateTime == null)
+                return null;
+
+            if (format == "GExt")
+            {
+                var info = AppBootstrapper.CultureCache.DateTimeFormat;
+
+                var date = dateTime.Value.ToString(info.ShortDatePattern, AppBootstrapper.CultureCache);
+                var time = dateTime.Value.ToString("HH:mm:ss.fff", AppBootstrapper.CultureCache);
+
+                return date + " " + time;
+            }
+            else
+                return dateTime.Value.ToString(format, AppBootstrapper.CultureCache);
+            
+        }
     }
 
     [ValueConversion(typeof(DateTime?), typeof(string))]
     public class KindAwareDateTimeConverter : IMultiValueConverter
     {
+        public string Format { get; set; } = "g";
+
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var timestamp = (DateTime)values[0];
             var toLocal = (bool)values[1];
 
             if (toLocal)
-                return ((DateTime?)timestamp)?.ToLocalTime().ToString(FullDateTimeConverter.Format);
+                return DateTimeConverter.FormatDateTime(Format, ((DateTime?)timestamp)?.ToLocalTime());
             else
-                return ((DateTime?)timestamp)?.ToString(FullDateTimeConverter.Format);
+                return DateTimeConverter.FormatDateTime(Format, (DateTime?)timestamp);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

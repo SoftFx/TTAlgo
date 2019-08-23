@@ -15,12 +15,14 @@ namespace TickTrader.BotTerminal
     {
         private IVarList<SymbolViewModel> viewModelCollection;
 
-        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell)
+        public SymbolListViewModel(IVarSet<string, SymbolModel> symbolCollection, QuoteDistributor distributor, IShell shell, bool showLocalTime)
         {
-            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel((SymbolModel)v, distributor, shell)).OrderBy((k, v) => k);
+            viewModelCollection = symbolCollection.Select((k, v) => new SymbolViewModel(v, distributor, shell, showLocalTime)).OrderBy((k, v) => k);
 
             Symbols = viewModelCollection.AsObservable();
             SelectedSymbol = AddProperty<SymbolViewModel>();
+
+            CanOpenChart = shell != null;
 
             TriggerOnChange(SelectedSymbol.Var, a =>
             {
@@ -31,7 +33,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<SymbolViewModel> Symbols { get; }
         public Property<SymbolViewModel> SelectedSymbol { get; }
-
+        public bool CanOpenChart { get; }
 
         public void OpenChart(object o)
         {

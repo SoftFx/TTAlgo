@@ -55,11 +55,17 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.BusinessLogic">
+    <Reference Include="TickTrader.BusinessLogic, Version=1.36.4.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.BusinessLogic.dll</HintPath>
     </Reference>
-    <Reference Include="TickTrader.BusinessObjects">
+    <Reference Include="TickTrader.BusinessObjects, Version=1.37.3.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\TickTrader.BusinessObjects.dll</HintPath>
+    </Reference>
+    <Reference Include="TickTrader.Common, Version=1.35.2.0, Culture=neutral, PublicKeyToken=f93e83ea42ea164d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\TickTrader.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -72,15 +78,35 @@
     <Compile Include="Adapters\TradeApiAdapter.cs" />
     <Compile Include="Adapters\TradeHistoryAdapter.cs" />
     <Compile Include="Adapters\TradeReportAdapter.cs" />
+    <Compile Include="Backtester\DelayedEventsQueue.cs" />
+    <Compile Include="Backtester\Feed\FeedEventSeries.cs" />
+    <Compile Include="Backtester\Feed\FeedReader.cs" />
+    <Compile Include="Backtester\Optimization\BruteforceStrategy.cs" />
+    <Compile Include="Backtester\Optimization\MetricProvider.cs" />
+    <Compile Include="Backtester\Optimization\OptCaseReport.cs" />
+    <Compile Include="Backtester\Optimization\OptCaseConfig.cs" />
+    <Compile Include="Backtester\Optimization\ParamSeekStrategy.cs" />
+    <Compile Include="Backtester\Optimization\Params\ConstParam.cs" />
+    <Compile Include="Backtester\Optimization\Params\ParamSeekSet.cs" />
+    <Compile Include="Backtester\Optimization\Params\RangeParamSet.cs" />
+    <Compile Include="Backtester\Optimization\Params\EnumParamSet.cs" />
+    <Compile Include="Backtester\Optimizer.cs" />
+    <Compile Include="Backtester\Feed\SeriesReader.cs" />
+    <Compile Include="Backtester\ScheduleEmulator.cs" />
+    <Compile Include="Backtester\Stats\ChartDataCollector.cs" />
+    <Compile Include="Backtester\Stats\FeedSeriesCollector.cs" />
+    <Compile Include="Backtester\Stats\OutputCollector.cs" />
+    <Compile Include="Backtester\TimeEvent.cs" />
     <Compile Include="Backtester\TimerApiEmulator.cs" />
     <Compile Include="Backtester\Trade\OrderExpirationEmulator.cs" />
+    <Compile Include="Backtester\Trade\TesterTradeUpdate.cs" />
     <Compile Include="Backtester\Trade\TradeHistoryEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationEmulator.cs" />
     <Compile Include="Backtester\Trade\ActivationIndex.cs" />
     <Compile Include="Backtester\Trade\ActivationRecord.cs" />
     <Compile Include="Backtester\Trade\ActivationRegistry.cs" />
     <Compile Include="Backtester\Stats\BacktesterCollector.cs" />
-    <Compile Include="Backtester\Feed\BarBasedSeriesEmulator.cs" />
+    <Compile Include="Backtester\Feed\BarSeriesReader.cs" />
     <Compile Include="Backtester\Trade\CommisionEmulator.cs" />
     <Compile Include="Backtester\Trade\DefaultDealer.cs" />
     <Compile Include="Backtester\EmulationControlFixture.cs" />
@@ -88,8 +114,21 @@
     <Compile Include="Backtester\Interfaces.cs" />
     <Compile Include="Backtester\Stats\TestingStatistics.cs" />
     <Compile Include="Backtester\Trade\TradeEmulator.cs" />
-    <Compile Include="Backtester\Feed\TickBasedSeriesEmulator.cs" />
+    <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
+    <Compile Include="Builder\SimplifiedBuilder.cs" />
+    <Compile Include="Calc\CashAccountCalculator.cs" />
+    <Compile Include="Calc\Conversion\ConversionManager.cs" />
+    <Compile Include="Calc\Conversion\FormulaBuilder.cs" />
+    <Compile Include="Calc\Conversion\Formula.cs" />
+    <Compile Include="Calc\Conversion\SymbolMarketNode.cs" />
+    <Compile Include="Calc\MarginAccountCalc.cs" />
+    <Compile Include="Calc\Interfaces.cs" />
+    <Compile Include="Calc\MarketState.cs" />
+    <Compile Include="Calc\OrderCalculator.cs" />
+    <Compile Include="Calc\OrderNetting.cs" />
+    <Compile Include="Calc\SideCalc.cs" />
+    <Compile Include="Calc\SymbolCalc.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
     <Compile Include="Container\DllLoader.cs" />
     <Compile Include="Container\PackageLoader.cs" />
@@ -104,6 +143,7 @@
     <Compile Include="Entities.Requests\ReplaceOrderRequest.cs" />
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
+    <Compile Include="Entities\AlgoMarketNode.cs" />
     <Compile Include="Entities\AssetAccessor.cs" />
     <Compile Include="Entities\AssetEntity.cs" />
     <Compile Include="Entities\AssetsCollection.cs" />
@@ -120,6 +160,7 @@
     <Compile Include="Entities\CompositeTag.cs" />
     <Compile Include="Entities\CurrenciesCollection.cs" />
     <Compile Include="Entities\CurrencyEntity.cs" />
+    <Compile Include="Entities\DataSeriesUpdate.cs" />
     <Compile Include="Entities\Dealer\CancelOrderDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ClosePositionDealerRequest.cs" />
     <Compile Include="Entities\Dealer\ModifyOrderDealerRequest.cs" />
@@ -147,6 +188,9 @@
     <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\PluignExecutorFactory.cs" />
+    <Compile Include="Executor\ExecutorHandler.cs" />
+    <Compile Include="Executor\MarketStateFixture.cs" />
     <Compile Include="Executor\TimerFixture.cs" />
     <Compile Include="Executor\TradingFixture.cs" />
     <Compile Include="Executor\BarStrategy.cs" />
@@ -172,19 +216,24 @@
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainEnumerator.cs" />
     <Compile Include="Lib\CrossDomainTask.cs" />
+    <Compile Include="Lib\FlipGate.cs" />
     <Compile Include="Lib\FormatExtentions.cs" />
     <Compile Include="Lib\IoHelper.cs" />
     <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
+    <Compile Include="Lib\PagedGate.cs" />
+    <Compile Include="Lib\QueueGate.cs" />
     <Compile Include="Lib\Ref.cs" />
+    <Compile Include="Lib\TaskExtensions.cs" />
+    <Compile Include="Lib\UpdateChannel.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Math\BarExtentions.cs" />
     <Compile Include="Math\BarSequenceBuilder.cs" />
     <Compile Include="Math\BarVector.cs" />
+    <Compile Include="Math\BarVector2.cs" />
     <Compile Include="Math\BarVectorBase.cs" />
     <Compile Include="Math\MathExt.cs" />
     <Compile Include="Math\Rounding.cs" />
-    <Compile Include="Math\SyncBarVector.cs" />
     <Compile Include="Metadata\AlgoAssemblyInspector.cs" />
     <Compile Include="Metadata\Descriptors\InputDescriptor.cs" />
     <Compile Include="Metadata\Descriptors\OutputDescriptor.cs" />
@@ -237,6 +286,7 @@
     <Compile Include="Repository\ReductionCollection.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
+    <Compile Include="Math\TimeVectorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Machinarium\Machinarium.csproj">

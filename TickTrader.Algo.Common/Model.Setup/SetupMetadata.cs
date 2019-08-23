@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public SetupContextInfo Context { get; }
 
-        public SymbolInfo DefaultSymbol { get; }
+        public SymbolKey DefaultSymbol { get; }
 
 
         public SetupMetadata(ApiMetadataInfo api, MappingCollectionInfo mappings, AccountMetadataInfo account, SetupContextInfo context)

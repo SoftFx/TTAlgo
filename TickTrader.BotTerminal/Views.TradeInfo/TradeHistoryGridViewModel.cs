@@ -1,4 +1,5 @@
-﻿using Machinarium.Var;
+﻿using Caliburn.Micro;
+using Machinarium.Var;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,9 +12,12 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.BotTerminal
 {
-    internal class TradeHistoryGridViewModel
+    internal class TradeHistoryGridViewModel : PropertyChangedBase
     {
-        public TradeHistoryGridViewModel(ICollection<TransactionReport> src)
+        private ProfileManager _profileManager;
+        private bool _isBacktester;
+
+        public TradeHistoryGridViewModel(ICollection<TransactionReport> src, ProfileManager profile = null, bool isBacktester = false)
         {
             Items = new Property<ICollectionView>();
             Items.Value = CollectionViewSource.GetDefaultView(src);
@@ -25,8 +29,17 @@ namespace TickTrader.BotTerminal
             IsMarginAccount = IsGrossAccount | IsNetAccount;
             IsAccTypeSet = AccType.Var.IsNotNull();
 
-            AutoSizeColumns = true;
-            ConvertTimeToLocal = true;
+            AutoSizeColumns = !isBacktester;
+            ConvertTimeToLocal = false;
+
+            _profileManager = profile;
+            _isBacktester = isBacktester;
+
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
 
         public Property<ICollectionView> Items { get; }
@@ -39,12 +52,14 @@ namespace TickTrader.BotTerminal
         public BoolVar IsMarginAccount { get; }
         public BoolVar IsAccTypeSet { get; }
 
-        public bool AutoSizeColumns { get; set; }
+        public bool IsSlippageSupported { get; set; } = true;
+        public bool AutoSizeColumns { get; private set; }
         public bool ConvertTimeToLocal { get; set; }
 
         public AccountTypes GetAccTypeValue() => AccType.Value.Value;
+        public ViewModelStorageEntry StateProvider { get; private set; }
 
-        public void Refresh()
+        public void RefreshItems()
         {
             Items.Value.Refresh();
         }
@@ -55,6 +70,12 @@ namespace TickTrader.BotTerminal
 
             Items.Value = CollectionViewSource.GetDefaultView(src);
             Items.Value.Filter = filterCopy;
+        }
+
+        private void UpdateProvider()
+        {
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.HistoryBacktester : ViewModelStorageKeys.History);
+            NotifyOfPropertyChange(nameof(StateProvider));
         }
     }
 }

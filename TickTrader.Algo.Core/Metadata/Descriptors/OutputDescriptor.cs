@@ -23,5 +23,7 @@ namespace TickTrader.Algo.Core.Metadata
         public int Precision { get; set; }
 
         public double ZeroLine { get; set; }
+
+        public bool Visibility { get; set; }
     }
 }

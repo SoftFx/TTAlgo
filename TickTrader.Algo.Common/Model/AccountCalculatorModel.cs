@@ -16,12 +16,12 @@ namespace TickTrader.Algo.Common.Model
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger<AccountCalculatorModel>();
 
-        private ClientModel.Data _client;
+        private IMarketDataProvider _client;
         private IFeedSubscription _subscription;
 
         protected AccountCalculatorModel() { }
 
-        private AccountCalculatorModel(AccountModel acc, ClientModel.Data client)
+        private AccountCalculatorModel(AccountModel acc, IMarketDataProvider client)
         {
             _client = client;
             Account = new AccountAdapter(acc);
@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Common.Model
         public decimal Profit { get; protected set; }
         public decimal Floating { get; protected set; }
         public decimal MarginLevel { get; protected set; }
+        public decimal Swap { get; protected set; }
 
         public event Action<AccountCalculatorModel> Updated;
 
@@ -59,7 +60,7 @@ namespace TickTrader.Algo.Common.Model
             Updated?.Invoke(this);
         }
 
-        public static AccountCalculatorModel Create(AccountModel acc, ClientModel.Data client)
+        public static AccountCalculatorModel Create(AccountModel acc, IMarketDataProvider client)
         {
             try
             {
@@ -129,6 +130,7 @@ namespace TickTrader.Algo.Common.Model
             public string Name { get; private set; }
             public int Precision { get; private set; }
             public int SortOrder { get; private set; }
+            public CurrencyType Type => CurrencyType.Default;
         }
 
         protected class AccountAdapter : IMarginAccountInfo, ICashAccountInfo
@@ -248,7 +250,7 @@ namespace TickTrader.Algo.Common.Model
         {
             private AccCalcAdapter calc;
 
-            public MarginCalc(AccountModel acc, ClientModel.Data client)
+            public MarginCalc(AccountModel acc, IMarketDataProvider client)
                 : base(acc, client)
             {
                 calc = new AccCalcAdapter(Account,  MarketModel);
@@ -259,6 +261,7 @@ namespace TickTrader.Algo.Common.Model
                     Profit = calc.Profit;
                     Floating = calc.Profit + calc.Commission + calc.Swap;
                     MarginLevel = calc.MarginLevel;
+                    Swap = calc.Swap;
                     OnUpdate();
                 };
             }
@@ -273,7 +276,7 @@ namespace TickTrader.Algo.Common.Model
         {
             private CashAccountCalculator calc;
 
-            public CashCalc(AccountModel acc, ClientModel.Data client)
+            public CashCalc(AccountModel acc, IMarketDataProvider client)
                 : base(acc, client)
             {
                 this.calc = new CashAccountCalculator(Account, MarketModel);
@@ -289,6 +292,7 @@ namespace TickTrader.Algo.Common.Model
                 Profit = -1;
                 Floating = -1;
                 MarginLevel = -1;
+                Swap = -1;
             }
 
             public override void Dispose() { }

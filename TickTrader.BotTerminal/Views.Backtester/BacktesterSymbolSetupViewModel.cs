@@ -2,8 +2,10 @@
 using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
+using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,21 +19,27 @@ namespace TickTrader.BotTerminal
 {
     internal class BacktesterSymbolSetupViewModel : EntityBase
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private IntProperty _requestsCount;
+        private Property<string> _errorProp;
         private bool _suppressRangeUpdates;
 
         public BacktesterSymbolSetupViewModel(SymbolSetupType type, IObservableList<SymbolData> symbols, Var<SymbolData> smbSource = null)
         {
             _requestsCount = AddIntProperty();
+            _errorProp = AddProperty<string>();
 
             SetupType = type;
 
             AvailableSymbols = symbols;
 
+            symbols.CollectionChanged += Symbols_CollectionChanged;
+
             if (type == SymbolSetupType.Main)
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>().Where(t => !t.IsTicks());
+                AvailableTimeFrames = TimeFrameModel.BarTimeFrames;
             else
-                AvailableTimeFrames = EnumHelper.AllValues<TimeFrames>();
+                AvailableTimeFrames = TimeFrameModel.AllTimeFrames;
 
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
@@ -60,9 +68,12 @@ namespace TickTrader.BotTerminal
                 TriggerOnChange(SelectedTimeframe.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
             }
 
+            //TriggerOn(SelectedSymbol.Var.IsNull(), SelectDefaultSymbol);
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
 
             SelectDefaultSymbol();
+
+            IsValid = IsSymbolSelected & Error.IsEmpty() & !IsUpdating;
         }
 
         public SymbolSetupType SetupType { get; private set; }
@@ -76,7 +87,9 @@ namespace TickTrader.BotTerminal
         public Property<Tuple<DateTime, DateTime>> AvailableRange { get; }
         public BoolVar IsUpdating { get; }
         public BoolVar CanChangePrice { get; }
+        public BoolVar IsValid { get; }
         public BoolVar IsSymbolSelected { get; }
+        public Var<string> Error => _errorProp.Var;
 
         public void Add() => OnAdd?.Invoke();
         public void Remove() => Removed?.Invoke(this);
@@ -86,7 +99,12 @@ namespace TickTrader.BotTerminal
 
         public string AsText()
         {
-            return SelectedSymbol.Value.Name + " " + SelectedTimeframe.Value;
+            var smb = SelectedSymbol.Value.InfoEntity;
+            var swapLong = smb.SwapEnabled ? smb.SwapSizeLong : 0;
+            var swapShort = smb.SwapEnabled ? smb.SwapSizeShort : 0;
+
+            return string.Format("{0} {1}, commission={2} {3}, swapLong={4} swapShort={5} ",
+                smb.Name, SelectedTimeframe.Value, smb.Commission, smb.CommissionType, swapLong, swapShort);
         }
 
         public async void UpdateAvailableRange(TimeFrames timeFrame)
@@ -96,19 +114,28 @@ namespace TickTrader.BotTerminal
 
             var smb = SelectedSymbol.Value;
 
-            if (smb != null)
+            if (smb != null && smb.IsDataAvailable)
             {
                 _requestsCount.Value++;
 
                 try
                 {
-                    //AvailableRange.Value = await smb.GetAvailableRange(SelectedTimeframe.Value, BarPriceType.Bid);
                     var range = await smb.GetAvailableRange(timeFrame, BarPriceType.Bid);
-                    AvailableRange.Value = new Tuple<DateTime, DateTime>(range.Item1.Date, range.Item2.Date + TimeSpan.FromDays(1));
+                    if (range != null && range.Item1 != null && range.Item2 != null)
+                    {
+                        AvailableRange.Value = new Tuple<DateTime, DateTime>(range.Item1.Value.Date, range.Item2.Value.Date + TimeSpan.FromDays(1));
+                        _errorProp.Value = null;
+                    }
+                    else
+                    {
+                        AvailableRange.Value = null;
+                        _errorProp.Value = "No data available!";
+                    }
                 }
                 catch (Exception ex)
                 {
-                    //TO DO
+                    _logger.Warn("Failed to get available range for symbol + " + smb.Name + ": " + ex.Message);
+                    _errorProp.Value = "An error occurred while requesting available data range! See log file for more details!";
                 }
 
                 _requestsCount.Value--;
@@ -122,6 +149,9 @@ namespace TickTrader.BotTerminal
 
         public async Task PrecacheData(IActionObserver observer, CancellationToken cToken, DateTime fromLimit, DateTime toLimit, TimeFrames timeFrameChoice)
         {
+            if (cToken.IsCancellationRequested)
+                return;
+
             //if (SetupType == SymbolSetupType.Main)
             //    return;
 
@@ -130,6 +160,9 @@ namespace TickTrader.BotTerminal
 
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
+
+            if (precacheFrom > precacheTo)
+                return;
 
             var smb = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
@@ -152,12 +185,34 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit)
+        public void Apply(Optimizer tester, DateTime fromLimit, DateTime toLimit)
         {
-            Apply(tester, fromLimit, toLimit, SelectedTimeframe.Value);
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, SelectedTimeframe.Value);
         }
 
-        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
+        public void Apply(Optimizer tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
+        {
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, baseTimeFrame);
+        }
+
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
+        {
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, SelectedTimeframe.Value);
+            SetupDataOutput(tester, isVisualizing);
+        }
+
+        public void Apply(Backtester tester, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame, bool isVisualizing)
+        {
+            Apply(tester.CommonSettings, tester.Feed, fromLimit, toLimit, baseTimeFrame);
+            SetupDataOutput(tester, isVisualizing);
+        }
+
+        public void Apply(CommonTestSettings settings, FeedEmulator feedEmulator, DateTime fromLimit, DateTime toLimit, bool isVisualizing)
+        {
+            Apply(settings, feedEmulator, fromLimit, toLimit, SelectedTimeframe.Value);
+        }
+
+        public void Apply(CommonTestSettings settings, FeedEmulator feedEmulator, DateTime fromLimit, DateTime toLimit, TimeFrames baseTimeFrame)
         {
             var smbData = SelectedSymbol.Value;
             var priceChoice = SelectedPriceType.Value;
@@ -167,20 +222,20 @@ namespace TickTrader.BotTerminal
 
             if (SetupType == SymbolSetupType.Main)
             {
-                tester.MainSymbol = smbData.Name;
-                tester.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
+                settings.MainSymbol = smbData.Name;
+                settings.MainTimeframe = SelectedTimeframe.Value; // SelectedTimeframe may differ from baseTimeFrame in case of main symbol
             }
 
             var precacheFrom = GetLocalFrom(fromLimit);
             var precacheTo = GetLocalTo(toLimit);
 
-            tester.Symbols.Add(smbData.Name, smbData.InfoEntity);
+            settings.Symbols.Add(smbData.Name, smbData.InfoEntity);
 
             if (baseTimeFrame == TimeFrames.Ticks || baseTimeFrame == TimeFrames.TicksLevel2)
             {
                 ITickStorage feed = smbData.GetCrossDomainTickReader(baseTimeFrame, precacheFrom, precacheTo);
 
-                tester.Feed.AddSource(smbData.Name, feed);
+                feedEmulator.AddSource(smbData.Name, feed);
             }
             else
             {
@@ -193,8 +248,18 @@ namespace TickTrader.BotTerminal
                 if (priceChoice == DownloadPriceChoices.Ask | priceChoice == DownloadPriceChoices.Both)
                     askFeed = smbData.GetCrossDomainBarReader(baseTimeFrame, BarPriceType.Ask, precacheFrom, precacheTo);
 
-                tester.Feed.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
+                feedEmulator.AddSource(smbData.Name, baseTimeFrame, bidFeed, askFeed);
             }
+        }
+
+        private void SetupDataOutput(Backtester tester, bool isVisualizing)
+        {
+            var smbData = SelectedSymbol.Value;
+
+            if (isVisualizing)
+                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream | TestDataSeriesFlags.Realtime);
+            else if (SetupType == SymbolSetupType.Main)
+                tester.SymbolDataConfig.Add(smbData.Name, TestDataSeriesFlags.Stream);
         }
 
         public void Reset()
@@ -265,7 +330,19 @@ namespace TickTrader.BotTerminal
 
         public override void Dispose()
         {
+            if (AvailableSymbols != null)
+                AvailableSymbols.CollectionChanged -= Symbols_CollectionChanged;
+
             base.Dispose();
+        }
+
+        private void Symbols_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                if (SelectedSymbol.Value == null || e.OldItems.Contains(SelectedSymbol.Value))
+                    SelectDefaultSymbol();
+            }
         }
 
         //private IEnumerable<BarEntity> ReadSlices(BlockingChannel<Slice<DateTime, BarEntity>> channel)

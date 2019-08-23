@@ -114,9 +114,21 @@ namespace TickTrader.Algo.Common.Model
                 return channel;
             }
 
+            public Channel<Slice<DateTime, QuoteEntity>> IterateTickCacheAsync(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                var channel = new Channel<Slice<DateTime, QuoteEntity>>(ChannelDirections.Out, 1);
+                _ref.SendChannel(channel, (a, c) => a.IterateTickCache(c, key, from, to));
+                return channel;
+            }
+
             public BlockingChannel<Slice<DateTime, BarEntity>> IterateBarCache(FeedCacheKey key, DateTime from, DateTime to)
             {
                 return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, BarEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateBarCache(c, key, from, to));
+            }
+
+            public BlockingChannel<Slice<DateTime, QuoteEntity>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
+            {
+                return _ref.OpenBlockingChannel<FeedCache, Slice<DateTime, QuoteEntity>>(ChannelDirections.Out, 2, (a, c) => a.IterateTickCache(c, key, from, to));
             }
 
             public Channel<KeyRange<DateTime>> IterateCacheKeys(FeedCacheKey key, DateTime from, DateTime to)
@@ -129,7 +141,7 @@ namespace TickTrader.Algo.Common.Model
             public Task<KeyRange<DateTime>> GetFirstRange(string symbol, Api.TimeFrames frame, Api.BarPriceType? priceType, DateTime from, DateTime to)
                 => _ref.Call(a => a.GetFirstRange(symbol, frame, priceType, from, to));
 
-            public Task<Tuple<DateTime, DateTime>> GetRange(FeedCacheKey key)
+            public Task<Tuple<DateTime?, DateTime?>> GetRange(FeedCacheKey key)
                 => _ref.Call(a => a.GetRange(key));
 
             public Task<double?> GetCollectionSize(FeedCacheKey key)
@@ -196,26 +208,22 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        protected Tuple<DateTime, DateTime> GetRange(FeedCacheKey key)
+        protected Tuple<DateTime?, DateTime?> GetRange(FeedCacheKey key)
         {
             CheckState();
 
-            bool hasValues = false;
-            var min = DateTime.MinValue;
-            var max = DateTime.MaxValue;
+            DateTime? min = null;
+            DateTime? max = null;
 
             foreach (var r in IterateCacheKeysInternal(key))
             {
-                if (!hasValues)
-                {
+                if (min == null)
                     min = r.From;
-                    hasValues = true;
-                }
 
                 max = r.To;
             }
 
-            return hasValues ? new Tuple<DateTime, DateTime>(min, max) : null;
+            return new Tuple<DateTime?, DateTime?>(min, max);
         }
 
         //private Task<Tuple<DateTime, DateTime>> GetRangeAsync(FeedCacheKey key, bool custom)
@@ -334,10 +342,10 @@ namespace TickTrader.Algo.Common.Model
 
         #region Tick History
 
-        //private IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCache(FeedCacheKey key, DateTime from, DateTime to)
-        //{
-        //    return IterateTickCacheInternal(key, from, to).GetSyncWrapper(_syncObj);
-        //}
+        private void IterateTickCache(Channel<Slice<DateTime, QuoteEntity>> channel, FeedCacheKey key, DateTime from, DateTime to)
+        {
+            channel.WriteAll(() => IterateTickCacheInternal(key, from, to));
+        }
 
         protected IEnumerable<Slice<DateTime, QuoteEntity>> IterateTickCacheInternal(FeedCacheKey key, DateTime from, DateTime to)
         {
@@ -374,7 +382,7 @@ namespace TickTrader.Algo.Common.Model
             ISeriesStorage<DateTime> collection;
 
             if (key.Frame == Api.TimeFrames.Ticks || key.Frame == Api.TimeFrames.TicksLevel2)
-                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new TickSerializer(key.Symbol), b => b.Time, key.ToCodeString(), true);
+                collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), TickSerializer.GetSerializer(key), b => b.Time, key.ToCodeString(), true);
             else
                 collection = _diskStorage.GetSeries(new DateTimeKeySerializer(), new BarSerializer(key.Frame), b => b.OpenTime, key.ToCodeString(), false);
 

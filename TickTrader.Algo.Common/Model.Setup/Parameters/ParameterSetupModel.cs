@@ -21,6 +21,13 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public abstract string ValueAsText { get; }
 
+        public string GetQuotedValue()
+        {
+            var str = ValueAsText;
+            if (str != null && str.Contains(" "))
+                return '"' + ValueAsText + '"';
+            return str;
+        }
 
         public ParameterSetupModel(ParameterMetadata descriptor)
         {
@@ -64,7 +71,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             public override Property Save()
             {
-                throw new Exception("Invalid parameter cannot be saved!");
+                //throw new Exception("Invalid parameter cannot be saved!");
+                return null;
             }
 
             public override void Reset()

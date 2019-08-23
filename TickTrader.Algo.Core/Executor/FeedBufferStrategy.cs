@@ -8,7 +8,7 @@ namespace TickTrader.Algo.Core
 {
     public abstract class FeedBufferStrategy
     {
-        private List<ILoadableFeedBuffer> _toLoad = new List<ILoadableFeedBuffer>();
+        private List<ILoadableFeedBuffer> _auxBuffers = new List<ILoadableFeedBuffer>();
 
         protected IFeedBuffer MainBuffer { get; private set; }
         protected bool IsStarted { get; private set; }
@@ -18,25 +18,30 @@ namespace TickTrader.Algo.Core
         {
             Context = context;
             MainBuffer = context.MainBuffer;
-
-            _toLoad.Add(MainBuffer);
         }
 
         public abstract void OnBufferExtended();
         public abstract bool InBoundaries(DateTime timePoint);
         public abstract void OnUserSetBufferSize(int newSize, out string error);
 
-        protected abstract void LoadData(ILoadableFeedBuffer buffer);
+        protected abstract void LoadMainBuffer(ILoadableFeedBuffer buffer);
+        protected abstract void LoadAuxBuffer(ILoadableFeedBuffer buffer);
 
         public void Start()
         {
-            foreach (var buff in _toLoad)
+            if (!MainBuffer.IsLoaded) // main buffer can have pre-loaded data
+                LoadMainBuffer(MainBuffer);
+
+            foreach (var buff in _auxBuffers)
             {
                 if (!buff.IsLoaded) // buffers can have pre-loaded data
-                    LoadData(buff);
+                    LoadAuxBuffer(buff);
             }
 
-            _toLoad.Clear();
+            foreach (var buff in _auxBuffers)
+                buff.SyncByTime();
+
+            _auxBuffers.Clear();
 
             IsStarted = true;
         }
@@ -44,9 +49,9 @@ namespace TickTrader.Algo.Core
         public void InitBuffer(ILoadableFeedBuffer buffer)
         {
             if (IsStarted)
-                LoadData(buffer);
-            else if(!_toLoad.Contains(buffer))
-                _toLoad.Add(buffer);
+                LoadMainBuffer(buffer);
+            else if(!_auxBuffers.Contains(buffer))
+                _auxBuffers.Add(buffer);
         }
 
         protected void TruncateBuffers(int bySize)
@@ -58,10 +63,15 @@ namespace TickTrader.Algo.Core
     public interface ILoadableFeedBuffer
     {
         bool IsLoaded { get; }
+        DateTime OpenTime { get; }
+        int Count { get; }
 
+        void LoadFeedFrom(DateTime from);
         void LoadFeed(DateTime from, DateTime to);
         void LoadFeed(int size);
         void LoadFeed(DateTime from, int size);
+
+        void SyncByTime();
     }
 
     public interface IFeedBuffer : ILoadableFeedBuffer, ITimeRef
@@ -77,15 +87,27 @@ namespace TickTrader.Algo.Core
     public class SlidingBufferStrategy : FeedBufferStrategy
     {
         private int _size;
+        private DateTime? _mainBufferStartTime;
 
         public SlidingBufferStrategy(int size)
         {
             _size = size;
         }
 
-        protected override void LoadData(ILoadableFeedBuffer buffer)
+        protected override void LoadMainBuffer(ILoadableFeedBuffer buffer)
         {
             buffer.LoadFeed(_size);
+            if (buffer.Count > 0)
+                _mainBufferStartTime = buffer.OpenTime;
+        }
+
+        protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
+        {
+            //if (_mainBufferStartTime == null)
+            //    throw new AlgoException("Main symbol has no data, cannot synchronize auxilary symbols.");
+
+            if (_mainBufferStartTime != null)
+                buffer.LoadFeedFrom(_mainBufferStartTime.Value);
         }
 
         public override void OnBufferExtended()
@@ -129,7 +151,12 @@ namespace TickTrader.Algo.Core
             _to = to;
         }
 
-        protected override void LoadData(ILoadableFeedBuffer buffer)
+        protected override void LoadMainBuffer(ILoadableFeedBuffer buffer)
+        {
+            buffer.LoadFeed(_from, _to);
+        }
+
+        protected override void LoadAuxBuffer(ILoadableFeedBuffer buffer)
         {
             buffer.LoadFeed(_from, _to);
         }

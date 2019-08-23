@@ -10,9 +10,7 @@ namespace TickTrader.BotTerminal
     {
         private MappingKey _defaultMapping;
 
-
         protected override MappingKey DefaultMapping => _defaultMapping;
-
 
         public BarToDoubleInputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
             : base(descriptor, setupMetadata)
@@ -21,10 +19,9 @@ namespace TickTrader.BotTerminal
             AvailableMappings = setupMetadata.Mappings.BarToDoubleMappings;
         }
 
-
         public override void Load(Property srcProperty)
         {
-            var input = srcProperty as BarToBarInput;
+            var input = srcProperty as BarToDoubleInput;
             if (input != null)
             {
                 LoadConfig(input);
@@ -33,11 +30,10 @@ namespace TickTrader.BotTerminal
 
         public override Property Save()
         {
-            var input = new BarToBarInput();
+            var input = new BarToDoubleInput();
             SaveConfig(input);
             return input;
         }
-
 
         protected override MappingInfo GetMapping(MappingKey mappingKey)
         {

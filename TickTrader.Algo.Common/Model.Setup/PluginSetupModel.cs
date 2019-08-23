@@ -56,8 +56,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             set { Permissions.Isolated = value; }
         }
 
-        public SymbolToken MainSymbolPlaceholder { get; private set; }
-
         private List<InputSetupModel> ActiveInputs => SelectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
 
         public event Action ValidityChanged = delegate { };
@@ -69,7 +67,6 @@ namespace TickTrader.Algo.Common.Model.Setup
             SetupMetadata = metadata;
             SetupContext = context;
 
-            MainSymbolPlaceholder = SpecialSymbols.MainSymbolPlaceholder;
             _parameters = Metadata.Parameters.Select(CreateParameter).ToList();
             _barBasedInputs = Metadata.Inputs.Select(CreateBarBasedInput).ToList();
             _tickBasedInputs = Metadata.Inputs.Select(CreateTickBasedInput).ToList();
@@ -85,8 +82,6 @@ namespace TickTrader.Algo.Common.Model.Setup
 
         public void Apply(IPluginSetupTarget target)
         {
-            MainSymbolPlaceholder.Id = MainSymbol.Id;
-
             _parameters.ForEach(p => p.Apply(target));
             _outputs.ForEach(p => p.Apply(target));
             ActiveInputs.Foreach(p => p.Apply(target));
@@ -95,7 +90,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame;
-            MainSymbol = cfg.MainSymbol.ResolveMainSymbol(SetupMetadata, SetupContext, MainSymbolPlaceholder);
+            MainSymbol = cfg.MainSymbol.ResolveMainSymbol(SetupMetadata, SetupContext, SetupContext.DefaultSymbol);
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(cfg.SelectedMapping);
             InstanceId = cfg.InstanceId;
             Permissions = cfg.Permissions.Clone();
@@ -120,8 +115,12 @@ namespace TickTrader.Algo.Common.Model.Setup
             cfg.SelectedMapping = SelectedMapping.Key;
             cfg.InstanceId = InstanceId;
             cfg.Permissions = Permissions.Clone();
-            foreach (var property in _allProperties)
-                cfg.Properties.Add(property.Save());
+            foreach (var propertyModel in _allProperties)
+            {
+                var prop = propertyModel.Save();
+                if (prop != null)
+                    cfg.Properties.Add(prop);
+            }
             return cfg;
         }
 
@@ -142,10 +141,8 @@ namespace TickTrader.Algo.Common.Model.Setup
             MainSymbol = SetupContext.DefaultSymbol;
             SelectedMapping = SetupMetadata.Mappings.GetBarToBarMappingOrDefault(SetupContext.DefaultMapping);
             InstanceId = SetupMetadata.IdProvider.GeneratePluginId(Metadata.Descriptor);
-            MainSymbolPlaceholder.Id = null;
             Permissions = new PluginPermissions();
 
-            _parameters.ForEach(p => p.Reset());
             foreach (var p in _allProperties)
                 p.Reset();
 
@@ -193,8 +190,8 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new BarToDoubleInputSetupModel(descriptor, MainSymbolPlaceholder, SetupMetadata, SetupContext);
-                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupModel(descriptor, MainSymbolPlaceholder, SetupMetadata, SetupContext);
+                case "System.Double": return new BarToDoubleInputSetupModel(descriptor, SetupContext.DefaultSymbol, SetupMetadata, SetupContext);
+                case "TickTrader.Algo.Api.Bar": return new BarToBarInputSetupModel(descriptor, SetupContext.DefaultSymbol, SetupMetadata, SetupContext);
                 //case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, Metadata, SetupContext, false);
                 //case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, Metadata, SetupContext, true);
                 default: return new InputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
@@ -208,10 +205,10 @@ namespace TickTrader.Algo.Common.Model.Setup
 
             switch (descriptor.Descriptor.DataSeriesBaseTypeFullName)
             {
-                case "System.Double": return new QuoteToDoubleInputSetupModel(descriptor, MainSymbolPlaceholder, SetupMetadata, SetupContext);
-                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupModel(descriptor, MainSymbolPlaceholder, SetupMetadata, SetupContext);
-                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, MainSymbolPlaceholder, SetupMetadata, SetupContext, false);
-                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, MainSymbolPlaceholder, SetupMetadata, SetupContext, true);
+                case "System.Double": return new QuoteToDoubleInputSetupModel(descriptor, SetupContext.DefaultSymbol, SetupMetadata, SetupContext);
+                case "TickTrader.Algo.Api.Bar": return new QuoteToBarInputSetupModel(descriptor, SetupContext.DefaultSymbol, SetupMetadata, SetupContext);
+                case "TickTrader.Algo.Api.Quote": return new QuoteInputSetupModel(descriptor, SetupContext.DefaultSymbol, SetupMetadata, SetupContext, false);
+                case "TickTrader.Algo.Api.QuoteL2": return new QuoteInputSetupModel(descriptor, SetupContext.DefaultSymbol, SetupMetadata, SetupContext, true);
                 default: return new InputSetupModel.Invalid(descriptor, ErrorMsgCodes.UnsupportedInputType);
             }
         }

@@ -7,12 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Machinarium.Qnil;
 using NLog;
+using SciChart.Charting.Visuals.Axes;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
+using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Protocol;
 using TickTrader.BotTerminal.Lib;
@@ -36,7 +39,6 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, TradeBotModel> _bots;
         private PreferencesStorageModel _preferences;
 
-
         public string Name => "Local";
 
         public bool IsRemote => false;
@@ -57,8 +59,6 @@ namespace TickTrader.BotTerminal
 
         public AccessManager AccessManager { get; }
 
-
-
         public PluginIdProvider IdProvider { get; }
 
         public MappingCollection Mappings { get; }
@@ -73,7 +73,6 @@ namespace TickTrader.BotTerminal
 
         public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !PluginStateHelper.IsStopped(b.State));
 
-
         public event Action<PackageInfo> PackageStateChanged;
 
         public event Action<AccountModelInfo> AccountStateChanged;
@@ -82,7 +81,7 @@ namespace TickTrader.BotTerminal
 
         public event Action<ITradeBot> BotUpdated;
 
-        public event Action AccessLevelChanged;
+        public event Action AccessLevelChanged { add { } remove { } }
 
 
         public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
@@ -153,7 +152,7 @@ namespace TickTrader.BotTerminal
         public Task AddBot(AccountKey account, PluginConfig config)
         {
             var bot = new TradeBotModel(config, this, this, this, Accounts.Snapshot.Values.First().Key);
-            IdProvider.RegisterBot(bot);
+            IdProvider.RegisterPluginId(bot.InstanceId);
             _bots.Add(bot.InstanceId, bot);
             bot.StateChanged += OnBotStateChanged;
             bot.Updated += OnBotUpdated;
@@ -527,6 +526,9 @@ namespace TickTrader.BotTerminal
 
         #region IAlgoPluginHost
 
+        ITimeVectorRef IPluginDataChartModel.TimeSyncRef => null;
+        AxisBase IPluginDataChartModel.CreateXAxis() => null;
+
         void IAlgoPluginHost.Lock()
         {
             Shell.ConnectionLock.Lock();
@@ -574,7 +576,7 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        bool IAlgoPluginHost.IsStarted => false;
+        bool IExecStateObservable.IsStarted => false;
 
         public event Action ParamsChanged = delegate { };
         public event Action StartEvent = delegate { };

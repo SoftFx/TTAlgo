@@ -17,6 +17,44 @@ namespace TickTrader.Algo.Core
 
         public void ConfirmOrderOpen(Api.Ext.OpenOrderRequest request)
         {
+            var order = request.Order;
+
+            if (order.Type == OrderType.Limit && order.Options.IsFlagSet(OrderExecOptions.ImmediateOrCancel))
+            {
+                var quote = request.CurrentRate;
+
+                // IOC
+                if (order.Side == OrderSide.Buy && quote.HasAsk && (quote.Ask <= order.Price))
+                {
+                    request.Confirm((decimal)order.RequestedVolume, quote.Ask);
+                    return;
+                }
+
+                if (order.Side == OrderSide.Sell && quote.HasBid && (quote.Bid >= order.Price))
+                {
+                    request.Confirm((decimal)order.RequestedVolume, quote.Bid);
+                    return;
+                }
+
+                request.Reject();
+            }
+
+            // Market
+
+            //if (order.Type == OrderType.Market)
+            //{
+            //    if ((Request.Side == OrderSides.Buy) && currentQuote.NullableAsk.HasValue)
+            //    {
+            //        dParams.Price = currentQuote.NullableAsk.Value;
+            //        return true;
+            //    }
+            //    else if ((Request.Side == OrderSides.Sell) && currentQuote.NullableBid.HasValue)
+            //    {
+            //        dParams.Price = currentQuote.NullableBid.Value;
+            //        return true;
+            //    }
+            //}
+
             request.Confirm();
         }
 

@@ -13,7 +13,8 @@ namespace TickTrader.Algo.Common.Model
 {
     internal class BarSerializer : ISliceSerializer<BarEntity>
     {
-        public BarSampler _sampler;
+        private readonly LightObjectReader _reader = new LightObjectReader();
+        public readonly BarSampler _sampler;
 
         public BarSerializer(TimeFrames frames)
         {
@@ -37,10 +38,10 @@ namespace TickTrader.Algo.Common.Model
 
         public BarEntity[] Deserialize(ArraySegment<byte> bytes)
         {
-            var reader = new LightObjectReader(bytes);
-            return reader.ReadFixedSizeArray((r) =>
+            _reader.SetDataBuffer(bytes);
+            return _reader.ReadArray((r) =>
             {
-                var time = r.ReadDateTime();
+                var time = r.ReadDateTime(DateTimeKind.Utc);
                 var open = r.ReadDouble();
                 var high = r.ReadDouble();
                 var low = r.ReadDouble();

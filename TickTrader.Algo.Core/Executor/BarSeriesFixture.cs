@@ -29,10 +29,7 @@ namespace TickTrader.Algo.Core
             sampler = BarSampler.Get(context.TimeFrame);
 
             if (refTimeline != null)
-            {
                 futureBarCache = new List<BarEntity>();
-                refTimeline.Appended += RefTimeline_Appended;
-            }
 
             var key = BarStrategy.GetKey(SymbolCode, priceType);
             Buffer = context.Builder.GetBarBuffer(key);
@@ -46,18 +43,10 @@ namespace TickTrader.Algo.Core
         public int LastIndex { get { return Buffer.Count - 1; } }
         public DateTime this[int index] { get { return Buffer[index].OpenTime; } }
         public bool IsLoaded { get; private set; }
+        public DateTime OpenTime => Buffer[0].OpenTime;
         public event Action Appended;
 
-        protected BarEntity LastBar
-        {
-            get
-            {
-                if (futureBarCache != null && futureBarCache.Count > 0)
-                    return futureBarCache.Last();
-                else
-                    return Buffer.Last;
-            }
-        }
+        protected BarEntity LastBar { get; private set; }
 
         public BufferUpdateResult Update(RateUpdate update)
         {
@@ -77,6 +66,9 @@ namespace TickTrader.Algo.Core
 
             // validate against time boundaries
             if (!Context.BufferingStrategy.InBoundaries(barOpenTime))
+                return new BufferUpdateResult();
+
+            if (double.IsNaN(price))
                 return new BufferUpdateResult();
 
             if (Count > 0)
@@ -101,9 +93,17 @@ namespace TickTrader.Algo.Core
         public BufferUpdateResult Update(BarRateUpdate update)
         {
             if (priceType == BarPriceType.Bid)
-                return Update(update.BidBar);
+            {
+                if (update.HasBid)
+                    return Update(update.BidBar);
+            }
             else
-                return Update(update.AskBar);
+            {
+                if (update.HasAsk)
+                    return Update(update.AskBar);
+            }
+
+            return new BufferUpdateResult();
         }
 
         public BufferUpdateResult Update(BarEntity bar)
@@ -117,6 +117,7 @@ namespace TickTrader.Algo.Core
                 return new BufferUpdateResult();
 
             if (Count > 0)
+
             {
                 var lastBar = LastBar;
 
@@ -132,6 +133,20 @@ namespace TickTrader.Algo.Core
 
             AppendBar(bar);
             return new BufferUpdateResult() { ExtendedBy = 1 };
+        }
+
+        public void SyncByTime()
+        {
+            for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
+            {
+                var timeCoordinate = refTimeline[i];
+                // fill empty spaces
+                var fillBar = CreateFillingBar(timeCoordinate);
+                Buffer.Append(fillBar);
+                LastBar = fillBar;
+            }
+
+            refTimeline.Appended += RefTimeline_Appended;
         }
 
         private void RefTimeline_Appended()
@@ -152,7 +167,9 @@ namespace TickTrader.Algo.Core
                     break;
             }
 
-            Buffer.Append(CreateFillingBar(timeCoordinate));
+            var fillingBar = CreateFillingBar(timeCoordinate);
+            Buffer.Append(fillingBar);
+            LastBar = fillingBar;
         }
 
         private void AppendBar(BarEntity bar)
@@ -164,22 +181,29 @@ namespace TickTrader.Algo.Core
                     var timeCoordinate = refTimeline[i];
                     if (timeCoordinate == bar.OpenTime) // found right place
                     {
-                        Buffer.Append(bar);
+                        AppendBarToBuffer(bar);
                         return;
                     }
                     else if (timeCoordinate > bar.OpenTime) // place not found - throw out
                         return;
 
-                    Buffer.Append(CreateFillingBar(timeCoordinate)); // fill empty spaces
+                    // fill empty spaces
+                    var fillBar = CreateFillingBar(timeCoordinate);
+                    AppendBarToBuffer(fillBar);
                 }
 
                 futureBarCache.Add(bar); // place not found - add to future cache
+                LastBar = bar;
             }
             else
-            {
-                Buffer.Append(bar);
-                Appended?.Invoke();
-            }
+                AppendBarToBuffer(bar);
+        }
+
+        private void AppendBarToBuffer(BarEntity bar)
+        {
+            Buffer.Append(bar);
+            LastBar = bar;
+            Appended?.Invoke();
         }
 
         private BarEntity CreateFillingBar(DateTime openTime)
@@ -197,19 +221,24 @@ namespace TickTrader.Algo.Core
         {
             IsLoaded = true;
 
-            defaultBarValue = double.NaN;
+            defaultBarValue = 0;
             if (data != null)
             {
                 if (data.Count > 0)
                     defaultBarValue = data[0].Open;
-                data.ForEach(AppendBar);
+                foreach (var bar in data)
+                    AppendBar(bar);
             }
 
             if (refTimeline != null)
             {
                 // fill end of buffer
                 for (int i = Buffer.Count; i <= refTimeline.LastIndex; i++)
-                    Buffer.Append(CreateFillingBar(refTimeline[i]));
+                {
+                    var fillBar = CreateFillingBar(refTimeline[i]);
+                    Buffer.Append(fillBar);
+                    LastBar = fillBar;
+                }
             }
         }
 
@@ -229,6 +258,13 @@ namespace TickTrader.Algo.Core
         public void LoadFeed(DateTime from, int size)
         {
             var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, size, Context.TimeFrame);
+            AppendSnapshot(data);
+        }
+
+        public void LoadFeedFrom(DateTime from)
+        {
+            var to = DateTime.UtcNow + TimeSpan.FromDays(2);
+            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
             AppendSnapshot(data);
         }
     }
