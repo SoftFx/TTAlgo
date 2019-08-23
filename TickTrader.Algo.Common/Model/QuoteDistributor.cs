@@ -274,7 +274,8 @@ namespace TickTrader.Algo.Common.Model
                     return quote;
                 }
                 depth = depth < 1 ? 1 : depth;
-                return new QuoteEntity(quote.Symbol, quote.CreatingTime, quote.BidList.Take(depth).ToArray(), quote.AskList.Take(depth).ToArray());
+                return new QuoteEntity(quote.Symbol, quote.CreatingTime, quote.BidList.Take(depth).ToArray(),
+                    quote.AskList.Take(depth).ToArray(), quote.IsBidIndicative, quote.IsAskIndicative);
             }
         }
 
