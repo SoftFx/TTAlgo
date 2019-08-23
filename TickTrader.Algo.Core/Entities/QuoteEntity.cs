@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Core
         public override string ToString()
         {
             var bookDepth = System.Math.Max(BidList?.Length ?? 0, AskList?.Length ?? 0);
-            return "{ " + Bid + "/" + Ask + " " + Time + " d" + bookDepth + "}";
+            return $"{{{Bid}{(IsBidIndicative ? "i" : "")}/{Ask}{(IsAskIndicative ? "i" : "")} {Time} d{bookDepth}}}";
         }
     }
 

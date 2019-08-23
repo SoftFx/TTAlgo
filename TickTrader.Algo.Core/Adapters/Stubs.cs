@@ -176,6 +176,8 @@ namespace TickTrader.Algo.Core
         public double Bid { get { return double.NaN; } }
         public bool HasBid => false;
         public bool HasAsk => false;
+        public bool IsAskIndicative => false;
+        public bool IsBidIndicative => false;
         public BookEntry[] AskBook { get { return Null.Book; } }
         public BookEntry[] BidBook { get { return Null.Book; } }
         public string Symbol { get { return ""; } }
