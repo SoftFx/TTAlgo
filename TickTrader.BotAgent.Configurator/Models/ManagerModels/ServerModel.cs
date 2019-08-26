@@ -33,13 +33,15 @@ namespace TickTrader.BotAgent.Configurator
 
                 _urlsString = value;
 
-                Urls = !string.IsNullOrEmpty(value) ? value.Split(';').Select(u => new Uri(u)).ToList() : new List<Uri>();
+                RestoreUrls();
             }
         }
 
         public void SetDefaultValues()
         {
             UrlsStr = UrlsStr ?? DefaultUrls;
+
+            RestoreUrls();
 
             if (SecretKey == null)
                 GenerateSecretKey();
@@ -53,6 +55,11 @@ namespace TickTrader.BotAgent.Configurator
         public void UpdateCurrentFields()
         {
             UrlsStr = string.Join(";", Urls);
+        }
+
+        private void RestoreUrls()
+        {
+            Urls = !string.IsNullOrEmpty(UrlsStr) ? UrlsStr.Split(';').Select(u => new Uri(u)).ToList() : new List<Uri>();
         }
     }
 }
