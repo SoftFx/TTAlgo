@@ -239,9 +239,7 @@ IgnoreFilesFromLegacyVersion:
     ${Configurator_CreateShortcuts}
     WriteUninstaller "$Agent_InstDir\uninstall.exe"
 
-    #StrCpy $Configurator_Installed ${TRUE}
-    # mimic old behavior of auto launching BotAgent everytime
-    StrCpy $Agent_LaunchService ${TRUE}
+    StrCpy $Configurator_Installed ${TRUE}
 
     ${Agent_CreateService}
     ${If} $Agent_ServiceCreated == ${TRUE}
@@ -261,17 +259,17 @@ AgentInstallEnd:
 
 SectionEnd
 
-SectionGroup "-Install ${CONFIGURATOR_DISPLAY_NAME}" ConfiguratorGroup
+SectionGroup "Install ${CONFIGURATOR_DISPLAY_NAME}" ConfiguratorGroup
 
-Section "-Core files" ConfiguratorCore
-
-SectionEnd
-
-Section "-Desktop Shortcut" ConfiguratorDesktop
+Section "Core files" ConfiguratorCore
 
 SectionEnd
 
-Section "-StartMenu Shortcut" ConfiguratorStartMenu
+Section "Desktop Shortcut" ConfiguratorDesktop
+
+SectionEnd
+
+Section "StartMenu Shortcut" ConfiguratorStartMenu
 
 SectionEnd
 
@@ -418,12 +416,12 @@ Function ConfigureInstallTypes
     IntOp $0 $0 | ${AgentInstallBitFlag}
     ; 011011b
     SectionSetInstTypes ${AgentCore} $0
-    SectionSetInstTypes ${ConfiguratorCore} 0#$0
+    SectionSetInstTypes ${ConfiguratorCore} $0
 
     IntOp $0 $0 ^ ${MinimalInstallBitFlag}
     ; 011001b
-    SectionSetInstTypes ${ConfiguratorDesktop} 0#$0
-    SectionSetInstTypes ${ConfiguratorStartMenu} 0#$0
+    SectionSetInstTypes ${ConfiguratorDesktop} $0
+    SectionSetInstTypes ${ConfiguratorStartMenu} $0
 
     Pop $0
 
@@ -482,11 +480,11 @@ Function .onSelChange
             ; MessageBox MB_OK "Agent Group"
             ${If} ${SectionIsSelected} ${AgentCore}
                 ${UnselectSection} ${AgentCore}
-                #${UnselectSection} ${ConfiguratorCore}
+                ${UnselectSection} ${ConfiguratorCore}
                 !insertmacro DisableAgentSections
             ${Else}
                 ${SelectSection} ${AgentCore}
-                #${SelectSection} ${ConfiguratorCore}
+                ${SelectSection} ${ConfiguratorCore}
                 !insertmacro EnableAgentSections
             ${EndIf}
         ${EndIf}
@@ -494,10 +492,10 @@ Function .onSelChange
         ${if} $0 == ${ConfiguratorGroup}
             ; MessageBox MB_OK "Configurator Group"
             ${If} ${SectionIsSelected} ${ConfiguratorCore}
-                #${UnselectSection} ${ConfiguratorCore}
+                ${UnselectSection} ${ConfiguratorCore}
                 !insertmacro DisableConfiguratorSections
             ${Else}
-                #${SelectSection} ${ConfiguratorCore}
+                ${SelectSection} ${ConfiguratorCore}
                 !insertmacro EnableConfiguratorSections
             ${EndIf}
         ${EndIf}
