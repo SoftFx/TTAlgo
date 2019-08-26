@@ -1,13 +1,11 @@
 ﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class SslViewModel : BaseViewModel, IContentViewModel
+    public class SslViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private SslModel _model;
-        private RefreshManager _refreshManager;
+        private RefreshCounter _refreshManager;
 
-        public SslViewModel(SslModel model, RefreshManager refManager = null)
+        public SslViewModel(SslModel model, RefreshCounter refManager = null) : base(nameof(ServerViewModel))
         {
             _model = model;
             _refreshManager = refManager;
@@ -22,10 +20,8 @@
                 if (_model.File == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(SslViewModel)} {nameof(File)}", _model.File, value));
-
                 _model.File = value;
-                _refreshManager?.Refresh();
+                //_refreshManager?.Refresh();
 
                 OnPropertyChanged(nameof(File));
             }
@@ -40,18 +36,14 @@
                 if (_model.Password == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(SslViewModel)} {nameof(Password)}", _model.Password, value));
-
                 _model.Password = value;
-                _refreshManager?.Refresh();
+                //_refreshManager?.Refresh();
 
                 OnPropertyChanged(nameof(Password));
             }
         }
 
-        public string ModelDescription { get; set; }
-
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(File));
             OnPropertyChanged(nameof(Password));

@@ -2,20 +2,18 @@
 {
     public class SpinnerViewModel : BaseViewModel
     {
-        private bool _run = false;
+        public bool Run { get; private set; }
 
-        public bool Run
+        public void Start()
         {
-            get => _run;
+            Run = true;
+            OnPropertyChanged(nameof(Run));
+        }
 
-            set
-            {
-                if (_run == value)
-                    return;
-
-                _run = value;
-                OnPropertyChanged(nameof(Run));
-            }
+        public void Stop()
+        {
+            Run = false;
+            OnPropertyChanged(nameof(Run));
         }
     }
 }

@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
         mc:Ignorable="d"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
-        Title="New Url" Height="200" Width="400">
+        Title="{Binding Title}"
+        WindowStartupLocation="CenterScreen" Height="200" Width="400">
     <Window.Resources>
         <ResourceDictionary Source="../Resx/Styles/AddNewUrlWindow.xaml"/>
     </Window.Resources>
@@ -29,11 +29,20 @@
         <TextBlock Grid.Column="1" Text="Host" Style="{StaticResource HeaderStyle}"/>
         <TextBlock Grid.Column="2" Text="Port" Style="{StaticResource HeaderStyle}"/>
 
-        <ComboBox Grid.Row="1" ItemsSource="{Binding Path=NewUri.TypesOfScheme}" SelectedItem="{Binding Path=NewUri.Scheme}" Style="{StaticResource ComboBoxScheme}"/>
-        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="newHost" ItemsSource="{Binding Path=Hosts}" SelectedItem="{Binding Path=NewUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ComboBoxHost}"/>
+        <ComboBox Grid.Row="1" ItemsSource="{Binding Path=CurrentUri.TypesOfScheme}" SelectedItem="{Binding Path=CurrentUri.Scheme}" Style="{StaticResource ComboBoxScheme}"/>
 
-        <TextBox Grid.Column="2" Grid.Row="1" x:Name="newPort" Text="{Binding Path=NewUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Style="{StaticResource PortTextBoxStyle}"/>
+        <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource ErrorHostBorder}">
+            <ComboBox  x:Name="newHost" ItemsSource="{Binding Path=Hosts}" Style="{StaticResource ComboBoxHost}"
+                  Text="{Binding Path=CurrentUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        </Border>
 
-        <Button x:Name="saveNewUrlButton" Grid.Column="1" Grid.Row="3" Command="{Binding SaveNewUri}"/>
+        <Border Grid.Column="2" Grid.Row="1" Style="{StaticResource ErrorPortBorder}">
+            <TextBox  x:Name="newPort" Text="{Binding Path=CurrentUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, Mode=TwoWay, Delay=200}" Style="{StaticResource PortTextBoxStyle}"/>
+        </Border>
+
+        <StackPanel Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Style="{StaticResource AddAndOkButton}" Command="{Binding SaveUri}"/>
+            <Button Style="{StaticResource DefaultButton}" Command="{Binding CloseWindow}"/>
+        </StackPanel>
     </Grid>
 </Window>

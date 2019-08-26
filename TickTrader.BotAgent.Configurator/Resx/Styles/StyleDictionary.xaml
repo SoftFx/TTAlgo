@@ -3,6 +3,8 @@
                     xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
                     xmlns:fa="http://schemas.fontawesome.io/icons/">
 
+    <local:ModelErrorCounter x:Key="ErrorCounter"/>
+
     <Style TargetType="TextBlock">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -20,55 +22,69 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
     </Style>
 
-    <Style TargetType="TextBox">
+    <Style x:Key="DefaultTextBoxStyle" TargetType="TextBox">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Height" Value="22"/>
         <Setter Property="Width" Value="170"/>
+        <!--<Setter Property="BorderBrush" Value="Gray"/>-->
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Name="Border"
+                            BorderThickness="{TemplateBinding Border.BorderThickness}"
+                            BorderBrush="{TemplateBinding Border.BorderBrush}"
+                            Background="{TemplateBinding Panel.Background}"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                               VerticalScrollBarVisibility="Hidden"
+                               Name="PART_ContentHost"
+                               Focusable="False" />
+                    </Border>
+                    <!--<ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsEnabled" Value="False">
+                            <Setter Property="UIElement.Opacity" TargetName="border" Value="0.56"/>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                            <Setter Property="Border.BorderBrush" TargetName="border" Value="#FF7EB4EA"/>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsKeyboardFocused" Value="True">
+                            <Setter Property="Border.BorderBrush" TargetName="border" Value="Black"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>-->
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
                 <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
                 <Setter Property="Foreground" Value="Red"/>
+                <Setter Property="BorderBrush" Value="Red"/>
             </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsMouseOver" Value="True"/>
+                    <Condition Property="Validation.HasError" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="Red"/>
+                <Setter Property="BorderBrush" Value="DarkRed"/>
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsFocused" Value="True"/>
+                    <Condition Property="Validation.HasError" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="Red"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </MultiTrigger>
         </Style.Triggers>
     </Style>
 
-    <ControlTemplate x:Key="validationFailed">
-        <Border BorderBrush="Red" BorderThickness="1">
-            <AdornedElementPlaceholder />
-        </Border>
-    </ControlTemplate>
-
-    <!--<ControlTemplate x:Key="rdButton" TargetType="Button">
-        <Border x:Name="buttonBorder" CornerRadius="5"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="2"
-                Background="White"
-                Height="50"
-                Width="100" >
-            <ContentControl
-                    Margin="{TemplateBinding Padding}"
-                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                    Content="{TemplateBinding Content}" />
-        </Border>
-        <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="true">
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="BorderBrush" Value="Black"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="true">
-                <Setter Property="FontWeight" Value="Normal"/>
-                <Setter TargetName="buttonBorder" Property="Background" Value="#FFEEF5FD" />
-            </Trigger>
-            <Trigger Property="IsEnabled" Value="false">
-                <Setter Property="Foreground" Value="Gray"/>
-                <Setter TargetName="buttonBorder" Property="Background" Value="LightGray"/>
-                <Setter TargetName="buttonBorder" Property="BorderBrush" Value="SlateGray"/>
-            </Trigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>-->
+    <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}"/>
 
     <Style x:Key="StateButton" TargetType="Button">
         <Setter Property="Margin" Value="20 0"/>
@@ -115,27 +131,68 @@
     </Style>
 
     <Style x:Key="ToolBarButton" TargetType="Button">
-        <Setter Property="Margin" Value="10 0"/>
+        <Setter Property="Margin" Value="7 0"/>
         <Setter Property="Height" Value="25"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="IsEnabled" Value="False"/>
     </Style>
 
-    <Style x:Key="ToolBarAgentStartButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
+    <Style x:Key="ToolBarSaveButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=mainTabControl, UpdateSourceTrigger=PropertyChanged, Path=(Validation.Errors).Count}" Value="0">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RefreshCounter.Update, UpdateSourceTrigger=PropertyChanged}" Value="true"/>
+                    <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="IsEnabled" Value="True"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ToolBarAgentStartButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
+        <Setter Property="IsEnabled" Value="False"/>
+        <Setter Property="ToolTip" Value="Start Agent"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+                <Setter Property="ToolTip" Value="Restart Agent"/>
+            </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                    <Condition Binding="{Binding Source={StaticResource ErrorCounter}, Path=TotalWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="0"/>
+                    <Condition Binding="{Binding Spinner.Run}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="IsEnabled" Value="True"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ToolBarStopButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
+        <Setter Property="IsEnabled" Value="False"/>
+        <Setter Property="ToolTip" Value="Stop Agent"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
                 <Setter Property="IsEnabled" Value="True"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
+
     <Style x:Key="ToolBarIcon" TargetType="{x:Type fa:ImageAwesome}">
         <Setter Property="Width" Value="25"/>
         <Setter Property="Height" Value="20"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}, Path=IsEnabled}" Value="False">
                 <Setter Property="Foreground" Value="LightGray"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="StartAndRestartToolBarIcon" TargetType="{x:Type fa:ImageAwesome}" BasedOn="{StaticResource ToolBarIcon}">
+        <Setter Property="Icon" Value="Play"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+                <Setter Property="Icon" Value="Refresh"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -175,6 +232,12 @@
         <Setter Property="Height" Value="25"/>
         <Setter Property="Margin" Value="0 0 10 0"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                <Setter Property="Foreground" Value="Red"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style TargetType="{x:Type TabItem}">
@@ -194,21 +257,48 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="LightBlue" />
                         </Trigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsSelected}" Value="False"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="False"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="Yellow"/>
+                        </MultiDataTrigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsSelected}" Value="True"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="False"/>
+                                <Condition Binding="{Binding ErrorCounter.HasModelWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="Orange"/>
+                        </MultiDataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style x:Key="ErrorTabItem" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="Red"/>
+    <Style x:Key="TabName" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="Black"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ElementName=docCred, Path=(Validation.Errors).Count, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                <Setter Property="Foreground" Value="Black"/>
+            <DataTrigger Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                <Setter Property="Foreground" Value="Red"/>
             </DataTrigger>
         </Style.Triggers>
+    </Style>
+
+    <Style x:Key="TabIcon" TargetType="fa:ImageAwesome">
+        <Setter Property="Foreground" Value="Red"/>
+        <Setter Property="Width" Value="23"/>
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="Margin" Value="0 0 10 0"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="MainTabControl" TargetType="TabControl">
@@ -218,6 +308,37 @@
             <DataTrigger Binding="{Binding ElementName=startAgentSpinner, Path=Visibility}" Value="Visible">
                 <Setter Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="TabWarningStyle" TargetType="TabItem">
+        <Setter Property="Background" Value="Yellow"/>
+    </Style>
+
+    <Style x:Key="UserTabItemErrorStyle" TargetType="TextBlock" BasedOn="{StaticResource TabName}">
+        <Setter Property="Foreground" Value="Red"/>
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding AdminModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding DealerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding ViewerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Foreground" Value="Black"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="UserTabIconErrorStyle" TargetType="fa:ImageAwesome" BasedOn="{StaticResource TabIcon}">
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding AdminModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding DealerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                    <Condition Binding="{Binding ViewerModel.ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Foreground" Value="Black"/>
+            </MultiDataTrigger>
         </Style.Triggers>
     </Style>
 

@@ -18,6 +18,8 @@ namespace TickTrader.BotAgent.Configurator
         private long _lastSize;
         private LinkedList<string> _messages;
 
+        public string LogsStr => string.Join("", _messages);
+
         public string LogsFilePath { get; }
 
         public LogsManager(string path, string folder)
@@ -28,7 +30,10 @@ namespace TickTrader.BotAgent.Configurator
             LoadLog();
         }
 
-        public string LogsStr => string.Join("", _messages);
+        public void DropLog()
+        {
+            _messages.Clear();
+        }
 
         public void LoadLog()
         {

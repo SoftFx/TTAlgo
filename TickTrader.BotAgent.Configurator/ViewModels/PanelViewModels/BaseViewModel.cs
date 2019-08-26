@@ -11,10 +11,32 @@ namespace TickTrader.BotAgent.Configurator
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
+    }
 
-        public static string GetChangeMessage(string category, string oldVal, string newVal)
+    public abstract class BaseContentViewModel : BaseViewModel, IDataErrorInfo, IContentViewModel
+    {
+        public ModelErrorCounter ErrorCounter { get; }
+
+        public string Error { get; }
+
+        public virtual string this[string columnName] => throw new System.NotImplementedException();
+
+        public string ModelDescription { get; set; }
+
+        public BaseContentViewModel(string key = "")
         {
-            return $"{category} was changed: {oldVal} to {newVal}";
+            ErrorCounter = new ModelErrorCounter(key);
         }
+
+        public virtual void RefreshModel() { }
+    }
+
+    public interface IContentViewModel
+    {
+        ModelErrorCounter ErrorCounter { get; }
+
+        string ModelDescription { get; set; }
+
+        void RefreshModel();
     }
 }

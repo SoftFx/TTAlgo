@@ -1,22 +1,25 @@
-﻿namespace TickTrader.BotAgent.Configurator
+﻿using System;
+
+namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialViewModel : BaseViewModel, IContentViewModel
+    public class CredentialViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        private readonly string _keyLogin, _keyPassword;
+        private readonly RefreshCounter _refreshManager;
 
         private CredentialModel _model;
-        private RefreshManager _refreshManager;
 
         private DelegateCommand _generateLogin;
         private DelegateCommand _generatePassword;
 
-        public CredentialViewModel(CredentialModel model, RefreshManager refManager = null)
+        public CredentialViewModel(CredentialModel model, RefreshCounter refManager = null) : base(nameof(CredentialViewModel))
         {
             _model = model;
             _refreshManager = refManager;
-        }
 
-        public string ModelDescription { get; set; }
+            _keyLogin = $"{_model.Name}{nameof(Login)}";
+            _keyPassword = $"{_model.Name}{nameof(Password)}";
+        }
 
         public string Name => _model.Name;
 
@@ -25,15 +28,14 @@
             get => _model.Login;
 
             set
-            {
+           {
                 if (_model.Login == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{_model.Name}{nameof(Login)}", _model.Login, value));
-
                 _model.Login = value;
-                _refreshManager?.Refresh();
+                _refreshManager?.CheckUpdate(value, _model.CurrentLogin, _keyLogin);
 
+                ErrorCounter.DeleteError(_keyLogin);
                 OnPropertyChanged(nameof(Login));
             }
         }
@@ -48,9 +50,36 @@
                     return;
 
                 _model.Password = value;
-                _refreshManager?.Refresh();
+                _refreshManager?.CheckUpdate(value, _model.CurrentPassword, _keyPassword);
 
+                ErrorCounter.DeleteError(_keyPassword);
                 OnPropertyChanged(nameof(Password));
+            }
+        }
+
+        public override string this[string columnName]
+        {
+            get
+            {
+                var msg = "";
+                try
+                {
+                    switch (columnName)
+                    {
+                        case "Login":
+                            ErrorCounter.CheckStringLength(Login, 3, _keyLogin);
+                            break;
+                        case "Password":
+                            ErrorCounter.CheckStringLength(Password, 5, _keyPassword);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    msg = ex.Message;
+                }
+
+                return msg;
             }
         }
 
@@ -58,7 +87,7 @@
             _generatePassword = new DelegateCommand(obj =>
             {
                 _model.GeneratePassword();
-                _refreshManager?.Refresh();
+                _refreshManager?.AddUpdate(_keyPassword);
 
                 OnPropertyChanged(nameof(Password));
             }));
@@ -67,12 +96,12 @@
             _generateLogin = new DelegateCommand(obj =>
             {
                 _model.GenerateNewLogin();
-                _refreshManager?.Refresh();
+                _refreshManager?.AddUpdate(_keyLogin);
 
                 OnPropertyChanged(nameof(Login));
             }));
 
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(Login));
             OnPropertyChanged(nameof(Password));

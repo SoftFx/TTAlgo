@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class CredentialsManager : ContentManager, IUploaderModels
+    public class CredentialsManager : ContentManager, IWorkingManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public enum Properties { Login, Password }
 
         public CredentialModel Dealer { get; }
@@ -13,11 +15,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public CredentialModel Viewer { get; }
 
+        private readonly List<IWorkingModel> _models;
+
         public CredentialsManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
-        { 
+        {
             Admin = new CredentialModel(nameof(Admin));
             Dealer = new CredentialModel(nameof(Dealer));
             Viewer = new CredentialModel(nameof(Viewer));
+
+            _models = new List<IWorkingModel>() { Admin, Dealer, Viewer };
         }
 
         public void UploadModels(List<JProperty> credentialsProp)
@@ -43,62 +49,31 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             SetDefaultModelValues();
+            UpdateCurrentModelValues();
         }
 
         public void SetDefaultModelValues()
         {
-            Admin.SetDefaultValues();
-            Dealer.SetDefaultValues();
-            Viewer.SetDefaultValues();
+            foreach (var model in _models)
+                model.SetDefaultValues();
+        }
+
+        public void UpdateCurrentModelValues()
+        {
+            foreach (var model in _models)
+                model.UpdateCurrentFields();
         }
 
         public void SaveConfigurationModels(JObject obj)
         {
-            SaveModels(obj, Admin);
-            SaveModels(obj, Dealer);
-            SaveModels(obj, Viewer);
+            foreach (var model in _models)
+                SaveModels(obj, (CredentialModel)model);
         }
 
         private void SaveModels(JObject root, CredentialModel model)
         {
-            SaveProperty(root, $"{model.Name}Login", model.Login);
-            SaveProperty(root, $"{model.Name}Password", model.Password);
-        }
-    }
-
-    public class CredentialModel
-    {
-        private const int PasswordLength = 10;
-
-        public string Name { get; }
-
-        public string Login { get; set; }
-
-        public string Password { get; set; }
-
-
-        public CredentialModel(string name)
-        {
-            Name = name;
-        }
-
-        public void SetDefaultValues()
-        {
-            if (string.IsNullOrEmpty(Login))
-                Login = Name;
-
-            if (string.IsNullOrEmpty(Password))
-                Password = Name;
-        }
-
-        public void GeneratePassword()
-        {
-            Password = CryptoManager.GetNewPassword(8);
-        }
-
-        public void GenerateNewLogin()
-        {
-            Login = $"{Name}_{CryptoManager.GetNewPassword(3)}";
+            SaveProperty(root, $"{model.Name}Login", model.Login, model.CurrentLogin, _logger);
+            SaveProperty(root, $"{model.Name}Password", model.Password, model.CurrentPassword);
         }
     }
 }

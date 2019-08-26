@@ -3,5 +3,5 @@
                     xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator">
 
     <local:ServiceStateToColorConverter x:Key="stateToColorConverter"/>
-    <local:BoolToVisibilityConverter x:Key="boolToVis"/>
+    <BooleanToVisibilityConverter x:Key="boolToVis"/>
 </ResourceDictionary>

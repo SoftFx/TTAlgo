@@ -8,4 +8,23 @@
     <Style x:Key="ProtocolCheckBox" BasedOn="{StaticResource BaseCheckBox}" TargetType="CheckBox">
         <Setter Property="Margin" Value="90 4 0 0"/>
     </Style>
+
+    <Style x:Key="ListenPortTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="BorderBrush" Value="#FFABADB3"/>
+                <Setter Property="BorderThickness" Value="1"/>
+            </Trigger>
+
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ErrorCounter.HasModelErrorCount, UpdateSourceTrigger=PropertyChanged}" Value="False"/>
+                    <Condition Binding="{Binding ErrorCounter.HasModelWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="Yellow"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

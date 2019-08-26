@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Management;
 using System.ServiceProcess;
 
 namespace TickTrader.BotAgent.Configurator
@@ -7,22 +8,18 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private ServiceController _serviceController;
         private readonly string _serviceName;
-        private int _servicePort;
+
+        private ServiceController _serviceController;
+
+        public string ServiceDisplayName => _serviceController.DisplayName;
 
         public bool IsServiceRunning => _serviceController?.Status == ServiceControllerStatus.Running;
 
         public ServiceControllerStatus ServiceStatus => _serviceController.Status;
-        public int ServicePort
-        {
-            get => _servicePort;
-            set
-            {
-                if (IsServiceRunning && _servicePort != value)
-                    _servicePort = value;
-            }
-        }
+
+        public int ServiceId { get; private set; }
+
 
         public ServiceManager(string serviceName)
         {
@@ -32,6 +29,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public void ServiceStart(int listeningPort)
         {
+            if (IsServiceRunning)
+                ServiceStop();
+
             _serviceController = new ServiceController(_serviceName);
 
             if (_serviceController.Status == ServiceControllerStatus.Running)
@@ -41,7 +41,6 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _serviceController.Start();
                 _serviceController.WaitForStatus(ServiceControllerStatus.Running);
-                ServicePort = listeningPort;
             }
             catch (Exception ex)
             {

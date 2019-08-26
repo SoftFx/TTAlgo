@@ -3,8 +3,10 @@ using Newtonsoft.Json.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class FdkManager : ContentManager, IUploaderModels
+    public class FdkManager : ContentManager, IWorkingManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public const string EnableLogsNameProperty = "EnableLogs";
 
         public FdkModel FdkModel { get; }
@@ -25,18 +27,20 @@ namespace TickTrader.BotAgent.Configurator
                         break;
                 }
             }
+
+            UpdateCurrentModelValues();
         }
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, EnableLogsNameProperty, FdkModel.EnableLogs);
+            SaveProperty(root, EnableLogsNameProperty, FdkModel.EnableLogs, FdkModel.CurrentEnableLogs, _logger);
         }
 
         public void SetDefaultModelValues() { }
-    }
 
-    public class FdkModel
-    {
-        public bool EnableLogs { get; set; }
+        public void UpdateCurrentModelValues()
+        {
+            FdkModel.UpdateCurrentFields();
+        }
     }
 }

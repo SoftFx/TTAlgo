@@ -20,11 +20,6 @@ namespace TickTrader.BotAgent.Configurator
             DownloadPrompts();
         }
 
-        public Dictionary<string, string> GetDict(SectionNames section)
-        {
-            return _prompts.ContainsKey(section) ? _prompts[section] : null;
-        }
-
         public string GetPrompt(SectionNames section, string key)
         {
             return _prompts.ContainsKey(section) && _prompts[section].ContainsKey(key) ? _prompts[section][key] : null;
@@ -42,6 +37,8 @@ namespace TickTrader.BotAgent.Configurator
 
                     if (!string.IsNullOrEmpty(str))
                         obj = JObject.Parse(str);
+                    else
+                        return;
                 }
 
                 foreach (SectionNames section in Enum.GetValues(typeof(SectionNames)))

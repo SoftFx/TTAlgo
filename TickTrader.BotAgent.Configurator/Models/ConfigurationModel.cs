@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public enum SectionNames {None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider }
+    public enum SectionNames { None, Credentials, Ssl, Protocol, Fdk, Server, MultipleAgentProvider }
 
     public class ConfigurationModel
     {
@@ -14,31 +14,32 @@ namespace TickTrader.BotAgent.Configurator
 
         private ConfigManager _configManager;
         private PortsManager _portsManager;
-        private RegistryManager _registryManager;
-
         private JObject _configurationObject;
 
-        private readonly List<IUploaderModels> _uploaderModels;
+        private List<IWorkingManager> _workingModels;
 
-        public ServiceManager ServiceManager { get; }
+        public RegistryNode CurrentAgent => RegistryManager?.CurrentAgent;
 
-        public ConfigurationProperies Settings { get; }
-
-        public CredentialsManager CredentialsManager { get; }
-
-        public SslManager SslManager { get; }
-
-        public ProtocolManager ProtocolManager { get; }
-
-        public ServerManager ServerManager { get; }
-
-        public FdkManager FdkManager { get; }
+        public RegistryManager RegistryManager { get; }
 
         public PrompterManager Prompts { get; }
 
+        public ConfigurationProperies Settings { get; }
+
+        public ServiceManager ServiceManager { get; private set; }
+
+        public CredentialsManager CredentialsManager { get; private set; }
+
+        public SslManager SslManager { get; private set; }
+
+        public ProtocolManager ProtocolManager { get; private set; }
+
+        public ServerManager ServerManager { get; private set; }
+
+        public FdkManager FdkManager { get; private set; }
+
         public LogsManager Logs { get; private set; }
 
-        public MultipleAgentConfigurator BotAgentHolder { get; }
 
         public ConfigurationModel()
         {
@@ -46,73 +47,84 @@ namespace TickTrader.BotAgent.Configurator
 
             Settings = _configManager.Properties;
             Prompts = new PrompterManager();
+            RegistryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings], Settings.IsDeveloper, Settings[AppProperties.ApplicationName]);
 
-            BotAgentHolder = Settings.MultipleAgentProvider;
-            _registryManager = new RegistryManager(Settings[AppProperties.RegistryAppName], Settings[AppProperties.AppSettings]);
+            RefreshModel();
+        }
 
-            ServiceManager = new ServiceManager(Settings[AppProperties.ServiceName]);
-            _portsManager = new PortsManager(ServiceManager);
+        public void RefreshModel(string newPath = null)
+        {
+            RegistryManager.ChangeCurrentAgent(newPath);
+
+            ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
+
+            _portsManager = new PortsManager(ServiceManager, RegistryManager.CurrentAgent);
+            _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
             SslManager = new SslManager(SectionNames.Ssl);
             ProtocolManager = new ProtocolManager(SectionNames.Protocol, _portsManager);
             FdkManager = new FdkManager(SectionNames.Fdk);
-            ServerManager = new ServerManager();
+            ServerManager = new ServerManager(_portsManager);
+            Logs = new LogsManager(CurrentAgent.Path, Settings[AppProperties.LogsPath]);
 
-            _uploaderModels = new List<IUploaderModels>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
+            _workingModels = new List<IWorkingManager>() { CredentialsManager, SslManager, ProtocolManager, ServerManager, FdkManager };
 
-            LoadConfiguration(false);
-
-            ServiceManager.ServicePort = ProtocolManager.ProtocolModel.ListeningPort;
+            LoadConfiguration();
+            SaveChanges();
         }
 
         public void StartAgent()
         {
             string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
 
-            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(BotAgentHolder.BotAgentPath, $"{Settings[AppProperties.ApplicationName]}.exe"), ports, Settings[AppProperties.ServiceName]);
+            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(CurrentAgent.Path, $"{Settings[AppProperties.ApplicationName]}.exe"), ports);
 
-            if (ServiceManager.IsServiceRunning)
-                 ServiceManager.ServiceStop();
-
-             ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort);
+            ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
         }
 
-        public void LoadConfiguration(bool loadConfig = true)
+        public void StopAgent()
         {
-            if (loadConfig)
-                _configManager.LoadProperties();
+            ServiceManager.ServiceStop();
+        }
 
-            BotAgentHolder.SetNewBotAgentPath(_registryManager.BotAgentPath, Settings[AppProperties.AppSettings]);
+        public void LoadConfiguration()
+        {
+            if (File.Exists(CurrentAgent.AppSettingPath))
+                using (var configStreamReader = new StreamReader(CurrentAgent.AppSettingPath))
+                {
+                    _configurationObject = JObject.Parse(configStreamReader.ReadToEnd());
+                }
 
-            Logs = new LogsManager(BotAgentHolder.BotAgentPath, Settings[AppProperties.LogsPath]);
-
-            using (var configStreamReader = new StreamReader(BotAgentHolder.BotAgentConfigPath))
+            foreach (var model in _workingModels)
             {
-                _configurationObject = JObject.Parse(configStreamReader.ReadToEnd());
-
-                foreach (var uploader in _uploaderModels)
-                    UploadModel(uploader);
+                UploadModel(model);
+                model.SetDefaultModelValues();
+                model.UpdateCurrentModelValues();
             }
-
-            _configManager.SaveChanges();
         }
 
         public void SaveChanges()
         {
-            foreach (var uploader in _uploaderModels)
-                uploader.SaveConfigurationModels(_configurationObject);
+            _configurationObject = _configurationObject ?? new JObject();
 
-            using (var configStreamWriter = new StreamWriter(BotAgentHolder.BotAgentConfigPath))
+            foreach (var model in _workingModels)
+            {
+                model.SaveConfigurationModels(_configurationObject);
+                model.UpdateCurrentModelValues();
+            }
+
+            using (var configStreamWriter = new StreamWriter(CurrentAgent.AppSettingPath))
             {
                 configStreamWriter.Write(_configurationObject.ToString());
             }
-
-            _configManager.SaveChanges();
         }
 
-        private void UploadModel(IUploaderModels model)
+        private void UploadModel(IWorkingManager model)
         {
+            if (_configurationObject == null)
+                return;
+
             try
             {
                 var args = model.SectionName == "" ? _configurationObject.Values<JProperty>() : _configurationObject[model.SectionName].Children<JProperty>();
@@ -121,19 +133,11 @@ namespace TickTrader.BotAgent.Configurator
             catch (NullReferenceException ex)
             {
                 _logger.Error(ex);
-
-                if (MessageBoxManager.YesNoBoxError($"Loading section {model.SectionName} failed. Apply default settings?"))
-                {
-                    model.SetDefaultModelValues();
-                }
-                else
-                    throw new Exception("Unable to load settings");
             }
         }
     }
 
-
-    public interface IUploaderModels
+    public interface IWorkingManager
     {
         string SectionName { get; }
 
@@ -142,12 +146,13 @@ namespace TickTrader.BotAgent.Configurator
         void SetDefaultModelValues();
 
         void SaveConfigurationModels(JObject root);
+
+        void UpdateCurrentModelValues();
     }
 
-    public interface IBotAgentConfigPathHolder
+    public interface IWorkingModel
     {
-        string BotAgentPath { get; }
-
-        string BotAgentConfigPath { get; }
+        void SetDefaultValues();
+        void UpdateCurrentFields();
     }
 }

@@ -1,32 +1,49 @@
-﻿namespace TickTrader.BotAgent.Configurator
+﻿using System;
+
+namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolViewModel : BaseViewModel, IContentViewModel
+    public class ProtocolViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        private readonly RefreshCounter _refreshManager;
+        private readonly string _keyPort, _keyDirectory, _keyLog;
 
         private ProtocolModel _model;
-        private RefreshManager _refreshManager;
 
-        public ProtocolViewModel(ProtocolModel model, RefreshManager refManager = null)
+        public ProtocolViewModel(ProtocolModel model, RefreshCounter refManager = null) : base(nameof(ProtocolViewModel))
         {
             _model = model;
             _refreshManager = refManager;
+
+            _keyPort = $"{nameof(ProtocolViewModel)} {nameof(ListeningPort)}";
+            _keyDirectory = $"{nameof(ProtocolViewModel)} {nameof(DirectoryName)}";
+            _keyLog = $"{nameof(ProtocolViewModel)} {nameof(_keyPort)}";
         }
 
-        public int ListeningPort
+        public string ListeningPort
         {
-            get => _model.ListeningPort;
+            get => _model.ListeningPort.ToString();
 
             set
             {
-                if (_model.ListeningPort == value)
+                if (_model.ListeningPort.ToString() == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(ListeningPort)}", _model.ListeningPort.ToString(), value.ToString()));
+                try
+                {
+                    _model.ListeningPort = int.Parse(value);
+                }
+                catch (Exception ex)
+                {
+                    ErrorCounter.AddError(_keyPort);
+                    _refreshManager?.AddUpdate(_keyPort);
+                    _model.ListeningPort = 0;
+                    throw ex;
+                }
 
-                _model.ListeningPort = value;
-                _refreshManager?.Refresh();
+                _refreshManager?.CheckUpdate(value, _model.CurrentListeningPort.ToString(), _keyPort);
 
+                ErrorCounter.DeleteError(_keyPort);
+                ErrorCounter.DeleteWarning(_keyPort);
                 OnPropertyChanged(nameof(ListeningPort));
             }
         }
@@ -40,11 +57,10 @@
                 if (_model.DirectoryName == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(DirectoryName)}", _model.DirectoryName, value));
-
                 _model.DirectoryName = value;
-                _refreshManager?.Refresh();
+                _refreshManager?.CheckUpdate(value, _model.CurrentDirectoryName, _keyDirectory);
 
+                ErrorCounter.DeleteError(_keyDirectory);
                 OnPropertyChanged(nameof(DirectoryName));
             }
         }
@@ -58,16 +74,45 @@
                 if (_model.LogMessage == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(ProtocolViewModel)} {nameof(LogMessage)}", _model.LogMessage.ToString(), value.ToString()));
-
                 _model.LogMessage = value;
-                _refreshManager?.Refresh();
+                _refreshManager?.CheckUpdate(value.ToString(), _model.CurrentLogMessage.ToString(), _keyLog);
 
                 OnPropertyChanged(nameof(LogMessage));
             }
         }
 
-        public string ModelDescription { get; set; }
+        public override string this[string columnName]
+        {
+            get
+            {
+                var msg = string.Empty;
+
+                try
+                {
+                    switch (columnName)
+                    {
+                        case "ListeningPort":
+                            ErrorCounter.CheckNumberRange(_model.ListeningPort.Value, _keyPort, max: 1 << 16);
+                            _model.CheckPort(_model.ListeningPort.Value);
+                            break;
+                        case "DirectoryName":
+                            ErrorCounter.CheckStringLength(DirectoryName, 1, _keyDirectory);
+                            break;
+                    }
+                }
+                catch (WarningException ex)
+                {
+                    msg = ex.Message;
+                    ErrorCounter.AddWarning(_keyPort);
+                }
+                catch (Exception ex)
+                {
+                    msg = ex.Message;
+                }
+
+                return msg;
+            }
+        }
 
         public string ListeningPortDescription { get; set; }
 
@@ -75,16 +120,11 @@
 
         public string LogMessageDescription { get; set; }
 
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(ListeningPort));
             OnPropertyChanged(nameof(DirectoryName));
             OnPropertyChanged(nameof(LogMessage));
-        }
-
-        public void CheckPort(int port = -1)
-        {
-            _model.CheckPort(port == -1 ? ListeningPort : port);
         }
     }
 }

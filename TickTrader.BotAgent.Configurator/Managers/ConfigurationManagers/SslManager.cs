@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class SslManager : ContentManager, IUploaderModels
+    public class SslManager : ContentManager, IWorkingManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public SslModel SslModel { get; }
 
         public SslManager(SectionNames sectionName = SectionNames.None) : base(sectionName)
@@ -35,28 +37,17 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, "File", SslModel.File);
-            SaveProperty(root, "Password", SslModel.Password);
+            //SaveProperty(root, "File", SslModel.File);
+            //SaveProperty(root, "Password", SslModel.Password);
         }
 
         public void SetDefaultModelValues()
         {
             SslModel.SetDefaultValues();
         }
-    }
 
-    public class SslModel
-    {
-        private const string DefaultFile = "certificate.ptx";
-
-        public string File { get; set; }
-
-        public string Password { get; set; }
-
-        public void SetDefaultValues()
+        public void UpdateCurrentModelValues()
         {
-            if (string.IsNullOrEmpty(File))
-                File = DefaultFile;
         }
     }
 }

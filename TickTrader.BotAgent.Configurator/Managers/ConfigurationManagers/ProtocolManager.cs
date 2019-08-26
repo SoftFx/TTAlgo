@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace TickTrader.BotAgent.Configurator
 {
-    public class ProtocolManager : ContentManager, IUploaderModels
+    public class ProtocolManager : ContentManager, IWorkingManager
     {
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         public const string PortNameProperty = "ListeningPort";
         public const string DirectoryNameProperty = "LogDirectoryName";
         public const string UseLogNameProperty = "LogMessages";
@@ -35,79 +37,24 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             SetDefaultModelValues();
+            UpdateCurrentModelValues();
         }
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, PortNameProperty, ProtocolModel.ListeningPort);
-            SaveProperty(root, DirectoryNameProperty, ProtocolModel.DirectoryName);
-            SaveProperty(root, UseLogNameProperty, ProtocolModel.LogMessage);
+            SaveProperty(root, PortNameProperty, ProtocolModel.ListeningPort, ProtocolModel.CurrentListeningPort, _logger);
+            SaveProperty(root, DirectoryNameProperty, ProtocolModel.DirectoryName, ProtocolModel.CurrentDirectoryName, _logger);
+            SaveProperty(root, UseLogNameProperty, ProtocolModel.LogMessage, ProtocolModel.CurrentLogMessage, _logger);
         }
 
         public void SetDefaultModelValues()
         {
             ProtocolModel.SetDefaultValues();
         }
-    }
 
-    public class ProtocolModel
-    {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
-        private const int MaxPort = 1 << 16;
-
-        private readonly PortsManager _portManager;
-
-        private const string DefaultDirectoryName = "Logs";
-        private const int DefaultPort = 58443;
-
-        public ProtocolModel(PortsManager manager)
+        public void UpdateCurrentModelValues()
         {
-            _portManager = manager;
-        }
-
-        public int ListeningPort { get; set; }
-
-        public string DirectoryName { get; set; }
-
-        public bool LogMessage { get; set; }
-
-        public void SetDefaultValues()
-        {
-            if (string.IsNullOrEmpty(DirectoryName))
-                DirectoryName = DefaultDirectoryName;
-
-            if (ListeningPort == 0)
-                ListeningPort = DefaultPort;
-        }
-
-        public void CheckPort(int port)
-        {
-            try
-            {
-                _portManager?.CheckPortOpen(port);
-            }
-            catch (WarningException ex)
-            {
-                string freePortMassage = string.Empty;
-
-                for (int i = (port + 1) % MaxPort; i != port;)
-                {
-                    if (_portManager.CheckPortOpen(i, exception: false))
-                    {
-                        freePortMassage = $"Port {i} is free";
-                        break;
-                    }
-
-                    i = (i + 1) % MaxPort;
-                }
-
-                if (string.IsNullOrEmpty(freePortMassage))
-                    freePortMassage = "Free ports not found";
-
-                _logger.Error(ex);
-                throw new WarningException($"{ex.Message}. {freePortMassage}");
-            }
+            ProtocolModel.UpdateCurrentFields();
         }
     }
 }

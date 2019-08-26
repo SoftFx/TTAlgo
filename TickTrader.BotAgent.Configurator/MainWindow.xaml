@@ -7,10 +7,11 @@
         xmlns:c="clr-namespace:TickTrader.BotAgent.Configurator.Controls"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="BotAgent Configurator" 
+        Title="{Binding Title}"
         Height="600" Width="1000"
         MinHeight="640" MinWidth="1000"
         WindowStartupLocation="CenterScreen">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="33"/>
@@ -21,7 +22,7 @@
 
         <ToolBarTray>
             <ToolBar Height="33">
-                <Button x:Name="CancelButton" Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                <Button Style="{StaticResource ToolBarButton}" Command="{Binding CancelChanges}" IsEnabled="{Binding RefreshCounter.Update, UpdateSourceTrigger=PropertyChanged}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Share" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
@@ -29,7 +30,7 @@
                         <TextBlock Text="Reset Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="SaveButton" Style="{StaticResource ToolBarButton}" Command="{Binding SaveChanges}" IsEnabled="{Binding RefreshManager.Update, UpdateSourceTrigger=PropertyChanged}">
+                <Button Style="{StaticResource ToolBarSaveButton}" Command="{Binding SaveChanges}">
                     <Button.Content>
                         <fa:ImageAwesome Icon="Save" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
@@ -37,20 +38,23 @@
                         <TextBlock Text="Save Changes"/>
                     </Button.ToolTip>
                 </Button>
-                <Button x:Name="StartButton" Style="{StaticResource ToolBarButton}" Command="{Binding StartAgent}" IsEnabled="True">
+                <Button Style="{StaticResource ToolBarAgentStartButton}" Command="{Binding StartAgent}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Play" Style="{StaticResource ToolBarIcon}"/>
+                        <fa:ImageAwesome Style="{StaticResource StartAndRestartToolBarIcon}"/>
                     </Button.Content>
-                    <Button.ToolTip>
-                        <TextBlock Text="Start Agent"/>
-                    </Button.ToolTip>
+                </Button>
+
+                <Button Style="{StaticResource ToolBarStopButton}" Command="{Binding StopAgent}">
+                    <Button.Content>
+                        <fa:ImageAwesome Icon="Stop" Style="{StaticResource ToolBarIcon}"/>
+                    </Button.Content>
                 </Button>
             </ToolBar>
         </ToolBarTray>
 
         <fa:ImageAwesome x:Name="startAgentSpinner" Grid.Row="1" Style="{StaticResource AgentSpinner}" Visibility="{Binding Spinner.Run, Converter={StaticResource boolToVis}}"/>
 
-        <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}" x:Name="mainTabControl" Validation.Error="CountNumberErrors">
+        <TabControl Grid.Row="1" Style="{StaticResource MainTabControl}">
             <TabControl.Resources>
                 <Style TargetType="Grid">
                     <Setter Property="Background" Value="#FFEEF5FD"/>
@@ -59,12 +63,12 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <fa:ImageAwesome Icon="AddressCardOutline"/>
-                        <TextBlock Text="User credentials" Style="{StaticResource ErrorTabItem}"/>
+                        <fa:ImageAwesome x:Name="iconUserTab" Icon="AddressCardOutline" Style="{StaticResource UserTabIconErrorStyle}"/>
+                        <TextBlock x:Name="textUserTab" Text="User credentials" Style="{StaticResource UserTabItemErrorStyle}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <TabItem.Content>
-                    <DockPanel x:Name="docCred">
+                    <DockPanel>
                         <DockPanel.Resources>
                             <Style TargetType="Grid">
                                 <Setter Property="Background" Value="White"/>
@@ -79,11 +83,11 @@
                 </TabItem.Content>
             </TabItem>
 
-            <TabItem>
+            <TabItem DataContext="{Binding ProtocolModel}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="Desktop"/>
-                        <TextBlock Text="Terminal connection"/>
+                        <TextBlock Text="Terminal connection" Style="{StaticResource TabName}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <TabItem.Content>
@@ -93,12 +97,12 @@
                                 <Setter Property="Background" Value="White"/>
                             </Style>
                         </DockPanel.Resources>
-                        <c:ProtocolPanel DataContext="{Binding ProtocolModel}" Style="{StaticResource ProtocolControlPanel}"/>
+                        <c:ProtocolPanel Style="{StaticResource ProtocolControlPanel}"/>
                     </DockPanel>
                 </TabItem.Content>
             </TabItem>
 
-            <TabItem>
+            <TabItem DataContext="{Binding ServerModel}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="Server"/>
@@ -113,7 +117,7 @@
                                 <Setter Property="Background" Value="White"/>
                             </Style>
                         </DockPanel.Resources>
-                        <c:ServerPanel DataContext="{Binding ServerModel}" Style="{StaticResource ServerControlPanel}"/>
+                        <c:ServerPanel Style="{StaticResource ServerControlPanel}"/>
                     </DockPanel>
                 </TabItem.Content>
             </TabItem>
@@ -134,7 +138,7 @@
                             </Style>
                         </DockPanel.Resources>
                         <StackPanel>
-                            <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}"/>
+                            <c:AdvancedPanel Style="{StaticResource AdvancedControlPanel}" Visibility="{Binding IsDeveloperVersion, Converter={StaticResource boolToVis}}"/>
                             <c:FdkPanel DataContext="{Binding FdkModel}" Style="{StaticResource FdkControlPanel}"/>
                         </StackPanel>
                     </DockPanel>

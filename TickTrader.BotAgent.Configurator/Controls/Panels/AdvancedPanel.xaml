@@ -6,9 +6,6 @@
              xmlns:local="clr-namespace:TickTrader.BotAgent.Configurator"
              mc:Ignorable="d">
     <Grid>
-        <Grid.Resources>
-            <local:UpdateNewProperty x:Key="urlsHolder" Holder="{Binding AdvancedModel}"/>
-        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
@@ -20,8 +17,8 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <ComboBox x:Name="urlsComboBox" ItemsSource="{Binding AdvancedModel.AgentPaths}" SelectedValue="{Binding NewValue, Source={StaticResource urlsHolder}}" Style="{StaticResource ComboBoxStyle}"/>
-        <Button x:Name="restartAppButton" Grid.Column="1" Style="{StaticResource AdvancedRestartAppButton}" Command="{Binding RestartApplication}" IsEnabled="{Binding WasUpdate, Source={StaticResource urlsHolder}}"/>
+        <ComboBox ItemsSource="{Binding AdvancedModel.AgentPaths}" Style="{StaticResource ComboBoxStyle}" SelectedItem="{Binding AdvancedModel.SelectPath, UpdateSourceTrigger=PropertyChanged}"/>
+        <Button Grid.Column="1" Style="{StaticResource AdvancedRestartAppButton}" Command="{Binding RestartApplication}" IsEnabled="{Binding AdvancedModel.NewCurrentAgent, UpdateSourceTrigger=PropertyChanged}"/>
 
         <Separator Grid.Row="1" Grid.ColumnSpan="3"/>
 

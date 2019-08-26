@@ -1,16 +1,18 @@
 ﻿namespace TickTrader.BotAgent.Configurator
 {
-    public class FdkViewModel : BaseViewModel, IContentViewModel
+    public class FdkViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        private readonly RefreshCounter _refreshManager;
+        private readonly string _keyLogs;
 
         private FdkModel _model;
-        private RefreshManager _refreshManager;
 
-        public FdkViewModel(FdkModel model, RefreshManager refManager = null)
+        public FdkViewModel(FdkModel model, RefreshCounter refManager = null) : base(nameof(FdkViewModel))
         {
             _model = model;
             _refreshManager = refManager;
+
+            _keyLogs = $"{nameof(FdkViewModel)} {nameof(EnableLogs)}";
         }
 
         public bool EnableLogs
@@ -21,18 +23,14 @@
                 if (_model.EnableLogs == value)
                     return;
 
-                _logger.Info(GetChangeMessage($"{nameof(FdkViewModel)} {nameof(EnableLogs)}", _model.EnableLogs.ToString(), value.ToString()));
-
                 _model.EnableLogs = value;
-                _refreshManager?.Refresh();
+                _refreshManager?.CheckUpdate(value.ToString(), _model.CurrentEnableLogs.ToString(), _keyLogs);
 
                 OnPropertyChanged(nameof(EnableLogs));
             }
         }
 
-        public string ModelDescription { get; set; }
-
-        public void RefreshModel()
+        public override void RefreshModel()
         {
             OnPropertyChanged(nameof(EnableLogs));
         }

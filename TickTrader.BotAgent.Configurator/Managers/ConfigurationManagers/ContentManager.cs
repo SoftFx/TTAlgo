@@ -12,19 +12,30 @@ namespace TickTrader.BotAgent.Configurator
             SectionName = sectionName == SectionNames.None ? string.Empty : sectionName.ToString();
         }
 
-        protected virtual void SaveProperty(JObject root, string property, object value)
+        protected virtual void SaveProperty(JObject root, string property, object newValue, object oldValue, NLog.Logger logger = null)
         {
+            if (newValue.Equals(oldValue))
+                return;
+
             if (!string.IsNullOrEmpty(SectionName))
             {
                 InsertSection(root, new JProperty(SectionName, new JObject()));
-                if (!InsertSection(root[SectionName] as JObject, new JProperty(property, value)))
-                    root[SectionName][property] = JToken.FromObject(value);
+                if (!InsertSection(root[SectionName] as JObject, new JProperty(property, newValue)))
+                    root[SectionName][property] = JToken.FromObject(newValue);
             }
             else
             {
-                if (!InsertSection(root, new JProperty(property, value)))
-                    root[property] = JToken.FromObject(value);
+                if (!InsertSection(root, new JProperty(property, newValue)))
+                    root[property] = JToken.FromObject(newValue);
             }
+
+            if (logger != null)
+                logger.Info(GetChangeMessage(property, oldValue, newValue));
+        }
+
+        private string GetChangeMessage(string property, object oldVal, object newVal)
+        {
+            return $"{property} was changed: {oldVal} to {newVal}";
         }
 
         private bool InsertSection(JObject root, JProperty prop)
