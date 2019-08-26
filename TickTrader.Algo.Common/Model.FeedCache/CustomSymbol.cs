@@ -1,15 +1,6 @@
 ﻿using ProtoBuf;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TickTrader.Algo.Common.Model.Setup;
 using TickTrader.Algo.Core;
-using TickTrader.BusinessObjects;
-using SoftFX.Extended;
-using TickTrader.Algo.Api;
-using TickTrader.SeriesStorage;
 
 namespace TickTrader.Algo.Common.Model
 {

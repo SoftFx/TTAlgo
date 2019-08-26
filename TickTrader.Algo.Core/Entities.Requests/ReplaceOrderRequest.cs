@@ -17,6 +17,7 @@ namespace TickTrader.Algo.Core
         public OrderSide Side { get; set; }
         public double CurrentVolume { get; set; }
         public double? NewVolume { get; set; }
+        public double VolumeChange => (double.IsNaN(CurrentVolume) || !NewVolume.HasValue) ? 0.0 : NewVolume.Value - CurrentVolume;
         public double? Price { get; set; }
         public double? StopPrice { get; set; }
         public double? MaxVisibleVolume { get; set; }

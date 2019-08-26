@@ -23,14 +23,12 @@ export class AccountModel implements Serializable<AccountModel> {
     public Login: string = "";
     public Server: string = "";
     public Password: string = "";
-    public UseNewProtocol: boolean = false;
 
     constructor() { }
 
     public Deserialize(input: any): AccountModel {
         this.Login = input.Login;
         this.Server = input.Server;
-        this.UseNewProtocol = input.UseNewProtocol;
 
         return this;
     }

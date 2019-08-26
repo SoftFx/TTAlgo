@@ -16,6 +16,9 @@ namespace TickTrader.Algo.Api
         bool HasAsk { get; }
         bool HasBid { get; }
 
+        bool IsAskIndicative { get; }
+        bool IsBidIndicative { get; }
+
         BookEntry[] AskBook { get; }
         BookEntry[] BidBook { get; }
     }

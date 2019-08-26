@@ -17,24 +17,20 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public string Password { get; set; }
 
-        [DataMember]
-        public bool UseSfxProtocol { get; set; }
-
         public AccountStorageEntry()
         {
         }
 
-        public AccountStorageEntry(string login, string password, string server, bool useSfx)
+        public AccountStorageEntry(string login, string password, string server)
         {
             Login = login;
             Password = password;
             ServerAddress = server;
-            UseSfxProtocol = useSfx;
         }
 
         public AccountStorageEntry Clone()
         {
-            return new AccountStorageEntry(Login, Password, ServerAddress, UseSfxProtocol);
+            return new AccountStorageEntry(Login, Password, ServerAddress);
         }
     }
 }

@@ -4,4 +4,3 @@ export * from './account-change-password.component';
 export * from './account-test.component';
 export * from './account-delete.component';
 export * from './account-add.component';
-export * from './account-change-protocol.component';

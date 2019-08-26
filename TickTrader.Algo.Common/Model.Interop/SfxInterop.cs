@@ -451,7 +451,7 @@ namespace TickTrader.Algo.Common.Model
         public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
         {
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
-                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
+                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
                 r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
         }
@@ -961,7 +961,9 @@ namespace TickTrader.Algo.Common.Model
 
         private static QuoteEntity Convert(SFX.Quote fdkTick)
         {
-            return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks));
+            return new QuoteEntity(fdkTick.Symbol, fdkTick.CreatingTime, ConvertLevel2(fdkTick.Bids), ConvertLevel2(fdkTick.Asks),
+                fdkTick.TickType == SFX.TickTypes.IndicativeBid || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk,
+                fdkTick.TickType == SFX.TickTypes.IndicativeAsk || fdkTick.TickType == SFX.TickTypes.IndicativeBidAsk);
         }
 
         public static Core.TradeTransactionReason Convert(SFX.TradeTransactionReason reason)

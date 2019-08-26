@@ -14,7 +14,6 @@ namespace TickTrader.BotTerminal
         private string _login;
         private string _password;
         private string _server;
-        private bool _useSfx;
         private bool _isValid;
         private AccountModelInfo _account;
         private bool _isEditable;
@@ -79,19 +78,6 @@ namespace TickTrader.BotTerminal
                 _server = value;
                 NotifyOfPropertyChange(nameof(Server));
                 ValidateState();
-            }
-        }
-
-        public bool UseSfxProtocol
-        {
-            get { return _useSfx; }
-            set
-            {
-                if (_useSfx == value)
-                    return;
-
-                _useSfx = value;
-                NotifyOfPropertyChange(nameof(UseSfxProtocol));
             }
         }
 
@@ -185,7 +171,6 @@ namespace TickTrader.BotTerminal
                     Login = value.Login;
                     Password = value.Password;
                     Server = value.Server.Address;
-                    UseSfxProtocol = value.UseSfxProtocol;
                 }
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             }
@@ -206,7 +191,6 @@ namespace TickTrader.BotTerminal
             {
                 IsNewMode = true;
                 DisplayName = "Add account";
-                UseSfxProtocol = true;
             }
             else
             {
@@ -215,7 +199,6 @@ namespace TickTrader.BotTerminal
 
                 Login = _account.Key.Login;
                 Server = _account.Key.Server;
-                UseSfxProtocol = _account.UseNewProtocol;
             }
         }
 
@@ -227,8 +210,8 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (_account == null)
-                    await SelectedAgent.Model.AddAccount(new AccountKey(Server, Login), Password, UseSfxProtocol);
-                else await SelectedAgent.Model.ChangeAccount(_account.Key, Password, UseSfxProtocol);
+                    await SelectedAgent.Model.AddAccount(new AccountKey(Server, Login), Password);
+                else await SelectedAgent.Model.ChangeAccount(_account.Key, Password);
             }
             catch (Exception ex)
             {
@@ -245,7 +228,7 @@ namespace TickTrader.BotTerminal
             Error = null;
             try
             {
-                var error = await SelectedAgent.Model.TestAccountCreds(new AccountKey(Server, Login), Password, UseSfxProtocol);
+                var error = await SelectedAgent.Model.TestAccountCreds(new AccountKey(Server, Login), Password);
                 if (error.Code == ConnectionErrorCodes.None)
                     Success = "Successfully connected";
                 else Error = string.IsNullOrEmpty(error.TextMessage) ? $"{error.Code}" : $"{error.Code} - {error.TextMessage}";

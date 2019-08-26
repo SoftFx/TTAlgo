@@ -29,12 +29,6 @@
                                     <span>{{ 'FieldIsRequired' | resx: ['Server'] }}</span>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="new_protocol">
-                                    <input name="new_protocol" formControlName="UseNewProtocol" type="checkbox" />
-                                    Use new protocol
-                                </label>
-                            </div>
 
                             <div class="pull-right">
                                 <button [disabled]="AccountForm.invalid" (click)="TestAccount(AccountForm.value)" class="btn btn-primary">Test</button>

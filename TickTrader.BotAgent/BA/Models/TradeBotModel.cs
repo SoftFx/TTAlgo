@@ -379,7 +379,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private string GetConnectionInfo()
         {
-            return $"account {_client.Username} on {_client.Address} using {(_client.UseNewProtocol ? "SFX" : "FIX")}";
+            return $"account {_client.Username} on {_client.Address}";
         }
     }
 }

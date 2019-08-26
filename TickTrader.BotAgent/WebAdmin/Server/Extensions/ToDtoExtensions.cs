@@ -144,7 +144,6 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Extensions
                 Server = account.Key.Server,
                 Login = account.Key.Login,
                 LastConnectionStatus = ConnectionErrorCodes.None,
-                UseNewProtocol = account.UseNewProtocol,
             };
         }
 

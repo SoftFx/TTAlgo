@@ -79,6 +79,7 @@ namespace TickTrader.Algo.Core
                 ValidateTradePersmission();
                 smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradeEnabled(smbMetadata);
+                ValidateQuotes(smbMetadata, orderType, side);
 
                 ValidateVolumeLots(volumeLots, smbMetadata);
                 ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
@@ -156,6 +157,7 @@ namespace TickTrader.Algo.Core
                 orderToCancel = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToCancel.Symbol);
                 ValidateTradeEnabled(smbMetadata);
+                ValidateQuotes(smbMetadata, orderToCancel.Type, orderToCancel.Side);
 
                 logger.PrintTrade("[Out] Canceling order #" + orderId);
 
@@ -190,6 +192,7 @@ namespace TickTrader.Algo.Core
                 orderToClose = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
                 ValidateTradeEnabled(smbMetadata);
+                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side);
 
                 if (closeVolumeLots != null)
                 {
@@ -237,6 +240,8 @@ namespace TickTrader.Algo.Core
 
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
                 ValidateTradeEnabled(smbMetadata);
+                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side);
+                ValidateQuotes(smbMetadata, orderByClose.Type, orderByClose.Side);
 
                 logger.PrintTrade("[Out] Closing order #" + orderId + " by order #" + byOrderId);
 
@@ -303,6 +308,7 @@ namespace TickTrader.Algo.Core
 
                 ValidateOptions(options, orderType);
                 ValidateTradeEnabled(smbMetadata);
+                ValidateQuotes(smbMetadata, orderToModify.Type, orderToModify.Side);
 
                 //if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
                 //    ValidatePrice(price);
@@ -629,6 +635,27 @@ namespace TickTrader.Algo.Core
 
             if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+        }
+
+        private void ValidateQuotes(SymbolAccessor symbol, OrderType type, OrderSide side)
+        {
+            if (IsIndicativeSide(symbol.LastQuote, type, side))
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+        }
+
+        private bool IsIndicativeSide(Quote quote, OrderType type, OrderSide side)
+        {
+            switch (type)
+            {
+                case OrderType.Market:
+                case OrderType.Stop:
+                    return (side == OrderSide.Buy && quote.IsAskIndicative) || (side == OrderSide.Sell && quote.IsBidIndicative);
+                case OrderType.StopLimit:
+                case OrderType.Limit:
+                case OrderType.Position:
+                    return (side == OrderSide.Buy && quote.IsBidIndicative) || (side == OrderSide.Sell && quote.IsAskIndicative);
+            }
+            return false;
         }
 
         private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)

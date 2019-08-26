@@ -43,12 +43,11 @@ namespace TickTrader.BotAgent.BA.Models
         private int _startedBotsCount;
         private bool _shutdownRequested => _shutdownCompletedSrc != null;
 
-        public ClientModel(string address, string username, string password, bool useNewProtocol)
+        public ClientModel(string address, string username, string password)
         {
             Address = address;
             Username = username;
             Password = password;
-            UseNewProtocol = useNewProtocol;
         }
 
         public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider)
@@ -138,8 +137,6 @@ namespace TickTrader.BotAgent.BA.Models
         public string Username { get; private set; }
         [DataMember(Name = "password")]
         public string Password { get; private set; }
-        [DataMember(Name = "useNewProtocol")]
-        public bool UseNewProtocol { get; private set; }
 
         public async Task<AccountMetadataInfo> GetMetadata()
         {
@@ -176,12 +173,6 @@ namespace TickTrader.BotAgent.BA.Models
         {
             return _core.CreateFeedProvider().Result;
         }
-
-        //[OnDeserializing]
-        //private void OnDeserializing(StreamingContext context)
-        //{
-        //    UseNewProtocol = true;
-        //}
 
         private void CheckInitialized()
         {
@@ -335,7 +326,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _connectCancellation = new CancellationTokenSource();
 
-            _lastError = await _core.Connection.Connect(Username, Password, Address, UseNewProtocol, _connectCancellation.Token);
+            _lastError = await _core.Connection.Connect(Username, Password, Address, _connectCancellation.Token);
 
             if (_lastError.Code == ConnectionErrorCodes.None)
             {
@@ -360,23 +351,12 @@ namespace TickTrader.BotAgent.BA.Models
             OnCredsChanged();
         }
 
-        public void ChangeProtocol()
-        {
-            UseNewProtocol = !UseNewProtocol;
-            OnCredsChanged();
-        }
-
-        public void ChangeConnectionSettings(string password, bool useNewProtocol)
+        public void ChangeConnectionSettings(string password)
         {
             var updated = false;
             if (!string.IsNullOrEmpty(password))
             {
                 Password = password;
-                updated = true;
-            }
-            if (UseNewProtocol != useNewProtocol)
-            {
-                UseNewProtocol = useNewProtocol;
                 updated = true;
             }
 
