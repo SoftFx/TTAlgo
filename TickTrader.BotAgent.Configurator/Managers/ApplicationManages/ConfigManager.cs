@@ -11,7 +11,7 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly string _appConfigPath = Path.Combine(Environment.CurrentDirectory, "appConfig.json");
+        private readonly string _appConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appConfig.json");
         private readonly ConfigurationProperies _defaultProperties;
 
         public ConfigurationProperies Properties { get; }
