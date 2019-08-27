@@ -46,7 +46,7 @@
 
                 <Button Style="{StaticResource ToolBarStopButton}" Command="{Binding StopAgent}">
                     <Button.Content>
-                        <fa:ImageAwesome Icon="Stop" Style="{StaticResource ToolBarIcon}"/>
+                        <fa:ImageAwesome Icon="Ban" Style="{StaticResource ToolBarIcon}"/>
                     </Button.Content>
                 </Button>
             </ToolBar>
