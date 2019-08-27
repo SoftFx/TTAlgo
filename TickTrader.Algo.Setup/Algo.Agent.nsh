@@ -120,6 +120,9 @@ var Configurator_Installed
 
 !macro _CreateConfiguratorShortcuts
 
+    Push $OUTDIR
+    StrCpy $OUTDIR $Configurator_InstDir ; Working directory for CreateShortcut is taken from $OUTDIR
+
     ${Log} "Shortcut name: $Configurator_ShortcutName"
     ${If} $Configurator_DesktopSelected == ${TRUE}
         ${Print} "Adding Desktop Shortcut"
@@ -131,6 +134,8 @@ var Configurator_Installed
         CreateDirectory "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$Agent_Id"
         CreateShortcut "$SMPROGRAMS\${BASE_NAME}\${AGENT_NAME}\$Agent_Id\$Configurator_ShortcutName.lnk" "$Configurator_InstDir\${CONFIGURATOR_EXE}"
     ${EndIf}
+
+    Pop $OUTDIR
 
 !macroend
 

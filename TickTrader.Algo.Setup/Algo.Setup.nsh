@@ -386,6 +386,7 @@ Function FinishPageLeave
 
         ${NSD_GetState} $Terminal_RunCheckBox $Void
         ${If} $Void == ${BST_CHECKED}
+            StrCpy $OUTDIR $Terminal_InstDir ; Exec command working dir is set to $OUTDIR
             Exec "$Terminal_InstDir\${TERMINAL_EXE}"
         ${EndIf}
 
@@ -395,6 +396,7 @@ Function FinishPageLeave
 
         ${NSD_GetState} $Configurator_RunCheckBox $Void
         ${If} $Void == ${BST_CHECKED}
+            StrCpy $OUTDIR $Configurator_InstDir ; Exec command working dir is set to $OUTDIR
             Exec "$Configurator_InstDir\${CONFIGURATOR_EXE}"
         ${EndIf}
 
