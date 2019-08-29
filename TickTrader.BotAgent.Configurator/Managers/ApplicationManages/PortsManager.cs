@@ -38,12 +38,12 @@ namespace TickTrader.BotAgent.Configurator
             {
                 firewallRule = _firewallPolicy.Rules.Item(name);
             }
-            catch (Exception ex)
+            catch
             {
                 firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
                 firewallRule.Name = name;
                 newRule = true;
-                _logger.Error(ex);
+                _logger.Info("Firewall: Rule not found. A new rule will be created.");
             }
 
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;

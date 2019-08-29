@@ -116,7 +116,7 @@ namespace TickTrader.BotAgent.Configurator
                 DeleteError(key);
         }
 
-        public void CheckNumberRange(int number, string field, int min = 0, int max = int.MaxValue)
+        public void CheckNumberRange(int number, string field, int min = 1, int max = int.MaxValue)
         {
             string key = $"{_validationKey}{field}";
 

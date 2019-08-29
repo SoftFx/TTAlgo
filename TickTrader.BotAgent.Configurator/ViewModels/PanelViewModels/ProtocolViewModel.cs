@@ -36,7 +36,7 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     ErrorCounter.AddError(_keyPort);
                     _refreshManager?.AddUpdate(_keyPort);
-                    _model.ListeningPort = 0;
+                    //_model.ListeningPort = 0;
                     throw ex;
                 }
 
