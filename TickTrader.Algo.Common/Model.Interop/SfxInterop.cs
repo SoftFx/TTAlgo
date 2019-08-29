@@ -450,8 +450,15 @@ namespace TickTrader.Algo.Common.Model
 
         public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
         {
+            if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
+            {
+                return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
+                    r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
+                    r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
+                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
+            }
             return ExecuteOrderOperation(request, r => _tradeProxy.ReplaceOrderAsync(r.OperationId, "",
-                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
+                r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
                 r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
         }
@@ -490,6 +497,10 @@ namespace TickTrader.Algo.Common.Model
             {
                 // workaround for inconsistent server logic
                 return new OrderInteropResult(Convert(RejectReason.Other, ex.Message));
+            }
+            catch (NotSupportedException)
+            {
+                return new OrderInteropResult(OrderCmdResultCodes.Unsupported);
             }
             catch (Exception ex)
             {
