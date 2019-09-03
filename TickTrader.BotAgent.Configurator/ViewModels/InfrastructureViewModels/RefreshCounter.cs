@@ -8,8 +8,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public delegate void ConfigurationStateChanged();
 
-        public event ConfigurationStateChanged NewValuesEvent;
-        public event ConfigurationStateChanged SaveValuesEvent;
+        public event ConfigurationStateChanged ChangeValuesEvent;
 
         public bool Update => _updatedFields.Count > 0;
 
@@ -31,8 +30,7 @@ namespace TickTrader.BotAgent.Configurator
             if (!_updatedFields.Contains(field))
                 _updatedFields.Add(field);
 
-            NewValuesEvent?.Invoke();
-            OnPropertyChanged(nameof(Update));
+            Refresh();
         }
 
         public void DeleteUpdate(string field)
@@ -40,17 +38,18 @@ namespace TickTrader.BotAgent.Configurator
             if (_updatedFields.Contains(field))
                 _updatedFields.Remove(field);
 
-            if (_updatedFields.Count == 0)
-                DropRefresh();
-
-            OnPropertyChanged(nameof(Update));
+            Refresh();
         }
 
         public void DropRefresh()
         {
             _updatedFields.Clear();
+            Refresh();
+        }
 
-            SaveValuesEvent?.Invoke();
+        private void Refresh()
+        {
+            ChangeValuesEvent?.Invoke();
             OnPropertyChanged(nameof(Update));
         }
     }

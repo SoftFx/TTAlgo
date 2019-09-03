@@ -89,8 +89,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 SetNewViewModels();
 
-                RefreshCounter.NewValuesEvent += () => StateServiceModel.VisibleRestartMessage = true;
-                RefreshCounter.SaveValuesEvent += () => StateServiceModel.VisibleRestartMessage = false;
+                RefreshCounter.ChangeValuesEvent += () => StateServiceModel.VisibleRestartMessage = RefreshCounter.Update;
 
                 _mainWindow.Closing += MainWindow_Closing;
             }

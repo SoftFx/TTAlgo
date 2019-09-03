@@ -6,7 +6,7 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ServerModel : IWorkingModel
     {
-        private const string DefaultUrls = "https://localhost:5001/;http://localhost:5000";
+        private const string DefaultUrls = "https://localhost:5000/;http://localhost:5001";
 
         private string _urlsString;
 
@@ -31,7 +31,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (UrlsStr == value)
                     return;
 
-                _urlsString = value;
+                _urlsString = string.Join(";", value.Split(';').OrderBy(u => u));
 
                 RestoreUrls();
             }
@@ -55,6 +55,16 @@ namespace TickTrader.BotAgent.Configurator
         public void UpdateCurrentFields()
         {
             UrlsStr = string.Join(";", Urls);
+        }
+
+        public bool CheckOnDefaultValue()
+        {
+            return UrlsStr == GetSortedUrls();
+        }
+
+        public string GetSortedUrls()
+        {
+            return string.Join(";", Urls.Select(u => u.ToString()).OrderBy(u => u));
         }
 
         private void RestoreUrls()

@@ -38,7 +38,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, UrlsNameProperty, string.Join(";", ServerModel.Urls.Select(u => u.ToString()).ToArray()), ServerModel.UrlsStr, _logger);
+            SaveProperty(root, UrlsNameProperty, ServerModel.GetSortedUrls(), ServerModel.UrlsStr, _logger);
             SaveProperty(root, SecretKeyNameProperty, ServerModel.SecretKey, null);
         }
 

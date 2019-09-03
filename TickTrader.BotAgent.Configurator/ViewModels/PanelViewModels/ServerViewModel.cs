@@ -7,8 +7,6 @@ namespace TickTrader.BotAgent.Configurator
 {
     public class ServerViewModel : BaseContentViewModel
     {
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly RefreshCounter _refreshManager;
 
         private NewUrlWindow _urlWindow;
@@ -80,8 +78,7 @@ namespace TickTrader.BotAgent.Configurator
                     else
                         AddUriMethod(CurrentUri.GetUri());
 
-                    _refreshManager?.AddUpdate(nameof(SaveUri));
-                    CheckFreePorts();
+                    UpdateRefreshAndErrors();
                 }
                 else
                     if (CurrentUri.OldUri == null)
@@ -99,8 +96,7 @@ namespace TickTrader.BotAgent.Configurator
                 foreach (Uri u in ((IList<object>)obj).ToList())
                     RemoveUriMethod(u);
 
-                _refreshManager?.AddUpdate(nameof(RemoveUrls));
-                CheckFreePorts();
+                UpdateRefreshAndErrors();
             }));
 
         public DelegateCommand GenerateSecretKey => _generateSecretKey ?? (
@@ -122,7 +118,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             CurrentUri = new UriViewModel(_model.PortsManager, _model.Urls);
             Urls = new ObservableCollection<UriWithValidation>(_model.Urls.Select(u => new UriWithValidation(u, _model.PortsManager)));
-            CheckFreePorts();
+            UpdateRefreshAndErrors();
 
             OnPropertyChanged(nameof(Urls));
             OnPropertyChanged(nameof(SecretKey));
@@ -132,8 +128,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             Urls.Add(new UriWithValidation(uri, _model.PortsManager));
             _model.Urls.Add(uri);
-
-            _logger.Info($"New url was added: {uri}");
         }
 
         private void RemoveUriMethod(Uri uri)
@@ -143,8 +137,6 @@ namespace TickTrader.BotAgent.Configurator
 
             Urls.Remove(new UriWithValidation(uri, _model.PortsManager));
             _model.Urls.Remove(uri);
-
-            _logger.Info($"Url was removed: {uri.ToString()}");
         }
 
         private void ModifyUriMethod()
@@ -153,12 +145,15 @@ namespace TickTrader.BotAgent.Configurator
 
             Urls[index] = new UriWithValidation(CurrentUri.GetUri(), _model.PortsManager);
             _model.Urls[index] = CurrentUri.GetUri();
-
-            _logger.Info($"Url was changed {CurrentUri.OldUri.ToString()} to {CurrentUri.GetUri()}");
         }
 
-        private void CheckFreePorts()
+        private void UpdateRefreshAndErrors()
         {
+            if (!_model.CheckOnDefaultValue())
+                _refreshManager?.AddUpdate(nameof(_model.Urls));
+            else
+                _refreshManager?.DeleteUpdate(nameof(_model.Urls));
+
             int busyPortsCount = Urls.Where(u => u.HasError).Count();
 
             if (busyPortsCount != 0)

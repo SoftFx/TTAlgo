@@ -28,18 +28,14 @@ namespace TickTrader.BotAgent.Configurator
                 if (_model.ListeningPort.ToString() == value)
                     return;
 
-                try
-                {
-                    _model.ListeningPort = int.Parse(value);
-                }
-                catch (Exception ex)
+                if (!int.TryParse(value, out int port))
                 {
                     ErrorCounter.AddError(_keyPort);
                     _refreshManager?.AddUpdate(_keyPort);
-                    //_model.ListeningPort = 0;
-                    throw ex;
+                    throw new ArgumentException("The field must be a number");
                 }
 
+                _model.ListeningPort = port;
                 _refreshManager?.CheckUpdate(value, _model.CurrentListeningPort.ToString(), _keyPort);
 
                 ErrorCounter.DeleteError(_keyPort);

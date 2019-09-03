@@ -14,9 +14,6 @@ namespace TickTrader.BotAgent.Configurator
 
         protected virtual void SaveProperty(JObject root, string property, object newValue, object oldValue, NLog.Logger logger = null)
         {
-            if (newValue.Equals(oldValue))
-                return;
-
             if (!string.IsNullOrEmpty(SectionName))
             {
                 InsertSection(root, new JProperty(SectionName, new JObject()));
@@ -29,7 +26,7 @@ namespace TickTrader.BotAgent.Configurator
                     root[property] = JToken.FromObject(newValue);
             }
 
-            if (logger != null)
+            if (logger != null && !newValue.Equals(oldValue))
                 logger.Info(GetChangeMessage(property, oldValue, newValue));
         }
 

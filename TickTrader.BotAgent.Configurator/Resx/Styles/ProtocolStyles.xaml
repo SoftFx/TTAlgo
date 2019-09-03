@@ -11,12 +11,12 @@
 
     <Style x:Key="ListenPortTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
         <Style.Triggers>
-            <Trigger Property="Validation.HasError" Value="True">
+            <!--<Trigger Property="Validation.HasError" Value="True">
                 <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
                 <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="BorderBrush" Value="#FFABADB3"/>
                 <Setter Property="BorderThickness" Value="1"/>
-            </Trigger>
+            </Trigger>-->
 
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
@@ -24,6 +24,9 @@
                     <Condition Binding="{Binding ErrorCounter.HasModelWarningCount, UpdateSourceTrigger=PropertyChanged}" Value="True"/>
                 </MultiDataTrigger.Conditions>
                 <Setter Property="Background" Value="Yellow"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="BorderThickness" Value="1"/>
             </MultiDataTrigger>
         </Style.Triggers>
     </Style>
