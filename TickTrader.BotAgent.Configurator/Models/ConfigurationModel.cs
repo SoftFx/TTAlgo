@@ -76,10 +76,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public void StartAgent()
         {
-            string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
-
-            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(CurrentAgent.Path, $"{Settings[AppProperties.ApplicationName]}.exe"), ports);
-
+            RegisterAgentInFirewall();
             ServiceManager.ServiceStart(ProtocolManager.ProtocolModel.ListeningPort.Value);
         }
 
@@ -118,6 +115,8 @@ namespace TickTrader.BotAgent.Configurator
             {
                 configStreamWriter.Write(_configurationObject.ToString());
             }
+
+            RegisterAgentInFirewall();
         }
 
         private void UploadModel(IWorkingManager model)
@@ -134,6 +133,13 @@ namespace TickTrader.BotAgent.Configurator
             {
                 _logger.Error(ex);
             }
+        }
+
+        private void RegisterAgentInFirewall()
+        {
+            string ports = $"{string.Join(",", ServerManager.ServerModel.Urls.Select(u => u.Port.ToString()))},{ProtocolManager.ProtocolModel.ListeningPort}";
+
+            _portsManager.RegisterRuleInFirewall(Settings[AppProperties.ApplicationName], Path.Combine(CurrentAgent.Path, $"{Settings[AppProperties.ApplicationName]}.exe"), ports);
         }
     }
 

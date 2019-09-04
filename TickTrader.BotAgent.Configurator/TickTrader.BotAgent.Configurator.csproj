@@ -159,17 +159,18 @@
     <Compile Include="Models\ManagerModels\SslModel.cs" />
     <Compile Include="ViewModels\ControlViewModels\SpinnerViewModel.cs" />
     <Compile Include="ViewModels\InfrastructureViewModels\RefreshCounter.cs" />
-    <Compile Include="ViewModels\PanelViewModels\BaseViewModel.cs" />
-    <Compile Include="ViewModels\PanelViewModels\LogsViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\BaseViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\LogsViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\UriViewModel.cs" />
     <Compile Include="Windows\NewUrlWindow.xaml.cs">
       <DependentUpon>NewUrlWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\PanelViewModels\AdvancedViewModel.cs" />
-    <Compile Include="ViewModels\PanelViewModels\CredentialViewModel.cs" />
-    <Compile Include="ViewModels\PanelViewModels\FdkViewModel.cs" />
-    <Compile Include="ViewModels\PanelViewModels\ProtocolViewModel.cs" />
-    <Compile Include="ViewModels\PanelViewModels\ServerViewModel.cs" />
-    <Compile Include="ViewModels\PanelViewModels\SslViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\AdvancedViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\CredentialViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\FdkViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\ProtocolViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\ServerViewModel.cs" />
+    <Compile Include="ViewModels\InstanceViewModels\SslViewModel.cs" />
     <Compile Include="ViewModels\ControlViewModels\StateServiceViewModel.cs" />
     <Page Include="Controls\Panels\AdvancedPanel.xaml">
       <SubType>Designer</SubType>

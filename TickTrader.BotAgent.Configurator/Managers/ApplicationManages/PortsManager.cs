@@ -90,13 +90,37 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool CheckPortOpen(int port, string hostname, int nativePort)
         {
+            bool localhost = false;
+            bool wasIPv4 = false;
+
             if (hostname != null && hostname.ToLower().Trim('/') == "localhost")
+            {
                 hostname = IPAddress.Loopback.ToString();
+                localhost = true;
+            }
 
             foreach (var tcp in ManagedIpHelper.GetExtendedTcpTable(true))
             {
-                if (CheckAdress(tcp, hostname) && tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp.State) && !IsAgentService(tcp.ProcessId))
-                    return false;
+                if (CheckAdress(tcp, hostname) && tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp.State))
+                {
+                    wasIPv4 = true;
+
+                    if (!IsAgentService(tcp.ProcessId))
+                        return false;
+                }
+            }
+
+            var ipGlobal = IPGlobalProperties.GetIPGlobalProperties();
+
+            foreach (var listener in ipGlobal.GetActiveTcpListeners())
+            {
+                if (listener.Port == port)
+                {
+                    var adress = listener.Address.ToString();
+
+                    if ((adress == hostname || (localhost && adress == "::")) && !wasIPv4)
+                        return false;
+                }
             }
 
             return true;

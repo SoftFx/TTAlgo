@@ -32,17 +32,17 @@
         <ComboBox Grid.Row="1" ItemsSource="{Binding Path=CurrentUri.TypesOfScheme}" SelectedItem="{Binding Path=CurrentUri.Scheme}" Style="{StaticResource ComboBoxScheme}"/>
 
         <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource ErrorHostBorder}">
-            <ComboBox  x:Name="newHost" ItemsSource="{Binding Path=Hosts}" Style="{StaticResource ComboBoxHost}"
-                  Text="{Binding Path=CurrentUri.Host, ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+            <ComboBox  x:Name="newHost" ItemsSource="{Binding Path=CurrentUri.Hosts}" Style="{StaticResource ComboBoxHost}"
+                  Text="{Binding Path=CurrentUri.Host, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
         </Border>
 
         <Border Grid.Column="2" Grid.Row="1" Style="{StaticResource ErrorPortBorder}">
-            <TextBox  x:Name="newPort" Text="{Binding Path=CurrentUri.Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, Mode=TwoWay, Delay=200}" Style="{StaticResource PortTextBoxStyle}"/>
+            <TextBox  x:Name="newPort" Text="{Binding Path=CurrentUri.Port, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=200}" Style="{StaticResource PortTextBoxStyle}"/>
         </Border>
 
         <StackPanel Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Style="{StaticResource AddAndOkButton}" Command="{Binding SaveUri}"/>
-            <Button Style="{StaticResource DefaultButton}" Command="{Binding CloseWindow}"/>
+            <Button Style="{StaticResource DefaultButton}" Command="{Binding CloseUriWindow}"/>
         </StackPanel>
     </Grid>
 </Window>

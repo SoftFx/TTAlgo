@@ -100,6 +100,7 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     msg = ex.Message;
                     ErrorCounter.AddWarning(_keyPort);
+                    ErrorCounter.DeleteError(_keyPort);
                 }
                 catch (Exception ex)
                 {

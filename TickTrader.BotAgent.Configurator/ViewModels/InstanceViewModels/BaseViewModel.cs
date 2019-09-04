@@ -13,13 +13,16 @@ namespace TickTrader.BotAgent.Configurator
         }
     }
 
-    public abstract class BaseContentViewModel : BaseViewModel, IDataErrorInfo, IContentViewModel
+    public abstract class BaseViewModelWithValidations : BaseViewModel, IDataErrorInfo
     {
-        public ModelErrorCounter ErrorCounter { get; }
-
         public string Error { get; }
 
         public virtual string this[string columnName] => throw new System.NotImplementedException();
+    }
+
+    public abstract class BaseContentViewModel : BaseViewModelWithValidations, IContentViewModel
+    {
+        public ModelErrorCounter ErrorCounter { get; }
 
         public string ModelDescription { get; set; }
 

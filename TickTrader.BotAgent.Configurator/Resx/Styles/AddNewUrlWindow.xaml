@@ -27,6 +27,7 @@
         <Setter Property="Width" Value="60"/>
         <Setter Property="Height" Value="24"/>
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
 
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
@@ -34,8 +35,9 @@
                 <Setter Property="Foreground" Value="Red"/>
             </Trigger>
 
-            <DataTrigger Binding="{Binding CurrentUri.IsFreePort, UpdateSourceTrigger=PropertyChanged}" Value="False">
+            <DataTrigger Binding="{Binding CurrentUri.IsFreePort}" Value="False">
                 <Setter Property="Background" Value="Yellow"/>
+                <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="ToolTip" Value="{Binding CurrentUri.WarningMessage}"/>
             </DataTrigger>
         </Style.Triggers>
@@ -86,11 +88,6 @@
                 <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
                 <Setter Property="Foreground" Value="Red"/>
             </Trigger>
-
-            <!--<DataTrigger Binding="{Binding ElementName=newPort, Path=(Validation.HasError)}" Value="True">
-                <Setter Property="ToolTip" Value="{Binding ElementName=newPort, Path=(Validation.Errors)[0].ErrorContent}" />
-                <Setter Property="Foreground" Value="Red"/>
-            </DataTrigger>-->
         </Style.Triggers>
     </Style>
 
@@ -114,6 +111,9 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding ElementName=newPort, Path=(Validation.HasError)}" Value="True">
                 <Setter Property="BorderBrush" Value="Red"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding CurrentUri.IsFreePort}" Value="False">
+                <Setter Property="BorderBrush" Value="#FFABADB3"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

@@ -24,11 +24,11 @@
         <TextBlock Grid.Row="0" Text="Listening Port: "/>
         <TextBlock Grid.Row="3" Text="Directory Name: "/>
 
-        <TextBox Grid.Row="1" Text="{Binding ListeningPort, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=500, ValidatesOnExceptions=True, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" Style="{StaticResource ListenPortTextBoxStyle}"/>
+        <TextBox Grid.Row="1" Text="{Binding ListeningPort, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=200, ValidatesOnExceptions=True, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" Style="{StaticResource ListenPortTextBoxStyle}"/>
 
         <Separator Grid.Row="2" Grid.ColumnSpan="2"/>
 
-        <TextBox Grid.Row="4" Text="{Binding DirectoryName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=500, ValidatesOnExceptions=True, NotifyOnValidationError=True, ValidatesOnDataErrors=True}"/>
+        <TextBox Grid.Row="4" Text="{Binding DirectoryName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, ValidatesOnExceptions=True, NotifyOnValidationError=True, ValidatesOnDataErrors=True}"/>
 
         <Separator Grid.Row="5" Grid.ColumnSpan="2"/>
 
