@@ -102,7 +102,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginExecutor CreateExecutor()
+        protected override PluginExecutorCore CreateExecutor()
         {
             var executor = base.CreateExecutor();
             executor.TradeExecutor = Host.GetTradeApi();

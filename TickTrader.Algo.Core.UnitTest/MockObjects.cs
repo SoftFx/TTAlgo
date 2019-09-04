@@ -53,12 +53,12 @@ namespace TickTrader.Algo.Core.UnitTest
 
     internal class MockFixtureContext : IFixtureContext
     {
-        private SubscriptionManager dispenser;
+        private SubscriptionFixtureManager dispenser;
         private FeedBufferStrategy bStrategy;
 
         public MockFixtureContext()
         {
-            dispenser = new SubscriptionManager(this);
+            dispenser = new SubscriptionFixtureManager(this);
             Builder = new PluginBuilder(new Metadata.PluginMetadata(typeof(MockBot)));
             Builder.Logger = new NullLogger();
             bStrategy = new TimeSpanStrategy(TimePeriodStart, TimePeriodEnd);
@@ -70,9 +70,9 @@ namespace TickTrader.Algo.Core.UnitTest
         public TimeFrames TimeFrame { get; set; }
         public DateTime TimePeriodEnd { get; set; }
         public DateTime TimePeriodStart { get; set; }
-        public IPluginFeedProvider FeedProvider => throw new NotImplementedException();
+        public IFeedProvider FeedProvider => throw new NotImplementedException();
         public FeedBufferStrategy BufferingStrategy => bStrategy;
-        public SubscriptionManager Dispenser => dispenser;
+        public SubscriptionFixtureManager Dispenser => dispenser;
 
         public IAccountInfoProvider AccInfoProvider => throw new NotImplementedException();
         public ITradeExecutor TradeExecutor => throw new NotImplementedException();

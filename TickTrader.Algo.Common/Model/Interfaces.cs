@@ -11,6 +11,7 @@ using TickTrader.SeriesStorage;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Common.Lib;
 using Machinarium.Var;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.Algo.Common.Model
 {

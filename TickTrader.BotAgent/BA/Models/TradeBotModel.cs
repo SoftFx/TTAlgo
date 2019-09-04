@@ -23,7 +23,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private ClientModel _client;
         private Task _stopTask;
-        private PluginExecutor executor;
+        private PluginExecutorCore executor;
         private BotLog.ControlHandler _botLog;
         private AlgoData _algoData;
         private AlgoPluginRef _ref;

@@ -19,6 +19,9 @@ namespace TickTrader.Algo.Core
         private Dictionary<string, OrderFilteredCollection> byTagFilterCache;
         private Dictionary<Predicate<Order>, OrderFilteredCollection> customFilterCache;
         private TradeHistory _history;
+        private OrdersCollection _orders;
+        private PositionCollection _positions;
+        private AssetsCollection _assets;
         private bool _blEventsEnabled;
         private decimal _balance;
         private double _dblBalance;
@@ -26,21 +29,35 @@ namespace TickTrader.Algo.Core
         public AccountAccessor(PluginBuilder builder)
         {
             this.builder = builder;
-
-            Orders = new OrdersCollection(builder);
-            NetPositions = new PositionCollection(builder);
-            Assets = new AssetsCollection(builder);
-
-            //Equity = double.NaN;
-            //Profit = double.NaN;
-            //Commision = double.NaN;
-            //MarginLevel = double.NaN;
-            //Margin = double.NaN;
         }
 
-        public OrdersCollection Orders { get; private set; }
-        public PositionCollection NetPositions { get; private set; }
-        public AssetsCollection Assets { get; private set; }
+        public OrdersCollection Orders
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _orders;
+            }
+        }
+
+        public PositionCollection NetPositions
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _positions;
+            }
+        }
+
+        public AssetsCollection Assets
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _assets;
+            }
+        }
+
         public TradeHistory HistoryProvider { get { return _history; } set { _history = value; } }
 
         public string Id { get; set; }
@@ -174,13 +191,41 @@ namespace TickTrader.Algo.Core
         TradeHistory AccountDataProvider.TradeHistory => _history;
 
         internal MarginAccountCalc MarginCalc { get; set; }
-        public double Equity => (double?)MarginCalc?.Equity ?? double.NaN;
-        public double Margin => (double?)MarginCalc?.Margin ?? double.NaN;
-        public double MarginLevel => (double?)MarginCalc?.MarginLevel ?? double.NaN;
-        public double Profit => (double?)MarginCalc?.Profit ?? double.NaN;
-        public double Commision => (double?)MarginCalc?.Commission ?? double.NaN;
+        public double Equity => GetCalc()?.Equity ?? double.NaN;
+        public double Margin => GetCalc()?.Margin ?? double.NaN;
+        public double MarginLevel => GetCalc()?.MarginLevel ?? double.NaN;
+        public double Profit => GetCalc()?.Profit ?? double.NaN;
+        public double Commision => (double?)GetCalc()?.Commission ?? double.NaN;
 
         double AccountDataProvider.Balance => (double)Balance;
+
+        #region Lazy init
+
+        internal event Action CalcRequested;
+        internal event Action TradeInfoRequested;
+
+        private MarginAccountCalc GetCalc()
+        {
+            if (MarginCalc == null)
+            {
+                OnTradeInfoAccess();
+                CalcRequested?.Invoke();
+            }
+            return MarginCalc;
+        }
+
+        private void OnTradeInfoAccess()
+        {
+            if (_orders == null)
+            {
+                _orders = new OrdersCollection(builder);
+                _positions = new PositionCollection(builder);
+                _assets = new AssetsCollection(builder);
+                TradeInfoRequested?.Invoke();
+            }
+        }
+
+        #endregion
 
         #region BO
 

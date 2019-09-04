@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.BusinessLogic;
 using TickTrader.BusinessObjects;
 using TickTrader.Common.Business;
@@ -30,7 +31,7 @@ namespace TickTrader.Algo.Common.Model
             MarketModel.Set(client.Symbols.Snapshot.Values.OrderBy(s => s.Descriptor.GroupSortOrder).ThenBy(s => s.Descriptor.SortOrder).ThenBy(s => s.Descriptor.Name));
             MarketModel.Set(client.Currencies.Snapshot.Values.Select(c => new CurrencyInfoAdapter(c)));
 
-            _subscription = client.Distributor.SubscribeAll();
+            _subscription = client.Distributor.AddSubscription(Symbols_RateUpdated, client.Symbols.Snapshot.Keys);
 
             foreach (var smb in client.Symbols.Snapshot.Values)
             {
@@ -38,7 +39,7 @@ namespace TickTrader.Algo.Common.Model
                     MarketModel.Update(smb.LastQuote);
             }
 
-            _subscription.NewQuote += Symbols_RateUpdated;
+            //_subscription.NewQuote += ;
         }
 
         protected AccountAdapter Account { get; private set; }
@@ -79,7 +80,7 @@ namespace TickTrader.Algo.Common.Model
         public virtual void Dispose()
         {
             Account.Dispose();
-            _subscription.Dispose();
+            _subscription.CancelAll();
         }
 
         private void Symbols_RateUpdated(QuoteEntity quote)

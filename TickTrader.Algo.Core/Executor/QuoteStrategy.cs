@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
@@ -14,6 +15,7 @@ namespace TickTrader.Algo.Core
 
         public override IFeedBuffer MainBuffer { get { return null; } }
         public override int BufferSize { get { return mainSeries.Count; } }
+        public override IEnumerable<string> BufferedSymbols => mainSeries.SymbolCode.Yield();
 
         public QuoteStrategy()
         {

@@ -10,7 +10,7 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginExecutor : CrossDomainObject, IFixtureContext, IPluginSetupTarget, DiagnosticInfo
+    public class PluginExecutorCore : CrossDomainObject, IFixtureContext, IPluginSetupTarget, DiagnosticInfo
     {
         public enum States { Idle, Running, Stopping }
 
@@ -18,11 +18,12 @@ namespace TickTrader.Algo.Core
         private LogFixture _pluginLoggerFixture;
         private IPluginLogger _pluginLogger = Null.Logger;
         private IPluginMetadata metadata;
-        private IPluginFeedProvider feedProvider;
+        private IFeedProvider feedProvider;
+        private IFeedHistoryProvider _feedHistorySrc;
         private ITradeHistoryProvider tradeHistoryProvider;
         private FeedStrategy fStrategy;
         private FeedBufferStrategy bStrategy;
-        private readonly SubscriptionManager dispenser;
+        private readonly SubscriptionFixtureManager dispenser;
         private InvokeStartegy iStrategy;
         private readonly CalculatorFixture calcFixture;
         private readonly MarketStateFixture _marketFixture;
@@ -48,12 +49,12 @@ namespace TickTrader.Algo.Core
 
         private bool InRunningState => state == States.Running;
 
-        public PluginExecutor(string pluginId)
+        public PluginExecutorCore(string pluginId)
         {
             descriptor = AlgoAssemblyInspector.GetPlugin(pluginId);
             statusFixture = new StatusFixture(this);
             calcFixture = new CalculatorFixture(this);
-            dispenser = new SubscriptionManager(this);
+            dispenser = new SubscriptionFixtureManager(this);
             _marketFixture = new MarketStateFixture(this);
             _timerFixture = new TimerFixture(this);
             //if (builderFactory == null)
@@ -101,6 +102,32 @@ namespace TickTrader.Algo.Core
                 {
                     ThrowIfRunning();
                     iStrategy = value ?? throw new InvalidOperationException("InvokeStrategy cannot be null!");
+                }
+            }
+        }
+
+        public IFeedProvider Feed
+        {
+            get => feedProvider;
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+                    feedProvider = value ?? throw new InvalidOperationException("Feed cannot be null!");
+                }
+            }
+        }
+
+        public IFeedHistoryProvider FeedHistory
+        {
+            get => _feedHistorySrc;
+            set
+            {
+                lock (_sync)
+                {
+                    ThrowIfRunning();
+                    _feedHistorySrc = value ?? throw new InvalidOperationException("FeedHistory cannot be null!");
                 }
             }
         }
@@ -230,7 +257,7 @@ namespace TickTrader.Algo.Core
         internal bool IsGlobalmarshalingenabled { get; set; }
         internal Action<object> OnUpdate { get; set; }
 
-        public event Action<PluginExecutor> IsRunningChanged = delegate { };
+        public event Action<PluginExecutorCore> IsRunningChanged = delegate { };
         public event Action<Exception> OnRuntimeError = delegate { };
 
         internal event Action Stopped;
@@ -275,7 +302,7 @@ namespace TickTrader.Algo.Core
                     _marketFixture.Start();
                     iStrategy.Init(builder, OnInternalException, OnRuntimeException, fStrategy);
                     fStrategy.Init(this, bStrategy, _marketFixture);
-                    fStrategy.SetSubscribed(MainSymbolCode, 1);   // Default subscribe
+                    fStrategy.SetUserSubscription(MainSymbolCode, 1);   // Default subscribe
                     setupActions.ForEach(a => a());
                     BindAllOutputs();
 
@@ -461,26 +488,24 @@ namespace TickTrader.Algo.Core
             mapping?.MapInput(this, inputName, symbolCode);
         }
 
-        public BarStrategy InitBarStrategy(IPluginFeedProvider feed, BarPriceType mainPirceTipe)
+        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                this.feedProvider = feed;
                 var strategy = new BarStrategy(mainPirceTipe);
                 this.fStrategy = strategy;
                 return strategy;
             }
         }
 
-        public QuoteStrategy InitQuoteStrategy(IPluginFeedProvider feed)
+        public QuoteStrategy InitQuoteStrategy()
         {
             lock (_sync)
             {
                 ThrowIfRunning();
                 ThrowIfAlreadyHasFStrategy();
-                this.feedProvider = feed;
                 var strategy = new QuoteStrategy();
                 this.fStrategy = strategy;
                 return strategy;
@@ -694,8 +719,8 @@ namespace TickTrader.Algo.Core
 
         #region IFixtureContext
 
-        IPluginFeedProvider IFixtureContext.FeedProvider => feedProvider;
-        SubscriptionManager IFixtureContext.Dispenser => dispenser;
+        IFeedProvider IFixtureContext.FeedProvider => feedProvider;
+        SubscriptionFixtureManager IFixtureContext.Dispenser => dispenser;
         FeedBufferStrategy IFixtureContext.BufferingStrategy => fStrategy.BufferingStrategy;
         string IFixtureContext.MainSymbolCode => mainSymbol;
         AlgoMarketState IFixtureContext.MarketData => _marketFixture.Market;

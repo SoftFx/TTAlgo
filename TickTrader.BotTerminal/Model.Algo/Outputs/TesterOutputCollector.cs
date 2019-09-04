@@ -11,9 +11,9 @@ namespace TickTrader.BotTerminal
     internal class TesterOutputCollector<T> : IOutputCollector<T>
     {
         private string _outputId;
-        private ExecutorHandler _executor;
+        private PluginExecutor _executor;
 
-        public TesterOutputCollector(OutputSetupModel setup, ExecutorHandler executor)
+        public TesterOutputCollector(OutputSetupModel setup, PluginExecutor executor)
         {
             OutputConfig = setup ?? throw new ArgumentNullException("setup");
             _outputId = setup.Id ?? throw new ArgumentNullException("setup.Id");

@@ -111,16 +111,18 @@ namespace TickTrader.BotTerminal
             return new IndicatorModel(config, Agent, this, this);
         }
 
-        public override void InitializePlugin(PluginExecutor plugin)
+        public override void InitializePlugin(PluginExecutorCore plugin)
         {
             base.InitializePlugin(plugin);
 
             var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
-            plugin.InitQuoteStrategy(feedProvider);
+            plugin.Feed = feedProvider;
+            plugin.FeedHistory = feedProvider;
+            plugin.InitQuoteStrategy();
             plugin.Metadata = feedProvider;
         }
 
-        public override void UpdatePlugin(PluginExecutor plugin)
+        public override void UpdatePlugin(PluginExecutorCore plugin)
         {
             base.UpdatePlugin(plugin);
             //TO DO: plugin.GetFeedStrategy<QuoteStrategy>().SetMainSeries();

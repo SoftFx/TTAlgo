@@ -259,6 +259,16 @@ namespace TickTrader.Algo.Core.Lib
 
             return result;
         }
+
+        public static HashSet<T> ToSet<T>(this IEnumerable<T> src)
+        {
+            return new HashSet<T>(src);
+        }
+
+        public static IEnumerable<T> Yield<T>(this T item)
+        {
+            yield return item;
+        }
     }
 
     public enum BinarySearchTypes { NearestLower, Exact, NearestHigher }

@@ -10,10 +10,11 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class ClientModel : Actor, IQuoteDistributorSource
+    public class ClientModel : Actor, IFeedSubscription
     {
         protected static readonly IAlgoCoreLogger logger = CoreLoggerFactory.GetLogger("ClientModel");
 
@@ -39,7 +40,7 @@ namespace TickTrader.Algo.Common.Model
             _ref = this.GetRef();
             _updateLock = new ActorSharp.Lib.AsyncLock();
             _feedLock = new ActorSharp.Lib.AsyncLock();
-            _rootDistributor = new QuoteDistributor(this);
+            _rootDistributor = new QuoteDistributor();
         }
 
         private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions)
@@ -165,12 +166,15 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public class Data : Handler<ClientModel>, IQuoteDistributorSource, IMarketDataProvider
+        public class Data : Handler<ClientModel>, IFeedSubscription, IMarketDataProvider
         {
+            private IFeedSubscription _defaultSubscription;
+
             public Data(Ref<ClientModel> actorRef) : base(actorRef)
             {
                 Cache = new EntityCache();
-                Distributor = new QuoteDistributor(this);
+                Distributor = new QuoteDistributor();
+                _defaultSubscription = Distributor.AddSubscription(q => { });
             }
 
             public ConnectionModel.Handler Connection { get; private set; }
@@ -179,7 +183,7 @@ namespace TickTrader.Algo.Common.Model
             public FeedHistoryProviderModel.Handler FeedHistory { get; private set; }
             public TradeHistoryProvider.Handler TradeHistory { get; private set; }
             public PluginTradeApiProvider.Handler TradeApi { get; private set; }
-            public QuoteDistributor Distributor { get; set; }
+            public QuoteDistributor Distributor { get; }
             public IVarSet<string, SymbolModel> Symbols => Cache.Symbols;
             public IVarSet<string, CurrencyEntity> Currencies => Cache.Currencies;
 
@@ -193,8 +197,6 @@ namespace TickTrader.Algo.Common.Model
                 Cache.Account.StartCalculator(this);
             }
 
-            public IFeedSubscription SubscribeAll() => Distributor.SubscribeAll();
-
             public void ClearCache()
             {
                 Cache.Clear();
@@ -204,6 +206,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 Connection = new ConnectionModel.Handler(await Actor.Call(a => a._connection.Ref));
                 await Connection.OpenHandler();
+                Connection.Connected += Connection_Connected;
+                Connection.Disconnected += Connection_Disconnected;
 
                 FeedHistory = new FeedHistoryProviderModel.Handler(await Actor.Call(a => a._feedHistory.Ref));
                 await FeedHistory.Init();
@@ -220,12 +224,6 @@ namespace TickTrader.Algo.Common.Model
                 var quoteStream = Channel.NewOutput<QuoteEntity>(1000);
                 await Actor.OpenChannel(quoteStream, (a, c) => a._feedListeners.Add(Ref, c));
                 ApplyQuotes(quoteStream);
-
-                await Actor.Call(a =>
-                {
-                    var subscription = a._rootDistributor.SubscribeAll();
-                    a._feedSubcribers.Add(Ref, subscription);
-                });
             }
 
             public async Task Deinit()
@@ -252,9 +250,26 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            void IQuoteDistributorSource.ModifySubscription(string symbol, int depth)
+            void IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
             {
-                Actor.Send(a => a._feedSubcribers[Ref].Add(symbol, depth));
+                Actor.Send(a => a.UpsertSubscription(Ref, updates));
+            }
+
+            void IFeedSubscription.CancelAll()
+            {
+                Actor.Send(a => a.RemoveSubscription(Ref));
+            }
+
+            private void Connection_Connected()
+            {
+                Distributor.Start(this);
+                _defaultSubscription.AddOrModify(Cache.Symbols.Snapshot.Keys, 1);
+            }
+
+            private void Connection_Disconnected()
+            {
+                Distributor.Stop();
+                _defaultSubscription.CancelAll();
             }
         }
 
@@ -346,6 +361,8 @@ namespace TickTrader.Algo.Common.Model
                 logger.Debug("Stopped quote stream.");
 
                 await _feedHistory.Stop();
+
+                _rootDistributor.Stop(false);
 
                 logger.Debug("Stopped feed history.");
 
@@ -448,6 +465,8 @@ namespace TickTrader.Algo.Common.Model
 
         private async Task LoadQuotesSnapshot(IEnumerable<string> allSymbols)
         {
+            _rootDistributor.Start(this, allSymbols, false);
+
             var groups = _rootDistributor.GetAllSubscriptions(allSymbols)
                 .GroupBy(i => i.Item1).ToList();
 
@@ -482,18 +501,48 @@ namespace TickTrader.Algo.Common.Model
                 await listener.Write(quote);
         }
 
-        public async void ModifySubscription(string symbol, int depth)
+        private void UpsertSubscription(ActorRef sender, List<FeedSubscriptionUpdate> updates)
         {
-            //System.Diagnostics.Debug.WriteLine("ModifySubscription(" + symbol + ", " + depth + ")");
+            var subscription = _feedSubcribers.GetOrAdd(sender, () => _rootDistributor.AddSubscription(q => { }));
+            subscription.Modify(updates);
+        }
 
+        private void RemoveSubscription(ActorRef sender)
+        {
+            if (_feedSubcribers.TryGetValue(sender, out var sub))
+            {
+                sub.CancelAll();
+                _feedSubcribers.Remove(sender);
+            }
+        }
+
+        private async void ModifySubscription(IEnumerable<string> symbols, int depth)
+        {
             try
             {
-                await _connection.FeedProxy.SubscribeToQuotes(new string[] { symbol }, depth);
+                await _connection.FeedProxy.SubscribeToQuotes(symbols.ToArray(), depth);
             }
             catch (Exception ex)
             {
                 logger.Debug("Failed to modify quote subscription: " + ex.Message);
             }
+        }
+
+        void IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+        {
+            var removes = updates.Where(u => u.IsRemoveAction);
+            var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Depth);
+
+            foreach (var upsertGourp in upserts)
+            {
+                var depth = upsertGourp.Key;
+                var symols = upsertGourp.Select(e => e.Symbol);
+                ModifySubscription(symols, depth);
+            }
+        }
+
+        void IFeedSubscription.CancelAll()
+        {
         }
 
         #endregion

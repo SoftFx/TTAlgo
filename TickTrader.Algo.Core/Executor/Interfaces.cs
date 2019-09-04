@@ -35,22 +35,28 @@ namespace TickTrader.Algo.Core
         IEnumerable<CurrencyEntity> GetCurrencyMetadata();
     }
 
-    public interface IPluginFeedProvider
+    public interface IFeedHistoryProvider
     {
-        ISynchronizationContext Sync { get; }
-        IEnumerable<QuoteEntity> GetSnapshot();
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame);
         List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, Api.TimeFrames timeFrame);
         List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2);
         List<QuoteEntity> QueryTicks(string symbolCode, DateTime from, int count, bool level2);
-        void Subscribe(Action<QuoteEntity[]> FeedUpdated);
-        void Unsubscribe();
-        void SetSymbolDepth(string symbolCode, int depth);
+    }
+
+    public interface IFeedProvider : Infrastructure.IFeedSubscription
+    {
+        ISynchronizationContext Sync { get; }
+        IEnumerable<QuoteEntity> GetSnapshot();
+        QuoteEntity GetRate(string symbol);
+        
+        event Action<QuoteEntity> RateUpdated;
+        event Action<List<QuoteEntity>> RatesUpdated;
     }
 
     public interface ISynchronizationContext
     {
         void Invoke(Action action);
+        void Invoke<T>(Action<T> action, T arg);
         void Send(Action action);
     }
 
@@ -90,8 +96,9 @@ namespace TickTrader.Algo.Core
 
         void SendExtUpdate(object update);
 
-        IPluginFeedProvider FeedProvider { get; }
-        SubscriptionManager Dispenser { get; }
+        IFeedProvider FeedProvider { get; }
+        IFeedHistoryProvider FeedHistory { get; }
+        SubscriptionFixtureManager Dispenser { get; }
         FeedBufferStrategy BufferingStrategy { get; }
         IAccountInfoProvider AccInfoProvider { get; }
         ITradeExecutor TradeExecutor { get; }

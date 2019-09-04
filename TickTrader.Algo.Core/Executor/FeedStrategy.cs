@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Infrastructure;
 using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
@@ -11,6 +12,7 @@ namespace TickTrader.Algo.Core
     public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext, CustomFeedProvider
     {
         private MarketStateFixture _marketFixture;
+        private IFeedSubscription _defaultSubscription;
         private readonly List<Action<FeedStrategy>> _setupActions = new List<Action<FeedStrategy>>();
 
         public FeedStrategy()
@@ -18,11 +20,13 @@ namespace TickTrader.Algo.Core
         }
 
         internal IFixtureContext ExecContext { get; private set; }
-        internal IPluginFeedProvider Feed { get; private set; }
-        internal SubscriptionManager RateDispenser => ExecContext.Dispenser;
+        internal IFeedProvider Feed { get; private set; }
+        internal IFeedHistoryProvider FeedHistory { get; private set; }
+        internal SubscriptionFixtureManager RateDispenser => ExecContext.Dispenser;
 
         public abstract int BufferSize { get; }
         public abstract IFeedBuffer MainBuffer { get; }
+        public abstract IEnumerable<string> BufferedSymbols { get; }
 
         internal abstract void OnInit();
         public FeedBufferStrategy BufferingStrategy { get; private set; }
@@ -48,14 +52,16 @@ namespace TickTrader.Algo.Core
 
         internal virtual void Start()
         {
-            RateDispenser.Start();
+            InitDefaultSubscription();
             Feed.Sync.Invoke(StartStrategy);
+            ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
+            ExecContext.Builder.CustomFeedProvider = this;
         }
 
         internal virtual void Stop()
         {
-            RateDispenser.Stop();
             Feed.Sync.Invoke(StopStrategy);
+            CancelDefaultSubscription();
         }
 
         internal FeedStrategy Clone()
@@ -65,7 +71,7 @@ namespace TickTrader.Algo.Core
             return copy;
         }
 
-        internal void SetSubscribed(string symbol, int depth)
+        internal void SetUserSubscription(string symbol, int depth)
         {
             RateDispenser.SetUserSubscription(symbol, depth);
         }
@@ -77,19 +83,21 @@ namespace TickTrader.Algo.Core
 
         private void StartStrategy()
         {
-            Feed.Subscribe(Feed_FeedUpdated);
-            ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
+            RateDispenser.Start();
+            Feed.RateUpdated += Feed_RateUpdated;
+            Feed.RatesUpdated += Feed_RatesUpdated;
 
             // apply snapshot
-            foreach (var quote in Feed.GetSnapshot())
-                _marketFixture.UpdateRate(quote);
-
-            ExecContext.Builder.CustomFeedProvider = this;
+            //foreach (var quote in Feed.GetSnapshot())
+            //    _marketFixture.UpdateRate(quote);
         }
 
         private void StopStrategy()
         {
-            Feed.Unsubscribe();
+            RateDispenser.Stop();
+            Feed.RateUpdated -= Feed_RateUpdated;
+            Feed.RatesUpdated -= Feed_RatesUpdated;
+            //Feed.CancelAll();
         }
 
         private void LoadDataAndBuild()
@@ -110,10 +118,26 @@ namespace TickTrader.Algo.Core
             builder.StopBatch();
         }
 
-        private void Feed_FeedUpdated(QuoteEntity[] updates)
+        private void Feed_RatesUpdated(List<QuoteEntity> updates)
         {
             foreach (var update in updates)
                 ExecContext.EnqueueQuote(update);
+        }
+
+        private void Feed_RateUpdated(QuoteEntity upd)
+        {
+            ExecContext.EnqueueQuote(upd);
+        }
+
+        private void InitDefaultSubscription()
+        {
+            _defaultSubscription = RateDispenser.AddSubscription(BufferedSymbols, 1);
+        }
+
+        private void CancelDefaultSubscription()
+        {
+            _defaultSubscription.CancelAll();
+            _defaultSubscription = null;
         }
 
         internal BufferUpdateResult ApplyUpdate(RateUpdate update, out AlgoMarketNode node)
@@ -191,7 +215,7 @@ namespace TickTrader.Algo.Core
 
             if (backwardOrder)
             {
-                page =  Feed.QueryBars(symbol, side, to, -pageSize, timeFrame);
+                page = FeedHistory.QueryBars(symbol, side, to, -pageSize, timeFrame);
                 pageIndex = page.Count - 1;
 
                 while (true)
@@ -201,7 +225,7 @@ namespace TickTrader.Algo.Core
                         if (page.Count < pageSize)
                             break; //last page
                         var timeRef = page.First().OpenTime.AddMilliseconds(-1);
-                        page = Feed.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
+                        page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
                         if (page.Count == 0)
                             break;
                         pageIndex = page.Count - 1;
@@ -216,7 +240,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                page = Feed.QueryBars(symbol, side, from, pageSize, timeFrame);
+                page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
                 pageIndex = 0;
 
                 while (true)
@@ -226,7 +250,7 @@ namespace TickTrader.Algo.Core
                         if (page.Count < pageSize)
                             break; //last page
                         var timeRef = page.Last().CloseTime.AddMilliseconds(1);
-                        page = Feed.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
+                        page = FeedHistory.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
                         if (page.Count == 0)
                             break;
                         pageIndex = 0;
@@ -255,7 +279,7 @@ namespace TickTrader.Algo.Core
             {
                 if (backwardOrder)
                 {
-                    page = Feed.QueryBars(symbol, side, from, -pageSize, timeFrame);
+                    page = FeedHistory.QueryBars(symbol, side, from, -pageSize, timeFrame);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -274,7 +298,7 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    page = Feed.QueryBars(symbol, side, from, pageSize, timeFrame);
+                    page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
@@ -305,7 +329,7 @@ namespace TickTrader.Algo.Core
 
             if (backwardOrder)
             {
-                page = Feed.QueryTicks(symbol, to, -pageSize, level2);
+                page = FeedHistory.QueryTicks(symbol, to, -pageSize, level2);
                 pageIndex = page.Count - 1;
 
                 while (true)
@@ -315,7 +339,7 @@ namespace TickTrader.Algo.Core
                         if (page.Count < pageSize)
                             break; //last page
                         var timeRef = page.First().Time.AddMilliseconds(-1);
-                        page = Feed.QueryTicks(symbol, timeRef, -pageSize, level2);
+                        page = FeedHistory.QueryTicks(symbol, timeRef, -pageSize, level2);
                         if (page.Count == 0)
                             break;
                         pageIndex = page.Count - 1;
@@ -330,7 +354,7 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                page = Feed.QueryTicks(symbol, from, pageSize, level2);
+                page = FeedHistory.QueryTicks(symbol, from, pageSize, level2);
                 pageIndex = 0;
 
                 while (true)
@@ -340,7 +364,7 @@ namespace TickTrader.Algo.Core
                         if (page.Count < pageSize)
                             break; //last page
                         var timeRef = page.Last().Time.AddMilliseconds(1);
-                        page = Feed.QueryTicks(symbol, timeRef, pageSize, level2);
+                        page = FeedHistory.QueryTicks(symbol, timeRef, pageSize, level2);
                         if (page.Count == 0)
                             break;
                         pageIndex = 0;
@@ -369,7 +393,7 @@ namespace TickTrader.Algo.Core
             {
                 if (backwardOrder)
                 {
-                    page = Feed.QueryTicks(symbol, from, -pageSize, level2);
+                    page = FeedHistory.QueryTicks(symbol, from, -pageSize, level2);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -388,7 +412,7 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    page = Feed.QueryTicks(symbol, from, pageSize, level2);
+                    page = FeedHistory.QueryTicks(symbol, from, pageSize, level2);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)

@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private PluginExecutor _executor;
+        private PluginExecutorCore _executor;
         private Dictionary<string, IOutputCollector> _outputs;
 
 
@@ -128,7 +128,7 @@ namespace TickTrader.BotTerminal
             _executor.Abort();
         }
 
-        protected virtual PluginExecutor CreateExecutor()
+        protected virtual PluginExecutorCore CreateExecutor()
         {
             var executor = PluginRef.CreateExecutor();
 
@@ -219,7 +219,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOutputs(PluginExecutor executor)
+        private void CreateOutputs(PluginExecutorCore executor)
         {
             try
             {
@@ -238,7 +238,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(string id, PluginExecutor executor, OutputSetupModel setup)
+        private void CreateOuput<T>(string id, PluginExecutorCore executor, OutputSetupModel setup)
         {
             var fixture = executor.GetOutput<T>(id);
             var collector = CreateOutputCollector<T>(id, fixture, setup);

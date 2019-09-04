@@ -104,8 +104,8 @@ namespace TickTrader.BotTerminal
         void Lock();
         void Unlock();
 
-        void InitializePlugin(PluginExecutor plugin);
-        void UpdatePlugin(PluginExecutor plugin);
+        void InitializePlugin(PluginExecutorCore plugin);
+        void UpdatePlugin(PluginExecutorCore plugin);
 
         ITradeExecutor GetTradeApi();
         ITradeHistoryProvider GetTradeHistoryApi();

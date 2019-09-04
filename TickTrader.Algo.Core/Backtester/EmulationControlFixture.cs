@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core
         public DateTime EmulationTimePoint => InvokeEmulator.SlimUpdateVirtualTimePoint;
         public InvokeEmulator InvokeEmulator { get; }
         public BacktesterCollector Collector { get; }
-        public PluginExecutor Executor { get; }
+        public PluginExecutorCore Executor { get; }
         public FeedEmulator Feed { get; }
         public TradeHistoryEmulator TradeHistory { get; }
         public IBacktesterSettings Settings { get; }
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
             remove => InvokeEmulator.StateUpdated -= value;
         }
 
-        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutor executor, CalculatorFixture calc, FeedEmulator fEmulator)
+        public EmulationControlFixture(IBacktesterSettings settings, PluginExecutorCore executor, CalculatorFixture calc, FeedEmulator fEmulator)
         {
             Settings = settings;
             Feed = fEmulator ?? new FeedEmulator();

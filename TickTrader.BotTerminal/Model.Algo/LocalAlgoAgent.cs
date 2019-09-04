@@ -554,25 +554,27 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(PluginExecutor plugin)
+        public virtual void InitializePlugin(PluginExecutorCore plugin)
         {
             plugin.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
             var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.Metadata = feedProvider;
+            plugin.Feed = feedProvider;
+            plugin.FeedHistory = feedProvider;
             switch (plugin.TimeFrame)
             {
                 case Algo.Api.TimeFrames.Ticks:
-                    plugin.InitQuoteStrategy(feedProvider);
+                    plugin.InitQuoteStrategy();
                     break;
                 default:
-                    plugin.InitBarStrategy(feedProvider, Algo.Api.BarPriceType.Bid);
+                    plugin.InitBarStrategy(Algo.Api.BarPriceType.Bid);
                     break;
             }
             plugin.InitSlidingBuffering(4000);
         }
 
-        public virtual void UpdatePlugin(PluginExecutor plugin)
+        public virtual void UpdatePlugin(PluginExecutorCore plugin)
         {
         }
 

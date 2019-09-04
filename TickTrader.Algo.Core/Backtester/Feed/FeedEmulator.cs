@@ -8,14 +8,13 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public class FeedEmulator : CrossDomainObject, IPluginFeedProvider, ISynchronizationContext
+    public class FeedEmulator : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, ISynchronizationContext
     {
-        //private FeedReader _reader;
         private List<IFeedStorage> _storages = new List<IFeedStorage>();
         private Dictionary<string, SeriesReader> _feedReaders = new Dictionary<string, SeriesReader>();
         private Dictionary<string, FeedSeriesEmulator> _feedSeries = new Dictionary<string, FeedSeriesEmulator>();
 
-        ISynchronizationContext IPluginFeedProvider.Sync => this;
+        ISynchronizationContext IFeedProvider.Sync => this;
 
         public FeedEmulator()
         {
@@ -153,44 +152,50 @@ namespace TickTrader.Algo.Core
 
         #region IPluginFeedProvider
 
-        IEnumerable<QuoteEntity> IPluginFeedProvider.GetSnapshot()
+        IEnumerable<QuoteEntity> IFeedProvider.GetSnapshot()
         {
             return _feedSeries.Values.Where(s => s.Current != null).Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
         }
 
-        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
+        QuoteEntity IFeedProvider.GetRate(string symbol)
+        {
+            return (QuoteEntity)_feedSeries.GetOrDefault(symbol)?.Current?.LastQuote;
+        }
+
+        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {
             return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, to).ToList() ?? new List<BarEntity>();
         }
 
-        List<BarEntity> IPluginFeedProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
+        List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, int size, TimeFrames timeFrame)
         {
             return GetFeedSrcOrThrow(symbolCode).QueryBars(timeFrame, priceType, from, size).ToList() ?? new List<BarEntity>();
         }
 
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
+        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, DateTime to, bool level2)
         {
             return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, to, level2) ?? new List<QuoteEntity>();
         }
 
-        List<QuoteEntity> IPluginFeedProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
+        List<QuoteEntity> IFeedHistoryProvider.QueryTicks(string symbolCode, DateTime from, int count, bool level2)
         {
             return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteEntity>();
         }
 
-        void IPluginFeedProvider.Subscribe(Action<QuoteEntity[]> FeedUpdated)
+        void Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
         {
         }
 
-        void IPluginFeedProvider.Unsubscribe()
+        void Infrastructure.IFeedSubscription.CancelAll()
         {
         }
 
-        void IPluginFeedProvider.SetSymbolDepth(string symbolCode, int depth)
-        {
-        }
+        public event Action<QuoteEntity> RateUpdated { add { } remove { } }
+        public event Action<List<QuoteEntity>> RatesUpdated { add { } remove { } }
 
         #endregion
+
+        #region ISynchronizationContext
 
         public void Invoke(Action action)
         {
@@ -201,5 +206,12 @@ namespace TickTrader.Algo.Core
         {
             action();
         }
+
+        public void Invoke<T>(Action<T> action, T arg)
+        {
+            action(arg);
+        }
+
+        #endregion ISynchronizationContext
     }
 }

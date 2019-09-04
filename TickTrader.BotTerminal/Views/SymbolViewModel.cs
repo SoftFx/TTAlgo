@@ -8,6 +8,7 @@ using System.Windows.Media;
 using TickTrader.Algo.Common;
 using TickTrader.Algo.Common.Model;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.BotTerminal
 {
@@ -27,8 +28,8 @@ namespace TickTrader.BotTerminal
             _model = model;
             _shell = shell;
             ShowLocalTime = showLocalTime;
-            subscription = distributor.Subscribe(model.Name);
-            subscription.NewQuote += OnRateUpdate;
+            subscription = distributor.AddSubscription(OnRateUpdate, model.Name);
+            //subscription.NewQuote += ;
 
             Bid = model.BidTracker;
             Ask = model.AskTracker;
@@ -144,7 +145,7 @@ namespace TickTrader.BotTerminal
 
         public void Close()
         {
-            subscription.Dispose();
+            subscription.CancelAll();
         }
     }
 }

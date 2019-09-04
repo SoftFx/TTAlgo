@@ -11,14 +11,18 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
-    public class ExecutorHandler : CrossDomainObject
+    public class PluginExecutor : IPluginSetupTarget, IDisposable
     {
         private ISynchronizationContext _syncContext;
         
         private AlgoPluginRef _ref;
-        private UpdateChannel _channel;
+        private BunchingBlock<object> _channel;
+        private Dictionary<string, object> _pluginParams = new Dictionary<string, object>();
+        private FeedStrategy _fStrategy;
+        private CommonCdProxy _bProxy;
+        private FeedCdProxy _fProxy;
 
-        public ExecutorHandler(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
+        public PluginExecutor(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
             _ref = pluginRef;
             _syncContext = updatesSync;
@@ -26,9 +30,12 @@ namespace TickTrader.Algo.Core
             IsIsolated = pluginRef.IsIsolated;
         }
 
+        private bool IsBunchingRequired => IsIsolated || _syncContext != null;
+
         // TO DO: Direct access to Core should be removed in future refactoring!
-        public PluginExecutor Core { get; }
+        internal PluginExecutorCore Core { get; }
         public bool IsIsolated { get; }
+        public bool IsRunning { get; private set; }
 
         public event Action<BotLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
@@ -40,23 +47,142 @@ namespace TickTrader.Algo.Core
         public event Action<IDataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
 
-        internal void StartCollection(bool realtime)
+        #region Excec control
+
+        public void Start()
         {
-            _channel = _ref.CreateObject<UpdateChannel>();
-            Core.OnUpdate = _channel.EnqueueUpdate;
-            _channel.Start(realtime, MarshalUpdates);
+            ConfigurateCore();
+            Core.Start();
         }
 
-        internal void StopCollection()
+        public void Stop()
+        {
+            Core.Stop();
+        }
+
+        public void Abort()
+        {
+            Core.Abort();
+        }
+
+        public void HandleDisconnect()
+        {
+            Core.HandleDisconnect();
+        }
+
+        public void HandleReconnect()
+        {
+            Core.HandleReconnect();
+        }
+
+        #endregion
+
+        #region Setup
+
+        public InvokeStartegy InvokeStrategy { get; set; }
+        public IAccountInfoProvider AccInfoProvider { get; set; }
+        public ITradeHistoryProvider TradeHistoryProvider { get; set; }
+        public IPluginMetadata Metadata { get; set; }
+        public IFeedProvider Feed { get; set; }
+        public IFeedHistoryProvider FeedHistory { get; set; }
+        public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
+
+        public void SetParameter(string id, object value)
+        {
+            _pluginParams[id] = value;
+        }
+
+        public T GetFeedStrategy<T>()
+           where T : FeedStrategy
+        {
+            return (T)_fStrategy;
+        }
+
+        public void MapInput(string inputName, string symbolCode, Mapping mapping)
+        {
+            // hook to appear in plugin domain
+            mapping?.MapInput(this, inputName, symbolCode);
+        }
+
+        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
+        {
+            var strategy = new BarStrategy(mainPirceTipe);
+            _fStrategy = strategy;
+            return strategy;
+        }
+
+        public QuoteStrategy InitQuoteStrategy(IFeedProvider feed)
+        {
+            var strategy = new QuoteStrategy();
+            _fStrategy = strategy;
+            return strategy;
+        }
+
+        #endregion
+
+        public void Dispose()
+        {
+        }
+
+        private void ConfigurateCore()
+        {
+            Core.MainSymbolCode = Config.MainSymbolCode;
+            Core.TimeFrame = Config.TimeFrame;
+
+            Core.BotWorkingFolder = Core.BotWorkingFolder;
+            Core.WorkingFolder = Core.WorkingFolder;
+
+            if (IsIsolated)
+            {
+                _bProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
+                Core.AccInfoProvider = _bProxy;
+                Core.TradeHistoryProvider = _bProxy;
+                Core.Metadata = _bProxy;
+
+                _fProxy = new FeedCdProxy(Feed, FeedHistory);
+                Core.Feed = _fProxy;
+                Core.FeedHistory = _fProxy;
+            }
+            else
+            {
+                Core.AccInfoProvider = AccInfoProvider;
+                Core.TradeHistoryProvider = TradeHistoryProvider;
+                Core.Metadata = Metadata;
+                Core.Feed = Feed;
+                Core.FeedHistory = FeedHistory;
+            }
+        }
+
+        #region Update Marshalling 
+
+        internal void StartUpdateMarshalling()
+        {
+            if (IsBunchingRequired)
+            {
+                _channel = new BunchingBlock<object>(MarshalUpdates, 30, 60);
+                Core.OnUpdate = _channel.Enqueue;
+            }
+            else
+            {
+                Core.OnUpdate = MarshalUpdate;
+            }
+        }
+
+        internal void StopUpdateMarshalling()
         {
             try
             {
-                _channel.Close();
+                if (_channel != null)
+                {
+                    _channel.Complete();
+                    _channel.Completion.Wait();
+                }
             }
             catch (Exception ex)
             {
                 ErrorOccurred?.Invoke(ex);
             }
+            _channel = null;
         }
 
         private void MarshalUpdates(IReadOnlyList<object> updates)
@@ -106,6 +232,9 @@ namespace TickTrader.Algo.Core
                 else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
             }
+
+            #endregion
         }
+        
     }
 }

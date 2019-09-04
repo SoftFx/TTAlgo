@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Machinarium.Qnil;
 using Machinarium.Var;
 using TickTrader.Algo.Common.Model;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.BotTerminal
 {

@@ -5,10 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class MockClient : IMarketDataProvider, IFeedSubscription, IQuoteDistributorSource
+    public class MockClient : IMarketDataProvider
     {
         private VarDictionary<string, SymbolModel> _symbols = new VarDictionary<string, SymbolModel>();
         private VarDictionary<string, CurrencyEntity> _currencies = new VarDictionary<string, CurrencyEntity>();
@@ -16,7 +17,7 @@ namespace TickTrader.Algo.Common.Model
         public MockClient()
         {
             Acc = new AccountModel(_currencies, _symbols);
-            Distributor = new QuoteDistributor(this);
+            Distributor = new QuoteDistributor();
         }
 
         public AccountModel Acc { get; }
@@ -51,7 +52,6 @@ namespace TickTrader.Algo.Common.Model
         public void OnRateUpdate(QuoteEntity quote)
         {
             _symbols.GetOrDefault(quote.Symbol)?.OnNewTick(quote);
-            NewQuote?.Invoke(quote);
             Distributor.UpdateRate(quote);
         }
 
@@ -59,17 +59,6 @@ namespace TickTrader.Algo.Common.Model
         public IVarSet<string, SymbolModel> Symbols => _symbols;
         public IVarSet<string, CurrencyEntity> Currencies => _currencies;
         public QuoteDistributor Distributor { get; }
-        #endregion
-
-        #region IFeedSubscription
-        public event Action<QuoteEntity> NewQuote;
-        void IFeedSubscription.Add(string symbol, int depth) => throw new NotImplementedException();
-        void IFeedSubscription.Remove(string symbol) => throw new NotImplementedException();
-        void IDisposable.Dispose() { }
-        #endregion
-
-        #region IQuoteDistributorSource
-        void IQuoteDistributorSource.ModifySubscription(string symbol, int depth) { }
         #endregion
     }
 }

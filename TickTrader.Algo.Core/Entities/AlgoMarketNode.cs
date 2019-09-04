@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core.Calc.Conversion;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.Algo.Core
 {
@@ -14,6 +15,6 @@ namespace TickTrader.Algo.Core
         }
 
         public ActivationRegistry ActivationIndex { get; set; }
-        public SubscriptionManager.Collection UserSubscriptions { get; set; }
+        public IFeedSubscription UserSubscriptionInfo { get; set; }
     }
 }

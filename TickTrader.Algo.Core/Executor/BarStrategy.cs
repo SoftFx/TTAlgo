@@ -22,6 +22,7 @@ namespace TickTrader.Algo.Core
         public BarPriceType MainPriceType { get; private set; }
         public override IFeedBuffer MainBuffer { get { return mainSeriesFixture; } }
         public override int BufferSize { get { return mainSeriesFixture.Count; } }
+        public override IEnumerable<string> BufferedSymbols => fixtures.Keys;
 
         internal override void OnInit()
         {
