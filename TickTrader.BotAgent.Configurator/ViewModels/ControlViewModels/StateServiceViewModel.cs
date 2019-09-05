@@ -28,11 +28,11 @@ namespace TickTrader.BotAgent.Configurator
             }
         }
 
-        public void RefreshService(string serviceName, ServiceControllerStatus currentState)
+        public void RefreshService(string serviceName)
         {
             _serviceName = serviceName;
 
-            Status = currentState;
+            Status = new ServiceController(_serviceName).Status;
 
             OnPropertyChanged(nameof(ServiceState));
             OnPropertyChanged(nameof(Status));

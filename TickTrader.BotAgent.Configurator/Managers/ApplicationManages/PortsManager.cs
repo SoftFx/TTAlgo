@@ -10,7 +10,7 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private const int MaxPort = 1 << 16;
+        private const int MaxPort = (1 << 16) - 1;
 
         private readonly INetFwMgr _firewallManager;
         private readonly ServiceManager _serviceManager;

@@ -8,7 +8,7 @@ namespace TickTrader.BotAgent.Configurator
     public class UriViewModel : BaseViewModelWithValidations
     {
         private const string specialSymbols = "$-_.+ !*'()";
-        private const int MinPort = 1, MaxPort = 1 << 16;
+        private const int MinPort = 1, MaxPort = (1 << 16) - 1;
 
         private readonly List<Uri> _urls;
         private readonly PortsManager _portsManager;
@@ -99,7 +99,7 @@ namespace TickTrader.BotAgent.Configurator
                     }
 
                     ExistanceCheck();
-                    _portsManager.CheckPort(_port, OldUri?.Port ?? 0, Host);
+                    _portsManager.CheckPort(_port, OldUri?.Port ?? 0, GetUri().Host);
                 }
                 catch (WarningException ex)
                 {

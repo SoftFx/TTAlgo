@@ -47,6 +47,13 @@
                 <Setter Property="Background" Value="Yellow"/>
                 <Setter Property="ToolTip" Value="{Binding Warning}"/>
             </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=IsSelected}" Value="True"/>
+                    <Condition Binding="{Binding HasWarning}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="Orange"/>
+            </MultiDataTrigger>
         </Style.Triggers>
     </Style>
 </ResourceDictionary>

@@ -14,6 +14,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public string SecretKey { get; set; }
 
+        public string CurrentSecretKey { get; private set; }
+
         public List<Uri> Urls { get; private set; }
 
         public ServerModel(PortsManager portsManager)
@@ -55,6 +57,7 @@ namespace TickTrader.BotAgent.Configurator
         public void UpdateCurrentFields()
         {
             UrlsStr = string.Join(";", Urls);
+            CurrentSecretKey = SecretKey;
         }
 
         public bool CheckOnDefaultValue()

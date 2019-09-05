@@ -12,7 +12,7 @@ namespace TickTrader.BotAgent.Configurator
             SectionName = sectionName == SectionNames.None ? string.Empty : sectionName.ToString();
         }
 
-        protected virtual void SaveProperty(JObject root, string property, object newValue, object oldValue, NLog.Logger logger = null)
+        protected virtual void SaveProperty(JObject root, string property, object newValue, object oldValue, NLog.Logger logger, bool secret = false)
         {
             if (!string.IsNullOrEmpty(SectionName))
             {
@@ -26,13 +26,18 @@ namespace TickTrader.BotAgent.Configurator
                     root[property] = JToken.FromObject(newValue);
             }
 
-            if (logger != null && !newValue.Equals(oldValue))
-                logger.Info(GetChangeMessage(property, oldValue, newValue));
+            if (!newValue.Equals(oldValue))
+            {
+                if (!secret)
+                    logger.Info(GetChangeMessage(property, oldValue, newValue));
+                else
+                    logger.Info($"Property {property} was changed");
+            }
         }
 
         private string GetChangeMessage(string property, object oldVal, object newVal)
         {
-            return $"{property} was changed: {oldVal} to {newVal}";
+            return $"Property {property} was changed: {oldVal} to {newVal}";
         }
 
         private bool InsertSection(JObject root, JProperty prop)

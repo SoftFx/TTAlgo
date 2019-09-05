@@ -37,8 +37,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveConfigurationModels(JObject root)
         {
-            SaveProperty(root, "File", SslModel.File, SslModel.File);
-            SaveProperty(root, "Password", SslModel.Password, SslModel.Password);
+            SaveProperty(root, "File", SslModel.File, SslModel.File, _logger);
+            SaveProperty(root, "Password", SslModel.Password, SslModel.Password, _logger);
         }
 
         public void SetDefaultModelValues()

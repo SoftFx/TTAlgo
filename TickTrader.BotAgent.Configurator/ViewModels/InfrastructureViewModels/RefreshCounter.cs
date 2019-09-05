@@ -12,6 +12,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool Update => _updatedFields.Count > 0;
 
+        public bool Restart { get; private set; }
+
         public RefreshCounter()
         {
             _updatedFields = new SortedSet<string>();
@@ -28,7 +30,10 @@ namespace TickTrader.BotAgent.Configurator
         public void AddUpdate(string field)
         {
             if (!_updatedFields.Contains(field))
+            {
                 _updatedFields.Add(field);
+                Restart = true;
+            }
 
             Refresh();
         }
@@ -47,10 +52,18 @@ namespace TickTrader.BotAgent.Configurator
             Refresh();
         }
 
+        public void DropRestart()
+        {
+            Restart = false;
+
+            Refresh();
+        }
+
         private void Refresh()
         {
             ChangeValuesEvent?.Invoke();
             OnPropertyChanged(nameof(Update));
+            OnPropertyChanged(nameof(Restart));
         }
     }
 }

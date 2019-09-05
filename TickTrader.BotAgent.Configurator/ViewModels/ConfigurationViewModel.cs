@@ -89,7 +89,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 SetNewViewModels();
 
-                RefreshCounter.ChangeValuesEvent += () => StateServiceModel.VisibleRestartMessage = RefreshCounter.Update;
+                RefreshCounter.ChangeValuesEvent += () => StateServiceModel.VisibleRestartMessage = RefreshCounter.Restart && ServiceRunning;
 
                 _mainWindow.Closing += MainWindow_Closing;
             }
@@ -192,6 +192,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 DropAllErrors();
                 RefreshCounter.DropRefresh();
+                RefreshCounter.DropRestart();
                 LogsModel.DropLog();
 
                 _model.RefreshModel(AdvancedModel.SelectPath);
@@ -230,6 +231,7 @@ namespace TickTrader.BotAgent.Configurator
                     {
                         DropAllErrors();
                         RefreshCounter.DropRefresh();
+                        RefreshCounter.DropRestart();
 
                         _model.LoadConfiguration();
 
@@ -291,6 +293,8 @@ namespace TickTrader.BotAgent.Configurator
                 _logger.Info(mes);
 
                 Spinner.Stop();
+
+                RefreshCounter.DropRestart();
                 OnPropertyChanged(nameof(ServiceRunning));
 
                 MessageBoxManager.OKBox(mes);
@@ -319,7 +323,7 @@ namespace TickTrader.BotAgent.Configurator
 
                 while (_runnignApplication)
                 {
-                    StateServiceModel.RefreshService(_model.ServiceManager.ServiceDisplayName, _model.ServiceManager.ServiceStatus);
+                    StateServiceModel.RefreshService(_model.ServiceManager.ServiceDisplayName);
 
                     sec = sec == 5 ? 0 : sec + 1;
 
