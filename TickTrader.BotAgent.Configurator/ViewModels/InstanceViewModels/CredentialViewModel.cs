@@ -33,7 +33,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Login = value;
-                _refreshManager?.CheckUpdate(value, _model.CurrentLogin, _keyLogin);
+                _refreshManager?.CheckUpdate(value, _model.CurrentLogin, _keyLogin, false);
 
                 ErrorCounter.DeleteError(_keyLogin);
                 OnPropertyChanged(nameof(Login));
@@ -50,7 +50,7 @@ namespace TickTrader.BotAgent.Configurator
                     return;
 
                 _model.Password = value;
-                _refreshManager?.CheckUpdate(value, _model.CurrentPassword, _keyPassword);
+                _refreshManager?.CheckUpdate(value, _model.CurrentPassword, _keyPassword, false);
 
                 ErrorCounter.DeleteError(_keyPassword);
                 OnPropertyChanged(nameof(Password));

@@ -29,10 +29,10 @@ namespace TickTrader.BotAgent.Configurator
 
         public void ServiceStart(int listeningPort)
         {
+            _serviceController = new ServiceController(_serviceName);
+
             if (IsServiceRunning)
                 ServiceStop();
-
-            _serviceController = new ServiceController(_serviceName);
 
             if (_serviceController.Status == ServiceControllerStatus.Running)
                 throw new Exception("Service alredy started");
@@ -51,6 +51,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void ServiceStop()
         {
+            _serviceController = new ServiceController(_serviceName);
+
             if (_serviceController.Status == ServiceControllerStatus.Stopped)
                 throw new Exception("Service alredy stopped");
 

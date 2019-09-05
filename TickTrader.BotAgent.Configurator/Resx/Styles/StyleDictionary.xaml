@@ -124,10 +124,28 @@
         <Setter Property="Control.Margin" Value="0 0 20 0"/>
     </Style>
 
-    <Style x:Key="RestartMessage" TargetType="TextBlock">
+    <Style x:Key="DefaultInfoMessage" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="Red"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
+    </Style>
+
+    <Style x:Key="RestartMessage" TargetType="TextBlock" BasedOn="{StaticResource DefaultInfoMessage}">
+        <Setter Property="Foreground" Value="Red"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding StateServiceModel.VisibleRestartMessage}" Value="True">
+                <Setter Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="InfoMessage" TargetType="TextBlock" BasedOn="{StaticResource DefaultInfoMessage}">
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding StateServiceModel.VisibleRestartMessage}" Value="True">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="ToolBarButton" TargetType="Button">

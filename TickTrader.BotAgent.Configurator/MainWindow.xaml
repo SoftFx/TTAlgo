@@ -187,7 +187,10 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem Grid.Column="1">
-                <TextBlock Text="{Binding StateServiceModel.RestartMessage}" Style="{StaticResource RestartMessage}" Visibility="{Binding StateServiceModel.VisibleRestartMessage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource boolToVis}}"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding StateServiceModel.RestartMessage}" Style="{StaticResource RestartMessage}"/>
+                    <TextBlock Text="{Binding StateServiceModel.InfoMessage}" Style="{StaticResource InfoMessage}"/>
+                </StackPanel>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">
                 <c:ServiceStateControl DataContext="{Binding StateServiceModel}" Style="{StaticResource StateServiceRow}"/>

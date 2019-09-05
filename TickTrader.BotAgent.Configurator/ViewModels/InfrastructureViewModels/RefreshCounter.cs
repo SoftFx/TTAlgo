@@ -5,6 +5,7 @@ namespace TickTrader.BotAgent.Configurator
     public class RefreshCounter : BaseViewModel
     {
         private SortedSet<string> _updatedFields;
+        private SortedSet<string> _restartFields;
 
         public delegate void ConfigurationStateChanged();
 
@@ -12,28 +13,29 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool Update => _updatedFields.Count > 0;
 
-        public bool Restart { get; private set; }
+        public bool Restart => _restartFields.Count > 0;
 
         public RefreshCounter()
         {
             _updatedFields = new SortedSet<string>();
+            _restartFields = new SortedSet<string>();
         }
 
-        public void CheckUpdate(string newValue, string oldValue, string field)
+        public void CheckUpdate(string newValue, string oldValue, string field, bool restart = true)
         {
             if (newValue != oldValue)
-                AddUpdate(field);
+                AddUpdate(field, restart);
             else
                 DeleteUpdate(field);
         }
 
-        public void AddUpdate(string field)
+        public void AddUpdate(string field, bool restart = true)
         {
             if (!_updatedFields.Contains(field))
-            {
                 _updatedFields.Add(field);
-                Restart = true;
-            }
+
+            if (!_restartFields.Contains(field) && restart)
+                _restartFields.Add(field);
 
             Refresh();
         }
@@ -42,6 +44,9 @@ namespace TickTrader.BotAgent.Configurator
         {
             if (_updatedFields.Contains(field))
                 _updatedFields.Remove(field);
+
+            if (_restartFields.Contains(field))
+                _restartFields.Remove(field);
 
             Refresh();
         }
@@ -54,8 +59,14 @@ namespace TickTrader.BotAgent.Configurator
 
         public void DropRestart()
         {
-            Restart = false;
+            _restartFields.Clear();
+            Refresh();
+        }
 
+        public void AllDrop()
+        {
+            _updatedFields.Clear();
+            _restartFields.Clear();
             Refresh();
         }
 

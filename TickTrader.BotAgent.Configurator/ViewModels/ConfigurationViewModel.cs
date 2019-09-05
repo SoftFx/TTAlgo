@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -71,7 +72,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
 
-        public bool ServiceRunning => _model?.ServiceManager.IsServiceRunning ?? false;
+        public bool ServiceRunning => StateServiceModel != null ? StateServiceModel.Status == ServiceControllerStatus.Running : false;
 
         public ConfigurationViewModel()
         {
@@ -90,6 +91,19 @@ namespace TickTrader.BotAgent.Configurator
                 SetNewViewModels();
 
                 RefreshCounter.ChangeValuesEvent += () => StateServiceModel.VisibleRestartMessage = RefreshCounter.Restart && ServiceRunning;
+
+                StateServiceModel.StopServiceEvent += () =>
+                {
+                    RefreshCounter?.DropRefresh();
+                    StateServiceModel.InfoMessage = $"Agent has been stopped!";
+                    OnPropertyChanged(nameof(ServiceRunning));
+                };
+
+                StateServiceModel.StartServiceEvent += () =>
+                {
+                    StateServiceModel.InfoMessage = $"Agent has been started!";
+                    OnPropertyChanged(nameof(ServiceRunning));
+                };
 
                 _mainWindow.Closing += MainWindow_Closing;
             }
@@ -191,8 +205,6 @@ namespace TickTrader.BotAgent.Configurator
                 Spinner.Start();
 
                 DropAllErrors();
-                RefreshCounter.DropRefresh();
-                RefreshCounter.DropRestart();
                 LogsModel.DropLog();
 
                 _model.RefreshModel(AdvancedModel.SelectPath);
@@ -202,7 +214,7 @@ namespace TickTrader.BotAgent.Configurator
                 _logger.Info($"The application has been restarted!");
 
                 Spinner.Stop();
-                MessageBoxManager.OKBox($"Agent {AdvancedModel.SelectPath} has been loaded");
+                StateServiceModel.InfoMessage = $"Agent {AdvancedModel.SelectPath} has been loaded";
             }));
 
         public DelegateCommand SaveChanges => _saveChanges ?? (
@@ -213,7 +225,7 @@ namespace TickTrader.BotAgent.Configurator
                     _model.SaveChanges();
                     RefreshCounter.DropRefresh();
                     _logger.Info($"Changes have been saved.");
-                    MessageBoxManager.OKBox("Configuration saved successfully!");
+                    StateServiceModel.InfoMessage = "Configuration saved successfully!";
                 }
                 catch (Exception ex)
                 {
@@ -230,8 +242,6 @@ namespace TickTrader.BotAgent.Configurator
                     try
                     {
                         DropAllErrors();
-                        RefreshCounter.DropRefresh();
-                        RefreshCounter.DropRestart();
 
                         _model.LoadConfiguration();
 
@@ -288,16 +298,12 @@ namespace TickTrader.BotAgent.Configurator
                 else
                     _model.StopAgent();
 
-                var mes = (bool)start ? $"Agent has been started!" : $"Agent has been stopped!";
-
-                _logger.Info(mes);
+                _logger.Info((bool)start ? $"Agent has been started!" : $"Agent has been stopped!");
 
                 Spinner.Stop();
 
                 RefreshCounter.DropRestart();
                 OnPropertyChanged(nameof(ServiceRunning));
-
-                MessageBoxManager.OKBox(mes);
             }
             catch (WarningException ex)
             {
@@ -386,6 +392,8 @@ namespace TickTrader.BotAgent.Configurator
             {
                 model.ErrorCounter.DropAll();
             }
+
+            RefreshCounter.AllDrop();
         }
 
         private void RefreshAllViewModels()
