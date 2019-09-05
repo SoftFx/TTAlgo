@@ -157,10 +157,10 @@ namespace TickTrader.Algo.Core
             return _feedSeries.Values.Where(s => s.Current != null).Select(s => (QuoteEntity)s.Current.LastQuote).ToList();
         }
 
-        QuoteEntity IFeedProvider.GetRate(string symbol)
-        {
-            return (QuoteEntity)_feedSeries.GetOrDefault(symbol)?.Current?.LastQuote;
-        }
+        //QuoteEntity IFeedProvider.GetRate(string symbol)
+        //{
+        //    return (QuoteEntity)_feedSeries.GetOrDefault(symbol)?.Current?.LastQuote;
+        //}
 
         List<BarEntity> IFeedHistoryProvider.QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {

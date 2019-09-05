@@ -70,7 +70,8 @@ namespace TickTrader.Algo.Core.UnitTest
         public TimeFrames TimeFrame { get; set; }
         public DateTime TimePeriodEnd { get; set; }
         public DateTime TimePeriodStart { get; set; }
-        public IFeedProvider FeedProvider => throw new NotImplementedException();
+        public IFeedProvider FeedProvider { get; set; }
+        public IFeedHistoryProvider FeedHistory { get; set; }
         public FeedBufferStrategy BufferingStrategy => bStrategy;
         public SubscriptionFixtureManager Dispenser => dispenser;
 

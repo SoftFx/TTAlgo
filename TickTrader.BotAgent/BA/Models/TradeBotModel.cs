@@ -240,7 +240,9 @@ namespace TickTrader.BotAgent.BA.Models
                 setupModel.Load(Config);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();
-                executor.InitBarStrategy(feedAdapter, Algo.Api.BarPriceType.Bid);
+                executor.Feed = feedAdapter;
+                executor.FeedHistory = feedAdapter;
+                executor.InitBarStrategy(Algo.Api.BarPriceType.Bid);
                 executor.MainSymbolCode = setupModel.MainSymbol.Id;
                 executor.TimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;

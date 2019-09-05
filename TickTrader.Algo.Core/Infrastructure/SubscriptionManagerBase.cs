@@ -269,7 +269,7 @@ namespace TickTrader.Algo.Core.Infrastructure
 
         protected class SubscriptionGroup
         {
-            public int Depth { get; set; }
+            public int Depth { get; set; } = -1;
             public Dictionary<Subscription, int> Subscriptions { get; private set; }
             public string Symbol { get; private set; }
 
@@ -277,7 +277,6 @@ namespace TickTrader.Algo.Core.Infrastructure
             {
                 this.Symbol = symbol;
                 Subscriptions = new Dictionary<Subscription, int>();
-                Depth = 1;
             }
 
             public int GetMaxDepth()

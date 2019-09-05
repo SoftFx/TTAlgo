@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
         private IAccountInfoProvider _dataProvider;
+        private bool _isStarted;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
 
@@ -32,14 +33,21 @@ namespace TickTrader.Algo.Core
             _dataProvider = context.AccInfoProvider;
 
             context.Builder.TradeApi = this;
+            context.Builder.Account.TradeInfoRequested += LazyInit;
+        }
 
-            if (_dataProvider != null)
+        private void LazyInit()
+        {
+            if (!_isStarted && _dataProvider != null)
+            {
+                _isStarted = true;
                 _dataProvider.SyncInvoke(Init);
+            }
         }
 
         public void Restart()
         {
-            if (_dataProvider != null)
+            if (_dataProvider != null && _isStarted)
             {
                 _dataProvider.SyncInvoke(() =>
                 {

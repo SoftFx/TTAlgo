@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Core
     {
         ISynchronizationContext Sync { get; }
         IEnumerable<QuoteEntity> GetSnapshot();
-        QuoteEntity GetRate(string symbol);
+        //QuoteEntity GetRate(string symbol);
         
         event Action<QuoteEntity> RateUpdated;
         event Action<List<QuoteEntity>> RatesUpdated;

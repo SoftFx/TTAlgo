@@ -38,10 +38,10 @@ namespace TickTrader.Algo.Core
             return _feed.GetSnapshot();
         }
 
-        public QuoteEntity GetRate(string symbol)
-        {
-            return _feed.GetRate(symbol);
-        }
+        //public QuoteEntity GetRate(string symbol)
+        //{
+        //    return _feed.GetRate(symbol);
+        //}
 
         public List<BarEntity> QueryBars(string symbolCode, BarPriceType priceType, DateTime from, DateTime to, TimeFrames timeFrame)
         {

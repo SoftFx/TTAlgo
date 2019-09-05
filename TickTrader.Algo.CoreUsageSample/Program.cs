@@ -60,7 +60,10 @@ namespace TickTrader.Algo.CoreUsageSample
             executor.TimeFrame = dataModel.TimeFrame;
             executor.InitTimeSpanBuffering(DateTime.Parse("2015.11.02 00:25:00"), DateTime.Parse("2015.11.03 3:00:00"));
 
-            var feedCfg = executor.InitBarStrategy(dataModel, BarPriceType.Bid);
+            executor.Feed = dataModel;
+            executor.FeedHistory = dataModel;
+
+            var feedCfg = executor.InitBarStrategy(BarPriceType.Bid);
             feedCfg.MapInput("Input", "EURUSD", BarPriceType.Bid);
 
             executor.Start();
