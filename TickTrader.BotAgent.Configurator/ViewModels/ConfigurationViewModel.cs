@@ -85,23 +85,14 @@ namespace TickTrader.BotAgent.Configurator
                 _model = new ConfigurationModel();
 
                 RefreshCounter = new RefreshCounter();
-                StateServiceModel = new StateServiceViewModel();
+                StateServiceModel = new StateServiceViewModel(RefreshCounter);
                 Spinner = new SpinnerViewModel();
 
                 SetNewViewModels();
 
-                RefreshCounter.ChangeValuesEvent += () => StateServiceModel.VisibleRestartMessage = RefreshCounter.Restart && ServiceRunning;
-
-                StateServiceModel.StopServiceEvent += () =>
+                StateServiceModel.ChangeServiceStatusEvent += () =>
                 {
-                    RefreshCounter?.DropRefresh();
-                    StateServiceModel.InfoMessage = $"Agent has been stopped!";
-                    OnPropertyChanged(nameof(ServiceRunning));
-                };
-
-                StateServiceModel.StartServiceEvent += () =>
-                {
-                    StateServiceModel.InfoMessage = $"Agent has been started!";
+                    StateServiceModel.InfoMessage = StateServiceModel.ServiceRun ? $"Agent has been started!" : $"Agent has been stopped!";
                     OnPropertyChanged(nameof(ServiceRunning));
                 };
 
@@ -222,9 +213,11 @@ namespace TickTrader.BotAgent.Configurator
             {
                 try
                 {
-                    _model.SaveChanges();
                     RefreshCounter.DropRefresh();
+
+                    _model.SaveChanges();
                     _logger.Info($"Changes have been saved.");
+
                     StateServiceModel.InfoMessage = "Configuration saved successfully!";
                 }
                 catch (Exception ex)
@@ -294,15 +287,16 @@ namespace TickTrader.BotAgent.Configurator
                 Spinner.Start();
 
                 if ((bool)start)
+                {
+                    RefreshCounter.DropRestart();
                     _model.StartAgent();
+                }
                 else
                     _model.StopAgent();
 
                 _logger.Info((bool)start ? $"Agent has been started!" : $"Agent has been stopped!");
 
                 Spinner.Stop();
-
-                RefreshCounter.DropRestart();
                 OnPropertyChanged(nameof(ServiceRunning));
             }
             catch (WarningException ex)

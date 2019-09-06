@@ -7,16 +7,24 @@ namespace TickTrader.BotAgent.Configurator
         private string _serviceName, _infoMessage;
         private bool _visibleRestartMessage;
 
+        private RefreshCounter _refresh;
+
         public delegate void ChangeServiceStatus();
 
-        public event ChangeServiceStatus StopServiceEvent;
-        public event ChangeServiceStatus StartServiceEvent;
+        public event ChangeServiceStatus ChangeServiceStatusEvent;
 
         public string RestartMessage => "To apply the new settings, restart the service.";
 
         public string ServiceState => $"{_serviceName} is {Status.ToString()}";
 
+        public bool ServiceRun => Status == ServiceControllerStatus.Running;
+
         public ServiceControllerStatus Status { get; private set; }
+
+        public StateServiceViewModel(RefreshCounter refresh)
+        {
+            _refresh = refresh;
+        }
 
         public string InfoMessage
         {
@@ -52,12 +60,9 @@ namespace TickTrader.BotAgent.Configurator
 
             Status = new ServiceController(_serviceName).Status;
 
-            if (Status == ServiceControllerStatus.Stopped)
-                StopServiceEvent?.Invoke();
-            else
-            if (Status == ServiceControllerStatus.Running)
-                StartServiceEvent?.Invoke();
+            VisibleRestartMessage = ServiceRun ? _refresh.Update : false;
 
+            ChangeServiceStatusEvent?.Invoke();
             OnPropertyChanged(nameof(ServiceState));
             OnPropertyChanged(nameof(Status));
         }

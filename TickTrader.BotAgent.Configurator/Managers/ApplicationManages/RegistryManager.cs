@@ -24,12 +24,13 @@ namespace TickTrader.BotAgent.Configurator
             AgentNodes = new List<RegistryNode>();
 
             var agentFolder = _base64.OpenSubKey(Path.Combine("SOFTWARE", registryApplicationName));
+            var agentPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.FullName;
 
             foreach (var agentName in agentFolder.GetSubKeyNames())
             {
                 var node = new RegistryNode(agentFolder.OpenSubKey(agentName), appSettings, developer, exeName);
 
-                if (AppDomain.CurrentDomain.BaseDirectory.Contains(node.Path))
+                if (agentPath == node.Path)
                     CurrentAgent = node;
 
                 AgentNodes.Add(node);
