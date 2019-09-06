@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -27,8 +28,6 @@ namespace TickTrader.BotAgent.Configurator
                     case "Password":
                         SslModel.Password = prop.Value.ToString();
                         break;
-                    default:
-                        throw new Exception($"Unknown property {prop.Name}");
                 }
             }
 

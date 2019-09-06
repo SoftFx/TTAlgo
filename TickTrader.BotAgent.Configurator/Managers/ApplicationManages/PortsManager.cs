@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.NetworkInformation;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -43,7 +44,7 @@ namespace TickTrader.BotAgent.Configurator
                 firewallRule = (INetFwRule)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule", true));
                 firewallRule.Name = name;
                 newRule = true;
-                _logger.Info("Firewall: Rule not found. A new rule will be created.");
+                _logger.Info(Resources.RuleNotFoundEx);
             }
 
             firewallRule.Protocol = (int)NET_FW_IP_PROTOCOL_.NET_FW_IP_PROTOCOL_TCP;

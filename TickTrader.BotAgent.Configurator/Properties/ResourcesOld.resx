@@ -124,16 +124,16 @@
     <value>Please, install TickTrader BotAgent!</value>
   </data>
   <data name="ApplyNewSettingMes" xml:space="preserve">
-    <value>To apply new settings restart the service.</value>
+    <value>To apply the new settings, restart the service.</value>
   </data>
   <data name="CannotStartServiceEx" xml:space="preserve">
     <value>Cannot start Windows Service</value>
   </data>
   <data name="CannotStopServiceEx" xml:space="preserve">
-    <value>Cannot stop Windows Service</value>
+    <value>Cannot stopped Windows Service</value>
   </data>
   <data name="DeleteUrlsMes" xml:space="preserve">
-    <value>Selected url(s) are going to be deleted. Do you want to proceed?</value>
+    <value>Are you sure to delete the selected urls?</value>
   </data>
   <data name="DeleteUrlsTitle" xml:space="preserve">
     <value>Urls deletion</value>
@@ -163,7 +163,7 @@
     <value>Changes have been reset.</value>
   </data>
   <data name="ResetChangesQuestion" xml:space="preserve">
-    <value>Changes will be reset. Do you want to proceed?</value>
+    <value>Changes will be reset. Continue?</value>
   </data>
   <data name="ResetChangesTitle" xml:space="preserve">
     <value>Reset changes</value>
@@ -172,25 +172,25 @@
     <value>The application has been restarted!</value>
   </data>
   <data name="RestartProcessQuestion" xml:space="preserve">
-    <value>The current process will be restarted. Do you want to proceed?</value>
+    <value>The current process will be restarted. Continue?</value>
   </data>
   <data name="RestartTitle" xml:space="preserve">
     <value>Restart</value>
   </data>
   <data name="RuleNotFoundEx" xml:space="preserve">
-    <value>Firewall: Rule is not found. A new rule will be created.</value>
+    <value>Firewall: Rule not found. A new rule will be created.</value>
   </data>
   <data name="SaveBeforeStartQuestion" xml:space="preserve">
-    <value>To start the agent you need to save new settings. Do you want to proceed?</value>
+    <value>To start the agent, you need to save the new settings. Continue?</value>
   </data>
   <data name="SaveChangesLog" xml:space="preserve">
     <value>Changes have been saved.</value>
   </data>
   <data name="SaveChangesQuestion" xml:space="preserve">
-    <value>Do you want to save new changes for current agent?</value>
+    <value>Save new changes for current agent?</value>
   </data>
   <data name="SaveIsFailedEx" xml:space="preserve">
-    <value>Save procedure is failed</value>
+    <value>Saved settings was failed</value>
   </data>
   <data name="SelectAgentMes_" xml:space="preserve">
     <value>Agent</value>
@@ -199,22 +199,22 @@
     <value>Agent has been started!</value>
   </data>
   <data name="StartServiceEx" xml:space="preserve">
-    <value>Service is alredy started</value>
+    <value>Service alredy started</value>
   </data>
   <data name="StopAgentLog" xml:space="preserve">
     <value>Agent has been stopped!</value>
   </data>
   <data name="StopAgentQuestion" xml:space="preserve">
-    <value>The current agent will be stopped. Do you want to proceed?</value>
+    <value>The current agent will be stopped. Continue?</value>
   </data>
   <data name="StopServiceEx" xml:space="preserve">
-    <value>Service is alredy stopped</value>
+    <value>Service alredy stopped</value>
   </data>
   <data name="StopTitle" xml:space="preserve">
     <value>Stop</value>
   </data>
   <data name="StringLengthLessEx" xml:space="preserve">
-    <value>String length is less than</value>
+    <value>String length less than</value>
   </data>
   <data name="SuccessfullySavedMes" xml:space="preserve">
     <value>Configuration saved successfully!</value>

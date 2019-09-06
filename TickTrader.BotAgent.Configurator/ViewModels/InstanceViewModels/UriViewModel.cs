@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -80,19 +81,19 @@ namespace TickTrader.BotAgent.Configurator
                         case "Host":
                             {
                                 if (string.IsNullOrEmpty(Host))
-                                    throw new ArgumentException("This field is required");
+                                    throw new ArgumentException(Resources.RequiredFieldEx);
 
                                 foreach (var c in Host)
                                 {
                                     if (!char.IsLetterOrDigit(c) && specialSymbols.IndexOf(c) == -1)
-                                        throw new ArgumentException($"An invalid character {c} was found");
+                                        throw new ArgumentException($"{Resources.InvalidCh_Ex} {c} {Resources._InvalidChEx}");
                                 }
                                 break;
                             }
                         case "Port":
                             {
                                 if (_port < MinPort || _port > MaxPort)
-                                    throw new ArgumentException($"Port must be between {MinPort} to {MaxPort}");
+                                    throw new ArgumentException($"{Resources.PortRangeEx} {MinPort} to {MaxPort}");
                                 break;
                             }
                     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -32,7 +33,7 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     ErrorCounter.AddError(_keyPort);
                     _refreshManager?.AddUpdate(_keyPort);
-                    throw new ArgumentException("The field must be a number");
+                    throw new ArgumentException(Resources.FieldAsNumberEx);
                 }
 
                 _model.ListeningPort = port;

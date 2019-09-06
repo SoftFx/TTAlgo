@@ -7,6 +7,7 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -72,8 +73,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool IsDeveloperVersion => _model.Settings.IsDeveloper;
 
-        public bool ServiceRunning => StateServiceModel != null ? StateServiceModel.Status == ServiceControllerStatus.Running : false;
-
         public ConfigurationViewModel()
         {
             try
@@ -84,17 +83,13 @@ namespace TickTrader.BotAgent.Configurator
                 _mainWindow = Application.Current.MainWindow;
                 _model = new ConfigurationModel();
 
+                Title = _model.CurrentAgent.FullVersion;
+
                 RefreshCounter = new RefreshCounter();
                 StateServiceModel = new StateServiceViewModel(RefreshCounter);
                 Spinner = new SpinnerViewModel();
 
                 SetNewViewModels();
-
-                StateServiceModel.ChangeServiceStatusEvent += () =>
-                {
-                    StateServiceModel.InfoMessage = StateServiceModel.ServiceRun ? $"Agent has been started!" : $"Agent has been stopped!";
-                    OnPropertyChanged(nameof(ServiceRunning));
-                };
 
                 _mainWindow.Closing += MainWindow_Closing;
             }
@@ -112,7 +107,6 @@ namespace TickTrader.BotAgent.Configurator
 
         private void SetNewViewModels()
         {
-            Title = _model.CurrentAgent.FullVersion;
             LogsModel = new LogsViewModel(_model.Logs);
 
             AdminModel = new CredentialViewModel(_model.CredentialsManager.Admin, RefreshCounter)
@@ -166,13 +160,13 @@ namespace TickTrader.BotAgent.Configurator
             {
                 if (WasUpdate)
                 {
-                    if (MessageBoxManager.OkCancelBoxQuestion("To start the agent, you need to save the new settings. Continue?", "Restart"))
+                    if (MessageBoxManager.OkCancelBoxQuestion(Resources.SaveBeforeStartQuestion, Resources.RestartTitle))
                         SaveModelChanges();
                     else
                         return;
                 }
 
-                if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.OkCancelBoxQuestion("The current process will be restarted. Continue?", "Restart"))
+                if (_model.ServiceManager.IsServiceRunning && !MessageBoxManager.OkCancelBoxQuestion(Resources.RestartProcessQuestion, Resources.RestartTitle))
                     return;
 
                 ThreadPool.QueueUserWorkItem(StartAndStopAgentMethod, true);
@@ -181,7 +175,7 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand StopAgent => _stopAgent ?? (
             _stopAgent = new DelegateCommand(obj =>
             {
-                if (ServiceRunning && MessageBoxManager.OkCancelBoxQuestion("The current agent will be stopped. Continue?", "Stop"))
+                if (StateServiceModel.ServiceRunning && MessageBoxManager.OkCancelBoxQuestion(Resources.StopAgentQuestion, Resources.StopTitle))
                 {
                     ThreadPool.QueueUserWorkItem(StartAndStopAgentMethod, false);
                 }
@@ -202,10 +196,10 @@ namespace TickTrader.BotAgent.Configurator
                 SetNewViewModels();
 
                 RefreshModels();
-                _logger.Info($"The application has been restarted!");
+                _logger.Info(Resources.RestartAppLog);
 
                 Spinner.Stop();
-                StateServiceModel.InfoMessage = $"Agent {AdvancedModel.SelectPath} has been loaded";
+                StateServiceModel.InfoMessage = $"{Resources.SelectAgentMes_} {AdvancedModel.SelectPath} {Resources._SelectAgentMes}";
             }));
 
         public DelegateCommand SaveChanges => _saveChanges ?? (
@@ -216,9 +210,9 @@ namespace TickTrader.BotAgent.Configurator
                     RefreshCounter.DropRefresh();
 
                     _model.SaveChanges();
-                    _logger.Info($"Changes have been saved.");
+                    _logger.Info(Resources.SaveChangesLog);
 
-                    StateServiceModel.InfoMessage = "Configuration saved successfully!";
+                    StateServiceModel.InfoMessage = Resources.SuccessfullySavedMes;
                 }
                 catch (Exception ex)
                 {
@@ -230,7 +224,7 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand CancelChanges => _cancelChanges ?? (
             _cancelChanges = new DelegateCommand(obj =>
             {
-                if (MessageBoxManager.OkCancelBoxQuestion("Changes will be reset. Continue?", "Reset changes"))
+                if (MessageBoxManager.OkCancelBoxQuestion(Resources.ResetChangesQuestion, Resources.ResetChangesTitle))
                 {
                     try
                     {
@@ -240,7 +234,7 @@ namespace TickTrader.BotAgent.Configurator
 
                         RefreshAllViewModels();
 
-                        _logger.Info($"Changes have been reset.");
+                        _logger.Info(Resources.ResetChangesLog);
                     }
                     catch (Exception ex)
                     {
@@ -270,9 +264,8 @@ namespace TickTrader.BotAgent.Configurator
 
             OnPropertyChanged(nameof(LogsModel));
             OnPropertyChanged(nameof(StateServiceModel));
-            OnPropertyChanged(nameof(ServiceRunning));
 
-            _logger.Info($"Models have been updated.");
+            _logger.Info(Resources.UpdateModelsLog);
         }
 
         public void Dispose()
@@ -294,10 +287,9 @@ namespace TickTrader.BotAgent.Configurator
                 else
                     _model.StopAgent();
 
-                _logger.Info((bool)start ? $"Agent has been started!" : $"Agent has been stopped!");
+                _logger.Info((bool)start ? Resources.StartAgentLog : Resources.StopAgentLog);
 
                 Spinner.Stop();
-                OnPropertyChanged(nameof(ServiceRunning));
             }
             catch (WarningException ex)
             {
@@ -355,7 +347,7 @@ namespace TickTrader.BotAgent.Configurator
                 if (!WasUpdate || ModelErrorCounter.TotalErrorCount != 0)
                     return MessageBoxResult.No;
 
-                var result = MessageBoxManager.YesNoCancelQuestion("Save new changes for current agent?", "New changes");
+                var result = MessageBoxManager.YesNoCancelQuestion(Resources.SaveChangesQuestion, Resources.NewChangesTitle);
 
                 if (result == MessageBoxResult.Yes)
                     SaveModelChanges();
@@ -365,7 +357,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                MessageBoxManager.OkError("Saved settings was failed");
+                MessageBoxManager.OkError(Resources.SaveIsFailedEx);
                 return MessageBoxResult.No;
             }
             finally

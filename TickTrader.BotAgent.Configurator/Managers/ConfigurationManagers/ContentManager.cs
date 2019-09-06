@@ -31,13 +31,18 @@ namespace TickTrader.BotAgent.Configurator
                 if (!secret)
                     logger.Info(GetChangeMessage(property, oldValue, newValue));
                 else
-                    logger.Info($"Property {property} was changed");
+                    logger.Info(GetChangeMessage(property));
             }
         }
 
         private string GetChangeMessage(string property, object oldVal, object newVal)
         {
             return $"Property {property} was changed: {oldVal} to {newVal}";
+        }
+
+        private string GetChangeMessage(string property)
+        {
+            return $"Property {property} was changed";
         }
 
         private bool InsertSection(JObject root, JProperty prop)

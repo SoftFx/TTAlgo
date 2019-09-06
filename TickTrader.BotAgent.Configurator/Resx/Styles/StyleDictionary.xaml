@@ -109,6 +109,7 @@
         <Setter Property="Height" Value="22"/>
         <Setter Property="Margin" Value="10 0 0 0"/>
         <Setter Property="Content" Value="Generate"/>
+        <Setter Property="IsTabStop" Value="False"/>
         <!--<Setter Property="Padding" Value="3"/>-->
     </Style>
 
@@ -154,6 +155,7 @@
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="IsEnabled" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
     </Style>
 
     <Style x:Key="ToolBarSaveButton" TargetType="Button" BasedOn="{StaticResource ToolBarButton}">
@@ -172,7 +174,7 @@
         <Setter Property="IsEnabled" Value="False"/>
         <Setter Property="ToolTip" Value="Start Agent"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+            <DataTrigger Binding="{Binding StateServiceModel.ServiceRunning}" Value="True">
                 <Setter Property="ToolTip" Value="Restart Agent"/>
             </DataTrigger>
             <MultiDataTrigger>
@@ -190,7 +192,7 @@
         <Setter Property="IsEnabled" Value="False"/>
         <Setter Property="ToolTip" Value="Stop Agent"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+            <DataTrigger Binding="{Binding StateServiceModel.ServiceRunning}" Value="True">
                 <Setter Property="IsEnabled" Value="True"/>
             </DataTrigger>
         </Style.Triggers>
@@ -209,7 +211,7 @@
     <Style x:Key="StartAndRestartToolBarIcon" TargetType="{x:Type fa:ImageAwesome}" BasedOn="{StaticResource ToolBarIcon}">
         <Setter Property="Icon" Value="Play"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ServiceRunning}" Value="True">
+            <DataTrigger Binding="{Binding StateServiceModel.ServiceRunning}" Value="True">
                 <Setter Property="Icon" Value="Refresh"/>
             </DataTrigger>
         </Style.Triggers>
@@ -221,6 +223,7 @@
         <Setter Property="Width" Value="23"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0 5 5 0"/>
+        <Setter Property="IsTabStop" Value="False"/>
     </Style>
 
     <Style x:Key="LogsHeader" TargetType="TextBlock">
@@ -243,6 +246,7 @@
         <Setter Property="BorderBrush" Value="SteelBlue"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="IsTabStop" Value="False"/>
     </Style>
 
     <Style TargetType="{x:Type fa:ImageAwesome}">
@@ -297,6 +301,7 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="IsTabStop" Value="False"/>
     </Style>
 
     <Style x:Key="TabName" TargetType="TextBlock">

@@ -1,4 +1,5 @@
 ﻿using System.ServiceProcess;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -13,11 +14,11 @@ namespace TickTrader.BotAgent.Configurator
 
         public event ChangeServiceStatus ChangeServiceStatusEvent;
 
-        public string RestartMessage => "To apply the new settings, restart the service.";
+        public string RestartMessage => Resources.ApplyNewSettingMes;
 
         public string ServiceState => $"{_serviceName} is {Status.ToString()}";
 
-        public bool ServiceRun => Status == ServiceControllerStatus.Running;
+        public bool ServiceRunning => Status == ServiceControllerStatus.Running;
 
         public ServiceControllerStatus Status { get; private set; }
 
@@ -58,12 +59,17 @@ namespace TickTrader.BotAgent.Configurator
         {
             _serviceName = serviceName;
 
-            Status = new ServiceController(_serviceName).Status;
+            var oldStatus = Status;
 
-            VisibleRestartMessage = ServiceRun ? _refresh.Update : false;
+            Status = new ServiceController(_serviceName).Status;
+            VisibleRestartMessage = ServiceRunning ? _refresh.Restart : false;
+
+            if (oldStatus != Status)
+                InfoMessage = ServiceRunning ? Resources.StartAgentLog : Resources.StopAgentLog;
 
             ChangeServiceStatusEvent?.Invoke();
             OnPropertyChanged(nameof(ServiceState));
+            OnPropertyChanged(nameof(ServiceRunning));
             OnPropertyChanged(nameof(Status));
         }
     }

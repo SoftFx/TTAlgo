@@ -60,7 +60,8 @@
                     <Setter Property="Background" Value="#FFEEF5FD"/>
                 </Style>
             </TabControl.Resources>
-            <TabItem TabIndex="1">
+
+            <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome x:Name="iconUserTab" Icon="AddressCardOutline" Style="{StaticResource UserTabIconErrorStyle}"/>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -37,7 +38,7 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             if (CurrentAgent == null)
-                CurrentAgent = AgentNodes.Count > 0 ? AgentNodes[0] : throw new Exception("Please, install TickTrader BotAgent!");
+                CurrentAgent = AgentNodes.Count > 0 ? AgentNodes[0] : throw new Exception(Resources.AgentNotFoundEx);
 
             OldAgent = CurrentAgent;
         }

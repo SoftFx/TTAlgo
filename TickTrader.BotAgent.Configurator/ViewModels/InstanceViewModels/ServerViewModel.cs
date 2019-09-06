@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -20,7 +21,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private ServerModel _model;      
 
-        public string Title => CurrentUri?.OldUri != null ? "Modify URL" : "Add URL";
+        public string Title => CurrentUri?.OldUri != null ? Resources.ModifyUrlTitle : Resources.AddUrlTitle;
 
         public string SecretKey => _model.SecretKey;
 
@@ -85,7 +86,7 @@ namespace TickTrader.BotAgent.Configurator
         public DelegateCommand RemoveUrls => _removeUrls ?? (
             _removeUrls = new DelegateCommand(obj =>
             {
-                if (!MessageBoxManager.YesNoBoxQuestion("Are you sure to delete the selected urls?", "Urls deletion"))
+                if (!MessageBoxManager.YesNoBoxQuestion(Resources.DeleteUrlsMes, Resources.DeleteUrlsTitle))
                     return;
 
                 foreach (Uri u in ((IList<object>)obj).ToList())

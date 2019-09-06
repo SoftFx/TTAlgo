@@ -24,6 +24,7 @@
         <Setter Property="Margin" Value="0 8"/>
         <Setter Property="SelectionMode" Value="Extended"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
     </Style>
@@ -42,6 +43,7 @@
     </Style>
 
     <Style x:Key="UrlItemStyle" TargetType="ListViewItem">
+        <Setter Property="IsTabStop" Value="False"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding HasWarning}" Value="True">
                 <Setter Property="Background" Value="Yellow"/>

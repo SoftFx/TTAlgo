@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TickTrader.BotAgent.Configurator.Properties
-{
-
-
+namespace TickTrader.BotAgent.Configurator.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -19,52 +19,386 @@ namespace TickTrader.BotAgent.Configurator.Properties
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources
-    {
-
+    internal class Resources {
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources()
-        {
+        internal Resources() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager
-        {
-            get
-            {
-                if ((resourceMan == null))
-                {
+        internal static global::System.Resources.ResourceManager ResourceManager {
+            get {
+                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TickTrader.BotAgent.Configurator.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture
-        {
-            get
-            {
+        internal static global::System.Globalization.CultureInfo Culture {
+            get {
                 return resourceCulture;
             }
-            set
-            {
+            set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to was found.
+        /// </summary>
+        internal static string _InvalidChEx {
+            get {
+                return ResourceManager.GetString("_InvalidChEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to has been loaded.
+        /// </summary>
+        internal static string _SelectAgentMes {
+            get {
+                return ResourceManager.GetString("_SelectAgentMes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add URL.
+        /// </summary>
+        internal static string AddUrlTitle {
+            get {
+                return ResourceManager.GetString("AddUrlTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please, install TickTrader BotAgent!.
+        /// </summary>
+        internal static string AgentNotFoundEx {
+            get {
+                return ResourceManager.GetString("AgentNotFoundEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To apply new settings restart the service..
+        /// </summary>
+        internal static string ApplyNewSettingMes {
+            get {
+                return ResourceManager.GetString("ApplyNewSettingMes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot start Windows Service.
+        /// </summary>
+        internal static string CannotStartServiceEx {
+            get {
+                return ResourceManager.GetString("CannotStartServiceEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot stop Windows Service.
+        /// </summary>
+        internal static string CannotStopServiceEx {
+            get {
+                return ResourceManager.GetString("CannotStopServiceEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected url(s) are going to be deleted. Do you want to proceed?.
+        /// </summary>
+        internal static string DeleteUrlsMes {
+            get {
+                return ResourceManager.GetString("DeleteUrlsMes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Urls deletion.
+        /// </summary>
+        internal static string DeleteUrlsTitle {
+            get {
+                return ResourceManager.GetString("DeleteUrlsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field must be a number.
+        /// </summary>
+        internal static string FieldAsNumberEx {
+            get {
+                return ResourceManager.GetString("FieldAsNumberEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An invalid character.
+        /// </summary>
+        internal static string InvalidCh_Ex {
+            get {
+                return ResourceManager.GetString("InvalidCh_Ex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Modify URL.
+        /// </summary>
+        internal static string ModifyUrlTitle {
+            get {
+                return ResourceManager.GetString("ModifyUrlTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New changes.
+        /// </summary>
+        internal static string NewChangesTitle {
+            get {
+                return ResourceManager.GetString("NewChangesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Number must be between.
+        /// </summary>
+        internal static string NumberRangeEx {
+            get {
+                return ResourceManager.GetString("NumberRangeEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Port must be between.
+        /// </summary>
+        internal static string PortRangeEx {
+            get {
+                return ResourceManager.GetString("PortRangeEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This field is required.
+        /// </summary>
+        internal static string RequiredFieldEx {
+            get {
+                return ResourceManager.GetString("RequiredFieldEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changes have been reset..
+        /// </summary>
+        internal static string ResetChangesLog {
+            get {
+                return ResourceManager.GetString("ResetChangesLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changes will be reset. Do you want to proceed?.
+        /// </summary>
+        internal static string ResetChangesQuestion {
+            get {
+                return ResourceManager.GetString("ResetChangesQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset changes.
+        /// </summary>
+        internal static string ResetChangesTitle {
+            get {
+                return ResourceManager.GetString("ResetChangesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application has been restarted!.
+        /// </summary>
+        internal static string RestartAppLog {
+            get {
+                return ResourceManager.GetString("RestartAppLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current process will be restarted. Do you want to proceed?.
+        /// </summary>
+        internal static string RestartProcessQuestion {
+            get {
+                return ResourceManager.GetString("RestartProcessQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restart.
+        /// </summary>
+        internal static string RestartTitle {
+            get {
+                return ResourceManager.GetString("RestartTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Firewall: Rule is not found. A new rule will be created..
+        /// </summary>
+        internal static string RuleNotFoundEx {
+            get {
+                return ResourceManager.GetString("RuleNotFoundEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To start the agent you need to save new settings. Do you want to proceed?.
+        /// </summary>
+        internal static string SaveBeforeStartQuestion {
+            get {
+                return ResourceManager.GetString("SaveBeforeStartQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changes have been saved..
+        /// </summary>
+        internal static string SaveChangesLog {
+            get {
+                return ResourceManager.GetString("SaveChangesLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you want to save new changes for current agent?.
+        /// </summary>
+        internal static string SaveChangesQuestion {
+            get {
+                return ResourceManager.GetString("SaveChangesQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save procedure is failed.
+        /// </summary>
+        internal static string SaveIsFailedEx {
+            get {
+                return ResourceManager.GetString("SaveIsFailedEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Agent.
+        /// </summary>
+        internal static string SelectAgentMes_ {
+            get {
+                return ResourceManager.GetString("SelectAgentMes_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Agent has been started!.
+        /// </summary>
+        internal static string StartAgentLog {
+            get {
+                return ResourceManager.GetString("StartAgentLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service is alredy started.
+        /// </summary>
+        internal static string StartServiceEx {
+            get {
+                return ResourceManager.GetString("StartServiceEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Agent has been stopped!.
+        /// </summary>
+        internal static string StopAgentLog {
+            get {
+                return ResourceManager.GetString("StopAgentLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The current agent will be stopped. Do you want to proceed?.
+        /// </summary>
+        internal static string StopAgentQuestion {
+            get {
+                return ResourceManager.GetString("StopAgentQuestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service is alredy stopped.
+        /// </summary>
+        internal static string StopServiceEx {
+            get {
+                return ResourceManager.GetString("StopServiceEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop.
+        /// </summary>
+        internal static string StopTitle {
+            get {
+                return ResourceManager.GetString("StopTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to String length is less than.
+        /// </summary>
+        internal static string StringLengthLessEx {
+            get {
+                return ResourceManager.GetString("StringLengthLessEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration saved successfully!.
+        /// </summary>
+        internal static string SuccessfullySavedMes {
+            get {
+                return ResourceManager.GetString("SuccessfullySavedMes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown property.
+        /// </summary>
+        internal static string UnknownPropertyEx {
+            get {
+                return ResourceManager.GetString("UnknownPropertyEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Models have been updated..
+        /// </summary>
+        internal static string UpdateModelsLog {
+            get {
+                return ResourceManager.GetString("UpdateModelsLog", resourceCulture);
             }
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -109,7 +110,7 @@ namespace TickTrader.BotAgent.Configurator
             if (str.Length < minLenght)
             {
                 AddError(key);
-                throw new ArgumentException($"String length less than {minLenght}");
+                throw new ArgumentException($"{Resources.StringLengthLessEx} {minLenght}");
             }
             else
             if (_damagedFields.Contains(key))
@@ -123,7 +124,7 @@ namespace TickTrader.BotAgent.Configurator
             if (number < min || number > max)
             {
                 AddError(key);
-                throw new Exception($"Number must be between {min} and {max}");
+                throw new Exception($"{Resources.NumberRangeEx} {min} and {max}");
             }
             else
             if (_damagedFields.Contains(key))

@@ -22,9 +22,6 @@ namespace TickTrader.BotAgent.Configurator
 
             _defaultProperties = new ConfigurationProperies(new Dictionary<string, string>()
             {
-                { "AppSettings", "WebAdmin\\appsettings.json" },
-                { "ApplicationName", "TickTrader.BotAgent" },
-                { "RegistryAppName", "TickTrader\\BotAgent" },
                 { "LogsPath", "Logs\\agent.log" },
                 { "DeveloperVersion", "false" }
             });
@@ -79,22 +76,49 @@ namespace TickTrader.BotAgent.Configurator
 
     public class ConfigurationProperies
     {
-        private Dictionary<string, string> _properties;
+        private const string AppSettings = "WebAdmin\\appsettings.json";
+        private const string ApplicationName = "TickTrader.BotAgent";
+        private const string RegistryAppName = "TickTrader\\BotAgent";
 
-        public bool IsDeveloper => _properties.ContainsKey(AppProperties.DeveloperVersion.ToString()) ? bool.Parse(this[AppProperties.DeveloperVersion]) : false;
+        private readonly Dictionary<string, string> _systemProperties;
 
-        public string this[string key] => _properties.ContainsKey(key) ? _properties[key] : null;
+        public Dictionary<string, string> CustomProperties;
+
+        public bool IsDeveloper => CustomProperties.ContainsKey(AppProperties.DeveloperVersion.ToString()) ? bool.Parse(this[AppProperties.DeveloperVersion]) : false;
+
+        public string this[string key]
+        {
+            get
+            {
+                string value = null;
+
+                if (CustomProperties.ContainsKey(key))
+                    value = CustomProperties[key];
+
+                if (_systemProperties.ContainsKey(key))
+                    value = _systemProperties[key];
+
+                return value;
+            }
+        }
 
         public string this[AppProperties key]
         {
             get => this[key.ToString()];
 
-            set => _properties[key.ToString()] = value;
+            set => CustomProperties[key.ToString()] = value;
         }
 
         public ConfigurationProperies(Dictionary<string, string> properties = null)
         {
-            _properties = properties ?? new Dictionary<string, string>();
+            CustomProperties = properties ?? new Dictionary<string, string>();
+
+            _systemProperties = new Dictionary<string, string>()
+            {
+                { nameof(AppSettings), AppSettings },
+                { nameof(ApplicationName), ApplicationName },
+                { nameof(RegistryAppName), RegistryAppName }
+            };
         }
 
         public void LoadProperties(JObject obj)
@@ -108,24 +132,24 @@ namespace TickTrader.BotAgent.Configurator
 
         public JObject GetJObject()
         {
-            return JObject.FromObject(_properties);
+            return JObject.FromObject(CustomProperties);
         }
 
         public void Clone(ConfigurationProperies defaultProp)
         {
-            foreach (string prop in Enum.GetNames(typeof(AppProperties)))
+            foreach (var prop in defaultProp.CustomProperties)
             {
-                SetEmptyProperty(prop, defaultProp[prop]);
+                SetEmptyProperty(prop.Key, prop.Value);
             }
         }
 
         private void SetEmptyProperty(string key, string value)
         {
-            if (!_properties.ContainsKey(key))
-                _properties.Add(key, value);
+            if (!CustomProperties.ContainsKey(key))
+                CustomProperties.Add(key, value);
             else
-            if (string.IsNullOrEmpty(_properties[key]))
-                _properties[key] = value;
+            if (string.IsNullOrEmpty(CustomProperties[key]))
+                CustomProperties[key] = value;
         }
     }
 }

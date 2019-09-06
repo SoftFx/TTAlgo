@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Management;
 using System.ServiceProcess;
+using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
@@ -35,7 +36,7 @@ namespace TickTrader.BotAgent.Configurator
                 ServiceStop();
 
             if (_serviceController.Status == ServiceControllerStatus.Running)
-                throw new Exception("Service alredy started");
+                throw new Exception(Resources.StartServiceEx);
 
             try
             {
@@ -45,7 +46,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                throw new Exception($"Cannot start Windows Service {_serviceName}");
+                throw new Exception($"{Resources.CannotStartServiceEx} {_serviceName}");
             }
         }
 
@@ -54,7 +55,7 @@ namespace TickTrader.BotAgent.Configurator
             _serviceController = new ServiceController(_serviceName);
 
             if (_serviceController.Status == ServiceControllerStatus.Stopped)
-                throw new Exception("Service alredy stopped");
+                throw new Exception(Resources.StopServiceEx);
 
             try
             {
@@ -64,7 +65,7 @@ namespace TickTrader.BotAgent.Configurator
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                throw new Exception($"Cannot stopped Windows Service {_serviceName}");
+                throw new Exception($"{Resources.CannotStopServiceEx} {_serviceName}");
             }
         }
     }
