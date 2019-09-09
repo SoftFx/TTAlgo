@@ -468,13 +468,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
         {
-            // ignore market rejections
-            if (report.OrderType == OrderType.Market)
-                return null;
-
             return new OrderUpdateAction(report, algoAction, OrderEntityAction.None);
-            //ExecReportToAlgo(algoAction, OrderEntityAction.None, report);
-            //OrderUpdate?.Invoke(report, null, algoAction);
         }
 
         private OrderUpdateAction OnOrderCanceled(ExecutionReport report, OrderExecAction algoAction)

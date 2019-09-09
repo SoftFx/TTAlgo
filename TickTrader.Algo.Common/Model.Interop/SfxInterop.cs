@@ -436,9 +436,8 @@ namespace TickTrader.Algo.Common.Model
             {
                 var timeInForce = GetTimeInForce(r.Expiration);
                 var ioc = GetIoC(r.Options);
-                var clientOrderId = Guid.NewGuid().ToString();
 
-                return _tradeProxy.NewOrderAsync(clientOrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
+                return _tradeProxy.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
                     r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, null);
             });
         }
