@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Core
                 ValidateTradePersmission();
                 smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderType, side);
+                ValidateQuotes(smbMetadata, orderType, side, options);
 
                 ValidateVolumeLots(volumeLots, smbMetadata);
                 ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
@@ -157,7 +157,7 @@ namespace TickTrader.Algo.Core
                 orderToCancel = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToCancel.Symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToCancel.Type, orderToCancel.Side);
+                ValidateQuotes(smbMetadata, orderToCancel.Type, orderToCancel.Side, OrderExecOptions.None);
 
                 logger.PrintTrade("[Out] Canceling order #" + orderId);
 
@@ -192,7 +192,7 @@ namespace TickTrader.Algo.Core
                 orderToClose = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side);
+                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side, OrderExecOptions.None);
 
                 if (closeVolumeLots != null)
                 {
@@ -240,8 +240,8 @@ namespace TickTrader.Algo.Core
 
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side);
-                ValidateQuotes(smbMetadata, orderByClose.Type, orderByClose.Side);
+                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side, OrderExecOptions.None);
+                ValidateQuotes(smbMetadata, orderByClose.Type, orderByClose.Side, OrderExecOptions.None);
 
                 logger.PrintTrade("[Out] Closing order #" + orderId + " by order #" + byOrderId);
 
@@ -308,7 +308,7 @@ namespace TickTrader.Algo.Core
 
                 ValidateOptions(options, orderType);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToModify.Type, orderToModify.Side);
+                ValidateQuotes(smbMetadata, orderToModify.Type, orderToModify.Side, options ?? OrderExecOptions.None);
 
                 //if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
                 //    ValidatePrice(price);
@@ -637,25 +637,23 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
-        private void ValidateQuotes(SymbolAccessor symbol, OrderType type, OrderSide side)
+        private void ValidateQuotes(SymbolAccessor symbol, OrderType type, OrderSide side, OrderExecOptions options)
         {
-            if (IsIndicativeSide(symbol.LastQuote, type, side))
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            if (type == OrderType.Market || type == OrderType.Position
+            || (type == OrderType.Limit && options.HasFlag(OrderExecOptions.ImmediateOrCancel)))
+                if (IsMarketSideIndicative(symbol.LastQuote, type, side))
+                    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
         }
 
-        private bool IsIndicativeSide(Quote quote, OrderType type, OrderSide side)
+        private bool IsMarketSideIndicative(Quote quote, OrderType type, OrderSide side)
         {
-            switch (type)
-            {
-                case OrderType.Market:
-                case OrderType.Stop:
-                    return (side == OrderSide.Buy && quote.IsAskIndicative) || (side == OrderSide.Sell && quote.IsBidIndicative);
-                case OrderType.StopLimit:
-                case OrderType.Limit:
-                case OrderType.Position:
-                    return (side == OrderSide.Buy && quote.IsBidIndicative) || (side == OrderSide.Sell && quote.IsAskIndicative);
-            }
-            return false;
+
+            return (side == OrderSide.Buy && quote.IsAskIndicative) || (side == OrderSide.Sell && quote.IsBidIndicative);
+        }
+
+        private bool IsPendingSideIndicative(Quote quote, OrderType type, OrderSide side)
+        {
+            return (side == OrderSide.Buy && quote.IsBidIndicative) || (side == OrderSide.Sell && quote.IsAskIndicative);
         }
 
         private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
