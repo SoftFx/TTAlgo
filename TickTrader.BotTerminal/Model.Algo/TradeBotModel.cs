@@ -156,10 +156,9 @@ namespace TickTrader.BotTerminal
             Updated?.Invoke(this);
         }
 
-        protected override IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel outputSetup)
+        protected override IOutputCollector CreateOutputCollector<T>(PluginExecutor executor, OutputSetupModel outputSetup)
         {
-            return null;
-            //return new CachingOutputCollector<T>(fixture, outputSetup);
+            return new CachingOutputCollector<T>(outputSetup, executor);
         }
 
         private void Host_Connected()

@@ -7,13 +7,13 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class OutputFixture : CrossDomainObject
+    public interface IOutputFixture
     {
-        internal abstract void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef);
-        internal abstract void Unbind();
+        void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef);
+        void Unbind();
     }
 
-    public class OutputFixture<T> : OutputFixture
+    public class OutputFixture<T> : CrossDomainObject, IOutputFixture
     {
         private OutputBuffer<T> buffer;
         private bool isBatch;
@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core
             if (!isBatch)
             {
                 var timeCoordinate = timeRef[index];
-                Appended(new Point(timeCoordinate, index, data));
+                Appended(new OutputPoint<T>(timeCoordinate, index, data));
             }
         }
 
@@ -52,7 +52,7 @@ namespace TickTrader.Algo.Core
             if (!isBatch)
             {
                 var timeCoordinate = timeRef[index];
-                Updated(new Point(timeCoordinate, index, data));
+                Updated(new OutputPoint<T>(timeCoordinate, index, data));
             }
         }
 
@@ -60,12 +60,12 @@ namespace TickTrader.Algo.Core
         {
             var count = buffer.Count;
 
-            Point[] list = new Point[count];
+            OutputPoint<T>[] list = new OutputPoint<T>[count];
 
             for (int i = 0; i < count; i++)
             {
                 var timeCoordinate = timeRef[i];
-                list[i] = new Point(timeCoordinate, i, buffer[i]);
+                list[i] = new OutputPoint<T>(timeCoordinate, i, buffer[i]);
             }
 
             RangeAppended(list);
@@ -81,7 +81,7 @@ namespace TickTrader.Algo.Core
             Truncating?.Invoke(truncateSize);
         }
 
-        internal override void Unbind()
+        public void Unbind()
         {
             if (buffer != null)
             {
@@ -95,39 +95,21 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal override void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef)
+        public void BindTo(IReaonlyDataBuffer buffer, ITimeRef timeRef)
         {
             BindTo((OutputBuffer<T>)buffer, timeRef);
         }
 
         internal int Count => buffer.Count;
-        internal Point this[int index] => new Point(timeRef[index], index, buffer[index]);
+        internal OutputPoint<T> this[int index] => new OutputPoint<T>(timeRef[index], index, buffer[index]);
         internal OutputBuffer<T> Buffer => buffer;
 
-        public event Action<Point[]> RangeAppended = delegate { };
-        public event Action<Point> Updated = delegate { };
-        public event Action<Point> Appended = delegate { };
+        public event Action<OutputPoint<T>[]> RangeAppended = delegate { };
+        public event Action<OutputPoint<T>> Updated = delegate { };
+        public event Action<OutputPoint<T>> Appended = delegate { };
         public event Action<int> Truncating;
         public event Action<int> Truncated;
-
-        [Serializable]
-        public struct Point
-        {
-            public Point(DateTime? time, int index, T val)
-            {
-                this.TimeCoordinate = time;
-                this.Index = index;
-                this.Value = val;
-            }
-
-            public DateTime? TimeCoordinate { get; }
-            public T Value { get; }
-            public int Index { get; }
-
-            public Point ChangeIndex(int newIndex)
-            {
-                return new Point(TimeCoordinate, newIndex, Value);
-            }
-        }
     }
+
+    
 }

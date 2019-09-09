@@ -173,6 +173,7 @@
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
+    <Compile Include="Entities\OutputPoint.cs" />
     <Compile Include="Entities\PositionAccessor.cs" />
     <Compile Include="Entities\PositionCollection.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\Marshaling\CommonCdProxy.cs" />
     <Compile Include="Executor\Marshaling\FeedCdProxy.cs" />
+    <Compile Include="Executor\OutputFixureGm.cs" />
     <Compile Include="Executor\PluginExecutorConfig.cs" />
     <Compile Include="Executor\PluignExecutorFactory.cs" />
     <Compile Include="Executor\ExecutorHandler.cs" />

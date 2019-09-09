@@ -24,6 +24,7 @@ namespace TickTrader.Algo.Core
         internal FeedBufferStrategy BufferStartegy { get; private set; }
         internal FeedStrategy FeedStrategy { get; private set; }
         internal Dictionary<string, object> PluginParams { get; } = new Dictionary<string, object>();
+        internal Dictionary<string, IOutputFixtureFactory> Outputs { get; } = new Dictionary<string, IOutputFixtureFactory>();
         //internal Dictionary<Tuple<string, string>, Mapping> Mappings { get; } = new Dictionary<Tuple<string, string>, Mapping>();
 
         public void SetParameter(string id, object value)
@@ -66,6 +67,11 @@ namespace TickTrader.Algo.Core
         public void InitTimeSpanBuffering(DateTime from, DateTime to)
         {
             BufferStartegy = new TimeSpanStrategy(from, to);
+        }
+
+        public void SetupOutput<T>(string outputSeriesId)
+        {
+            Outputs[outputSeriesId] = new OutputFixtureFactory<T>(outputSeriesId);
         }
     }
 }

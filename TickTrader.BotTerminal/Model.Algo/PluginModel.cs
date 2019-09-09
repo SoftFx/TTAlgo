@@ -139,6 +139,7 @@ namespace TickTrader.BotTerminal
             executor.Config.Permissions = Setup.Permissions;
             executor.Config.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
             executor.Config.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
 
             Host.InitializePlugin(executor);
 
@@ -225,9 +226,9 @@ namespace TickTrader.BotTerminal
                 foreach (var outputSetup in Setup.Outputs)
                 {
                     if (outputSetup is ColoredLineOutputSetupModel)
-                        CreateOuput<double>(outputSetup.Id, executor, outputSetup);
+                        CreateOuput<double>(executor, outputSetup);
                     else if (outputSetup is MarkerSeriesOutputSetupModel)
-                        CreateOuput<Marker>(outputSetup.Id, executor, outputSetup);
+                        CreateOuput<Marker>(executor, outputSetup);
                 }
                 OutputsChanged?.Invoke();
             }
@@ -237,17 +238,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(string id, PluginExecutor executor, OutputSetupModel setup)
+        private void CreateOuput<T>(PluginExecutor executor, OutputSetupModel setup)
         {
-            //var fixture = executor.GetOutput<T>(id);
-            //var collector = CreateOutputCollector<T>(id, fixture, setup);
-            //_outputs.Add(id, collector);
+            executor.Config.SetupOutput<T>(setup.Id);
+            var collector = CreateOutputCollector<T>(executor, setup);
+            _outputs.Add(setup.Id, collector);
         }
 
-        protected virtual IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel setup)
+        protected virtual IOutputCollector CreateOutputCollector<T>(PluginExecutor executor, OutputSetupModel setup)
         {
-            return null;
-            //return new OutputCollector<T>(fixture, setup);
+            return new OutputCollector<T>(setup, executor);
         }
 
         private void ClearOutputs()

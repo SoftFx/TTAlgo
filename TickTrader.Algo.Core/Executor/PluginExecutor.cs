@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
         private Api.TimeFrames timeframe;
         private List<Action> setupActions = new List<Action>();
         private readonly PluginMetadata descriptor;
-        private Dictionary<string, OutputFixture> outputFixtures = new Dictionary<string, OutputFixture>();
+        private Dictionary<string, IOutputFixture> outputFixtures = new Dictionary<string, IOutputFixture>();
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
@@ -549,7 +549,7 @@ namespace TickTrader.Algo.Core
 
         public OutputFixture<T> GetOutput<T>(string id)
         {
-            OutputFixture fixture;
+            IOutputFixture fixture;
             if (!outputFixtures.TryGetValue(id, out fixture))
             {
                 fixture = new OutputFixture<T>();
@@ -596,6 +596,9 @@ namespace TickTrader.Algo.Core
 
             if (config.IsLoggingEnabled)
                 InitLogging();
+
+            foreach (var record in config.Outputs)
+                outputFixtures[record.Key] = record.Value.Create(this);
 
             //foreach (var record in config.Mappings)
             //    record.Value.MapInput(this, record.Key.Item1, record.Key.Item2);

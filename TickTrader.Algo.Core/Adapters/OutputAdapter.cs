@@ -4,11 +4,11 @@ namespace TickTrader.Algo.Core
 {
     public interface IOutputListener<T>
     {
-        void Append(OutputFixture<T>.Point point);
+        void Append(OutputPoint<T> point);
 
-        void Update(OutputFixture<T>.Point point);
+        void Update(OutputPoint<T> point);
 
-        void CopyAll(OutputFixture<T>.Point[] points);
+        void CopyAll(OutputPoint<T>[] points);
 
         void TruncateBy(int truncateSize);
     }
@@ -29,17 +29,17 @@ namespace TickTrader.Algo.Core
             _fixture.Truncated += OnTruncate;
         }
 
-        private void OnAppend(OutputFixture<T>.Point point)
+        private void OnAppend(OutputPoint<T> point)
         {
             _listener.Append(point);
         }
 
-        private void OnUpdate(OutputFixture<T>.Point point)
+        private void OnUpdate(OutputPoint<T> point)
         {
             _listener.Update(point);
         }
 
-        private void OnCopyAll(OutputFixture<T>.Point[] points)
+        private void OnCopyAll(OutputPoint<T>[] points)
         {
             _listener.CopyAll(points);
         }
