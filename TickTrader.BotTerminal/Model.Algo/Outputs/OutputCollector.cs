@@ -29,11 +29,13 @@ namespace TickTrader.BotTerminal
     internal class OutputCollector<T> : IOutputListener<T>, IOutputCollector<T>, IDisposable
     {
         private OutputAdapter<T> _adapter;
+        private PluginExecutor _executor;
 
-        public OutputCollector(OutputFixture<T> fixture, OutputSetupModel outputSetup)
+        public OutputCollector(OutputSetupModel setup, PluginExecutor executor)
         {
-            OutputConfig = outputSetup;
-            _adapter = new OutputAdapter<T>(fixture, this);
+            OutputConfig = setup;
+            _executor = executor;
+            //_adapter = new OutputAdapter<T>(fixture, this);
         }
 
         public virtual bool IsNotSyncrhonized => false;
@@ -95,7 +97,7 @@ namespace TickTrader.BotTerminal
     {
         private CircularList<OutputFixture<T>.Point> _cache = new CircularList<OutputFixture<T>.Point>();
 
-        public CachingOutputCollector(OutputFixture<T> fixture, OutputSetupModel outputConfig) : base(fixture, outputConfig)
+        public CachingOutputCollector(OutputSetupModel setup, PluginExecutor executor) : base(setup, executor)
         {
         }
 

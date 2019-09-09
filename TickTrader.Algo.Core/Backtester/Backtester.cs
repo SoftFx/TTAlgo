@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
             _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
             _executor.Feed = _feed;
-            _executor.InitBarStrategy(Api.BarPriceType.Bid);
+            _executor.Config.InitBarStrategy(Api.BarPriceType.Bid);
 
             CommonSettings.Leverage = 100;
             CommonSettings.InitialBalance = 10000;
@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Core
             bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
                 | OutputDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | SymbolDataConfig.Any(s => s.Value.IsFlagSet(TestDataSeriesFlags.Realtime));
 
-            _executor.StartUpdateMarshalling();
+            //_executor.StartUpdateMarshalling();
 
             try
             {
@@ -126,7 +126,7 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
-                _executor.StopUpdateMarshalling();
+                //_executor.StopUpdateMarshalling();
             }
         }
 
@@ -197,17 +197,17 @@ namespace TickTrader.Algo.Core
 
         void IPluginSetupTarget.SetParameter(string id, object value)
         {
-            _executor.SetParameter(id, value);
+            _executor.Config.SetParameter(id, value);
         }
 
         T IPluginSetupTarget.GetFeedStrategy<T>()
         {
-            return _executor.GetFeedStrategy<T>();
+            return _executor.Config.GetFeedStrategy<T>();
         }
 
         void IPluginSetupTarget.MapInput(string inputName, string symbolCode, Mapping mapping)
         {
-            _executor.MapInput(inputName, symbolCode, mapping);
+            _executor.Config.MapInput(inputName, symbolCode, mapping);
         }
 
         #endregion

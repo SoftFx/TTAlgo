@@ -401,17 +401,17 @@ namespace TickTrader.BotTerminal
             return $"account {ClientModel.Connection.CurrentLogin} on {ClientModel.Connection.CurrentServer} using {ClientModel.Connection.CurrentProtocol}";
         }
 
-        public virtual void InitializePlugin(PluginExecutorCore plugin)
+        public virtual void InitializePlugin(PluginExecutor plugin)
         {
-            plugin.InvokeStrategy = new PriorityInvokeStartegy();
+            plugin.Config.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
         }
 
-        public virtual void UpdatePlugin(PluginExecutorCore plugin)
+        public virtual void UpdatePlugin(PluginExecutor plugin)
         {
-            plugin.TimeFrame = TimeFrame;
-            plugin.MainSymbolCode = SymbolCode;
-            plugin.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            plugin.Config.TimeFrame = TimeFrame;
+            plugin.Config.MainSymbolCode = SymbolCode;
+            plugin.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }

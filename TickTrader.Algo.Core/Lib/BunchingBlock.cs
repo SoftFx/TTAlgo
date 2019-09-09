@@ -30,6 +30,17 @@ namespace TickTrader.Algo.Core.Lib
 
         public void Enqueue(T item)
         {
+            if (!TryEnqueue(item))
+                throw new InvalidOperationException("Block is completed!");
+        }
+
+        public void EnqueueNoTrhow(T item)
+        {
+            TryEnqueue(item);
+        }
+
+        public bool TryEnqueue(T item)
+        {
             lock (_sycObj)
             {
                 if (_maxQueueSize > 0)
@@ -39,7 +50,8 @@ namespace TickTrader.Algo.Core.Lib
                 }
 
                 if (_isCompleted)
-                    throw new InvalidOperationException("Block is completed!");
+                    return false;
+                    
 
                 if (_lastPage == null || _lastPage.Count >= _maxPageSize)
                 {
@@ -54,6 +66,8 @@ namespace TickTrader.Algo.Core.Lib
                 Count++;
 
                 ScheduleProcessing();
+
+                return true;
             }
         }
 

@@ -16,9 +16,8 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private PluginExecutorCore _executor;
+        private PluginExecutor _executor;
         private Dictionary<string, IOutputCollector> _outputs;
-
 
         public PluginConfig Config { get; private set; }
 
@@ -77,12 +76,12 @@ namespace TickTrader.BotTerminal
                 Setup.Load(Config);
 
                 _executor = CreateExecutor();
-                Setup.SetWorkingFolder(_executor.WorkingFolder);
-                Setup.Apply(_executor);
+                Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
+                Setup.Apply(_executor.Config);
 
                 Host.UpdatePlugin(_executor);
                 _executor.Start();
-                _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+                //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
             catch (Exception ex)
@@ -107,7 +106,7 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Stopping);
                 try
                 {
-                    _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+                    //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                     _executor.Stop();
                     ClearOutputs();
                     UnlockResources();
@@ -128,18 +127,18 @@ namespace TickTrader.BotTerminal
             _executor.Abort();
         }
 
-        protected virtual PluginExecutorCore CreateExecutor()
+        protected virtual PluginExecutor CreateExecutor()
         {
-            var executor = PluginRef.CreateExecutor();
+            var executor = new PluginExecutor(PluginRef, new DispatcherSync());
 
-            executor.OnRuntimeError += Executor_OnRuntimeError;
+            executor.ErrorOccurred += Executor_OnRuntimeError;
 
-            executor.TimeFrame = Setup.SelectedTimeFrame;
-            executor.MainSymbolCode = Setup.MainSymbol.Id;
-            executor.InstanceId = InstanceId;
-            executor.Permissions = Setup.Permissions;
-            executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
-            executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.Config.TimeFrame = Setup.SelectedTimeFrame;
+            executor.Config.MainSymbolCode = Setup.MainSymbol.Id;
+            executor.Config.InstanceId = InstanceId;
+            executor.Config.Permissions = Setup.Permissions;
+            executor.Config.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.Config.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
 
             Host.InitializePlugin(executor);
 
@@ -151,13 +150,13 @@ namespace TickTrader.BotTerminal
         protected virtual void HandleReconnect()
         {
             _executor.HandleReconnect();
-            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+            //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
         }
 
         protected virtual void HandleDisconnect()
         {
             _executor.HandleDisconnect();
-            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+            //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
         }
 
         protected virtual void ChangeState(PluginStates state, string faultMessage = null)
@@ -219,7 +218,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOutputs(PluginExecutorCore executor)
+        private void CreateOutputs(PluginExecutor executor)
         {
             try
             {
@@ -238,16 +237,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(string id, PluginExecutorCore executor, OutputSetupModel setup)
+        private void CreateOuput<T>(string id, PluginExecutor executor, OutputSetupModel setup)
         {
-            var fixture = executor.GetOutput<T>(id);
-            var collector = CreateOutputCollector<T>(id, fixture, setup);
-            _outputs.Add(id, collector);
+            //var fixture = executor.GetOutput<T>(id);
+            //var collector = CreateOutputCollector<T>(id, fixture, setup);
+            //_outputs.Add(id, collector);
         }
 
         protected virtual IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel setup)
         {
-            return new OutputCollector<T>(fixture, setup);
+            return null;
+            //return new OutputCollector<T>(fixture, setup);
         }
 
         private void ClearOutputs()

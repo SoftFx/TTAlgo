@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public abstract class FeedBufferStrategy
     {
+        [NonSerialized]
         private List<ILoadableFeedBuffer> _auxBuffers = new List<ILoadableFeedBuffer>();
 
         protected IFeedBuffer MainBuffer { get; private set; }
@@ -84,6 +86,7 @@ namespace TickTrader.Algo.Core
         void TruncateBuffers(int bySize);
     }
 
+    [Serializable]
     public class SlidingBufferStrategy : FeedBufferStrategy
     {
         private int _size;
@@ -140,6 +143,7 @@ namespace TickTrader.Algo.Core
         }
     }
 
+    [Serializable]
     public class TimeSpanStrategy : FeedBufferStrategy
     {
         private DateTime _from;

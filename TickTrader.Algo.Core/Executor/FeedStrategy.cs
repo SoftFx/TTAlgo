@@ -9,11 +9,15 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    public abstract class FeedStrategy : CrossDomainObject, IFeedBuferStrategyContext, CustomFeedProvider
+    [Serializable]
+    public abstract class FeedStrategy : IFeedBuferStrategyContext, CustomFeedProvider
     {
+        [NonSerialized]
         private MarketStateFixture _marketFixture;
+        [NonSerialized]
         private IFeedSubscription _defaultSubscription;
-        private readonly List<Action<FeedStrategy>> _setupActions = new List<Action<FeedStrategy>>();
+        private readonly List<SetupAction> _setupActions = new List<SetupAction>();
+        private CrossDomainProxy _proxy;
 
         public FeedStrategy()
         {
@@ -47,21 +51,24 @@ namespace TickTrader.Algo.Core
             RateDispenser.ClearUserSubscriptions();
             OnInit();
             BufferingStrategy.Init(this);
-            _setupActions.ForEach(a => a(this));
+            _setupActions.ForEach(a => a.Apply(this));
         }
 
         internal virtual void Start()
         {
+            _proxy = new CrossDomainProxy(this);
             InitDefaultSubscription();
-            Feed.Sync.Invoke(StartStrategy);
+            Feed.Sync.Invoke(_proxy.StartStrategy);
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
         }
 
         internal virtual void Stop()
         {
-            Feed.Sync.Invoke(StopStrategy);
+            Feed.Sync.Invoke(_proxy.StopStrategy);
             CancelDefaultSubscription();
+            _proxy.Dispose();
+            _proxy = null;
         }
 
         internal FeedStrategy Clone()
@@ -76,28 +83,9 @@ namespace TickTrader.Algo.Core
             RateDispenser.SetUserSubscription(symbol, depth);
         }
 
-        protected void AddSetupAction(Action<FeedStrategy> setupAction)
+        protected void AddSetupAction(SetupAction setupAction)
         {
             _setupActions.Add(setupAction);
-        }
-
-        private void StartStrategy()
-        {
-            RateDispenser.Start();
-            Feed.RateUpdated += Feed_RateUpdated;
-            Feed.RatesUpdated += Feed_RatesUpdated;
-
-            // apply snapshot
-            //foreach (var quote in Feed.GetSnapshot())
-            //    _marketFixture.UpdateRate(quote);
-        }
-
-        private void StopStrategy()
-        {
-            RateDispenser.Stop();
-            Feed.RateUpdated -= Feed_RateUpdated;
-            Feed.RatesUpdated -= Feed_RatesUpdated;
-            //Feed.CancelAll();
         }
 
         private void LoadDataAndBuild()
@@ -164,22 +152,6 @@ namespace TickTrader.Algo.Core
         {
             return Aggregate(last, quote);
         }
-
-        #region IFeedStrategyContext
-
-        //IPluginFeedProvider IFeedFixtureContext.Feed { get { return Feed; } }
-
-        //void IFeedFixtureContext.Add(IRateSubscription subscriber)
-        //{
-        //    dispenser.Add(subscriber);
-        //}
-
-        //void IFeedFixtureContext.Remove(IRateSubscription subscriber)
-        //{
-        //    dispenser.Remove(subscriber);
-        //}
-
-        #endregion IFeedStrategyContext
 
         #region IFeedBufferController
 
@@ -443,5 +415,51 @@ namespace TickTrader.Algo.Core
         }
 
         #endregion
+
+        private class CrossDomainProxy : CrossDomainObject
+        {
+            private readonly FeedStrategy _strategy;
+
+            public CrossDomainProxy(FeedStrategy strategy)
+            {
+                _strategy = strategy;
+            }
+
+            public void StartStrategy()
+            {
+                _strategy.RateDispenser.Start();
+                _strategy.Feed.RateUpdated += Feed_RateUpdated;
+                _strategy.Feed.RatesUpdated += Feed_RatesUpdated;
+            }
+
+            private void Feed_RatesUpdated(List<QuoteEntity> updates) => _strategy.Feed_RatesUpdated(updates);
+            private void Feed_RateUpdated(QuoteEntity upd) => _strategy.Feed_RateUpdated(upd);
+
+            public void StopStrategy()
+            {
+                _strategy.RateDispenser.Stop();
+                _strategy.Feed.RateUpdated -= Feed_RateUpdated;
+                _strategy.Feed.RatesUpdated -= Feed_RatesUpdated;
+            }
+        }
+
+        [Serializable]
+        public abstract class SetupAction
+        {
+            public abstract void Apply(FeedStrategy fStartegy);
+        }
+
+        [Serializable]
+        public abstract class InputSetupAction : SetupAction
+        {
+            public InputSetupAction(string inputName, string symbol)
+            {
+                InputName = inputName;
+                SymbolName = symbol;
+            }
+
+            public string InputName { get; }
+            public string SymbolName { get; }
+        }
     }
 }

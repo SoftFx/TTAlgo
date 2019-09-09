@@ -102,14 +102,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override PluginExecutorCore CreateExecutor()
+        protected override PluginExecutor CreateExecutor()
         {
             var executor = base.CreateExecutor();
-            executor.TradeExecutor = Host.GetTradeApi();
-            executor.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
-            executor.BotWorkingFolder = executor.WorkingFolder;
+            executor.Config.TradeExecutor = Host.GetTradeApi();
+            executor.Config.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
+            executor.Config.BotWorkingFolder = executor.Config.WorkingFolder;
             executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
-            EnvService.Instance.EnsureFolder(executor.WorkingFolder);
+            EnvService.Instance.EnsureFolder(executor.Config.WorkingFolder);
 
             _botListener = new BotListenerProxy(executor, OnBotExited, this);
             return executor;
@@ -158,7 +158,8 @@ namespace TickTrader.BotTerminal
 
         protected override IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel outputSetup)
         {
-            return new CachingOutputCollector<T>(fixture, outputSetup);
+            return null;
+            //return new CachingOutputCollector<T>(fixture, outputSetup);
         }
 
         private void Host_Connected()
@@ -224,27 +225,15 @@ namespace TickTrader.BotTerminal
 
         #region IBotWriter implementation
 
-        void IBotWriter.LogMesssages(IEnumerable<BotLogRecord> records)
+        void IBotWriter.LogMesssage(BotLogRecord rec)
         {
-            var messages = new List<BotMessage>();
-
-            foreach (var rec in records)
-            {
-                if (rec.Severity != LogSeverities.CustomStatus)
-                    messages.Add(Convert(rec));
-            }
-
-            if (messages.Count > 0)
-                Journal.Add(messages);
+            Journal.Add(Convert(rec));
         }
 
         void IBotWriter.UpdateStatus(string status)
         {
-            Execute.OnUIThread(() =>
-            {
-                Status = status;
-                StatusChanged?.Invoke(this);
-            });
+            Status = status;
+            StatusChanged?.Invoke(this);
         }
 
         void IBotWriter.Trace(string status)

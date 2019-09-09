@@ -11,15 +11,12 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
-    public class PluginExecutor : IPluginSetupTarget, IDisposable
+    public class PluginExecutor : CrossDomainObject, IDisposable
     {
         private ISynchronizationContext _syncContext;
         
         private AlgoPluginRef _ref;
-        private BunchingBlock<object> _channel;
-        private Dictionary<string, object> _pluginParams = new Dictionary<string, object>();
-        private FeedStrategy _fStrategy;
-        private CommonCdProxy _bProxy;
+        private CommonCdProxy _cProxy;
         private FeedCdProxy _fProxy;
 
         public PluginExecutor(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
@@ -28,14 +25,30 @@ namespace TickTrader.Algo.Core
             _syncContext = updatesSync;
             Core = pluginRef.CreateExecutor();
             IsIsolated = pluginRef.IsIsolated;
+
+            Core.IsGlobalMarshalingEnabled = true;
+            Core.IsBunchingRequired = IsIsolated || _syncContext != null;
+
+            Core.MarshalUpdate = MarshalUpdate;
+            Core.MarshalUpdates = MarshalUpdates;
+            Core.Stopped += () =>
+            {
+                if (_syncContext != null)
+                    _syncContext.Invoke(() => Stopped?.Invoke(this));
+                else
+                    Stopped?.Invoke(this);
+            };
         }
 
-        private bool IsBunchingRequired => IsIsolated || _syncContext != null;
-
-        // TO DO: Direct access to Core should be removed in future refactoring!
         internal PluginExecutorCore Core { get; }
         public bool IsIsolated { get; }
-        public bool IsRunning { get; private set; }
+        //public bool IsRunning { get; private set; }
+
+        public IAccountInfoProvider AccInfoProvider { get; set; }
+        public ITradeHistoryProvider TradeHistoryProvider { get; set; }
+        public IPluginMetadata Metadata { get; set; }
+        public IFeedProvider Feed { get; set; }
+        public IFeedHistoryProvider FeedHistory { get; set; }
 
         public event Action<BotLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
@@ -46,6 +59,8 @@ namespace TickTrader.Algo.Core
         public event Action<BarEntity, SeriesUpdateActions> MarginUpdated;
         public event Action<IDataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
+
+        public event Action<PluginExecutor> Stopped;
 
         #region Excec control
 
@@ -79,128 +94,50 @@ namespace TickTrader.Algo.Core
 
         #region Setup
 
-        public InvokeStartegy InvokeStrategy { get; set; }
-        public IAccountInfoProvider AccInfoProvider { get; set; }
-        public ITradeHistoryProvider TradeHistoryProvider { get; set; }
-        public IPluginMetadata Metadata { get; set; }
-        public IFeedProvider Feed { get; set; }
-        public IFeedHistoryProvider FeedHistory { get; set; }
         public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
-
-        public void SetParameter(string id, object value)
-        {
-            _pluginParams[id] = value;
-        }
-
-        public T GetFeedStrategy<T>()
-           where T : FeedStrategy
-        {
-            return (T)_fStrategy;
-        }
-
-        public void MapInput(string inputName, string symbolCode, Mapping mapping)
-        {
-            // hook to appear in plugin domain
-            mapping?.MapInput(this, inputName, symbolCode);
-        }
-
-        public BarStrategy InitBarStrategy(BarPriceType mainPirceTipe)
-        {
-            var strategy = new BarStrategy(mainPirceTipe);
-            _fStrategy = strategy;
-            return strategy;
-        }
-
-        public QuoteStrategy InitQuoteStrategy(IFeedProvider feed)
-        {
-            var strategy = new QuoteStrategy();
-            _fStrategy = strategy;
-            return strategy;
-        }
 
         #endregion
 
-        public void Dispose()
-        {
-        }
+        //public override void Dispose()
+        //{
+        //}
 
         private void ConfigurateCore()
         {
-            Core.MainSymbolCode = Config.MainSymbolCode;
-            Core.TimeFrame = Config.TimeFrame;
-
-            Core.BotWorkingFolder = Core.BotWorkingFolder;
-            Core.WorkingFolder = Core.WorkingFolder;
-
             if (IsIsolated)
             {
-                _bProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
-                Core.AccInfoProvider = _bProxy;
-                Core.TradeHistoryProvider = _bProxy;
-                Core.Metadata = _bProxy;
-
+                _cProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
                 _fProxy = new FeedCdProxy(Feed, FeedHistory);
-                Core.Feed = _fProxy;
-                Core.FeedHistory = _fProxy;
+
+                Core.ApplyConfig(Config, _cProxy, _cProxy, _cProxy, _fProxy, _fProxy);
             }
             else
-            {
-                Core.AccInfoProvider = AccInfoProvider;
-                Core.TradeHistoryProvider = TradeHistoryProvider;
-                Core.Metadata = Metadata;
-                Core.Feed = Feed;
-                Core.FeedHistory = FeedHistory;
-            }
+                Core.ApplyConfig(Config, AccInfoProvider, Metadata, TradeHistoryProvider, Feed, FeedHistory);
         }
 
         #region Update Marshalling 
 
-        internal void StartUpdateMarshalling()
+        private void MarshalUpdatesToContext(IReadOnlyList<object> updates)
         {
-            if (IsBunchingRequired)
-            {
-                _channel = new BunchingBlock<object>(MarshalUpdates, 30, 60);
-                Core.OnUpdate = _channel.Enqueue;
-            }
+            if (_syncContext != null)
+                _syncContext.Invoke(MarshalUpdatesToContext, updates);
             else
-            {
-                Core.OnUpdate = MarshalUpdate;
-            }
-        }
-
-        internal void StopUpdateMarshalling()
-        {
-            try
-            {
-                if (_channel != null)
-                {
-                    _channel.Complete();
-                    _channel.Completion.Wait();
-                }
-            }
-            catch (Exception ex)
-            {
-                ErrorOccurred?.Invoke(ex);
-            }
-            _channel = null;
+                MarshalUpdatesToContext(updates);
         }
 
         private void MarshalUpdates(IReadOnlyList<object> updates)
         {
-            _syncContext.Invoke(() =>
+            for (int i = 0; i < updates.Count; i++)
             {
-                for (int i = 0; i < updates.Count; i++)
+                try
                 {
-                    try
-                    {
-                        MarshalUpdate(updates[i]);
-                    }
-                    catch (Exception ex)
-                    {
-                        ErrorOccurred?.Invoke(ex);
-                    }
+                    MarshalUpdate(updates[i]);
                 }
-            });
+                catch (Exception ex)
+                {
+                    ErrorOccurred?.Invoke(ex);
+                }
+            }
         }
 
         private void MarshalUpdate(object update)
@@ -232,9 +169,10 @@ namespace TickTrader.Algo.Core
                 else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
             }
+            else if (update is Exception)
+                ErrorOccurred?.Invoke((Exception)update);
 
             #endregion
         }
-        
     }
 }

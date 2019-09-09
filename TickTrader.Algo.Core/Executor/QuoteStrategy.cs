@@ -38,13 +38,7 @@ namespace TickTrader.Algo.Core
 
         public void MapInput<TVal>(string inputName, string symbolCode, Func<QuoteEntity, TVal> selector)
         {
-            AddSetupAction(fs =>
-            {
-                if (symbolCode != mainSeries.SymbolCode)
-                    throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
-
-                fs.ExecContext.Builder.MapInput(inputName, symbolCode, selector);
-            });
+            AddSetupAction(new MapAction<TVal>(inputName, symbolCode, selector));
         }
 
         public void SetMainSeries(List<QuoteEntity> data)
@@ -74,6 +68,25 @@ namespace TickTrader.Algo.Core
         protected override BarSeries GetBarSeries(string symbol, BarPriceType side)
         {
             throw new NotImplementedException();
+        }
+
+        [Serializable]
+        public class MapAction<TVal> : InputSetupAction
+        {
+            public MapAction(string inputName, string symbol, Func<QuoteEntity, TVal> selector) : base(inputName, symbol)
+            {
+                Selector = selector;
+            }
+
+            public Func<QuoteEntity, TVal> Selector { get; }
+
+            public override void Apply(FeedStrategy fStartegy)
+            {
+                if (SymbolName != ((QuoteStrategy)fStartegy).mainSeries.SymbolCode)
+                    throw new InvalidOperationException("Wrong symbol! TickStrategy does only suppot main symbol inputs!");
+
+                fStartegy.ExecContext.Builder.MapInput(InputName, SymbolName, Selector);
+            }
         }
     }
 }
