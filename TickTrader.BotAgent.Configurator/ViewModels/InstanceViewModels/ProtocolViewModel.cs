@@ -10,6 +10,10 @@ namespace TickTrader.BotAgent.Configurator
 
         private ProtocolModel _model;
 
+        public delegate void ChangeListeningPort();
+
+        public event ChangeListeningPort ChangeListeningPortEvent;
+
         public ProtocolViewModel(ProtocolModel model, RefreshCounter refManager = null) : base(nameof(ProtocolViewModel))
         {
             _model = model;
@@ -42,6 +46,7 @@ namespace TickTrader.BotAgent.Configurator
                 ErrorCounter.DeleteError(_keyPort);
                 ErrorCounter.DeleteWarning(_keyPort);
                 OnPropertyChanged(nameof(ListeningPort));
+                ChangeListeningPortEvent.Invoke();
             }
         }
 
@@ -77,6 +82,8 @@ namespace TickTrader.BotAgent.Configurator
                 OnPropertyChanged(nameof(LogMessage));
             }
         }
+
+        public Uri ListeningUri => _model.ListeningUri;
 
         public override string this[string columnName]
         {

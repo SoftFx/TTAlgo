@@ -57,7 +57,9 @@ namespace TickTrader.BotAgent.Configurator
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public string FullVersion => IsDeveloper ? $"{Version} ({BuildDate}) Developer Version" : $"{Version} ({BuildDate})";
+        public string FullVersion => $"{Version} ({BuildDate})";
+
+        public string FullVersionWithDeveloper => IsDeveloper ? $"{FullVersion} Developer Version" : FullVersion;
 
         public string AppSettingPath { get; }
 

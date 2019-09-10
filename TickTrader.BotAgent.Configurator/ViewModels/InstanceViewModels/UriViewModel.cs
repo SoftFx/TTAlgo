@@ -1,33 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using TickTrader.BotAgent.Configurator.Properties;
 
 namespace TickTrader.BotAgent.Configurator
 {
     public class UriViewModel : BaseViewModelWithValidations
     {
-        private const string specialSymbols = "$-_.+ !*'()";
+        private const string SpecialSymbols = "$-_.+ !*'()";
         private const int MinPort = 1, MaxPort = (1 << 16) - 1;
+
+        private readonly List<string> _correctHosts = new List<string>()
+        {
+            IPAddress.Any.ToString(),
+            $"[{IPAddress.IPv6Any.ToString()}]",
+            IPAddress.Loopback.ToString(),
+            $"[{IPAddress.IPv6Loopback.ToString()}]"
+        };
 
         private readonly List<Uri> _urls;
         private readonly PortsManager _portsManager;
+        private readonly ProtocolViewModel _protocolManager;
 
         private int _port = 0;
+        private string _host = string.Empty;
 
         public List<string> TypesOfScheme => new List<string>() { "https", "http" };
 
         public IEnumerable<string> Hosts => _urls.Select(u => u.Host).Distinct();
 
         public bool IsFreePort { get; private set; }
-        
+
         public UriWithValidation OldUri { get; private set; }
 
         public string WarningMessage { get; private set; }
 
         public string Scheme { get; set; }
 
-        public string Host { get; set; }
+        public string Host
+        {
+            get => _host;
+            set
+            {
+                _host = value;
+
+                OnPropertyChanged(nameof(Port));
+            }
+        }
 
         public string Port
         {
@@ -40,9 +60,10 @@ namespace TickTrader.BotAgent.Configurator
                 _port = int.Parse(value);
             }
         }
-        
-        public UriViewModel(PortsManager manager, List<Uri> urls)
+
+        public UriViewModel(PortsManager manager, List<Uri> urls, ProtocolViewModel protocolManager)
         {
+            _protocolManager = protocolManager;
             _portsManager = manager;
             _urls = urls;
         }
@@ -53,7 +74,7 @@ namespace TickTrader.BotAgent.Configurator
 
             if (OldUri != null)
             {
-                
+
                 Scheme = OldUri.Scheme;
                 Host = OldUri.Host;
                 _port = OldUri.Port;
@@ -79,27 +100,30 @@ namespace TickTrader.BotAgent.Configurator
                     switch (columnName)
                     {
                         case "Host":
-                            {
-                                if (string.IsNullOrEmpty(Host))
-                                    throw new ArgumentException(Resources.RequiredFieldEx);
+                            if (string.IsNullOrEmpty(Host))
+                                throw new ArgumentException(Resources.RequiredFieldEx);
 
-                                foreach (var c in Host)
-                                {
-                                    if (!char.IsLetterOrDigit(c) && specialSymbols.IndexOf(c) == -1)
-                                        throw new ArgumentException($"{Resources.InvalidCh_Ex} {c} {Resources._InvalidChEx}");
-                                }
-                                break;
-                            }
-                        case "Port":
+                            if (GetUri().HostNameType != UriHostNameType.Dns)
                             {
-                                if (_port < MinPort || _port > MaxPort)
-                                    throw new ArgumentException($"{Resources.PortRangeEx} {MinPort} to {MaxPort}");
-                                break;
+                                if (!_correctHosts.Contains(Host))
+                                    throw new ArgumentException(Resources.InvalidHostEx);
                             }
+                            else
+                            {
+                                foreach (var c in Host)
+                                    if (!char.IsLetterOrDigit(c) && SpecialSymbols.IndexOf(c) == -1)
+                                        throw new ArgumentException($"{Resources.InvalidCh_Ex} {c} {Resources._InvalidChEx}");
+                            }
+                            break;
+
+                        case "Port":
+                            if (_port < MinPort || _port > MaxPort)
+                                throw new ArgumentException($"{Resources.PortRangeEx} {MinPort} to {MaxPort}");
+                            break;
                     }
 
                     ExistanceCheck();
-                    _portsManager.CheckPort(_port, OldUri?.Port ?? 0, GetUri().Host);
+                    _portsManager.CheckPort(_port, Host);
                 }
                 catch (WarningException ex)
                 {
@@ -122,8 +146,27 @@ namespace TickTrader.BotAgent.Configurator
             if (OldUri != null && OldUri.Host == Host && OldUri.Port == _port)
                 return;
 
-            if (_urls.Where(u => u.Host == Host && u.Port == _port).Count() > 0)
-                throw new Exception("Current url already exists!");
+            var encodedUrls = UriChecker.GetEncodedUrls(_urls);
+
+            var uri = GetUri();
+
+            if (uri.HostNameType == UriHostNameType.Dns)
+            {
+                var hosts = UriChecker.GetEncodedDnsHosts(uri);
+
+                if (encodedUrls.Where(u => u.Host == hosts.Item1 && u.Port == uri.Port).Count() > 0)
+                    throw new ArgumentException(Resources.ExistingUrlEx);
+
+                if (encodedUrls.Where(u => u.Host == hosts.Item2 && u.Port == uri.Port).Count() > 0)
+                    throw new ArgumentException(Resources.ExistingUrlEx);
+            }
+            else
+            {
+                if (encodedUrls.Where(u => u.Host == Host && u.Port == _port).Count() > 0)
+                    throw new ArgumentException(Resources.ExistingUrlEx);
+            }
+
+            UriChecker.CompareUriWithWarnings(_protocolManager.ListeningUri, uri, Resources.EqualToListeningPortEx);
         }
 
         public Uri GetUri() => new UriBuilder(Scheme, Host, _port).Uri;

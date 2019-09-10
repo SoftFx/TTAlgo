@@ -19,7 +19,8 @@ namespace TickTrader.BotAgent.Configurator
         private DelegateCommand _openUriWindow;
         private DelegateCommand _closeUriWindow;
 
-        private ServerModel _model;      
+        private ServerModel _model;
+        private ProtocolViewModel _protocolModel;
 
         public string Title => CurrentUri?.OldUri != null ? Resources.ModifyUrlTitle : Resources.AddUrlTitle;
 
@@ -35,7 +36,7 @@ namespace TickTrader.BotAgent.Configurator
         {
             get
             {
-                var urls = _model.Urls.Select(u => new UriWithValidation(u, _model.PortsManager));
+                var urls = _model.Urls.Select(u => new UriWithValidation(u, _model.PortsManager, _protocolModel));
 
                 int busyPortsCount = urls.Where(u => u.HasWarning).Count();
 
@@ -49,10 +50,11 @@ namespace TickTrader.BotAgent.Configurator
         }
 
 
-        public ServerViewModel(ServerModel model, RefreshCounter refManager = null) : base(nameof(ServerViewModel))
+        public ServerViewModel(ServerModel model, ProtocolViewModel protocol, RefreshCounter refManager = null) : base(nameof(ServerViewModel))
         {
             _model = model;
             _refreshManager = refManager;
+            _protocolModel = protocol;
 
             RefreshModel();
         }
@@ -107,7 +109,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public override void RefreshModel()
         {
-            CurrentUri = new UriViewModel(_model.PortsManager, _model.Urls);
+            CurrentUri = new UriViewModel(_model.PortsManager, _model.Urls, _protocolModel);
 
             UpdateRefreshAndErrors();
             OnPropertyChanged(nameof(SecretKey));
@@ -130,14 +132,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public string Warning { get; private set; }
 
-        public UriWithValidation(Uri uri, PortsManager manager) : this(uri.ToString(), manager)
+        public UriWithValidation(Uri uri, PortsManager manager, ProtocolViewModel protocol) : this(uri.ToString(), manager, protocol)
         { }
 
-        public UriWithValidation(string str, PortsManager manager) : base(str)
+        public UriWithValidation(string str, PortsManager manager, ProtocolViewModel protocol) : base(str)
         {
             try
             {
-                manager.CheckPort(Port, Port, Host);
+                manager.CheckPort(Port, Host);
+                UriChecker.CompareUriWithWarnings(protocol.ListeningUri, this, Resources.EqualToListeningPortEx);
             }
             catch (WarningException ex)
             {

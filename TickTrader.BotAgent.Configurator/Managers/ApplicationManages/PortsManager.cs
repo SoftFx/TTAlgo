@@ -1,6 +1,8 @@
 ﻿using NetFwTypeLib;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using TickTrader.BotAgent.Configurator.Properties;
@@ -13,18 +15,20 @@ namespace TickTrader.BotAgent.Configurator
 
         private const int MaxPort = (1 << 16) - 1;
 
+        private readonly RegistryNode _currentAgent;
+
         private readonly INetFwMgr _firewallManager;
-        private readonly ServiceManager _serviceManager;
         private readonly INetFwPolicy2 _firewallPolicy;
 
-        private RegistryNode _currentAgent;
+        private List<Uri> _busyUrls;
 
-        public PortsManager(ServiceManager service, RegistryNode agent)
+        public PortsManager(RegistryNode agent, CashManager cash)
         {
-            _serviceManager = service;
             _currentAgent = agent;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
+
+            _busyUrls = UriChecker.GetEncodedUrls(cash.BusyUrls);
         }
 
         public void RegisterRuleInFirewall(string nameApp, string application, string porst)
@@ -59,77 +63,88 @@ namespace TickTrader.BotAgent.Configurator
                 _firewallPolicy.Rules.Add(firewallRule);
         }
 
-        public void CheckPort(int port, int nativePort, string hostname = null)
+        public void CheckPort(int port, string hostname = "current")
         {
-            if (!CheckPortOpen(port, hostname, nativePort))
-                FindFreePort(port, nativePort, hostname);
-        }
-
-        private void FindFreePort(int port, int nativePort, string hostname)
-        {
-            string freePortMassage = string.Empty;
-
-            for (int i = (port + 1) % MaxPort; i != port;)
+            if (!CheckPortOpen(port, hostname))
             {
-                if (CheckPortOpen(i, hostname, nativePort))
+                string freePortMassage = string.Empty;
+
+                for (int i = (port + 1) % MaxPort; i != port;)
                 {
-                    freePortMassage = $"Port {i} is free";
-                    break;
+                    if (CheckPortOpen(i, hostname))
+                    {
+                        freePortMassage = $"Port {i} is free";
+                        break;
+                    }
+
+                    i = (i + 1) % MaxPort;
                 }
 
-                i = (i + 1) % MaxPort;
+                if (string.IsNullOrEmpty(freePortMassage))
+                    freePortMassage = "Free ports not found";
+
+                var mes = $"Port {port} is not available. {freePortMassage}";
+
+                _logger.Error(mes);
+                throw new WarningException(mes);
             }
-
-            if (string.IsNullOrEmpty(freePortMassage))
-                freePortMassage = "Free ports not found";
-
-            var mes = $"Port {port} is not available. {freePortMassage}";
-
-            _logger.Error(mes);
-            throw new WarningException(mes);
         }
 
-        private bool CheckPortOpen(int port, string hostname, int nativePort)
+        private bool CheckPortOpen(int port, string hostname)
         {
-            bool localhost = false;
-            bool wasIPv4 = false;
+            var uri = new UriBuilder("https", hostname, port).Uri;
 
-            if (hostname != null && hostname.ToLower().Trim('/') == "localhost")
+            var free = true;
+
+            switch (uri.HostNameType)
             {
-                hostname = IPAddress.Loopback.ToString();
-                localhost = true;
+                case UriHostNameType.Dns:
+                    var hosts = UriChecker.GetEncodedDnsHosts(uri);
+
+                    free &= CheckIPv4(hosts.Item1, port);
+                    free &= CheckIPv6(hosts.Item2, port);
+                    break;
+
+                case UriHostNameType.IPv4:
+                    free &= CheckIPv4(hostname, port);
+                    break;
+
+                case UriHostNameType.IPv6:
+                    free &= CheckIPv6(hostname, port);
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown hostname type: {uri}");
             }
 
+            return free;
+        }
+
+        private bool CheckIPv4(string hostname, int port)
+        {
             foreach (var tcp in ManagedIpHelper.GetExtendedTcpTable(true))
             {
-                if (CheckAdress(tcp, hostname) && tcp.LocalEndPoint.Port == port && CheckActiveServiceState(tcp.State))
-                {
-                    wasIPv4 = true;
-
-                    if (!IsAgentService(tcp.ProcessId))
-                        return false;
-                }
-            }
-
-            var ipGlobal = IPGlobalProperties.GetIPGlobalProperties();
-
-            foreach (var listener in ipGlobal.GetActiveTcpListeners())
-            {
-                if (listener.Port == port)
-                {
-                    var adress = listener.Address.ToString();
-
-                    if ((adress == hostname || (localhost && adress == "::")) && !wasIPv4)
-                        return false;
-                }
+                if (CheckLocalPoint(tcp.LocalEndPoint, hostname, port) && CheckActiveServiceState(tcp.State) && !IsAgentPort(hostname, port))
+                    return false;
             }
 
             return true;
         }
 
-        private bool CheckAdress(TcpRow tcp, string hostname)
+        private bool CheckIPv6(string hostname, int port)
         {
-            return hostname != null ? tcp.LocalEndPoint.Address.ToString() == hostname : true;
+            foreach (var listener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+            {
+                if (CheckLocalPoint(listener, hostname, port) && !IsAgentPort(hostname, port))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool CheckLocalPoint(IPEndPoint point, string hostname, int port)
+        {
+            return point.Address.ToString() == hostname && point.Port == port;
         }
 
         private bool CheckActiveServiceState(TcpState state)
@@ -137,11 +152,9 @@ namespace TickTrader.BotAgent.Configurator
             return state == TcpState.Established || state == TcpState.Listen;
         }
 
-        private bool IsAgentService(int id)
+        private bool IsAgentPort(string hostname, int port)
         {
-            var service = Process.GetProcessById(id);
-
-            return _serviceManager.IsServiceRunning && service.MainModule.FileName == _currentAgent.ExePath;
+            return _busyUrls.Where(u => u.Host == hostname && u.Port == port).Count() > 0;
         }
     }
 }

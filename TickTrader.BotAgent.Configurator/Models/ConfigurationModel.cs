@@ -40,6 +40,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; private set; }
 
+        public CashManager CashManager { get; private set; }
 
         public ConfigurationModel()
         {
@@ -57,8 +58,9 @@ namespace TickTrader.BotAgent.Configurator
             RegistryManager.ChangeCurrentAgent(newPath);
 
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
+            CashManager = new CashManager(CurrentAgent);
 
-            _portsManager = new PortsManager(ServiceManager, RegistryManager.CurrentAgent);
+            _portsManager = new PortsManager(RegistryManager.CurrentAgent, CashManager);
             _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
@@ -117,6 +119,16 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             RegisterAgentInFirewall();
+        }
+
+        public bool EqualsCurrentAndCashedSettings()
+        {
+            if (CashManager.BusyUrls.Count == 0)
+                return true;
+
+            var current = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
+
+            return current.All(CashManager.BusyUrls.Contains) && current.Count == CashManager.BusyUrls.Count;
         }
 
         private void UploadModel(IWorkingManager model)

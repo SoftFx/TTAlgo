@@ -1,4 +1,6 @@
-﻿namespace TickTrader.BotAgent.Configurator
+﻿using System;
+
+namespace TickTrader.BotAgent.Configurator
 {
     public class ProtocolModel : IWorkingModel
     {
@@ -13,6 +15,8 @@
         {
             _portManager = manager;
         }
+
+        public Uri ListeningUri => new UriBuilder("https", "current", ListeningPort.Value).Uri;
 
         public int? ListeningPort { get; set; }
 
@@ -43,7 +47,7 @@
 
         public void CheckPort(int port)
         {
-            _portManager.CheckPort(port, CurrentListeningPort);
+            _portManager.CheckPort(port);
         }
     }
 }

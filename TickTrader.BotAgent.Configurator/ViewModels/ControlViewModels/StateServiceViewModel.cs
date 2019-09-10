@@ -12,7 +12,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public delegate void ChangeServiceStatus();
 
-        public event ChangeServiceStatus ChangeServiceStatusEvent;
+        public event ChangeServiceStatus StopServiceEvent;
+        public event ChangeServiceStatus StartServiceEvent;
 
         public string RestartMessage => Resources.ApplyNewSettingMes;
 
@@ -21,6 +22,8 @@ namespace TickTrader.BotAgent.Configurator
         public bool ServiceRunning => Status == ServiceControllerStatus.Running;
 
         public ServiceControllerStatus Status { get; private set; }
+
+        public bool RestartRequired { get; set; }
 
         public StateServiceViewModel(RefreshCounter refresh)
         {
@@ -62,17 +65,24 @@ namespace TickTrader.BotAgent.Configurator
             var oldStatus = Status;
 
             Status = new ServiceController(_serviceName).Status;
-            VisibleRestartMessage = ServiceRunning ? _refresh.Restart : false;
+            VisibleRestartMessage = ServiceRunning ? (_refresh.Restart || RestartRequired) : false;
 
-            if (oldStatus != Status)
+            if (oldStatus != 0 && oldStatus != Status)
             {
                 InfoMessage = ServiceRunning ? Resources.StartAgentLog : Resources.StopAgentLog;
 
                 if (ServiceRunning)
+                {
                     _refresh.DropRestart();
+                    RestartRequired = false;
+                    StartServiceEvent.Invoke();
+                }
+                else
+                {
+                    StopServiceEvent.Invoke();
+                }
             }
 
-            ChangeServiceStatusEvent?.Invoke();
             OnPropertyChanged(nameof(ServiceState));
             OnPropertyChanged(nameof(ServiceRunning));
             OnPropertyChanged(nameof(Status));

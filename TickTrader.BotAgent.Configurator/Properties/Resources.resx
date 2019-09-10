@@ -138,11 +138,20 @@
   <data name="DeleteUrlsTitle" xml:space="preserve">
     <value>Urls deletion</value>
   </data>
+  <data name="EqualToListeningPortEx" xml:space="preserve">
+    <value>This url should be different from the url used for terminal connection</value>
+  </data>
+  <data name="ExistingUrlEx" xml:space="preserve">
+    <value>Current url already exists</value>
+  </data>
   <data name="FieldAsNumberEx" xml:space="preserve">
     <value>The field must be a number</value>
   </data>
   <data name="InvalidCh_Ex" xml:space="preserve">
     <value>An invalid character</value>
+  </data>
+  <data name="InvalidHostEx" xml:space="preserve">
+    <value>Invalid host adress. Only dns and special ip are allowed</value>
   </data>
   <data name="ModifyUrlTitle" xml:space="preserve">
     <value>Modify URL</value>

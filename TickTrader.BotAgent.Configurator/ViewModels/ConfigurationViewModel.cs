@@ -83,7 +83,7 @@ namespace TickTrader.BotAgent.Configurator
                 _mainWindow = Application.Current.MainWindow;
                 _model = new ConfigurationModel();
 
-                Title = _model.CurrentAgent.FullVersion;
+                Title = _model.CurrentAgent.FullVersionWithDeveloper;
 
                 RefreshCounter = new RefreshCounter();
                 StateServiceModel = new StateServiceViewModel(RefreshCounter);
@@ -92,6 +92,15 @@ namespace TickTrader.BotAgent.Configurator
                 SetNewViewModels();
 
                 _mainWindow.Closing += MainWindow_Closing;
+
+                StateServiceModel.StopServiceEvent += () => _model.CashManager.DropCash();
+                StateServiceModel.StartServiceEvent += () =>
+                {
+                    var ports = new List<Uri>(_model.ServerManager.ServerModel.Urls) { ProtocolModel.ListeningUri };
+
+                    _model.CashManager.SetProperty(CashedProperties.Ports,  ports);
+                    _model.CashManager.SaveProperties();
+                };
             }
             catch (Exception ex)
             {
@@ -133,7 +142,7 @@ namespace TickTrader.BotAgent.Configurator
                 LogMessageDescription = _model.Prompts.GetPrompt(SectionNames.Protocol, ProtocolManager.UseLogNameProperty),
             };
 
-            ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, RefreshCounter)
+            ServerModel = new ServerViewModel(_model.ServerManager.ServerModel, ProtocolModel, RefreshCounter)
             {
                 UrlsDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.UrlsNameProperty),
                 SecretKeyDescription = _model.Prompts.GetPrompt(SectionNames.Server, ServerManager.SecretKeyNameProperty),
@@ -151,6 +160,9 @@ namespace TickTrader.BotAgent.Configurator
 
             _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
             _runnignApplication = true;
+
+            StateServiceModel.RestartRequired = !_model.EqualsCurrentAndCashedSettings();
+            ProtocolModel.ChangeListeningPortEvent += () => ServerModel.RefreshModel();
 
             ThreadPool.QueueUserWorkItem(RefreshServiceState);
         }
@@ -282,6 +294,7 @@ namespace TickTrader.BotAgent.Configurator
                 if ((bool)start)
                 {
                     RefreshCounter.DropRestart();
+
                     _model.StartAgent();
                 }
                 else

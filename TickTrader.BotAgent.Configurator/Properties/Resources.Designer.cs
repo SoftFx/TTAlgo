@@ -142,6 +142,24 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This url should be different from the url used for terminal connection.
+        /// </summary>
+        internal static string EqualToListeningPortEx {
+            get {
+                return ResourceManager.GetString("EqualToListeningPortEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current url already exists.
+        /// </summary>
+        internal static string ExistingUrlEx {
+            get {
+                return ResourceManager.GetString("ExistingUrlEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The field must be a number.
         /// </summary>
         internal static string FieldAsNumberEx {
@@ -156,6 +174,15 @@ namespace TickTrader.BotAgent.Configurator.Properties {
         internal static string InvalidCh_Ex {
             get {
                 return ResourceManager.GetString("InvalidCh_Ex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid host adress. Only dns and special ip are allowed.
+        /// </summary>
+        internal static string InvalidHostEx {
+            get {
+                return ResourceManager.GetString("InvalidHostEx", resourceCulture);
             }
         }
         
