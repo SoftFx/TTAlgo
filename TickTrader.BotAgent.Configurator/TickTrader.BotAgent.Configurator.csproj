@@ -111,7 +111,7 @@
     <Compile Include="Helpers\Static\UriChecker.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
     <Compile Include="Helpers\Static\IoHelper.cs" />
-    <Compile Include="Managers\ApplicationManages\CashManager.cs" />
+    <Compile Include="Managers\ApplicationManages\CacheManager.cs" />
     <Compile Include="ViewModels\InfrastructureViewModels\ModelErrorCounter.cs" />
     <Compile Include="Helpers\Static\CryptoManager.cs" />
     <Compile Include="Managers\ApplicationManages\LogsManager.cs" />

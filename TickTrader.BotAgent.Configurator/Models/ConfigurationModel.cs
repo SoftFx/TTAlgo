@@ -40,7 +40,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; private set; }
 
-        public CashManager CashManager { get; private set; }
+        public CacheManager CashManager { get; private set; }
 
         public ConfigurationModel()
         {
@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.Configurator
             RegistryManager.ChangeCurrentAgent(newPath);
 
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
-            CashManager = new CashManager(CurrentAgent);
+            CashManager = new CacheManager(CurrentAgent);
 
             _portsManager = new PortsManager(RegistryManager.CurrentAgent, CashManager);
             _configurationObject = null;

@@ -8,11 +8,11 @@ namespace TickTrader.BotAgent.Configurator
 {
     public enum CashedProperties { Ports };
 
-    public class CashManager
+    public class CacheManager
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly string _cashFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cash");
+        private readonly string _cashFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cache");
 
         private JObject _cashObj = new JObject();
         private string _cashFile;
@@ -20,7 +20,7 @@ namespace TickTrader.BotAgent.Configurator
         public List<Uri> BusyUrls { get; private set; } 
 
 
-        public CashManager(RegistryNode node)
+        public CacheManager(RegistryNode node)
         {
             BusyUrls = new List<Uri>();
 

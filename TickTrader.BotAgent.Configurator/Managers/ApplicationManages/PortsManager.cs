@@ -22,13 +22,13 @@ namespace TickTrader.BotAgent.Configurator
 
         private List<Uri> _busyUrls;
 
-        public PortsManager(RegistryNode agent, CashManager cash)
+        public PortsManager(RegistryNode agent, CacheManager cache)
         {
             _currentAgent = agent;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
 
-            _busyUrls = UriChecker.GetEncodedUrls(cash.BusyUrls);
+            _busyUrls = UriChecker.GetEncodedUrls(cache.BusyUrls);
         }
 
         public void RegisterRuleInFirewall(string nameApp, string application, string porst)
