@@ -93,14 +93,8 @@ namespace TickTrader.BotAgent.Configurator
 
                 _mainWindow.Closing += MainWindow_Closing;
 
-                StateServiceModel.StopServiceEvent += () => _model.CashManager.DropCash();
-                StateServiceModel.StartServiceEvent += () =>
-                {
-                    var ports = new List<Uri>(_model.ServerManager.ServerModel.Urls) { ProtocolModel.ListeningUri };
-
-                    _model.CashManager.SetProperty(CashedProperties.Ports,  ports);
-                    _model.CashManager.RefreshCache();
-                };
+                StateServiceModel.StopServiceEvent += () => _model.CacheManager.DropCash();
+                StateServiceModel.StartServiceEvent += () => _model.SaveCache();
             }
             catch (Exception ex)
             {
@@ -383,6 +377,8 @@ namespace TickTrader.BotAgent.Configurator
         {
             if (SaveChangesMethod() == MessageBoxResult.Cancel)
                 e.Cancel = true;
+
+            _appRestrictor.Dispose();
         }
 
         private void DropAllErrors()

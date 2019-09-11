@@ -63,7 +63,7 @@ namespace TickTrader.BotAgent.Configurator
             _openUriWindow = new DelegateCommand(obj =>
             {
                 CurrentUri.SetOldUri(obj, _model.Urls);
-                (_urlWindow = new NewUrlWindow(this)).ShowDialog();
+                (_urlWindow = new NewUrlWindow(this) { Topmost = true }).ShowDialog();
             }));
 
         public DelegateCommand CloseUriWindow => _closeUriWindow ?? (

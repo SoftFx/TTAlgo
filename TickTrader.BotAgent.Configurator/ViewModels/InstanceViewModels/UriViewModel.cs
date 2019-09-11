@@ -59,6 +59,8 @@ namespace TickTrader.BotAgent.Configurator
                 OnPropertyChanged(nameof(IsFreePort));
 
                 _port = int.Parse(value);
+
+                OnPropertyChanged(nameof(Host));
             }
         }
 

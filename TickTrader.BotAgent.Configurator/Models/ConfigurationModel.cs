@@ -40,7 +40,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; private set; }
 
-        public CacheManager CashManager { get; private set; }
+        public CacheManager CacheManager { get; private set; }
 
         public ConfigurationModel()
         {
@@ -58,9 +58,9 @@ namespace TickTrader.BotAgent.Configurator
             RegistryManager.ChangeCurrentAgent(newPath);
 
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
-            CashManager = new CacheManager(CurrentAgent);
+            CacheManager = new CacheManager(CurrentAgent);
 
-            _portsManager = new PortsManager(RegistryManager.CurrentAgent, CashManager);
+            _portsManager = new PortsManager(RegistryManager.CurrentAgent, CacheManager);
             _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
@@ -74,6 +74,9 @@ namespace TickTrader.BotAgent.Configurator
 
             LoadConfiguration();
             SaveChanges();
+
+            if (AppInstanceRestrictor.FirstRun && ServiceManager.IsServiceRunning)
+                SaveCache();
         }
 
         public void StartAgent()
@@ -85,6 +88,14 @@ namespace TickTrader.BotAgent.Configurator
         public void StopAgent()
         {
             ServiceManager.ServiceStop();
+        }
+
+        public void SaveCache()
+        {
+            var ports = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
+
+            CacheManager.SetProperty(CashedProperties.Ports, ports);
+            CacheManager.RefreshCache();
         }
 
         public void LoadConfiguration()
@@ -123,12 +134,12 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool EqualsCurrentAndCashedSettings()
         {
-            if (CashManager.BusyUrls.Count == 0)
+            if (CacheManager.BusyUrls.Count == 0)
                 return true;
 
             var current = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
 
-            return current.All(CashManager.BusyUrls.Contains) && current.Count == CashManager.BusyUrls.Count;
+            return current.All(CacheManager.BusyUrls.Contains) && current.Count == CacheManager.BusyUrls.Count;
         }
 
         private void UploadModel(IWorkingManager model)
