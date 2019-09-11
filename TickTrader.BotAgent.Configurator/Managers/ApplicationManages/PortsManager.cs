@@ -16,6 +16,7 @@ namespace TickTrader.BotAgent.Configurator
         private const int MaxPort = (1 << 16) - 1;
 
         private readonly RegistryNode _currentAgent;
+        private readonly CacheManager _cache;
 
         private readonly INetFwMgr _firewallManager;
         private readonly INetFwPolicy2 _firewallPolicy;
@@ -25,10 +26,9 @@ namespace TickTrader.BotAgent.Configurator
         public PortsManager(RegistryNode agent, CacheManager cache)
         {
             _currentAgent = agent;
+            _cache = cache;
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
-
-            _busyUrls = UriChecker.GetEncodedUrls(cache.BusyUrls);
         }
 
         public void RegisterRuleInFirewall(string nameApp, string application, string porst)
@@ -65,6 +65,8 @@ namespace TickTrader.BotAgent.Configurator
 
         public void CheckPort(int port, string hostname = "current")
         {
+            _busyUrls = UriChecker.GetEncodedUrls(_cache.BusyUrls);
+
             if (!CheckPortOpen(port, hostname))
             {
                 string freePortMassage = string.Empty;

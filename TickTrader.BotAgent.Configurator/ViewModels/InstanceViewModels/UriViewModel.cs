@@ -19,9 +19,10 @@ namespace TickTrader.BotAgent.Configurator
             $"[{IPAddress.IPv6Loopback.ToString()}]"
         };
 
-        private readonly List<Uri> _urls;
         private readonly PortsManager _portsManager;
         private readonly ProtocolViewModel _protocolManager;
+
+        private List<Uri> _urls;
 
         private int _port = 0;
         private string _host = string.Empty;
@@ -68,23 +69,24 @@ namespace TickTrader.BotAgent.Configurator
             _urls = urls;
         }
 
-        public void SetOldUri(object obj)
+        public void SetOldUri(object obj, List<Uri> urls)
         {
             OldUri = (UriWithValidation)obj;
+            _urls = urls;
 
             if (OldUri != null)
             {
 
                 Scheme = OldUri.Scheme;
-                Host = OldUri.Host;
                 _port = OldUri.Port;
+                Host = OldUri.Host;
             }
             else
             {
                 OldUri = null;
                 Scheme = "https";
-                Host = "localhost";
                 _port = 0;
+                Host = "localhost";
             }
         }
 
@@ -146,7 +148,12 @@ namespace TickTrader.BotAgent.Configurator
             if (OldUri != null && OldUri.Host == Host && OldUri.Port == _port)
                 return;
 
-            var encodedUrls = UriChecker.GetEncodedUrls(_urls);
+            var copyUrls = new List<Uri>(_urls);
+
+            if (OldUri != null)
+                copyUrls.Remove(OldUri);
+
+            var encodedUrls = UriChecker.GetEncodedUrls(copyUrls);
 
             var uri = GetUri();
 
