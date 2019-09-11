@@ -68,9 +68,9 @@ namespace TickTrader.Algo.Core
         //    _feed.Modify(update);
         //}
 
-        public void Modify(List<FeedSubscriptionUpdate> updates)
+        public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
         {
-            _feed.Modify(updates);
+            return _feed.Modify(updates);
         }
 
         //public void SubscribeForAll()

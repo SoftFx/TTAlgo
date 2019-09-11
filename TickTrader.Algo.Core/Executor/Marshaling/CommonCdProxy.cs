@@ -19,6 +19,17 @@ namespace TickTrader.Algo.Core
             _acc = acc;
             _meta = meta;
             _tHistory = tHistory;
+
+            _acc.OrderUpdated += Acc_OrderUpdated;
+            _acc.BalanceUpdated += Acc_BalanceUpdated;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            _acc.OrderUpdated -= Acc_OrderUpdated;
+            _acc.BalanceUpdated -= Acc_BalanceUpdated;
         }
 
         #region ITradeHistoryProvider
@@ -74,6 +85,16 @@ namespace TickTrader.Algo.Core
         public void SyncInvoke(Action action)
         {
             _acc.SyncInvoke(action);
+        }
+
+        private void Acc_BalanceUpdated(BalanceOperationReport rep)
+        {
+            BalanceUpdated?.Invoke(rep);
+        }
+
+        private void Acc_OrderUpdated(OrderExecReport rep)
+        {
+            OrderUpdated?.Invoke(rep);
         }
 
         #endregion

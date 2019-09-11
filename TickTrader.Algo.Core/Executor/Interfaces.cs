@@ -82,6 +82,7 @@ namespace TickTrader.Algo.Core
     {
         PluginBuilder Builder { get; }
         AlgoMarketState MarketData { get; }
+        FeedStrategy FeedStrategy { get; }
         string MainSymbolCode { get; }
         Api.TimeFrames TimeFrame { get; }
         PluginLoggerAdapter Logger { get; }

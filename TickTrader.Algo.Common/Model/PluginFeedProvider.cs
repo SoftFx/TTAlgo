@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Common.Model
         private ISyncContext _sync;
         private IFeedSubscription subscription;
         private IVarSet<string, SymbolModel> symbols;
-        private SubscriptionManagerBase _distributor;
+        private QuoteDistributor _distributor;
         private FeedHistoryProviderModel.Handler history;
         private Dictionary<string, int> _subscriptionCache;
         private IReadOnlyDictionary<string, CurrencyEntity> currencies;
@@ -69,9 +69,9 @@ namespace TickTrader.Algo.Common.Model
             throw new NotImplementedException();
         }
 
-        public void Modify(List<FeedSubscriptionUpdate> updates)
+        public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
         {
-            subscription.Modify(updates);
+            return subscription.Modify(updates);
         }
 
         public void CancelAll()

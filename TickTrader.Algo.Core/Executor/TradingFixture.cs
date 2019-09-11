@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Core
             context.Builder.Account.TradeInfoRequested += LazyInit;
         }
 
-        private void LazyInit()
+        public void LazyInit()
         {
             if (!_isStarted && _dataProvider != null)
             {
@@ -68,7 +68,8 @@ namespace TickTrader.Algo.Core
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             //_dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accType = _dataProvider.AccountInfo.Type;
+            var accInfo = _dataProvider.AccountInfo;
+            var accType = accInfo.Type;
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
@@ -76,7 +77,7 @@ namespace TickTrader.Algo.Core
             builder.Account.NetPositions.Clear();
             builder.Account.Assets.Clear();
 
-            builder.Account.Update(_dataProvider.AccountInfo, currencies);
+            builder.Account.Update(accInfo, currencies);
 
             foreach (var order in _dataProvider.GetOrders())
                 builder.Account.Orders.Add(order, _account);

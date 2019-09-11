@@ -191,6 +191,7 @@
     <Compile Include="Entities\TradeResultEntity.cs" />
     <Compile Include="Executor\Marshaling\CommonCdProxy.cs" />
     <Compile Include="Executor\Marshaling\FeedCdProxy.cs" />
+    <Compile Include="Executor\Marshaling\TradeApiProxy.cs" />
     <Compile Include="Executor\OutputFixureGm.cs" />
     <Compile Include="Executor\PluginExecutorConfig.cs" />
     <Compile Include="Executor\PluignExecutorFactory.cs" />
@@ -217,9 +218,9 @@
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
     <Compile Include="Infrastructure\Interfaces.cs" />
     <Compile Include="Infrastructure\QuoteDistributor.cs" />
+    <Compile Include="Infrastructure\Subscription.cs" />
     <Compile Include="Infrastructure\SubscriptionExtentions.cs" />
-    <Compile Include="Infrastructure\SubscriptionManager.cs" />
-    <Compile Include="Infrastructure\SubscriptionManagerBase.cs" />
+    <Compile Include="Infrastructure\SubscriptionGroup.cs" />
     <Compile Include="Lib\AsyncBuffer.cs" />
     <Compile Include="Lib\AsyncEnumerator.cs" />
     <Compile Include="Lib\BunchingBlock.cs" />

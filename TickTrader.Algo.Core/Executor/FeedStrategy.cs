@@ -39,8 +39,6 @@ namespace TickTrader.Algo.Core
         protected abstract BarSeries GetBarSeries(string symbol);
         protected abstract BarSeries GetBarSeries(string symbol, BarPriceType side);
         protected abstract FeedStrategy CreateClone();
-        //protected abstract IEnumerable<Bar> QueryBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to);
-        //protected abstract IEnumerable<Quote> QueryQuotes(string symbol, DateTime from, DateTime to, bool level2);
 
         internal void Init(IFixtureContext executor, FeedBufferStrategy bStrategy, MarketStateFixture marketFixture)
         {
@@ -57,7 +55,6 @@ namespace TickTrader.Algo.Core
         internal virtual void Start()
         {
             _proxy = new CrossDomainProxy(this);
-            InitDefaultSubscription();
             Feed.Sync.Invoke(_proxy.StartStrategy);
             ExecContext.EnqueueCustomInvoke(b => LoadDataAndBuild());
             ExecContext.Builder.CustomFeedProvider = this;
@@ -119,13 +116,31 @@ namespace TickTrader.Algo.Core
 
         private void InitDefaultSubscription()
         {
-            _defaultSubscription = RateDispenser.AddSubscription(BufferedSymbols, 1);
+            _defaultSubscription = RateDispenser.AddSubscription(q => { });
+            var snaphsot = _defaultSubscription.AddOrModify(BufferedSymbols, 1);
+            ApplySnaphost(snaphsot);
+        }
+
+        internal void SubscribeAll()
+        {
+            var symbols = ExecContext.Builder.Symbols.Select(s => s.Name);
+            var snaphsot = _defaultSubscription.AddOrModify(symbols, 1);
+            ApplySnaphost(snaphsot);
         }
 
         private void CancelDefaultSubscription()
         {
             _defaultSubscription.CancelAll();
             _defaultSubscription = null;
+        }
+
+        private void ApplySnaphost(List<QuoteEntity> snaphsot)
+        {
+            if (snaphsot != null)
+            {
+                foreach (var rate in snaphsot)
+                    _marketFixture.UpdateRate(rate);
+            }
         }
 
         internal BufferUpdateResult ApplyUpdate(RateUpdate update, out AlgoMarketNode node)
@@ -428,6 +443,7 @@ namespace TickTrader.Algo.Core
             public void StartStrategy()
             {
                 _strategy.RateDispenser.Start();
+                _strategy.InitDefaultSubscription();
                 _strategy.Feed.RateUpdated += Feed_RateUpdated;
                 _strategy.Feed.RatesUpdated += Feed_RatesUpdated;
             }

@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Stopping);
                 try
                 {
-                    //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
+                    _executor.WriteConnectionInfo(Host.GetConnectionInfo());
                     _executor.Stop();
                     ClearOutputs();
                     UnlockResources();
@@ -151,13 +151,13 @@ namespace TickTrader.BotTerminal
         protected virtual void HandleReconnect()
         {
             _executor.HandleReconnect();
-            //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
+            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
         }
 
         protected virtual void HandleDisconnect()
         {
             _executor.HandleDisconnect();
-            //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
+            _executor.WriteConnectionInfo(Host.GetConnectionInfo());
         }
 
         protected virtual void ChangeState(PluginStates state, string faultMessage = null)

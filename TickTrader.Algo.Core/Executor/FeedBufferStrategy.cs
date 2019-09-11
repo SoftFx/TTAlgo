@@ -10,7 +10,7 @@ namespace TickTrader.Algo.Core
     public abstract class FeedBufferStrategy
     {
         [NonSerialized]
-        private List<ILoadableFeedBuffer> _auxBuffers = new List<ILoadableFeedBuffer>();
+        private List<ILoadableFeedBuffer> _auxBuffers;
 
         protected IFeedBuffer MainBuffer { get; private set; }
         protected bool IsStarted { get; private set; }
@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
 
         internal void Init(IFeedBuferStrategyContext context)
         {
+            _auxBuffers = new List<ILoadableFeedBuffer>();
             Context = context;
             MainBuffer = context.MainBuffer;
         }

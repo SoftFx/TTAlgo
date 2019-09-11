@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         private AlgoPluginRef _ref;
         private CommonCdProxy _cProxy;
         private FeedCdProxy _fProxy;
+        private TradeApiProxy _tProxy;
 
         public PluginExecutor(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
@@ -49,6 +50,8 @@ namespace TickTrader.Algo.Core
         public IPluginMetadata Metadata { get; set; }
         public IFeedProvider Feed { get; set; }
         public IFeedHistoryProvider FeedHistory { get; set; }
+        public ITradeExecutor TradeExecutor { get; set; }
+        public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
 
         public event Action<BotLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
@@ -90,13 +93,28 @@ namespace TickTrader.Algo.Core
             Core.HandleReconnect();
         }
 
+        public void WriteConnectionInfo(string connectionInfo)
+        {
+            Core.WriteConnectionInfo(connectionInfo);
+        }
+
         #endregion
 
-        #region Setup
+        public override void Dispose()
+        {
+            DisposeProxies();
+            base.Dispose();
+        }
 
-        public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
-
-        #endregion
+        private void DisposeProxies()
+        {
+            _cProxy?.Dispose();
+            _fProxy?.Dispose();
+            _tProxy?.Dispose();
+            _cProxy = null;
+            _fProxy = null;
+            _tProxy = null;
+        }
 
         //public override void Dispose()
         //{
@@ -104,15 +122,36 @@ namespace TickTrader.Algo.Core
 
         private void ConfigurateCore()
         {
+            DisposeProxies();
+
+            if (AccInfoProvider == null)
+                throw new ExecutorException("AccInfoProvider is not set!");
+
+            if (Metadata == null)
+                throw new ExecutorException("Metadata is not set!");
+
+            if (TradeHistoryProvider == null)
+                throw new ExecutorException("TradeHistoryProvider is not set!");
+
+            if (Feed == null)
+                throw new ExecutorException("Feed is not set!");
+
+            if (FeedHistory == null)
+                throw new ExecutorException("FeedHistory is not set!");
+
+            if (TradeExecutor == null)
+                throw new ExecutorException("TradeExecutor is not set!");
+
             if (IsIsolated)
             {
                 _cProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
                 _fProxy = new FeedCdProxy(Feed, FeedHistory);
+                _tProxy = new TradeApiProxy(TradeExecutor);
 
-                Core.ApplyConfig(Config, _cProxy, _cProxy, _cProxy, _fProxy, _fProxy);
+                Core.ApplyConfig(Config, _cProxy, _cProxy, _cProxy, _fProxy, _fProxy, _tProxy);
             }
             else
-                Core.ApplyConfig(Config, AccInfoProvider, Metadata, TradeHistoryProvider, Feed, FeedHistory);
+                Core.ApplyConfig(Config, AccInfoProvider, Metadata, TradeHistoryProvider, Feed, FeedHistory, TradeExecutor);
         }
 
         #region Update Marshalling 

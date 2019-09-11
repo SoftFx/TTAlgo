@@ -8,8 +8,7 @@ namespace TickTrader.Algo.Core.Infrastructure
 {
     public interface IFeedSubscription
     {
-        //void Modify(FeedSubscriptionUpdate update);
-        void Modify(List<FeedSubscriptionUpdate> updates);
+        List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates);
         //void SubscribeForAll();
         void CancelAll();
     }

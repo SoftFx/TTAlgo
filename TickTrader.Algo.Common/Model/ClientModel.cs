@@ -250,9 +250,10 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            void IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+            List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
             {
                 Actor.Send(a => a.UpsertSubscription(Ref, updates));
+                return null;
             }
 
             void IFeedSubscription.CancelAll()
@@ -528,7 +529,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        void IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+        List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
             var removes = updates.Where(u => u.IsRemoveAction);
             var upserts = updates.Where(u => u.IsUpsertAction).GroupBy(u => u.Depth);
@@ -539,6 +540,8 @@ namespace TickTrader.Algo.Common.Model
                 var symols = upsertGourp.Select(e => e.Symbol);
                 ModifySubscription(symols, depth);
             }
+
+            return null;
         }
 
         void IFeedSubscription.CancelAll()

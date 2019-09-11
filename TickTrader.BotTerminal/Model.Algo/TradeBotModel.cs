@@ -105,10 +105,9 @@ namespace TickTrader.BotTerminal
         protected override PluginExecutor CreateExecutor()
         {
             var executor = base.CreateExecutor();
-            executor.Config.TradeExecutor = Host.GetTradeApi();
+            executor.TradeExecutor = Host.GetTradeApi();
             executor.Config.WorkingFolder = Path.Combine(EnvService.Instance.AlgoWorkingFolder, PathHelper.GetSafeFileName(InstanceId));
             executor.Config.BotWorkingFolder = executor.Config.WorkingFolder;
-            executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
             EnvService.Instance.EnsureFolder(executor.Config.WorkingFolder);
 
             _botListener = new BotListenerProxy(executor, OnBotExited, this);

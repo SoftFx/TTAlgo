@@ -24,7 +24,6 @@ namespace TickTrader.Algo.Core
         private CashAccountCalculator cashCalc;
         private AccountAccessor acc;
         private bool _isStarted;
-        private IFeedSubscription _subscription;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -57,8 +56,8 @@ namespace TickTrader.Algo.Core
         {
             try
             {
-                var symbols = _context.Builder.Symbols.Select(s => s.Name);
-                _subscription = _context.Dispenser.AddSubscription(symbols);
+                _context.Builder.Account.OnTradeInfoAccess();
+                _context.FeedStrategy.SubscribeAll();
 
                 acc = _context.Builder.Account;
                 if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
@@ -107,12 +106,6 @@ namespace TickTrader.Algo.Core
         {
             if (_context.Builder != null)
                 _context.Builder.Account.CalcRequested -= LazyInit;
-
-            if (_subscription != null)
-            {
-                _subscription.CancelAll();
-                _subscription = null;
-            }
 
             //_state = null;
             if (acc != null)

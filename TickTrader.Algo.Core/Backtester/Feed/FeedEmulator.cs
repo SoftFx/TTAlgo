@@ -182,8 +182,9 @@ namespace TickTrader.Algo.Core
             return GetFeedSrcOrThrow(symbolCode).QueryTicks(from, count, level2) ?? new List<QuoteEntity>();
         }
 
-        void Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
+        List<QuoteEntity> Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
         {
+            return null;
         }
 
         void Infrastructure.IFeedSubscription.CancelAll()

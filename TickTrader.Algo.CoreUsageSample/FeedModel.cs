@@ -74,8 +74,9 @@ namespace TickTrader.Algo.CoreUsageSample
         }
 
 
-        void IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
+        List<QuoteEntity> IFeedSubscription.Modify(List<FeedSubscriptionUpdate> updates)
         {
+            return null;
         }
 
         void IFeedSubscription.CancelAll()

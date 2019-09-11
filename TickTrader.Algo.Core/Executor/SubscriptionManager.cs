@@ -9,14 +9,16 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class SubscriptionFixtureManager : SubscriptionManager
+    internal class SubscriptionFixtureManager : QuoteDistributor
     {
-        private IFixtureContext _context;
-        private Dictionary<string, IFeedSubscription> _userSubscriptions = new Dictionary<string, IFeedSubscription>();
+        private readonly IFixtureContext _context;
+        private readonly Dictionary<string, IFeedSubscription> _userSubscriptions = new Dictionary<string, IFeedSubscription>();
+        private readonly MarketStateFixture _marketFixture;
 
-        public SubscriptionFixtureManager(IFixtureContext context)
+        public SubscriptionFixtureManager(IFixtureContext context, MarketStateFixture marketFixture)
         {
             _context = context;
+            _marketFixture = marketFixture;
         }
 
         public void Start()
@@ -29,10 +31,13 @@ namespace TickTrader.Algo.Core
             base.Stop(true);
         }
 
-        protected override void ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
+        protected override List<QuoteEntity> ModifySourceSubscription(List<FeedSubscriptionUpdate> updates)
         {
-            var request = new CrossdomainRequest { Feed = _context.FeedProvider, Updates = updates };
-            _context.FeedProvider.Sync.Invoke(request.Modify);
+            using (var request = new CrossdomainRequest { Feed = _context.FeedProvider, Updates = updates })
+            {
+                _context.FeedProvider.Sync.Invoke(request.Modify);
+                return request.Result;
+            }
         }
 
         public void OnUpdateEvent(AlgoMarketNode node)
@@ -47,6 +52,20 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        internal override SubscriptionGroup GetGroupOrDefault(string symbol)
+        {
+            var node = _marketFixture.Market.GetSymbolNodeOrNull(symbol);
+            return node?.SubGroup;
+        }
+
+        internal override SubscriptionGroup GetOrAddGroup(string symbol)
+        {
+            var node = _marketFixture.Market.GetSymbolNodeOrNull(symbol);
+            if (node.SubGroup == null)
+                node.SubGroup = new SubscriptionGroup(symbol);
+            return node.SubGroup;
+        }
+
         public void SetUserSubscription(string symbol, int depth)
         {
             var node = _context.MarketData.GetSymbolNodeOrNull(symbol);
@@ -54,7 +73,7 @@ namespace TickTrader.Algo.Core
             if (node != null)
             {
                 if (node.UserSubscriptionInfo == null)
-                    node.UserSubscriptionInfo = AddSubscription(symbol, depth);
+                    node.UserSubscriptionInfo = AddSubscription(q => { }, symbol, depth);
                 else
                     node.UserSubscriptionInfo.AddOrModify(symbol, depth);
             }
@@ -80,15 +99,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        [Serializable]
-        private class CrossdomainRequest
+        private class CrossdomainRequest : CrossDomainObject
         {
             public List<FeedSubscriptionUpdate> Updates { get; set; }
             public IFeedProvider Feed { get; set; }
+            public List<QuoteEntity> Result { get; set; }
 
             public void Modify()
             {
-                Feed.Modify(Updates);
+                Result = Feed.Modify(Updates);
             }
 
             public void CancellAll()
