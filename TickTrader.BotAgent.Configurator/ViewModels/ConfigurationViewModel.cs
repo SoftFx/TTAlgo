@@ -99,7 +99,7 @@ namespace TickTrader.BotAgent.Configurator
                     var ports = new List<Uri>(_model.ServerManager.ServerModel.Urls) { ProtocolModel.ListeningUri };
 
                     _model.CashManager.SetProperty(CashedProperties.Ports,  ports);
-                    _model.CashManager.SaveProperties();
+                    _model.CashManager.RefreshCache();
                 };
             }
             catch (Exception ex)

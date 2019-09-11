@@ -13,11 +13,11 @@ namespace TickTrader.BotAgent.Configurator
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly string _cashFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cache");
+        private readonly string _cacheFile;
 
-        private JObject _cashObj = new JObject();
-        private string _cashFile;
+        private JObject _cacheObj = new JObject();
 
-        public List<Uri> BusyUrls { get; private set; } 
+        public List<Uri> BusyUrls { get; private set; }
 
 
         public CacheManager(RegistryNode node)
@@ -27,26 +27,32 @@ namespace TickTrader.BotAgent.Configurator
             if (!Directory.Exists(_cashFolder))
                 Directory.CreateDirectory(_cashFolder);
 
-            _cashFile = Path.Combine(_cashFolder, node.FullVersion);
+            _cacheFile = Path.Combine(_cashFolder, node.FullVersion);
 
+            GetSettings();
+        }
+
+        public void RefreshCache()
+        {
+            SaveProperties();
             GetSettings();
         }
 
         public void DropCash()
         {
-            if (File.Exists(_cashFile))
-                File.Delete(_cashFile);
+            if (File.Exists(_cacheFile))
+                File.Delete(_cacheFile);
         }
 
         public void SaveProperties()
         {
             try
             {
-                using (var fs = new FileStream(_cashFile, FileMode.Create))
+                using (var fs = new FileStream(_cacheFile, FileMode.Create))
                 {
                     using (var sw = new StreamWriter(fs))
                     {
-                        sw.Write(_cashObj.ToString());
+                        sw.Write(_cacheObj.ToString());
                     }
                 }
             }
@@ -63,27 +69,27 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SetProperty(string prop, object value)
         {
-            if (_cashObj.SelectToken(prop) == null)
-                _cashObj.Add(new JProperty(prop, new JObject()));
+            if (_cacheObj.SelectToken(prop) == null)
+                _cacheObj.Add(new JProperty(prop, new JObject()));
 
-            _cashObj[prop] = JToken.FromObject(value);
+            _cacheObj[prop] = JToken.FromObject(value);
         }
 
         private void GetSettings()
         {
-            if (File.Exists(_cashFile))
+            if (File.Exists(_cacheFile))
             {
                 try
                 {
-                    using (var sr = new StreamReader(_cashFile))
+                    using (var sr = new StreamReader(_cacheFile))
                     {
-                        _cashObj = JObject.Parse(sr.ReadToEnd());
+                        _cacheObj = JObject.Parse(sr.ReadToEnd());
                     }
 
                     foreach (string prop in Enum.GetNames(typeof(CashedProperties)))
                     {
-                        if (_cashObj.SelectToken(prop) != null)
-                            BusyUrls = (_cashObj[prop] as JArray).Select(u => new Uri(u.ToString())).ToList();
+                        if (_cacheObj.SelectToken(prop) != null)
+                            BusyUrls = (_cacheObj[prop] as JArray).Select(u => new Uri(u.ToString())).ToList();
                     }
                 }
                 catch (Exception ex)
