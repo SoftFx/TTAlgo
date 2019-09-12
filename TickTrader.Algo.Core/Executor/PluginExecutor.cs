@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Core
         private PluginPermissions _permissions;
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
+        private bool _enableUpdateMarshaling = true;
 
         private bool InRunningState => state == States.Running;
 
@@ -271,7 +272,8 @@ namespace TickTrader.Algo.Core
 
                     Validate();
 
-                    StartUpdateMarshalling();
+                    if (_enableUpdateMarshaling)
+                        StartUpdateMarshalling();
 
                     accFixture = _tradeFixtureFactory(this);
 
@@ -453,7 +455,8 @@ namespace TickTrader.Algo.Core
 
             try
             {
-                StopUpdateMarshalling();
+                if (_enableUpdateMarshaling)
+                    StopUpdateMarshalling();
             }
             catch { }
 
@@ -616,12 +619,14 @@ namespace TickTrader.Algo.Core
             {
                 this._fStrategy = fStrategy;
                 _feedProvider = emulator;
+                _feedHistorySrc = emulator;
             }
             _tradeFixtureFactory = c => new TradeEmulator(c, settings, _calcFixture, fixture.InvokeEmulator, fixture.Collector, fixture.TradeHistory, pluginType);
             _pluginLogger = fixture.Collector;
             _timerFixture = new TimerApiEmulator(this, fixture.InvokeEmulator);
             _builderFactory = m => new SimplifiedBuilder(m);
             _calcFixture.Emulator = fixture.InvokeEmulator;
+            _enableUpdateMarshaling = false;
             return fixture;
         }
 
@@ -779,7 +784,7 @@ namespace TickTrader.Algo.Core
         internal Action<object> MarshalUpdate { get; set; }
         internal Action<object> OnUpdate { get; set; }
 
-        private void StartUpdateMarshalling()
+        internal void StartUpdateMarshalling()
         {
             if (IsBunchingRequired)
             {
@@ -790,7 +795,7 @@ namespace TickTrader.Algo.Core
                 OnUpdate = MarshalUpdate;
         }
 
-        private void StopUpdateMarshalling()
+        internal void StopUpdateMarshalling()
         {
             if (_channel != null)
             {

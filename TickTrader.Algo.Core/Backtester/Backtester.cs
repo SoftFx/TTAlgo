@@ -25,15 +25,16 @@ namespace TickTrader.Algo.Core
             PluginInfo = pluginRef.Metadata.Descriptor;
             _sync = syncObj;
             _executor = new PluginExecutor(pluginRef, syncObj);
-            _executor.Metadata = this;
+            _executor.Core.Metadata = this;
 
             CommonSettings.EmulationPeriodStart = from;
             CommonSettings.EmulationPeriodEnd = to;
 
             _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
-            _executor.Feed = _feed;
-            _executor.Config.InitBarStrategy(Api.BarPriceType.Bid);
+            _executor.Core.Feed = _feed;
+            _executor.Core.FeedHistory = _feed;
+            _executor.Core.InitBarStrategy(Api.BarPriceType.Bid);
 
             CommonSettings.Leverage = 100;
             CommonSettings.InitialBalance = 10000;
@@ -91,15 +92,15 @@ namespace TickTrader.Algo.Core
         {
             _executor.Core.InitSlidingBuffering(4000);
 
-            _executor.Config.MainSymbolCode = CommonSettings.MainSymbol;
-            _executor.Config.TimeFrame = CommonSettings.MainTimeframe;
-            _executor.Config.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
-            _executor.Config.Permissions = new PluginPermissions() { TradeAllowed = true };
+            _executor.Core.MainSymbolCode = CommonSettings.MainSymbol;
+            _executor.Core.TimeFrame = CommonSettings.MainTimeframe;
+            _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
+            _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
                 | OutputDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | SymbolDataConfig.Any(s => s.Value.IsFlagSet(TestDataSeriesFlags.Realtime));
 
-            //_executor.StartUpdateMarshalling();
+            _executor.Core.StartUpdateMarshalling();
 
             try
             {
@@ -126,7 +127,7 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
-                //_executor.StopUpdateMarshalling();
+                _executor.Core.StopUpdateMarshalling();
             }
         }
 
@@ -197,17 +198,17 @@ namespace TickTrader.Algo.Core
 
         void IPluginSetupTarget.SetParameter(string id, object value)
         {
-            _executor.Config.SetParameter(id, value);
+            _executor.Core.SetParameter(id, value);
         }
 
         T IPluginSetupTarget.GetFeedStrategy<T>()
         {
-            return _executor.Config.GetFeedStrategy<T>();
+            return _executor.Core.GetFeedStrategy<T>();
         }
 
         void IPluginSetupTarget.MapInput(string inputName, string symbolCode, Mapping mapping)
         {
-            _executor.Config.MapInput(inputName, symbolCode, mapping);
+            _executor.Core.MapInput(inputName, symbolCode, mapping);
         }
 
         #endregion

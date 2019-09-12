@@ -33,6 +33,7 @@ namespace TickTrader.Algo.Core
         private Exception _fatalError;
         private Action _exStartAction;
         private Action _extStopAction;
+        private bool _isStarted;
 
         public InvokeEmulator(IBacktesterSettings settings, BacktesterCollector collector, FeedEmulator feed, Action exStartAction, Action extStopAction)
         {
@@ -176,6 +177,7 @@ namespace TickTrader.Algo.Core
                     return;
                 }
                 _exStartAction();
+                _isStarted = true;
                 EmulateEvents();
                 EmulateStop();
                 StopFeedRead();
@@ -184,13 +186,15 @@ namespace TickTrader.Algo.Core
             {
                 _collector.AddEvent(LogSeverities.Error, "Testing canceled!");
                 StopFeedRead();
-                EmulateStop();
+                if(_isStarted)
+                    EmulateStop();
                 throw;
             }
             catch (Exception)
             {
                 StopFeedRead();
-                EmulateStop();
+                if (_isStarted)
+                    EmulateStop();
                 throw;
             }
             finally
@@ -205,6 +209,7 @@ namespace TickTrader.Algo.Core
             //EmulateStop();
             //EnableStopPhase();
             _stopPhase = true;
+            _isStarted = false;
             _fatalError = null;
             EmulateEvents();
         }

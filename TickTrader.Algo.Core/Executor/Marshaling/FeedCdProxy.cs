@@ -63,46 +63,17 @@ namespace TickTrader.Algo.Core
             return _history.QueryTicks(symbolCode, from, count, level2);
         }
 
-        //public void Modify(FeedSubscriptionUpdate update)
-        //{
-        //    _feed.Modify(update);
-        //}
-
         public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
         {
+            LazyInit();
+
             return _feed.Modify(updates);
         }
-
-        //public void SubscribeForAll()
-        //{
-        //    _feed.SubscribeForAll();
-        //}
 
         public void CancelAll()
         {
             _feed.CancelAll();
         }
-
-        //public void Subscribe(string symbol, int depth)
-        //{
-        //    _feed.Subscribe(symbol, depth);
-        //}
-
-        //public void SubscribeForAll()
-        //{
-        //    _feed.SubscribeForAll();
-        //}
-
-        //public void UnsubscribeAll()
-        //{
-        //    if (_bBlock != null)
-        //    {
-        //        _bBlock.Complete(true);
-        //        _feed.RateUpdated += _feed_RateUpdated;
-        //        _feed.RatesUpdated += _feed_RatesUpdated;
-        //        _feed.UnsubscribeAll();
-        //    }
-        //}
 
         private void LazyInit()
         {
@@ -119,12 +90,15 @@ namespace TickTrader.Algo.Core
             RatesUpdated?.Invoke(page);
         }
 
-        private void _feed_RatesUpdated(List<QuoteEntity> obj)
+        private void _feed_RatesUpdated(List<QuoteEntity> quotes)
         {
+            foreach (var q in quotes)
+                _feed_RateUpdated(q);
         }
 
-        private void _feed_RateUpdated(QuoteEntity obj)
+        private void _feed_RateUpdated(QuoteEntity quote)
         {
+            _bBlock?.Enqueue(quote);
         }
     }
 }

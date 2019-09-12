@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
             Core.IsBunchingRequired = IsIsolated || _syncContext != null;
 
             Core.MarshalUpdate = MarshalUpdate;
-            Core.MarshalUpdates = MarshalUpdates;
+            Core.MarshalUpdates = MarshalUpdatesToContext;
             Core.Stopped += () =>
             {
                 if (_syncContext != null)
@@ -139,14 +139,13 @@ namespace TickTrader.Algo.Core
             if (FeedHistory == null)
                 throw new ExecutorException("FeedHistory is not set!");
 
-            if (TradeExecutor == null)
-                throw new ExecutorException("TradeExecutor is not set!");
-
             if (IsIsolated)
             {
                 _cProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
                 _fProxy = new FeedCdProxy(Feed, FeedHistory);
-                _tProxy = new TradeApiProxy(TradeExecutor);
+
+                if (TradeExecutor != null)
+                    _tProxy = new TradeApiProxy(TradeExecutor);
 
                 Core.ApplyConfig(Config, _cProxy, _cProxy, _cProxy, _fProxy, _fProxy, _tProxy);
             }
@@ -159,9 +158,9 @@ namespace TickTrader.Algo.Core
         private void MarshalUpdatesToContext(IReadOnlyList<object> updates)
         {
             if (_syncContext != null)
-                _syncContext.Invoke(MarshalUpdatesToContext, updates);
+                _syncContext.Invoke(MarshalUpdates, updates);
             else
-                MarshalUpdatesToContext(updates);
+                MarshalUpdates(updates);
         }
 
         private void MarshalUpdates(IReadOnlyList<object> updates)
