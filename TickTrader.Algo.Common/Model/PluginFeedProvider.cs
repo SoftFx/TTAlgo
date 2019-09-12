@@ -8,22 +8,22 @@ using TickTrader.Algo.Core.Lib;
 using Api = TickTrader.Algo.Api;
 using System.Threading.Tasks.Dataflow;
 using Machinarium.Qnil;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.Algo.Common.Model
 {
-    public class PluginFeedProvider : CrossDomainObject, IPluginFeedProvider, IPluginMetadata, ISynchronizationContext
+    public class PluginFeedProvider : CrossDomainObject, IFeedProvider, IFeedHistoryProvider, IPluginMetadata, ISynchronizationContext
     {
         private ISyncContext _sync;
         private IFeedSubscription subscription;
         private IVarSet<string, SymbolModel> symbols;
         private QuoteDistributor _distributor;
         private FeedHistoryProviderModel.Handler history;
-        private Action<QuoteEntity[]> feedUpdateHandler;
         private Dictionary<string, int> _subscriptionCache;
         private IReadOnlyDictionary<string, CurrencyEntity> currencies;
 
-        private BufferBlock<QuoteEntity> rxBuffer;
-        private ActionBlock<QuoteEntity[]> txBlock;
+        public event Action<QuoteEntity> RateUpdated;
+        public event Action<List<QuoteEntity>> RatesUpdated { add { } remove { } }
 
         public ISynchronizationContext Sync { get { return this; } }
 
@@ -35,22 +35,10 @@ namespace TickTrader.Algo.Common.Model
             this.history = history;
             this.currencies = cache.Currencies.Snapshot;
             _subscriptionCache = new Dictionary<string, int>();
-
-            rxBuffer = new BufferBlock<QuoteEntity>();
-            txBlock = new ActionBlock<QuoteEntity[]>(uList =>
-                {
-                    try
-                    {
-                        feedUpdateHandler?.Invoke(uList);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.Write(ex.ToString());
-                    }
-                });
-
-            rxBuffer.BatchLinkTo(txBlock, 30).Forget();
+            subscription = quoteDistributor.AddSubscription(r => RateUpdated?.Invoke(r));
         }
+
+        #region IFeedHistoryProvider implementation
 
         public List<BarEntity> QueryBars(string symbolCode, Api.BarPriceType priceType, DateTime from, DateTime to, Api.TimeFrames timeFrame)
         {
@@ -72,44 +60,36 @@ namespace TickTrader.Algo.Common.Model
             return history.GetQuotePage(symbolCode, from, count, level2).Result.ToList();
         }
 
-        public void Subscribe(Action<QuoteEntity[]> handler)
+        #endregion
+
+        #region IFeedProvider
+
+        public QuoteEntity GetRate(string symbol)
         {
-            //System.Diagnostics.Debug.WriteLine("SUBSCRIBED!");
-
-            if (subscription != null)
-                throw new InvalidOperationException("Already subscribed!");
-
-            feedUpdateHandler = handler;
-
-            subscription = _distributor.SubscribeAll();
-            subscription.NewQuote += q => rxBuffer.Post(q);
+            throw new NotImplementedException();
         }
 
-        public void Unsubscribe()
+        public List<QuoteEntity> Modify(List<FeedSubscriptionUpdate> updates)
         {
-            //System.Diagnostics.Debug.WriteLine("UNSUBSCRIBED!");
-
-            foreach (var pair in _subscriptionCache)
-            {
-                subscription.Remove(pair.Key);
-            }
-            _subscriptionCache.Clear();
-
-            if (subscription != null)
-            {
-                subscription.Dispose();
-                subscription = null;
-            }
+            return subscription.Modify(updates);
         }
 
-        public void SetSymbolDepth(string symbolCode, int depth)
+        public void CancelAll()
         {
-            if (subscription == null)
-                throw new InvalidOperationException("No subscription to change! You must call Subscribe() prior to calling SetSymbolDepth()!");
-
-            _subscriptionCache[symbolCode] = depth;
-            subscription.Add(symbolCode, depth);
+            subscription.CancelAll();
         }
+
+        public IEnumerable<QuoteEntity> GetSnapshot()
+        {
+            return symbols.Snapshot
+                .Where(s => s.Value.LastQuote != null)
+                .Select(s => s.Value.LastQuote)
+                .ToList();
+        }
+
+        #endregion
+
+        #region IPluginMetadata
 
         public IEnumerable<SymbolEntity> GetSymbolMetadata()
         {
@@ -121,15 +101,9 @@ namespace TickTrader.Algo.Common.Model
             return currencies.Values.ToList();
         }
 
-        public IEnumerable<BarEntity> QueryBars(string symbolCode)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public IEnumerable<QuoteEntity> QueryTicks()
-        {
-            throw new NotImplementedException();
-        }
+        #region ISynchronizationContext
 
         public void Invoke(Action action)
         {
@@ -141,12 +115,11 @@ namespace TickTrader.Algo.Common.Model
             _sync.Send(action);
         }
 
-        public IEnumerable<QuoteEntity> GetSnapshot()
+        public void Invoke<T>(Action<T> action, T arg)
         {
-            return symbols.Snapshot
-                .Where(s => s.Value.LastQuote != null)
-                .Select(s => s.Value.LastQuote)
-                .ToList();
+            _sync.Invoke(action, arg);
         }
+
+        #endregion
     }
 }

@@ -29,6 +29,7 @@ using TickTrader.Algo.Common.Model.Config;
 using Machinarium.Var;
 using SM = Machinarium.State;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.BotTerminal
 {
@@ -77,8 +78,8 @@ namespace TickTrader.BotTerminal
             ClientModel.Disconnected += Connection_Disconnected;
             ClientModel.Deinitializing += Client_Deinitializing;
 
-            subscription = ClientModel.Distributor.Subscribe(symbol.Name);
-            subscription.NewQuote += OnRateUpdate;
+            subscription = ClientModel.Distributor.AddSubscription(OnRateUpdate, symbol.Name);
+            //subscription.NewQuote += ;
 
             _currentRateProp.Value = symbol.LastQuote;
 
@@ -326,7 +327,7 @@ namespace TickTrader.BotTerminal
                     AvailableBotTraders.CollectionChanged -= AvailableBotTraders_CollectionChanged;
                     AvailableIndicators.Dispose();
                     AvailableBotTraders.Dispose();
-                    subscription.Dispose();
+                    subscription.CancelAll();
 
                     logger.Debug("Chart[" + Model.Name + "] disposed!");
                 }
@@ -402,15 +403,15 @@ namespace TickTrader.BotTerminal
 
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
-            plugin.InvokeStrategy = new PriorityInvokeStartegy();
+            plugin.Config.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)
         {
-            plugin.TimeFrame = TimeFrame;
-            plugin.MainSymbolCode = SymbolCode;
-            plugin.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
+            plugin.Config.TimeFrame = TimeFrame;
+            plugin.Config.MainSymbolCode = SymbolCode;
+            plugin.Config.InitTimeSpanBuffering(TimelineStart, DateTime.Now + TimeSpan.FromDays(100));
         }
 
         bool IExecStateObservable.IsStarted { get { return isIndicatorsOnline; } }

@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core
 
         private ISynchronizationContext _sync;
         private readonly FeedEmulator _feed;
-        private readonly ExecutorHandler _executor;
+        private readonly PluginExecutor _executor;
         private readonly EmulationControlFixture _control;
 
         public Backtester(AlgoPluginRef pluginRef, ISynchronizationContext syncObj, DateTime? from, DateTime? to)
@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
             PluginInfo = pluginRef.Metadata.Descriptor;
             _sync = syncObj;
-            _executor = new ExecutorHandler(pluginRef, syncObj);
+            _executor = new PluginExecutor(pluginRef, syncObj);
             _executor.Core.Metadata = this;
 
             CommonSettings.EmulationPeriodStart = from;
@@ -32,7 +32,9 @@ namespace TickTrader.Algo.Core
 
             _control = _executor.Core.InitEmulation(this, PluginInfo.Type);
             _feed = _control.Feed;
-            _executor.Core.InitBarStrategy(_feed, Api.BarPriceType.Bid);
+            _executor.Core.Feed = _feed;
+            _executor.Core.FeedHistory = _feed;
+            _executor.Core.InitBarStrategy(Api.BarPriceType.Bid);
 
             CommonSettings.Leverage = 100;
             CommonSettings.InitialBalance = 10000;
@@ -48,7 +50,7 @@ namespace TickTrader.Algo.Core
 
         public CommonTestSettings CommonSettings { get; } = new CommonTestSettings();
 
-        public ExecutorHandler Executor => _executor;
+        public PluginExecutor Executor => _executor;
         public PluginDescriptor PluginInfo { get; }
         public int TradesCount => _control.TradeHistory.Count;
         public FeedEmulator Feed => _feed;
@@ -98,7 +100,7 @@ namespace TickTrader.Algo.Core
             bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
                 | OutputDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | SymbolDataConfig.Any(s => s.Value.IsFlagSet(TestDataSeriesFlags.Realtime));
 
-            _executor.StartCollection(isRealtime);
+            _executor.Core.StartUpdateMarshalling();
 
             try
             {
@@ -125,7 +127,7 @@ namespace TickTrader.Algo.Core
             finally
             {
                 _control.OnStop();
-                _executor.StopCollection();
+                _executor.Core.StopUpdateMarshalling();
             }
         }
 

@@ -16,7 +16,7 @@ namespace TickTrader.Algo.Core
     /// </summary>
     internal class BacktesterCollector : CrossDomainObject, IPluginLogger
     {
-        private PluginExecutor _executor;
+        private PluginExecutorCore _executor;
         private Dictionary<string, IOutputCollector> _outputCollectors = new Dictionary<string, IOutputCollector>();
         private Dictionary<string, FeedSeriesCollector> _symbolDataCollectors = new Dictionary<string, FeedSeriesCollector>();
         //private ChartDataCollector _mainSymbolCollector;
@@ -31,7 +31,7 @@ namespace TickTrader.Algo.Core
         public const string EquityStreamName = "Equity";
         public const string MarginStreamName = "Margin";
 
-        public BacktesterCollector(PluginExecutor executor)
+        public BacktesterCollector(PluginExecutorCore executor)
         {
             _executor = executor;
             //_invokeEmulator.RateUpdated += r => Stats.TicksCount++;

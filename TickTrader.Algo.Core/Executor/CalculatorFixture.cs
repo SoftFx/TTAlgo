@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Calc;
+using TickTrader.Algo.Core.Infrastructure;
 using BL = TickTrader.BusinessLogic;
 using BO = TickTrader.BusinessObjects;
 
@@ -22,6 +23,7 @@ namespace TickTrader.Algo.Core
         private MarginAccountCalc _marginCalc;
         private CashAccountCalculator cashCalc;
         private AccountAccessor acc;
+        private bool _isStarted;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -35,10 +37,28 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            var orderedSymbols = _context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name);
+            //var orderedSymbols = _context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name);
 
+            //_context.Dispenser.AddSubscription(orderedSymbols.
+            _context.Builder.Account.CalcRequested += LazyInit;
+        }
+
+        private void LazyInit()
+        {
+            if (!_isStarted)
+            {
+                _isStarted = true;
+                StartCalculator();
+            }
+        }
+
+        private void StartCalculator()
+        {
             try
             {
+                _context.Builder.Account.OnTradeInfoAccess();
+                _context.FeedStrategy.SubscribeAll();
+
                 acc = _context.Builder.Account;
                 if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
                 {
@@ -84,6 +104,9 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
+            if (_context.Builder != null)
+                _context.Builder.Account.CalcRequested -= LazyInit;
+
             //_state = null;
             if (acc != null)
             {
@@ -241,6 +264,8 @@ namespace TickTrader.Algo.Core
 
         public bool HasEnoughMarginToOpenOrder(SymbolAccessor symbol, double orderVol, OrderType type, OrderSide side, double? price, double? stopPrice, bool isHidden)
         {
+            LazyInit();
+
             try
             {
                 if (_marginCalc != null)
@@ -268,6 +293,8 @@ namespace TickTrader.Algo.Core
 
         public bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, SymbolAccessor symbol, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden)
         {
+            LazyInit();
+
             var side = oldOrder.Entity.GetBlOrderSide();
             var type = oldOrder.Entity.GetBlOrderType();
 
@@ -327,6 +354,8 @@ namespace TickTrader.Algo.Core
 
         public double? CalculateOrderMargin(SymbolAccessor symbol, double orderVol, double? price, double? stopPrice, OrderType type, OrderSide side, bool isHidden)
         {
+            LazyInit();
+
             var boType = type.ToBoType();
             var boSide = side.ToBoSide();
 

@@ -18,6 +18,7 @@ namespace TickTrader.Algo.Core
         private SymbolsCollection _symbols;
         private ITradeExecutor _executor;
         private IAccountInfoProvider _dataProvider;
+        private bool _isStarted;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
 
@@ -32,14 +33,21 @@ namespace TickTrader.Algo.Core
             _dataProvider = context.AccInfoProvider;
 
             context.Builder.TradeApi = this;
+            context.Builder.Account.TradeInfoRequested += LazyInit;
+        }
 
-            if (_dataProvider != null)
+        public void LazyInit()
+        {
+            if (!_isStarted && _dataProvider != null)
+            {
+                _isStarted = true;
                 _dataProvider.SyncInvoke(Init);
+            }
         }
 
         public void Restart()
         {
-            if (_dataProvider != null)
+            if (_dataProvider != null && _isStarted)
             {
                 _dataProvider.SyncInvoke(() =>
                 {
@@ -60,7 +68,8 @@ namespace TickTrader.Algo.Core
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             //_dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accType = _dataProvider.AccountInfo.Type;
+            var accInfo = _dataProvider.AccountInfo;
+            var accType = accInfo.Type;
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
@@ -68,7 +77,7 @@ namespace TickTrader.Algo.Core
             builder.Account.NetPositions.Clear();
             builder.Account.Assets.Clear();
 
-            builder.Account.Update(_dataProvider.AccountInfo, currencies);
+            builder.Account.Update(accInfo, currencies);
 
             foreach (var order in _dataProvider.GetOrders())
                 builder.Account.Orders.Add(order, _account);

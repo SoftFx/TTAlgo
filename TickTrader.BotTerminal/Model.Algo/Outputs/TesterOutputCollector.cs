@@ -11,9 +11,9 @@ namespace TickTrader.BotTerminal
     internal class TesterOutputCollector<T> : IOutputCollector<T>
     {
         private string _outputId;
-        private ExecutorHandler _executor;
+        private PluginExecutor _executor;
 
-        public TesterOutputCollector(OutputSetupModel setup, ExecutorHandler executor)
+        public TesterOutputCollector(OutputSetupModel setup, PluginExecutor executor)
         {
             OutputConfig = setup ?? throw new ArgumentNullException("setup");
             _outputId = setup.Id ?? throw new ArgumentNullException("setup.Id");
@@ -26,7 +26,7 @@ namespace TickTrader.BotTerminal
         {
             if (update.SeriesId == _outputId)
             {
-                var typedUpdate = update as DataSeriesUpdate<OutputFixture<T>.Point>;
+                var typedUpdate = update as DataSeriesUpdate<OutputPoint<T>>;
                 if (typedUpdate != null)
                 {
                     if (typedUpdate.Action == SeriesUpdateActions.Append)
@@ -39,11 +39,11 @@ namespace TickTrader.BotTerminal
 
         public bool IsNotSyncrhonized => false;
         public OutputSetupModel OutputConfig { get; }
-        public IList<OutputFixture<T>.Point> Cache => null;
+        public IList<OutputPoint<T>> Cache => null;
 
-        public event Action<OutputFixture<T>.Point> Appended;
-        public event Action<OutputFixture<T>.Point> Updated;
-        public event Action<OutputFixture<T>.Point[]> SnapshotAppended { add { } remove { } }
+        public event Action<OutputPoint<T>> Appended;
+        public event Action<OutputPoint<T>> Updated;
+        public event Action<OutputPoint<T>[]> SnapshotAppended { add { } remove { } }
         public event Action<int> Truncated { add { } remove { } }
 
         public void Dispose()

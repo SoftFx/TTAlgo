@@ -3,6 +3,7 @@ using System;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Lib;
 using Machinarium.Var;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.Algo.Common.Model
 {

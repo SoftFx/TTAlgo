@@ -173,6 +173,7 @@
     <Compile Include="Entities\NetPositionOpenInfo.cs" />
     <Compile Include="Entities\OrderAccessor.cs" />
     <Compile Include="Entities\OrderFilteredCollection.cs" />
+    <Compile Include="Entities\OutputPoint.cs" />
     <Compile Include="Entities\PositionAccessor.cs" />
     <Compile Include="Entities\PositionCollection.cs" />
     <Compile Include="Entities\PositionEntity.cs" />
@@ -188,6 +189,11 @@
     <Compile Include="Entities\TimeKey.cs" />
     <Compile Include="Entities\TradeReportEntity.cs" />
     <Compile Include="Entities\TradeResultEntity.cs" />
+    <Compile Include="Executor\Marshaling\CommonCdProxy.cs" />
+    <Compile Include="Executor\Marshaling\FeedCdProxy.cs" />
+    <Compile Include="Executor\Marshaling\TradeApiProxy.cs" />
+    <Compile Include="Executor\OutputFixureGm.cs" />
+    <Compile Include="Executor\PluginExecutorConfig.cs" />
     <Compile Include="Executor\PluignExecutorFactory.cs" />
     <Compile Include="Executor\ExecutorHandler.cs" />
     <Compile Include="Executor\MarketStateFixture.cs" />
@@ -210,8 +216,14 @@
     <Compile Include="Executor\SubscriptionManager.cs" />
     <Compile Include="Executor\QuoteStrategy.cs" />
     <Compile Include="Executor\QuoteSeriesFixture.cs" />
+    <Compile Include="Infrastructure\Interfaces.cs" />
+    <Compile Include="Infrastructure\QuoteDistributor.cs" />
+    <Compile Include="Infrastructure\Subscription.cs" />
+    <Compile Include="Infrastructure\SubscriptionExtentions.cs" />
+    <Compile Include="Infrastructure\SubscriptionGroup.cs" />
     <Compile Include="Lib\AsyncBuffer.cs" />
     <Compile Include="Lib\AsyncEnumerator.cs" />
+    <Compile Include="Lib\BunchingBlock.cs" />
     <Compile Include="Lib\CollectionExtentions.cs" />
     <Compile Include="Lib\CrossDomainCallback.cs" />
     <Compile Include="Lib\CrossDomainEnumerator.cs" />

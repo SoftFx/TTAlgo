@@ -13,6 +13,7 @@ using TickTrader.Algo.Core;
 using TickTrader.Algo.Api;
 using Machinarium.Var;
 using TickTrader.Algo.Common.Lib;
+using TickTrader.Algo.Core.Infrastructure;
 
 namespace TickTrader.BotTerminal
 {

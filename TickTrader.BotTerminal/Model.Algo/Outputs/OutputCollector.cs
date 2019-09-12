@@ -18,44 +18,72 @@ namespace TickTrader.BotTerminal
 
     internal interface IOutputCollector<T> : IOutputCollector
     {
-        IList<OutputFixture<T>.Point> Cache { get; }
+        IList<OutputPoint<T>> Cache { get; }
 
-        event Action<OutputFixture<T>.Point> Appended;
-        event Action<OutputFixture<T>.Point> Updated;
-        event Action<OutputFixture<T>.Point[]> SnapshotAppended;
+        event Action<OutputPoint<T>> Appended;
+        event Action<OutputPoint<T>> Updated;
+        event Action<OutputPoint<T>[]> SnapshotAppended;
         event Action<int> Truncated;
     }
 
-    internal class OutputCollector<T> : IOutputListener<T>, IOutputCollector<T>, IDisposable
+    internal class OutputCollector<T> : IOutputCollector<T>, IDisposable
     {
-        private OutputAdapter<T> _adapter;
+        private readonly PluginExecutor _executor;
+        private readonly string _outputId;
 
-        public OutputCollector(OutputFixture<T> fixture, OutputSetupModel outputSetup)
+        public OutputCollector(OutputSetupModel setup, PluginExecutor executor)
         {
-            OutputConfig = outputSetup;
-            _adapter = new OutputAdapter<T>(fixture, this);
+            OutputConfig = setup;
+            _executor = executor;
+            _outputId = setup.Id;
+
+            executor.OutputUpdate += Executor_OutputUpdate;
         }
 
         public virtual bool IsNotSyncrhonized => false;
-        public virtual IList<OutputFixture<T>.Point> Cache => null;
+        public virtual IList<OutputPoint<T>> Cache => null;
         public OutputSetupModel OutputConfig { get; }
 
-        public event Action<OutputFixture<T>.Point> Appended;
-        public event Action<OutputFixture<T>.Point> Updated;
-        public event Action<OutputFixture<T>.Point[]> SnapshotAppended;
+        public event Action<OutputPoint<T>> Appended;
+        public event Action<OutputPoint<T>> Updated;
+        public event Action<OutputPoint<T>[]> SnapshotAppended;
         public event Action<int> Truncated;
 
         public virtual void Dispose()
         {
-            _adapter.Dispose();
+            _executor.OutputUpdate -= Executor_OutputUpdate;
         }
 
-        protected virtual void OnAppend(OutputFixture<T>.Point point)
+        private void Executor_OutputUpdate(IDataSeriesUpdate update)
+        {
+            if (update.SeriesId == _outputId)
+            {
+                if (update.BufferTrucatedBy > 0)
+                    OnTruncate(update.BufferTrucatedBy);
+
+                var batchUpdate = update as DataSeriesUpdate<OutputPoint<T>[]>;
+                if (batchUpdate != null)
+                    OnSnapshot(batchUpdate.Value);
+                else
+                {
+                    var pointUpdate = update as DataSeriesUpdate<OutputPoint<T>>;
+                    if (pointUpdate != null)
+                    {
+                        if (pointUpdate.Action == SeriesUpdateActions.Append)
+                            OnAppend(pointUpdate.Value);
+                        else if (pointUpdate.Action == SeriesUpdateActions.Update)
+                            OnUpdate(pointUpdate.Value);
+                    }
+                }
+            }
+        }
+
+        protected virtual void OnAppend(OutputPoint<T> point)
         {
             Appended?.Invoke(point);
         }
 
-        protected virtual void OnSnapshot(OutputFixture<T>.Point[] points)
+        protected virtual void OnSnapshot(OutputPoint<T>[] points)
         {
             SnapshotAppended?.Invoke(points);
         }
@@ -65,56 +93,36 @@ namespace TickTrader.BotTerminal
             Truncated?.Invoke(truncateSize);
         }
 
-        protected virtual void OnUpdate(OutputFixture<T>.Point point)
+        protected virtual void OnUpdate(OutputPoint<T> point)
         {
             Updated?.Invoke(point);
-        }
-
-        void IOutputListener<T>.Append(OutputFixture<T>.Point point)
-        {
-            Execute.OnUIThread(() => OnAppend(point));
-        }
-
-        void IOutputListener<T>.CopyAll(OutputFixture<T>.Point[] points)
-        {
-            Execute.OnUIThread(() => OnSnapshot(points));
-        }
-
-        void IOutputListener<T>.TruncateBy(int truncateSize)
-        {
-            Execute.OnUIThread(() => OnTruncate(truncateSize));
-        }
-
-        void IOutputListener<T>.Update(OutputFixture<T>.Point point)
-        {
-            Execute.OnUIThread(() => OnUpdate(point));
         }
     }
 
     internal class CachingOutputCollector<T> : OutputCollector<T>
     {
-        private CircularList<OutputFixture<T>.Point> _cache = new CircularList<OutputFixture<T>.Point>();
+        private CircularList<OutputPoint<T>> _cache = new CircularList<OutputPoint<T>>();
 
-        public CachingOutputCollector(OutputFixture<T> fixture, OutputSetupModel outputConfig) : base(fixture, outputConfig)
+        public CachingOutputCollector(OutputSetupModel setup, PluginExecutor executor) : base(setup, executor)
         {
         }
 
         public override bool IsNotSyncrhonized => true;
-        public override IList<OutputFixture<T>.Point> Cache => _cache;
+        public override IList<OutputPoint<T>> Cache => _cache;
 
-        protected override void OnAppend(OutputFixture<T>.Point point)
+        protected override void OnAppend(OutputPoint<T> point)
         {
             _cache.Add(point);
             base.OnAppend(point);
         }
 
-        protected override void OnSnapshot(OutputFixture<T>.Point[] points)
+        protected override void OnSnapshot(OutputPoint<T>[] points)
         {
             _cache.AddRange(points);
             base.OnSnapshot(points);
         }
 
-        protected override void OnUpdate(OutputFixture<T>.Point point)
+        protected override void OnUpdate(OutputPoint<T> point)
         {
             _cache[point.Index] = point;
             base.OnUpdate(point);

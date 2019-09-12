@@ -185,7 +185,6 @@
     <Compile Include="Model\PluginTradeApiProvider.cs" />
     <Compile Include="Model\PluginTradeInfoProvider.cs" />
     <Compile Include="Model\PositionModel.cs" />
-    <Compile Include="Model\QuoteDistributor.cs" />
     <Compile Include="Model\RateDirectionTracker.cs" />
     <Compile Include="Model\SymbolModel.cs" />
     <Compile Include="Model\ClientModel.cs" />

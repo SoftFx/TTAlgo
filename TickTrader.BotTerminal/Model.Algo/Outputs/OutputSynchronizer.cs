@@ -32,7 +32,7 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        public void AppendSnapshot(IEnumerable<OutputFixture<T>.Point> points)
+        public void AppendSnapshot(IEnumerable<OutputPoint<T>> points)
         {
             int syncIndex = -1;
 
@@ -76,7 +76,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public int Append(OutputFixture<T>.Point point)
+        public int Append(OutputPoint<T> point)
         {
             var pointTime = point.TimeCoordinate.Value;
             var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);
@@ -91,7 +91,7 @@ namespace TickTrader.BotTerminal
             return index;
         }
 
-        public void Update(OutputFixture<T>.Point point)
+        public void Update(OutputPoint<T> point)
         {
             var pointTime = point.TimeCoordinate.Value;
             var index = _baseVector.BinarySearch(pointTime, BinarySearchTypes.Exact);

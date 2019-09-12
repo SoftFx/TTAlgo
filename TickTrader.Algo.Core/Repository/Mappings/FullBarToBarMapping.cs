@@ -13,14 +13,12 @@ namespace TickTrader.Algo.Core.Repository
         {
         }
 
-
         public override void MapInput(IPluginSetupTarget target, string inputName, string symbol)
         {
             var barReduction = AlgoAssemblyInspector.GetReduction(Key.PrimaryReduction.DescriptorId);
             var barReductionInstance = barReduction.CreateInstance<FullBarToBarReduction>();
             target.GetFeedStrategy<BarStrategy>().MapInput<Bar>(inputName, symbol, (bidBar, askBar) => MapValue(barReductionInstance, bidBar, askBar));
         }
-
 
         private BarEntity MapValue(FullBarToBarReduction reductionInstance, BarEntity bidBar, BarEntity askBar)
         {

@@ -7,11 +7,16 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core
 {
+    [Serializable]
     public sealed class BarStrategy : FeedStrategy
     {
+        [NonSerialized]
         private BarSampler sampler;
+        [NonSerialized]
         private BarSeriesFixture mainSeriesFixture;
+        [NonSerialized]
         private List<BarEntity> mainSeries;
+        [NonSerialized]
         private Dictionary<string, BarSeriesFixture[]> fixtures;
 
         public BarStrategy(BarPriceType mainPirceTipe)
@@ -22,6 +27,7 @@ namespace TickTrader.Algo.Core
         public BarPriceType MainPriceType { get; private set; }
         public override IFeedBuffer MainBuffer { get { return mainSeriesFixture; } }
         public override int BufferSize { get { return mainSeriesFixture.Count; } }
+        public override IEnumerable<string> BufferedSymbols => fixtures.Keys;
 
         internal override void OnInit()
         {
@@ -160,24 +166,12 @@ namespace TickTrader.Algo.Core
 
         public void MapInput<TVal>(string inputName, string symbolCode, BarPriceType priceType, Func<BarEntity, TVal> selector)
         {
-            AddSetupAction(fs =>
-            {
-                ((BarStrategy)fs).InitSymbol(symbolCode, priceType);
-                var key = GetKey(symbolCode, priceType);
-                fs.ExecContext.Builder.MapInput(inputName, key, selector);
-            });
+            AddSetupAction(new MapBarAction<TVal>(inputName, symbolCode, priceType, selector));
         }
 
         public void MapInput<TVal>(string inputName, string symbolCode, Func<BarEntity, BarEntity, TVal> selector)
         {
-            AddSetupAction(fs =>
-            {
-                var key1 = GetKey(symbolCode, BarPriceType.Bid);
-                var key2 = GetKey(symbolCode, BarPriceType.Ask);
-                ((BarStrategy)fs).InitSymbol(symbolCode, BarPriceType.Ask);
-                ((BarStrategy)fs).InitSymbol(symbolCode, BarPriceType.Bid);
-                ExecContext.Builder.MapInput(inputName, key1, key2, selector);
-            });
+            AddSetupAction(new MapDBarAction<TVal>(inputName, symbolCode, selector));
         }
 
         public void MapInput(string inputName, string symbolCode, BarPriceType priceType)
@@ -198,6 +192,46 @@ namespace TickTrader.Algo.Core
 
             //foreach (var fixture in fixtures.Values)
             //    fixture.Dispose();
-        } 
+        }
+
+        [Serializable]
+        public class MapBarAction<TVal> : InputSetupAction
+        {
+            public MapBarAction(string inputName, string symbol, BarPriceType priceType, Func<BarEntity, TVal> selector) : base(inputName, symbol)
+            {
+                Selector = selector;
+                PriceType = priceType;
+            }
+
+            public BarPriceType PriceType { get; }
+            public Func<BarEntity, TVal> Selector { get; }
+
+            public override void Apply(FeedStrategy fStartegy)
+            {
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, PriceType);
+                var key = GetKey(SymbolName, PriceType);
+                fStartegy.ExecContext.Builder.MapInput(InputName, key, Selector);
+            }
+        }
+
+        [Serializable]
+        public class MapDBarAction<TVal> : InputSetupAction
+        {
+            public MapDBarAction(string inputName, string symbol, Func<BarEntity, BarEntity, TVal> selector) : base(inputName, symbol)
+            {
+                Selector = selector;
+            }
+
+            public Func<BarEntity, BarEntity, TVal> Selector { get; }
+
+            public override void Apply(FeedStrategy fStartegy)
+            {
+                var key1 = GetKey(SymbolName, BarPriceType.Bid);
+                var key2 = GetKey(SymbolName, BarPriceType.Ask);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Ask);
+                ((BarStrategy)fStartegy).InitSymbol(SymbolName, BarPriceType.Bid);
+                fStartegy.ExecContext.Builder.MapInput(InputName, key1, key2, Selector);
+            }
+        }
     }
 }

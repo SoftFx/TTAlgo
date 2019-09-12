@@ -22,7 +22,7 @@ namespace TickTrader.Algo.Core
         internal SynchronizationContextAdapter syncContext = new SynchronizationContextAdapter();
         private TradeApiAdapter _tradeApater;
         private TradeCommands _commands;
-        private bool _isolated;
+        //private bool _isolated;
         private string _instanceId;
         private PluginPermissions _permissions;
         private ICalculatorApi _calc;
@@ -96,17 +96,18 @@ namespace TickTrader.Algo.Core
             {
                 _permissions = value ?? throw new InvalidOperationException("Permissions cannot be null!");
                 _tradeApater.Permissions = value;
+                Account.Isolated = value.Isolated;
             }
         }
-        public bool Isolated
-        {
-            get { return _isolated; }
-            set
-            {
-                _isolated = value;
-                Account.Isolated = _isolated;
-            }
-        }
+        public bool Isolated => _permissions.Isolated;
+        //{
+        //    get { return _isolated; }
+        //    set
+        //    {
+        //        _isolated = value;
+        //        Account.Isolated = _isolated;
+        //    }
+        //}
         public string InstanceId
         {
             get { return _instanceId; }

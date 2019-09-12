@@ -347,6 +347,7 @@
     <Compile Include="Lib\UiUpdateTimer.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
+    <Compile Include="Model.Algo\BotListenerProxy.cs" />
     <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
     <Compile Include="Model.Algo\Outputs\DoubleSeriesModel.cs" />
     <Compile Include="Model.Algo\Outputs\MarkerSeriesModel.cs" />

@@ -53,12 +53,14 @@ namespace TickTrader.Algo.Core.UnitTest
 
     internal class MockFixtureContext : IFixtureContext
     {
-        private SubscriptionManager dispenser;
+        private SubscriptionFixtureManager dispenser;
         private FeedBufferStrategy bStrategy;
+        private MarketStateFixture _marketState;
 
         public MockFixtureContext()
         {
-            dispenser = new SubscriptionManager(this);
+            _marketState = new MarketStateFixture(this);
+            dispenser = new SubscriptionFixtureManager(this, _marketState);
             Builder = new PluginBuilder(new Metadata.PluginMetadata(typeof(MockBot)));
             Builder.Logger = new NullLogger();
             bStrategy = new TimeSpanStrategy(TimePeriodStart, TimePeriodEnd);
@@ -70,16 +72,15 @@ namespace TickTrader.Algo.Core.UnitTest
         public TimeFrames TimeFrame { get; set; }
         public DateTime TimePeriodEnd { get; set; }
         public DateTime TimePeriodStart { get; set; }
-        public IPluginFeedProvider FeedProvider => throw new NotImplementedException();
+        public IFeedProvider FeedProvider { get; set; }
+        public IFeedHistoryProvider FeedHistory { get; set; }
         public FeedBufferStrategy BufferingStrategy => bStrategy;
-        public SubscriptionManager Dispenser => dispenser;
-
+        public SubscriptionFixtureManager Dispenser => dispenser;
+        public AlgoMarketState MarketData { get; } = new AlgoMarketState();
+        public FeedStrategy FeedStrategy => throw new NotImplementedException();
         public IAccountInfoProvider AccInfoProvider => throw new NotImplementedException();
         public ITradeExecutor TradeExecutor => throw new NotImplementedException();
-
         public bool IsGlobalUpdateMarshalingEnabled => false;
-
-        public AlgoMarketState MarketData { get; } = new AlgoMarketState();
 
         public void EnqueueTradeUpdate(Action<PluginBuilder> action)
         {

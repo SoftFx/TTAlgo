@@ -80,27 +80,27 @@ namespace TickTrader.Algo.Core
                 for (int i = 0; i < _fixture.Count; i++)
                 {
                     var point = _fixture[i].ChangeIndex(-1);
-                    var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
+                    var update = new DataSeriesUpdate<OutputPoint<T>>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
                     _onTruncateUpdate(update);
                 }
             }
         }
 
-        private void Fixture_Updated(OutputFixture<T>.Point point)
+        private void Fixture_Updated(OutputPoint<T> point)
         {
             var adjustedPoint = point.ChangeIndex(point.Index + _indexShift);
-            var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Update, adjustedPoint);
+            var update = new DataSeriesUpdate<OutputPoint<T>>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Update, adjustedPoint);
             _onRealtimeUpdate(update);
         }
 
-        private void Fixture_Appended(OutputFixture<T>.Point point)
+        private void Fixture_Appended(OutputPoint<T> point)
         {
             var adjustedPoint = point.ChangeIndex(point.Index + _indexShift);
-            var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, adjustedPoint);
+            var update = new DataSeriesUpdate<OutputPoint<T>>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, adjustedPoint);
             _onRealtimeUpdate(update);
         }
 
-        private void Fixture_AllUpdated(OutputFixture<T>.Point[] snapshot)
+        private void Fixture_AllUpdated(OutputPoint<T>[] snapshot)
         {
             foreach (var point in snapshot)
                 Fixture_Appended(point);
@@ -111,7 +111,7 @@ namespace TickTrader.Algo.Core
             for (int i = 0; i < size; i++)
             {
                 var point = _fixture[i].ChangeIndex(-1);
-                var update = new DataSeriesUpdate<OutputFixture<T>.Point>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
+                var update = new DataSeriesUpdate<OutputPoint<T>>(DataSeriesTypes.Output, _outputId, SeriesUpdateActions.Append, point);
                 _onTruncateUpdate?.Invoke(update);
                 Snapshot?.Add(point.Value);
             }

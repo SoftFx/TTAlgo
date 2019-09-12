@@ -555,20 +555,22 @@ namespace TickTrader.BotTerminal
 
         public virtual void InitializePlugin(PluginExecutor plugin)
         {
-            plugin.InvokeStrategy = new PriorityInvokeStartegy();
+            plugin.Config.InvokeStrategy = new PriorityInvokeStartegy();
             plugin.AccInfoProvider = new PluginTradeInfoProvider(ClientModel.Cache, new DispatcherSync());
             var feedProvider = new PluginFeedProvider(ClientModel.Cache, ClientModel.Distributor, ClientModel.FeedHistory, new DispatcherSync());
             plugin.Metadata = feedProvider;
-            switch (plugin.TimeFrame)
+            plugin.Feed = feedProvider;
+            plugin.FeedHistory = feedProvider;
+            switch (plugin.Config.TimeFrame)
             {
                 case Algo.Api.TimeFrames.Ticks:
-                    plugin.InitQuoteStrategy(feedProvider);
+                    plugin.Config.InitQuoteStrategy();
                     break;
                 default:
-                    plugin.InitBarStrategy(feedProvider, Algo.Api.BarPriceType.Bid);
+                    plugin.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
                     break;
             }
-            plugin.InitSlidingBuffering(4000);
+            plugin.Config.InitSlidingBuffering(4000);
         }
 
         public virtual void UpdatePlugin(PluginExecutor plugin)

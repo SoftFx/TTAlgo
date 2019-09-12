@@ -21,6 +21,19 @@ namespace TickTrader.Algo.Core
     }
 
     [Serializable]
+    public class ExecutorCoreException : Exception
+    {
+        public ExecutorCoreException(string message) : base(message)
+        {
+        }
+
+        protected ExecutorCoreException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
+
+    [Serializable]
     public class ExecutorException : AlgoException
     {
         public ExecutorException(string msg) : base(msg)

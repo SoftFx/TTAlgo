@@ -95,7 +95,7 @@ namespace TickTrader.BotTerminal
             return CompletedTask.Default;
         }
 
-        private void Append(OutputFixture<T>.Point point)
+        private void Append(OutputPoint<T> point)
         {
             if (_synchronizer != null)
                 _synchronizer.Append(point);
@@ -103,7 +103,7 @@ namespace TickTrader.BotTerminal
                 AppendInternal(point.TimeCoordinate.Value, point.Value);
         }
 
-        private void Update(OutputFixture<T>.Point point)
+        private void Update(OutputPoint<T> point)
         {
             if (_synchronizer != null)
                 _synchronizer.Update(point);
@@ -111,7 +111,7 @@ namespace TickTrader.BotTerminal
                 UpdateInternal(point.Index, point.TimeCoordinate.Value, point.Value);
         }
 
-        private void _collector_SnapshotAppended(OutputFixture<T>.Point[] points)
+        private void _collector_SnapshotAppended(OutputPoint<T>[] points)
         {
             if (_synchronizer != null)
                 _synchronizer.AppendSnapshot(points);

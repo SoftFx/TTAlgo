@@ -48,9 +48,9 @@ namespace TickTrader.Algo.Core.Container
             return new T();
         }
 
-        public PluginExecutor CreateExecutor(string pluginId)
+        public PluginExecutorCore CreateExecutor(string pluginId)
         {
-            return new PluginExecutor(pluginId);
+            return new PluginExecutorCore(pluginId);
         }
 
         public PluignExecutorFactory CreateExecutorFactory(string pluginId)

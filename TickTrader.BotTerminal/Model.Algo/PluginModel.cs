@@ -19,7 +19,6 @@ namespace TickTrader.BotTerminal
         private PluginExecutor _executor;
         private Dictionary<string, IOutputCollector> _outputs;
 
-
         public PluginConfig Config { get; private set; }
 
         public string InstanceId { get; }
@@ -77,12 +76,12 @@ namespace TickTrader.BotTerminal
                 Setup.Load(Config);
 
                 _executor = CreateExecutor();
-                Setup.SetWorkingFolder(_executor.WorkingFolder);
-                Setup.Apply(_executor);
+                Setup.SetWorkingFolder(_executor.Config.WorkingFolder);
+                Setup.Apply(_executor.Config);
 
                 Host.UpdatePlugin(_executor);
                 _executor.Start();
-                _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+                //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
             catch (Exception ex)
@@ -130,16 +129,17 @@ namespace TickTrader.BotTerminal
 
         protected virtual PluginExecutor CreateExecutor()
         {
-            var executor = PluginRef.CreateExecutor();
+            var executor = new PluginExecutor(PluginRef, new DispatcherSync());
 
-            executor.OnRuntimeError += Executor_OnRuntimeError;
+            executor.ErrorOccurred += Executor_OnRuntimeError;
 
-            executor.TimeFrame = Setup.SelectedTimeFrame;
-            executor.MainSymbolCode = Setup.MainSymbol.Id;
-            executor.InstanceId = InstanceId;
-            executor.Permissions = Setup.Permissions;
-            executor.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
-            executor.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.Config.TimeFrame = Setup.SelectedTimeFrame;
+            executor.Config.MainSymbolCode = Setup.MainSymbol.Id;
+            executor.Config.InstanceId = InstanceId;
+            executor.Config.Permissions = Setup.Permissions;
+            executor.Config.WorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.Config.BotWorkingFolder = EnvService.Instance.AlgoWorkingFolder;
+            executor.TradeHistoryProvider = Host.GetTradeHistoryApi();
 
             Host.InitializePlugin(executor);
 
@@ -226,9 +226,9 @@ namespace TickTrader.BotTerminal
                 foreach (var outputSetup in Setup.Outputs)
                 {
                     if (outputSetup is ColoredLineOutputSetupModel)
-                        CreateOuput<double>(outputSetup.Id, executor, outputSetup);
+                        CreateOuput<double>(executor, outputSetup);
                     else if (outputSetup is MarkerSeriesOutputSetupModel)
-                        CreateOuput<Marker>(outputSetup.Id, executor, outputSetup);
+                        CreateOuput<Marker>(executor, outputSetup);
                 }
                 OutputsChanged?.Invoke();
             }
@@ -238,16 +238,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void CreateOuput<T>(string id, PluginExecutor executor, OutputSetupModel setup)
+        private void CreateOuput<T>(PluginExecutor executor, OutputSetupModel setup)
         {
-            var fixture = executor.GetOutput<T>(id);
-            var collector = CreateOutputCollector<T>(id, fixture, setup);
-            _outputs.Add(id, collector);
+            executor.Config.SetupOutput<T>(setup.Id);
+            var collector = CreateOutputCollector<T>(executor, setup);
+            _outputs.Add(setup.Id, collector);
         }
 
-        protected virtual IOutputCollector CreateOutputCollector<T>(string id, OutputFixture<T> fixture, OutputSetupModel setup)
+        protected virtual IOutputCollector CreateOutputCollector<T>(PluginExecutor executor, OutputSetupModel setup)
         {
-            return new OutputCollector<T>(fixture, setup);
+            return new OutputCollector<T>(setup, executor);
         }
 
         private void ClearOutputs()

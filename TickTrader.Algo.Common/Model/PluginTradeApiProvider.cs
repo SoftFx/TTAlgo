@@ -82,25 +82,25 @@ namespace TickTrader.Algo.Common.Model
                 _ref = aRef;
             }
 
-            public async void SendCancelOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
+            public async void SendCancelOrder(ICallback<OrderCmdResultCodes> callback, CancelOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendCancelOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendCloseOrder(CrossDomainCallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
+            public async void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendCloseOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendModifyOrder(CrossDomainCallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
+            public async void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendModifyOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendOpenOrder(CrossDomainCallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
+            public async void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
             {
                 var result = await _ref.Call(a => a.SendOpenOrder(request));
                 callback.Invoke(result);

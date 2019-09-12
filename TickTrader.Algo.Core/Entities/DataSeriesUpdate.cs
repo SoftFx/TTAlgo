@@ -10,6 +10,7 @@ namespace TickTrader.Algo.Core
     {
         DataSeriesTypes SeriesType { get; }
         string SeriesId { get; }
+        int BufferTrucatedBy { get; }
     }
 
     [Serializable]
@@ -26,6 +27,7 @@ namespace TickTrader.Algo.Core
         public DataSeriesTypes SeriesType { get; }
         // Symbol name for SymbolRate type. OutputId for Output type. Stream name for NamedStream type (Equity, Margin)
         public string SeriesId { get; }
+        public int BufferTrucatedBy { get; set; }
         public SeriesUpdateActions Action { get; }
         public T Value { get; }
     }

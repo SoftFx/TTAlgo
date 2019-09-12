@@ -7,7 +7,12 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.Core.Lib
 {
-    public class CrossDomainCallback<T> : CrossDomainObject
+    public interface ICallback<T>
+    {
+        void Invoke(T arg);
+    }
+
+    public class CrossDomainCallback<T> : CrossDomainObject, ICallback<T>
     {
         public CrossDomainCallback()
         {

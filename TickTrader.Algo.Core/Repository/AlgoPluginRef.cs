@@ -18,9 +18,9 @@ namespace TickTrader.Algo.Core.Repository
             Metadata = metadata;
         }
 
-        public virtual PluginExecutor CreateExecutor()
+        public virtual PluginExecutorCore CreateExecutor()
         {
-            return new PluginExecutor(Id);
+            return new PluginExecutorCore(Id);
         }
 
         public virtual PluignExecutorFactory CreateExecutorFactory()
@@ -48,7 +48,7 @@ namespace TickTrader.Algo.Core.Repository
 
         public override bool IsIsolated => true;
 
-        public override PluginExecutor CreateExecutor()
+        public override PluginExecutorCore CreateExecutor()
         {
             return _sandbox.CreateExecutor(Id);
         }

@@ -244,27 +244,27 @@ namespace TickTrader.Algo.Core
 
         public void LoadFeed(DateTime from, DateTime to)
         {
-            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
+            var data = Context.FeedHistory.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
             AppendSnapshot(data);
         }
 
         public void LoadFeed(int size)
         {
             var to = DateTime.Now + TimeSpan.FromDays(1);
-            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
+            var data = Context.FeedHistory.QueryBars(SymbolCode, priceType, to, -size, Context.TimeFrame);
             AppendSnapshot(data);
         }
 
         public void LoadFeed(DateTime from, int size)
         {
-            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, size, Context.TimeFrame);
+            var data = Context.FeedHistory.QueryBars(SymbolCode, priceType, from, size, Context.TimeFrame);
             AppendSnapshot(data);
         }
 
         public void LoadFeedFrom(DateTime from)
         {
             var to = DateTime.UtcNow + TimeSpan.FromDays(2);
-            var data = Context.FeedProvider.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
+            var data = Context.FeedHistory.QueryBars(SymbolCode, priceType, from, to, Context.TimeFrame);
             AppendSnapshot(data);
         }
     }

@@ -11,24 +11,47 @@ using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
-    public class ExecutorHandler : CrossDomainObject
+    public class PluginExecutor : CrossDomainObject, IDisposable
     {
         private ISynchronizationContext _syncContext;
         
         private AlgoPluginRef _ref;
-        private UpdateChannel _channel;
+        private CommonCdProxy _cProxy;
+        private FeedCdProxy _fProxy;
+        private TradeApiProxy _tProxy;
 
-        public ExecutorHandler(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
+        public PluginExecutor(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
             _ref = pluginRef;
             _syncContext = updatesSync;
             Core = pluginRef.CreateExecutor();
             IsIsolated = pluginRef.IsIsolated;
+
+            Core.IsGlobalMarshalingEnabled = true;
+            Core.IsBunchingRequired = IsIsolated || _syncContext != null;
+
+            Core.MarshalUpdate = MarshalUpdate;
+            Core.MarshalUpdates = MarshalUpdatesToContext;
+            Core.Stopped += () =>
+            {
+                if (_syncContext != null)
+                    _syncContext.Invoke(() => Stopped?.Invoke(this));
+                else
+                    Stopped?.Invoke(this);
+            };
         }
 
-        // TO DO: Direct access to Core should be removed in future refactoring!
-        public PluginExecutor Core { get; }
+        internal PluginExecutorCore Core { get; }
         public bool IsIsolated { get; }
+        //public bool IsRunning { get; private set; }
+
+        public IAccountInfoProvider AccInfoProvider { get; set; }
+        public ITradeHistoryProvider TradeHistoryProvider { get; set; }
+        public IPluginMetadata Metadata { get; set; }
+        public IFeedProvider Feed { get; set; }
+        public IFeedHistoryProvider FeedHistory { get; set; }
+        public ITradeExecutor TradeExecutor { get; set; }
+        public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
 
         public event Action<BotLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
@@ -40,41 +63,119 @@ namespace TickTrader.Algo.Core
         public event Action<IDataSeriesUpdate> OutputUpdate;
         public event Action<Exception> ErrorOccurred;
 
-        internal void StartCollection(bool realtime)
+        public event Action<PluginExecutor> Stopped;
+
+        #region Excec control
+
+        public void Start()
         {
-            _channel = _ref.CreateObject<UpdateChannel>();
-            Core.OnUpdate = _channel.EnqueueUpdate;
-            _channel.Start(realtime, MarshalUpdates);
+            ConfigurateCore();
+            Core.Start();
         }
 
-        internal void StopCollection()
+        public void Stop()
         {
-            try
+            Core.Stop();
+        }
+
+        public void Abort()
+        {
+            Core.Abort();
+        }
+
+        public void HandleDisconnect()
+        {
+            Core.HandleDisconnect();
+        }
+
+        public void HandleReconnect()
+        {
+            Core.HandleReconnect();
+        }
+
+        public void WriteConnectionInfo(string connectionInfo)
+        {
+            Core.WriteConnectionInfo(connectionInfo);
+        }
+
+        #endregion
+
+        public override void Dispose()
+        {
+            DisposeProxies();
+            base.Dispose();
+        }
+
+        private void DisposeProxies()
+        {
+            _cProxy?.Dispose();
+            _fProxy?.Dispose();
+            _tProxy?.Dispose();
+            _cProxy = null;
+            _fProxy = null;
+            _tProxy = null;
+        }
+
+        //public override void Dispose()
+        //{
+        //}
+
+        private void ConfigurateCore()
+        {
+            DisposeProxies();
+
+            if (AccInfoProvider == null)
+                throw new ExecutorException("AccInfoProvider is not set!");
+
+            if (Metadata == null)
+                throw new ExecutorException("Metadata is not set!");
+
+            if (TradeHistoryProvider == null)
+                throw new ExecutorException("TradeHistoryProvider is not set!");
+
+            if (Feed == null)
+                throw new ExecutorException("Feed is not set!");
+
+            if (FeedHistory == null)
+                throw new ExecutorException("FeedHistory is not set!");
+
+            if (IsIsolated)
             {
-                _channel.Close();
+                _cProxy = new CommonCdProxy(AccInfoProvider, Metadata, TradeHistoryProvider);
+                _fProxy = new FeedCdProxy(Feed, FeedHistory);
+
+                if (TradeExecutor != null)
+                    _tProxy = new TradeApiProxy(TradeExecutor);
+
+                Core.ApplyConfig(Config, _cProxy, _cProxy, _cProxy, _fProxy, _fProxy, _tProxy);
             }
-            catch (Exception ex)
-            {
-                ErrorOccurred?.Invoke(ex);
-            }
+            else
+                Core.ApplyConfig(Config, AccInfoProvider, Metadata, TradeHistoryProvider, Feed, FeedHistory, TradeExecutor);
+        }
+
+        #region Update Marshalling 
+
+        private void MarshalUpdatesToContext(IReadOnlyList<object> updates)
+        {
+            if (_syncContext != null)
+                _syncContext.Invoke(MarshalUpdates, updates);
+            else
+                MarshalUpdates(updates);
         }
 
         private void MarshalUpdates(IReadOnlyList<object> updates)
         {
-            _syncContext.Invoke(() =>
+            for (int i = 0; i < updates.Count; i++)
             {
-                for (int i = 0; i < updates.Count; i++)
+                try
                 {
-                    try
-                    {
-                        MarshalUpdate(updates[i]);
-                    }
-                    catch (Exception ex)
-                    {
-                        ErrorOccurred?.Invoke(ex);
-                    }
+                    MarshalUpdate(updates[i]);
                 }
-            });
+                catch (Exception ex)
+                {
+                    ErrorOccurred?.Invoke(ex);
+                }
+            }
         }
 
         private void MarshalUpdate(object update)
@@ -106,6 +207,10 @@ namespace TickTrader.Algo.Core
                 else if (seriesUpdate.SeriesType == DataSeriesTypes.Output)
                     OutputUpdate?.Invoke(seriesUpdate);
             }
+            else if (update is Exception)
+                ErrorOccurred?.Invoke((Exception)update);
+
+            #endregion
         }
     }
 }

@@ -16,9 +16,9 @@ namespace TickTrader.Algo.Core
             _pluginId = pluginId;
         }
 
-        public PluginExecutor CreateExecutor()
+        public PluginExecutorCore CreateExecutor()
         {
-            return new PluginExecutor(_pluginId);
+            return new PluginExecutorCore(_pluginId);
         }
     }
 }
