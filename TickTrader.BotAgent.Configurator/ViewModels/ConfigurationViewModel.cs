@@ -377,8 +377,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             if (SaveChangesMethod() == MessageBoxResult.Cancel)
                 e.Cancel = true;
-
-            _appRestrictor.Dispose();
         }
 
         private void DropAllErrors()

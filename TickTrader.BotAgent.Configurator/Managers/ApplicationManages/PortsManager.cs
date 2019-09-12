@@ -146,7 +146,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool CheckLocalPoint(IPEndPoint point, string hostname, int port)
         {
-            return point.Address.ToString() == hostname && point.Port == port;
+            return $"[{point.Address}]" == hostname && point.Port == port;
         }
 
         private bool CheckActiveServiceState(TcpState state)

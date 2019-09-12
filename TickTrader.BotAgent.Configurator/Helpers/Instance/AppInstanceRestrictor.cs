@@ -87,8 +87,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             if (_lockFile != null)
                 _lockFile.Close();
-
-            File.Delete(_appLockFilePath);
         }
     }
 }
