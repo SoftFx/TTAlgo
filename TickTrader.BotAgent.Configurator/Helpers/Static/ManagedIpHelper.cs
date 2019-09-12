@@ -149,6 +149,42 @@ namespace TickTrader.BotAgent.Configurator
             return new TcpTable(tcpRows);
         }
 
+
+        public static TcpTable GetExtendedTcpTableIPv6(bool sorted)
+        {
+            List<TcpRow> tcpRows = new List<TcpRow>();
+
+            IntPtr tcpTable = IntPtr.Zero;
+            int tcpTableLength = 0;
+
+            if (IpHelper.GetExtendedTcpTable(tcpTable, ref tcpTableLength, sorted, IpHelper.AfInet6, IpHelper.TcpTableType.OwnerPidAll, 0) != 0)
+            {
+                try
+                {
+                    tcpTable = Marshal.AllocHGlobal(tcpTableLength);
+                    if (IpHelper.GetExtendedTcpTable(tcpTable, ref tcpTableLength, true, IpHelper.AfInet6, IpHelper.TcpTableType.OwnerPidAll, 0) == 0)
+                    {
+                        IpHelper.TcpTable table = (IpHelper.TcpTable)Marshal.PtrToStructure(tcpTable, typeof(IpHelper.TcpTable));
+
+                        IntPtr rowPtr = (IntPtr)((long)tcpTable + Marshal.SizeOf(table.length));
+                        for (int i = 0; i < table.length; ++i)
+                        {
+                            tcpRows.Add(new TcpRow((IpHelper.TcpRow)Marshal.PtrToStructure(rowPtr, typeof(IpHelper.TcpRow))));
+                            rowPtr = (IntPtr)((long)rowPtr + Marshal.SizeOf(typeof(IpHelper.TcpRow)));
+                        }
+                    }
+                }
+                finally
+                {
+                    if (tcpTable != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(tcpTable);
+                    }
+                }
+            }
+
+            return new TcpTable(tcpRows);
+        }
         #endregion
     }
 
@@ -165,7 +201,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public const string DllName = "iphlpapi.dll";
         public const int AfInet = 2;
-
+        public const int AfInet6 = 23;
         #endregion
 
         #region Public Methods

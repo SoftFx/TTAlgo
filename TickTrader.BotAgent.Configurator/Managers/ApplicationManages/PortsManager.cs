@@ -135,6 +135,7 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool CheckIPv6(string hostname, int port)
         {
+            //var x = ManagedIpHelper.GetExtendedTcpTableIPv6(true);
             foreach (var listener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
             {
                 if (CheckLocalPoint(listener, hostname, port) && !IsAgentPort(hostname, port))
