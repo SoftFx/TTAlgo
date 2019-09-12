@@ -8,8 +8,6 @@ namespace TickTrader.BotAgent.Configurator
         private FileStream _lockFile;
         private readonly string _appLockFilePath;
 
-        public static bool FirstRun { get; private set; }
-
         public AppInstanceRestrictor()
         {
             _appLockFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "applock");
@@ -47,8 +45,6 @@ namespace TickTrader.BotAgent.Configurator
         {
             try
             {
-                FirstRun = !File.Exists(_appLockFilePath);
-
                 _lockFile = new FileStream(_appLockFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
                 var processId = System.Diagnostics.Process.GetCurrentProcess().Id;
                 _lockFile.Write(BitConverter.GetBytes(processId), 0, 4);

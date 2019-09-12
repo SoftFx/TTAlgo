@@ -74,9 +74,6 @@ namespace TickTrader.BotAgent.Configurator
 
             LoadConfiguration();
             SaveChanges();
-
-            if (AppInstanceRestrictor.FirstRun && ServiceManager.IsServiceRunning)
-                SaveCache();
         }
 
         public void StartAgent()
