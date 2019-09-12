@@ -11,37 +11,31 @@ namespace TickTrader.BotAgent.Configurator
 
         private readonly string _serviceName;
 
-        private ServiceController _serviceController;
+        private ServiceController ServiceController => new ServiceController(_serviceName);
 
-        public string ServiceDisplayName => _serviceController.DisplayName;
+        public string ServiceDisplayName => ServiceController.DisplayName;
 
-        public bool IsServiceRunning => _serviceController?.Status == ServiceControllerStatus.Running;
-
-        public ServiceControllerStatus ServiceStatus => _serviceController.Status;
-
-        public int ServiceId { get; private set; }
-
+        public bool IsServiceRunning => ServiceController.Status == ServiceControllerStatus.Running;
 
         public ServiceManager(string serviceName)
         {
             _serviceName = serviceName;
-            _serviceController = new ServiceController(_serviceName);
         }
 
         public void ServiceStart(int listeningPort)
         {
-            _serviceController = new ServiceController(_serviceName);
-
             if (IsServiceRunning)
                 ServiceStop();
 
-            if (_serviceController.Status == ServiceControllerStatus.Running)
+            var service = ServiceController;
+
+            if (service.Status == ServiceControllerStatus.Running)
                 throw new Exception(Resources.StartServiceEx);
 
             try
             {
-                _serviceController.Start();
-                _serviceController.WaitForStatus(ServiceControllerStatus.Running);
+                service.Start();
+                service.WaitForStatus(ServiceControllerStatus.Running);
             }
             catch (Exception ex)
             {
@@ -52,15 +46,15 @@ namespace TickTrader.BotAgent.Configurator
 
         public void ServiceStop()
         {
-            _serviceController = new ServiceController(_serviceName);
+            var service = ServiceController;
 
-            if (_serviceController.Status == ServiceControllerStatus.Stopped)
+            if (service.Status == ServiceControllerStatus.Stopped)
                 throw new Exception(Resources.StopServiceEx);
 
             try
             {
-                _serviceController.Stop();
-                _serviceController.WaitForStatus(ServiceControllerStatus.Stopped);
+                service.Stop();
+                service.WaitForStatus(ServiceControllerStatus.Stopped);
             }
             catch (Exception ex)
             {

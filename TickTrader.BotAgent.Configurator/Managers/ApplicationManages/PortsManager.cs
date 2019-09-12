@@ -16,17 +16,19 @@ namespace TickTrader.BotAgent.Configurator
         private const int MaxPort = (1 << 16) - 1;
 
         private readonly RegistryNode _currentAgent;
-        private readonly CacheManager _cache;
+        private readonly IPHelperWrapper _helper;
+        private readonly ServiceManager _service;
 
         private readonly INetFwMgr _firewallManager;
         private readonly INetFwPolicy2 _firewallPolicy;
 
-        private List<Uri> _busyUrls;
-
-        public PortsManager(RegistryNode agent, CacheManager cache)
+        public PortsManager(RegistryNode agent, ServiceManager service)
         {
+            _helper = new IPHelperWrapper();
+
+            _service = service;
             _currentAgent = agent;
-            _cache = cache;
+
             _firewallManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr", false));
             _firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2", true));
         }
@@ -65,8 +67,6 @@ namespace TickTrader.BotAgent.Configurator
 
         public void CheckPort(int port, string hostname = "current")
         {
-            _busyUrls = UriChecker.GetEncodedUrls(_cache.BusyUrls);
-
             if (!CheckPortOpen(port, hostname))
             {
                 string freePortMassage = string.Empty;
@@ -124,9 +124,9 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool CheckIPv4(string hostname, int port)
         {
-            foreach (var tcp in ManagedIpHelper.GetExtendedTcpTable(true))
+            foreach (var tcpRow in _helper.GetAllTCPv4Connections())
             {
-                if (CheckLocalPoint(tcp.LocalEndPoint, hostname, port) && CheckActiveServiceState(tcp.State) && !IsAgentPort(hostname, port))
+                if (CheckLocalPoint(tcpRow.LocalEndPoint, $"[{hostname}]", port) && CheckActiveServiceState(tcpRow.State) && !IsAgentPort(tcpRow.ProcessId))
                     return false;
             }
 
@@ -135,10 +135,9 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool CheckIPv6(string hostname, int port)
         {
-            //var x = ManagedIpHelper.GetExtendedTcpTableIPv6(true);
-            foreach (var listener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+            foreach (var tcpRow in _helper.GetAllTCPv6Connections())
             {
-                if (CheckLocalPoint(listener, hostname, port) && !IsAgentPort(hostname, port))
+                if (CheckLocalPoint(tcpRow.LocalEndPoint, hostname, port) && CheckActiveServiceState(tcpRow.State) && !IsAgentPort(tcpRow.ProcessId))
                     return false;
             }
 
@@ -155,9 +154,11 @@ namespace TickTrader.BotAgent.Configurator
             return state == TcpState.Established || state == TcpState.Listen;
         }
 
-        private bool IsAgentPort(string hostname, int port)
+        private bool IsAgentPort(uint processId)
         {
-            return _busyUrls.Where(u => u.Host == hostname && u.Port == port).Count() > 0;
+            var process = Process.GetProcessById((int)processId);
+
+            return _service.IsServiceRunning && process.MainModule.FileName == _currentAgent.ExePath;
         }
     }
 }

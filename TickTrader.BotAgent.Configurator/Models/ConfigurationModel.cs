@@ -60,7 +60,7 @@ namespace TickTrader.BotAgent.Configurator
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
             CacheManager = new CacheManager(CurrentAgent);
 
-            _portsManager = new PortsManager(RegistryManager.CurrentAgent, CacheManager);
+            _portsManager = new PortsManager(RegistryManager.CurrentAgent, ServiceManager);
             _configurationObject = null;
 
             CredentialsManager = new CredentialsManager(SectionNames.Credentials);
