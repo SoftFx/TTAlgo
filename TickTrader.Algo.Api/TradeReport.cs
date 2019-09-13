@@ -56,6 +56,7 @@ namespace TickTrader.Algo.Api
         BalanceTransaction = 5,
         Credit = 6,
         PositionOpened = 7,
-        OrderActivated = 8
+        OrderActivated = 8,
+        TradeModified = 9
     }
 }

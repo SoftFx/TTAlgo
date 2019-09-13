@@ -110,6 +110,7 @@ namespace TickTrader.Algo.Core
         public bool IsReducedOpenCommission { get; set; }
         public double? MinCommissionConversionRate { get; set; }
         public OrderType ReqOrderType { get; set; }
+        public double? SplitRatio { get; set; }
         #endregion
     }
 
@@ -125,6 +126,8 @@ namespace TickTrader.Algo.Core
         Rollover = 6,
         DeleteAccount = 7,
         Expired = 8,
-        TransferMoney = 9
+        TransferMoney = 9,
+        Split = 10,
+        Dividend = 11
     }
 }

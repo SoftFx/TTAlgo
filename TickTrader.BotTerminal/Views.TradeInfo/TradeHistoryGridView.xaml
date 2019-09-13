@@ -48,6 +48,9 @@
                                     <Binding Path="OrderExecutionOption"/>
                                     <Binding Path="PosRemainingPrice"/>
                                     <Binding Path="PosQuantity"/>
+                                    <Binding Path="SplitReqVolume"/>
+                                    <Binding Path="SplitReqPrice"/>
+                                    <Binding Path="SplitRatio"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -88,6 +91,18 @@
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding PosQuantity, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Pos Volume: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding PosQuantity}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqPrice, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Req Price: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SplitReqPrice}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqVolume, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Req Volume: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SplitReqVolume}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding SplitRatio, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Split Ratio: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SplitRatio}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
@@ -324,10 +339,41 @@
                         <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="ToolTipService.IsEnabled">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
+                                    <Binding Path="SplitReqVolume"/>
+                                    <Binding Path="SplitReqPrice"/>
+                                    <Binding Path="SplitRatio"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="ToolTip">
+                            <Setter.Value>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqPrice, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Req Price: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SplitReqPrice}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqVolume, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Req Volume: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SplitReqVolume}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding SplitRatio, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Split Ratio: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SplitRatio}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Order" Width="90" Binding="{Binding UniqueId}" />
+                    <DataGridTextColumn Header="Order" Width="80" Binding="{Binding UniqueId}" />
                     <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}"/>
-                    <DataGridTextColumn Header="Type" Width="70" Binding="{Binding Type}"/>
+                    <DataGridTextColumn Header="Type" Width="90" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
                     <DataGridTextColumn Header="Action" Width="100" Binding="{Binding ActionType}" />
                     <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
                     <DataGridTextColumn Header="Requested Quantity" Width="70" SortMemberPath="OpenQuantity" >
