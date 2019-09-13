@@ -107,7 +107,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Helpers\Instance\AppInstanceRestrictor.cs" />
-    <Compile Include="Helpers\Static\ManagedIpHelper.cs" />
+    <Compile Include="Helpers\Instance\IPHelper.cs" />
     <Compile Include="Helpers\Static\UriChecker.cs" />
     <Compile Include="Infrastructure\Commands\AsyncCommand.cs" />
     <Compile Include="Helpers\Static\IoHelper.cs" />
