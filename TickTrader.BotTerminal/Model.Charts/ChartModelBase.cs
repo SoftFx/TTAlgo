@@ -83,14 +83,17 @@ namespace TickTrader.BotTerminal
 
             _currentRateProp.Value = symbol.LastQuote;
 
-            stateController.AddTransition(States.Idle, () => isConnected && !_isDisposed, States.LoadingData);
+            Func<bool> isReadyToStart = () => isConnected && !_isDisposed;
+            Func<bool> isNotReadyToStart = () => !isReadyToStart();
+
+            stateController.AddTransition(States.Idle, isReadyToStart, States.LoadingData);
             stateController.AddTransition(States.LoadingData, Events.Loaded, States.Online);
             stateController.AddTransition(States.LoadingData, Events.LoadFailed, States.Faulted);
             stateController.AddTransition(States.Online, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
             stateController.AddTransition(States.Faulted, () => isUpdateRequired || !isConnected || _isDisposed, States.Stopping);
             //stateController.AddTransition(States.Stopping, () => isUpdateRequired && isConnected, States.LoadingData);
-            stateController.AddTransition(States.Stopping, Events.Stopped, States.Idle);
-            stateController.AddTransition(States.Stopping, () => isConnected && !_isDisposed, States.LoadingData);
+            stateController.AddTransition(States.Stopping, Events.Stopped, isNotReadyToStart, States.Idle);
+            stateController.AddTransition(States.Stopping, Events.Stopped, isReadyToStart, States.LoadingData);
 
             stateController.OnEnter(States.LoadingData, () => Update(CancellationToken.None));
             stateController.OnEnter(States.Online, StartIndicators);
@@ -256,7 +259,6 @@ namespace TickTrader.BotTerminal
                 isUpdateRequired = false;
                 ClearData();
                 updateQueue = new List<QuoteEntity>();
-                await StopEvent.InvokeAsync(this);
                 await LoadData(cToken);
                 ApplyQueue();
                 stateController.PushEvent(Events.Loaded);
@@ -423,7 +425,6 @@ namespace TickTrader.BotTerminal
         public event System.Action Disconnected;
 
         #endregion
-
 
         #region IAlgoSetupContext
 

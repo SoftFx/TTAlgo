@@ -605,8 +605,8 @@ namespace TickTrader.Algo.Core
             foreach (var record in config.Outputs)
                 outputFixtures[record.Key] = record.Value.Create(this);
 
-            //foreach (var record in config.Mappings)
-            //    record.Value.MapInput(this, record.Key.Item1, record.Key.Item2);
+            foreach (var record in config.Mappings)
+                record.Value.MapInput(this, record.Key.Item1, record.Key.Item2);
         }
 
         #region Emulator Support

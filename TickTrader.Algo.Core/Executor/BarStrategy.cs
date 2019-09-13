@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.Algo.Core
 {
@@ -14,7 +15,6 @@ namespace TickTrader.Algo.Core
         private BarSampler sampler;
         [NonSerialized]
         private BarSeriesFixture mainSeriesFixture;
-        [NonSerialized]
         private List<BarEntity> mainSeries;
         [NonSerialized]
         private Dictionary<string, BarSeriesFixture[]> fixtures;
