@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Core
             ExecContext = executor;
             _marketFixture = marketFixture;
             Feed = executor.FeedProvider;
+            FeedHistory = executor.FeedHistory;
             BufferingStrategy = bStrategy;
             RateDispenser.ClearUserSubscriptions();
             OnInit();
