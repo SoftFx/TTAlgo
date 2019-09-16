@@ -65,13 +65,13 @@ namespace TickTrader.Algo.TestCollection.Bots
                     }
                     if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
                     {
-                        stopPrice = Symbol.Bid + _diff * 2;
-                        modifyStopPrice = Symbol.Bid + _diff;
+                        stopPrice = Symbol.Ask + _diff * 2;
+                        modifyStopPrice = Symbol.Ask + _diff;
                     }
                     if (orderType == OrderType.StopLimit)
                     {
-                        price = Symbol.Bid + _diff * 3;
-                        modifyPrice = Symbol.Bid + _diff * 4;
+                        price = Symbol.Ask + _diff * 3;
+                        modifyPrice = Symbol.Ask + _diff * 4;
                     }
                 }   
             }
@@ -88,13 +88,13 @@ namespace TickTrader.Algo.TestCollection.Bots
                     }
                     if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
                     {
-                        stopPrice = Symbol.Ask - _diff * 2;
-                        modifyStopPrice = Symbol.Ask - _diff;
+                        stopPrice = Symbol.Bid - _diff * 2;
+                        modifyStopPrice = Symbol.Bid - _diff;
                     }
                     if (orderType == OrderType.StopLimit)
                     {
-                        price = Symbol.Ask - _diff * 3;
-                        modifyPrice = Symbol.Ask - _diff * 4;
+                        price = Symbol.Bid - _diff * 3;
+                        modifyPrice = Symbol.Bid - _diff * 4;
                     }
                 }
             }
