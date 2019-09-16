@@ -40,7 +40,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public LogsManager Logs { get; private set; }
 
-        public CacheManager CacheManager { get; private set; }
+        //public CacheManager CacheManager { get; private set; }
 
         public ConfigurationModel()
         {
@@ -58,7 +58,7 @@ namespace TickTrader.BotAgent.Configurator
             RegistryManager.ChangeCurrentAgent(newPath);
 
             ServiceManager = new ServiceManager(CurrentAgent.ServiceId);
-            CacheManager = new CacheManager(CurrentAgent);
+            //CacheManager = new CacheManager(CurrentAgent);
 
             _portsManager = new PortsManager(RegistryManager.CurrentAgent, ServiceManager);
             _configurationObject = null;
@@ -85,13 +85,6 @@ namespace TickTrader.BotAgent.Configurator
         public void StopAgent()
         {
             ServiceManager.ServiceStop();
-        }
-
-        public void SaveCache()
-        {
-            //var ports = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
-            //CacheManager.SetProperty(CashedProperties.Ports, ports);
-            CacheManager.RefreshCache(_configurationObject);
         }
 
         public void LoadConfiguration()
@@ -126,11 +119,6 @@ namespace TickTrader.BotAgent.Configurator
             }
 
             RegisterAgentInFirewall();
-        }
-
-        public bool EqualsCurrentAndCashedSettings()
-        {
-            return CacheManager.CompareJObject(_configurationObject);
         }
 
         private void UploadModel(IWorkingManager model)

@@ -75,11 +75,11 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     _refresh.DropRestart();
                     RestartRequired = false;
-                    StartServiceEvent.Invoke();
+                    StartServiceEvent?.Invoke();
                 }
                 else
                 {
-                    StopServiceEvent.Invoke();
+                    StopServiceEvent?.Invoke();
                 }
             }
 

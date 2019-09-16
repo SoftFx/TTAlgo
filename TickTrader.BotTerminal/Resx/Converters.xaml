@@ -30,4 +30,5 @@
     <l:LogSeverityToBrushConverter x:Key="LogSeverityConverter" />
     <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
     <l:PascalCaseSplitConverter x:Key="PascalSplitString"/>
+    <l:TextLengthComparisonConverter x:Key="TextLengthComparison"/>
 </ResourceDictionary>
