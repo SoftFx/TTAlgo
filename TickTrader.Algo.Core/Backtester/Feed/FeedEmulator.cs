@@ -191,7 +191,18 @@ namespace TickTrader.Algo.Core
 
         List<QuoteEntity> Infrastructure.IFeedSubscription.Modify(List<Infrastructure.FeedSubscriptionUpdate> updates)
         {
-            return null;
+            List<QuoteEntity> snapshot = new List<QuoteEntity>();
+
+            foreach (var upd in updates)
+            {
+                if (upd.IsUpsertAction)
+                {
+                    if (_feedSeries.TryGetValue(upd.Symbol, out var series) && series.Current != null)
+                        snapshot.Add((QuoteEntity)series.Current.LastQuote);
+                }
+            }
+
+            return snapshot;
         }
 
         void Infrastructure.IFeedSubscription.CancelAll()

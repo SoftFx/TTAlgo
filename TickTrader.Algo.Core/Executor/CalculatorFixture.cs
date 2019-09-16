@@ -37,6 +37,8 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
+            acc = _context.Builder.Account;
+
             //var orderedSymbols = _context.Builder.Symbols.OrderBy(s => s.Name).ThenBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name);
 
             //_context.Dispenser.AddSubscription(orderedSymbols.
@@ -59,7 +61,6 @@ namespace TickTrader.Algo.Core
                 _context.Builder.Account.OnTradeInfoAccess();
                 _context.FeedStrategy.SubscribeAll();
 
-                acc = _context.Builder.Account;
                 if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
                 {
                     _marginCalc = new MarginAccountCalc(acc, Market, true);
@@ -80,6 +81,8 @@ namespace TickTrader.Algo.Core
 
         public OrderCalculator GetCalculator(string symbol, string accountCurrency)
         {
+            LazyInit();
+
             return Market.GetCalculator(symbol, accountCurrency);
         }
 
