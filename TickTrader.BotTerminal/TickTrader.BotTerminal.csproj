@@ -303,6 +303,7 @@
     <Compile Include="Converters\NumberConverter.cs" />
     <Compile Include="Converters\PascalCaseSplitConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
+    <Compile Include="Converters\TextLengthComparisonConverter.cs" />
     <Compile Include="Extensions\ChartExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumToItemSource.cs" />
