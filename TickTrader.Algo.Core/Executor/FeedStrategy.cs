@@ -444,10 +444,18 @@ namespace TickTrader.Algo.Core
 
             public void StartStrategy()
             {
-                _strategy.RateDispenser.Start();
-                _strategy.InitDefaultSubscription();
-                _strategy.Feed.RateUpdated += Feed_RateUpdated;
-                _strategy.Feed.RatesUpdated += Feed_RatesUpdated;
+                _strategy.RateDispenser.IsSynchronized = true;
+                try
+                {
+                    _strategy.RateDispenser.Start();
+                    _strategy.InitDefaultSubscription();
+                    _strategy.Feed.RateUpdated += Feed_RateUpdated;
+                    _strategy.Feed.RatesUpdated += Feed_RatesUpdated;
+                }
+                finally
+                {
+                    _strategy.RateDispenser.IsSynchronized = false;
+                }
             }
 
             private void Feed_RatesUpdated(List<QuoteEntity> updates) => _strategy.Feed_RatesUpdated(updates);
@@ -455,9 +463,17 @@ namespace TickTrader.Algo.Core
 
             public void StopStrategy()
             {
-                _strategy.RateDispenser.Stop();
-                _strategy.Feed.RateUpdated -= Feed_RateUpdated;
-                _strategy.Feed.RatesUpdated -= Feed_RatesUpdated;
+                _strategy.RateDispenser.IsSynchronized = true;
+                try
+                {
+                    _strategy.RateDispenser.Stop();
+                    _strategy.Feed.RateUpdated -= Feed_RateUpdated;
+                    _strategy.Feed.RatesUpdated -= Feed_RatesUpdated;
+                }
+                finally
+                {
+                    _strategy.RateDispenser.IsSynchronized = false;
+                }
             }
         }
 

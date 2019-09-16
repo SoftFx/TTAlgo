@@ -21,6 +21,8 @@ namespace TickTrader.Algo.Core
             _marketFixture = marketFixture;
         }
 
+        public bool IsSynchronized { get; set; }
+
         public void Start()
         {
             Start(_context.FeedProvider, _context.Builder.Symbols.Select(s => s.Name));
@@ -35,7 +37,10 @@ namespace TickTrader.Algo.Core
         {
             using (var request = new CrossdomainRequest { Feed = _context.FeedProvider, Updates = updates })
             {
-                _context.FeedProvider.Sync.Invoke(request.Modify);
+                if (IsSynchronized)
+                    request.Modify();
+                else
+                    _context.FeedProvider.Sync.Invoke(request.Modify);
                 return request.Result;
             }
         }

@@ -12,6 +12,8 @@ namespace ActorSharp
 
     public abstract class Ref<TActor> : ActorRef
     {
+        public abstract bool IsInActorContext { get; }
+
         public abstract void Send(Action<TActor> method);
         public abstract Task Call(Action<TActor> method);
         public abstract Task Call(Func<TActor, Task> method);

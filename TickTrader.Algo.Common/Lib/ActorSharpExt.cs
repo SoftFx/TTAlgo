@@ -41,19 +41,38 @@ namespace TickTrader.Algo.Common.Lib
             public SyncAdapter(Ref<TActor> aRef) : base(aRef) { }
 
             public void Invoke(Action syncAction)
-                => CallActor(a => syncAction());
+            {
+                if (Actor.IsInActorContext)
+                    syncAction();
+                else
+                    CallActor(a => syncAction());
+            }
 
             public void Invoke<T>(Action<T> syncAction, T args)
-                => CallActor(a => syncAction(args));
+            {
+                if (Actor.IsInActorContext)
+                    syncAction(args);
+                else
+                    CallActor(a => syncAction(args));
+            }
 
             public T Invoke<T>(Func<T> syncFunc)
-                => CallActor(a => syncFunc());
+            {
+                if (Actor.IsInActorContext)
+                    return syncFunc();
+                else
+                    return CallActor(a => syncFunc());
+            }
 
             public TOut Invoke<TIn, TOut>(Func<TIn, TOut> syncFunc, TIn args)
-                => CallActor(a => syncFunc(args));
+            {
+                if (Actor.IsInActorContext)
+                    return syncFunc(args);
+                else
+                    return CallActor(a => syncFunc(args));
+            }
 
-            public void Send(Action asyncAction)
-                => ActorSend(a => asyncAction());
+            public void Send(Action asyncAction) => ActorSend(a => asyncAction());
         }
 
         private class CrossDomainAdapter<T> : CrossDomainObject, IAsyncCrossDomainEnumerator<T>
