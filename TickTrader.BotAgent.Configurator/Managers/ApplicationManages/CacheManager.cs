@@ -32,9 +32,9 @@ namespace TickTrader.BotAgent.Configurator
             GetSettings();
         }
 
-        public void RefreshCache()
+        public void RefreshCache(JObject cur)
         {
-            SaveProperties();
+            SaveProperties(cur);
             GetSettings();
         }
 
@@ -44,7 +44,12 @@ namespace TickTrader.BotAgent.Configurator
                 File.Delete(_cacheFile);
         }
 
-        public void SaveProperties()
+        public bool CompareJObject(JObject cur)
+        {
+            return JToken.DeepEquals(cur, _cacheObj);
+        }
+
+        public void SaveProperties(JObject obj)
         {
             try
             {
@@ -52,7 +57,7 @@ namespace TickTrader.BotAgent.Configurator
                 {
                     using (var sw = new StreamWriter(fs))
                     {
-                        sw.Write(_cacheObj.ToString());
+                        sw.Write(obj.ToString());
                     }
                 }
             }

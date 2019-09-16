@@ -1000,6 +1000,10 @@ namespace TickTrader.Algo.Common.Model
                     return Core.TradeTransactionReason.TakeProfitActivation;
                 case SFX.TradeTransactionReason.TransferMoney:
                     return Core.TradeTransactionReason.TransferMoney;
+                case SFX.TradeTransactionReason.Split:
+                    return Core.TradeTransactionReason.Split;
+                case SFX.TradeTransactionReason.Dividend:
+                    return Core.TradeTransactionReason.Dividend;
                 default:
                     return Core.TradeTransactionReason.None;
             }
@@ -1094,6 +1098,7 @@ namespace TickTrader.Algo.Common.Model
                 UsdToSrcAssetConversionRate = report.UsdToSrcAssetConversionRate,
                 ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
                 TradeTransactionReason = Convert(report.TradeTransactionReason),
+                SplitRatio = report.SplitRatio,
             };
         }
 
@@ -1148,6 +1153,7 @@ namespace TickTrader.Algo.Common.Model
                 case TradeTransactionReportType.OrderOpened: return Api.TradeExecActions.OrderOpened;
                 case TradeTransactionReportType.PositionClosed: return Api.TradeExecActions.PositionClosed;
                 case TradeTransactionReportType.PositionOpened: return Api.TradeExecActions.PositionOpened;
+                case TradeTransactionReportType.TradeModified: return Api.TradeExecActions.TradeModified;
                 default: return Api.TradeExecActions.None;
             }
         }

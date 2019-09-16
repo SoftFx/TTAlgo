@@ -89,10 +89,9 @@ namespace TickTrader.BotAgent.Configurator
 
         public void SaveCache()
         {
-            var ports = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
-
-            CacheManager.SetProperty(CashedProperties.Ports, ports);
-            CacheManager.RefreshCache();
+            //var ports = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
+            //CacheManager.SetProperty(CashedProperties.Ports, ports);
+            CacheManager.RefreshCache(_configurationObject);
         }
 
         public void LoadConfiguration()
@@ -131,12 +130,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public bool EqualsCurrentAndCashedSettings()
         {
-            if (CacheManager.BusyUrls.Count == 0)
-                return true;
-
-            var current = new List<Uri>(ServerManager.ServerModel.Urls) { ProtocolManager.ProtocolModel.ListeningUri };
-
-            return current.All(CacheManager.BusyUrls.Contains) && current.Count == CacheManager.BusyUrls.Count;
+            return CacheManager.CompareJObject(_configurationObject);
         }
 
         private void UploadModel(IWorkingManager model)

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace TickTrader.BotAgent.Configurator
+namespace TickTrader.BotAgent.Configurator.IPHelper
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct MIB_TCPROW_OWNER_PID
