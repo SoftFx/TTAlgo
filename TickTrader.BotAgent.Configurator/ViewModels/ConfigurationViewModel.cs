@@ -92,9 +92,6 @@ namespace TickTrader.BotAgent.Configurator
                 SetNewViewModels();
 
                 _mainWindow.Closing += MainWindow_Closing;
-
-                StateServiceModel.StopServiceEvent += () => _model.CacheManager.DropCash();
-                StateServiceModel.StartServiceEvent += () => _model.SaveCache();
             }
             catch (Exception ex)
             {
@@ -155,7 +152,6 @@ namespace TickTrader.BotAgent.Configurator
             _viewModels = new List<BaseContentViewModel>() { AdminModel, DealerModel, ViewerModel, ProtocolModel, ServerModel, FdkModel, AdvancedModel };
             _runnignApplication = true;
 
-            StateServiceModel.RestartRequired = !_model.EqualsCurrentAndCashedSettings();
             ProtocolModel.ChangeListeningPortEvent += () => ServerModel.RefreshModel();
 
             ThreadPool.QueueUserWorkItem(RefreshServiceState);
