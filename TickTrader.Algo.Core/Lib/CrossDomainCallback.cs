@@ -12,6 +12,11 @@ namespace TickTrader.Algo.Core.Lib
         void Invoke(T arg);
     }
 
+    public interface ICallback
+    {
+        void Invoke();
+    }
+
     public class CrossDomainCallback<T> : CrossDomainObject, ICallback<T>
     {
         public CrossDomainCallback()
@@ -31,7 +36,7 @@ namespace TickTrader.Algo.Core.Lib
         }
     }
 
-    public class CrossDomainCallback : CrossDomainObject
+    public class CrossDomainCallback : CrossDomainObject, ICallback
     {
         public CrossDomainCallback()
         {

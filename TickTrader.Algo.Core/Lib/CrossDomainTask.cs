@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core.Lib
 
     }
 
-    public class CrossDomainTaskProxy : CrossDomainObject
+    public class CrossDomainTaskProxy : CrossDomainObject, ICallback
     {
         private TaskCompletionSource<object> _taskSrc = new TaskCompletionSource<object>();
 
@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Core.Lib
         public void SetCompleted()
         {
             _taskSrc.SetResult(null);
+            Dispose();
         }
 
         public bool TrySetCompleted()
@@ -49,6 +50,11 @@ namespace TickTrader.Algo.Core.Lib
         public void SetException(Exception ex)
         {
             _taskSrc.SetException(ex);
+        }
+
+        public void Invoke()
+        {
+            SetCompleted();
         }
     }
 }

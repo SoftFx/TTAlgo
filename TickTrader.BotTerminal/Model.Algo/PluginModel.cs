@@ -99,27 +99,25 @@ namespace TickTrader.BotTerminal
             Config = config;
         }
 
-        protected Task<bool> StopExecutor()
+        protected async Task<bool> StopExecutor()
         {
-            return Task.Factory.StartNew(() =>
+            ChangeState(PluginStates.Stopping);
+
+            try
             {
-                ChangeState(PluginStates.Stopping);
-                try
-                {
-                    _executor.WriteConnectionInfo(Host.GetConnectionInfo());
-                    _executor.Stop();
-                    ClearOutputs();
-                    UnlockResources();
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "StopExcecutor() failed!");
-                    ChangeState(PluginStates.Faulted, ex.Message);
-                    UnlockResources();
-                    return false;
-                }
-            });
+                _executor.WriteConnectionInfo(Host.GetConnectionInfo());
+                await _executor.StopAsync();
+                ClearOutputs();
+                UnlockResources();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "StopExcecutor() failed!");
+                ChangeState(PluginStates.Faulted, ex.Message);
+                UnlockResources();
+                return false;
+            }
         }
 
         protected void AbortExecutor()

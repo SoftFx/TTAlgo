@@ -78,6 +78,13 @@ namespace TickTrader.Algo.Core
             Core.Stop();
         }
 
+        public Task StopAsync()
+        {
+            var taskSrc = new CrossDomainTaskProxy();
+            Core.StopAsync(taskSrc);
+            return taskSrc.Task;
+        }
+
         public void Abort()
         {
             Core.Abort();

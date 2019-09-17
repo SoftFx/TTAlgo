@@ -347,24 +347,34 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
-            Task taskToWait = null;
+            StopInternal()?.Wait();
+        }
 
+        public void StopAsync(ICallback asyncCallback)
+        {
+            var task = StopInternal();
+            if (task != null)
+                task.ContinueWith(t => asyncCallback.Invoke());
+            else
+                asyncCallback.Invoke();
+        }
+
+        private Task StopInternal()
+        {
             lock (_sync)
             {
                 System.Diagnostics.Debug.WriteLine("EXECUTOR STOP!");
 
                 if (state == States.Idle)
-                    return;
+                    return null;
                 else if (state != States.Stopping)
                 {
                     ChangeState(States.Stopping);
                     stopTask = DoStop(false);
                 }
 
-                taskToWait = stopTask;
+                return stopTask;
             }
-
-            taskToWait.Wait();
         }
 
         public void Abort()
