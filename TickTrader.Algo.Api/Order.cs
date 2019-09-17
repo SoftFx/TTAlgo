@@ -51,6 +51,7 @@ namespace TickTrader.Algo.Api
         event Action<OrderFilledEventArgs> Filled;
         event Action<OrderExpiredEventArgs> Expired;
         event Action<OrderActivatedEventArgs> Activated;
+        event Action<OrderSplittedEventArgs> Splitted;
         event Action<Order> Added;
         event Action<Order> Removed;
         event Action<Order> Replaced;
@@ -88,6 +89,12 @@ namespace TickTrader.Algo.Api
     }
 
     public interface OrderFilledEventArgs
+    {
+        Order OldOrder { get; }
+        Order NewOrder { get; }
+    }
+
+    public interface OrderSplittedEventArgs
     {
         Order OldOrder { get; }
         Order NewOrder { get; }

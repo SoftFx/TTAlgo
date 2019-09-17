@@ -132,10 +132,16 @@ namespace TickTrader.Algo.Core
             internal IEnumerable<PositionAccessor> Values => _positions.Values;
 
             public event Action<NetPositionModifiedEventArgs> Modified;
+            public event Action<NetPositionSplittedEventArgs> Splitted;
 
             public void FirePositionModified(NetPositionModifiedEventArgs args)
             {
                 Modified?.Invoke(args);
+            }
+
+            public void FirePositionSplitted(NetPositionSplittedEventArgs args)
+            {
+                Splitted?.Invoke(args);
             }
 
             public PositionAccessor CreatePosition(SymbolAccessor symbol)

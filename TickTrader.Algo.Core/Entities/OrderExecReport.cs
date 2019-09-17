@@ -20,6 +20,6 @@ namespace TickTrader.Algo.Core
         public PositionEntity NetPosition { get; set; }
     }
 
-    public enum OrderExecAction {None, Opened, Modified, Canceled, Closed, Filled, Expired, Rejected, Activated, DepositWithdraw }
+    public enum OrderExecAction {None, Opened, Modified, Canceled, Closed, Filled, Expired, Rejected, Activated, DepositWithdraw, Splitted }
     public enum OrderEntityAction { None, Added, Removed, Updated }
 }

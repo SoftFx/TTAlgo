@@ -47,7 +47,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="TickTrader.Algo.Api">
       <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
-      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
