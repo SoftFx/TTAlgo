@@ -63,6 +63,9 @@ namespace TickTrader.BotAgent.BA.Models
             public void SaveFile(string file, byte[] bytes) => throw new NotSupportedException("Saving files in bot logs folder is not allowed");
             public string GetFileReadPath(string file) => CallActor(a => a.GetFileReadPath(file));
             public string GetFileWritePath(string file) => throw new NotSupportedException("Writing files in bot logs folder is not allowed");
+
+            public Task<string> GetStatusAsync() => CallActorAsync(a => a._status);
+            public Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
         }
 
         //public string Status { get; private set; }
@@ -75,6 +78,11 @@ namespace TickTrader.BotAgent.BA.Models
         //        return _logMessages.ToArray();
         //    }
         //}
+
+        private List<ILogEntry> QueryMessages(DateTime from, int maxCount)
+        {
+            return _logMessages.Where(e => e.TimeUtc.Timestamp > from).Take(maxCount).ToList();
+        }
 
         private IFile[] GetFiles()
         {

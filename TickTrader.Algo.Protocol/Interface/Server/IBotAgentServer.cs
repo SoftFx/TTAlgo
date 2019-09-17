@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
@@ -87,7 +88,11 @@ namespace TickTrader.Algo.Protocol
 
         string GetBotStatus(string botId);
 
+        Task<string> GetBotStatusAsync(string botId);
+
         LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount);
+
+        Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount);
 
         BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId);
 

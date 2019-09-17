@@ -138,6 +138,12 @@ namespace TickTrader.BotAgent.BA.Models
                 return new BotLog.Handler(logRef);
             }
 
+            public async Task<IBotLog> GetBotLogAsync(string botId)
+            {
+                var logRef = await CallActorAsync(a => a.GetBotOrThrow(botId).LogRef);
+                return new BotLog.Handler(logRef);
+            }
+
             public ConnectionErrorInfo GetAccountMetadata(AccountKey key, out AccountMetadataInfo info)
             {
                 var result = CallActorFlatten(a => a.GetAccountMetadata(key));

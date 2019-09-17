@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
@@ -173,6 +174,12 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
             return _botAgent.GetBotLog(botId).Status;
         }
 
+        public async Task<string> GetBotStatusAsync(string botId)
+        {
+            var log = await _botAgent.GetBotLogAsync(botId);
+            return await log.GetStatusAsync();
+        }
+
         public LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
         {
             return _botAgent.GetBotLog(botId).Messages.Where(e => e.TimeUtc.Timestamp > lastLogTimeUtc).Take(maxCount)
@@ -182,6 +189,18 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     Severity = Convert(e.Type),
                     Message = e.Message,
                 }).ToArray();
+        }
+
+        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount)
+        {
+            var log = await _botAgent.GetBotLogAsync(botId);
+            var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
+            return msgs.Select(e => new LogRecordInfo
+            {
+                TimeUtc = e.TimeUtc,
+                Severity = Convert(e.Type),
+                Message = e.Message,
+            }).ToArray();
         }
 
         public BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId)

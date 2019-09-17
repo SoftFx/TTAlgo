@@ -1188,50 +1188,51 @@ namespace TickTrader.Algo.Protocol.Grpc
             await SendServerStreamResponse(responseStream, session, res);
         }
 
-        private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.BotStatusResponse { ExecResult = execResult, BotId = request.BotId };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetBotStatus())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.Status = ToGrpc.Convert(_botAgent.GetBotStatus(request.BotId));
+                res.Status = ToGrpc.Convert(await _botAgent.GetBotStatusAsync(request.BotId));
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get bot status");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
-        private Task<Lib.BotLogsResponse> GetBotLogsInternal(Lib.BotLogsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        private async Task<Lib.BotLogsResponse> GetBotLogsInternal(Lib.BotLogsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
         {
             var res = new Lib.BotLogsResponse { ExecResult = execResult, BotId = request.BotId };
             if (session == null)
-                return Task.FromResult(res);
+                return res;
             if (!session.AccessManager.CanGetBotLogs())
             {
                 res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
-                return Task.FromResult(res);
+                return res;
             }
 
             try
             {
-                res.Logs.AddRange(_botAgent.GetBotLogs(request.BotId, request.LastLogTimeUtc.ToDateTime(), request.MaxCount).Select(ToGrpc.Convert));
+                var entries = await _botAgent.GetBotLogsAsync(request.BotId, request.LastLogTimeUtc.ToDateTime(), request.MaxCount);
+                res.Logs.AddRange(entries.Select(ToGrpc.Convert));
             }
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get bot logs");
                 res.ExecResult = CreateErrorResult(ex);
             }
-            return Task.FromResult(res);
+            return res;
         }
 
         private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)

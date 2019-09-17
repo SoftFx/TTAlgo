@@ -58,6 +58,7 @@ namespace TickTrader.BotAgent.BA
         Task StopBotAsync(string botId);
         void AbortBot(string botId);
         IBotLog GetBotLog(string botId);
+        Task<IBotLog> GetBotLogAsync(string botId);
 
         event Action<BotModelInfo, ChangeAction> BotChanged;
         event Action<BotModelInfo> BotStateChanged;
@@ -97,6 +98,8 @@ namespace TickTrader.BotAgent.BA
     {
         IEnumerable<ILogEntry> Messages { get; }
         string Status { get; }
+        Task<string> GetStatusAsync();
+        Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount);
     }
 
     public interface IFdkOptionsProvider
