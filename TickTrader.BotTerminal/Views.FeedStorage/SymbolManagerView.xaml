@@ -26,6 +26,7 @@
                     <MenuItem Header="Import" cal:Message.Attach="Import" IsEnabled="{Binding IsCustom}"/>
                     <!--<MenuItem Header="Cached data" IsEnabled="False" ToolTip="Not implemented!"/>-->
                     <Separator/>
+                    <MenuItem Header="Copy settings..." cal:Message.Attach="Copy"/>
                     <MenuItem Header="Edit settings..." cal:Message.Attach="Edit" IsEnabled="{Binding IsCustom}"/>
                     <MenuItem Header="Remove" cal:Message.Attach="Remove" IsEnabled="{Binding IsCustom}"/>
                 </ContextMenu>

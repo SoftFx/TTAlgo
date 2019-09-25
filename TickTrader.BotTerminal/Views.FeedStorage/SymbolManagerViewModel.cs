@@ -50,7 +50,7 @@ namespace TickTrader.BotTerminal
             var symbolsBySecurity = _onlineManagedSymbols.GroupBy((k, v) => v.Security);
             var groupsBySecurity = symbolsBySecurity.TransformToList((k, v) => new ManageSymbolGrouping(v.GroupKey, v.TransformToList((k1, v1) => v1)));
 
-            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols.TransformToList((k,v) => v), groupsBySecurity);
+            var onlineGroup = new ManageSymbolGrouping("Online", _onlineManagedSymbols.TransformToList((k, v) => v), groupsBySecurity);
             var customGroup = new ManageSymbolGrouping("Custom", _customManagedSymbols.TransformToList((k, v) => v));
 
             RootGroups = new ManageSymbolGrouping[] { customGroup, onlineGroup };
@@ -159,6 +159,26 @@ namespace TickTrader.BotTerminal
             if (_wndManager.ShowDialog(model, this) == true)
             {
                 var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.Update(model.GetResultingSymbol()));
+                _wndManager.ShowDialog(actionModel, this);
+            }
+        }
+
+        public void CopySymbol(SymbolData symbol)
+        {
+            CustomSymbol smb = null;
+            if (symbol is CustomSymbolData)
+            {
+                smb = ((CustomSymbolData)symbol).Entity;
+            }
+            else
+            {
+                smb = CustomSymbol.FromAlgo(symbol.InfoEntity);
+            }
+            var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasCustomSymbol, true);
+
+            if (_wndManager.ShowDialog(model, this) == true)
+            {
+                var actionModel = new ActionDialogViewModel("Saving symbol settings...", () => _catalog.AddCustomSymbol(model.GetResultingSymbol()));
                 _wndManager.ShowDialog(actionModel, this);
             }
         }
@@ -319,6 +339,11 @@ namespace TickTrader.BotTerminal
         public void Edit()
         {
             Parent.EditSymbol(Model);
+        }
+
+        public void Copy()
+        {
+            Parent.CopySymbol(Model);
         }
     }
 

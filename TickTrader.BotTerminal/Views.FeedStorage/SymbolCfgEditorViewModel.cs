@@ -14,25 +14,30 @@ namespace TickTrader.BotTerminal
     {
         private VarContext _varContext = new VarContext();
 
-        public SymbolCfgEditorViewModel(CustomSymbol symbol, IObservableList<string> availableCurrencies, Predicate<string> symbolExistsFunc)
+        public SymbolCfgEditorViewModel(CustomSymbol symbol, IObservableList<string> availableCurrencies, Predicate<string> symbolExistsFunc, bool createNew = false)
         {
             if (symbol == null)
             {
-                DisplayName = "Add Custom Symbol";
+                IsEditMode = false;
                 symbol = new CustomSymbol()
                 {
                     Name = "Symbol1",
                     Description = "",
                     BaseCurr = "EUR",
                     ProfitCurr = "USD",
-                    Digits = 5
+                    Digits = 5,
+                    ContractSize = 1,
+                    MinVolume = 0.01,
+                    MaxVolume = 1000,
+                    VolumeStep = 0.01,
+                    Commission = 0.0018,
                 };
             }
             else
             {
-                IsEditMode = true;
-                DisplayName = "Edit Symbol Settings";
+                IsEditMode = !createNew;
             }
+            DisplayName = IsEditMode ? "Edit Symbol Settings" : "Add Custom Symbol";
 
             Name = _varContext.AddValidable<string>(symbol.Name);
             Description = _varContext.AddValidable<string>(symbol.Description);
@@ -40,6 +45,16 @@ namespace TickTrader.BotTerminal
             ProfitCurr = _varContext.AddValidable<string>(symbol.ProfitCurr);
             Digits = _varContext.AddIntValidable(symbol.Digits);
             DigitsStr = _varContext.AddConverter(Digits, new StringToInt());
+            ContractSize = _varContext.AddDoubleValidable(symbol.ContractSize);
+            ContractSizeStr = _varContext.AddConverter(ContractSize, new StringToDouble());
+            MinVolume = _varContext.AddDoubleValidable(symbol.MinVolume);
+            MinVolumeStr = _varContext.AddConverter(MinVolume, new StringToDouble());
+            MaxVolume = _varContext.AddDoubleValidable(symbol.MaxVolume);
+            MaxVolumeStr = _varContext.AddConverter(MaxVolume, new StringToDouble());
+            VolumeStep = _varContext.AddDoubleValidable(symbol.VolumeStep);
+            VolumeStepStr = _varContext.AddConverter(VolumeStep, new StringToDouble());
+            Commission = _varContext.AddDoubleValidable(symbol.Commission);
+            CommissionStr = _varContext.AddConverter(Commission, new StringToDouble());
             Error = _varContext.AddProperty<string>();
 
             if (!IsEditMode)
@@ -77,7 +92,12 @@ namespace TickTrader.BotTerminal
                 Description = Description.Value,
                 BaseCurr = BaseCurr.Value.Trim(),
                 ProfitCurr = ProfitCurr.Value.Trim(),
-                Digits = Digits.Value
+                Digits = Digits.Value,
+                ContractSize = ContractSize.Value,
+                MinVolume = MinVolume.Value,
+                MaxVolume = MaxVolume.Value,
+                VolumeStep = VolumeStep.Value,
+                Commission = Commission.Value,
             };
         }
 
@@ -87,6 +107,16 @@ namespace TickTrader.BotTerminal
         public Validable<string> ProfitCurr { get; }
         public IntValidable Digits { get; }
         public IValidable<string> DigitsStr { get; }
+        public DoubleValidable ContractSize { get; }
+        public IValidable<string> ContractSizeStr { get; }
+        public DoubleValidable MinVolume { get; }
+        public IValidable<string> MinVolumeStr { get; }
+        public DoubleValidable MaxVolume { get; }
+        public IValidable<string> MaxVolumeStr { get; }
+        public DoubleValidable VolumeStep { get; }
+        public IValidable<string> VolumeStepStr { get; }
+        public DoubleValidable Commission { get; }
+        public IValidable<string> CommissionStr { get; }
         public IObservableList<string> AvailableCurrencies { get; }
         public Property<string> Error { get; }
         public bool IsEditMode { get; }
