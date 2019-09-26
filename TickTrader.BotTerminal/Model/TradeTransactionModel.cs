@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         public enum AggregatedTransactionType
         {
             Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit, SellStopLimitCanceled,
-            SellStopCanceled, SellLimitCanceled, BuyStopLimitCanceled, BuyStopCanceled, BuyLimitCanceled, TransferFunds, Split, Dividend
+            SellStopCanceled, SellLimitCanceled, BuyStopLimitCanceled, BuyStopCanceled, BuyLimitCanceled, TransferFunds, SplitBuy, SplitSell, Dividend
         }
 
         public enum TransactionSide { None = -1, Buy, Sell }
@@ -145,7 +145,8 @@ namespace TickTrader.BotTerminal
         public double? PosQuantity { get; protected set; }
         public string SortedNumber { get; protected set; }
 
-        public bool IsSplitTransaction => Type == AggregatedTransactionType.Split;
+        public bool IsSplitTransaction => Type == AggregatedTransactionType.SplitBuy || Type == AggregatedTransactionType.SplitSell;
+        public bool IsNotSplitTransaction => !IsSplitTransaction;
         public double? SplitReqVolume { get; protected set; }
         public double? SplitReqPrice { get; protected set; }
         public double? SplitRatio { get; protected set; }
@@ -291,7 +292,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual double? GetSlippage(TradeReportEntity transaction)
         {
-            if (IsBalanceTransaction || Type == AggregatedTransactionType.Split)
+            if (IsBalanceTransaction || IsSplitTransaction)
                 return null;
 
             return GetTransactionSide(transaction) == TransactionSide.Buy ? OpenPrice - transaction.ReqOpenPrice : transaction.ReqOpenPrice - OpenPrice;
@@ -373,6 +374,8 @@ namespace TickTrader.BotTerminal
             return null;
         }
 
+        protected virtual void UpdateFieldsAfterSplit(TradeReportEntity transaction) { }
+
         protected AggregatedTransactionType GetBuyOrSellType(TradeReportEntity transaction)
         {
             return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
@@ -449,7 +452,7 @@ namespace TickTrader.BotTerminal
             if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
             {
                 if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                    type = AggregatedTransactionType.Split;
+                    type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
             }
 
             return type;
@@ -513,6 +516,8 @@ namespace TickTrader.BotTerminal
                 AssetII = 0;
                 AssetIICurrency = "";
             }
+
+            UpdateFieldsAfterSplit(transaction);
         }
 
         public double AssetI { get; private set; }
@@ -532,7 +537,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
+        protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction) //after creation Splits and Dividends on Grosses make common
         {
             var type = base.GetTransactionType(transaction);
 
@@ -545,11 +550,8 @@ namespace TickTrader.BotTerminal
                     type = AggregatedTransactionType.TransferFunds;
             }
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
-            {
-                if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                    type = AggregatedTransactionType.Split;
-            }
+            if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
+                type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
 
             return type;
         }
@@ -567,6 +569,17 @@ namespace TickTrader.BotTerminal
         protected override double? GetOpenQuntity(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? transaction.TransactionAmount / LotSize : base.GetOpenQuntity(transaction);
+        }
+
+        protected override void UpdateFieldsAfterSplit(TradeReportEntity transaction)
+        {
+            if (transaction.TradeTransactionReason != TradeTransactionReason.Split)
+                return;
+
+            ClosePrice = OpenPrice;
+            CloseQuantity = OpenQuantity;
+            OpenPrice = null;
+            OpenQuantity = null;
         }
     }
 }
