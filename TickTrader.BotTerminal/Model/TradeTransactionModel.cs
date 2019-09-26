@@ -409,10 +409,7 @@ namespace TickTrader.BotTerminal
             return $"{CloseTime.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{_numberGenerator.GetNumber(CloseTime)}";
         }
 
-        private bool OrderWasCanceled()
-        {
-            return Type.ToString().Contains("Canceled");
-        }
+        private bool OrderWasCanceled() => Type.ToString().Contains("Canceled");
     }
 
     class NetTransactionModel : TransactionReport
