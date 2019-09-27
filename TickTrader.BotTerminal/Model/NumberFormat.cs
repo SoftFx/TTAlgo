@@ -33,46 +33,36 @@ namespace TickTrader.BotTerminal
                 return "{0:N" + precision + "} " + currency;
         }
 
-        public static string FormatCurrency(decimal value, int precision)
+        public static string FormatCurrency(decimal value, int precision) => GetFormattedDecimal(value, "N", precision, AmountNumberInfo);
+
+        public static string FormatPrice(decimal value, int precision) => GetFormattedDecimal(value, "F", precision);
+
+        public static string FormatPrice(double value, int precision) => GetFormattedDouble(value, "F", precision);
+
+        public static string FormatPrice(double? value, int precision) => value == null ? value.ToString() : FormatPrice(value.Value, precision);
+
+        public static string FormatPrecente(decimal value, int precision) => GetFormattedDecimal(value, "P", precision, AmountNumberInfo);
+
+        public static string FormatCurrency(double value, int precision, bool suppressNaN = true) => suppressNaN && double.IsNaN(value) ? "" : GetFormattedDouble(value, "N", precision, AmountNumberInfo);
+
+        public static string FormatPrice(double value, int precision, bool suppressNaN = true) => suppressNaN && double.IsNaN(value) ? "" : GetFormattedDouble(value, "F", precision);
+
+        public static string FormatPrecente(double value, int precision, bool suppressNaN = true) => suppressNaN && double.IsNaN(value) ? "" : GetFormattedDouble(value, "P", precision, AmountNumberInfo);
+
+        private static string GetFormattedDouble(double value, string type, int precision, NumberFormatInfo info = null)
         {
-            return value.ToString("N" + precision, AmountNumberInfo);
+            if (info == null)
+                return precision >= 0 ? value.ToString($"{type}{precision}") : value.ToString();
+            else
+                return precision >= 0 ? value.ToString($"{type}{precision}", info) : value.ToString(info);
         }
 
-        public static string FormatPrice(decimal value, int precision)
+        private static string GetFormattedDecimal(decimal value, string type, int precision, NumberFormatInfo info = null)
         {
-            return value.ToString("F" + precision);
-        }
-
-        public static string FormatPrice(double value, int precision)
-        {
-            return value.ToString("F" + precision);
-        }
-
-        public static string FormatPrice(double? value, int precision)
-        {
-            if (value == null)
-                return "NaN";
-            return value.Value.ToString("F" + precision);
-        }
-
-        public static string FormatPrecente(decimal value, int precision)
-        {
-            return value.ToString("P" + precision, AmountNumberInfo);
-        }
-
-        public static string FormatCurrency(double value, int precision, bool suppressNaN = true)
-        {
-            return suppressNaN && double.IsNaN(value) ? "" : value.ToString("N" + precision, AmountNumberInfo);
-        }
-
-        public static string FormatPrice(double value, int precision, bool suppressNaN = true)
-        {
-            return suppressNaN && double.IsNaN(value) ? "" : value.ToString("F" + precision);
-        }
-
-        public static string FormatPrecente(double value, int precision, bool suppressNaN = true)
-        {
-            return suppressNaN && double.IsNaN(value) ? "" : value.ToString("P" + precision, AmountNumberInfo);
+            if (info == null)
+                return precision >= 0 ? value.ToString($"{type}{precision}") : value.ToString();
+            else
+                return precision >= 0 ? value.ToString($"{type}{precision}", info) : value.ToString(info);
         }
     }
 }

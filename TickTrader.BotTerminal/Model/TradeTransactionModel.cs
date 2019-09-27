@@ -29,8 +29,8 @@ namespace TickTrader.BotTerminal
 
         public TransactionReport(TradeReportEntity transaction, SymbolModel symbol)
         {
-            PriceDigits = symbol?.PriceDigits ?? 5;
-            ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
+            PriceDigits = symbol?.PriceDigits ?? -1;
+            ProfitDigits = symbol?.QuoteCurrencyDigits ?? -1;
             LotSize = symbol?.LotSize ?? 1;
 
             IsPosition = transaction.TradeRecordType == OrderType.Position;
