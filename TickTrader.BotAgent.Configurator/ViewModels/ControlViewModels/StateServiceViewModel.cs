@@ -17,7 +17,7 @@ namespace TickTrader.BotAgent.Configurator
 
         public string RestartMessage => Resources.ApplyNewSettingMes;
 
-        public string ServiceState => $"{_serviceName} is {Status.ToString()}";
+        public string ServiceState => $"{_serviceName} is {Status}";
 
         public bool ServiceRunning => Status == ServiceControllerStatus.Running;
 
