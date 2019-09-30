@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get; set; }
         public CommissionType CommissionType { get; set; }
         public double ContractSizeFractional { get; set; }
-        public double MarginFactorFractional { get; set; }
+        public double MarginFactor { get; set; }
         public double StopOrderMarginReduction { get; set; }
         public double MarginHedged { get; set; }
         public BO.MarginCalculationModes MarginMode { get; set; }
@@ -49,8 +49,8 @@ namespace TickTrader.Algo.Core
 
         #region FDK Compatibility
 
-        public double MinCommission { get; }
-        public string MinCommissionCurrency { get; }
+        public double MinCommission { get; set; }
+        public string MinCommissionCurrency { get; set; }
         //public BL.SwapType SwapType { get; }
         public double? DefaultSlippage { get; set; }
         public bool IsTradeEnabled { get; set; }
@@ -68,10 +68,9 @@ namespace TickTrader.Algo.Core
         public double MinTradeVolume => MinAmount;
         public double MaxTradeVolume => MaxAmount;
         public double TradeVolumeStep => AmountStep;
-        public BL.ProfitCalculationModes ProfitCalcMode { get; }
+        public BL.ProfitCalculationModes ProfitCalcMode { get; set; }
         public BL.MarginCalculationModes MarginCalcMode { get; }
         public double MarginHedge { get; }
-        public int MarginFactor { get; }
         public double ContractMultiplier { get; }
         public int Color { get; }
 

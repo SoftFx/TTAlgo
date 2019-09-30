@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
         public NumberFormatInfo PriceFormat { get; }
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
-        public double MarginFactorFractional => entity.MarginFactorFractional;
+        public double MarginFactorFractional => entity.MarginFactor;
         public double StopOrderMarginReduction => entity.StopOrderMarginReduction;
         public double MarginHedged => entity.MarginHedged;
         public BO.MarginCalculationModes MarginMode => entity.MarginMode;

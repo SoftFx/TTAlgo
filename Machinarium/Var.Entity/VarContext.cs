@@ -11,7 +11,7 @@ namespace Machinarium.Var
         public new PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
         {
             var converter = new PropConverter<TProp, T>(property, valueConverter);
-            AddDisposableChild(converter);
+            AddChild(converter);
             return converter;
         }
 

@@ -101,11 +101,11 @@
     <Compile Include="Var.Collections\VarSet.cs" />
     <Compile Include="Var.Entity\BoolEvent.cs" />
     <Compile Include="Var.Entity\ChangeEvent.cs" />
-    <Compile Include="Var.Entity\DisposableEntity.cs" />
     <Compile Include="Var.Entity\EntityBase.cs" />
     <Compile Include="Var.Entity\PropConverter.cs" />
     <Compile Include="Var.Entity\Property.cs" />
     <Compile Include="Var.Entity\Validable.cs" />
+    <Compile Include="Var.Entity\ValidationExt.cs" />
     <Compile Include="Var\BoolVar.cs" />
     <Compile Include="Var\DoubleVar.cs" />
     <Compile Include="Var\Interfaces.cs" />
