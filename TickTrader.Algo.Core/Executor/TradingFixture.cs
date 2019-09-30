@@ -69,7 +69,6 @@ namespace TickTrader.Algo.Core
             //_dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
             var accInfo = _dataProvider.AccountInfo;
-            var accType = accInfo.Type;
 
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 

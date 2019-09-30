@@ -656,34 +656,34 @@ namespace TickTrader.Algo.Core
             return (side == OrderSide.Buy && quote.IsBidIndicative) || (side == OrderSide.Sell && quote.IsAskIndicative);
         }
 
-        private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
-        {
-            //add prices for market orders
-            if (order.Type == OrderType.Market && order.Price == null)
-            {
-                order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
-                if (account.Type == AccountTypes.Cash)
-                {
-                    order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
-                }
-            }
+        //private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
+        //{
+        //    //add prices for market orders
+        //    if (order.Type == OrderType.Market && order.Price == null)
+        //    {
+        //        order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
+        //        if (account.Type == AccountTypes.Cash)
+        //        {
+        //            order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
+        //        }
+        //    }
 
-            //convert order types for cash accounts
-            if (account.Type == AccountTypes.Cash)
-            {
-                switch (order.Type)
-                {
-                    case OrderType.Market:
-                        order.Type = OrderType.Limit;
-                        order.Options |= OrderExecOptions.ImmediateOrCancel;
-                        break;
-                    case OrderType.Stop:
-                        order.Type = OrderType.StopLimit;
-                        order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
-                        break;
-                }
-            }
-        }
+        //    //convert order types for cash accounts
+        //    if (account.Type == AccountTypes.Cash)
+        //    {
+        //        switch (order.Type)
+        //        {
+        //            case OrderType.Market:
+        //                order.Type = OrderType.Limit;
+        //                order.Options |= OrderExecOptions.ImmediateOrCancel;
+        //                break;
+        //            case OrderType.Stop:
+        //                order.Type = OrderType.StopLimit;
+        //                order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
+        //                break;
+        //        }
+        //    }
+        //}
 
         #endregion
 

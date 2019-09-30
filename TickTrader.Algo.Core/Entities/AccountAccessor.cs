@@ -25,6 +25,9 @@ namespace TickTrader.Algo.Core
         private bool _blEventsEnabled;
         private decimal _balance;
         private double _dblBalance;
+        private string _balanceCurrency;
+        private string _id;
+        private AccountTypes _type;
 
         public AccountAccessor(PluginBuilder builder)
         {
@@ -60,20 +63,57 @@ namespace TickTrader.Algo.Core
 
         public TradeHistory HistoryProvider { get { return _history; } set { _history = value; } }
 
-        public string Id { get; set; }
+        public string Id
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _id;
+            }
+            set
+            {
+                _id = value;
+            }
+        }
         public decimal Balance
         {
-            get => _balance;
+            get
+            {
+                OnTradeInfoAccess();
+                return _balance;
+            }
             set
             {
                 _balance = value;
                 _dblBalance = (double)value;
             }
         }
-        public string BalanceCurrency { get; private set; }
+        public string BalanceCurrency
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _balanceCurrency;
+            }
+            private set
+            {
+                _balanceCurrency = value;
+            }
+        }
         public Currency BalanceCurrencyInfo { get; private set; }
         public int Leverage { get; internal set; }
-        public AccountTypes Type { get; internal set; }
+        public AccountTypes Type
+        {
+            get
+            {
+                OnTradeInfoAccess();
+                return _type;
+            }
+            internal set
+            {
+                _type = value;
+            }
+        }
         public bool Isolated { get; set; }
         public string InstanceId { get; internal set; }
         public NumberFormatInfo BalanceCurrencyFormat { get; private set; }

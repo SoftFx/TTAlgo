@@ -344,6 +344,8 @@ namespace TickTrader.Algo.Core
 
         public double? GetSymbolMargin(string symbol, OrderSide side)
         {
+            LazyInit();
+
             if (_marginCalc != null)
             {
                 var netting = _marginCalc.GetSymbolStats(symbol);
