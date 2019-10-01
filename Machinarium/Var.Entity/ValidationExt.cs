@@ -8,7 +8,7 @@ namespace Machinarium.Var
 {
     public static class ValidationExt
     {
-        public static void MustBeNotEmpy(this Validable<string> property)
+        public static void MustBeNotEmpty(this Validable<string> property)
         {
             property.AddValidationRule(v => !string.IsNullOrEmpty(v), "Value is required!");
         }

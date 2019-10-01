@@ -118,12 +118,12 @@ namespace TickTrader.BotTerminal
 
             if (!IsEditMode)
             {
-                Name.MustBeNotEmpy();
+                Name.MustBeNotEmpty();
                 Name.AddValidationRule(v => !symbolExistsFunc(v), "Symbol with such name already exists!");
             }
 
-            BaseCurr.MustBeNotEmpy();
-            ProfitCurr.MustBeNotEmpy();
+            BaseCurr.MustBeNotEmpty();
+            ProfitCurr.MustBeNotEmpty();
 
             Digits.AddValidationRule(v => v >= 1 && v <= 11, "Digits can be from 1 to 11!");
 

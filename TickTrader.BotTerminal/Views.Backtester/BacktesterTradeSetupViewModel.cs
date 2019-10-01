@@ -16,9 +16,6 @@ namespace TickTrader.BotTerminal
     {
         private TaskCompletionSource<bool> _completedSrc = new TaskCompletionSource<bool>();
         private VarContext _proprs = new VarContext();
-        private BoolVar _isTradeSettingsValid;
-        private BoolVar _isEmulatorSettingsValid;
-        private BoolVar _isAdvancedSettingsValid;
 
         public BacktesterTradeSetupViewModel(BacktesterSettings settings, IObservableList<string> currencies)
         {
@@ -29,7 +26,7 @@ namespace TickTrader.BotTerminal
             InitTradeEmulatorSettings(settings);
             InitAdvancedSetttings(settings);
 
-            IsValid = _isTradeSettingsValid & _isEmulatorSettingsValid & _isAdvancedSettingsValid;
+            IsValid = _proprs.GetValidationModelResult();
         }
        
         public BoolVar IsValid { get; }
@@ -93,8 +90,6 @@ namespace TickTrader.BotTerminal
             EmulatedServerPing.AddValidationRule(p => p > 0, "Server ping be positive integer.");
 
             PingStr = _proprs.AddConverter(EmulatedServerPing, new StringToInt());
-
-            _isEmulatorSettingsValid = EmulatedServerPing.IsValid() & SelectedEmulator.Var.IsNotNull();
         }
 
         #endregion
@@ -121,21 +116,16 @@ namespace TickTrader.BotTerminal
             AvailableCurrencies = currencies;
 
             BalanceCurrency.Value = settings.BalanceCurrency ?? GetDefaultCurrency(currencies);
-            BalanceCurrency.AddValidationRule(s => !string.IsNullOrWhiteSpace(s), "Balance currency must not be empty!");
+            BalanceCurrency.MustBeNotEmpty();
+            BalanceCurrency.AddValidationRule(r => AvailableCurrencies.Contains(r), "Selected currency not found.");
 
             Leverage = _proprs.AddIntValidable(settings.Leverage);
             LeverageStr = _proprs.AddConverter(Leverage, new StringToInt());
             Leverage.AddValidationRule(l => l > 0, "Leverage must be positive integer.");
 
             InitialBalance = _proprs.AddDoubleValidable(settings.InitialBalance);
+            InitialBalance.AddValidationRule(r => r > 0, "InitialBalance must be positive double.");
             InitialBalanceStr = _proprs.AddConverter(InitialBalance, new StringToDouble());
-
-            var isMargin = SelectedAccType.Var.Check(t => t == AccountTypes.Net || t == AccountTypes.Gross);
-            var isCash = SelectedAccType.Var == AccountTypes.Cash;
-
-            var isMarginSetupValid = InitialBalance.IsValid() & InitialBalanceStr.IsValid() & Leverage.IsValid() & LeverageStr.IsValid();
-
-            _isTradeSettingsValid = ((isMargin & isMarginSetupValid) | (isCash));
         }
 
         private string GetDefaultCurrency(IObservableList<string> currencies)
@@ -205,8 +195,6 @@ namespace TickTrader.BotTerminal
             Warmup = _proprs.AddIntValidable(settings.WarmupValue);
             SelectedWarmupUnits = _proprs.AddProperty(settings.WarmupUnits);
             WarmupStr = _proprs.AddConverter(Warmup, new StringToInt());
-
-            _isAdvancedSettingsValid = Warmup.IsValid();
         }
 
         #endregion

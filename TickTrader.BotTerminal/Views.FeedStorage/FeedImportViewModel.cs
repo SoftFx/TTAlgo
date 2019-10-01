@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
         {
             CanImport.Set();
             FilePath = AddValidable<string>();
-            FilePath.MustBeNotEmpy();
+            FilePath.MustBeNotEmpty();
 
             CanImport.Var = FilePath.IsValid();
         }
