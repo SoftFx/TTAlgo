@@ -58,5 +58,6 @@ namespace TickTrader.Algo.Api
         IncorrectPricePrecision = 118,
         CloseOnlyTrading = 119,
         MarketWithMaxVisibleVolume = 120,
+        InvalidAmountChange = 121,
     }
 }

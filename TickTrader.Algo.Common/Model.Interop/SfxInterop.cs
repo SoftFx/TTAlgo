@@ -885,6 +885,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.OrderNotFound;
                             else if (message.StartsWith("Invalid order type"))
                                 return Api.OrderCmdResultCodes.Unsupported;
+                            else if (message.StartsWith("Invalid AmountChange"))
+                                return Api.OrderCmdResultCodes.InvalidAmountChange;
                         }
                         break;
                     }
