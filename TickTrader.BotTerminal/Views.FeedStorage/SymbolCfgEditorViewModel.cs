@@ -127,11 +127,15 @@ namespace TickTrader.BotTerminal
 
             Digits.AddValidationRule(v => v >= 1 && v <= 11, "Digits can be from 1 to 11!");
 
-            ContractSize.AddValidationRule(GetValidatePositiveRange(1e-6, 1e6), GetPositiveRangeErrorMessage(1e6, nameof(ContractSize), 1e-6));
-            Slippage.AddValidationRule(GetValidatePositiveRange(0, (int)1e6), GetPositiveRangeErrorMessage(1e6, nameof(Slippage)));
-            MinVolume.AddValidationRule(GetValidatePositiveRange(0.01, 1e6), GetPositiveRangeErrorMessage(1e6, nameof(MinVolume), 0.01));
-            MaxVolume.AddValidationRule(GetValidatePositiveRange(0.01, 1e6), GetPositiveRangeErrorMessage(1e6, nameof(MaxVolume), 0.01));
-            VolumeStep.AddValidationRule(GetValidatePositiveRange(0.01, 1e6), GetPositiveRangeErrorMessage(1e6, nameof(VolumeStep), 0.01));
+            double baseUpperLimit = 1e6;
+            double upperLimit = 1e7;
+            double lowerLimit = 1e-6;
+
+            ContractSize.AddValidationRule(GetValidatePositiveRange(lowerLimit, baseUpperLimit), GetPositiveRangeErrorMessage(baseUpperLimit, nameof(ContractSize), lowerLimit));
+            Slippage.AddValidationRule(GetValidatePositiveRange(0, (int)baseUpperLimit), GetPositiveRangeErrorMessage(baseUpperLimit, nameof(Slippage)));
+            MinVolume.AddValidationRule(GetValidatePositiveRange(lowerLimit, upperLimit), GetPositiveRangeErrorMessage(upperLimit, nameof(MinVolume), lowerLimit));
+            MaxVolume.AddValidationRule(GetValidatePositiveRange(lowerLimit, upperLimit), GetPositiveRangeErrorMessage(upperLimit, nameof(MaxVolume), lowerLimit));
+            VolumeStep.AddValidationRule(GetValidatePositiveRange(lowerLimit, upperLimit), GetPositiveRangeErrorMessage(upperLimit, nameof(VolumeStep), lowerLimit));
 
             SelectedCommissionType.AddValidationRule(t => t == CommissionType.PerUnit || t == CommissionType.Absolute || t == CommissionType.Percent, "Selected СommissionType not supported");
 
@@ -139,10 +143,10 @@ namespace TickTrader.BotTerminal
             LimitsCommission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(LimitsCommission)));
             MinCommission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(MinCommission)));
 
-            MarginHedged.AddValidationRule(GetValidatePositiveRange(0.01, 1), GetPositiveRangeErrorMessage(1, nameof(MarginHedged)));
-            MarginFactor.AddValidationRule(GetValidatePositiveRange(1, 1e6), GetPositiveRangeErrorMessage(1e6, nameof(MarginFactor), 1));
-            StopOrderMarginReduction.AddValidationRule(GetValidatePositiveRange(0.01, 1), GetPositiveRangeErrorMessage(1, nameof(StopOrderMarginReduction), 0.01));
-            HiddenLimitOrderMarginReduction.AddValidationRule(GetValidatePositiveRange(0.01, 1), GetPositiveRangeErrorMessage(1, nameof(HiddenLimitOrderMarginReduction), 0.01));
+            MarginHedged.AddValidationRule(GetValidatePositiveRange(0, 1, false), GetPositiveRangeErrorMessage(1, nameof(MarginHedged), include: false));
+            MarginFactor.AddValidationRule(GetValidatePositiveRange(0, 1e6, false), GetPositiveRangeErrorMessage(1e6, nameof(MarginFactor), include: false));
+            StopOrderMarginReduction.AddValidationRule(GetValidatePositiveRange(0, 1, false), GetPositiveRangeErrorMessage(1, nameof(StopOrderMarginReduction), include: false));
+            HiddenLimitOrderMarginReduction.AddValidationRule(GetValidatePositiveRange(0, 1, false), GetPositiveRangeErrorMessage(1, nameof(HiddenLimitOrderMarginReduction), include: false));
 
             Action<VarChangeEventArgs<string>> validate = a =>
             {
@@ -151,6 +155,8 @@ namespace TickTrader.BotTerminal
                 else
                 if (MinVolume.Value > MaxVolume.Value)
                     Error.Value = "The MaxVolume must be more or equal than MinVolume!";
+                if (Commission.Value < LimitsCommission.Value)
+                    Error.Value = "The TakerFee must be more or equal than MakerFee!";
                 else
                     Error.Value = null;
             };
@@ -159,6 +165,8 @@ namespace TickTrader.BotTerminal
             _varContext.TriggerOnChange(ProfitCurr.Var, validate);
             _varContext.TriggerOnChange(MinVolumeStr.Var, validate);
             _varContext.TriggerOnChange(MaxVolumeStr.Var, validate);
+            _varContext.TriggerOnChange(CommissionStr.Var, validate);
+            _varContext.TriggerOnChange(LimitsCommissionStr.Var, validate);
 
             _varContext.TriggerOnChange(SwapEnabled.Var, a =>
             {
@@ -212,6 +220,7 @@ namespace TickTrader.BotTerminal
             };
         }
 
+        #region Properties
         public Validable<string> Name { get; }
         public Validable<string> Description { get; }
         public Validable<string> BaseCurr { get; }
@@ -273,6 +282,7 @@ namespace TickTrader.BotTerminal
         public bool IsAddMode => !IsEditMode;
 
         public BoolVar IsValid { get; }
+        #endregion
 
         public void Ok()
         {
@@ -285,10 +295,10 @@ namespace TickTrader.BotTerminal
         }
 
         private Predicate<int> GetValidatePositiveRange(int min, int max) => (int val) => val >= min && val <= max;
-        private Predicate<double> GetValidatePositiveRange(double min, double max) => (double val) => val >= min && val <= max;
+        private Predicate<double> GetValidatePositiveRange(double min, double max, bool includeLeftLimit = true) => (double val) => includeLeftLimit ? (val >= min && val <= max) : (val > min && val <= max);
         private bool IsPositiveValue(double x) => x >= 0;
 
-        private string GetPositiveRangeErrorMessage(double max, string prop, double min = 0) => $"{prop} must be between {min} and {max}";
+        private string GetPositiveRangeErrorMessage(double max, string prop, double min = 0, bool include = true) => $"{prop} must be between in range {(include ? "[" : "(")}{min:R}..{max:R}]";
         private string GetPositiveRangeErrorMessage(string prop) => $"{prop} must be positive";
     }
 }

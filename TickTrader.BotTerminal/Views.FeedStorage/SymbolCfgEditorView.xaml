@@ -164,9 +164,9 @@
                                     <TextBox Grid.Column="1" Grid.Row="1" Text="{l:ValidationBinding CommissionStr.Value}"/>
                                     <Label Content="Maker Fee:" Grid.Column="0" Grid.Row="2" />
                                     <TextBox Grid.Column="1" Grid.Row="2" Text="{l:ValidationBinding LimitsCommissionStr.Value}"/>
-                                    <Label Content="Min. Fee:" Grid.Column="0" Grid.Row="4" />
+                                    <!--<Label Content="Min. Fee:" Grid.Column="0" Grid.Row="4" />
                                     <TextBox Grid.Column="1" Grid.Row="4" Text="{l:ValidationBinding MinCommissionStr.Value}"/>
-                                    <ComboBox Grid.Column="2" Grid.Row="4" Width="70" SelectedItem="{l:ValidationBinding SelectedMinCommissionCurr.Value}" ItemsSource="{Binding AvailableCurrencies}" IsEditable="True"/>
+                                    <ComboBox Grid.Column="2" Grid.Row="4" Width="70" SelectedItem="{l:ValidationBinding SelectedMinCommissionCurr.Value}" ItemsSource="{Binding AvailableCurrencies}" IsEditable="True"/>-->
                                 </Grid>
                             </GroupBox>
                         </Grid>
@@ -210,8 +210,8 @@
                                     <TextBox Grid.Column="1" Grid.Row="3" Text="{l:ValidationBinding SwapSizeLongStr.Value}" IsEnabled="{Binding SwapEnabled.Value}"/>
                                     <Label Content="Triple Swap:" Grid.Column="0" Grid.Row="4" />
                                     <CheckBox Grid.Column="1" Grid.Row="4" IsChecked="{l:ValidationBinding TripleSwap.Value}" IsEnabled="{Binding SwapEnabled.Value}"/>
-                                    <Label Content="Triple Swap Day:" Grid.Column="0" Grid.Row="5" />
-                                    <ComboBox Grid.Column="1" Grid.Row="5" SelectedIndex="{l:ValidationBinding SelectedTripleSwapDay.Value}" ItemsSource="{Binding TripleSwapDays}" IsEnabled="{Binding TripleSwapEnabled.Value}"/>
+                                    <!--<Label Content="Triple Swap Day:" Grid.Column="0" Grid.Row="5" />
+                                    <ComboBox Grid.Column="1" Grid.Row="5" SelectedIndex="{l:ValidationBinding SelectedTripleSwapDay.Value}" ItemsSource="{Binding TripleSwapDays}" IsEnabled="{Binding TripleSwapEnabled.Value}"/>-->
                                 </Grid>
                             </GroupBox>
 
