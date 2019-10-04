@@ -117,8 +117,8 @@ namespace ApiCheckerBot
         {
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            if (ServerName.Equals("https://tp.st.soft-fx.eu:8443"))
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            //if (ServerName.Equals("https://tp.st.soft-fx.eu:8443"))
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
         }
 
         private void InitOperations()
