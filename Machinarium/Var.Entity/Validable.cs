@@ -29,7 +29,6 @@ namespace Machinarium.Var
                 if (!rule.Condition(Value))
                 {
                     _errorVar.Value = rule.MessageFactory();
-                    _errorVar.OnChanged();
                     return;
                 }
             }
@@ -92,5 +91,7 @@ namespace Machinarium.Var
         Var<string> ErrorVar { get; }
 
         string Error { get; }
+
+        void Validate();
     }
 }

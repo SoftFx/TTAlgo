@@ -40,6 +40,13 @@ namespace Machinarium.Var
             get => _error.Value;
         }
 
+        public void Validate()
+        {
+            _property.Validate();
+            UpdateError();
+            NotifyPropertyChange(nameof(Value));
+        }
+
         string IDataErrorInfo.Error => null;
         string IDataErrorInfo.this[string columnName]
         {

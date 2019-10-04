@@ -97,7 +97,7 @@ namespace TickTrader.BotTerminal
             SwapSizeShort = _varContext.AddDoubleValidable(symbol.SwapSizeShort);
             SwapSizeShortStr = _varContext.AddConverter(SwapSizeShort, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear));
             SwapSizeLong = _varContext.AddDoubleValidable(symbol.SwapSizeLong);
-            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear));;
+            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear)); ;
 
             SelectedProfitMode = _varContext.AddValidable(symbol.ProfitMode);
 
@@ -142,7 +142,8 @@ namespace TickTrader.BotTerminal
 
             var SwapRange = new ValidationRange(-100, 100);
 
-            SwapSizeShort.AddValidationRule(GetValidableRange(SwapRange), "Error");
+            SwapSizeShort.AddValidationRule(GetValidableRange(SwapRange), GetErrorRangeMessage(SwapRange, nameof(SwapSizeShort)));
+            SwapSizeLong.AddValidationRule(GetValidableRange(SwapRange), GetErrorRangeMessage(SwapRange, nameof(SwapSizeLong)));
 
             MarginHedged.AddValidationRule(GetValidatePositiveRange(0, 1, false), GetPositiveRangeErrorMessage(1, nameof(MarginHedged), include: false));
             MarginFactor.AddValidationRule(GetValidatePositiveRange(0, 1e6, false), GetPositiveRangeErrorMessage(1e6, nameof(MarginFactor), include: false));
@@ -175,7 +176,8 @@ namespace TickTrader.BotTerminal
                 else
                     SwapRange.Update(-1e9, 1e9);
 
-                SwapSizeShort.Value = double.Parse(SwapSizeShortStr.Value);
+                SwapSizeShortStr.Validate();
+                SwapSizeLongStr.Validate();
             });
 
             IsValid = Error.Var.IsEmpty() & _varContext.GetValidationModelResult();
@@ -287,6 +289,7 @@ namespace TickTrader.BotTerminal
             TryClose(false);
         }
 
+        private Func<string> GetErrorRangeMessage(ValidationRange range, string prop) => () => $"{prop} must be between in range [{range.Min:R}..{range.Max:R}]";
         private Predicate<string> IsExistingSymbol(IObservableList<string> symbolsList) => (string symbol) => symbolsList.Contains(symbol);
         private Predicate<double> GetValidableRange(ValidationRange range) => (val) => val >= range.Min && val <= range.Max;
         private Predicate<int> GetValidatePositiveRange(int min, int max) => (int val) => val >= min && val <= max;

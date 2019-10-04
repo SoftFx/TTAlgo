@@ -56,7 +56,7 @@ namespace Machinarium.Var
                 Dispose();
         }
 
-        public void OnChanged()
+        protected void OnChanged()
         {
             Changed?.Invoke();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Value"));
