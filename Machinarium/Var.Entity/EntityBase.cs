@@ -34,13 +34,8 @@ namespace Machinarium.Var
         {
             BoolVar result = new BoolVar(true);
 
-            foreach (var l in _validableChildren)
-            {
-                result = result & l.ErrorVar.IsEmpty();
-
-                if (result.Value)
-                    break;
-            }
+            foreach (var v in _validableChildren)
+                result = result & v.ErrorVar.IsEmpty();
 
             return result;
         }

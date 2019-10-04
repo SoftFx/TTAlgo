@@ -29,6 +29,7 @@ namespace Machinarium.Var
                 if (!rule.Condition(Value))
                 {
                     _errorVar.Value = rule.MessageFactory();
+                    _errorVar.OnChanged();
                     return;
                 }
             }

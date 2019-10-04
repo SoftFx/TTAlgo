@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
                     VolumeStep = 0.01,
                     Slippage = 0,
 
-                    CommissionType = CommissionType.Percent,
+                    CommissionType = CustomCommissionType.Percentage,
                     Commission = 0.0018,
                     LimitsCommission = 0.0018,
                     MinCommission = 0.222,
@@ -46,13 +46,11 @@ namespace TickTrader.BotTerminal
                     SwapSizeShort = 1.08,
                     SwapSizeLong = -4.38,
                     TripleSwap = false,
-                    TripleSwapDay = 0,
 
                     ProfitMode = BO.ProfitCalculationModes.Forex,
 
                     MarginMode = BO.MarginCalculationModes.Forex,
                     MarginHedged = 0.5,
-                    MarginCurrency = "EUR",
                     MarginFactor = 3,
                     StopOrderMarginReduction = 1,
                     HiddenLimitOrderMarginReduction = 1,
@@ -96,19 +94,16 @@ namespace TickTrader.BotTerminal
             SwapEnabled = _varContext.AddBoolValidable(symbol.SwapEnabled);
             TripleSwap = _varContext.AddBoolValidable(symbol.TripleSwap);
             SelectedSwapType = _varContext.AddValidable(symbol.SwapType);
-            SwapSizeSort = _varContext.AddDoubleValidable(symbol.SwapSizeShort);
-            SwapSizeSortStr = _varContext.AddConverter(SwapSizeSort, new StringToDouble());
+            SwapSizeShort = _varContext.AddDoubleValidable(symbol.SwapSizeShort);
+            SwapSizeShortStr = _varContext.AddConverter(SwapSizeShort, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear));
             SwapSizeLong = _varContext.AddDoubleValidable(symbol.SwapSizeLong);
-            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble());
-            SelectedTripleSwapDay = _varContext.AddIntValidable(symbol.TripleSwapDay);
-            TripleSwapEnabled = _varContext.AddBoolProperty();
+            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear));;
 
             SelectedProfitMode = _varContext.AddValidable(symbol.ProfitMode);
 
             SelectedMarginMode = _varContext.AddValidable(symbol.MarginMode);
             MarginHedged = _varContext.AddDoubleValidable(symbol.MarginHedged);
             MarginHedgedStr = _varContext.AddConverter(MarginHedged, new StringToDouble());
-            SelectedMarginCurrency = _varContext.AddValidable(symbol.MarginCurrency);
             MarginFactor = _varContext.AddDoubleValidable(symbol.MarginFactor);
             MarginFactorStr = _varContext.AddConverter(MarginFactor, new StringToDouble());
             StopOrderMarginReduction = _varContext.AddDoubleValidable(symbol.StopOrderMarginReduction);
@@ -131,17 +126,23 @@ namespace TickTrader.BotTerminal
             double upperLimit = 1e7;
             double lowerLimit = 1e-6;
 
+
+            ProfitCurr.AddValidationRule(IsExistingSymbol(AvailableCurrencies), "Selected symbol not found");
+            BaseCurr.AddValidationRule(IsExistingSymbol(AvailableCurrencies), "Selected symbol not found");
+
             ContractSize.AddValidationRule(GetValidatePositiveRange(lowerLimit, baseUpperLimit), GetPositiveRangeErrorMessage(baseUpperLimit, nameof(ContractSize), lowerLimit));
             Slippage.AddValidationRule(GetValidatePositiveRange(0, (int)baseUpperLimit), GetPositiveRangeErrorMessage(baseUpperLimit, nameof(Slippage)));
             MinVolume.AddValidationRule(GetValidatePositiveRange(lowerLimit, upperLimit), GetPositiveRangeErrorMessage(upperLimit, nameof(MinVolume), lowerLimit));
             MaxVolume.AddValidationRule(GetValidatePositiveRange(lowerLimit, upperLimit), GetPositiveRangeErrorMessage(upperLimit, nameof(MaxVolume), lowerLimit));
             VolumeStep.AddValidationRule(GetValidatePositiveRange(lowerLimit, upperLimit), GetPositiveRangeErrorMessage(upperLimit, nameof(VolumeStep), lowerLimit));
 
-            SelectedCommissionType.AddValidationRule(t => t == CommissionType.PerUnit || t == CommissionType.Absolute || t == CommissionType.Percent, "Selected СommissionType not supported");
-
             Commission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(Commission)));
             LimitsCommission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(LimitsCommission)));
             MinCommission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(MinCommission)));
+
+            var SwapRange = new ValidationRange(-100, 100);
+
+            SwapSizeShort.AddValidationRule(GetValidableRange(SwapRange), "Error");
 
             MarginHedged.AddValidationRule(GetValidatePositiveRange(0, 1, false), GetPositiveRangeErrorMessage(1, nameof(MarginHedged), include: false));
             MarginFactor.AddValidationRule(GetValidatePositiveRange(0, 1e6, false), GetPositiveRangeErrorMessage(1e6, nameof(MarginFactor), include: false));
@@ -167,15 +168,14 @@ namespace TickTrader.BotTerminal
             _varContext.TriggerOnChange(MaxVolumeStr.Var, validate);
             _varContext.TriggerOnChange(CommissionStr.Var, validate);
             _varContext.TriggerOnChange(LimitsCommissionStr.Var, validate);
-
-            _varContext.TriggerOnChange(SwapEnabled.Var, a =>
+            _varContext.TriggerOnChange(SelectedSwapType.Var, (a) =>
             {
-                TripleSwapEnabled.Value = a.New && TripleSwap.Value;
-            });
+                if (a.New == BO.SwapType.PercentPerYear)
+                    SwapRange.Update(-100, 100);
+                else
+                    SwapRange.Update(-1e9, 1e9);
 
-            _varContext.TriggerOnChange(TripleSwap.Var, a =>
-            {
-                TripleSwapEnabled.Value = a.New && SwapEnabled.Value;
+                SwapSizeShort.Value = double.Parse(SwapSizeShortStr.Value);
             });
 
             IsValid = Error.Var.IsEmpty() & _varContext.GetValidationModelResult();
@@ -204,17 +204,15 @@ namespace TickTrader.BotTerminal
 
                 SwapEnabled = SwapEnabled.Value,
                 SwapType = SelectedSwapType.Value,
-                SwapSizeShort = SwapSizeSort.Value,
+                SwapSizeShort = SwapSizeShort.Value,
                 SwapSizeLong = SwapSizeLong.Value,
                 TripleSwap = TripleSwap.Value,
-                TripleSwapDay = SelectedTripleSwapDay.Value,
 
                 ProfitMode = SelectedProfitMode.Value,
 
                 MarginMode = SelectedMarginMode.Value,
                 MarginHedged = MarginHedged.Value,
                 MarginFactor = MarginFactor.Value,
-                MarginCurrency = SelectedMarginCurrency.Value,
                 StopOrderMarginReduction = StopOrderMarginReduction.Value,
                 HiddenLimitOrderMarginReduction = HiddenLimitOrderMarginReduction.Value,
             };
@@ -224,7 +222,6 @@ namespace TickTrader.BotTerminal
         public Validable<string> Name { get; }
         public Validable<string> Description { get; }
         public Validable<string> BaseCurr { get; }
-        public Validable<string> ProfitCurr { get; }
         public IntValidable Digits { get; }
         public IValidable<string> DigitsStr { get; }
         public DoubleValidable ContractSize { get; }
@@ -242,22 +239,18 @@ namespace TickTrader.BotTerminal
         public BoolValidable SwapEnabled { get; }
         public Validable<BO.SwapType> SelectedSwapType { get; }
         public IEnumerable<BO.SwapType> SwapTypes => EnumHelper.AllValues<BO.SwapType>();
-        public DoubleValidable SwapSizeSort { get; }
-        public IValidable<string> SwapSizeSortStr { get; }
+        public DoubleValidable SwapSizeShort { get; }
+        public IValidable<string> SwapSizeShortStr { get; }
         public DoubleValidable SwapSizeLong { get; }
         public IValidable<string> SwapSizeLongStr { get; }
         public BoolValidable TripleSwap { get; }
-        public BoolProperty TripleSwapEnabled { get; }
 
-        public IntValidable SelectedTripleSwapDay { get; }
-        public IEnumerable<string> TripleSwapDays => Enumerable.Range(0, 7).Select(u => Enum.GetName(typeof(DayOfWeek), u));
-
+        public Validable<string> ProfitCurr { get; }
         public Validable<BO.ProfitCalculationModes> SelectedProfitMode { get; }
         public IEnumerable<BO.ProfitCalculationModes> ProfitModes => EnumHelper.AllValues<BO.ProfitCalculationModes>();
 
         public Validable<BO.MarginCalculationModes> SelectedMarginMode { get; }
         public IEnumerable<BO.MarginCalculationModes> MarginModes => EnumHelper.AllValues<BO.MarginCalculationModes>();
-        public Validable<string> SelectedMarginCurrency { get; }
         public DoubleValidable MarginHedged { get; }
         public IValidable<string> MarginHedgedStr { get; }
         public DoubleValidable MarginFactor { get; }
@@ -267,8 +260,8 @@ namespace TickTrader.BotTerminal
         public DoubleValidable HiddenLimitOrderMarginReduction { get; }
         public IValidable<string> HiddenLimitOrderMarginReductionStr { get; }
 
-        public Validable<CommissionType> SelectedCommissionType { get; }
-        public IEnumerable<CommissionType> CommissionTypes => EnumHelper.AllValues<CommissionType>();
+        public Validable<CustomCommissionType> SelectedCommissionType { get; }
+        public IEnumerable<CustomCommissionType> CommissionTypes => EnumHelper.AllValues<CustomCommissionType>();
         public DoubleValidable Commission { get; }
         public IValidable<string> CommissionStr { get; }
         public DoubleValidable LimitsCommission { get; }
@@ -294,11 +287,30 @@ namespace TickTrader.BotTerminal
             TryClose(false);
         }
 
+        private Predicate<string> IsExistingSymbol(IObservableList<string> symbolsList) => (string symbol) => symbolsList.Contains(symbol);
+        private Predicate<double> GetValidableRange(ValidationRange range) => (val) => val >= range.Min && val <= range.Max;
         private Predicate<int> GetValidatePositiveRange(int min, int max) => (int val) => val >= min && val <= max;
         private Predicate<double> GetValidatePositiveRange(double min, double max, bool includeLeftLimit = true) => (double val) => includeLeftLimit ? (val >= min && val <= max) : (val > min && val <= max);
         private bool IsPositiveValue(double x) => x >= 0;
 
         private string GetPositiveRangeErrorMessage(double max, string prop, double min = 0, bool include = true) => $"{prop} must be between in range {(include ? "[" : "(")}{min:R}..{max:R}]";
         private string GetPositiveRangeErrorMessage(string prop) => $"{prop} must be positive";
+    }
+
+    public class ValidationRange
+    {
+        public double Min { get; private set; }
+        public double Max { get; private set; }
+
+        public ValidationRange(double min, double max)
+        {
+            Update(min, max);
+        }
+
+        public void Update(double min, double max)
+        {
+            Min = min;
+            Max = max;
+        }
     }
 }

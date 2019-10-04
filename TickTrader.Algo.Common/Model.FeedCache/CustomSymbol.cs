@@ -5,6 +5,8 @@ using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Common.Model
 {
+    public enum CustomCommissionType { Percentage, Points, Money }
+
     [ProtoContract]
     public class CustomSymbol
     {
@@ -42,8 +44,6 @@ namespace TickTrader.Algo.Common.Model
         public double SwapSizeLong { get; set; }
         [ProtoMember(16)]
         public bool TripleSwap { get; set; }
-        [ProtoMember(17)]
-        public int TripleSwapDay { get; set; }
 
         [ProtoMember(18)]
         public BO.ProfitCalculationModes ProfitMode { get; set; }
@@ -52,8 +52,6 @@ namespace TickTrader.Algo.Common.Model
         public BO.MarginCalculationModes MarginMode { get; set; }
         [ProtoMember(20)]
         public double MarginHedged { get; set; }
-        [ProtoMember(21)]
-        public string MarginCurrency { get; set; }
         [ProtoMember(22)]
         public double MarginFactor { get; set; }
         [ProtoMember(23)]
@@ -65,7 +63,7 @@ namespace TickTrader.Algo.Common.Model
         public int Slippage { get; set; }
 
         [ProtoMember(26)]
-        public Api.CommissionType CommissionType { get; set; }
+        public CustomCommissionType CommissionType { get; set; }
         [ProtoMember(27)]
         public double LimitsCommission { get; set; }
         [ProtoMember(28)]
@@ -91,9 +89,9 @@ namespace TickTrader.Algo.Common.Model
                 DefaultSlippage = Slippage,
 
                 Commission = Commission,
-                CommissionType = CommissionType,
+                CommissionType = Convert(CommissionType),
                 CommissionChargeMethod = Api.CommissionChargeMethod.OneWay,
-                CommissionChargeType = Api.CommissionChargeType.PerTrade,
+                CommissionChargeType = CommissionType != CustomCommissionType.Money ? Api.CommissionChargeType.PerTrade : Api.CommissionChargeType.PerLot,
                 LimitsCommission = LimitsCommission,
                 MinCommission = MinCommission,
                 MinCommissionCurrency = MinCommissionCurr,
@@ -102,7 +100,7 @@ namespace TickTrader.Algo.Common.Model
                 SwapType = SwapType,
                 SwapSizeLong = (float)SwapSizeLong,
                 SwapSizeShort = (float)SwapSizeShort,
-                TripleSwapDay = TripleSwap ? TripleSwapDay : 0,
+                TripleSwapDay = TripleSwap ? (int)DayOfWeek.Wednesday : 0,
 
                 ProfitCalcMode = ProfitMode,
 
@@ -130,7 +128,7 @@ namespace TickTrader.Algo.Common.Model
                 Slippage = (int)(symbol.DefaultSlippage ?? 0),
 
                 Commission = symbol.Commission,
-                CommissionType = symbol.CommissionType,
+                CommissionType = Convert(symbol.CommissionType),
                 LimitsCommission = symbol.LimitsCommission,
                 MinCommission = symbol.MinCommission,
                 MinCommissionCurr = symbol.MinCommissionCurrency,
@@ -139,7 +137,6 @@ namespace TickTrader.Algo.Common.Model
                 SwapType = symbol.SwapType,
                 SwapSizeLong = symbol.SwapSizeLong,
                 SwapSizeShort = symbol.SwapSizeShort,
-                TripleSwapDay = symbol.TripleSwapDay,
                 TripleSwap = symbol.TripleSwapDay > 0,
 
                 ProfitMode = symbol.ProfitCalcMode,
@@ -150,6 +147,42 @@ namespace TickTrader.Algo.Common.Model
                 StopOrderMarginReduction = symbol.StopOrderMarginReduction,
                 HiddenLimitOrderMarginReduction = symbol.HiddenLimitOrderMarginReduction.Value
             };
+        }
+
+        private static CustomCommissionType Convert(Api.CommissionType type)
+        {
+            switch (type)
+            {
+                case Api.CommissionType.Absolute:
+                    return CustomCommissionType.Money;
+
+                case Api.CommissionType.Percent:
+                    return CustomCommissionType.Percentage;
+
+                case Api.CommissionType.PerUnit:
+                    return CustomCommissionType.Points;
+
+                default:
+                    throw new InvalidCastException($"Commission type not found: {type}");
+            }
+        }
+
+        private static Api.CommissionType Convert(CustomCommissionType type)
+        {
+            switch (type)
+            {
+                case CustomCommissionType.Money:
+                    return Api.CommissionType.Absolute;
+
+                case CustomCommissionType.Percentage:
+                    return Api.CommissionType.Percent;
+
+                case CustomCommissionType.Points:
+                    return Api.CommissionType.PerUnit;
+
+                default:
+                    throw new InvalidCastException($"Commission type not found: {type}");
+            }
         }
     }
 }
