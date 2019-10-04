@@ -32,7 +32,7 @@ namespace TickTrader.Algo.Common.Model
         [ProtoMember(10)]
         public double VolumeStep { get; set; }
         [ProtoMember(11)]
-        public double Commission { get; set; } // taker fee in percentage for now
+        public double Commission { get; set; }
 
         [ProtoMember(12)]
         public bool SwapEnabled { get; set; }
@@ -45,30 +45,30 @@ namespace TickTrader.Algo.Common.Model
         [ProtoMember(16)]
         public bool TripleSwap { get; set; }
 
-        [ProtoMember(18)]
+        [ProtoMember(17)]
         public BO.ProfitCalculationModes ProfitMode { get; set; }
 
-        [ProtoMember(19)]
+        [ProtoMember(18)]
         public BO.MarginCalculationModes MarginMode { get; set; }
-        [ProtoMember(20)]
+        [ProtoMember(19)]
         public double MarginHedged { get; set; }
-        [ProtoMember(22)]
+        [ProtoMember(20)]
         public double MarginFactor { get; set; }
-        [ProtoMember(23)]
+        [ProtoMember(21)]
         public double StopOrderMarginReduction { get; set; }
-        [ProtoMember(24)]
+        [ProtoMember(22)]
         public double HiddenLimitOrderMarginReduction { get; set; }
 
-        [ProtoMember(25)]
+        [ProtoMember(23)]
         public int Slippage { get; set; }
 
-        [ProtoMember(26)]
+        [ProtoMember(24)]
         public CustomCommissionType CommissionType { get; set; }
-        [ProtoMember(27)]
+        [ProtoMember(25)]
         public double LimitsCommission { get; set; }
-        [ProtoMember(28)]
+        [ProtoMember(26)]
         public double MinCommission { get; set; }
-        [ProtoMember(29)]
+        [ProtoMember(27)]
         public string MinCommissionCurr { get; set; }
 
 
