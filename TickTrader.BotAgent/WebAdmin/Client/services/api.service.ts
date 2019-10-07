@@ -26,12 +26,12 @@ export class ApiService {
 
     GetDownloadLogUrl(botId: string, file: string) {
         var token = this.Auth.AuthData ? this.Auth.AuthData.Token : "";
-        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}?authorization-token=${token}`;
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/Logs/${file}?access_token=${token}`;
     }
 
     GetDownloadAlgoDataUrl(botId: string, file: string) {
         var token = this.Auth.AuthData ? this.Auth.AuthData.Token : "";
-        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/AlgoData/${file}?authorization-token=${token}`;
+        return `${this._tradeBotsUrl}/${encodeURIComponent(botId)}/AlgoData/${file}?access_token=${token}`;
     }
 
     AutogenerateBotId(name: string) {
