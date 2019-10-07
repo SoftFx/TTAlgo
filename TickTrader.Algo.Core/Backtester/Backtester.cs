@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
 
             _executor.Core.MainSymbolCode = CommonSettings.MainSymbol;
             _executor.Core.TimeFrame = CommonSettings.MainTimeframe;
-            _executor.Core.InstanceId = "Baktesting-" + Interlocked.Increment(ref IdSeed).ToString();
+            _executor.Core.InstanceId = "Baсktesting-" + Interlocked.Increment(ref IdSeed).ToString();
             _executor.Core.Permissions = new PluginPermissions() { TradeAllowed = true };
 
             bool isRealtime = MarginDataMode.IsFlagSet(TestDataSeriesFlags.Realtime) | EquityDataMode.IsFlagSet(TestDataSeriesFlags.Realtime)
