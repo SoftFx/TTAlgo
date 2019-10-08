@@ -10,9 +10,12 @@ namespace Machinarium.Var
     public class EntityBase : IDisposable
     {
         private List<IDisposable> _disposableChildren;
+        private List<IValidable> _validableChildren;
 
         public virtual void Dispose()
         {
+            _validableChildren?.Clear();
+
             if (_disposableChildren != null)
             {
                 foreach (var c in _disposableChildren)
@@ -27,11 +30,30 @@ namespace Machinarium.Var
             PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected void AddDisposableChild(IDisposable child)
+        public BoolVar GetValidationModelResult()
+        {
+            BoolVar result = new BoolVar(true);
+
+            foreach (var v in _validableChildren)
+                result = result & v.ErrorVar.IsEmpty();
+
+            return result;
+        }
+
+        protected void AddChild(IDisposable child)
         {
             if (_disposableChildren == null)
                 _disposableChildren = new List<IDisposable>();
+
             _disposableChildren.Add(child);
+
+            if (child is IValidable valid)
+            {
+                if (_validableChildren == null)
+                    _validableChildren = new List<IValidable>();
+
+                _validableChildren.Add(valid);
+            }
         }
 
         protected Property<T> AddProperty<T>(T initialValue = default(T), string notifyName = null)
@@ -39,7 +61,7 @@ namespace Machinarium.Var
             var property = new Property<T>();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -48,7 +70,7 @@ namespace Machinarium.Var
             var property = new IntProperty();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -57,7 +79,7 @@ namespace Machinarium.Var
             var property = new DoubleProperty();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -66,7 +88,7 @@ namespace Machinarium.Var
             var property = new BoolProperty();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -75,7 +97,7 @@ namespace Machinarium.Var
             var property = new Validable<T>();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -84,7 +106,7 @@ namespace Machinarium.Var
             var property = new IntValidable();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -93,7 +115,7 @@ namespace Machinarium.Var
             var property = new DoubleValidable();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
@@ -102,14 +124,14 @@ namespace Machinarium.Var
             var property = new BoolValidable();
             property.Value = initialValue;
             property.Name = notifyName;
-            AddDisposableChild(property);
+            AddChild(property);
             return property;
         }
 
         protected PropConverter<TProp, T> AddConverter<TProp, T>(IValidable<TProp> property, IValueConverter<TProp, T> valueConverter)
         {
             var converter = new PropConverter<TProp, T>(property, valueConverter);
-            AddDisposableChild(converter);
+            AddChild(converter);
             return converter;
         }
 
@@ -127,21 +149,21 @@ namespace Machinarium.Var
         protected IDisposable TriggerOn(BoolVar condition, Action onTrue, Action onFalse)
         {
             var trigger = new BoolEvent(condition, onTrue, onFalse);
-            AddDisposableChild(trigger);
+            AddChild(trigger);
             return trigger;
         }
 
         protected IDisposable TriggerOnChange<T>(Var<T> var, Action<VarChangeEventArgs<T>> changeHandler)
         {
             var trigger = new ChangeEvent<T>(var, changeHandler);
-            AddDisposableChild(trigger);
+            AddChild(trigger);
             return trigger;
         }
 
         protected IDisposable TriggerOnChange<T>(IProperty<T> property, Action<VarChangeEventArgs<T>> changeHandler)
         {
             var trigger = new ChangeEvent<T>(property.Var, changeHandler);
-            AddDisposableChild(trigger);
+            AddChild(trigger);
             return trigger;
         }
     }

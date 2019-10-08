@@ -155,7 +155,7 @@ namespace Machinarium.Var
         public T Value
         {
             get => _val;
-            internal set
+            set
             {
                 if (_srcOperator != null)
                     throw new Exception();

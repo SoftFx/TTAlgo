@@ -554,7 +554,7 @@ namespace TickTrader.Algo.Common.Model
                 CommissionChargeType = Convert(info.CommissionChargeType),
                 CommissionType = Convert(info.CommissionType),
                 ContractSizeFractional = info.RoundLot,
-                MarginFactorFractional = info.MarginFactorFractional ?? 1,
+                MarginFactor = info.MarginFactorFractional ?? 1,
                 StopOrderMarginReduction = info.StopOrderMarginReduction ?? 0,
                 MarginHedged = info.MarginHedge,
                 MarginMode = Convert(info.MarginCalcMode),

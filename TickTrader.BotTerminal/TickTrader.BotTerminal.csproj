@@ -422,7 +422,6 @@
     <Compile Include="Model\EventJournal.cs" />
     <Compile Include="Model.Algo\PluginCatalog.cs" />
     <Compile Include="Model\UiLock.cs" />
-    <Compile Include="Model\ValidationExt.cs" />
     <Compile Include="Model\VsIntegration.cs" />
     <Compile Include="Resx\Locales\gui.en-gb.Designer.cs">
       <DependentUpon>gui.en-gb.resx</DependentUpon>

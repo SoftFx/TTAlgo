@@ -102,10 +102,12 @@ namespace TickTrader.BotTerminal
             var sortedSymbolTokens = _symbolTokens.OrderBy((k, v) => k, new SymbolKeyComparer());
             _observableSymbolTokens = sortedSymbolTokens.AsObservable();
 
-            Modes = new List<OptionalItem<TesterModes>>();
-            Modes.Add(new OptionalItem<TesterModes>(TesterModes.Backtesting));
-            Modes.Add(new OptionalItem<TesterModes>(TesterModes.Visualization));
-            Modes.Add(new OptionalItem<TesterModes>(TesterModes.Optimization));
+            Modes = new List<OptionalItem<TesterModes>>
+            {
+                new OptionalItem<TesterModes>(TesterModes.Backtesting),
+                new OptionalItem<TesterModes>(TesterModes.Visualization),
+                new OptionalItem<TesterModes>(TesterModes.Optimization)
+            };
             _optModeItem = Modes.Last();
             ModeProp.Value = Modes[0];
 

@@ -63,7 +63,7 @@ namespace TickTrader.Algo.Common.Model
         double ISymbolInfo.ContractSizeFractional { get { return Descriptor.RoundLot; } }
         string ISymbolInfo.MarginCurrency { get { return Descriptor.Currency; } }
         string ISymbolInfo.ProfitCurrency { get { return Descriptor.SettlementCurrency; } }
-        double ISymbolInfo.MarginFactorFractional { get { return Descriptor.MarginFactorFractional; } }
+        double ISymbolInfo.MarginFactorFractional { get { return Descriptor.MarginFactor; } }
         double ISymbolInfo.MarginHedged { get { return Descriptor.MarginHedged; } }
         int ISymbolInfo.Precision { get { return Descriptor.Precision; } }
         bool ISymbolInfo.SwapEnabled { get { return true; } }

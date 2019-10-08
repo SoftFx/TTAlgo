@@ -84,9 +84,14 @@ namespace Machinarium.Var
     public class BoolValidable : ValidableBase<BoolVar, bool> { }
     public class DoubleValidable : ValidableBase<DoubleVar, double> { }
 
-    public interface IValidable<T> : IProperty<T>
+    public interface IValidable<T> : IProperty<T>, IValidable { }
+
+    public interface IValidable
     {
         Var<string> ErrorVar { get; }
+
         string Error { get; }
+
+        void Validate();
     }
 }

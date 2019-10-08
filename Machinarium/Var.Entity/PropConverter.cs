@@ -40,6 +40,13 @@ namespace Machinarium.Var
             get => _error.Value;
         }
 
+        public void Validate()
+        {
+            _property.Validate();
+            UpdateError();
+            NotifyPropertyChange(nameof(Value));
+        }
+
         string IDataErrorInfo.Error => null;
         string IDataErrorInfo.this[string columnName]
         {
@@ -108,9 +115,21 @@ namespace Machinarium.Var
 
     public class StringToDouble : IValueConverter<double, string>
     {
+        private readonly int _precision = -1;
+        private readonly int _toPercent = 1;
+
+        public StringToDouble() { }
+
+        public StringToDouble(int precision, bool percent = false)
+        {
+            _precision = precision;
+            _toPercent = percent ? 100 : 1;
+        }
+
         public string ConvertFrom(double val)
         {
-            return val.ToString("G");
+            val *= _toPercent;
+            return _precision == -1 ? val.ToString("G") : val.ToString($"G{_precision}");
         }
 
         public double ConvertTo(string val, out string error)
@@ -118,6 +137,7 @@ namespace Machinarium.Var
             double result;
             if (double.TryParse(val, out result))
             {
+                result /= _toPercent;
                 error = null;
                 return result;
             }

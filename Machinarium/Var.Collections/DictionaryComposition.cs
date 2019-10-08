@@ -60,7 +60,7 @@ namespace Machinarium.Qnil
         private void ReplaceElement(TKey key, TValue newVal, TValue oldVal)
         {
             snapshot[key] = newVal;
-            OnUpdated(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Insert, key, newVal, oldVal));
+            OnUpdated(new DictionaryUpdateArgs<TKey, TValue>(this, DLinqAction.Replace, key, newVal, oldVal));
         }
 
         private void Src_Updated(DictionaryUpdateArgs<TKey, TValue> args)
@@ -77,8 +77,7 @@ namespace Machinarium.Qnil
 
         private void OnUpdated(DictionaryUpdateArgs<TKey, TValue> args)
         {
-            if (Updated != null)
-                Updated(args);
+            Updated?.Invoke(args);
         }
 
         protected override void DoDispose()
