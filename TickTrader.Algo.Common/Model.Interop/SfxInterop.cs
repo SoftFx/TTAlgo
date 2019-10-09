@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
@@ -927,8 +926,31 @@ namespace TickTrader.Algo.Common.Model
                 AgentCommission = p.AgentCommission,
                 Swap = p.Swap,
                 Modified = p.Modified,
+                Type = Convert(p.PosReportType),
             };
         }
+
+        private static OrderExecAction Convert(SFX.PosReportType type)
+        {
+            switch (type)
+            {
+                case SFX.PosReportType.CancelPosition:
+                    return OrderExecAction.Canceled;
+
+                case SFX.PosReportType.ModifyPosition:
+                    return OrderExecAction.Modified;
+
+                case SFX.PosReportType.ClosePosition:
+                    return OrderExecAction.Closed;
+
+                case SFX.PosReportType.Split:
+                    return OrderExecAction.Splitted;
+
+                default:
+                    return OrderExecAction.None;
+            }
+        }
+
 
         internal static BarEntity Convert(SFX.Bar fdkBar)
         {

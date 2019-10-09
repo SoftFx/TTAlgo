@@ -6,9 +6,9 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class PositionExecReport
     {
-        public OrderExecAction ExecAction { get; set; }
         public PositionEntity PositionInfo { get; set; }
 
+        public OrderExecAction ExecAction => PositionInfo.Type;
         public double Volume => PositionInfo.Volume;
         public OrderSide Side => PositionInfo.Side;
         public string Symbol => PositionInfo.Symbol;

@@ -66,7 +66,7 @@ namespace TickTrader.Algo.Core
 
             _dataProvider.OrderUpdated += DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
-            //_dataProvider.PositionUpdated += DataProvider_PositionUpdated;
+            _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
             var accInfo = _dataProvider.AccountInfo;
             var accType = accInfo.Type;
@@ -94,7 +94,7 @@ namespace TickTrader.Algo.Core
         {
             _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
-            //_dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
+            _dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
         }
 
         private bool CallListener(OrderExecReport eReport)
@@ -106,8 +106,7 @@ namespace TickTrader.Algo.Core
 
         private bool InvokeListener(string operationId, OrderExecReport rep)
         {
-            Action<OrderExecReport> listener;
-            if (reportListeners.TryGetValue(operationId, out listener))
+            if (reportListeners.TryGetValue(operationId, out Action<OrderExecReport> listener))
             {
                 listener(rep);
                 return true;
@@ -164,37 +163,10 @@ namespace TickTrader.Algo.Core
             });
         }
 
-        //private void DataProvider_PositionUpdated(PositionExecReport report)
-        //{
-        //    context.EnqueueTradeUpdate(b =>
-        //    {
-        //        var accProxy = context.Builder.Account;
-        //        var positions = accProxy.NetPositions;
-
-        //        var oldPos = positions.GetPositionOrNull(report.PositionInfo.Symbol);
-        //        var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.PositionInfo.Symbol);
-        //        var pos = positions.UpdatePosition(report);
-        //        var isClosed = report.ExecAction == OrderExecAction.Closed;
-
-        //        context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
-        //    });
-
-        //}
-
-        private void UpdatePosition(OrderExecReport report)
+        private void DataProvider_PositionUpdated(PositionExecReport report)
         {
-            if (report.NetPosition != null)
-            {
-                var accProxy = context.Builder.Account;
-                var positions = accProxy.NetPositions;
-
-                var oldPos = positions.GetPositionOrNull(report.NetPosition.Symbol);
-                var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(report.NetPosition.Symbol, _symbols.GetOrDefault, accProxy.Leverage);
-                var pos = positions.UpdatePosition(report.NetPosition);
-                var isClosed = report.ExecAction == OrderExecAction.Closed;
-
-                context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
-            }
+            if (report.ExecAction == OrderExecAction.Splitted) // Modify execute with order
+                UpdatePosition(report.PositionInfo, report.ExecAction);
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -206,11 +178,31 @@ namespace TickTrader.Algo.Core
             });
         }
 
+        private void UpdatePosition(PositionEntity position, OrderExecAction action)
+        {
+            var accProxy = context.Builder.Account;
+            var positions = accProxy.NetPositions;
+
+            var oldPos = positions.GetPositionOrNull(position.Symbol);
+            var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(position.Symbol, _symbols.GetOrDefault, accProxy.Leverage);
+            var pos = positions.UpdatePosition(position);
+            var isClosed = action == OrderExecAction.Closed;
+
+            if (action == OrderExecAction.Splitted)
+            {
+                context.EnqueueEvent(builder => positions.FirePositionSplitted(new PositionSplittedEventArgsImpl(clone, pos, isClosed)));
+                context.Logger.NotifyPositionSplitting(pos);
+            }
+            else
+                context.EnqueueEvent(builder => positions.FirePositionUpdated(new PositionModifiedEventArgsImpl(clone, pos, isClosed)));
+        }
+
         private void UpdateOrders(PluginBuilder builder, OrderExecReport eReport)
         {
             System.Diagnostics.Debug.WriteLine($"ER: {eReport.Action} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
 
-            UpdatePosition(eReport);
+            if (eReport.NetPosition != null)
+                UpdatePosition(eReport.NetPosition, eReport.ExecAction);
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecAction.Activated)
@@ -279,6 +271,7 @@ namespace TickTrader.Algo.Core
                     var isOwnOrder = CallListener(eReport);
                     if (!isOwnOrder && !IsInvisible(newOrder))
                         context.Logger.NotifyOrderModification(newOrder);
+
                     context.EnqueueEvent(b => orderCollection.FireOrderModified(new OrderModifiedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
@@ -291,7 +284,8 @@ namespace TickTrader.Algo.Core
                     var newOrder = order.Clone();
                     var isOwnOrder = CallListener(eReport);
                     if (!isOwnOrder && !IsInvisible(newOrder))
-                        context.Logger.NotifyOrderModification(newOrder);
+                        context.Logger.NotifyOrderSplitting(newOrder);
+
                     context.EnqueueEvent(b => orderCollection.FireOrderSplitted(new OrderSplittedEventArgsImpl(oldOrder, newOrder)));
                 }
             }
@@ -455,6 +449,7 @@ namespace TickTrader.Algo.Core
             where TRequest : OrderRequest
         {
             var resultTask = new TaskCompletionSource<TradeResultEntity>();
+
             var resultContainer = new List<OrderEntity>(2);
 
             string operationId = Guid.NewGuid().ToString();

@@ -64,7 +64,8 @@ namespace TickTrader.Algo.Common.Model
         PendingReplace = 7,
         Replace = 8,
         OrderStatus = 9,
-        PendingClose = 10
+        PendingClose = 10,
+        Split = 11
     }
 
     public enum OrderStatus

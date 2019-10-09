@@ -248,7 +248,7 @@ namespace TickTrader.Algo.Common.Model
         public void UpdatePosition(PositionEntity position)
         {
             var model = UpsertPosition(position);
-            PositionUpdate?.Invoke(model, OrderExecAction.Modified);
+            PositionUpdate?.Invoke(model, position.Type);
         }
 
         public void OnPositionAdded(PositionEntity position)
@@ -361,6 +361,9 @@ namespace TickTrader.Algo.Common.Model
                         return OnOrderUpdated(report, OrderExecAction.Opened);
                     else
                         return OnOrderAdded(report, OrderExecAction.Opened);
+
+                case ExecutionType.Split:
+                    return OnOrderUpdated(report, OrderExecAction.Splitted);
 
                 case ExecutionType.Replace:
                     return OnOrderUpdated(report, OrderExecAction.Modified);

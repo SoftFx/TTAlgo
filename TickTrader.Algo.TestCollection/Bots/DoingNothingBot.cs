@@ -18,9 +18,6 @@ namespace TickTrader.Algo.TestCollection.Bots
         public double IgnoredParam2 { get; set; }
 
         protected override void Init()
-        {
-            Account.Orders.Splited += (OrderSplitedEventArgs s) => Print("Received split");
-            Account.NetPositions
-        }
+        {}
     }
 }

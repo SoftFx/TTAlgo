@@ -45,7 +45,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api">
+    <Reference Include="TickTrader.Algo.Api, Version=1.1.2.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -64,6 +65,7 @@
     <Compile Include="Bots\EventBot.cs" />
     <Compile Include="Bots\OpenCloseBot.cs" />
     <Compile Include="Bots\QuotePrintBot.cs" />
+    <Compile Include="Bots\SplitViewBot.cs" />
     <Compile Include="Bots\TestBotOutputs.cs" />
     <Compile Include="Bots\TradeLoadBot.cs" />
     <Compile Include="Bots\LogBot.cs" />

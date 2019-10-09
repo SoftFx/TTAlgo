@@ -186,6 +186,24 @@ namespace TickTrader.Algo.Core
             Logger.OnPrintTrade(logEntry.ToString());
         }
 
+        public void NotifyOrderSplitting(OrderAccessor order)
+        {
+            var logEntry = new StringBuilder();
+
+            logEntry.Append("Order #").Append(order.Id).Append(" ");
+            AppendOrderParams(logEntry, order.SymbolInfo, " was splitted to ", order);
+
+            Logger.OnPrintTrade(logEntry.ToString());
+        }
+
+        public void NotifyPositionSplitting(PositionAccessor position)
+        {
+            var logEntry = new StringBuilder();
+            logEntry.Append($"Position #{position.Id} was splitted to {position.Side} {position.Volume:F3} {position.Symbol} at price {position.Price}");
+
+            Logger.OnPrintTrade(logEntry.ToString());
+        }
+
         public void NotifyDespositWithdrawal(double amount, CurrencyEntity currency)
         {
             string action = amount > 0 ? "Deposit" : "Withdrawal";

@@ -47,9 +47,19 @@ namespace TickTrader.Algo.Core
             _builder.InvokePluginMethod(InvokePositionUpdated, args, false);
         }
 
+        public void FirePositionSplitted(NetPositionSplittedEventArgs args)
+        {
+            _builder.InvokePluginMethod(InvokePositionSplitted, args, false);
+        }
+
         private void InvokePositionUpdated(PluginBuilder builder, NetPositionModifiedEventArgs args)
         {
             builder.Account.NetPositions._fixture.FirePositionModified(args);
+        }
+
+        private void InvokePositionSplitted(PluginBuilder builder, NetPositionSplittedEventArgs args)
+        {
+            builder.Account.NetPositions._fixture.FirePositionSplitted(args);
         }
 
         public IEnumerator<PositionAccessor> GetEnumerator()

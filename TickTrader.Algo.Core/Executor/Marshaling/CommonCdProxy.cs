@@ -22,6 +22,7 @@ namespace TickTrader.Algo.Core
 
             _acc.OrderUpdated += Acc_OrderUpdated;
             _acc.BalanceUpdated += Acc_BalanceUpdated;
+            _acc.PositionUpdated += Acc_PositionUpdated;
         }
 
         public override void Dispose()
@@ -30,6 +31,7 @@ namespace TickTrader.Algo.Core
 
             _acc.OrderUpdated -= Acc_OrderUpdated;
             _acc.BalanceUpdated -= Acc_BalanceUpdated;
+            _acc.PositionUpdated -= Acc_PositionUpdated;
         }
 
         #region ITradeHistoryProvider
@@ -71,6 +73,7 @@ namespace TickTrader.Algo.Core
 
         public event Action<OrderExecReport> OrderUpdated;
         public event Action<BalanceOperationReport> BalanceUpdated;
+        public event Action<PositionExecReport> PositionUpdated;
 
         public List<OrderEntity> GetOrders()
         {
@@ -95,6 +98,11 @@ namespace TickTrader.Algo.Core
         private void Acc_OrderUpdated(OrderExecReport rep)
         {
             OrderUpdated?.Invoke(rep);
+        }
+
+        private void Acc_PositionUpdated(PositionExecReport rep)
+        {
+            PositionUpdated?.Invoke(rep);
         }
 
         #endregion
