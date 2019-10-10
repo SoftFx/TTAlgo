@@ -91,13 +91,15 @@ namespace TickTrader.BotTerminal
             MinCommissionStr = _varContext.AddConverter(MinCommission, new StringToDouble());
             SelectedMinCommissionCurr = _varContext.AddValidable(symbol.MinCommissionCurr);
 
+            int swapPrecision = Math.Max(Digits.Value + 1, 6);
+
             SwapEnabled = _varContext.AddBoolValidable(symbol.SwapEnabled);
             TripleSwap = _varContext.AddBoolValidable(symbol.TripleSwap);
             SelectedSwapType = _varContext.AddValidable(symbol.SwapType);
             SwapSizeShort = _varContext.AddDoubleValidable(symbol.SwapSizeShort);
-            SwapSizeShortStr = _varContext.AddConverter(SwapSizeShort, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear));
+            SwapSizeShortStr = _varContext.AddConverter(SwapSizeShort, new StringToDouble(swapPrecision, symbol.SwapType == BO.SwapType.PercentPerYear));
             SwapSizeLong = _varContext.AddDoubleValidable(symbol.SwapSizeLong);
-            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble(Digits.Value, symbol.SwapType == BO.SwapType.PercentPerYear)); ;
+            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble(swapPrecision, symbol.SwapType == BO.SwapType.PercentPerYear)); ;
 
             SelectedProfitMode = _varContext.AddValidable(symbol.ProfitMode);
 
