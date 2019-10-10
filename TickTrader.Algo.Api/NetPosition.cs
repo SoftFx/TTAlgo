@@ -26,9 +26,17 @@ namespace TickTrader.Algo.Api
         NetPosition this[string symbol] { get; }
 
         event Action<NetPositionModifiedEventArgs> Modified;
+        event Action<NetPositionSplittedEventArgs> Splitted;
     }
 
     public interface NetPositionModifiedEventArgs
+    {
+        NetPosition OldPosition { get; }
+        NetPosition NewPosition { get; }
+        bool IsClosed { get; }
+    }
+
+    public interface NetPositionSplittedEventArgs
     {
         NetPosition OldPosition { get; }
         NetPosition NewPosition { get; }

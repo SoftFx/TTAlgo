@@ -83,6 +83,11 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderModified(p), args);
         }
 
+        public void FireOrderSplitted(OrderSplittedEventArgs args)
+        {
+            builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderSplitted(p), args);
+        }
+
         public void FireOrderClosed(OrderClosedEventArgs args)
         {
             builder.InvokePluginMethod((b, p) => b.Account.Orders.OrderListImpl.FireOrderClosed(p), args);
@@ -238,6 +243,11 @@ namespace TickTrader.Algo.Core
                 Activated(args);
             }
 
+            public void FireOrderSplitted(OrderSplittedEventArgs args)
+            {
+                Splitted(args);
+            }
+
             public event Action<OrderClosedEventArgs> Closed = delegate { };
             public event Action<OrderModifiedEventArgs> Modified = delegate { };
             public event Action<OrderOpenedEventArgs> Opened = delegate { };
@@ -245,6 +255,7 @@ namespace TickTrader.Algo.Core
             public event Action<OrderExpiredEventArgs> Expired = delegate { };
             public event Action<OrderFilledEventArgs> Filled = delegate { };
             public event Action<OrderActivatedEventArgs> Activated = delegate { };
+            public event Action<OrderSplittedEventArgs> Splitted = delegate { };
             public event Action<Order> Added;
             public event Action<Order> Removed;
             public event Action<Order> Replaced;

@@ -16,5 +16,8 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         [Parameter]
         public double IgnoredParam2 { get; set; }
+
+        protected override void Init()
+        {}
     }
 }

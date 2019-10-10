@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Core
         public event Action<OrderFilledEventArgs> Filled;
         public event Action<OrderModifiedEventArgs> Modified;
         public event Action<OrderOpenedEventArgs> Opened;
+        public event Action<OrderSplittedEventArgs> Splitted;
         public event Action<Order> Added { add { } remove { } }
         public event Action<Order> Removed { add { } remove { } }
         public event Action<Order> Replaced { add { } remove { } }
@@ -56,6 +57,7 @@ namespace TickTrader.Algo.Core
             _originalList.Opened += OriginalList_Opened;
             _originalList.Activated += OriginalList_Activated;
             _originalList.Cleared += OriginalList_Cleared;
+            _originalList.Splitted += OriginalList_Splitted;
         }
 
         public IEnumerator<Order> GetEnumerator()
@@ -130,6 +132,12 @@ namespace TickTrader.Algo.Core
         {
             if (_predicate(args.Order))
                 Activated?.Invoke(args);
+        }
+
+        private void OriginalList_Splitted(OrderSplittedEventArgs args)
+        {
+            if (_predicate(args.OldOrder))
+                Splitted?.Invoke(args);
         }
     }
 }

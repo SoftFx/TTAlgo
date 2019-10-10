@@ -54,6 +54,7 @@ namespace TickTrader.Algo.Core
         public OrderSide Side { get; set; }
         public double Swap { get; set; }
         public string Symbol { get; private set; }
+        public OrderExecAction Type { get; set; }
         public DateTime? Modified { get; set; }
         public bool IsEmpty => Volume == 0;
     }

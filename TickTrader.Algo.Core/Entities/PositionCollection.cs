@@ -47,9 +47,19 @@ namespace TickTrader.Algo.Core
             _builder.InvokePluginMethod(InvokePositionUpdated, args, false);
         }
 
+        public void FirePositionSplitted(NetPositionSplittedEventArgs args)
+        {
+            _builder.InvokePluginMethod(InvokePositionSplitted, args, false);
+        }
+
         private void InvokePositionUpdated(PluginBuilder builder, NetPositionModifiedEventArgs args)
         {
             builder.Account.NetPositions._fixture.FirePositionModified(args);
+        }
+
+        private void InvokePositionSplitted(PluginBuilder builder, NetPositionSplittedEventArgs args)
+        {
+            builder.Account.NetPositions._fixture.FirePositionSplitted(args);
         }
 
         public IEnumerator<PositionAccessor> GetEnumerator()
@@ -132,10 +142,16 @@ namespace TickTrader.Algo.Core
             internal IEnumerable<PositionAccessor> Values => _positions.Values;
 
             public event Action<NetPositionModifiedEventArgs> Modified;
+            public event Action<NetPositionSplittedEventArgs> Splitted;
 
             public void FirePositionModified(NetPositionModifiedEventArgs args)
             {
                 Modified?.Invoke(args);
+            }
+
+            public void FirePositionSplitted(NetPositionSplittedEventArgs args)
+            {
+                Splitted?.Invoke(args);
             }
 
             public PositionAccessor CreatePosition(SymbolAccessor symbol)

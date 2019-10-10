@@ -43,6 +43,7 @@ namespace TickTrader.Algo.Core
             _buy.Update(src._buy.Amount, src._buy.Price);
             _sell.Update(src._sell.Amount, src._sell.Price);
 
+            Volume = src.Volume;
             SettlementPrice = src.SettlementPrice;
             Swap = src.Swap;
             Modified = src.Modified;

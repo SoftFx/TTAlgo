@@ -270,10 +270,12 @@ namespace TickTrader.Algo.Common.Model
 
         internal PositionExecReport ToReport(OrderExecAction action)
         {
+            var entity = GetEntity();
+            entity.Type = action;
+
             return new PositionExecReport()
             {
-                ExecAction = action,
-                PositionInfo = GetEntity()
+                PositionInfo = entity,
             };
         }
 
@@ -287,7 +289,8 @@ namespace TickTrader.Algo.Common.Model
                 Side = Side,
                 Volume = Amount,
                 Swap = (double)Swap,
-                Price = (double)Price
+                Price = (double)Price,
+                Id = Id,
             };
         }
     }
