@@ -421,14 +421,19 @@ namespace TickTrader.BotTerminal
             if (IsBalanceTransaction)
                 return null;
 
+            if (IsSplitTransaction)
+            {
+                if (transaction.TradeRecordType == OrderType.Stop)
+                    return transaction.StopPrice;
+                else
+                    return transaction.PosRemainingPrice ?? transaction.Price;
+            }
+
             if (transaction.TradeRecordType == OrderType.Stop)
                 return transaction.OrderFillPrice;
 
             if (transaction.TradeRecordType == OrderType.StopLimit)
                 return transaction.StopPrice;
-
-            if (IsSplitTransaction)
-                return transaction.PosRemainingPrice ?? transaction.Price;
 
             return transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
         }
