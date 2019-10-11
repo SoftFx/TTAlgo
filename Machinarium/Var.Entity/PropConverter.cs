@@ -42,7 +42,9 @@ namespace Machinarium.Var
 
         public void Validate()
         {
+            ConvertToProperty();
             _property.Validate();
+
             UpdateError();
             NotifyPropertyChange(nameof(Value));
         }
@@ -116,14 +118,20 @@ namespace Machinarium.Var
     public class StringToDouble : IValueConverter<double, string>
     {
         private readonly int _precision = -1;
-        private readonly int _toPercent = 1;
+        private int _toPercent = 1;
 
         public StringToDouble() { }
 
         public StringToDouble(int precision, bool percent = false)
         {
             _precision = precision;
-            _toPercent = percent ? 100 : 1;
+            Percent = percent;
+        }
+
+        public bool Percent
+        {
+            get => _toPercent == 1;
+            set => _toPercent = value ? 100 : 1;
         }
 
         public string ConvertFrom(double val)

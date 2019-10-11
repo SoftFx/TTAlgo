@@ -91,15 +91,16 @@ namespace TickTrader.BotTerminal
             MinCommissionStr = _varContext.AddConverter(MinCommission, new StringToDouble());
             SelectedMinCommissionCurr = _varContext.AddValidable(symbol.MinCommissionCurr);
 
-            int swapPrecision = Math.Max(Digits.Value + 1, 6);
+
+            var percentConverter = new StringToDouble(Math.Max(Digits.Value + 1, 6), symbol.SwapType == BO.SwapType.PercentPerYear);
 
             SwapEnabled = _varContext.AddBoolValidable(symbol.SwapEnabled);
             TripleSwap = _varContext.AddBoolValidable(symbol.TripleSwap);
             SelectedSwapType = _varContext.AddValidable(symbol.SwapType);
             SwapSizeShort = _varContext.AddDoubleValidable(symbol.SwapSizeShort);
-            SwapSizeShortStr = _varContext.AddConverter(SwapSizeShort, new StringToDouble(swapPrecision, symbol.SwapType == BO.SwapType.PercentPerYear));
+            SwapSizeShortStr = _varContext.AddConverter(SwapSizeShort, percentConverter);
             SwapSizeLong = _varContext.AddDoubleValidable(symbol.SwapSizeLong);
-            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, new StringToDouble(swapPrecision, symbol.SwapType == BO.SwapType.PercentPerYear)); ;
+            SwapSizeLongStr = _varContext.AddConverter(SwapSizeLong, percentConverter); ;
 
             SelectedProfitMode = _varContext.AddValidable(symbol.ProfitMode);
 
@@ -142,7 +143,7 @@ namespace TickTrader.BotTerminal
             LimitsCommission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(LimitsCommission)));
             MinCommission.AddValidationRule(IsPositiveValue, GetPositiveRangeErrorMessage(nameof(MinCommission)));
 
-            var SwapRange = new ValidationRange(-100, 100);
+            var SwapRange = new ValidationRange(-1, 1);
 
             SwapSizeShort.AddValidationRule(GetValidableRange(SwapRange), GetErrorRangeMessage(SwapRange, nameof(SwapSizeShort)));
             SwapSizeLong.AddValidationRule(GetValidableRange(SwapRange), GetErrorRangeMessage(SwapRange, nameof(SwapSizeLong)));
@@ -174,9 +175,11 @@ namespace TickTrader.BotTerminal
             _varContext.TriggerOnChange(SelectedSwapType.Var, (a) =>
             {
                 if (a.New == BO.SwapType.PercentPerYear)
-                    SwapRange.Update(-100, 100);
+                    SwapRange.Update(-1, 1, true);
                 else
-                    SwapRange.Update(-1e9, 1e9);
+                    SwapRange.Update(-1e7, 1e7);
+
+                percentConverter.Percent = a.New == BO.SwapType.PercentPerYear;
 
                 SwapSizeShortStr.Validate();
                 SwapSizeLongStr.Validate();
@@ -244,9 +247,9 @@ namespace TickTrader.BotTerminal
         public Validable<BO.SwapType> SelectedSwapType { get; }
         public IEnumerable<BO.SwapType> SwapTypes => EnumHelper.AllValues<BO.SwapType>();
         public DoubleValidable SwapSizeShort { get; }
-        public IValidable<string> SwapSizeShortStr { get; }
+        public PropConverter<double, string> SwapSizeShortStr { get; }
         public DoubleValidable SwapSizeLong { get; }
-        public IValidable<string> SwapSizeLongStr { get; }
+        public PropConverter<double, string> SwapSizeLongStr { get; }
         public BoolValidable TripleSwap { get; }
 
         public Validable<string> ProfitCurr { get; }
@@ -291,7 +294,7 @@ namespace TickTrader.BotTerminal
             TryClose(false);
         }
 
-        private Func<string> GetErrorRangeMessage(ValidationRange range, string prop) => () => $"{prop} must be between in range [{range.Min:R}..{range.Max:R}]";
+        private Func<string> GetErrorRangeMessage(ValidationRange range, string prop) => () => $"{prop} must be between in range [{range.MinToErr:R}..{range.MaxtoErr:R}]";
         private Predicate<string> IsExistingSymbol(IObservableList<string> symbolsList) => (string symbol) => symbolsList.Contains(symbol);
         private Predicate<double> GetValidableRange(ValidationRange range) => (val) => val >= range.Min && val <= range.Max;
         private Predicate<int> GetValidatePositiveRange(int min, int max) => (int val) => val >= min && val <= max;
@@ -304,18 +307,24 @@ namespace TickTrader.BotTerminal
 
     public class ValidationRange
     {
+        private bool _toPercent = false;
+
         public double Min { get; private set; }
         public double Max { get; private set; }
+
+        public double MinToErr => _toPercent ? Min * 100 : Min;
+        public double MaxtoErr => _toPercent ? Max * 100 : Max;
 
         public ValidationRange(double min, double max)
         {
             Update(min, max);
         }
 
-        public void Update(double min, double max)
+        public void Update(double min, double max, bool persent = false)
         {
             Min = min;
             Max = max;
+            _toPercent = persent;
         }
     }
 }
