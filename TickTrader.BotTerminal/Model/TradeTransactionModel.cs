@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
             UniqueId = GetUniqueId(transaction, out long orderNum);
             OrderNum = orderNum;
 
-            if (IsSplitTransaction)
+            if (IsSplitTransaction && !IsBalanceTransaction)
             {
                 SplitRatio = transaction.SplitRatio;
                 SplitReqPrice = OpenPrice * SplitRatio;
