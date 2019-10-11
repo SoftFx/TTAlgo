@@ -66,6 +66,10 @@ namespace TickTrader.Algo.Core
         internal override SubscriptionGroup GetOrAddGroup(string symbol)
         {
             var node = _marketFixture.Market.GetSymbolNodeOrNull(symbol);
+
+            if (node == null)
+                throw new AlgoException($"Symbol {symbol} has not been added for emulation");
+
             if (node.SubGroup == null)
                 node.SubGroup = new SubscriptionGroup(symbol);
             return node.SubGroup;

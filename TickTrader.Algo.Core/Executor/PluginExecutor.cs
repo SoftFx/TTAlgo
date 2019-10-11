@@ -338,6 +338,10 @@ namespace TickTrader.Algo.Core
                 {
                     throw new Exception(ex.Message); // save formatted message
                 }
+                catch (AlgoException ex)
+                {
+                    throw new Exception(ex.Message);
+                }
                 catch (Exception ex)
                 {
                     throw new Exception("Exception of type " + ex.GetType().Name + " has been thrown: " + ex.ToString());
