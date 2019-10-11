@@ -23,7 +23,7 @@ namespace TickTrader.Algo.Core
         private MarginAccountCalc _marginCalc;
         private CashAccountCalculator cashCalc;
         private AccountAccessor acc;
-        private bool _isStarted;
+        private bool _isRunning;
 
         public CalculatorFixture(IFixtureContext context)
         {
@@ -47,9 +47,9 @@ namespace TickTrader.Algo.Core
 
         private void LazyInit()
         {
-            if (!_isStarted)
+            if (!_isRunning)
             {
-                _isStarted = true;
+                _isRunning = true;
                 StartCalculator();
             }
         }
@@ -107,6 +107,8 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
+            _isRunning = false;
+
             if (_context.Builder != null)
                 _context.Builder.Account.CalcRequested -= LazyInit;
 
