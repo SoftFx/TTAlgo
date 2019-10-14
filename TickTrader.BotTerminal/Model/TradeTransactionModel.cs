@@ -312,7 +312,7 @@ namespace TickTrader.BotTerminal
         {
             List<OrderExecutionOptions> options = new List<OrderExecutionOptions>();
 
-            if (transaction.ImmediateOrCancel)
+            if (transaction.ImmediateOrCancel && !IsSplitTransaction)
             {
                 Type = Type == AggregatedTransactionType.BuyLimit ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
                 options.Add(OrderExecutionOptions.IoC);
@@ -423,7 +423,7 @@ namespace TickTrader.BotTerminal
 
             if (IsSplitTransaction)
             {
-                if (transaction.TradeRecordType == OrderType.Stop)
+                if (transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit)
                     return transaction.StopPrice;
                 else
                     return transaction.PosRemainingPrice ?? transaction.Price;
@@ -539,6 +539,20 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        protected override double? GetOpenPrice(TradeReportEntity transaction)
+        {
+            if (IsBalanceTransaction)
+                return null;
+
+            if (IsSplitTransaction)
+            {
+                if (transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit)
+                    return transaction.StopPrice;
+            }
+
+            return transaction.Price;
+        }
+
         protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction) //after creation Splits and Dividends on Grosses make common
         {
             var type = base.GetTransactionType(transaction);
@@ -552,8 +566,11 @@ namespace TickTrader.BotTerminal
                     type = AggregatedTransactionType.TransferFunds;
             }
 
-            if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
+            if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
+            {
+                if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
+                    type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
+            }
 
             return type;
         }
