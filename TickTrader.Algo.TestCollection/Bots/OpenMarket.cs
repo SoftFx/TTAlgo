@@ -20,6 +20,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         public bool DoNotExit { get; set; }
 
         protected override void Init()
+        {}
+
+        protected override void OnStart()
         {
             var price = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
             if (double.IsNaN(price))
@@ -32,16 +35,6 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Exit();
                 return;
             }
-        }
-
-        protected override void OnStart()
-        {
-
-        }
-
-        protected override double GetOptimizationMetric()
-        {
-            return Account.Equity / 4;
         }
     }
 }

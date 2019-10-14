@@ -257,13 +257,13 @@ namespace TickTrader.Algo.Core
                         nextItem = DequeueNext();
                     }
 
-                    if (_fatalError != null)
-                        throw _fatalError;
-
                     if (nextItem == null)
                         return;
 
                     ExecItem(nextItem);
+
+                    if (_fatalError != null)
+                        throw _fatalError;
                 }
             }
             catch (Exception)
@@ -539,6 +539,12 @@ namespace TickTrader.Algo.Core
 
         private object DequeueUpcoming(out bool isTrade, bool syncOp)
         {
+            if (_feedReader == null)
+            {
+                isTrade = false;
+                return null;
+            }
+
             if (_feedReader.IsCompeted)
             {
                 if ((!_stopPhase && !syncOp) || _delayedQueue.IsEmpty)
