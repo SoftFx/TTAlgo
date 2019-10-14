@@ -42,8 +42,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     //}
                     //else
                     //{
-                    DateTime from, to;
-                    GetBounds(out from, out to);
+                    GetBounds(out DateTime from, out DateTime to);
                     if (TimeFrame == TimeFrames.Ticks || TimeFrame == TimeFrames.TicksLevel2)
                         PrintQuotes(from, to, TimeFrame == TimeFrames.TicksLevel2);
                     else
@@ -77,13 +76,14 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             int count = 0;
             IEnumerable<Bar> bars;
-            if (UseCount)
-                bars = Feed.GetBars(SafeSymbol, TimeFrame, from, IsBackwarOrder ? -Count : Count, BarPriceType.Bid);
-            else bars = Feed.GetBars(SafeSymbol, TimeFrame, from, to, BarPriceType.Bid, IsBackwarOrder);
+            bars = UseCount ? Feed.GetBars(SafeSymbol, TimeFrame, from, IsBackwarOrder ? -Count : Count, BarPriceType.Bid) :
+                                Feed.GetBars(SafeSymbol, TimeFrame, from, to, BarPriceType.Bid, IsBackwarOrder);
+
             foreach (var bar in bars)
             {
                 if (IsStopped)
                     break;
+
                 PrintBar(bar);
                 count++;
             }

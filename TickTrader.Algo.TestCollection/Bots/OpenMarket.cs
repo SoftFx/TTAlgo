@@ -21,16 +21,22 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
+            var price = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
+            if (double.IsNaN(price))
+                price = 1; // can still try
+
+            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, price, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
+
+            if (!DoNotExit)
+            {
+                Exit();
+                return;
+            }
         }
 
         protected override void OnStart()
         {
-            var price = Side == OrderSide.Buy ? Symbol.Ask : Symbol.Bid;
-            if (double.IsNaN(price))
-                price = 1; // can still try
-            OpenOrder(Symbol.Name, OrderType.Market, Side, Volume, price, null, null, "Open Market Bot " + DateTime.Now, OrderExecOptions.None, Tag);
-            if (!DoNotExit)
-                Exit();
+
         }
 
         protected override double GetOptimizationMetric()
