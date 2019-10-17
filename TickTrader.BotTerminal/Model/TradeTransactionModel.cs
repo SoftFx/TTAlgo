@@ -72,6 +72,8 @@ namespace TickTrader.BotTerminal
             Slippage = GetSlippage(transaction);
             Tag = GetTag(transaction);
             PosQuantity = GetPosQuantity(transaction);
+            Fees = GetFees(transaction);
+            Taxes = GetTaxes(transaction);
             SortedNumber = GetSortedNumber();
 
             // should be last (it's based on other fields)
@@ -150,6 +152,10 @@ namespace TickTrader.BotTerminal
         public double? SplitReqVolume { get; protected set; }
         public double? SplitReqPrice { get; protected set; }
         public double? SplitRatio { get; protected set; }
+
+        public bool IsDividendTransaction => Type == AggregatedTransactionType.Dividend;
+        public double? Taxes { get; protected set; }
+        public double? Fees { get; protected set; }
 
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
@@ -306,6 +312,16 @@ namespace TickTrader.BotTerminal
         protected virtual double? GetPosRemainingPrice(TradeReportEntity transaction)
         {
             return IsBalanceTransaction ? null : transaction.PosRemainingPrice;
+        }
+
+        protected virtual double? GetFees(TradeReportEntity transaction)
+        {
+            return IsDividendTransaction ? (double?)transaction.Commission : null;
+        }
+
+        protected virtual double? GetTaxes(TradeReportEntity transaction)
+        {
+            return null;
         }
 
         protected virtual string GetOrderExecutionOption(TradeReportEntity transaction)

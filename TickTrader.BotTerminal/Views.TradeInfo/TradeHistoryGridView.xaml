@@ -20,6 +20,8 @@
                     <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
                     <l:DataGridColumnHide x:Key="TagShow" Provider="{Binding StateProvider}" ColumnKey="Tag"/>
                     <l:DataGridColumnHide x:Key="CommentShow" Provider="{Binding StateProvider}" ColumnKey="Comment"/>
+                    <l:DataGridColumnHide x:Key="TaxesShow" Provider="{Binding StateProvider}" ColumnKey="Taxes"/>
+                    <l:DataGridColumnHide x:Key="FeesShow" Provider="{Binding StateProvider}" ColumnKey="Fees"/>
                 </DataGrid.Resources>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
@@ -32,6 +34,8 @@
                         <MenuItem Header="Show Close Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource PosCloseVolumeShow}}"/>
                         <MenuItem Header="Show Commision" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommissionShow}}"/>
                         <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
+                        <MenuItem Header="Show Taxes" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TaxesShow}}"/>
+                        <MenuItem Header="Show Fees" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource FeesShow}}"/>
                         <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TagShow}}"/>
                         <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommentShow}}"/>
                     </ContextMenu>
@@ -200,6 +204,10 @@
                             </MultiBinding>
                         </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Taxes" Width="100" Binding="{Binding Taxes}" Visibility="{Binding Visibility, Source={StaticResource TaxesShow}}"/>
+
+                    <DataGridTextColumn Header="Fees" Width="100" Binding="{Binding Fees}" Visibility="{Binding Visibility, Source={StaticResource FeesShow}}"/>
 
                     <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
 
