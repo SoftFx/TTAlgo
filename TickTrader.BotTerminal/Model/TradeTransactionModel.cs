@@ -321,7 +321,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual double? GetTaxes(TradeReportEntity transaction)
         {
-            return null;
+            return IsDividendTransaction ? (double?)transaction.Tax : null;
         }
 
         protected virtual string GetOrderExecutionOption(TradeReportEntity transaction)

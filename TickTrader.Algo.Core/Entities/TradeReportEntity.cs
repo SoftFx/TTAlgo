@@ -111,6 +111,7 @@ namespace TickTrader.Algo.Core
         public double? MinCommissionConversionRate { get; set; }
         public OrderType ReqOrderType { get; set; }
         public double? SplitRatio { get; set; }
+        public double Tax { get; set; }
         #endregion
     }
 

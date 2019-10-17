@@ -1123,6 +1123,7 @@ namespace TickTrader.Algo.Common.Model
                 ReqOrderType = Convert(report.ReqOrderType != null ? report.ReqOrderType.Value : report.OrderType),
                 TradeTransactionReason = Convert(report.TradeTransactionReason),
                 SplitRatio = report.SplitRatio,
+                Tax = report.Tax,
             };
         }
 
