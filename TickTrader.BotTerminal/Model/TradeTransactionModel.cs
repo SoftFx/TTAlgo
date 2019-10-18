@@ -16,7 +16,7 @@ namespace TickTrader.BotTerminal
         public enum AggregatedTransactionType
         {
             Unknown, Buy, BuyLimit, BuyStop, Deposit, Sell, SellLimit, SellStop, Withdrawal, BuyStopLimit, SellStopLimit, SellStopLimitCanceled,
-            SellStopCanceled, SellLimitCanceled, BuyStopLimitCanceled, BuyStopCanceled, BuyLimitCanceled, TransferFunds, SplitBuy, SplitSell, Dividend
+            SellStopCanceled, SellLimitCanceled, BuyStopLimitCanceled, BuyStopCanceled, BuyLimitCanceled, TransferFunds, SplitBuy, SplitSell, Split, Dividend
         }
 
         public enum TransactionSide { None = -1, Buy, Sell }
@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
         public double? PosQuantity { get; protected set; }
         public string SortedNumber { get; protected set; }
 
-        public bool IsSplitTransaction => Type == AggregatedTransactionType.SplitBuy || Type == AggregatedTransactionType.SplitSell;
+        public bool IsSplitTransaction => Type == AggregatedTransactionType.SplitBuy || Type == AggregatedTransactionType.SplitSell || Type == AggregatedTransactionType.Split;
         public bool IsNotSplitTransaction => !IsSplitTransaction;
         public double? SplitReqVolume { get; protected set; }
         public double? SplitReqPrice { get; protected set; }
@@ -581,6 +581,9 @@ namespace TickTrader.BotTerminal
                 if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
                     type = AggregatedTransactionType.TransferFunds;
             }
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction && transaction.TradeTransactionReason == TradeTransactionReason.Split)
+                type = AggregatedTransactionType.Split;
 
             if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
             {
