@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -611,22 +610,6 @@ namespace TickTrader.Algo.Core
         {
             var oldOrder = account.Orders.GetOrderOrNull(request.OrderId);
 
-            //var orderEntity = new OrderEntity(request.OrderId)
-            //{
-            //    Symbol = request.Symbol,
-            //    Type = request.Type,
-            //    Side = request.Side,
-            //    Price = request.Price ?? oldOrder.Price,
-            //    StopPrice = request.StopPrice ?? oldOrder.StopPrice,
-            //    RequestedVolume = request.NewVolume ?? request.CurrentVolume,
-            //    RemainingVolume = request.NewVolume ?? request.CurrentVolume,
-            //    MaxVisibleVolume = request.MaxVisibleVolume ?? request.MaxVisibleVolume,
-            //    StopLoss = request.StopLoss ?? oldOrder.StopLoss,
-            //    TakeProfit = request.TakeProfit ?? oldOrder.TakeProfit,
-            //    Expiration = request.Expiration ?? oldOrder.Expiration,
-            //    Options = request.Options ?? oldOrder.Entity.Options,
-            //};
-
             var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
             var newVol = request.NewVolume ?? oldOrder.RemainingVolume;
@@ -639,51 +622,17 @@ namespace TickTrader.Algo.Core
 
         private void ValidateQuotes(SymbolAccessor symbol, OrderType type, OrderSide side, OrderExecOptions options)
         {
-            if (type == OrderType.Market || type == OrderType.Position
-            || (type == OrderType.Limit && options.HasFlag(OrderExecOptions.ImmediateOrCancel)))
-                if (IsMarketSideIndicative(symbol.LastQuote, type, side))
-                    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            //var quote = symbol.LastQuote;
+
+            //if (this.account.Type != AccountTypes.Cash && (!quote.HasBid || !quote.HasAsk))
+            //    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+
+            //if (side == OrderSide.Sell && quote.IsBidIndicative)
+            //    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+
+            //if (side == OrderSide.Buy && quote.IsAskIndicative)
+            //    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
         }
-
-        private bool IsMarketSideIndicative(Quote quote, OrderType type, OrderSide side)
-        {
-
-            return (side == OrderSide.Buy && quote.IsAskIndicative) || (side == OrderSide.Sell && quote.IsBidIndicative);
-        }
-
-        private bool IsPendingSideIndicative(Quote quote, OrderType type, OrderSide side)
-        {
-            return (side == OrderSide.Buy && quote.IsBidIndicative) || (side == OrderSide.Sell && quote.IsAskIndicative);
-        }
-
-        //private void ApplyHiddenServerLogic(OrderEntity order, SymbolAccessor symbol)
-        //{
-        //    //add prices for market orders
-        //    if (order.Type == OrderType.Market && order.Price == null)
-        //    {
-        //        order.Price = order.Side == OrderSide.Buy ? symbol.Ask : symbol.Bid;
-        //        if (account.Type == AccountTypes.Cash)
-        //        {
-        //            order.Price += symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? 1 : -1);
-        //        }
-        //    }
-
-        //    //convert order types for cash accounts
-        //    if (account.Type == AccountTypes.Cash)
-        //    {
-        //        switch (order.Type)
-        //        {
-        //            case OrderType.Market:
-        //                order.Type = OrderType.Limit;
-        //                order.Options |= OrderExecOptions.ImmediateOrCancel;
-        //                break;
-        //            case OrderType.Stop:
-        //                order.Type = OrderType.StopLimit;
-        //                order.Price = order.StopPrice + symbol.Point * symbol.DefaultSlippage * (order.Side == OrderSide.Buy ? -1 : 1);
-        //                break;
-        //        }
-        //    }
-        //}
 
         #endregion
 
