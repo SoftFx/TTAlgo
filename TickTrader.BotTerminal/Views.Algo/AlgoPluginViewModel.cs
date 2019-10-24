@@ -9,10 +9,11 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoPluginViewModel : PropertyChangedBase
     {
+        public enum FolderType { Common, Local }
+
         public PluginInfo Info { get; }
 
         public AlgoAgentViewModel Agent { get; }
-
 
         public PluginKey Key => Info.Key;
 
@@ -20,9 +21,13 @@ namespace TickTrader.BotTerminal
 
         public string DisplayName => Info.Descriptor.UiDisplayName;
 
+        public string PackageDisplayName { get; }
+
         public string Category => Info.Descriptor.Category;
 
         public AlgoTypes Type => Info.Descriptor.Type;
+
+        public FolderType Folder { get; }
 
         public string Description { get; }
 
@@ -34,15 +39,15 @@ namespace TickTrader.BotTerminal
             Info = info;
             Agent = agent;
 
-            var packageDisplayName = Info.Key.PackageName;
+            PackageDisplayName = Info.Key.PackageName;
             var packagePath = "Unknown path";
             if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
             {
-                packageDisplayName = packageInfo.Identity.FileName;
+                PackageDisplayName = packageInfo.Identity.FileName;
                 packagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
             }
 
-            Description = string.Join(Environment.NewLine, Info.Descriptor.Description, string.Empty, $"Agent {Agent.Name}. Package {packageDisplayName} at {packagePath}").Trim();
+            Description = string.Join(Environment.NewLine, Info.Descriptor.Description, string.Empty, $"Agent {Agent.Name}. Package {PackageDisplayName} at {packagePath}").Trim();
 
             switch (Type)
             {
@@ -54,6 +59,17 @@ namespace TickTrader.BotTerminal
                     break;
                 case AlgoTypes.Unknown:
                     Group = "Unknown";
+                    break;
+            }
+
+            switch (Info.Key.PackageLocation)
+            {
+                case RepositoryLocation.LocalRepository:
+                case RepositoryLocation.LocalExtensions:
+                    Folder = FolderType.Local;
+                    break;
+                default:
+                    Folder = FolderType.Common;
                     break;
             }
         }

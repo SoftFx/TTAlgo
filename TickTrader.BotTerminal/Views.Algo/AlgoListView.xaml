@@ -111,14 +111,39 @@
                 <Border.Resources>
                     <CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Plugins}">
                         <CollectionViewSource.SortDescriptions>
-                            <scm:SortDescription PropertyName="Category" />
-                            <scm:SortDescription PropertyName="Type" Direction="Descending" />
-                            <scm:SortDescription PropertyName="DisplayName" />
+                            <scm:SortDescription PropertyName="PackageDisplayName"/>
+                            <scm:SortDescription PropertyName="DisplayName"/>
+                            <!--<scm:SortDescription PropertyName="Category" />
+                            <scm:SortDescription PropertyName="DisplayName" />-->
                         </CollectionViewSource.SortDescriptions>
                         <CollectionViewSource.GroupDescriptions>
-                            <PropertyGroupDescription PropertyName="Category" />
+                            <PropertyGroupDescription PropertyName="Group"/>
+                            <PropertyGroupDescription PropertyName="Folder"/>
+                            <PropertyGroupDescription PropertyName="PackageDisplayName"/>
                         </CollectionViewSource.GroupDescriptions>
                     </CollectionViewSource>
+
+                    <HierarchicalDataTemplate x:Key="LevelPackage" ItemsSource="{Binding Items}">
+                        <TextBlock Text="{Binding Name}"/>
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderThickness="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding Description}"/>
+                                        <i:Interaction.Behaviors>
+                                            <l:DragBehavior/>
+                                        </i:Interaction.Behaviors>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
+
+                    <HierarchicalDataTemplate x:Key="LevelFolder" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource LevelPackage}">
+                        <TextBlock Text="{Binding Name}"/>
+                    </HierarchicalDataTemplate>
+
                 </Border.Resources>
                 <TreeView ItemsSource="{Binding Source={StaticResource PluginGroupViewSrc}, Path=Groups}" BorderThickness="0">
                     <TreeView.ItemContainerStyle>
@@ -127,21 +152,8 @@
                         </Style>
                     </TreeView.ItemContainerStyle>
                     <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                        <HierarchicalDataTemplate ItemsSource="{Binding Items}" ItemTemplate="{StaticResource LevelFolder}">
                             <TextBlock Text="{Binding Name}"/>
-                            <HierarchicalDataTemplate.ItemTemplate>
-                                <DataTemplate>
-                                    <Border BorderThickness="0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding Description}"/>
-                                            <i:Interaction.Behaviors>
-                                                <l:DragBehavior/>
-                                            </i:Interaction.Behaviors>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </HierarchicalDataTemplate.ItemTemplate>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
