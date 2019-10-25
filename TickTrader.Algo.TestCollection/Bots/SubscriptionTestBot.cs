@@ -10,7 +10,7 @@ namespace TickTrader.Algo.TestCollection.Bots
     public enum SubscribeMethod { FeedProvider = 0, SymbolAccessor = 1 };
 
 
-    [TradeBot(DisplayName = "[T] Subscription Test Bot", Version = "1.2", Category = "Test Plugin Info", SetupMainSymbol = false,
+    [TradeBot(DisplayName = "[T] Subscription Test Bot", Version = "1.2", Category = "Test Plugin Info",
         Description = "Subcribes to specified number of symbols with specified depth. " +
                       "Prints number of quotes that already came, lastest quote time and depth to bot status window")]
     public class SubscriptionTestBot : TradeBot
@@ -39,10 +39,21 @@ namespace TickTrader.Algo.TestCollection.Bots
         {
             Symbol.Unsubscribe();
 
-            _snapshot = Symbols
-                .Take(Count)
-                .Select(s => new QuoteStats(s))
-                .ToDictionary(s => s.Symbol);
+            if (Count == 0)
+            {
+                _snapshot = new Dictionary<string, QuoteStats>()
+                {
+                    { Symbol.Name, new QuoteStats(Symbol) }
+                };
+            }
+            else
+            {
+                _snapshot = Symbols
+                    .Where(s => !s.Name.EndsWith("_L"))
+                    .Take(Count)
+                    .Select(s => new QuoteStats(s))
+                    .ToDictionary(s => s.Symbol);
+            }
 
             _cancelTokenSrc = new CancellationTokenSource();
 
@@ -199,7 +210,9 @@ namespace TickTrader.Algo.TestCollection.Bots
                 {
                     var lastQuote = Info.LastQuote;
                     var depth = Math.Max(lastQuote.BidBook.Length, lastQuote.AskBook.Length);
-                    status.WriteLine($"{Symbol}: depth={CurrentDepth}({lastQuote.BidBook.Length}/{lastQuote.AskBook.Length}), count={Count}, {lastQuote.Time}");
+                    var bidLength = $"{lastQuote.BidBook.Length}{(lastQuote.IsBidIndicative ? "i" : "")}";
+                    var askLength = $"{lastQuote.AskBook.Length}{(lastQuote.IsAskIndicative ? "i" : "")}";
+                    status.WriteLine($"{Symbol}: depth={CurrentDepth}({bidLength}/{askLength}), count={Count}, {lastQuote.Time}");
                 }
             }
         }
