@@ -78,7 +78,7 @@ namespace TickTrader.Algo.Core
                 ValidateTradePersmission();
                 smbMetadata = GetSymbolOrThrow(symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderType, side, options);
+                ValidateQuotes(smbMetadata, side);
 
                 ValidateVolumeLots(volumeLots, smbMetadata);
                 ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
@@ -156,7 +156,7 @@ namespace TickTrader.Algo.Core
                 orderToCancel = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToCancel.Symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToCancel.Type, orderToCancel.Side, OrderExecOptions.None);
+                ValidateQuotes(smbMetadata, orderToCancel.Side);
 
                 logger.PrintTrade("[Out] Canceling order #" + orderId);
 
@@ -191,7 +191,7 @@ namespace TickTrader.Algo.Core
                 orderToClose = GetOrderOrThrow(orderId);
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side, OrderExecOptions.None);
+                ValidateQuotes(smbMetadata, orderToClose.Side.Revert());
 
                 if (closeVolumeLots != null)
                 {
@@ -239,8 +239,7 @@ namespace TickTrader.Algo.Core
 
                 var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToClose.Type, orderToClose.Side, OrderExecOptions.None);
-                ValidateQuotes(smbMetadata, orderByClose.Type, orderByClose.Side, OrderExecOptions.None);
+                ValidateQuotes(smbMetadata, orderToClose.Side.Revert());
 
                 logger.PrintTrade("[Out] Closing order #" + orderId + " by order #" + byOrderId);
 
@@ -307,7 +306,7 @@ namespace TickTrader.Algo.Core
 
                 ValidateOptions(options, orderType);
                 ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToModify.Type, orderToModify.Side, options ?? OrderExecOptions.None);
+                ValidateQuotes(smbMetadata, orderToModify.Side);
 
                 //if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
                 //    ValidatePrice(price);
@@ -583,23 +582,6 @@ namespace TickTrader.Algo.Core
 
         private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
         {
-            //var orderEntity = new OrderEntity("-1")
-            //{
-            //    Symbol = request.Symbol,
-            //    InitialType = request.Type,
-            //    Type = request.Type,
-            //    Side = request.Side,
-            //    Price = request.Price,
-            //    StopPrice = request.StopPrice,
-            //    RequestedVolume = request.Volume,
-            //    RemainingVolume = request.Volume,
-            //    MaxVisibleVolume = request.MaxVisibleVolume,
-            //    StopLoss = request.StopLoss,
-            //    TakeProfit = request.TakeProfit,
-            //    Expiration = request.Expiration,
-            //    Options = request.Options,
-            //};
-
             var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
             if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden))
@@ -620,18 +602,18 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
         }
 
-        private void ValidateQuotes(SymbolAccessor symbol, OrderType type, OrderSide side, OrderExecOptions options)
+        private void ValidateQuotes(SymbolAccessor symbol, OrderSide side)
         {
-            //var quote = symbol.LastQuote;
+            var quote = symbol.LastQuote;
 
-            //if (this.account.Type != AccountTypes.Cash && (!quote.HasBid || !quote.HasAsk))
-            //    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            if (this.account.Type != AccountTypes.Cash && (!quote.HasBid || !quote.HasAsk))
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
 
-            //if (side == OrderSide.Sell && quote.IsBidIndicative)
-            //    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            if (side == OrderSide.Sell && quote.IsBidIndicative)
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
 
-            //if (side == OrderSide.Buy && quote.IsAskIndicative)
-            //    throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            if (side == OrderSide.Buy && quote.IsAskIndicative)
+                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
         }
 
         #endregion
