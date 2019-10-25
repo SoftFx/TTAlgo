@@ -36,7 +36,8 @@ namespace TickTrader.BotTerminal
             DisplayName = $"Status: {botId} ({agent.Name})";
             _isInitialized = false;
 
-            FindBot();
+            if (FindBot())
+                _algoEnv.Shell.AlertsManager.AddMessage(botId, "Piu piu");
 
             _agent.Bots.Updated += Bots_Updated;
             _agent.AccessLevelChanged += OnAccessLevelChanged;

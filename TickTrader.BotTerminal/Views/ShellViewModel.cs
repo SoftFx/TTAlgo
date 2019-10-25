@@ -80,6 +80,7 @@ namespace TickTrader.BotTerminal
             AccountPane = new AccountPaneViewModel(this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
+            AlertsManager = new AlertsManager(wndManager);
             DockManagerService = new DockManagerService(algoEnv);
 
             CanConnect = true;
@@ -280,12 +281,13 @@ namespace TickTrader.BotTerminal
         public DockManagerService DockManagerService { get; set; }
         public LocalAlgoAgent Agent { get; }
         public ConnectionManager ConnectionManager => cManager;
-
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
         public string ProtocolName => cManager.Connection.CurrentProtocol;
 
         public NotificationsViewModel Notifications { get; private set; }
+
+        public AlertsManager AlertsManager { get; }
 
         public async Task Shutdown()
         {

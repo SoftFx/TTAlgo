@@ -47,6 +47,7 @@
                 <ResourceDictionary Source="Views/SymbolListView.xaml" />
                 <ResourceDictionary Source="Views/JournalView.xaml" />
                 <ResourceDictionary Source="Views/BotJournalView.xaml" />
+                <ResourceDictionary Source="Views/AlertView.xaml" />
 
                 <ResourceDictionary Source="Views.Algo/AlgoBotView.xaml" />
                 <ResourceDictionary Source="Views.Algo/AlgoListView.xaml" />

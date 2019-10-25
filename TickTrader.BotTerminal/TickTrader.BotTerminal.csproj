@@ -391,6 +391,7 @@
     <Compile Include="Model.Protocol\RemoteAlgoAgent.cs" />
     <Compile Include="Model.Protocol\RemoteAlgoLibrary.cs" />
     <Compile Include="Model.Protocol\RemoteTradeBot.cs" />
+    <Compile Include="Model\AlertsManager.cs" />
     <Compile Include="Model\BacktesterAdapter.cs" />
     <Compile Include="Model\BacktesterSettings.cs" />
     <Compile Include="Model\BotNameAggregator.cs" />
@@ -582,6 +583,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
     <Compile Include="Views.Algo\BotListViewModel.cs" />
+    <Compile Include="Views\AlertViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -1180,6 +1182,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views.Algo\BotListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AlertView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
