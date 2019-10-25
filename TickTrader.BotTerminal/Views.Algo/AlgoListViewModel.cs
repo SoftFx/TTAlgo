@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<AlgoPackageViewModel> Packages => SelectedAgent.PackageList;
 
-        public IObservableList<AlgoPluginViewModel> Plugins => SelectedAgent.Plugins.Where(p => p.Key.PackageName != "ticktrader.algo.indicators.dll").AsObservable();
+        public IObservableList<AlgoPluginViewModel> Plugins => SelectedAgent.Plugins.AsObservable();
 
         public AlgoListViewType[] AvaliableViewTypes { get; }
 

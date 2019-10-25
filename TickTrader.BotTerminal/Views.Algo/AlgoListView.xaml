@@ -148,7 +148,7 @@
                 <TreeView ItemsSource="{Binding Source={StaticResource PluginGroupViewSrc}, Path=Groups}" BorderThickness="0">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">
-                            <Setter Property="IsExpanded" Value="True"/>
+                            <Setter Property="IsExpanded" Value="False"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
                     <TreeView.ItemTemplate>
