@@ -19,6 +19,9 @@ namespace TickTrader.BotTerminal
         private PluginExecutor _executor;
         private Dictionary<string, IOutputCollector> _outputs;
 
+        private delegate void AlertUpdate(IAlertUpdateEventArgs args);
+        private event AlertUpdate AlertUpdateEvent;
+
         public PluginConfig Config { get; private set; }
 
         public string InstanceId { get; }
@@ -58,6 +61,8 @@ namespace TickTrader.BotTerminal
             UpdateRefs();
 
             Agent.Library.PluginUpdated += Library_PluginUpdated;
+
+            AlertUpdateEvent += agent.Shell.AlertsManager.UpdateAlertModel;
         }
 
         protected bool StartExcecutor()
@@ -202,6 +207,11 @@ namespace TickTrader.BotTerminal
             Descriptor = pluginRef.Metadata.Descriptor;
             ChangeState(PluginStates.Stopped);
             OnRefsUpdated();
+        }
+
+        protected void TriggerAlert(AlertEventType type, string message = "")
+        {
+            AlertUpdateEvent?.Invoke(new AlertUpdateEventArgsImpl(InstanceId, type, message));
         }
 
         private void Executor_OnRuntimeError(Exception ex)

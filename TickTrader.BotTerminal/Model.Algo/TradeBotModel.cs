@@ -193,6 +193,7 @@ namespace TickTrader.BotTerminal
                 case LogSeverities.Trade: return JournalMessageType.Trading;
                 case LogSeverities.TradeSuccess: return JournalMessageType.TradingSuccess;
                 case LogSeverities.TradeFail: return JournalMessageType.TradingFail;
+                case LogSeverities.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }
@@ -225,7 +226,20 @@ namespace TickTrader.BotTerminal
 
         void IBotWriter.LogMesssage(BotLogRecord rec)
         {
-            Journal.Add(Convert(rec));
+            switch (rec.Severity)
+            {
+                case LogSeverities.AlertClear:
+                    TriggerAlert(AlertEventType.Clear);
+                    return;
+
+                case LogSeverities.Alert:
+                    TriggerAlert(AlertEventType.Update, rec.Message);
+                    goto default;
+
+                default:
+                    Journal.Add(Convert(rec));
+                    break;
+            }
         }
 
         void IBotWriter.UpdateStatus(string status)

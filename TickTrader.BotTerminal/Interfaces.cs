@@ -33,6 +33,6 @@ namespace TickTrader.BotTerminal
         LocalAlgoAgent Agent { get; }
         DockManagerService DockManagerService { get; }
         ConnectionManager ConnectionManager { get; }
-        AlertsManager AlertsManager { get; }
+        AlertViewModel AlertsManager { get; }
     }
 }

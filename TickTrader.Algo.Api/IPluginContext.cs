@@ -46,6 +46,8 @@ namespace TickTrader.Algo.Api
 
     internal interface IPluginMonitor
     {
+        IAlertAPI Alert { get; }
+
         void Print(string entry);
         void Print(string entry, object[] parameters);
         void PrintError(string entry);
@@ -63,5 +65,11 @@ namespace TickTrader.Algo.Api
         DateTime UtcNow { get; }
         Timer CreateTimer(TimeSpan period, Action<Timer> callback);
         Task Delay(TimeSpan period);
+    }
+
+    public interface IAlertAPI
+    {
+        void Print(string message);
+        void Clear();
     }
 }

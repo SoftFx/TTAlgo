@@ -138,6 +138,16 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.TradeFail, entry);
         }
 
+        public void OnPrintAlert(string entry)
+        {
+            AddLogRecord(LogSeverities.Alert, entry);
+        }
+
+        public void OnClearAlert()
+        {
+            AddLogRecord(LogSeverities.AlertClear, "Alerts cleared");
+        }
+
         public void OnInitialized()
         {
             AddLogRecord(LogSeverities.Info, "Bot initialized");
@@ -229,6 +239,8 @@ namespace TickTrader.Algo.Core
         TradeSuccess,
         TradeFail,
         Custom,
-        CustomStatus
+        CustomStatus,
+        Alert,
+        AlertClear,
     }
 }

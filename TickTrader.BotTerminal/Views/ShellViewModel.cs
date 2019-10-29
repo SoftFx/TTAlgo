@@ -80,7 +80,7 @@ namespace TickTrader.BotTerminal
             AccountPane = new AccountPaneViewModel(this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
-            AlertsManager = new AlertsManager(wndManager);
+            AlertsManager = new AlertViewModel(wndManager);
             DockManagerService = new DockManagerService(algoEnv);
 
             CanConnect = true;
@@ -287,7 +287,7 @@ namespace TickTrader.BotTerminal
 
         public NotificationsViewModel Notifications { get; private set; }
 
-        public AlertsManager AlertsManager { get; }
+        public AlertViewModel AlertsManager { get; }
 
         public async Task Shutdown()
         {

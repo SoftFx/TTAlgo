@@ -423,6 +423,14 @@ namespace TickTrader.Algo.Core
         {
         }
 
+        void IPluginLogger.OnPrintAlert(string entry)
+        {
+        }
+
+        void IPluginLogger.OnClearAlert()
+        {
+        }
+
         #endregion
     }
 }
