@@ -59,7 +59,6 @@ namespace TickTrader.Algo.Core
             try
             {
                 _context.Builder.Account.OnTradeInfoAccess();
-                _context.FeedStrategy.SubscribeAll();
 
                 if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
                 {

@@ -59,6 +59,10 @@ namespace TickTrader.Algo.Core
 
         private void Init()
         {
+            // makes all symbols in symbol list have correct rates
+            // also required for account calculator
+            context.FeedStrategy.SubscribeAll();
+
             var builder = context.Builder;
 
             _account = builder.Account;
