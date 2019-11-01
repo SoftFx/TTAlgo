@@ -108,6 +108,7 @@ namespace TickTrader.BotAgent.BA.Models
                 case LogEntryType.Trading:
                 case LogEntryType.TradingSuccess:
                 case LogEntryType.TradingFail:
+                case LogEntryType.Alert:
                     _logger.Info(msg.ToString());
                     break;
                 case LogEntryType.Error:
@@ -232,6 +233,8 @@ namespace TickTrader.BotAgent.BA.Models
                 case LogSeverities.Trade: return LogEntryType.Trading;
                 case LogSeverities.TradeSuccess: return LogEntryType.TradingSuccess;
                 case LogSeverities.TradeFail: return LogEntryType.TradingFail;
+                case LogSeverities.Alert: return LogEntryType.Alert;
+                case LogSeverities.AlertClear: return LogEntryType.AlertClear;
                 default: return LogEntryType.Info;
             }
         }
@@ -240,7 +243,7 @@ namespace TickTrader.BotAgent.BA.Models
         {
             public LogWriter(Ref<BotLog> logRef) : base(logRef) { }
 
-            public void LogMesssages(IEnumerable<BotLogRecord> records)
+            public void LogMesssages(IEnumerable<PluginLogRecord> records)
             {
                 CallActor(a =>
                 {

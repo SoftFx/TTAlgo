@@ -27,7 +27,6 @@ namespace TickTrader.BotTerminal
         public override void Add(BotMessage item)
         {
             base.Add(item);
-
             WriteToLogger(item);
         }
 

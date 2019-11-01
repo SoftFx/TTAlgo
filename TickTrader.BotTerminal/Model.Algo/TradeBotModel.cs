@@ -178,7 +178,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private BotMessage Convert(BotLogRecord record)
+        private BotMessage Convert(PluginLogRecord record)
         {
             return new BotMessage(record.Time, InstanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
         }
@@ -224,22 +224,13 @@ namespace TickTrader.BotTerminal
 
         #region IBotWriter implementation
 
-        void IBotWriter.LogMesssage(BotLogRecord rec)
+        void IBotWriter.LogMesssage(PluginLogRecord rec)
         {
-            switch (rec.Severity)
-            {
-                case LogSeverities.AlertClear:
-                    TriggerAlert(AlertEventType.Clear);
-                    return;
+            if (rec.Severity == LogSeverities.Alert || rec.Severity == LogSeverities.AlertClear)
+                AlertModel.AddAlert(InstanceId, rec);
 
-                case LogSeverities.Alert:
-                    TriggerAlert(AlertEventType.Update, rec.Message);
-                    goto default;
-
-                default:
-                    Journal.Add(Convert(rec));
-                    break;
-            }
+            if (rec.Severity != LogSeverities.AlertClear)
+                Journal.Add(Convert(rec));
         }
 
         void IBotWriter.UpdateStatus(string status)

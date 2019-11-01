@@ -3,9 +3,12 @@ using Machinarium.Qnil;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
@@ -13,38 +16,40 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private const int MaxBufferSize = 100;
+        private const int MaxBufferSize = 500;
 
-        public ObservableCircularList<IAlertUpdateEventArgs> AlertBuffer { get; }
+        private readonly object _locker = new object();
+
+        private ObservableCircularList<IAlertUpdateEventArgs> _alertBuffer = new ObservableCircularList<IAlertUpdateEventArgs>();
 
         private WindowManager _wnd;
+
 
         internal AlertViewModel(WindowManager wnd)
         {
             _wnd = wnd;
 
-            AlertBuffer = new ObservableCircularList<IAlertUpdateEventArgs>();
+            ObservabeBuffer = CollectionViewSource.GetDefaultView(_alertBuffer);
+            ObservabeBuffer.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
             DisplayName = "Alert";
         }
 
-        public void UpdateAlertModel(IAlertUpdateEventArgs args)
-        {
-            _wnd.OpenMdiWindow(this);
+        public ICollectionView ObservabeBuffer { get; }
 
-            switch (args.Type)
-            {
-                case AlertEventType.Update:
-                    AddRecord(args);
-                    break;
-                default:
-                    AlertBuffer.Clear();
-                    break;
-            }
+        public void SubscribeToModel(IAlertModel model)
+        {
+            model.AlertUpdateEvent += GetAlertsArray;
+        }
+
+        public void SubscribeToModels(IEnumerable<IAlertModel> models)
+        {
+            foreach (var m in models)
+                SubscribeToModel(m);
         }
 
         public void Clear()
         {
-            AlertBuffer.Clear();
+            _alertBuffer.Clear();
         }
 
         public void Ok()
@@ -52,46 +57,47 @@ namespace TickTrader.BotTerminal
             TryClose();
         }
 
+        private void GetAlertsArray(IEnumerable<IAlertUpdateEventArgs> args)
+        {
+            lock (_locker)
+            {
+                var record = new List<IAlertUpdateEventArgs>(args);
+
+                Execute.BeginOnUIThread(() =>
+                {
+                    _wnd.OpenMdiWindow(this);
+
+                    foreach (var a in record)
+                        switch (a.Type)
+                        {
+                            case AlertEventType.Update:
+                                AddRecord(a);
+                                break;
+                            default:
+                                Clear();
+                                break;
+                        }
+                });
+
+                foreach (var a in record)
+                    WriteToLogger(a);
+            }
+        }
+
         private void AddRecord(IAlertUpdateEventArgs record)
         {
-            while (AlertBuffer.Count > MaxBufferSize)
-                AlertBuffer.Dequeue();
+            while (_alertBuffer.Count > MaxBufferSize)
+                _alertBuffer.Dequeue();
 
-            AlertBuffer.Add(record);
+            _alertBuffer.Add(record);
         }
-    }
 
-
-    public class AlertUpdateEventArgsImpl : IAlertUpdateEventArgs
-    {
-        public DateTime Time { get; }
-
-        public string InstanceId { get; }
-
-        public string Message { get; }
-
-        public AlertEventType Type { get; }
-
-
-        public AlertUpdateEventArgsImpl(string id, AlertEventType type, string message = "")
+        private void WriteToLogger(IAlertUpdateEventArgs record)
         {
-            Time = DateTime.Now;
-            InstanceId = id;
-            Message = message;
-            Type = type;
+            if (record.Type == AlertEventType.Clear)
+                return;
+
+            _logger.Info(record);
         }
     }
-
-    public interface IAlertUpdateEventArgs
-    {
-        DateTime Time { get; }
-
-        string InstanceId { get; }
-
-        string Message { get; }
-
-        AlertEventType Type { get; }
-    }
-
-    public enum AlertEventType { Update, Clear }
 }

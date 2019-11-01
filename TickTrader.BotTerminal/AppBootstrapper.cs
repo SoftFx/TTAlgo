@@ -2,6 +2,7 @@
 using Caliburn.Micro;
 using NLog;
 using NLog.Config;
+using NLog.Filters;
 using NLog.Targets;
 using System;
 using System.Collections.Generic;
@@ -124,7 +125,17 @@ namespace TickTrader.BotTerminal
             {
                 Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
-                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.LogFolder, "Archives"), "terminal-{#}.zip"),
+                ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "terminal-{#}.zip"),
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveNumbering = ArchiveNumberingMode.Date,
+                EnableArchiveFileCompression = true,
+            };
+
+            var alertTarget = new FileTarget()
+            {
+                Layout = "${message} ${exception:format=tostring}",
+                FileName = Path.Combine(EnvService.Instance.LogFolder, "alert.log"),
+                ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "alerts-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
@@ -140,7 +151,7 @@ namespace TickTrader.BotTerminal
             {
                 FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Log.txt"),
                 Layout = "${longdate} | ${message}",
-                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}"), "Archives"), "Log-{#}.zip"),
+                ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives"), "Log-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true
@@ -150,7 +161,7 @@ namespace TickTrader.BotTerminal
             {
                 FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Error.txt"),
                 Layout = "${longdate} | ${message}",
-                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}"), "Archives"), "Error-{#}.zip"),
+                ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Error-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true
@@ -160,7 +171,7 @@ namespace TickTrader.BotTerminal
             {
                 FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Status.txt"),
                 Layout = "${longdate} | ${message}",
-                ArchiveFileName = Path.Combine(Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}"), "Archives"), "Status-{#}.zip"),
+                ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Status-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true
@@ -170,14 +181,23 @@ namespace TickTrader.BotTerminal
             var ruleForBotInfoTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Debug, botInfoTarget) { Final = true };
             var ruleForBotErrorTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Error, botErrorTarget);
             var ruleForBotStatusTarget = new LoggingRule(string.Concat(LoggerHelper.LoggerNamePrefix, "*"), LogLevel.Trace, LogLevel.Trace, botStatusTarget) { Final = true };
+            var ruleForAlertTarget = new LoggingRule(string.Concat("*", nameof(AlertViewModel)), LogLevel.Trace, alertTarget);
             var ruleForLogTarget = new LoggingRule();
             ruleForLogTarget.LoggerNamePattern = "*";
+
+            ruleForLogTarget.Filters.Add(new ConditionBasedFilter()
+            {
+                Condition = "contains('${logger}','AlertViewModel')",
+                Action = FilterResult.Ignore
+            });
+
             ruleForLogTarget.EnableLoggingForLevels(LogLevel.Debug, LogLevel.Fatal);
             ruleForLogTarget.Targets.Add(debuggerTarget);
             ruleForLogTarget.Targets.Add(logTarget);
 
             var config = new LoggingConfiguration();
 
+            config.LoggingRules.Add(ruleForAlertTarget);
             config.LoggingRules.Add(ruleForJournalTarget);
             config.LoggingRules.Add(ruleForBotStatusTarget);
             config.LoggingRules.Add(ruleForBotErrorTarget);

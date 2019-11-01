@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public interface IBotWriter
     {
-        void LogMesssages(IEnumerable<BotLogRecord> records);
+        void LogMesssages(IEnumerable<PluginLogRecord> records);
 
         void UpdateStatus(string status);
 
@@ -72,11 +72,11 @@ namespace TickTrader.Algo.Common.Model
         }
 
 
-        private void ListenerProxy_NewRecords(BotLogRecord[] records)
+        private void ListenerProxy_NewRecords(PluginLogRecord[] records)
         {
             lock (_sync)
             {
-                var messages = new List<BotLogRecord>(records.Length);
+                var messages = new List<PluginLogRecord>(records.Length);
                 string status = null;
 
                 foreach (var record in records)

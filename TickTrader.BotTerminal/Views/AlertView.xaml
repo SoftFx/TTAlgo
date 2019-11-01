@@ -24,18 +24,13 @@
 
             <Image Grid.Column="0" Grid.Row="0" Stretch="Uniform" Height="60" Source="{DynamicResource BellIconSource}"/>
 
-            <DataGrid Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding AlertBuffer}" 
+            <DataGrid Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding ObservabeBuffer}" 
                   EnableRowVirtualization="True"
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 
                   SelectionMode="Single">
                 <DataGrid.Columns>
-                    <!--<DataGridTextColumn SortMemberPath="TimeKey" 
-                                    Binding="{Binding TimeKey.Timestamp, Converter={StaticResource ExtDateTimeFormat}}"
-                                    SortDirection="Descending" Header="{l:Resx Journal_Time}" Width="Auto"/>-->
-                    <!--<DataGridTemplateColumn Header="{l:Resx Journal_Message}" Width="*" ClipboardContentBinding="{Binding Message}"
-                                            CellTemplate="{StaticResource BotMessageCellTemplate}"/>-->
                     <DataGridTextColumn SortMemberPath="Time" 
                                     Binding="{Binding Time, Converter={StaticResource ExtDateTimeFormat}}"
                                     SortDirection="Descending" Header="Time" Width="Auto"/>
@@ -55,18 +50,12 @@
         </Grid>
     </ControlTemplate>
 
-    <!--<Style x:Key="AlertViewStyle" TargetType="Window">
-        --><!--<Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
---><!--
-
-    </Style>-->
-
     <Style x:Key="AlertViewStyle.Classic" TargetType="Window">
         <Setter Property="Template" Value="{StaticResource AlertView.Template.Classic}"/>
         <Setter Property="MinHeight" Value="200"/>
         <Setter Property="MinWidth" Value="400"/>
-        <Setter Property="Height" Value="400"/>
-        <Setter Property="Width" Value="510"/>
+        <Setter Property="Height" Value="410"/>
+        <Setter Property="Width" Value="520"/>
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
         <Setter Property="ShowInTaskbar" Value="True"/>

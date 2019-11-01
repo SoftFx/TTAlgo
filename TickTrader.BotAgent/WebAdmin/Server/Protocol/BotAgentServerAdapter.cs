@@ -276,6 +276,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     return LogSeverity.TradeFail;
                 case LogEntryType.Custom:
                     return LogSeverity.Custom;
+                case LogEntryType.Alert:
+                    return LogSeverity.Alert;
+                case LogEntryType.AlertClear:
+                    return LogSeverity.AlertClear;
                 default:
                     throw new ArgumentException();
             }

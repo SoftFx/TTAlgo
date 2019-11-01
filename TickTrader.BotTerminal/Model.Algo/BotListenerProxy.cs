@@ -9,7 +9,7 @@ namespace TickTrader.BotTerminal
 {
     public interface IBotWriter
     {
-        void LogMesssage(BotLogRecord records);
+        void LogMesssage(PluginLogRecord records);
 
         void UpdateStatus(string status);
 
@@ -68,7 +68,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void Executor_LogUpdated(BotLogRecord record)
+        private void Executor_LogUpdated(PluginLogRecord record)
         {
             if (record.Severity != LogSeverities.CustomStatus)
                 _writer.LogMesssage(record);

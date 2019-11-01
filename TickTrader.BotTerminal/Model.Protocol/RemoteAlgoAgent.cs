@@ -50,6 +50,7 @@ namespace TickTrader.BotTerminal
 
         public AccessManager AccessManager => _protocolClient.AccessManager;
 
+        public IAlertModel AlertModel { get; }
 
         public event Action<PackageInfo> PackageStateChanged = delegate { };
 
@@ -77,6 +78,7 @@ namespace TickTrader.BotTerminal
             _idProvider = new PluginIdProvider();
 
             Catalog = new PluginCatalog(this);
+            AlertModel = new AlgoAlertModel(name);
         }
 
 

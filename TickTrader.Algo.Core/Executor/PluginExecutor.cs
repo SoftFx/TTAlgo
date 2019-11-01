@@ -42,7 +42,7 @@ namespace TickTrader.Algo.Core
         private Task stopTask;
         private string workingFolder;
         private string botWorkingFolder;
-        private string _botInstanceId;
+        private string _instanceId;
         private PluginPermissions _permissions;
         private States state;
         private Func<IFixtureContext, IExecutorFixture> _tradeFixtureFactory = c => new TradingFixture(c);
@@ -229,14 +229,14 @@ namespace TickTrader.Algo.Core
 
         public string InstanceId
         {
-            get { return _botInstanceId; }
+            get { return _instanceId; }
             set
             {
                 lock (_sync)
                 {
                     ThrowIfRunning();
 
-                    _botInstanceId = value;
+                    _instanceId = value;
                 }
             }
         }
@@ -287,7 +287,7 @@ namespace TickTrader.Algo.Core
                     //builder.TradeApi = accFixture;
                     _builder.Calculator = _calcFixture;
                     _builder.TradeHistoryProvider = new TradeHistoryAdapter(tradeHistoryProvider, _builder.Symbols);
-                    _builder.InstanceId = _botInstanceId;
+                    _builder.InstanceId = _instanceId;
                     //_builder.Isolated = _permissions.Isolated;
                     _builder.Permissions = _permissions;
                     _builder.Diagnostics = this;
@@ -581,7 +581,7 @@ namespace TickTrader.Algo.Core
             {
                 ThrowIfRunning();
                 if (_pluginLoggerFixture == null)
-                    _pluginLoggerFixture = new LogFixture(this);
+                    _pluginLoggerFixture = new LogFixture(this, GetDescriptor().Type);
                 _pluginLogger = _pluginLoggerFixture;
                 return _pluginLoggerFixture;
             }

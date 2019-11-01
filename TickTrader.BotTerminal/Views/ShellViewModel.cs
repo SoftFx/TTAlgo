@@ -80,8 +80,11 @@ namespace TickTrader.BotTerminal
             AccountPane = new AccountPaneViewModel(this);
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
-            AlertsManager = new AlertViewModel(wndManager);
             DockManagerService = new DockManagerService(algoEnv);
+
+            AlertsManager = new AlertViewModel(wndManager);
+            AlertsManager.SubscribeToModel(Agent.AlertModel);
+            AlertsManager.SubscribeToModels(_botAgentManager.BotAgents.Values.Select(u => u.RemoteAgent.AlertModel));
 
             CanConnect = true;
             UpdateCommandStates();

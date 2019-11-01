@@ -90,5 +90,6 @@ namespace TickTrader.BotTerminal
         Error,
         Custom,
         Alert,
+        AlertClear,
     }
 }

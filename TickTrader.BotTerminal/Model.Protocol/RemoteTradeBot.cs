@@ -172,13 +172,17 @@ namespace TickTrader.BotTerminal
                 if (logs.Length > 0)
                 {
                     _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
-                    Journal.Add(logs.Select(Convert).ToList());
+
+                    var convertLogs = logs.Select(Convert).ToList();
+                    Journal.Add(convertLogs.Where(u => u.Type != JournalMessageType.AlertClear).ToList());
+                    _agent.AlertModel.AddAlerts(convertLogs.Where(u => u.Type == JournalMessageType.Alert || u.Type == JournalMessageType.AlertClear).ToList());
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
             }
+
             _logsTimer?.Change(LogsUpdateTimeout, -1);
         }
 
@@ -197,6 +201,8 @@ namespace TickTrader.BotTerminal
                 case LogSeverity.Trade: return JournalMessageType.Trading;
                 case LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
                 case LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case LogSeverity.Alert: return JournalMessageType.Alert;
+                case LogSeverity.AlertClear: return JournalMessageType.AlertClear;
                 default: return JournalMessageType.Info;
             }
         }

@@ -22,12 +22,12 @@ namespace TickTrader.Algo.TestCollection.Bots
         private int _count = 0;
         private bool ok = false;
 
-        protected async override void Init()
+        protected async override void OnStart()
         {
             while (!ok)
             {
-                Alert.Print($"{Message} {++_count}");
                 await Task.Delay(DelayMc);
+                Alert.Print($"{Message} {++_count}");
             }
         }
 

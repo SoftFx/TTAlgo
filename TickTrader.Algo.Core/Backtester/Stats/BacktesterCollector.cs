@@ -160,6 +160,7 @@ namespace TickTrader.Algo.Core
         public bool WriteInfo { get; private set; }
         public bool WriteTrade { get; private set; }
         public bool WriteOrderModifications { get; private set; }
+        public bool WriteAlert { get; private set; }
 
         private void InitJournal(IBacktesterSettings settings)
         {
@@ -170,6 +171,7 @@ namespace TickTrader.Algo.Core
             WriteInfo = WriteJournal && flags.HasFlag(JournalOptions.WriteInfo);
             WriteTrade = WriteJournal && flags.HasFlag(JournalOptions.WriteTrade);
             WriteOrderModifications = WriteJournal && WriteTrade && flags.HasFlag(JournalOptions.WriteOrderModifications);
+            WriteAlert = WriteJournal && flags.HasFlag(JournalOptions.WriteAlert);
         }
 
         private bool CheckFilter(LogSeverities severity)
@@ -183,6 +185,7 @@ namespace TickTrader.Algo.Core
                 case LogSeverities.Trade: return WriteTrade;
                 case LogSeverities.TradeFail: return WriteTrade;
                 case LogSeverities.TradeSuccess: return WriteTrade;
+                case LogSeverities.Alert: return WriteAlert;
             }
             return false;
         }
@@ -191,7 +194,7 @@ namespace TickTrader.Algo.Core
         {
             if (CheckFilter(severity))
             {
-                var record = new BotLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
+                var record = new PluginLogRecord(_logKeyGen.NextKey(VirtualTimepoint), severity, message, description);
                 _executor.OnUpdate(record);
 
                 //_events.Add();
@@ -425,6 +428,7 @@ namespace TickTrader.Algo.Core
 
         void IPluginLogger.OnPrintAlert(string entry)
         {
+            AddEvent(LogSeverities.Alert, entry);
         }
 
         void IPluginLogger.OnClearAlert()
