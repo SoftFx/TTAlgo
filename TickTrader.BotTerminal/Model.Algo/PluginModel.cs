@@ -127,7 +127,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual PluginExecutor CreateExecutor()
         {
-            var executor = new PluginExecutor(PluginRef, new DispatcherSync());
+            var executor = new PluginExecutor(PluginRef, null);
 
             executor.ErrorOccurred += Executor_OnRuntimeError;
 

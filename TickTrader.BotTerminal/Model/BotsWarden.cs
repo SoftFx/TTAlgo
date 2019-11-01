@@ -51,7 +51,7 @@ namespace TickTrader.BotTerminal
 
         private async Task AbortBotAfter(TradeBotModel bot, TimeSpan delay, CancellationToken token)
         {
-            await Task.Delay(delay, token);
+            await Task.Delay(delay, token).ConfigureAwait(false);
 
             if (!token.IsCancellationRequested && bot.State == PluginStates.Stopping)
             {
