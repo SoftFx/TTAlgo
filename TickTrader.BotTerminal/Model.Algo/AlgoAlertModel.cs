@@ -14,6 +14,7 @@ namespace TickTrader.BotTerminal
 
         private List<IAlertUpdateEventArgs> _buffer = new List<IAlertUpdateEventArgs>();
         private bool _newAlerts = false;
+        private object _locker = new object();
 
         public AlgoAlertModel(string name)
         {
@@ -28,20 +29,26 @@ namespace TickTrader.BotTerminal
 
         public void AddAlert(string instanceId, PluginLogRecord record)
         {
-            var update = record.Severity == LogSeverities.Alert ?
-               new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), AlertEventType.Update, record.Time.Timestamp, record.Message) :
-               new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), AlertEventType.Clear);
+            lock (_locker)
+            {
+                var update = record.Severity == LogSeverities.Alert ?
+                   new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), AlertEventType.Update, record.Time.Timestamp, record.Message) :
+                   new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), AlertEventType.Clear);
 
-            _buffer.Add(update);
+                _buffer.Add(update);
 
-            _newAlerts = true;
+                _newAlerts = true;
+            }
         }
 
         public void AddAlerts(List<BotMessage> records)
         {
-            if (records.Count > 0)
+            lock (_locker)
             {
-                AlertUpdateEvent?.Invoke(records.Select(Convert));
+                if (records.Count > 0)
+                {
+                    AlertUpdateEvent?.Invoke(records.Select(Convert));
+                }
             }
         }
 
@@ -49,9 +56,12 @@ namespace TickTrader.BotTerminal
         {
             if (_newAlerts)
             {
-                AlertUpdateEvent?.Invoke(_buffer);
-                _buffer = new List<IAlertUpdateEventArgs>();
-                _newAlerts = false;
+                lock (_locker)
+                {
+                    AlertUpdateEvent?.Invoke(_buffer);
+                    _buffer = new List<IAlertUpdateEventArgs>();
+                    _newAlerts = false;
+                }
             }
         }
 
@@ -99,7 +109,7 @@ namespace TickTrader.BotTerminal
 
         public override string ToString()
         {
-            return $"{Time.ToString("yyyy-MM-dd HH:mm:ss.fff")} | {InstanceId} -> {Message} ";
+            return $"Create: {Time.ToString("yyyy-MM-dd HH:mm:ss.fff")} | {InstanceId} -> {Message} ";
         }
     }
 

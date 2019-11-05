@@ -31,10 +31,10 @@ namespace TickTrader.BotAgent.BA.Models
         {
             _name = name;
             _logDirectory = Path.Combine(ServerModel.Environment.BotLogFolder, _name.Escape());
+            _alertStorage = new AlertStorage(name, _logDirectory, _fileExtension, _archiveExtension);
             _maxCachedRecords = keepInMemory;
             _logMessages = new CircularList<ILogEntry>(_maxCachedRecords);
             _logger = GetLogger(name);
-            _alertStorage = new AlertStorage(name, _logDirectory, _fileExtension, _archiveExtension);
         }
 
         public class ControlHandler : Handler<BotLog>

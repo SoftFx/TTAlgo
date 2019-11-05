@@ -133,7 +133,7 @@ namespace TickTrader.BotTerminal
 
             var alertTarget = new FileTarget()
             {
-                Layout = "${message} ${exception:format=tostring}",
+                Layout = "${longdate} | ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "alert.log"),
                 ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "alerts-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
