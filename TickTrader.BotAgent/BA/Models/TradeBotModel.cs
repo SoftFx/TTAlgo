@@ -350,14 +350,14 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (Package == null)
             {
-                ChangeState(PluginStates.Broken, $"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
+                BreakBot($"Package {PackageKey.Name} at {PackageKey.Location} is not found!");
                 return;
             }
 
             _ref = _packageRepo.Library.GetPluginRef(PluginKey);
             if (_ref == null || _ref.Metadata.Descriptor.Type != AlgoTypes.Robot)
             {
-                ChangeState(PluginStates.Broken, $"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
+                BreakBot($"Trade bot {PluginKey.DescriptorId} is missing in package {PluginKey.PackageName} at {PluginKey.PackageLocation}!");
                 return;
             }
 
@@ -371,6 +371,12 @@ namespace TickTrader.BotAgent.BA.Models
 
             if (State == PluginStates.Stopping)
                 executor?.Abort();
+        }
+
+        private void BreakBot(string message)
+        {
+            ChangeState(PluginStates.Broken, message);
+            SetRunning(false);
         }
 
         private void CheckShutdownFlag()
