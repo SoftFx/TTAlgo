@@ -456,6 +456,7 @@ message BotLogsRequest
     string bot_id = 1;
     google.protobuf.Timestamp last_log_time_utc = 2;
     int32 max_count = 3;
+    bool get_alerts = 4;
 }
 
 message BotLogsResponse

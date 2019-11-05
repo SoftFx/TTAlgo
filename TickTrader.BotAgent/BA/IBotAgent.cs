@@ -100,6 +100,7 @@ namespace TickTrader.BotAgent.BA
         string Status { get; }
         Task<string> GetStatusAsync();
         Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount);
+        Task<List<ILogEntry>> QueryAlertsAsync(DateTime from, int maxCount);
     }
 
     public interface IFdkOptionsProvider

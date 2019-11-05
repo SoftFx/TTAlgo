@@ -19,6 +19,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private CircularList<ILogEntry> _logMessages;
         private ILogger _logger;
+        private AlertStorage _alertStorage;
         private int _maxCachedRecords;
         private string _name;
         private string _logDirectory;
@@ -33,6 +34,7 @@ namespace TickTrader.BotAgent.BA.Models
             _maxCachedRecords = keepInMemory;
             _logMessages = new CircularList<ILogEntry>(_maxCachedRecords);
             _logger = GetLogger(name);
+            _alertStorage = new AlertStorage(name, _logDirectory, _fileExtension, _archiveExtension);
         }
 
         public class ControlHandler : Handler<BotLog>
@@ -66,6 +68,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             public Task<string> GetStatusAsync() => CallActorAsync(a => a._status);
             public Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
+            public Task<List<ILogEntry>> QueryAlertsAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryAlerts(from, maxCount));
         }
 
         //public string Status { get; private set; }
@@ -83,6 +86,8 @@ namespace TickTrader.BotAgent.BA.Models
         {
             return _logMessages.Where(e => e.TimeUtc.Timestamp > from).Take(maxCount).ToList();
         }
+
+        private List<ILogEntry> QueryAlerts(DateTime from, int maxCount) => _alertStorage?.QueryAlerts(from, maxCount);
 
         private IFile[] GetFiles()
         {
@@ -108,8 +113,10 @@ namespace TickTrader.BotAgent.BA.Models
                 case LogEntryType.Trading:
                 case LogEntryType.TradingSuccess:
                 case LogEntryType.TradingFail:
-                case LogEntryType.Alert:
                     _logger.Info(msg.ToString());
+                    break;
+                case LogEntryType.Alert:
+                    _logger.Warn(msg.Message);
                     break;
                 case LogEntryType.Error:
                     _logger.Error(msg.ToString());
@@ -120,6 +127,9 @@ namespace TickTrader.BotAgent.BA.Models
                 _logMessages.Dequeue();
 
             _logMessages.Add(msg);
+
+            if (type == LogEntryType.Alert || type == LogEntryType.AlertClear)
+                _alertStorage.AddAlert(msg);
         }
 
         private bool IsLogFull
@@ -170,6 +180,8 @@ namespace TickTrader.BotAgent.BA.Models
             logConfig.AddRule(LogLevel.Trace, LogLevel.Trace, statusTarget);
             logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
+
+            _alertStorage.AttachedAlertLogger(logConfig);
 
             var nlogFactory = new LogFactory(logConfig);
 

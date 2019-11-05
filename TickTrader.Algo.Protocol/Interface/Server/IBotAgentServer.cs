@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Protocol
 
         LogRecordInfo[] GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount);
 
-        Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount);
+        Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount, bool alert);
 
         BotFolderInfo GetBotFolderInfo(string botId, BotFolderId folderId);
 

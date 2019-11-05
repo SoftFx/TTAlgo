@@ -804,9 +804,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Status;
         }
 
-        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
+        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount, bool getAlerts = false)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
+            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount, GetAlerts = getAlerts});
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();
         }
