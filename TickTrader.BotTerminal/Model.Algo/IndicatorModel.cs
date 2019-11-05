@@ -11,8 +11,10 @@ using TickTrader.Algo.Common.Info;
 
 namespace TickTrader.BotTerminal
 {
-    internal class IndicatorModel : PluginModel
+    internal class IndicatorModel : PluginModel, IIndicatorWriter
     {
+        private IndicatorListenerProxy _indicatorListener;
+
         public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
             : base(config, agent, host, setupContext)
         {
@@ -45,6 +47,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        protected override PluginExecutor CreateExecutor()
+        {
+            var executor = base.CreateExecutor();
+
+            _indicatorListener = new IndicatorListenerProxy(executor, this);
+
+            return executor;
+        }
 
         private void StartIndicator()
         {
@@ -73,5 +83,23 @@ namespace TickTrader.BotTerminal
         {
             return StopIndicator();
         }
+
+        void IIndicatorWriter.LogMessage(PluginLogRecord record)
+        {
+            switch (record.Severity)
+            {
+                case LogSeverities.Alert:
+                case LogSeverities.AlertClear:
+                    AlertModel.AddAlert(InstanceId, record);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public interface IIndicatorWriter
+    {
+        void LogMessage(PluginLogRecord record);
     }
 }

@@ -83,6 +83,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <CheckBox Content="Write journal" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0"
@@ -91,9 +92,11 @@
                       IsChecked="{Binding WriteInfo.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
             <CheckBox Content="Write custom" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="2"
                       IsChecked="{Binding WriteCustom.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
-            <CheckBox Content="Write trade" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3"
+            <CheckBox Content="Write alert" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="3"
+                      IsChecked="{Binding WriteAlert.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
+            <CheckBox Content="Write trade" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="4"
                       IsChecked="{Binding WriteTrade.Value}" IsEnabled="{Binding IsJournalEnabled.Value}"/>
-            <CheckBox Content="Write modifications" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="4"
+            <CheckBox Content="Write modifications" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="5"
                       IsChecked="{Binding WriteModifications.Value}" IsEnabled="{Binding IsJournaTradeEnabled.Value}"/>
 
         </Grid>

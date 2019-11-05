@@ -105,7 +105,8 @@ namespace TickTrader.BotTerminal
         Info,
         Trading,
         Error,
-        Custom
+        Custom,
+        Alert,
     }
 
     internal class BotMessageFilter
@@ -142,6 +143,7 @@ namespace TickTrader.BotTerminal
                 case MessageTypeFilter.Trading: return journalType == JournalMessageType.Trading || journalType == JournalMessageType.TradingSuccess || journalType == JournalMessageType.TradingFail;
                 case MessageTypeFilter.Error: return journalType == JournalMessageType.Error;
                 case MessageTypeFilter.Custom: return journalType == JournalMessageType.Custom;
+                case MessageTypeFilter.Alert: return journalType == JournalMessageType.Alert;
                 default: return true;
             }
         }

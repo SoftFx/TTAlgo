@@ -110,20 +110,20 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "IAEoCzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVn",
             "aW5EZXNjcmlwdG9yIm4KC1BsdWdpblN0YXRlEgsKB1NUT1BQRUQQABIMCghT",
             "VEFSVElORxABEgsKB0ZBVUxURUQQAhILCgdSVU5OSU5HEAMSDAoIU1RPUFBJ",
-            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiKPAgoNTG9nUmVj",
+            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiKrAgoNTG9nUmVj",
             "b3JkSW5mbxIsCgh0aW1lX3V0YxgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
             "aW1lc3RhbXASTgoIc2V2ZXJpdHkYAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28u",
             "UHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mby5Mb2dTZXZlcml0eRIP",
-            "CgdtZXNzYWdlGAMgASgJEhEKCXRpbWVfc2hpdBgEIAEoDSJcCgtMb2dTZXZl",
+            "CgdtZXNzYWdlGAMgASgJEhEKCXRpbWVfc2hpdBgEIAEoDSJ4CgtMb2dTZXZl",
             "cml0eRIICgRJTkZPEAASCQoFRVJST1IQARIJCgVUUkFERRACEhEKDVRSQURF",
-            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUiKQoLQm90",
-            "RmlsZUluZm8SDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDIukBCg1Cb3RG",
-            "b2xkZXJJbmZvEg4KBmJvdF9pZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4y",
-            "PC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVy",
-            "SW5mby5Cb3RGb2xkZXJJZBIMCgRwYXRoGAMgASgJEj0KBWZpbGVzGAQgAygL",
-            "Mi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdEZpbGVJ",
-            "bmZvIioKC0JvdEZvbGRlcklkEg0KCUFMR09fREFUQRAAEgwKCEJPVF9MT0dT",
-            "EAFiBnByb3RvMw=="));
+            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUSCQoFQUxF",
+            "UlQQBhIPCgtBTEVSVF9DTEVBUhAHIikKC0JvdEZpbGVJbmZvEgwKBG5hbWUY",
+            "ASABKAkSDAoEc2l6ZRgCIAEoAyLpAQoNQm90Rm9sZGVySW5mbxIOCgZib3Rf",
+            "aWQYASABKAkSTwoJZm9sZGVyX2lkGAIgASgOMjwuVGlja1RyYWRlci5BbGdv",
+            "LlByb3RvY29sLkdycGMuTGliLkJvdEZvbGRlckluZm8uQm90Rm9sZGVySWQS",
+            "DAoEcGF0aBgDIAEoCRI9CgVmaWxlcxgEIAMoCzIuLlRpY2tUcmFkZXIuQWxn",
+            "by5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RGaWxlSW5mbyIqCgtCb3RGb2xkZXJJ",
+            "ZBINCglBTEdPX0RBVEEQABIMCghCT1RfTE9HUxABYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -3364,6 +3364,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         [pbr::OriginalName("TRADE_SUCCESS")] TradeSuccess = 3,
         [pbr::OriginalName("TRADE_FAIL")] TradeFail = 4,
         [pbr::OriginalName("CUSTOM")] Custom = 5,
+        [pbr::OriginalName("ALERT")] Alert = 6,
+        [pbr::OriginalName("ALERT_CLEAR")] AlertClear = 7,
       }
 
     }

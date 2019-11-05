@@ -85,7 +85,7 @@ namespace TickTrader.BotAgent.BA
         string GetFileWritePath(string name);
     }
 
-    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
+    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert, AlertClear }
 
     public interface ILogEntry
     {
@@ -100,6 +100,7 @@ namespace TickTrader.BotAgent.BA
         string Status { get; }
         Task<string> GetStatusAsync();
         Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount);
+        Task<List<ILogEntry>> QueryAlertsAsync(DateTime from, int maxCount);
     }
 
     public interface IFdkOptionsProvider

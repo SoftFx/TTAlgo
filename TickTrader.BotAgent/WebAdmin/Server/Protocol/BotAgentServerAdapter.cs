@@ -191,10 +191,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 }).ToArray();
         }
 
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount)
+        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount, bool getAlerts)
         {
             var log = await _botAgent.GetBotLogAsync(botId);
-            var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
+            var msgs = await (!getAlerts ? log.QueryMessagesAsync(lastLogTimeUtc, maxCount) : log.QueryAlertsAsync(lastLogTimeUtc, maxCount));
             return msgs.Select(e => new LogRecordInfo
             {
                 TimeUtc = e.TimeUtc,
@@ -276,6 +276,10 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                     return LogSeverity.TradeFail;
                 case LogEntryType.Custom:
                     return LogSeverity.Custom;
+                case LogEntryType.Alert:
+                    return LogSeverity.Alert;
+                case LogEntryType.AlertClear:
+                    return LogSeverity.AlertClear;
                 default:
                     throw new ArgumentException();
             }

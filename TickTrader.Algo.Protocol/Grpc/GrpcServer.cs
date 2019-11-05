@@ -1224,7 +1224,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                var entries = await _botAgent.GetBotLogsAsync(request.BotId, request.LastLogTimeUtc.ToDateTime(), request.MaxCount);
+                var entries = await _botAgent.GetBotLogsAsync(request.BotId, request.LastLogTimeUtc.ToDateTime(), request.MaxCount, request.GetAlerts);
                 res.Logs.AddRange(entries.Select(ToGrpc.Convert));
             }
             catch (Exception ex)

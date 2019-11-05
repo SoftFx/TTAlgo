@@ -14,13 +14,17 @@ namespace TickTrader.BotTerminal
 
         private const int StatusUpdateTimeout = 1000;
         private const int LogsUpdateTimeout = 1000;
+        private const int AlertsUpdateTimeout = 1000;
 
         private RemoteAlgoAgent _agent;
         private int _statusSubscriptionCnt;
         private int _logsSubscriptionCnt;
+        private int _alertsSubscriptionCnt;
         private Timer _statusTimer;
         private Timer _logsTimer;
+        private Timer _alertTimer;
         private DateTime _lastLogTimeUtc;
+        private DateTime _lastAlertTimeUtc;
 
 
         public BotModelInfo Info { get; private set; }
@@ -99,10 +103,23 @@ namespace TickTrader.BotTerminal
             ManageLogsTimer();
         }
 
+        public void SubscribeToAlerts()
+        {
+            _alertsSubscriptionCnt++;
+            ManageAlertTimer();
+        }
+
+        public void UnsubscribeFromAlerts()
+        {
+            _alertsSubscriptionCnt--;
+            ManageAlertTimer();
+        }
+
         public void Dispose()
         {
             _statusTimer.Dispose();
             _logsTimer.Dispose();
+            _alertTimer.Dispose();
         }
 
 
@@ -138,9 +155,26 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        private void ManageAlertTimer()
+        {
+            if (_alertsSubscriptionCnt < 0)
+                _alertsSubscriptionCnt = 0;
+
+            if (_alertsSubscriptionCnt > 0 && _alertTimer == null)
+            {
+                _alertTimer = new Timer(UpdateAlert, null, AlertsUpdateTimeout, -1);
+            }
+            else if (_alertsSubscriptionCnt == 0 && _alertTimer != null)
+            {
+                _alertTimer.Dispose();
+                _alertTimer = null;
+            }
+        }
+
         private void ResetJournal()
         {
             _lastLogTimeUtc = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            _lastAlertTimeUtc = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             Journal.Clear();
         }
 
@@ -172,14 +206,37 @@ namespace TickTrader.BotTerminal
                 if (logs.Length > 0)
                 {
                     _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
-                    Journal.Add(logs.Select(Convert).ToList());
+
+                    var convertLogs = logs.Select(Convert).ToList();
+                    Journal.Add(convertLogs.Where(u => u.Type != JournalMessageType.AlertClear).ToList());
                 }
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
             }
+
             _logsTimer?.Change(LogsUpdateTimeout, -1);
+        }
+
+        private async void UpdateAlert(object state)
+        {
+            _alertTimer?.Change(-1, -1);
+            try
+            {
+                var alerts = await _agent.GetBotLogs(InstanceId, _lastAlertTimeUtc, getAlert: true);
+                if (alerts.Length > 0)
+                {
+                    _lastAlertTimeUtc = alerts.Max(l => l.TimeUtc).Timestamp;
+                    _agent.AlertModel.AddAlerts(alerts.Select(Convert).ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Failed to get bot alerts {InstanceId} at {_agent.Name}");
+            }
+
+            _alertTimer?.Change(AlertsUpdateTimeout, -1);
         }
 
         private BotMessage Convert(LogRecordInfo record)
@@ -197,6 +254,8 @@ namespace TickTrader.BotTerminal
                 case LogSeverity.Trade: return JournalMessageType.Trading;
                 case LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
                 case LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case LogSeverity.Alert: return JournalMessageType.Alert;
+                case LogSeverity.AlertClear: return JournalMessageType.AlertClear;
                 default: return JournalMessageType.Info;
             }
         }

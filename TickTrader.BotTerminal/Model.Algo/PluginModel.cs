@@ -43,6 +43,9 @@ namespace TickTrader.BotTerminal
 
         protected IAlgoSetupContext SetupContext { get; }
 
+        protected IAlertModel AlertModel { get; }
+
+
         public event Action OutputsChanged;
 
         public PluginModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
@@ -58,6 +61,9 @@ namespace TickTrader.BotTerminal
             UpdateRefs();
 
             Agent.Library.PluginUpdated += Library_PluginUpdated;
+
+            AlertModel = agent.AlertModel;
+            //AlertUpdateEvent += agent.Shell.AlertsManager.UpdateAlertModel;
         }
 
         protected bool StartExcecutor()

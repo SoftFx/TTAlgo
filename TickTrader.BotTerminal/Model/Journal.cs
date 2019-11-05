@@ -88,6 +88,8 @@ namespace TickTrader.BotTerminal
         TradingSuccess,
         TradingFail,
         Error,
-        Custom
+        Custom,
+        Alert,
+        AlertClear,
     }
 }

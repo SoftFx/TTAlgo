@@ -9,7 +9,11 @@ namespace TickTrader.BotTerminal
 {
     internal class AlgoPluginViewModel : PropertyChangedBase
     {
+<<<<<<< HEAD
         public enum FolderType { Common, Local, Embedded }
+=======
+        public enum FolderType { Common, Local }
+>>>>>>> Alerts
 
         public PluginInfo Info { get; }
 
@@ -68,9 +72,12 @@ namespace TickTrader.BotTerminal
                 case RepositoryLocation.LocalExtensions:
                     Folder = FolderType.Local;
                     break;
+<<<<<<< HEAD
                 case RepositoryLocation.Embedded:
                     Folder = FolderType.Embedded;
                     break;
+=======
+>>>>>>> Alerts
                 default:
                     Folder = FolderType.Common;
                     break;
