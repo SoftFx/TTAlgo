@@ -42,6 +42,10 @@ namespace TickTrader.Algo.Core
             {
                 _isStarted = true;
                 _dataProvider.SyncInvoke(Init);
+                // makes all symbols in symbol list have correct rates
+                // also required for account calculator
+                // actor synchronization is broken, workaround for this case
+                context.FeedStrategy.SubscribeAll();
             }
         }
 
@@ -54,15 +58,15 @@ namespace TickTrader.Algo.Core
                     Deinit();
                     Init();
                 });
+                // makes all symbols in symbol list have correct rates
+                // also required for account calculator
+                // actor synchronization is broken, workaround for this case
+                context.FeedStrategy.SubscribeAll();
             }
         }
 
         private void Init()
         {
-            // makes all symbols in symbol list have correct rates
-            // also required for account calculator
-            context.FeedStrategy.SubscribeAll();
-
             var builder = context.Builder;
 
             _account = builder.Account;
