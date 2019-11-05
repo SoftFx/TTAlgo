@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Lib;
 using BO = TickTrader.BusinessObjects;
 
@@ -29,6 +30,8 @@ namespace TickTrader.Algo.Core
             CounterCurrencyInfo = currencies.GetOrDefault(CounterCurrency) ?? Null.Currency;
 
             PriceFormat = FormatExtentions.CreateTradeFormatInfo(entity.Digits);
+            AmountDigits = entity.ContractSizeFractional.E(1) ? -1
+                : (entity.TradeVolumeStep * entity.ContractSizeFractional).Digits();
         }
 
         public string Name { get { return entity.Name; } }
@@ -54,6 +57,7 @@ namespace TickTrader.Algo.Core
         public CommissionType CommissionType { get { return entity.CommissionType; } }
         public double HedgingFactor => entity.MarginHedged;
         public NumberFormatInfo PriceFormat { get; }
+        public int AmountDigits { get; }
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
         public double MarginFactorFractional => entity.MarginFactor;

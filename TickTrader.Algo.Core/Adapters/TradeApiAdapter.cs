@@ -314,8 +314,8 @@ namespace TickTrader.Algo.Core
                 //if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
                 //    ValidateStopPrice(stopPrice);
 
-                double orderVolume = ConvertVolume(orderToModify.RemainingVolume, smbMetadata);
-                double orderVolumeInLots = orderVolume / GetSymbolOrThrow(orderToModify.Symbol).ContractSize;
+                double orderVolumeInLots = orderToModify.RemainingVolume;
+                double orderVolume = ConvertVolume(orderVolumeInLots, smbMetadata);
 
                 ValidateVolumeLots(volume, smbMetadata);
                 ValidateMaxVisibleVolumeLots(maxVisibleVolume, smbMetadata, orderType, volume ?? orderVolumeInLots);
@@ -323,6 +323,7 @@ namespace TickTrader.Algo.Core
                 maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
                 double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
                 double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
+                double volumeChange = volume.HasValue ? ConvertVolume(volume.Value - orderVolumeInLots, smbMetadata) : 0;
                 price = RoundPrice(price, smbMetadata, orderToModify.Side);
                 stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
                 sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
@@ -350,6 +351,7 @@ namespace TickTrader.Algo.Core
                     Side = orderToModify.Side,
                     CurrentVolume = orderVolume,
                     NewVolume = newOrderVolume,
+                    VolumeChange = volumeChange,
                     Price = price,
                     StopPrice = stopPrice,
                     StopLoss = sl,
@@ -384,16 +386,26 @@ namespace TickTrader.Algo.Core
             return resultEntity;
         }
 
-        private double? ConvertNullableVolume(double? volumeInLots, Symbol smbMetadata)
+        private double? ConvertNullableVolume(double? volumeInLots, SymbolAccessor smbMetadata)
         {
             if (volumeInLots == null)
                 return null;
             return ConvertVolume(volumeInLots.Value, smbMetadata);
         }
 
-        private double ConvertVolume(double volumeInLots, Symbol smbMetadata)
+        private double ConvertVolume(double volumeInLots, SymbolAccessor smbMetadata)
         {
-            return smbMetadata.ContractSize * volumeInLots;
+            var res = smbMetadata.ContractSize * volumeInLots;
+            var amountDigits = smbMetadata.AmountDigits;
+            if (amountDigits == 0)
+            {
+                res = Math.Round(res);
+            }
+            else if (amountDigits > 0)
+            {
+                res = res.Round(amountDigits);
+            }
+            return res;
         }
 
         private double RoundVolume(double volumeInLots, Symbol smbMetadata)
