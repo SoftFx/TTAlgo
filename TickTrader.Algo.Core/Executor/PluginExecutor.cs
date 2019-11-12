@@ -409,7 +409,7 @@ namespace TickTrader.Algo.Core
             {
                 if (state == States.Running)
                 {
-                    iStrategy.EnqueueTradeUpdate(b =>
+                    iStrategy.EnqueueCustomInvoke(b =>
                     {
                         _calcFixture.Stop();
                         InitMetadata();

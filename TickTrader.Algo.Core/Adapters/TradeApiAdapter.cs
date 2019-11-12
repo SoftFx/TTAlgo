@@ -139,6 +139,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
+                await Task.Yield(); //free plugin thread to enable queue processing
                 resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen, null) { IsServerResponse = false };
             }
 
@@ -172,6 +173,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
+                await Task.Yield(); //free plugin thread to enable queue processing
                 logger.PrintTradeFail("[Self] FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
                 return new OrderResultEntity(ex.ErrorCode, orderToCancel, null) { IsServerResponse = false };
             }
@@ -221,6 +223,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
+                await Task.Yield(); //free plugin thread to enable queue processing
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
                 return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
@@ -260,6 +263,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
+                await Task.Yield(); //free plugin thread to enable queue processing
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
                 return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
@@ -379,6 +383,7 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
+                await Task.Yield(); //free plugin thread to enable queue processing
                 resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify, null) { IsServerResponse = false };
             }
 
