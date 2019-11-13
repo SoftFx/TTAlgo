@@ -1307,7 +1307,7 @@ namespace TickTrader.Algo.Core
         internal void UpdateAssetsOnFill(OrderAccessor order, decimal fillPrice, decimal fillAmount)
         {
             var smb = order.SymbolInfo;
-            var roundDigits = _context.Builder.Currencies.GetOrNull(smb.ProfitCurrency)?.Digits ?? 2;
+            var roundDigits = _context.Builder.Currencies.GetOrDefault(smb.ProfitCurrency)?.Digits ?? 2;
 
             //var mrgAsset = _acc.Assets.GetOrCreateAsset(smb.MarginCurrency);
             //var prfAsset = _acc.Assets.GetOrCreateAsset(smb.ProfitCurrency);

@@ -87,7 +87,7 @@ namespace TickTrader.Algo.Core
 
         public CurrencyEntity GetCurrencyInfo(string currency)
         {
-            return _context.Builder.Currencies.GetOrNull(currency);
+            return _context.Builder.Currencies.GetOrDefault(currency);
         }
 
         internal RateUpdate GetCurrentRateOrNull(string symbol)

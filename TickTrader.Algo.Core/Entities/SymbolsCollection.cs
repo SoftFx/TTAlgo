@@ -36,7 +36,7 @@ namespace TickTrader.Algo.Core
             fixture.MainSymbol = fixture[mainSymbolCode];
         }
 
-        public void Add(SymbolEntity symbol, Dictionary<string, CurrencyEntity> currencies)
+        public void Add(SymbolEntity symbol, CurrenciesCollection currencies)
         {
             fixture.Add(new SymbolAccessor(symbol, subscriptionHandler, currencies));
 
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core
                 InitCurrentSymbol();
         }
 
-        public void Init(IEnumerable<SymbolEntity> symbols, Dictionary<string, CurrencyEntity> currencies)
+        public void Init(IEnumerable<SymbolEntity> symbols, CurrenciesCollection currencies)
         {
             fixture.Clear();
 
@@ -52,6 +52,30 @@ namespace TickTrader.Algo.Core
             {
                 foreach (var smb in symbols)
                     fixture.Add(new SymbolAccessor(smb, subscriptionHandler, currencies));
+
+                InitCurrentSymbol();
+            }
+        }
+
+        public void Merge(IEnumerable<SymbolEntity> symbols, CurrenciesCollection currencies)
+        {
+            if (symbols != null)
+            {
+                fixture.InvalidateAll();
+
+                foreach (var smb in symbols)
+                {
+                    var smbAccessor = fixture.GetOrDefault(smb.Name);
+                    if (smbAccessor == null)
+                    {
+                        fixture.Add(new SymbolAccessor(smb, subscriptionHandler, currencies));
+                    }
+                    else
+                    {
+                        smbAccessor.Update(smb, currencies);
+                    }
+
+                }
 
                 InitCurrentSymbol();
             }
@@ -74,7 +98,10 @@ namespace TickTrader.Algo.Core
 
         internal SymbolAccessor GetOrDefault(string symbol)
         {
-            return fixture.GetOrDefault(symbol);
+            var entity = fixture.GetOrDefault(symbol);
+            if (entity?.IsNull ?? true) // deleted symbols will be present after reconnect, but IsNull will be true
+                return null;
+            return entity;
         }
 
         private class SymbolFixture : Api.SymbolProvider, Api.SymbolList
@@ -101,7 +128,7 @@ namespace TickTrader.Algo.Core
                 get
                 {
                     if (sortedSymbols == null)
-                        sortedSymbols = symbols.Values.OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name).ToList();
+                        sortedSymbols = symbols.Values.Where(s => !s.IsNull).OrderBy(s => s.GroupSortOrder).ThenBy(s => s.SortOrder).ThenBy(s => s.Name).ToList();
 
                     return sortedSymbols;
                 }
@@ -130,6 +157,17 @@ namespace TickTrader.Algo.Core
             public void Add(SymbolAccessor symbol)
             {
                 symbols.Add(symbol.Name, symbol);
+                sortedSymbols = null;
+            }
+
+            public void InvalidateAll()
+            {
+                // symbols are not deleted from collection
+                // deleted symbols will have IsNull set to true
+                foreach(var smb in sortedSymbols)
+                {
+                    smb.Update(null, null);
+                }
                 sortedSymbols = null;
             }
 

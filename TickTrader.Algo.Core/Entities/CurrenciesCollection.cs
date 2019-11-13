@@ -28,9 +28,33 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        internal CurrencyEntity GetOrNull(string currency)
+        public void Merge(IEnumerable<CurrencyEntity> currencies)
         {
-            return fixture.Get(currency);
+            if (currencies != null)
+            {
+                fixture.InvalidateAll();
+
+                foreach (var currency in currencies)
+                {
+                    var curr = fixture.GetOrDefault(currency.Name);
+                    if (curr == null)
+                    {
+                        fixture.Add(currency);
+                    }
+                    else
+                    {
+                        curr.Update(currency);
+                    }
+                }
+            }
+        }
+
+        internal CurrencyEntity GetOrDefault(string currency)
+        {
+            var currInfo = fixture.GetOrDefault(currency);
+            if (currInfo?.IsNull ?? true) // deleted currencies will be present after reconnect, but IsNull will be true
+                return null;
+            return currInfo;
         }
 
         public IEnumerator<CurrencyEntity> GetEnumerator()
@@ -67,14 +91,17 @@ namespace TickTrader.Algo.Core
                 get
                 {
                     if (sortedCurrencies == null)
-                        sortedCurrencies = currencies.Values.OrderBy(c => c.SortOrder).ToList();
+                        sortedCurrencies = currencies.Values.Where(c => !c.IsNull).OrderBy(c => c.SortOrder).ToList();
 
                     return sortedCurrencies;
                 }
             }
 
-            public CurrencyEntity Get(string name)
+            public CurrencyEntity GetOrDefault(string name)
             {
+                if (string.IsNullOrEmpty(name))
+                    return null;
+
                 CurrencyEntity currInfo;
                 currencies.TryGetValue(name, out currInfo);
                 return currInfo;
@@ -89,6 +116,17 @@ namespace TickTrader.Algo.Core
             public void Clear()
             {
                 currencies.Clear();
+                sortedCurrencies = null;
+            }
+
+            public void InvalidateAll()
+            {
+                // currencies are not deleted from collection
+                // deleted currencies will have IsNull set to true
+                foreach (var curr in sortedCurrencies)
+                {
+                    curr.IsNull = true;
+                }
                 sortedCurrencies = null;
             }
 

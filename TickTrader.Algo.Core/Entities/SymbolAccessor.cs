@@ -16,22 +16,16 @@ namespace TickTrader.Algo.Core
         private SymbolEntity entity;
         private FeedProvider feed;
 
-        internal SymbolAccessor(SymbolEntity entity, FeedProvider feed, Dictionary<string, CurrencyEntity> currencies)
+        internal SymbolAccessor(SymbolEntity entity, FeedProvider feed, CurrenciesCollection currencies)
         {
             this.entity = entity;
             this.feed = feed;
 
-            Point = System.Math.Pow(10, -entity.Digits);
-
             Ask = double.NaN;
             Bid = double.NaN;
             LastQuote = Null.Quote;
-            BaseCurrencyInfo = currencies.GetOrDefault(BaseCurrency) ?? Null.Currency;
-            CounterCurrencyInfo = currencies.GetOrDefault(CounterCurrency) ?? Null.Currency;
 
-            PriceFormat = FormatExtentions.CreateTradeFormatInfo(entity.Digits);
-            AmountDigits = entity.ContractSizeFractional.E(1) ? -1
-                : (entity.TradeVolumeStep * entity.ContractSizeFractional).Digits();
+            Update(entity, currencies);
         }
 
         public string Name { get { return entity.Name; } }
@@ -44,7 +38,7 @@ namespace TickTrader.Algo.Core
         public Currency BaseCurrencyInfo { get; private set; }
         public string CounterCurrency { get { return entity.CounterCurrencyCode; } }
         public Currency CounterCurrencyInfo { get; private set; }
-        public bool IsNull { get { return false; } }
+        public bool IsNull { get; private set; }
         public double Point { get; private set; }
         public double Bid { get; set; }
         public double Ask { get; set; }
@@ -56,8 +50,8 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get { return entity.CommissionChargeType; } }
         public CommissionType CommissionType { get { return entity.CommissionType; } }
         public double HedgingFactor => entity.MarginHedged;
-        public NumberFormatInfo PriceFormat { get; }
-        public int AmountDigits { get; }
+        public NumberFormatInfo PriceFormat { get; private set; }
+        public int AmountDigits { get; private set; }
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
         public double MarginFactorFractional => entity.MarginFactor;
@@ -103,6 +97,27 @@ namespace TickTrader.Algo.Core
             Ask = quote.Ask;
             Bid = quote.Bid;
             LastQuote = quote;
+        }
+
+        public void Update(SymbolEntity entity, CurrenciesCollection currencies)
+        {
+            if (entity == null)
+            {
+                IsNull = true;
+            }
+            else
+            {
+                IsNull = false;
+                this.entity = entity;
+
+                Point = System.Math.Pow(10, -entity.Digits);
+                BaseCurrencyInfo = currencies.GetOrDefault(entity.BaseCurrencyCode) ?? Null.Currency;
+                CounterCurrencyInfo = currencies.GetOrDefault(entity.CounterCurrencyCode) ?? Null.Currency;
+
+                PriceFormat = FormatExtentions.CreateTradeFormatInfo(entity.Digits);
+                AmountDigits = entity.ContractSizeFractional.E(1) ? -1
+                    : (entity.TradeVolumeStep * entity.ContractSizeFractional).Digits();
+            }
         }
     }
 

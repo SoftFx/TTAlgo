@@ -412,7 +412,7 @@ namespace TickTrader.Algo.Core
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
                         _calcFixture.Stop();
-                        InitMetadata();
+                        MergeMetadata();
                         accFixture.Restart();
                         _calcFixture.Start();
                         _builder.Account.FireResetEvent();
@@ -776,10 +776,21 @@ namespace TickTrader.Algo.Core
             {
                 var symbolInfoList = metadata.GetSymbolMetadata();
                 var currencies = metadata.GetCurrencyMetadata();
-                var currenciesLookup = currencies.ToDictionary(c => c.Name);
 
-                _builder.Symbols.Init(symbolInfoList, currenciesLookup);
                 _builder.Currencies.Init(currencies);
+                _builder.Symbols.Init(symbolInfoList, _builder.Currencies);
+            }
+        }
+
+        private void MergeMetadata()
+        {
+            if (metadata != null)
+            {
+                var symbolInfoList = metadata.GetSymbolMetadata();
+                var currencies = metadata.GetCurrencyMetadata();
+
+                _builder.Currencies.Merge(currencies);
+                _builder.Symbols.Merge(symbolInfoList, _builder.Currencies);
             }
         }
 

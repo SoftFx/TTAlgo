@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Indicators.UTest.OtherTests.ZigZag
                 Digits = Digits,
                 BaseCurrencyCode = string.Empty,
                 CounterCurrencyCode = string.Empty
-            }, new Dictionary<string, Core.CurrencyEntity>());
+            }, new Core.CurrenciesCollection());
         }
 
         protected override void GetOutput()

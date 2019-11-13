@@ -19,8 +19,8 @@ namespace TickTrader.Algo.Core
             InitFormat();
         }
 
-        public string Name { get; }
-        public int Digits { get; }
+        public string Name { get; private set; }
+        public int Digits { get; private set; }
         public int SortOrder { get; set; }
         public bool IsNull { get; set; }
 
@@ -49,5 +49,22 @@ namespace TickTrader.Algo.Core
         #endregion
 
         public override string ToString() { return $"{Name} (Digits = {Digits})"; }
+
+
+        public void Update(CurrencyEntity other)
+        {
+            if (other == null)
+            {
+                IsNull = true;
+            }
+            else
+            {
+                Name = other.Name;
+                Digits = other.Digits;
+                SortOrder = other.SortOrder;
+                IsNull = other.IsNull;
+                InitFormat();
+            }
+        }
     }
 }

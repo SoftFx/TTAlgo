@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
 
         public AssetAccessor Update(AssetEntity entity, Dictionary<string, Currency> currencies, out AssetChangeType cType)
         {
-            var result = fixture.Update(entity, builder.Currencies.GetOrNull, out cType);
+            var result = fixture.Update(entity, builder.Currencies.GetOrDefault, out cType);
             if (cType != AssetChangeType.NoChanges)
                 AssetChanged?.Invoke(result, cType);
             return result;
@@ -65,7 +65,7 @@ namespace TickTrader.Algo.Core
 
         internal AssetAccessor GetOrCreateAsset(string currency, out AssetChangeType cType)
         {
-            return fixture.GetOrAdd(currency, builder.Currencies.GetOrNull, out cType);
+            return fixture.GetOrAdd(currency, builder.Currencies.GetOrDefault, out cType);
         }
 
         #endregion
