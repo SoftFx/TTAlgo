@@ -369,7 +369,7 @@ namespace ActorSharp
             private int _confirmationCounter;
             private int _maxPageSize;
 
-            private bool IsCahnnelFree => _cachedPage != null;
+            private bool IsChannelFree => _cachedPage != null;
 
             public Writer(BlockingChannel<T> src, int pageSize)
             {
@@ -449,7 +449,7 @@ namespace ActorSharp
 
             private void TrySendPage()
             {
-                if (IsCahnnelFree)
+                if (IsChannelFree)
                     SendPage();
             }
 
