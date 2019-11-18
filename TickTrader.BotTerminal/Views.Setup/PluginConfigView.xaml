@@ -364,10 +364,10 @@
             <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
                      Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="AllowTrade" />
-            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="2" Grid.Column="2" Content="Isolate bot" />
-            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="0" Content="Isolate bot" />
+            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="2" Grid.Column="2" Content="AllowTrade" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
+            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">

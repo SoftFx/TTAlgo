@@ -127,6 +127,8 @@ namespace TickTrader.BotTerminal
 
         public bool CanBeSkipped => IsEmpty && Descriptor.IsValid && Descriptor.Type != AlgoTypes.Robot;
 
+        public bool IsBot => Descriptor.Type == AlgoTypes.Robot;
+
         public string InstanceId
         {
             get { return _instanceId; }
