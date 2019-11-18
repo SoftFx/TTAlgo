@@ -9,6 +9,7 @@ namespace TickTrader.Algo.Api
     public interface TradeHistory : IEnumerable<TradeReport>
     {
         IEnumerable<TradeReport> Get(ThQueryOptions options = ThQueryOptions.None);
+        IEnumerable<TradeReport> Get(int count, ThQueryOptions options = ThQueryOptions.None);
         IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None);
         IEnumerable<TradeReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None);
         IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None);

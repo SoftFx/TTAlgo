@@ -31,6 +31,11 @@ namespace TickTrader.Algo.Core
             return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(options)));
         }
 
+        public IEnumerable<TradeReport> Get(int count, ThQueryOptions options = ThQueryOptions.None)
+        {
+            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(count, options)));
+        }
+
         public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
             return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(from, to, options)));

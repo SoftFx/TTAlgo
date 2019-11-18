@@ -65,6 +65,35 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
+        //public static IEnumerable<T> ToEnumerable<T>(this Func<IAsyncCrossDomainEnumerator<T>> factory, int count)
+        //{
+        //    var enumerator = factory();
+
+        //    if (enumerator == null)
+        //        yield break;
+
+        //    int currentCount = 0;
+
+        //    while (currentCount < count)
+        //    {
+        //        var callback = new CrossDomainTaskProxy<T[]>();
+        //        enumerator.GetNextPage(callback);
+        //        var page = callback.Result;
+
+        //        if (page == null)
+        //            break;
+
+        //        foreach (var i in page)
+        //            if (currentCount < count)
+        //            {
+        //                currentCount++;
+        //                yield return i;
+        //            }
+        //            else
+        //                break;
+        //    }
+        //}
+
         public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
         {
             return new FakeAsyncEnumerator<T>(src);

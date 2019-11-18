@@ -51,6 +51,11 @@ namespace TickTrader.Algo.Core
             return _tHistory.GetTradeHistory(to, options);
         }
 
+        public IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(int count, ThQueryOptions options)
+        {
+            return _tHistory.GetTradeHistory(count, options);
+        }
+
         #endregion
 
         #region IPluginMetadata

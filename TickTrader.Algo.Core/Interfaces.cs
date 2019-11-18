@@ -46,6 +46,7 @@ namespace TickTrader.Algo.Core
     public interface ITradeHistoryProvider
     {
         IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(ThQueryOptions options);
+        IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(int count, ThQueryOptions options);
         IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime from, DateTime to, ThQueryOptions options);
         IAsyncCrossDomainEnumerator<TradeReportEntity> GetTradeHistory(DateTime to, ThQueryOptions options);
     }
