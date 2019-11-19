@@ -78,39 +78,6 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private async void GetTradeHistory(Channel<TradeReportEntity> txChannel, int count, bool skipCanceledOrders, bool backwards)
-        {
-            try
-            {
-                if (!_isStarted)
-                    throw new InvalidOperationException("No connection!");
-
-                var rxChannel = Channel.NewInput<TradeReportEntity>(1000);
-                _connection.TradeProxy.GetTradeHistory(CreateBlockingChannel(rxChannel), null, null, skipCanceledOrders, backwards);
-
-                int currentCount = 0;
-
-                while (await rxChannel.ReadNext())
-                {
-                    if (currentCount >= count)
-                        break;
-
-                    if (!await txChannel.Write(rxChannel.Current))
-                    {
-                        await rxChannel.Close();
-                        return;
-                    }
-                    else
-                        currentCount++;
-                }
-
-                await txChannel.Close();
-            }
-            catch (Exception ex)
-            {
-                await txChannel.Close(ex);
-            }
-        }
 
         private Task Start()
         {
@@ -196,11 +163,6 @@ namespace TickTrader.Algo.Common.Model
                 return GetTradeHistoryInternal(from, to, skipCancelOrders);
             }
 
-            public Channel<TradeReportEntity> GetTradeHistory(int count, bool skipCancelOrders)
-            {
-                return GetTradeHistoryInternal(count, skipCancelOrders);
-            }
-
             public Channel<TradeReportEntity> GetTradeHistory(DateTime to, bool skipCancelOrders)
             {
                 return GetTradeHistoryInternal(null, to, skipCancelOrders);
@@ -210,13 +172,6 @@ namespace TickTrader.Algo.Common.Model
             {
                 var channel = Channel.NewOutput<TradeReportEntity>(1000);
                 Actor.OpenChannel(channel, (a, c) => a.GetTradeHistory(c, from, to, skipCancelOrders, true));
-                return channel;
-            }
-
-            private Channel<TradeReportEntity> GetTradeHistoryInternal(int count, bool skipCancelOrders)
-            {
-                var channel = Channel.NewOutput<TradeReportEntity>(1000);
-                Actor.OpenChannel(channel, (a, c) => a.GetTradeHistory(c, count, skipCancelOrders, true));
                 return channel;
             }
 
@@ -251,11 +206,6 @@ namespace TickTrader.Algo.Common.Model
                 return GetTradeHistoryInternal(null, to, options).AsCrossDomain();
             }
 
-            IAsyncCrossDomainEnumerator<TradeReportEntity> ITradeHistoryProvider.GetTradeHistory(int count, ThQueryOptions options)
-            {
-                return GetTradeHistoryInternal(count, options).AsCrossDomain();
-            }
-
             private BlockingChannel<TradeReportEntity> GetTradeHistoryInternal(DateTime? from, DateTime? to, ThQueryOptions options)
             {
                 bool skipCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
@@ -263,15 +213,6 @@ namespace TickTrader.Algo.Common.Model
 
                 return _ref.OpenBlockingChannel<TradeHistoryProvider, TradeReportEntity>(ChannelDirections.Out, 1000,
                     (a, c) => a.GetTradeHistory(c, from, to, skipCancels, backwards));
-            }
-
-            private BlockingChannel<TradeReportEntity> GetTradeHistoryInternal(int count, ThQueryOptions options)
-            {
-                bool skipCancels = options.HasFlag(ThQueryOptions.SkipCanceled);
-                bool backwards = options.HasFlag(ThQueryOptions.Backwards);
-
-                return _ref.OpenBlockingChannel<TradeHistoryProvider, TradeReportEntity>(ChannelDirections.Out, 1000,
-                    (a, c) => a.GetTradeHistory(c, count, skipCancels, backwards));
             }
         }
     }

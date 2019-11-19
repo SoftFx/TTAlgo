@@ -48,11 +48,6 @@ namespace TickTrader.Algo.Core
             return QueryAll(options);
         }
 
-        IEnumerable<TradeReport> TradeHistory.Get(int count, ThQueryOptions options)
-        {
-            throw new NotImplementedException(); //add implementation
-        }
-
         IAsyncEnumerator<TradeReport> TradeHistory.GetAsync(ThQueryOptions options)
         {
             return QueryAll(options).SimulateAsync();

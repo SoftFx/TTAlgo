@@ -42,10 +42,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
                 await OpenOrders();
 
+                ReportsIteratorTest();
+
                 await DoQueryTests(false);
                 await DoQueryTests(true);
-
-                //ReportsIteratorTest(); //should be the last, because with a large history size it leads to deadlock
             }
             catch (Exception ex)
             {
@@ -258,8 +258,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             //var rangeStart = _tradeRepVerifiers.First().TradeReportTimestamp;
             var expected = Enumerable.Reverse(_tradeRepVerifiers).ToList();
-            //var actual = Account.TradeHistory.TakeWhile(r => r.ReportTime >= expected.First().TradeReportTimestamp).ToList();
-            var actual = Account.TradeHistory.Get(expected.Count(), ThQueryOptions.Backwards).ToList();
+            var actual = Account.TradeHistory.Take(expected.Count).ToList();
 
             CheckReports(expected, actual);
         }

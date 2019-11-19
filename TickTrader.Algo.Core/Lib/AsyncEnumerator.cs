@@ -44,55 +44,7 @@ namespace TickTrader.Algo.Core.Lib
             return new AsyncSelect<TSrc, TDst>(src, selector);
         }
 
-        public static IEnumerable<T> ToEnumerable<T>(this Func<IAsyncCrossDomainEnumerator<T>> factory)
-        {
-            var enumerator = factory();
-
-            if (enumerator == null)
-                yield break;
-
-            while (true)
-            {
-                var callback = new CrossDomainTaskProxy<T[]>();
-                enumerator.GetNextPage(callback);
-                var page = callback.Result;
-
-                if (page == null)
-                    break;
-
-                foreach (var i in page)
-                    yield return i;
-            }
-        }
-
-        //public static IEnumerable<T> ToEnumerable<T>(this Func<IAsyncCrossDomainEnumerator<T>> factory, int count)
-        //{
-        //    var enumerator = factory();
-
-        //    if (enumerator == null)
-        //        yield break;
-
-        //    int currentCount = 0;
-
-        //    while (currentCount < count)
-        //    {
-        //        var callback = new CrossDomainTaskProxy<T[]>();
-        //        enumerator.GetNextPage(callback);
-        //        var page = callback.Result;
-
-        //        if (page == null)
-        //            break;
-
-        //        foreach (var i in page)
-        //            if (currentCount < count)
-        //            {
-        //                currentCount++;
-        //                yield return i;
-        //            }
-        //            else
-        //                break;
-        //    }
-        //}
+        public static AsyncEnumerableAdapter<T> GetAdapter<T>(Func<IAsyncCrossDomainEnumerator<T>> factory) where T : class => new AsyncEnumerableAdapter<T>(factory);
 
         public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
         {
@@ -244,6 +196,57 @@ namespace TickTrader.Algo.Core.Lib
                     return CompletedTrue;
                 return CompletedFalse;
             }
+        }
+
+        public class AsyncEnumerableAdapter<T> : IEnumerator<T>, IEnumerable<T>, IDisposable where T : class
+        {
+            private IAsyncCrossDomainEnumerator<T> _enumerator;
+
+            private List<T> _page;
+            private int _position = -1;
+
+            public T Current => _page?[_position];
+
+            object IEnumerator.Current => _page?[_position];
+
+            public AsyncEnumerableAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            {
+                _enumerator = factory();
+            }
+
+            public void Dispose()
+            {
+                _enumerator.Dispose();
+            }
+
+            public bool MoveNext()
+            {
+                if (_enumerator == null)
+                    return false;
+
+                if (_page == null || _position == _page.Count - 1)
+                {
+                    var callback = new CrossDomainTaskProxy<T[]>();
+                    _enumerator.GetNextPage(callback);
+                    _page = callback.Result?.ToList();
+                    _position = -1;
+
+                    if (_page == null)
+                        return false;
+                }
+
+                return ++_position < _page.Count;
+            }
+
+            public void Reset()
+            {
+                _page = null;
+                _position = -1;
+            }
+
+            public IEnumerator<T> GetEnumerator() => this;
+
+            IEnumerator IEnumerable.GetEnumerator() => this;
         }
     }
 }
