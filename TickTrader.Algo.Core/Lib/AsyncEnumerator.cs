@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Core.Lib
             return new AsyncSelect<TSrc, TDst>(src, selector);
         }
 
-        public static AsyncEnumerableAdapter<T> GetAdapter<T>(Func<IAsyncCrossDomainEnumerator<T>> factory) where T : class => new AsyncEnumerableAdapter<T>(factory);
+        public static AsyncEnumerableChannelAdapter<T> GetAdapter<T>(Func<IAsyncCrossDomainEnumerator<T>> factory) where T : class => new AsyncEnumerableChannelAdapter<T>(factory);
 
         public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
         {
@@ -198,7 +198,21 @@ namespace TickTrader.Algo.Core.Lib
             }
         }
 
-        public class AsyncEnumerableAdapter<T> : IEnumerator<T>, IEnumerable<T>, IDisposable where T : class
+        public class AsyncEnumerableChannelAdapter<T> : IEnumerable<T> where T : class
+        {
+            private readonly Func<IAsyncCrossDomainEnumerator<T>> _factory;
+
+            public AsyncEnumerableChannelAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            {
+                _factory = factory;
+            }
+
+            public IEnumerator<T> GetEnumerator() => new AsyncEnumeratorChannelAdapter<T>(_factory);
+
+            IEnumerator IEnumerable.GetEnumerator() => new AsyncEnumeratorChannelAdapter<T>(_factory);
+        }
+
+        public class AsyncEnumeratorChannelAdapter<T> : IEnumerator<T>, IDisposable where T : class
         {
             private IAsyncCrossDomainEnumerator<T> _enumerator;
 
@@ -209,7 +223,7 @@ namespace TickTrader.Algo.Core.Lib
 
             object IEnumerator.Current => _page?[_position];
 
-            public AsyncEnumerableAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            public AsyncEnumeratorChannelAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
             {
                 _enumerator = factory();
             }
@@ -243,10 +257,6 @@ namespace TickTrader.Algo.Core.Lib
                 _page = null;
                 _position = -1;
             }
-
-            public IEnumerator<T> GetEnumerator() => this;
-
-            IEnumerator IEnumerable.GetEnumerator() => this;
         }
     }
 }
