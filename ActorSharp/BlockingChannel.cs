@@ -174,7 +174,7 @@ namespace ActorSharp
 
             lock (_readLock)
             {
-                if (_isClosed)
+                if (!_isClosed)
                 {
                     _isClosed = true;
 

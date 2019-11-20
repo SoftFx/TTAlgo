@@ -23,22 +23,22 @@ namespace TickTrader.Algo.Core
 
         public IEnumerator<TradeReport> GetEnumerator()
         {
-            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(ThQueryOptions.Backwards))).GetEnumerator();
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(ThQueryOptions.Backwards))).GetEnumerator();
         }
 
         public IEnumerable<TradeReport> Get(ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(options)));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(options)));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime from, DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(from, to, options)));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(from, to, options)));
         }
 
         public IEnumerable<TradeReport> GetRange(DateTime to, ThQueryOptions options = ThQueryOptions.None)
         {
-            return Adapt(AsyncEnumerator.ToEnumerable(() => Provider?.GetTradeHistory(to, options)));
+            return Adapt(AsyncEnumerator.GetAdapter(() => Provider?.GetTradeHistory(to, options)));
         }
 
         public IAsyncEnumerator<TradeReport> GetAsync(ThQueryOptions options = ThQueryOptions.None)

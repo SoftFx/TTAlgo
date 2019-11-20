@@ -96,6 +96,12 @@ namespace TickTrader.Algo.Common.Lib
                     pageCallback.SetException(ex);
                 }
             }
+
+            public override void Dispose()
+            {
+                _channel.Close();
+                base.Dispose();
+            }
         }
 
         private class CrossDomainSelectAdapter<TIn, TOut> : CrossDomainObject, IAsyncCrossDomainEnumerator<TOut>
@@ -134,6 +140,12 @@ namespace TickTrader.Algo.Common.Lib
                     result[i] = _selector(page[i]);
 
                 return result;
+            }
+
+            public override void Dispose()
+            {
+                _channel.Close();
+                base.Dispose();
             }
         }
     }

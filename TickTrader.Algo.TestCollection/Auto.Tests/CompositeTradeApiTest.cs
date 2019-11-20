@@ -43,9 +43,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 await OpenOrders();
 
                 ReportsIteratorTest();
+
                 await DoQueryTests(false);
                 await DoQueryTests(true);
-
             }
             catch (Exception ex)
             {
@@ -72,7 +72,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await OpenFill(OrderType.Limit, OrderSide.Sell, 1);
 
             // wait some time to allow trade reports reach DB
-            await Delay(TimeSpan.FromSeconds(10)); 
+            await Delay(TimeSpan.FromSeconds(10));
         }
 
         #region Orders
@@ -258,7 +258,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             //var rangeStart = _tradeRepVerifiers.First().TradeReportTimestamp;
             var expected = Enumerable.Reverse(_tradeRepVerifiers).ToList();
-            //var actual = Account.TradeHistory.TakeWhile(r => r.ReportTime >= rangeStart).ToList();
             var actual = Account.TradeHistory.Take(expected.Count).ToList();
 
             CheckReports(expected, actual);

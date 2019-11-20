@@ -78,6 +78,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+
         private Task Start()
         {
             _updateQueue = new AsyncQueue<TradeReportEntity>();

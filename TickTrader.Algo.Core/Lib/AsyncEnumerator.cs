@@ -44,26 +44,7 @@ namespace TickTrader.Algo.Core.Lib
             return new AsyncSelect<TSrc, TDst>(src, selector);
         }
 
-        public static IEnumerable<T> ToEnumerable<T>(this Func<IAsyncCrossDomainEnumerator<T>> factory)
-        {
-            var enumerator = factory();
-
-            if (enumerator == null)
-                yield break;
-
-            while (true)
-            {
-                var callback = new CrossDomainTaskProxy<T[]>();
-                enumerator.GetNextPage(callback);
-                var page = callback.Result;
-
-                if (page == null)
-                    break;
-
-                foreach (var i in page)
-                    yield return i;
-            }
-        }
+        public static AsyncEnumerableChannelAdapter<T> GetAdapter<T>(Func<IAsyncCrossDomainEnumerator<T>> factory) where T : class => new AsyncEnumerableChannelAdapter<T>(factory);
 
         public static IAsyncEnumerator<T> SimulateAsync<T>(this IEnumerable<T> src)
         {
@@ -214,6 +195,67 @@ namespace TickTrader.Algo.Core.Lib
                 if (_e.MoveNext())
                     return CompletedTrue;
                 return CompletedFalse;
+            }
+        }
+
+        public class AsyncEnumerableChannelAdapter<T> : IEnumerable<T> where T : class
+        {
+            private readonly Func<IAsyncCrossDomainEnumerator<T>> _factory;
+
+            public AsyncEnumerableChannelAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            {
+                _factory = factory;
+            }
+
+            public IEnumerator<T> GetEnumerator() => new AsyncEnumeratorChannelAdapter<T>(_factory);
+
+            IEnumerator IEnumerable.GetEnumerator() => new AsyncEnumeratorChannelAdapter<T>(_factory);
+        }
+
+        public class AsyncEnumeratorChannelAdapter<T> : IEnumerator<T>, IDisposable where T : class
+        {
+            private IAsyncCrossDomainEnumerator<T> _enumerator;
+
+            private List<T> _page;
+            private int _position = -1;
+
+            public T Current => _page?[_position];
+
+            object IEnumerator.Current => _page?[_position];
+
+            public AsyncEnumeratorChannelAdapter(Func<IAsyncCrossDomainEnumerator<T>> factory)
+            {
+                _enumerator = factory();
+            }
+
+            public void Dispose()
+            {
+                _enumerator.Dispose();
+            }
+
+            public bool MoveNext()
+            {
+                if (_enumerator == null)
+                    return false;
+
+                if (_page == null || _position == _page.Count - 1)
+                {
+                    var callback = new CrossDomainTaskProxy<T[]>();
+                    _enumerator.GetNextPage(callback);
+                    _page = callback.Result?.ToList();
+                    _position = -1;
+
+                    if (_page == null)
+                        return false;
+                }
+
+                return ++_position < _page.Count;
+            }
+
+            public void Reset()
+            {
+                _page = null;
+                _position = -1;
             }
         }
     }
