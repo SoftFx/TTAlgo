@@ -198,7 +198,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double GetDoNotExecPrice(OrderSide side, OrderType type)
         {
-            var delta = PriceDelta * Symbol.Point;
+            var delta = PriceDelta * Symbol.Point * Math.Min(1, 10 - Symbol.Digits); //Math.Min it is necessary that orders are not executed on symbols with large price jumps
 
             if (type == OrderType.Limit)
             {
