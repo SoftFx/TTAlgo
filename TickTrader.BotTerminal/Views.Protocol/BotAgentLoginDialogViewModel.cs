@@ -15,10 +15,11 @@ namespace TickTrader.BotTerminal
         private string _password;
         private string _server;
         private string _port;
-        private string _agentDisplayName;
+        private string _agentName;
         private string _error;
         private bool _isValid;
         private bool _isConnecting;
+        private bool _isEdit;
 
 
         public string Login
@@ -78,16 +79,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public string AgentDisplayName
+        public string AgentName
         {
-            get => _agentDisplayName;
+            get => _agentName;
             set
             {
-                if (_agentDisplayName == value)
+                if (_agentName == value)
                     return;
 
-                _agentDisplayName = value;
-                NotifyOfPropertyChange(nameof(AgentDisplayName));
+                _agentName = value;
+                NotifyOfPropertyChange(nameof(AgentName));
+                ValidateState();
             }
         }
 
@@ -113,12 +115,15 @@ namespace TickTrader.BotTerminal
                 NotifyOfPropertyChange(nameof(IsConnecting));
                 NotifyOfPropertyChange(nameof(CanConnect));
                 NotifyOfPropertyChange(nameof(IsEditable));
+                NotifyOfPropertyChange(nameof(CanEditAgentName));
             }
         }
 
         public bool CanConnect => _isValid && !_isConnecting;
 
         public bool IsEditable => !_isConnecting;
+
+        public bool CanEditAgentName => !_isEdit && IsEditable;
 
         public ObservableCollection<BotAgentServerEntry> Servers => _botAgentManager.PredefinedServers;
 
@@ -152,7 +157,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                Error = await _botAgentManager.Connect(_login, _password, _server, int.Parse(_port), _agentDisplayName);
+                Error = await _botAgentManager.Connect(_agentName, _login, _password, _server, int.Parse(_port));
                 if (!HasError)
                 {
                     TryClose();
@@ -170,13 +175,14 @@ namespace TickTrader.BotTerminal
 
         private void Init(BotAgentStorageEntry creds)
         {
-            if (creds != null)
+            _isEdit = creds != null;
+            if (_isEdit)
             {
+                AgentName = creds.Name;
                 Login = creds.Login;
                 Password = creds.Password;
                 Server = creds.ServerAddress;
                 Port = creds.Port.ToString();
-                AgentDisplayName = creds.DisplayName;
             }
 
             if (_server == null)
@@ -188,10 +194,26 @@ namespace TickTrader.BotTerminal
 
         private void ValidateState()
         {
-            _isValid = !string.IsNullOrWhiteSpace(_login)
+            Error = null;
+            _isValid = !string.IsNullOrWhiteSpace(_agentName)
+                && !string.IsNullOrWhiteSpace(_login)
                 && !string.IsNullOrWhiteSpace(_password)
                 && !string.IsNullOrWhiteSpace(_server)
                 && !string.IsNullOrWhiteSpace(_port);
+            if (_isValid)
+            {
+                if (_agentName.Equals("Local", StringComparison.OrdinalIgnoreCase)
+                    || _agentName.Contains("/"))
+                {
+                    _isValid = false;
+                    Error = "Invalid name";
+                }
+                if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName))
+                {
+                    _isValid = false;
+                    Error = "Duplicate name";
+                }
+            }
             if (_isValid)
             {
                 var port = -1;
@@ -199,6 +221,7 @@ namespace TickTrader.BotTerminal
                 if (!parseResult || port < 0 || port > 65535)
                 {
                     _isValid = false;
+                    Error = "Invalid port";
                 }
             }
 

@@ -17,12 +17,10 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel Agent { get; }
 
-        public string Server => Connection.Server;
-
         public string DisplayName =>
             Connection.State == BotAgentConnectionManager.States.Online
-            ? $"{Connection.DisplayName} ({Connection.AccessLevel}, {Connection.Server}:{Connection.Port})"
-            : $"{Connection.DisplayName} ({Connection.Server}:{Connection.Port})";
+            ? $"{Connection.Creds.Name} - {Connection.AccessLevel} ({Connection.Creds.ServerAddress}:{Connection.Creds.Port})"
+            : $"{Connection.Creds.Name} ({Connection.Creds.ServerAddress}:{Connection.Creds.Port})";
 
         public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 
@@ -86,18 +84,18 @@ namespace TickTrader.BotTerminal
 
         public void RemoveBotAgent()
         {
-            _algoEnv.BotAgentManager.Remove(Server);
+            _algoEnv.BotAgentManager.Remove(Agent.Name);
 
         }
 
         public void ConnectBotAgent()
         {
-            _algoEnv.BotAgentManager.Connect(Server);
+            _algoEnv.BotAgentManager.Connect(Agent.Name);
         }
 
         public void DisconnectBotAgent()
         {
-            _algoEnv.BotAgentManager.Disconnect(Server);
+            _algoEnv.BotAgentManager.Disconnect(Agent.Name);
         }
 
         public void AddAccount()
@@ -131,7 +129,9 @@ namespace TickTrader.BotTerminal
             NotifyOfPropertyChange(nameof(Status));
             NotifyOfPropertyChange(nameof(CanConnectBotAgent));
             NotifyOfPropertyChange(nameof(CanDisconnectBotAgent));
-            if (Connection.State == BotAgentConnectionManager.States.Online || Connection.State == BotAgentConnectionManager.States.Offline)
+            if (Connection.State == BotAgentConnectionManager.States.Online
+                || Connection.State == BotAgentConnectionManager.States.Offline
+                || Connection.State == BotAgentConnectionManager.States.Connecting)
                 NotifyOfPropertyChange(nameof(DisplayName));
         }
 

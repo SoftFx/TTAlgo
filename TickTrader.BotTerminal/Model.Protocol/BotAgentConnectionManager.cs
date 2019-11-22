@@ -24,12 +24,6 @@ namespace TickTrader.BotTerminal
         private bool _needReconnect;
 
 
-        public string Server => Creds.ServerAddress;
-
-        public int Port => Creds.Port;
-
-        public string DisplayName { get; }
-
         public AccessLevels AccessLevel => _protocolClient.AccessManager.Level;
 
         public States State => _stateControl.Current;
@@ -51,9 +45,8 @@ namespace TickTrader.BotTerminal
         public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds)
         {
             Creds = botAgentCreds;
-            DisplayName = Creds.DisplayName ?? Creds.ServerAddress;
 
-            RemoteAgent = new RemoteAlgoAgent(DisplayName);
+            RemoteAgent = new RemoteAlgoAgent(Creds.Name);
             _protocolClient = new Algo.Protocol.Grpc.GrpcClient(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 

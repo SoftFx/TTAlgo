@@ -30,35 +30,35 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void Remove(string server)
+        public void Remove(string agentName)
         {
-            var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
+            var index = _botAgents.Values.IndexOf(b => b.Name == agentName);
             if (index != -1)
             {
                 _botAgents.RemoveAt(index);
             }
         }
 
-        public BotAgentStorageEntry Update(string login, string password, string server, int port, string displayName)
+        public BotAgentStorageEntry Update(string name, string login, string password, string server, int port)
         {
-            var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
+            var index = _botAgents.Values.IndexOf(b => b.Name == name);
             if (index == -1)
             {
-                _botAgents.Add(new BotAgentStorageEntry { ServerAddress = server });
+                _botAgents.Add(new BotAgentStorageEntry(name));
                 index = _botAgents.Count - 1;
             }
             var botAgent = _botAgents[index];
             botAgent.Login = login;
             botAgent.Password = password;
+            botAgent.ServerAddress = server;
             botAgent.Port = port;
-            botAgent.DisplayName = displayName;
 
             return botAgent;
         }
 
-        public void UpdateConnect(string server, bool connect)
+        public void UpdateConnect(string agentName, bool connect)
         {
-            var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
+            var index = _botAgents.Values.IndexOf(b => b.Name == agentName);
             if (index != -1)
             {
                 _botAgents[index].Connect = connect;

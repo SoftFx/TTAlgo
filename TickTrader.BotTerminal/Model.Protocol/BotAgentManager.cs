@@ -34,39 +34,43 @@ namespace TickTrader.BotTerminal
             BotAgents = new VarDictionary<string, BotAgentConnectionManager>();
             foreach (var agent in _botAgentStorage.BotAgents.Values)
             {
-                BotAgents.Add(agent.ServerAddress, new BotAgentConnectionManager(agent));
+                if (string.IsNullOrEmpty(agent.Name))
+                {
+                    agent.PatchName();
+                }
+                BotAgents.Add(agent.Name, new BotAgentConnectionManager(agent));
             }
         }
 
 
-        public async Task<string> Connect(string login, string password, string server, int port, string displayName)
+        public async Task<string> Connect(string agentName, string login, string password, string server, int port)
         {
-            var creds = _botAgentStorage.Update(login, password, server, port, displayName);
+            var creds = _botAgentStorage.Update(agentName, login, password, server, port);
             _botAgentStorage.Save();
 
-            if (!BotAgents.ContainsKey(server))
+            if (!BotAgents.TryGetValue(agentName, out var connection))
             {
-                BotAgents.Add(server, new BotAgentConnectionManager(creds));
+                connection = new BotAgentConnectionManager(creds);
+                BotAgents.Add(agentName, connection);
             }
-            var connection = BotAgents[server];
             await connection.WaitConnect();
 
             if (string.IsNullOrWhiteSpace(connection.LastError))
             {
-                _botAgentStorage.UpdateConnect(server, true);
+                _botAgentStorage.UpdateConnect(agentName, true);
                 _botAgentStorage.Save();
             }
 
             return connection.LastError;
         }
 
-        public void Connect(string server)
+        public void Connect(string agentName)
         {
             try
             {
-                if (BotAgents.TryGetValue(server, out var connection))
+                if (BotAgents.TryGetValue(agentName, out var connection))
                 {
-                    _botAgentStorage.UpdateConnect(server, true);
+                    _botAgentStorage.UpdateConnect(agentName, true);
                     _botAgentStorage.Save();
                     connection.Connect();
                 }
@@ -77,13 +81,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void Disconnect(string server)
+        public void Disconnect(string agentName)
         {
             try
             {
-                if (BotAgents.TryGetValue(server, out var connection))
+                if (BotAgents.TryGetValue(agentName, out var connection))
                 {
-                    _botAgentStorage.UpdateConnect(server, false);
+                    _botAgentStorage.UpdateConnect(agentName, false);
                     _botAgentStorage.Save();
                     connection.Disconnect();
                 }
@@ -94,15 +98,15 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void Remove(string server)
+        public void Remove(string agentName)
         {
             try
             {
-                if (BotAgents.TryGetValue(server, out var connection))
+                if (BotAgents.TryGetValue(agentName, out var connection))
                 {
-                    _botAgentStorage.Remove(server);
+                    _botAgentStorage.Remove(agentName);
                     _botAgentStorage.Save();
-                    BotAgents.Remove(server);
+                    BotAgents.Remove(agentName);
                     connection.Disconnect();
                 }
             }

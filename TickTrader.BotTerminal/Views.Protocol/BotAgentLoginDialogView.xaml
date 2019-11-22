@@ -41,9 +41,9 @@
             <ColumnDefinition Width="75"/>
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.ColumnSpan="2" Content="BotAgent Log In" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
-        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Display Name"/>
-        <TextBox Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding AgentDisplayName, UpdateSourceTrigger=PropertyChanged}"
-                  IsEnabled="{Binding IsEditable}"/>
+        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Name"/>
+        <TextBox Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding AgentName, UpdateSourceTrigger=PropertyChanged}"
+                  IsEnabled="{Binding CanEditAgentName}"/>
         <Label Grid.Row="3" Content="Server"/>
         <ComboBox Grid.Row="4" Grid.Column="0" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
                   TextSearch.TextPath="Address" IsEditable="True" 
