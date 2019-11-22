@@ -207,8 +207,7 @@ namespace TickTrader.BotTerminal
                 {
                     _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
 
-                    var convertLogs = logs.Select(Convert).ToList();
-                    Journal.Add(convertLogs.Where(u => u.Type != JournalMessageType.AlertClear).ToList());
+                    Journal.Add(logs.Select(Convert).ToList());
                 }
             }
             catch (Exception ex)
@@ -255,7 +254,6 @@ namespace TickTrader.BotTerminal
                 case LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
                 case LogSeverity.TradeFail: return JournalMessageType.TradingFail;
                 case LogSeverity.Alert: return JournalMessageType.Alert;
-                case LogSeverity.AlertClear: return JournalMessageType.AlertClear;
                 default: return JournalMessageType.Info;
             }
         }

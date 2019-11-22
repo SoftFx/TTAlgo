@@ -11,10 +11,10 @@ namespace TickTrader.BotTerminal
     internal class AlgoAlertModel : IAlertModel
     {
         private readonly Timer _timer;
+        private readonly object _locker = new object();
 
         private List<IAlertUpdateEventArgs> _buffer = new List<IAlertUpdateEventArgs>();
         private bool _newAlerts = false;
-        private object _locker = new object();
 
         public AlgoAlertModel(string name)
         {
@@ -31,12 +31,7 @@ namespace TickTrader.BotTerminal
         {
             lock (_locker)
             {
-                var update = record.Severity == LogSeverities.Alert ?
-                   new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), AlertEventType.Update, record.Time.Timestamp, record.Message) :
-                   new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), AlertEventType.Clear);
-
-                _buffer.Add(update);
-
+                _buffer.Add(new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), record.Time.Timestamp, record.Message));
                 _newAlerts = true;
             }
         }
@@ -65,11 +60,9 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private string GetFullInstance(string bot) => $"{bot} ({Name})";
+        private string GetFullInstance(string bot) => $"{bot} ({Name})"; // split into separate parts
 
-        private AlertUpdateEventArgsImpl Convert(BotMessage mes) =>
-            new AlertUpdateEventArgsImpl(GetFullInstance(mes.Bot), mes.Type == JournalMessageType.Alert ? AlertEventType.Update :
-                AlertEventType.Clear, mes.TimeKey.Timestamp, mes.Message);
+        private AlertUpdateEventArgsImpl Convert(BotMessage mes) => new AlertUpdateEventArgsImpl(GetFullInstance(mes.Bot), mes.TimeKey.Timestamp, mes.Message);
     }
 
     internal interface IAlertModel
@@ -91,20 +84,17 @@ namespace TickTrader.BotTerminal
 
         public string Message { get; }
 
-        public AlertEventType Type { get; }
 
-
-        public AlertUpdateEventArgsImpl(string id, AlertEventType type, DateTime time, string message = "") : this(id, type, message)
+        public AlertUpdateEventArgsImpl(string id, DateTime time, string message) : this(id, message)
         {
             Time = time;
         }
 
-        public AlertUpdateEventArgsImpl(string id, AlertEventType type, string message = "")
+        public AlertUpdateEventArgsImpl(string id, string message)
         {
             Time = DateTime.MinValue;
             InstanceId = id;
             Message = message;
-            Type = type;
         }
 
         public override string ToString()
@@ -120,9 +110,5 @@ namespace TickTrader.BotTerminal
         string InstanceId { get; }
 
         string Message { get; }
-
-        AlertEventType Type { get; }
     }
-
-    public enum AlertEventType { Update, Clear }
 }

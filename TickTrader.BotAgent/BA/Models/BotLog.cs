@@ -128,7 +128,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             _logMessages.Add(msg);
 
-            if (type == LogEntryType.Alert || type == LogEntryType.AlertClear)
+            if (type == LogEntryType.Alert)
                 _alertStorage.AddAlert(msg);
         }
 
@@ -246,7 +246,6 @@ namespace TickTrader.BotAgent.BA.Models
                 case LogSeverities.TradeSuccess: return LogEntryType.TradingSuccess;
                 case LogSeverities.TradeFail: return LogEntryType.TradingFail;
                 case LogSeverities.Alert: return LogEntryType.Alert;
-                case LogSeverities.AlertClear: return LogEntryType.AlertClear;
                 default: return LogEntryType.Info;
             }
         }

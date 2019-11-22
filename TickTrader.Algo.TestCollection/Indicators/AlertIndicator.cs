@@ -13,9 +13,6 @@ namespace TickTrader.Algo.TestCollection.Indicators
         [Parameter(DisplayName = "Delay (ms)", DefaultValue = 100)]
         public int DelayMc { get; set; }
 
-        [Parameter(DisplayName = "Clear Alert", DefaultValue = true)]
-        public bool ClearAlert { get; set; }
-
         [Parameter(DisplayName = "Count Records", DefaultValue = 100)]
         public int Count { get; set; }
 
@@ -35,8 +32,6 @@ namespace TickTrader.Algo.TestCollection.Indicators
                     break;
             }
 
-            if (ClearAlert)
-                Alert.Clear();
         }
 
         protected override void Calculate()

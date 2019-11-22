@@ -85,7 +85,7 @@ namespace TickTrader.BotAgent.BA
         string GetFileWritePath(string name);
     }
 
-    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert, AlertClear }
+    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert }
 
     public interface ILogEntry
     {

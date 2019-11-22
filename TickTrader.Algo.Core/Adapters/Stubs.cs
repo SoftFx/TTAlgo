@@ -17,7 +17,6 @@ namespace TickTrader.Algo.Core
         void OnPrintTradeSuccess(string entry);
         void OnPrintTradeFail(string entry);
         void OnPrintAlert(string entry);
-        void OnClearAlert();
         void OnError(Exception ex);
         void OnError(string message, Exception ex);
         void OnError(string message);
@@ -143,10 +142,6 @@ namespace TickTrader.Algo.Core
         }
 
         public void OnPrintAlert(string entry)
-        {
-        }
-
-        public void OnClearAlert()
         {
         }
     }

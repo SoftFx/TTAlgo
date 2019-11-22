@@ -431,10 +431,6 @@ namespace TickTrader.Algo.Core
             AddEvent(LogSeverities.Alert, entry);
         }
 
-        void IPluginLogger.OnClearAlert()
-        {
-        }
-
         #endregion
     }
 }

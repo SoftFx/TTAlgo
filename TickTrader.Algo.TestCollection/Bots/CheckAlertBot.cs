@@ -16,9 +16,6 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Message", DefaultValue = "I'm Alert bot!")]
         public string Message { get; set; }
 
-        [Parameter(DisplayName = "Clear Alert", DefaultValue = true)]
-        public bool ClearAlert { get; set; }
-
         private int _count = 0;
         private bool ok = false;
 
@@ -34,9 +31,6 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void OnStop()
         {
             ok = false;
-
-            if (ClearAlert)
-                Alert.Clear();
         }
 
         protected override void OnQuote(Quote quote)

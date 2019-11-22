@@ -70,6 +70,5 @@ namespace TickTrader.Algo.Api
     public interface IAlertAPI
     {
         void Print(string message);
-        void Clear();
     }
 }

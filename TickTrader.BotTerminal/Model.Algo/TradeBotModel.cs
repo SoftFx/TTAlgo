@@ -234,11 +234,11 @@ namespace TickTrader.BotTerminal
 
         void IBotWriter.LogMesssage(PluginLogRecord rec)
         {
-            if (rec.Severity == LogSeverities.Alert || rec.Severity == LogSeverities.AlertClear)
+            if (rec.Severity == LogSeverities.Alert)
+            {
                 AlertModel.AddAlert(InstanceId, rec);
-
-            if (rec.Severity != LogSeverities.AlertClear)
                 Journal.Add(Convert(rec));
+            }
         }
 
         void IBotWriter.UpdateStatus(string status)

@@ -82,8 +82,6 @@ namespace TickTrader.Algo.Core
 
         void IAlertAPI.Print(string message) => logger.OnPrintAlert(message);
 
-        void IAlertAPI.Clear() => logger.OnClearAlert();
-
         #endregion
 
 

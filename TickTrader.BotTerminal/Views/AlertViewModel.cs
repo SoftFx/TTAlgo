@@ -68,19 +68,11 @@ namespace TickTrader.BotTerminal
                     _wnd.OpenMdiWindow(this);
 
                     foreach (var a in record)
-                        switch (a.Type)
-                        {
-                            case AlertEventType.Update:
-                                AddRecord(a);
-                                break;
-                            default:
-                                Clear();
-                                break;
-                        }
+                        AddRecord(a);
                 });
 
                 foreach (var a in record)
-                    WriteToLogger(a);
+                    _logger.Info(a); ;
             }
         }
 
@@ -90,14 +82,6 @@ namespace TickTrader.BotTerminal
                 _alertBuffer.Dequeue();
 
             _alertBuffer.Add(record);
-        }
-
-        private void WriteToLogger(IAlertUpdateEventArgs record)
-        {
-            if (record.Type == AlertEventType.Clear)
-                return;
-
-            _logger.Info(record);
         }
     }
 }

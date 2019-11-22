@@ -89,7 +89,6 @@ namespace TickTrader.BotTerminal
             switch (record.Severity)
             {
                 case LogSeverities.Alert:
-                case LogSeverities.AlertClear:
                     AlertModel.AddAlert(InstanceId, record);
                     break;
                 default:

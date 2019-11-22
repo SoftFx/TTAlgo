@@ -146,11 +146,6 @@ namespace TickTrader.Algo.Core
             AddLogRecord(LogSeverities.Alert, entry);
         }
 
-        public void OnClearAlert()
-        {
-            AddLogRecord(LogSeverities.AlertClear, "Alerts cleared");
-        }
-
         public void OnInitialized()
         {
             AddLogRecord(LogSeverities.Info, $"{GetPluginType()} initialized");
@@ -254,6 +249,5 @@ namespace TickTrader.Algo.Core
         Custom,
         CustomStatus,
         Alert,
-        AlertClear,
     }
 }

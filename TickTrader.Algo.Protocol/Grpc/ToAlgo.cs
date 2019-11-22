@@ -943,8 +943,6 @@ namespace TickTrader.Algo.Protocol.Grpc
                     return LogSeverity.Custom;
                 case Lib.LogRecordInfo.Types.LogSeverity.Alert:
                     return LogSeverity.Alert;
-                case Lib.LogRecordInfo.Types.LogSeverity.AlertClear:
-                    return LogSeverity.AlertClear;
                 default:
                     throw new ArgumentException();
             }

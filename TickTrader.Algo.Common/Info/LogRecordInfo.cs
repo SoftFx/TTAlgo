@@ -12,7 +12,6 @@ namespace TickTrader.Algo.Common.Info
         TradeFail = 4,
         Custom = 5,
         Alert = 6,
-        AlertClear = 7,
     }
 
 
