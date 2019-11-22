@@ -39,7 +39,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public BotAgentStorageEntry Update(string login, string password, string server, int port)
+        public BotAgentStorageEntry Update(string login, string password, string server, int port, string displayName)
         {
             var index = _botAgents.Values.IndexOf(b => b.ServerAddress == server);
             if (index == -1)
@@ -47,11 +47,13 @@ namespace TickTrader.BotTerminal
                 _botAgents.Add(new BotAgentStorageEntry { ServerAddress = server });
                 index = _botAgents.Count - 1;
             }
-            _botAgents[index].Login = login;
-            _botAgents[index].Password = password;
-            _botAgents[index].Port = port;
+            var botAgent = _botAgents[index];
+            botAgent.Login = login;
+            botAgent.Password = password;
+            botAgent.Port = port;
+            botAgent.DisplayName = displayName;
 
-            return _botAgents[index];
+            return botAgent;
         }
 
         public void UpdateConnect(string server, bool connect)

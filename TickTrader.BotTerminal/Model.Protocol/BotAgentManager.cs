@@ -39,9 +39,9 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public async Task<string> Connect(string login, string password, string server, int port)
+        public async Task<string> Connect(string login, string password, string server, int port, string displayName)
         {
-            var creds = _botAgentStorage.Update(login, password, server, port);
+            var creds = _botAgentStorage.Update(login, password, server, port, displayName);
             _botAgentStorage.Save();
 
             if (!BotAgents.ContainsKey(server))

@@ -22,23 +22,27 @@ namespace TickTrader.BotTerminal
         [DataMember]
         public bool Connect { get; set; }
 
+        [DataMember]
+        public string DisplayName { get; set; }
+
 
         public BotAgentStorageEntry()
         {
         }
 
-        public BotAgentStorageEntry(string login, string password, string server, int port)
+        public BotAgentStorageEntry(string login, string password, string server, int port, string displayName)
         {
             Login = login;
             Password = password;
             ServerAddress = server;
             Port = port;
+            DisplayName = displayName;
         }
 
 
         public BotAgentStorageEntry Clone()
         {
-            return new BotAgentStorageEntry(Login, Password, ServerAddress, Port) { Connect = Connect };
+            return new BotAgentStorageEntry(Login, Password, ServerAddress, Port, DisplayName) { Connect = Connect };
         }
 
         public ProtocolClientSettings ToClientSettings()

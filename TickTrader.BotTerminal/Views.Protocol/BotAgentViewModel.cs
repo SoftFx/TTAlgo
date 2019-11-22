@@ -21,8 +21,8 @@ namespace TickTrader.BotTerminal
 
         public string DisplayName =>
             Connection.State == BotAgentConnectionManager.States.Online
-            ? $"{Connection.Server}:{Connection.Port} ({Connection.AccessLevel})"
-            : $"{Connection.Server}:{Connection.Port}";
+            ? $"{Connection.DisplayName} ({Connection.AccessLevel}, {Connection.Server}:{Connection.Port})"
+            : $"{Connection.DisplayName} ({Connection.Server}:{Connection.Port})";
 
         public bool CanConnectBotAgent => Connection.State == BotAgentConnectionManager.States.Offline || Connection.State == BotAgentConnectionManager.States.WaitReconnect;
 

@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
         private string _password;
         private string _server;
         private string _port;
+        private string _agentDisplayName;
         private string _error;
         private bool _isValid;
         private bool _isConnecting;
@@ -77,6 +78,19 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public string AgentDisplayName
+        {
+            get => _agentDisplayName;
+            set
+            {
+                if (_agentDisplayName == value)
+                    return;
+
+                _agentDisplayName = value;
+                NotifyOfPropertyChange(nameof(AgentDisplayName));
+            }
+        }
+
         public string Error
         {
             get => _error;
@@ -116,7 +130,6 @@ namespace TickTrader.BotTerminal
                 if (value != null)
                 {
                     Server = value.Address;
-                    Port = value.Port.ToString();
                 }
                 NotifyOfPropertyChange(nameof(SelectedServer));
             }
@@ -139,7 +152,7 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                Error = await _botAgentManager.Connect(_login, _password, _server, int.Parse(_port));
+                Error = await _botAgentManager.Connect(_login, _password, _server, int.Parse(_port), _agentDisplayName);
                 if (!HasError)
                 {
                     TryClose();
@@ -163,11 +176,13 @@ namespace TickTrader.BotTerminal
                 Password = creds.Password;
                 Server = creds.ServerAddress;
                 Port = creds.Port.ToString();
+                AgentDisplayName = creds.DisplayName;
             }
 
             if (_server == null)
             {
                 Server = Servers.FirstOrDefault()?.Address;
+                Port = "8443";
             }
         }
 

@@ -28,6 +28,8 @@ namespace TickTrader.BotTerminal
 
         public int Port => Creds.Port;
 
+        public string DisplayName { get; }
+
         public AccessLevels AccessLevel => _protocolClient.AccessManager.Level;
 
         public States State => _stateControl.Current;
@@ -38,7 +40,7 @@ namespace TickTrader.BotTerminal
 
         public string Status => string.IsNullOrEmpty(_protocolClient.LastError) ? $"{_stateControl.Current}" : $"{_stateControl.Current} - {_protocolClient.LastError}";
 
-        public BotAgentStorageEntry Creds { get; private set; }
+        public BotAgentStorageEntry Creds { get; }
 
         public RemoteAlgoAgent RemoteAgent { get; }
 
@@ -49,8 +51,9 @@ namespace TickTrader.BotTerminal
         public BotAgentConnectionManager(BotAgentStorageEntry botAgentCreds)
         {
             Creds = botAgentCreds;
+            DisplayName = Creds.DisplayName ?? Creds.ServerAddress;
 
-            RemoteAgent = new RemoteAlgoAgent(Creds.ServerAddress);
+            RemoteAgent = new RemoteAlgoAgent(DisplayName);
             _protocolClient = new Algo.Protocol.Grpc.GrpcClient(RemoteAgent);
             RemoteAgent.SetProtocolClient(_protocolClient);
 
