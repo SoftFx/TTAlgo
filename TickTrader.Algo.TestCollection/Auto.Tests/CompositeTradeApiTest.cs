@@ -15,7 +15,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private TaskCompletionSource<object> _eventWaiter;
 
         private readonly TimeSpan OpenEventTimeout = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan CancelEventTimeout = TimeSpan.FromSeconds(5);
         private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
         private readonly TimeSpan PauseBetweenOrders = TimeSpan.FromSeconds(1);
@@ -72,7 +72,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await OpenFill(OrderType.Limit, OrderSide.Sell, 1);
 
             // wait some time to allow trade reports reach DB
-            await Delay(TimeSpan.FromSeconds(10));
+            await Delay(TimeSpan.FromSeconds(5));
         }
 
         #region Orders
@@ -180,20 +180,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double GetImmExecPrice(OrderSide side, OrderType type)
         {
-            var delta = PriceDelta * Symbol.Point;
+            var delta = PriceDelta * Symbol.Point * Math.Min(1, 10 - Symbol.Digits); //Math.Min it is necessary that orders are not executed on symbols with large price jumps
 
-            if (type == OrderType.Market)
-                return Symbol.Bid;
-
-            if (type == OrderType.Limit)
-            {
-                if (side == OrderSide.Buy)
-                    return Symbol.Bid + delta;
-                else if (side == OrderSide.Sell)
-                    return Symbol.Ask - delta;
-            }
-
-            throw new NotImplementedException();
+            return side == OrderSide.Buy ? Symbol.Ask + delta : Symbol.Bid - delta;
         }
 
         private double GetDoNotExecPrice(OrderSide side, OrderType type)
@@ -430,7 +419,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             _eventWaiter = new TaskCompletionSource<object>();
 
-            var delayTask = Delay(waitTimeout);
+            var delayTask = Task.Delay(waitTimeout);
             var eventTask = _eventWaiter.Task;
 
             var completedFirst = await Task.WhenAny(delayTask, eventTask);

@@ -541,6 +541,10 @@ namespace TickTrader.Algo.Core
             //var orderCopy = order.Clone();
             var fillInfo = new FillInfo();
 
+            // fire API event
+            if (order.Type != OrderType.Position)
+                _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
+
             if (order.Type == OrderType.Market)
             {
                 // fill order
@@ -569,6 +573,7 @@ namespace TickTrader.Algo.Core
             {
                 _acc.Orders.Add(order);
                 RegisterOrder(order, currentRate);
+
                 //FinalizeOrderOperation(order, null, order.SymbolRef, acc, OrderStatuses.Calculated, OrderExecutionEvents.Allocated);
             }
             else if (order.Type == OrderType.Position)
@@ -577,9 +582,6 @@ namespace TickTrader.Algo.Core
                 throw new OrderValidationError("Unknown order type", OrderCmdResultCodes.InternalError);
 
             RecalculateAccount();
-
-            // fire API event
-            _scheduler.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(order)));
 
             // execution report
             if (_sendReports)

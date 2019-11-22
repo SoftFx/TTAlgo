@@ -138,7 +138,7 @@ namespace TickTrader.Algo.Core
         private static IEnumerable<TradeReport> SkipCancelReports(IEnumerable<TradeReportAdapter> src, ThQueryOptions options)
         {
             if (options.HasFlag(ThQueryOptions.SkipCanceled))
-                return src.Where(r => r.Entity.TradeTransactionReportType != TradeExecActions.OrderCanceled);
+                return src.Where(r => r.Entity.TradeTransactionReportType != TradeExecActions.OrderCanceled && r.Entity.TradeTransactionReportType != TradeExecActions.OrderExpired);
             return src;
         }
     }
