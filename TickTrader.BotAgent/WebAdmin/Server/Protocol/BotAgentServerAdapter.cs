@@ -191,15 +191,29 @@ namespace TickTrader.BotAgent.WebAdmin.Server.Protocol
                 }).ToArray();
         }
 
-        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount, bool getAlerts)
+        public async Task<LogRecordInfo[]> GetBotLogsAsync(string botId, DateTime lastLogTimeUtc, int maxCount)
         {
             var log = await _botAgent.GetBotLogAsync(botId);
-            var msgs = await (!getAlerts ? log.QueryMessagesAsync(lastLogTimeUtc, maxCount) : log.QueryAlertsAsync(lastLogTimeUtc, maxCount));
+            var msgs = await log.QueryMessagesAsync(lastLogTimeUtc, maxCount);
+
             return msgs.Select(e => new LogRecordInfo
             {
                 TimeUtc = e.TimeUtc,
                 Severity = Convert(e.Type),
                 Message = e.Message,
+            }).ToArray();
+        }
+
+        public async Task<AlertRecordInfo[]> GetAlertsAsync(DateTime lastLogTimeUtc, int maxCount)
+        {
+            var storage = _botAgent.GetAlertStorage();
+            var alerts = await storage.QueryAlertsAsync(lastLogTimeUtc, maxCount);
+
+            return alerts.Select(e => new AlertRecordInfo
+            {
+                TimeUtc = e.TimeUtc,
+                Message = e.Message,
+                BotId = e.BotId,
             }).ToArray();
         }
 

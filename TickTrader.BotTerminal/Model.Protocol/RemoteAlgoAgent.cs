@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
             _idProvider = new PluginIdProvider();
 
             Catalog = new PluginCatalog(this);
-            AlertModel = new AlgoAlertModel(name);
+            AlertModel = new AlgoAlertModel(name, this);
         }
 
 
@@ -110,13 +110,19 @@ namespace TickTrader.BotTerminal
             return Task.FromResult("Disconnected!");
         }
 
-        internal Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount = 1000, bool getAlert = false)
+        internal Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount = 1000)
         {
             if (_protocolClient.State == ClientStates.Online)
-                return _protocolClient.GetBotLogs(botId, lastLogTimeUtc, maxCount, getAlert);
+                return _protocolClient.GetBotLogs(botId, lastLogTimeUtc, maxCount);
             return Task.FromResult(new LogRecordInfo[0]);
         }
 
+        internal Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount = 1000)
+        {
+            if (_protocolClient.State == ClientStates.Online)
+                return _protocolClient.GetAlerts(lastLogTimeUtc, maxCount);
+            return Task.FromResult(new AlertRecordInfo[0]);
+        }
 
         #region IAlgoAgent implementation
 

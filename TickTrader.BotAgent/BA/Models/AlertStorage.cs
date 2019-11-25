@@ -7,46 +7,46 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
+using ActorSharp;
 
 namespace TickTrader.BotAgent.BA.Models
 {
-    public class AlertStorage
+    public class AlertStorage : IAlertStorage
     {
         private const int AlertsInStorage = 100000;
 
-        private CircularList<ILogEntry> _alertStorage = new CircularList<ILogEntry>();
-
-        private readonly string _botId, _logDirectory, _fileExt, _archExt;
+        private CircularList<IAlertEntry> _alertStorage = new CircularList<IAlertEntry>();
+        private readonly object _lock = new object();
 
         public bool FullStorage => _alertStorage.Count > AlertsInStorage;
 
-        public AlertStorage(string botId, string logDirectory, string fileExt, string archExt)
+        public AlertStorage()
         {
-            _botId = botId;
-            _logDirectory = logDirectory;
-            _fileExt = fileExt;
-            _archExt = archExt;
         }
 
-        public void AddAlert(ILogEntry newAlert)
+        public void AddAlert(ILogEntry record, string id)
         {
-            if (FullStorage)
-                _alertStorage.Dequeue();
+            lock (_lock)
+            {
+                if (FullStorage)
+                    _alertStorage.Dequeue();
 
-            _alertStorage.Add(newAlert);
+                _alertStorage.Add(new AlertRecord(record, id));
+            }
         }
 
-        public void AttachedAlertLogger(LoggingConfiguration config)
+        public void AttachedAlertLogger(LoggingConfiguration config, string botId, string logDirectory, string fileExt)
         {
-            var alertTarget = $"alert-{_botId}";
+            var alertTarget = $"alert-{botId}";
 
             var alertFile = new FileTarget(alertTarget)
             {
-                FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-alert{_fileExt}")),
-                Layout = Layout.FromString("${longdate} | ${message}"),
+                FileName = Layout.FromString(Path.Combine(logDirectory, $"${{shortdate}}-alert{fileExt}")),
+                Layout = Layout.FromString("${longdate}  | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-alert{_archExt}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(logDirectory, $"{{#}}-alert{fileExt}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
             };
@@ -55,9 +55,29 @@ namespace TickTrader.BotAgent.BA.Models
             config.AddRule(LogLevel.Warn, LogLevel.Warn, alertTarget);
         }
 
-        public List<ILogEntry> QueryAlerts(DateTime from, int maxCount)
+        public Task<List<IAlertEntry>> QueryAlertsAsync(DateTime from, int maxCount)
         {
-            return _alertStorage.Where(u => u.TimeUtc.Timestamp > from).Take(maxCount).ToList();
+            return Task.FromResult(_alertStorage.Where(u => u.TimeUtc.Timestamp > from).Take(maxCount).ToList());
+        }
+    }
+
+    public class AlertRecord : IAlertEntry
+    {
+        public TimeKey TimeUtc { get; }
+
+        public string Message { get; }
+
+        public string BotId { get; }
+
+        public AlertRecord(ILogEntry log, string id) : this(log.TimeUtc, log.Message, id)
+        {
+        }
+
+        public AlertRecord(TimeKey time, string message, string id)
+        {
+            TimeUtc = time;
+            Message = message;
+            BotId = id;
         }
     }
 }

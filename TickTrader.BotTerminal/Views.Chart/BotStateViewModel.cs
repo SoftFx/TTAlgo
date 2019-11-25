@@ -130,7 +130,6 @@ namespace TickTrader.BotTerminal
 
                     Bot.Model.SubscribeToStatus();
                     Bot.Model.SubscribeToLogs();
-                    Bot.Model.SubscribeToAlerts();
 
                     Bot_StateChanged(Bot.Model);
                     Bot_Updated(Bot.Model);
@@ -156,7 +155,6 @@ namespace TickTrader.BotTerminal
 
                     Bot.Model.UnsubscribeFromStatus();
                     Bot.Model.UnsubscribeFromLogs();
-                    Bot.Model.UnsubscribeFromAlerts();
                 }
                 catch (Exception ex)
                 {

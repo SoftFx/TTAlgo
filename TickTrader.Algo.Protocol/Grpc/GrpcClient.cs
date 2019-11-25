@@ -543,6 +543,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.GetBotLogsAsync(request, options).ResponseAsync;
         }
 
+        private Task<Lib.AlertBotsResponse> GetAlertsInternal(Lib.AlertBotsRequest request, CallOptions options)
+        {
+            return _client.GetAlertsAsync(request, options).ResponseAsync;
+        }
+
         private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, CallOptions options)
         {
             return _client.GetBotFolderInfoAsync(request, options).ResponseAsync;
@@ -804,9 +809,16 @@ namespace TickTrader.Algo.Protocol.Grpc
             return response.Status;
         }
 
-        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount, bool getAlerts = false)
+        public override async Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount)
         {
-            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount, GetAlerts = getAlerts});
+            var response = await ExecuteUnaryRequestAuthorized(GetBotLogsInternal, new Lib.BotLogsRequest { BotId = ToGrpc.Convert(botId), LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount});
+            FailForNonSuccess(response.ExecResult);
+            return response.Logs.Select(ToAlgo.Convert).ToArray();
+        }
+
+        public override async Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount)
+        {
+            var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, new Lib.AlertBotsRequest { LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();
         }

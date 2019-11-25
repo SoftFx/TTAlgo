@@ -17,7 +17,7 @@
                 <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="110"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="110"/>
             </Grid.ColumnDefinitions>
@@ -41,6 +41,12 @@
                                             CellTemplate="{StaticResource AlertMessageCellTemplate}"/>
                 </DataGrid.Columns>
             </DataGrid>
+
+            <l:FlatButton Grid.Row="2" Grid.Column="0" Margin="6 6"
+                      Content="Clear"
+                      cal:Message.Attach="Clear"
+                      Background="{DynamicResource Dialog_OkButtonBackground}"
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
 
             <l:FlatButton Grid.Row="2" Grid.Column="2" Margin="6"
                       Content="OK"

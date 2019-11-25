@@ -984,6 +984,17 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
+        public static Lib.AlertRecordInfo Convert(this AlertRecordInfo alertRecord)
+        {
+            return new Lib.AlertRecordInfo
+            {
+                TimeUtc = Timestamp.FromDateTime(alertRecord.TimeUtc.Timestamp),
+                TimeShit = alertRecord.TimeUtc.Shift,
+                Message = Convert(alertRecord.Message),
+                BotId = alertRecord.BotId,
+            };
+        }
+
         public static Lib.BotFileInfo Convert(this BotFileInfo botFile)
         {
             return new Lib.BotFileInfo

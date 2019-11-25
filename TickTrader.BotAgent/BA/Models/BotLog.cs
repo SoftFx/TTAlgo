@@ -27,11 +27,11 @@ namespace TickTrader.BotAgent.BA.Models
         private readonly string _fileExtension = ".txt";
         private readonly string _archiveExtension = ".zip";
 
-        private void Init(string name, int keepInMemory = 100)
+        private void Init(string name, AlertStorage storage, int keepInMemory = 100)
         {
             _name = name;
             _logDirectory = Path.Combine(ServerModel.Environment.BotLogFolder, _name.Escape());
-            _alertStorage = new AlertStorage(name, _logDirectory, _fileExtension, _archiveExtension);
+            _alertStorage = storage;
             _maxCachedRecords = keepInMemory;
             _logMessages = new CircularList<ILogEntry>(_maxCachedRecords);
             _logger = GetLogger(name);
@@ -39,10 +39,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         public class ControlHandler : Handler<BotLog>
         {
-            public ControlHandler(string name, int cacheSize = 100)
+            public ControlHandler(string name, AlertStorage storage, int cacheSize = 100)
                 : base(SpawnLocal<BotLog>(null, "BotLog: " + name))
             {
-                Actor.Send(a => a.Init(name, cacheSize));
+                Actor.Send(a => a.Init(name, storage, cacheSize));
             }
 
             public Ref<BotLog> Ref => Actor;
@@ -68,7 +68,6 @@ namespace TickTrader.BotAgent.BA.Models
 
             public Task<string> GetStatusAsync() => CallActorAsync(a => a._status);
             public Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryMessages(from, maxCount));
-            public Task<List<ILogEntry>> QueryAlertsAsync(DateTime from, int maxCount) => CallActorAsync(a => a.QueryAlerts(from, maxCount));
         }
 
         //public string Status { get; private set; }
@@ -86,8 +85,6 @@ namespace TickTrader.BotAgent.BA.Models
         {
             return _logMessages.Where(e => e.TimeUtc.Timestamp > from).Take(maxCount).ToList();
         }
-
-        private List<ILogEntry> QueryAlerts(DateTime from, int maxCount) => _alertStorage?.QueryAlerts(from, maxCount);
 
         private IFile[] GetFiles()
         {
@@ -116,7 +113,7 @@ namespace TickTrader.BotAgent.BA.Models
                     _logger.Info(msg.ToString());
                     break;
                 case LogEntryType.Alert:
-                    _logger.Warn(msg.Message);
+                    _logger.Warn(msg.ToString());
                     break;
                 case LogEntryType.Error:
                     _logger.Error(msg.ToString());
@@ -129,7 +126,7 @@ namespace TickTrader.BotAgent.BA.Models
             _logMessages.Add(msg);
 
             if (type == LogEntryType.Alert)
-                _alertStorage.AddAlert(msg);
+                _alertStorage.AddAlert(msg, _name);
         }
 
         private bool IsLogFull
@@ -181,7 +178,7 @@ namespace TickTrader.BotAgent.BA.Models
             logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
 
-            _alertStorage.AttachedAlertLogger(logConfig);
+            _alertStorage.AttachedAlertLogger(logConfig, botId, _logDirectory, _fileExtension);
 
             var nlogFactory = new LogFactory(logConfig);
 

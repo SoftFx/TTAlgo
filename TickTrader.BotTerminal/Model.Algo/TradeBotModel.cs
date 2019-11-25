@@ -48,10 +48,6 @@ namespace TickTrader.BotTerminal
         void SubscribeToLogs();
 
         void UnsubscribeFromLogs();
-
-        void SubscribeToAlerts();
-
-        void UnsubscribeFromAlerts();
     }
 
     internal class TradeBotModel : PluginModel, IBotWriter, ITradeBot

@@ -61,7 +61,7 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public bool Init(ClientModel client, PackageStorage packageRepo, string workingFolder)
+        public bool Init(ClientModel client, PackageStorage packageRepo, string workingFolder, AlertStorage storage)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 _client.StateChanged += Client_StateChanged;
 
-                _botLog = new BotLog.ControlHandler(Id);
+                _botLog = new BotLog.ControlHandler(Id, storage);
 
                 _algoData = new AlgoData(workingFolder);
 

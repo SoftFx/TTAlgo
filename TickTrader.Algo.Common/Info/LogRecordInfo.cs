@@ -28,4 +28,17 @@ namespace TickTrader.Algo.Common.Info
         {
         }
     }
+
+    public class AlertRecordInfo
+    {
+        public TimeKey TimeUtc { get; set; }
+
+        public string Message { get; set; }
+
+        public string BotId { get; set; }
+
+        public AlertRecordInfo()
+        {
+        }
+    }
 }

@@ -45,6 +45,7 @@ service BotAgent
 
     rpc GetBotStatus(BotStatusRequest) returns (BotStatusResponse);
     rpc GetBotLogs(BotLogsRequest) returns (BotLogsResponse);
+    rpc GetAlerts(AlertBotsRequest) returns (AlertBotsResponse);
 
     rpc GetBotFolderInfo(BotFolderInfoRequest) returns (BotFolderInfoResponse);
     rpc ClearBotFolder(ClearBotFolderRequest) returns (ClearBotFolderResponse);
@@ -456,7 +457,6 @@ message BotLogsRequest
     string bot_id = 1;
     google.protobuf.Timestamp last_log_time_utc = 2;
     int32 max_count = 3;
-    bool get_alerts = 4;
 }
 
 message BotLogsResponse
@@ -464,6 +464,18 @@ message BotLogsResponse
     RequestResult exec_result = 1;
     string bot_id = 2;
     repeated LogRecordInfo logs = 3;
+}
+
+message AlertBotsRequest
+{
+    google.protobuf.Timestamp last_log_time_utc = 1;
+    int32 max_count = 2;
+}
+
+message AlertBotsResponse
+{
+    RequestResult exec_result = 1;
+    repeated AlertRecordInfo logs = 2;
 }
 
 message BotFolderInfoRequest
