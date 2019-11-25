@@ -18,6 +18,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan CancelEventTimeout = TimeSpan.FromSeconds(5);
         private readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
+        private readonly TimeSpan PauseBetweenOpenOrders = TimeSpan.FromSeconds(1);
         private readonly TimeSpan PauseBetweenOrders = TimeSpan.FromSeconds(1);
 
         [Parameter]
@@ -79,7 +80,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task OpenFill(OrderType type, OrderSide side, double volumeFactor)
         {
-            await Delay(PauseBetweenOrders);
+            await Delay(PauseBetweenOpenOrders);
 
             var volume = BaseOrderVolume * volumeFactor;
             var price = GetImmExecPrice(side, type);
@@ -180,7 +181,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double GetImmExecPrice(OrderSide side, OrderType type)
         {
-            var delta = PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+
+            if (type == OrderType.Market)
+                return Symbol.Bid - delta;
 
             return side == OrderSide.Buy ? Symbol.Ask + delta : Symbol.Bid - delta;
         }
