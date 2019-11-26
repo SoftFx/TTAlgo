@@ -34,6 +34,7 @@ namespace TickTrader.Algo.Common.Model
         private ActorSharp.Lib.AsyncLock _updateLock;
         private ActorSharp.Lib.AsyncLock _feedLock;
         private Dictionary<ActorRef, IFeedSubscription> _feedSubcribers = new Dictionary<ActorRef, IFeedSubscription>();
+        private IFeedSubscription _defaultSubscription;
 
         protected override void ActorInit()
         {
@@ -41,6 +42,7 @@ namespace TickTrader.Algo.Common.Model
             _updateLock = new ActorSharp.Lib.AsyncLock();
             _feedLock = new ActorSharp.Lib.AsyncLock();
             _rootDistributor = new QuoteDistributor();
+            _defaultSubscription = _rootDistributor.AddSubscription(q => { });
         }
 
         private void Init(ConnectionOptions connectionOptions, string historyFolder, FeedHistoryFolderOptions historyOptions)
@@ -297,6 +299,13 @@ namespace TickTrader.Algo.Common.Model
 
             logger.Debug("Loaded symbols.");
 
+            // symbols snapshot has to be applied before loading quotes snapshot
+            foreach (var update in _cache.GetMergeUpdate(currencies))
+                await ApplyUpdate(update);
+
+            foreach (var update in _cache.GetMergeUpdate(symbols))
+                await ApplyUpdate(update);
+
             var initFeedTask = LoadQuotesSnapshot(symbols.Select(s => s.Name));
 
             var accInfo = await getInfoTask;
@@ -310,13 +319,6 @@ namespace TickTrader.Algo.Common.Model
                 positions = await tradeApi.GetPositions();
                 logger.Debug("Loaded position snaphsot.");
             }
-
-            foreach (var update in _cache.GetMergeUpdate(currencies))
-                await ApplyUpdate(update);
-
-            foreach (var update in _cache.GetMergeUpdate(symbols))
-                await ApplyUpdate(update);
-
 
             var accUpdate = new AccountModel.Snapshot(accInfo, null, positions, accInfo.Assets);
 
@@ -350,6 +352,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 logger.Debug("Stopping...");
 
+                _defaultSubscription.CancelAll();
                 _updateQueue.Close();
                 _feedQueue.Close(true);
 
@@ -467,6 +470,10 @@ namespace TickTrader.Algo.Common.Model
         private async Task LoadQuotesSnapshot(IEnumerable<string> allSymbols)
         {
             _rootDistributor.Start(this, allSymbols, false);
+
+            // In order to have valid cache we need to subscribe to all symbols by depth 1
+            // This will create subscription groups which handle quotes cache
+            _defaultSubscription.AddOrModify(allSymbols, 1);
 
             var groups = _rootDistributor.GetAllSubscriptions(allSymbols)
                 .GroupBy(i => i.Item1).ToList();

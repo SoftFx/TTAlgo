@@ -48,11 +48,6 @@ namespace TickTrader.Algo.Core.Infrastructure
 
             _src = src;
 
-            //if (_isSubscribedForAll)
-            //    _src.SubscribeForAll();
-
-            //ResetAllSubscriptions();
-
             if (subscribeOnStart)
             {
                 var updates = new List<FeedSubscriptionUpdate>();
