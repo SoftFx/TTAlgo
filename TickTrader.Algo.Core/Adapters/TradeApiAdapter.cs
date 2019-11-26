@@ -31,16 +31,16 @@ namespace TickTrader.Algo.Core
         public IPluginPermissions Permissions { get; set; }
         public string IsolationTag { get; set; }
 
-        public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
+        public Task<OrderCmdResult> OpenOrder(bool isAsync, string symbol, OrderType type, OrderSide side, double volumeLots, double price,
             double? sl, double? tp, string comment, OrderExecOptions options, string tag)
         {
             var limPrice = type != OrderType.Stop ? price : (double?)null;
             var stopPrice = type == OrderType.Stop ? price : (double?)null;
 
-            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
+            return OpenOrder(isAsync, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
         }
 
-        public async Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
+        public async Task<OrderCmdResult> OpenOrder(bool isAsync, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
             double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
         {
             OrderResultEntity resultEntity;
@@ -130,7 +130,7 @@ namespace TickTrader.Algo.Core
 
                 logger.LogOrderOpening(logRequest, smbMetadata);
 
-                var orderResp = await api.OpenOrder(isAysnc, request);
+                var orderResp = await api.OpenOrder(isAsync, request);
 
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
                     resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen, orderResp.TransactionTime);
@@ -139,7 +139,8 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                await Task.Yield(); //free plugin thread to enable queue processing
+                if (isAsync)
+                    await Task.Yield(); //free plugin thread to enable queue processing
                 resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen, null) { IsServerResponse = false };
             }
 
@@ -147,7 +148,7 @@ namespace TickTrader.Algo.Core
             return resultEntity;
         }
 
-        public async Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId)
+        public async Task<OrderCmdResult> CancelOrder(bool isAsync, string orderId)
         {
             Order orderToCancel = null;
 
@@ -162,7 +163,7 @@ namespace TickTrader.Algo.Core
                 logger.PrintTrade("[Out] Canceling order #" + orderId);
 
                 var request = new CancelOrderRequest { OrderId = orderId, Side = orderToCancel.Side };
-                var result = await api.CancelOrder(isAysnc, request);
+                var result = await api.CancelOrder(isAsync, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                     logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " canceled");
@@ -173,13 +174,14 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                await Task.Yield(); //free plugin thread to enable queue processing
+                if (isAsync)
+                    await Task.Yield(); //free plugin thread to enable queue processing
                 logger.PrintTradeFail("[Self] FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
                 return new OrderResultEntity(ex.ErrorCode, orderToCancel, null) { IsServerResponse = false };
             }
         }
 
-        public async Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? closeVolumeLots)
+        public async Task<OrderCmdResult> CloseOrder(bool isAsync, string orderId, double? closeVolumeLots)
         {
             Order orderToClose = null;
 
@@ -208,7 +210,7 @@ namespace TickTrader.Algo.Core
 
                 var request = new CloseOrderRequest { OrderId = orderId, Volume = closeVolume };
 
-                var result = await api.CloseOrder(isAysnc, request);
+                var result = await api.CloseOrder(isAsync, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
@@ -223,13 +225,14 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                await Task.Yield(); //free plugin thread to enable queue processing
+                if (isAsync)
+                    await Task.Yield(); //free plugin thread to enable queue processing
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
                 return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
         }
 
-        public async Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId)
+        public async Task<OrderCmdResult> CloseOrderBy(bool isAsync, string orderId, string byOrderId)
         {
             Order orderToClose = null;
 
@@ -248,7 +251,7 @@ namespace TickTrader.Algo.Core
 
                 var request = new CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
 
-                var result = await api.CloseOrder(isAysnc, request);
+                var result = await api.CloseOrder(isAsync, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
@@ -263,18 +266,19 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                await Task.Yield(); //free plugin thread to enable queue processing
+                if (isAsync)
+                    await Task.Yield(); //free plugin thread to enable queue processing
                 logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
                 return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
             }
         }
 
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
+        public Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null, null);
+            return ModifyOrder(isAsync, orderId, price, null, null, sl, tp, comment, null, null, null);
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
         {
             OrderResultEntity resultEntity;
             Order orderToModify = null;
@@ -370,7 +374,7 @@ namespace TickTrader.Algo.Core
 
                 logger.LogOrderModifying(logRequest, smbMetadata);
 
-                var result = await api.ModifyOrder(isAysnc, request);
+                var result = await api.ModifyOrder(isAsync, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
@@ -383,7 +387,8 @@ namespace TickTrader.Algo.Core
             }
             catch (OrderValidationError ex)
             {
-                await Task.Yield(); //free plugin thread to enable queue processing
+                if (isAsync)
+                    await Task.Yield(); //free plugin thread to enable queue processing
                 resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify, null) { IsServerResponse = false };
             }
 
