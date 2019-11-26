@@ -13,8 +13,8 @@
         <Grid Background="{TemplateBinding Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="80"/>
+                <RowDefinition Height="30"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="110"/>
@@ -23,43 +23,71 @@
             </Grid.ColumnDefinitions>
 
             <Image Grid.Column="0" Grid.Row="0" Stretch="Uniform" Height="60" Source="{DynamicResource BellIconSource}"/>
+            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                <Grid.ColumnDefinitions>
 
-            <DataGrid Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding ObservabeBuffer}" 
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Filters: " HorizontalContentAlignment="Right" Width="{Binding ElementName=TimeColumn, Path=ActualWidth}"/>
+
+                <ComboBox Grid.Column="1" ItemsSource="{Binding AgentsNames}" HorizontalAlignment="Left"
+                          Width="{Binding ElementName=AgentColumn, Path=ActualWidth}" SelectedValue="{Binding SelectAgentNameFilter}"
+                          Margin="0 0 1 0"/>
+
+                <ComboBox Grid.Column="2" ItemsSource="{Binding BotsNames}" HorizontalAlignment="Left" 
+                          Width="{Binding ElementName=BotIdColumn, Path=ActualWidth}" SelectedValue="{Binding SelectBotNameFilter}"
+                          Margin="0.5 0 0 0"/>
+
+                <Button Grid.Column="4" Content="Show in folder" cal:Message.Attach="ShowInFolder" HorizontalAlignment="Right" 
+                        Width="90" HorizontalContentAlignment="Center" Margin="0 4"/>
+                <Button Grid.Column="5" Content="Clear" cal:Message.Attach="Clear" HorizontalAlignment="Right" Width="40" Margin="0 4 5 4"/>
+            </Grid>
+
+            <DataGrid Grid.Row="2" Grid.ColumnSpan="3" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding ObservableBuffer}" 
                   EnableRowVirtualization="True"
                   AutoGenerateColumns="False" 
                   CanUserAddRows="False" 
                   CanUserDeleteRows="False" 
                   SelectionMode="Single">
                 <DataGrid.Columns>
-                    <DataGridTextColumn SortMemberPath="Time" 
+                    <DataGridTextColumn x:Name="TimeColumn" SortMemberPath="Time" 
                                     Binding="{Binding Time, Converter={StaticResource ExtDateTimeFormat}}"
-                                    SortDirection="Descending" Header="Time" Width="Auto"/>
-                    <DataGridTextColumn SortMemberPath="InstanceId" 
+                                    SortDirection="Descending" Header="Time" Width="130"/>
+                    <DataGridTextColumn x:Name="AgentColumn" SortMemberPath="AgentName" 
+                                    Binding="{Binding AgentName}"
+                                    Header="Agent" MinWidth="80"/>
+                    <DataGridTextColumn x:Name="BotIdColumn" SortMemberPath="InstanceId" 
                                     Binding="{Binding InstanceId}"
-                                    Header="Instance" Width="Auto"/>
+                                    Header="Instance" MinWidth="100"/>
                     <DataGridTemplateColumn Header="Message" Width="*" ClipboardContentBinding="{Binding Message}" 
                                             CellTemplate="{StaticResource AlertMessageCellTemplate}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
-            <l:FlatButton Grid.Row="2" Grid.Column="0" Margin="6 6"
+            <!--<l:FlatButton Grid.Row="3" Grid.Column="0" Margin="6 6"
                       Content="Clear"
                       cal:Message.Attach="Clear"
                       Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>-->
 
-            <l:FlatButton Grid.Row="2" Grid.Column="2" Margin="6"
+            <!--<l:FlatButton Grid.Row="3" Grid.Column="2" Margin="6"
                       Content="OK"
                       cal:Message.Attach="Ok"
                       Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>-->
         </Grid>
     </ControlTemplate>
 
     <Style x:Key="AlertViewStyle.Classic" TargetType="Window">
         <Setter Property="Template" Value="{StaticResource AlertView.Template.Classic}"/>
-        <Setter Property="MinHeight" Value="200"/>
-        <Setter Property="MinWidth" Value="400"/>
+        <Setter Property="MinHeight" Value="410"/>
+        <Setter Property="MinWidth" Value="520"/>
         <Setter Property="Height" Value="410"/>
         <Setter Property="Width" Value="520"/>
         <Setter Property="WindowStyle" Value="ToolWindow" />

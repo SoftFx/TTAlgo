@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
         {
             lock (_locker)
             {
-                _buffer.Add(new AlertUpdateEventArgsImpl(GetFullInstance(instanceId), record.Time.Timestamp, record.Message));
+                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.Time.Timestamp, record.Message));
                 _newAlerts = true;
             }
         }
@@ -105,11 +105,7 @@ namespace TickTrader.BotTerminal
             _alertTimer?.Change(AlertsUpdateTimeout, -1);
         }
 
-        private string GetFullInstance(string bot) => $"{bot} ({Name})"; // split into separate parts
-
-        private AlertUpdateEventArgsImpl Convert(BotMessage mes) => new AlertUpdateEventArgsImpl(GetFullInstance(mes.Bot), mes.TimeKey.Timestamp, mes.Message);
-
-        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(GetFullInstance(rec.BotId), rec.TimeUtc.Timestamp, rec.Message);
+        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name,rec.TimeUtc.Timestamp, rec.Message);
 
         public void Dispose() //add dispose storage to remote agent
         {
@@ -138,18 +134,21 @@ namespace TickTrader.BotTerminal
 
         public string InstanceId { get; }
 
+        public string AgentName { get; }
+
         public string Message { get; }
 
 
-        public AlertUpdateEventArgsImpl(string id, DateTime time, string message) : this(id, message)
+        public AlertUpdateEventArgsImpl(string id, string agent, DateTime time, string message) : this(id, agent, message)
         {
-            Time = time;
+            Time = time.ToUniversalTime();
         }
 
-        public AlertUpdateEventArgsImpl(string id, string message)
+        public AlertUpdateEventArgsImpl(string id, string agent, string message)
         {
             Time = DateTime.MinValue;
             InstanceId = id;
+            AgentName = agent;
             Message = message;
         }
 
@@ -164,6 +163,8 @@ namespace TickTrader.BotTerminal
         DateTime Time { get; }
 
         string InstanceId { get; }
+
+        string AgentName { get; }
 
         string Message { get; }
     }

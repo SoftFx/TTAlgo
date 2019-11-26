@@ -345,6 +345,7 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\ChartBarVector.cs" />
+    <Compile Include="Lib\ObservableSet.cs" />
     <Compile Include="Lib\UiUpdateTimer.cs" />
     <Compile Include="Model.Algo\AlgoAlertModel.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
@@ -444,7 +445,7 @@
     <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
-    <Compile Include="Lib\ObservableSrotedList.cs" />
+    <Compile Include="Lib\ObservableSortedList.cs" />
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
