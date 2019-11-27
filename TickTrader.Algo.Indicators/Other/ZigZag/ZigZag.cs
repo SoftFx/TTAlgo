@@ -79,7 +79,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
             Zigzag[pos] = double.NaN;
             ZigzagLine[pos] = double.NaN;
             var n = Bars.Count - 1;
-            if (!IsUpdate)
+            if (IsNewBar)
             {
                 _prevLastLow = _lastLow;
                 _prevLastHigh = _lastHigh;
@@ -160,7 +160,7 @@ namespace TickTrader.Algo.Indicators.Other.ZigZag
 
                 DrawZigZagSection(false);
 
-                if (!IsUpdate)
+                if (IsNewBar)
                 {
                     RevertZigZagChanges();
                     CalculateZigZag(Backstep + 1);

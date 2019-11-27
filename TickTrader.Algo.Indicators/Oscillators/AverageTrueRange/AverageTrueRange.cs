@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.AverageTrueRange
                 tr = Math.Max(tr, Math.Abs(Bars[0].High - Bars[1].Close));
                 tr = Math.Max(tr, Math.Abs(Bars[0].Low - Bars[1].Close));
             }
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 _ma.UpdateLast(tr);
             }

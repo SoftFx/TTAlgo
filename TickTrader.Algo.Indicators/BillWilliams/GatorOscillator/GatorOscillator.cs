@@ -96,7 +96,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
 
         private void ProcessShifterValue(IShift shifter, double val, DataSeries series)
         {
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 shifter.UpdateLast(val);
             }

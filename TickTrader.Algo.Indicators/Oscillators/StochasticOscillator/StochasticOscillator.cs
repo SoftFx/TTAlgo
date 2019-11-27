@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
                 double num;
                 double denum;
                 ApplyPriceField(out num, out denum, pos);
-                if (IsUpdate)
+                if (!IsNewBar)
                 {
                     _numMa.UpdateLast(num);
                     _denumMa.UpdateLast(denum);
@@ -119,7 +119,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
                 }
                 if (!double.IsNaN(Stoch[pos]))
                 {
-                    if (IsUpdate)
+                    if (!IsNewBar)
                     {
                         _dMa.UpdateLast(Stoch[pos]);
                     }

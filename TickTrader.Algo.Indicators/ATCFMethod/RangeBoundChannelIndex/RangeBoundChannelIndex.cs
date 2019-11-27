@@ -85,7 +85,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             var pos = LastPositionChanged;
             var val = CalculateDigitalIndicator(Price);
 
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 _ma.UpdateLast(val);
                 _calcCache[Price.Count - 1] = val;

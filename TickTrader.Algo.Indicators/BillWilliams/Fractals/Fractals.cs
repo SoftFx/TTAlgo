@@ -140,12 +140,12 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
 
             if (IsFractalsUp(i))
                 SetMarker(i, Bars[i].High, true);
-            else if(IsUpdate)
+            else if(!IsNewBar)
                 ClearMarker(i, true);
 
             if (IsFractalsDown(i))
                 SetMarker(i, Bars[i].Low, false);
-            else if (IsUpdate)
+            else if (!IsNewBar)
                 ClearMarker(i, false);
         }
 

@@ -59,7 +59,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.MACD
         {
             var pos = LastPositionChanged;
             MacdSeries[pos] = _fastEma.Average[pos] - _slowEma.Average[pos];
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 _macdSma.UpdateLast(MacdSeries[pos]);
             }

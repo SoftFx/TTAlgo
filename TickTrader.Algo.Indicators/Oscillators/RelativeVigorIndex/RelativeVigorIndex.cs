@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
             var i = LastPositionChanged;
             if (!double.IsNaN(_moveTriMa.Average[i]))
             {
-                if (IsUpdate)
+                if (!IsNewBar)
                 {
                     _moveMa.UpdateLast(_moveTriMa.Average[i]);
                     _rangeMa.UpdateLast(_rangeTriMa.Average[i]);
@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
             }
             if (!double.IsNaN(RviAverage[i]))
             {
-                if (IsUpdate)
+                if (!IsNewBar)
                 {
                     _rviMa.UpdateLast(RviAverage[i]);
                 }

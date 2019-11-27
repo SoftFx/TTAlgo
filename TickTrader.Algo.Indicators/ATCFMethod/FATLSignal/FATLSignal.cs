@@ -62,7 +62,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
             var pos = LastPositionChanged;
             Up[pos] = double.NaN;
             Down[pos] = double.NaN;
-            if (!IsUpdate)
+            if (IsNewBar)
             {
                 _prevTrend = _trend;
             }

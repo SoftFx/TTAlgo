@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
         protected override void Calculate()
         {
             var pos = LastPositionChanged;
-            if (!IsUpdate)
+            if (IsNewBar)
             {
                 _prevAcceleration = _acceleration;
                 _prevLastLow = _lastLow;

@@ -98,7 +98,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
                     minusDmi = minusDmi/tr*100.0;
                 }
             }
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 _plusMa.UpdateLast(plusDmi);
                 _minusMa.UpdateLast(minusDmi);
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
             {
                 dx = 0.0;
             }
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 _adxMa.UpdateLast(dx);
             }

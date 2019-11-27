@@ -75,7 +75,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
             }
             else
             {
-                if (IsUpdate)
+                if (!IsNewBar)
                 {
                     _uMa.UpdateLast(u);
                     _dMa.UpdateLast(d);

@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
             {
                 positive = Bars.Volume[pos]*Bars.Typical[pos];
             }
-            if (IsUpdate)
+            if (!IsNewBar)
             {
                 _positiveMa.UpdateLast(positive);
                 _negativeMa.UpdateLast(negative);
