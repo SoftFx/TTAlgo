@@ -110,20 +110,23 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             "IAEoCzIzLlRpY2tUcmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5QbHVn",
             "aW5EZXNjcmlwdG9yIm4KC1BsdWdpblN0YXRlEgsKB1NUT1BQRUQQABIMCghT",
             "VEFSVElORxABEgsKB0ZBVUxURUQQAhILCgdSVU5OSU5HEAMSDAoIU1RPUFBJ",
-            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiKPAgoNTG9nUmVj",
+            "TkcQBBIKCgZCUk9LRU4QBRIQCgxSRUNPTk5FQ1RJTkcQBiKaAgoNTG9nUmVj",
             "b3JkSW5mbxIsCgh0aW1lX3V0YxgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
             "aW1lc3RhbXASTgoIc2V2ZXJpdHkYAiABKA4yPC5UaWNrVHJhZGVyLkFsZ28u",
             "UHJvdG9jb2wuR3JwYy5MaWIuTG9nUmVjb3JkSW5mby5Mb2dTZXZlcml0eRIP",
-            "CgdtZXNzYWdlGAMgASgJEhEKCXRpbWVfc2hpdBgEIAEoDSJcCgtMb2dTZXZl",
+            "CgdtZXNzYWdlGAMgASgJEhEKCXRpbWVfc2hpdBgEIAEoDSJnCgtMb2dTZXZl",
             "cml0eRIICgRJTkZPEAASCQoFRVJST1IQARIJCgVUUkFERRACEhEKDVRSQURF",
-            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUiKQoLQm90",
-            "RmlsZUluZm8SDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDIukBCg1Cb3RG",
-            "b2xkZXJJbmZvEg4KBmJvdF9pZBgBIAEoCRJPCglmb2xkZXJfaWQYAiABKA4y",
-            "PC5UaWNrVHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90Rm9sZGVy",
-            "SW5mby5Cb3RGb2xkZXJJZBIMCgRwYXRoGAMgASgJEj0KBWZpbGVzGAQgAygL",
-            "Mi4uVGlja1RyYWRlci5BbGdvLlByb3RvY29sLkdycGMuTGliLkJvdEZpbGVJ",
-            "bmZvIioKC0JvdEZvbGRlcklkEg0KCUFMR09fREFUQRAAEgwKCEJPVF9MT0dT",
-            "EAFiBnByb3RvMw=="));
+            "X1NVQ0NFU1MQAxIOCgpUUkFERV9GQUlMEAQSCgoGQ1VTVE9NEAUSCQoFQUxF",
+            "UlQQBiJzCg9BbGVydFJlY29yZEluZm8SLAoIdGltZV91dGMYASABKAsyGi5n",
+            "b29nbGUucHJvdG9idWYuVGltZXN0YW1wEg8KB21lc3NhZ2UYAiABKAkSEQoJ",
+            "dGltZV9zaGl0GAMgASgNEg4KBmJvdF9pZBgEIAEoCSIpCgtCb3RGaWxlSW5m",
+            "bxIMCgRuYW1lGAEgASgJEgwKBHNpemUYAiABKAMi6QEKDUJvdEZvbGRlcklu",
+            "Zm8SDgoGYm90X2lkGAEgASgJEk8KCWZvbGRlcl9pZBgCIAEoDjI8LlRpY2tU",
+            "cmFkZXIuQWxnby5Qcm90b2NvbC5HcnBjLkxpYi5Cb3RGb2xkZXJJbmZvLkJv",
+            "dEZvbGRlcklkEgwKBHBhdGgYAyABKAkSPQoFZmlsZXMYBCADKAsyLi5UaWNr",
+            "VHJhZGVyLkFsZ28uUHJvdG9jb2wuR3JwYy5MaWIuQm90RmlsZUluZm8iKgoL",
+            "Qm90Rm9sZGVySWQSDQoJQUxHT19EQVRBEAASDAoIQk9UX0xPR1MQAWIGcHJv",
+            "dG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.KeysReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.DescriptorsReflection.Descriptor, global::TickTrader.Algo.Protocol.Grpc.Lib.ConfigReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -142,6 +145,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Parser, new[]{ "Key", "UseNewProtocol", "ConnectionState", "LastError" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AccountModelInfo.Types.ConnectionState) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Parser, new[]{ "InstanceId", "Account", "State", "FaultMessage", "Config", "Descriptor_" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotModelInfo.Types.PluginState) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Parser, new[]{ "TimeUtc", "Severity", "Message", "TimeShit" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.LogRecordInfo.Types.LogSeverity) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.AlertRecordInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.AlertRecordInfo.Parser, new[]{ "TimeUtc", "Message", "TimeShit", "BotId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFileInfo.Parser, new[]{ "Name", "Size" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Parser, new[]{ "BotId", "FolderId", "Path", "Files" }, null, new[]{ typeof(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfo.Types.BotFolderId) }, null)
           }));
@@ -3364,10 +3368,230 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         [pbr::OriginalName("TRADE_SUCCESS")] TradeSuccess = 3,
         [pbr::OriginalName("TRADE_FAIL")] TradeFail = 4,
         [pbr::OriginalName("CUSTOM")] Custom = 5,
+        [pbr::OriginalName("ALERT")] Alert = 6,
       }
 
     }
     #endregion
+
+  }
+
+  public sealed partial class AlertRecordInfo : pb::IMessage<AlertRecordInfo> {
+    private static readonly pb::MessageParser<AlertRecordInfo> _parser = new pb::MessageParser<AlertRecordInfo>(() => new AlertRecordInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<AlertRecordInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[15]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AlertRecordInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AlertRecordInfo(AlertRecordInfo other) : this() {
+      TimeUtc = other.timeUtc_ != null ? other.TimeUtc.Clone() : null;
+      message_ = other.message_;
+      timeShit_ = other.timeShit_;
+      botId_ = other.botId_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public AlertRecordInfo Clone() {
+      return new AlertRecordInfo(this);
+    }
+
+    /// <summary>Field number for the "time_utc" field.</summary>
+    public const int TimeUtcFieldNumber = 1;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp timeUtc_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.Timestamp TimeUtc {
+      get { return timeUtc_; }
+      set {
+        timeUtc_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "message" field.</summary>
+    public const int MessageFieldNumber = 2;
+    private string message_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Message {
+      get { return message_; }
+      set {
+        message_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "time_shit" field.</summary>
+    public const int TimeShitFieldNumber = 3;
+    private uint timeShit_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint TimeShit {
+      get { return timeShit_; }
+      set {
+        timeShit_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "bot_id" field.</summary>
+    public const int BotIdFieldNumber = 4;
+    private string botId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string BotId {
+      get { return botId_; }
+      set {
+        botId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as AlertRecordInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(AlertRecordInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(TimeUtc, other.TimeUtc)) return false;
+      if (Message != other.Message) return false;
+      if (TimeShit != other.TimeShit) return false;
+      if (BotId != other.BotId) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (timeUtc_ != null) hash ^= TimeUtc.GetHashCode();
+      if (Message.Length != 0) hash ^= Message.GetHashCode();
+      if (TimeShit != 0) hash ^= TimeShit.GetHashCode();
+      if (BotId.Length != 0) hash ^= BotId.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (timeUtc_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(TimeUtc);
+      }
+      if (Message.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Message);
+      }
+      if (TimeShit != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(TimeShit);
+      }
+      if (BotId.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(BotId);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (timeUtc_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(TimeUtc);
+      }
+      if (Message.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Message);
+      }
+      if (TimeShit != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(TimeShit);
+      }
+      if (BotId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(BotId);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(AlertRecordInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.timeUtc_ != null) {
+        if (timeUtc_ == null) {
+          timeUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        }
+        TimeUtc.MergeFrom(other.TimeUtc);
+      }
+      if (other.Message.Length != 0) {
+        Message = other.Message;
+      }
+      if (other.TimeShit != 0) {
+        TimeShit = other.TimeShit;
+      }
+      if (other.BotId.Length != 0) {
+        BotId = other.BotId;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (timeUtc_ == null) {
+              timeUtc_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(timeUtc_);
+            break;
+          }
+          case 18: {
+            Message = input.ReadString();
+            break;
+          }
+          case 24: {
+            TimeShit = input.ReadUInt32();
+            break;
+          }
+          case 34: {
+            BotId = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
 
   }
 
@@ -3379,7 +3603,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[15]; }
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[16]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3536,7 +3760,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[16]; }
+      get { return global::TickTrader.Algo.Protocol.Grpc.Lib.MetadataReflection.Descriptor.MessageTypes[17]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

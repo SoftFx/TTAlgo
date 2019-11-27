@@ -178,7 +178,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private BotMessage Convert(BotLogRecord record)
+        private BotMessage Convert(PluginLogRecord record)
         {
             return new BotMessage(record.Time, InstanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
         }
@@ -193,6 +193,7 @@ namespace TickTrader.BotTerminal
                 case LogSeverities.Trade: return JournalMessageType.Trading;
                 case LogSeverities.TradeSuccess: return JournalMessageType.TradingSuccess;
                 case LogSeverities.TradeFail: return JournalMessageType.TradingFail;
+                case LogSeverities.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }
@@ -219,13 +220,21 @@ namespace TickTrader.BotTerminal
 
         public void UnsubscribeFromLogs() { }
 
+        public void SubscribeToAlerts() { }
+
+        public void UnsubscribeFromAlerts() { }
+
         #endregion
 
         #region IBotWriter implementation
 
-        void IBotWriter.LogMesssage(BotLogRecord rec)
+        void IBotWriter.LogMesssage(PluginLogRecord rec)
         {
-            Journal.Add(Convert(rec));
+            if (rec.Severity == LogSeverities.Alert)
+            {
+                AlertModel.AddAlert(InstanceId, rec);
+                Journal.Add(Convert(rec));
+            }
         }
 
         void IBotWriter.UpdateStatus(string status)

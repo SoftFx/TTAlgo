@@ -941,6 +941,8 @@ namespace TickTrader.Algo.Protocol.Grpc
                     return LogSeverity.TradeFail;
                 case Lib.LogRecordInfo.Types.LogSeverity.Custom:
                     return LogSeverity.Custom;
+                case Lib.LogRecordInfo.Types.LogSeverity.Alert:
+                    return LogSeverity.Alert;
                 default:
                     throw new ArgumentException();
             }
@@ -956,7 +958,22 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
+        public static AlertRecordInfo Convert(this Lib.AlertRecordInfo alertRecord)
+        {
+            return new AlertRecordInfo
+            {
+                TimeUtc = alertRecord.GetTimeKey(),
+                Message = alertRecord.Message,
+                BotId = alertRecord.BotId,
+            };
+        }
+
         public static TimeKey GetTimeKey(this Lib.LogRecordInfo record)
+        {
+            return new TimeKey(record.TimeUtc.ToDateTime(), record.TimeShit);
+        }
+
+        public static TimeKey GetTimeKey(this Lib.AlertRecordInfo record)
         {
             return new TimeKey(record.TimeUtc.ToDateTime(), record.TimeShit);
         }

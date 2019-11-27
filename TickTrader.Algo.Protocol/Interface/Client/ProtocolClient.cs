@@ -299,6 +299,8 @@ namespace TickTrader.Algo.Protocol
 
         public abstract Task<LogRecordInfo[]> GetBotLogs(string botId, DateTime lastLogTimeUtc, int maxCount);
 
+        public abstract Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount);
+
         public abstract Task<BotFolderInfo> GetBotFolderInfo(string botId, BotFolderId folderId);
 
         public abstract Task ClearBotFolder(string botId, BotFolderId folderId);

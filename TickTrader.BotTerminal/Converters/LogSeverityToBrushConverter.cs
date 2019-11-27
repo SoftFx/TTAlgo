@@ -23,6 +23,7 @@ namespace TickTrader.BotTerminal
                 case LogSeverities.TradeFail: return new SolidColorBrush(Colors.DarkOrange);
                 case LogSeverities.Error: return new SolidColorBrush(Colors.Red);
                 case LogSeverities.Custom: return new SolidColorBrush(Colors.Violet);
+                case LogSeverities.Alert: return new SolidColorBrush(Colors.Khaki);
                 default: return null;
             }
         }

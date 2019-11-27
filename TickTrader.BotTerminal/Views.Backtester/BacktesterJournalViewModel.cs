@@ -22,14 +22,14 @@ namespace TickTrader.BotTerminal
             DisplayName = "Journal";
         }
 
-        public ObservableCollection<BotLogRecord> JournalRecords { get; } = new ObservableCollection<BotLogRecord>();
+        public ObservableCollection<PluginLogRecord> JournalRecords { get; } = new ObservableCollection<PluginLogRecord>();
 
         //public void SetData(List<BotLogRecord> records)
         //{
         //    _journalContent.Value = records;
         //}
 
-        public void Append(BotLogRecord record)
+        public void Append(PluginLogRecord record)
         {
             JournalRecords.Add(record);
         }

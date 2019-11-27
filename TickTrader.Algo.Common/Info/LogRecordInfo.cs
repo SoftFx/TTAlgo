@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Common.Info
         TradeSuccess = 3,
         TradeFail = 4,
         Custom = 5,
+        Alert = 6,
     }
 
 
@@ -24,6 +25,19 @@ namespace TickTrader.Algo.Common.Info
 
 
         public LogRecordInfo()
+        {
+        }
+    }
+
+    public class AlertRecordInfo
+    {
+        public TimeKey TimeUtc { get; set; }
+
+        public string Message { get; set; }
+
+        public string BotId { get; set; }
+
+        public AlertRecordInfo()
         {
         }
     }

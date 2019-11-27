@@ -286,6 +286,11 @@ namespace TickTrader.Algo.Protocol.Grpc
             return ExecuteUnaryRequestAuthorized(GetBotLogsInternal, request, context);
         }
 
+        public override Task<Lib.AlertBotsResponse> GetAlerts(Lib.AlertBotsRequest request, ServerCallContext context)
+        {
+            return ExecuteUnaryRequestAuthorized(GetAlertsInternal, request, context);
+        }
+
         public override Task<Lib.BotFolderInfoResponse> GetBotFolderInfo(Lib.BotFolderInfoRequest request, ServerCallContext context)
         {
             return ExecuteUnaryRequestAuthorized(GetBotFolderInfoInternal, request, context);
@@ -1230,6 +1235,30 @@ namespace TickTrader.Algo.Protocol.Grpc
             catch (Exception ex)
             {
                 session.Logger.Error(ex, "Failed to get bot logs");
+                res.ExecResult = CreateErrorResult(ex);
+            }
+            return res;
+        }
+
+        private async Task<Lib.AlertBotsResponse> GetAlertsInternal(Lib.AlertBotsRequest request, ServerCallContext context, ServerSession.Handler session, Lib.RequestResult execResult)
+        {
+            var res = new Lib.AlertBotsResponse { ExecResult = execResult };
+            if (session == null)
+                return res;
+            if (!session.AccessManager.CanGetAlerts())
+            {
+                res.ExecResult = CreateNotAllowedResult(session, request.GetType().Name);
+                return res;
+            }
+
+            try
+            {
+                var entries = await _botAgent.GetAlertsAsync(request.LastLogTimeUtc.ToDateTime(), request.MaxCount);
+                res.Logs.AddRange(entries.Select(ToGrpc.Convert));
+            }
+            catch (Exception ex)
+            {
+                session.Logger.Error(ex, "Failed to get alerts");
                 res.ExecResult = CreateErrorResult(ex);
             }
             return res;

@@ -56,6 +56,7 @@
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />
+    <Compile Include="Bots\CheckAlertBot.cs" />
     <Compile Include="Bots\DoingNothingBot.cs" />
     <Compile Include="Bots\GetIndicatorsInfoBot.cs" />
     <Compile Include="Bots\BufferPrintBot.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Bots\CalculateOrderMarginBot.cs" />
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
+    <Compile Include="Indicators\AlertIndicator.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
     <Compile Include="Indicators\MultipleInputIndicator.cs" />

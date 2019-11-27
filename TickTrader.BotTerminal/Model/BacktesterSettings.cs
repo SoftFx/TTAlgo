@@ -20,7 +20,7 @@ namespace TickTrader.BotTerminal
         public int WarmupValue { get; set; } = 10;
         public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
 
-        public JournalOptions JournalSettings { get; set; } = JournalOptions.Enabled | JournalOptions.WriteCustom | JournalOptions.WriteInfo | JournalOptions.WriteTrade;
+        public JournalOptions JournalSettings { get; set; } = JournalOptions.Enabled | JournalOptions.WriteCustom | JournalOptions.WriteInfo | JournalOptions.WriteTrade | JournalOptions.WriteAlert;
 
         public void Apply(Backtester tester)
         {

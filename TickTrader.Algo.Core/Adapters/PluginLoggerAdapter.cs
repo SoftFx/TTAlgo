@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class PluginLoggerAdapter : IPluginMonitor
+    internal class PluginLoggerAdapter : IPluginMonitor, IAlertAPI
     {
         private static NumberFormatInfo DefaultPriceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
@@ -22,14 +22,8 @@ namespace TickTrader.Algo.Core
 
         public IPluginLogger Logger
         {
-            get { return logger; }
-            set
-            {
-                if (value == null)
-                    throw new InvalidOperationException("Logger cannot be null!");
-
-                this.logger = value;
-            }
+            get => logger;
+            set => logger = value ?? throw new InvalidOperationException("Logger cannot be null!");
         }
 
         #region Logger Methods
@@ -79,7 +73,17 @@ namespace TickTrader.Algo.Core
             logger.OnPrintTradeFail(entry);
         }
 
+        public IAlertAPI Alert => this;
+
         #endregion
+
+
+        #region Alert API
+
+        void IAlertAPI.Print(string message) => logger.OnPrintAlert(message);
+
+        #endregion
+
 
         #region Trade Log Builder methods
 

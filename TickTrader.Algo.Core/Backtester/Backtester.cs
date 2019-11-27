@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Core
         //public int WarmupSize { get; set; } = 10;
         //public WarmupUnitTypes WarmupUnits { get; set; } = WarmupUnitTypes.Bars;
         public DateTime? CurrentTimePoint => _control?.EmulationTimePoint;
-        public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade;
+        public JournalOptions JournalFlags { get; set; } = JournalOptions.Enabled | JournalOptions.WriteInfo | JournalOptions.WriteCustom | JournalOptions.WriteTrade | JournalOptions.WriteAlert;
         public EmulatorStates State { get; private set; }
         public event Action<EmulatorStates> StateChanged;
         public event Action<Exception> ErrorOccurred { add => Executor.ErrorOccurred += value; remove => Executor.ErrorOccurred -= value; }

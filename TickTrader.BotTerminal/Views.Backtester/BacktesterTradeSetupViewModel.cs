@@ -142,6 +142,7 @@ namespace TickTrader.BotTerminal
         public BoolProperty WriteCustom { get; private set; }
         public BoolProperty WriteTrade { get; private set; }
         public BoolProperty WriteModifications { get; private set; }
+        public BoolProperty WriteAlert { get; private set; }
 
         public BoolVar IsJournalEnabled { get; private set; }
         public BoolVar IsJournaTradeEnabled { get; private set; }
@@ -153,6 +154,7 @@ namespace TickTrader.BotTerminal
             WriteCustom = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteCustom));
             WriteTrade = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteTrade));
             WriteModifications = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteOrderModifications));
+            WriteAlert = _proprs.AddBoolProperty(settings.JournalSettings.IsFlagSet(JournalOptions.WriteAlert));
 
             IsJournalEnabled = WriteJournal.Var;
             IsJournaTradeEnabled = WriteJournal.Var & WriteTrade.Var;
@@ -176,6 +178,9 @@ namespace TickTrader.BotTerminal
 
             if (WriteModifications.Value)
                 result |= JournalOptions.WriteOrderModifications;
+
+            if (WriteAlert.Value)
+                result |= JournalOptions.WriteAlert;
 
             return result;
         }

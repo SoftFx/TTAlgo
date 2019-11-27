@@ -37,6 +37,8 @@ namespace TickTrader.BotTerminal
 
         AccessManager AccessManager { get; }
 
+        IAlertModel AlertModel { get; }
+
 
         event Action<PackageInfo> PackageStateChanged;
         event Action<AccountModelInfo> AccountStateChanged;

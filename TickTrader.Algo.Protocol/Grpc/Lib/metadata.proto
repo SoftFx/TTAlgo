@@ -162,12 +162,21 @@ message LogRecordInfo
         TRADE_SUCCESS = 3;
         TRADE_FAIL = 4;
         CUSTOM = 5;
+        ALERT = 6;
     }
 
     google.protobuf.Timestamp time_utc = 1;
     LogSeverity severity = 2;
     string message = 3;
     uint32 time_shit = 4;
+}
+
+message AlertRecordInfo
+{
+    google.protobuf.Timestamp time_utc = 1;
+    string message = 2;
+    uint32 time_shit = 3;
+    string bot_id = 4;
 }
 
 message BotFileInfo
