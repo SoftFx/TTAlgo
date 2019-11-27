@@ -44,7 +44,7 @@ namespace TickTrader.BotAgent.BA.Models
             var alertFile = new FileTarget(alertTarget)
             {
                 FileName = Layout.FromString(Path.Combine(logDirectory, $"${{shortdate}}-alert{fileExt}")),
-                Layout = Layout.FromString("${longdate}  | ${message}"),
+                Layout = Layout.FromString("${longdate} | ${message}"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveFileName = Layout.FromString(Path.Combine(logDirectory, $"{{#}}-alert{fileExt}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,

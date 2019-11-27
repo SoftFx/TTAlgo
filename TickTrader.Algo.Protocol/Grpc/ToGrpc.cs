@@ -991,7 +991,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                 TimeUtc = Timestamp.FromDateTime(alertRecord.TimeUtc.Timestamp),
                 TimeShit = alertRecord.TimeUtc.Shift,
                 Message = Convert(alertRecord.Message),
-                BotId = alertRecord.BotId,
+                BotId = Convert(alertRecord.BotId),
             };
         }
 
