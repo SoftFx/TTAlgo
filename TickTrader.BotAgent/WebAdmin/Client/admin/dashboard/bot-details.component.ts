@@ -53,6 +53,9 @@ export class BotDetailsComponent implements OnInit, OnDestroy {
                     this._api.Feed.ChangeBotState
                         .filter(state => this.Bot && this.Bot.Id == state.Id)
                         .subscribe(botState => this.updateBotState(botState));
+                    this._api.Feed.UpdateBot
+                        .filter(bot => this.Bot && this.Bot.Id == bot.Id)
+                        .subscribe(bot => this.updateBot(bot));
                     this._api.Feed.ConnectionState.subscribe(state => { if (state == ConnectionStatus.Connected) this.getBotInfo(); });
 
                     this.isAliveFlag = true;
@@ -194,6 +197,10 @@ export class BotDetailsComponent implements OnInit, OnDestroy {
 
     private updateBotState(botState: TradeBotStateModel) {
         this.Bot = <TradeBotModel>{ ...this.Bot, State: botState.State, FaultMessage: botState.FaultMessage }
+    }
+
+    private updateBot(bot: TradeBotModel) {
+        this.Bot = bot;
     }
 
     private notifyAboutError(response: ResponseStatus) {
