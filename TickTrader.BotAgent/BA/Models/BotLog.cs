@@ -12,6 +12,7 @@ using System.Linq;
 using TickTrader.Algo.Common.Model;
 using ActorSharp;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -91,7 +92,8 @@ namespace TickTrader.BotAgent.BA.Models
             if (Directory.Exists(_logDirectory))
             {
                 DirectoryInfo dInfo = new DirectoryInfo(_logDirectory);
-                return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new ReadOnlyFileModel(fInfo.FullName)).ToArray();
+                return dInfo.GetFiles($"*{_fileExtension}").Select(fInfo => new ReadOnlyFileModel(fInfo.FullName))
+                    .Concat(dInfo.GetFiles($"*{_archiveExtension}").Select(fInfo => new ReadOnlyFileModel(fInfo.FullName))).ToArray();
             }
             else
                 return new ReadOnlyFileModel[0];
@@ -144,6 +146,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-log{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
+                Encoding = Encoding.UTF8,
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-log{_archiveExtension}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -154,6 +157,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-error{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
+                Encoding = Encoding.UTF8,
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-error{_archiveExtension}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -164,6 +168,7 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 FileName = Layout.FromString(Path.Combine(_logDirectory, $"${{shortdate}}-status{_fileExtension}")),
                 Layout = Layout.FromString("${longdate} | ${logger} | ${message}"),
+                Encoding = Encoding.UTF8,
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveFileName = Layout.FromString(Path.Combine(_logDirectory, $"{{#}}-status{_archiveExtension}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -178,7 +183,7 @@ namespace TickTrader.BotAgent.BA.Models
             logConfig.AddRule(LogLevel.Debug, LogLevel.Fatal, logTarget);
             logConfig.AddRule(LogLevel.Error, LogLevel.Fatal, errTarget);
 
-            _alertStorage.AttachedAlertLogger(logConfig, botId, _logDirectory, _fileExtension);
+            _alertStorage.AttachedAlertLogger(logConfig, botId, _logDirectory, _fileExtension, _archiveExtension);
 
             var nlogFactory = new LogFactory(logConfig);
 

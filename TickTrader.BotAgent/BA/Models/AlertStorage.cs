@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 using ActorSharp;
+using System.Text;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -37,7 +38,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
-        public void AttachedAlertLogger(LoggingConfiguration config, string botId, string logDirectory, string fileExt)
+        public void AttachedAlertLogger(LoggingConfiguration config, string botId, string logDirectory, string fileExt, string archiveExt)
         {
             var alertTarget = $"alert-{botId}";
 
@@ -45,8 +46,9 @@ namespace TickTrader.BotAgent.BA.Models
             {
                 FileName = Layout.FromString(Path.Combine(logDirectory, $"${{shortdate}}-alert{fileExt}")),
                 Layout = Layout.FromString("${longdate} | ${message}"),
+                Encoding = Encoding.UTF8,
                 ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveFileName = Layout.FromString(Path.Combine(logDirectory, $"{{#}}-alert{fileExt}")),
+                ArchiveFileName = Layout.FromString(Path.Combine(logDirectory, $"{{#}}-alert{archiveExt}")),
                 ArchiveNumbering = ArchiveNumberingMode.Date,
                 EnableArchiveFileCompression = true,
             };

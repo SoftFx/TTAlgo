@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows;
 using TickTrader.Algo.Common.Model;
 
@@ -125,6 +126,7 @@ namespace TickTrader.BotTerminal
             {
                 Layout = "${longdate} | ${logger} -> ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "terminal.log"),
+                Encoding = Encoding.UTF8,
                 ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "terminal-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -135,6 +137,7 @@ namespace TickTrader.BotTerminal
             {
                 Layout = "${longdate} | ${message} ${exception:format=tostring}",
                 FileName = Path.Combine(EnvService.Instance.LogFolder, "alert.log"),
+                Encoding = Encoding.UTF8,
                 ArchiveFileName = Path.Combine(EnvService.Instance.LogFolder, "Archives", "alerts-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -144,13 +147,15 @@ namespace TickTrader.BotTerminal
             var journalTarget = new FileTarget()
             {
                 FileName = Path.Combine(EnvService.Instance.JournalFolder, "Journal-${shortdate}.txt"),
-                Layout = "${longdate} | ${message}"
+                Layout = "${longdate} | ${message}",
+                Encoding = Encoding.UTF8,
             };
 
             var botInfoTarget = new FileTarget()
             {
                 FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Log.txt"),
                 Layout = "${longdate} | ${message}",
+                Encoding = Encoding.UTF8,
                 ArchiveFileName = Path.Combine(Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives"), "Log-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -161,6 +166,7 @@ namespace TickTrader.BotTerminal
             {
                 FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Error.txt"),
                 Layout = "${longdate} | ${message}",
+                Encoding = Encoding.UTF8,
                 ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Error-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
@@ -171,6 +177,7 @@ namespace TickTrader.BotTerminal
             {
                 FileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}/Status.txt"),
                 Layout = "${longdate} | ${message}",
+                Encoding = Encoding.UTF8,
                 ArchiveFileName = Path.Combine(EnvService.Instance.BotLogFolder, "${botName}", "Archives", "Status-{#}.zip"),
                 ArchiveEvery = FileArchivePeriod.Day,
                 ArchiveNumbering = ArchiveNumberingMode.Date,
