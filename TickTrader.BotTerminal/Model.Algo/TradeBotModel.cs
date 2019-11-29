@@ -231,10 +231,9 @@ namespace TickTrader.BotTerminal
         void IBotWriter.LogMesssage(PluginLogRecord rec)
         {
             Journal.Add(Convert(rec));
+
             if (rec.Severity == LogSeverities.Alert)
-            {
                 AlertModel.AddAlert(InstanceId, rec);
-            }
         }
 
         void IBotWriter.UpdateStatus(string status)

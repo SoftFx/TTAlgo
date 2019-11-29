@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
         {
             lock (_locker)
             {
-                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.Time.Timestamp, record.Message));
+                _buffer.Add(new AlertUpdateEventArgsImpl(instanceId, Name, record.Time.Timestamp, record.Message, _remoteAgent != null));
                 _newAlerts = true;
             }
         }
@@ -105,7 +105,7 @@ namespace TickTrader.BotTerminal
             _alertTimer?.Change(AlertsUpdateTimeout, -1);
         }
 
-        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name,rec.TimeUtc.Timestamp, rec.Message);
+        private AlertUpdateEventArgsImpl Convert(AlertRecordInfo rec) => new AlertUpdateEventArgsImpl(rec.BotId, Name,rec.TimeUtc.Timestamp, rec.Message, _remoteAgent != null);
 
         public void Dispose() //add dispose storage to remote agent
         {
@@ -138,24 +138,23 @@ namespace TickTrader.BotTerminal
 
         public string Message { get; }
 
+        public bool IsRemoteAgent { get; }
 
-        public AlertUpdateEventArgsImpl(string id, string agent, DateTime time, string message) : this(id, agent, message)
+        public AlertUpdateEventArgsImpl(string id, string agent, DateTime time, string message, bool isRemote = false) : this(id, agent, message, isRemote)
         {
             Time = time.ToUniversalTime();
         }
 
-        public AlertUpdateEventArgsImpl(string id, string agent, string message)
+        public AlertUpdateEventArgsImpl(string id, string agent, string message, bool isRemote)
         {
             Time = DateTime.MinValue;
             InstanceId = id;
             AgentName = agent;
             Message = message;
+            IsRemoteAgent = isRemote;
         }
 
-        public override string ToString()
-        {
-            return $"Create: {Time.ToString("yyyy-MM-dd HH:mm:ss.fff")} | {InstanceId} -> {Message} ";
-        }
+        public override string ToString() => $"{InstanceId} -> {Message} ";
     }
 
     public interface IAlertUpdateEventArgs
@@ -167,5 +166,7 @@ namespace TickTrader.BotTerminal
         string AgentName { get; }
 
         string Message { get; }
+
+        bool IsRemoteAgent { get; }
     }
 }

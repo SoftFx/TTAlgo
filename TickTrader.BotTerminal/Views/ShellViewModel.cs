@@ -58,6 +58,11 @@ namespace TickTrader.BotTerminal
 
             _botAgentManager = new BotAgentManager(storage);
 
+            AlertsManager = new AlertViewModel(wndManager, this);
+            AlertsManager.SubscribeToModel(Agent.AlertModel);
+            AlertsManager.SubcribeToModels(_botAgentManager.BotAgents.Values.Select(u => u.RemoteAgent.AlertModel));
+            _botAgentManager.BotAgents.Updated += AlertsManager.UpdateBotAgents;
+
             algoEnv = new AlgoEnvironment(this, Agent, _botAgentManager);
 
             AlgoList = new AlgoListViewModel(algoEnv);
@@ -81,10 +86,6 @@ namespace TickTrader.BotTerminal
             Journal = new JournalViewModel(eventJournal);
             //BotJournal = new BotJournalViewModel(algoEnv.BotJournal);
             DockManagerService = new DockManagerService(algoEnv);
-
-            AlertsManager = new AlertViewModel(wndManager);
-            AlertsManager.SubscribeToModel(Agent.AlertModel);
-            AlertsManager.SubscribeToModels(_botAgentManager.BotAgents.Values.Select(u => u.RemoteAgent.AlertModel));
 
             CanConnect = true;
             UpdateCommandStates();

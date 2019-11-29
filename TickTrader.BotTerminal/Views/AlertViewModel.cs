@@ -25,14 +25,16 @@ namespace TickTrader.BotTerminal
 
         private ObservableCircularList<IAlertUpdateEventArgs> _alertBuffer = new ObservableCircularList<IAlertUpdateEventArgs>();
         private WindowManager _wnd;
+        private Screen _shell;
 
         private string _selectAgentFilter = DefaultFilterValue;
         private string _selectBotFilter = DefaultFilterValue;
 
 
-        internal AlertViewModel(WindowManager wnd)
+        internal AlertViewModel(WindowManager wnd, ShellViewModel shell)
         {
             _wnd = wnd;
+            _shell = shell;
 
             ObservableBuffer = CollectionViewSource.GetDefaultView(_alertBuffer);
             ObservableBuffer.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
@@ -40,20 +42,21 @@ namespace TickTrader.BotTerminal
             DisplayName = "Alert";
         }
 
-        public ObservableSet<string> AgentsNames { get; } = new ObservableSet<string>() { DefaultFilterValue };
+        public ObservableCounter<string> AgentsNames { get; } = new ObservableCounter<string>(DefaultFilterValue);
 
-        public ObservableSet<string> BotsNames { get; } = new ObservableSet<string>() { DefaultFilterValue };
+        public ObservableCounter<string> BotsNames { get; } = new ObservableCounter<string>(DefaultFilterValue);
 
         public string SelectAgentNameFilter
         {
             get => _selectAgentFilter;
             set
             {
-                if (value == _selectAgentFilter)
+                if (value == _selectAgentFilter || string.IsNullOrEmpty(value))
                     return;
 
                 _selectAgentFilter = value;
                 ObservableBuffer.Refresh();
+                NotifyOfPropertyChange(nameof(SelectAgentNameFilter));
             }
         }
 
@@ -62,11 +65,12 @@ namespace TickTrader.BotTerminal
             get => _selectBotFilter;
             set
             {
-                if (value == _selectBotFilter)
+                if (value == _selectBotFilter || string.IsNullOrEmpty(value))
                     return;
 
                 _selectBotFilter = value;
                 ObservableBuffer.Refresh();
+                NotifyOfPropertyChange(nameof(SelectBotNameFilter));
             }
         }
 
@@ -77,7 +81,7 @@ namespace TickTrader.BotTerminal
             model.AlertUpdateEvent += GetAlertsArray;
         }
 
-        public void SubscribeToModels(IEnumerable<IAlertModel> models)
+        public void SubcribeToModels(IEnumerable<IAlertModel> models)
         {
             foreach (var m in models)
                 SubscribeToModel(m);
@@ -92,23 +96,39 @@ namespace TickTrader.BotTerminal
         {
             lock (_locker)
             {
-                var items = new IAlertUpdateEventArgs[_alertBuffer.Count];
-                int position = -1;
+                try
+                {
+                    var items = new IAlertUpdateEventArgs[_alertBuffer.Count];
+                    int position = -1;
 
-                while (_alertBuffer.Count > 0)
-                    items[++position] = _alertBuffer.Dequeue();
+                    while (_alertBuffer.Count > 0)
+                        items[++position] = GetAlertItem();
 
-                position = -1;
+                    position = -1;
 
-                foreach (var item in items)
-                    if (!AgentAndBotFilter(item))
-                        _alertBuffer.Add(item);
+                    foreach (var item in items)
+                        if (!AgentAndBotFilter(item))
+                            SetAlertItem(item);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex);
+                }
             }
+
+            SelectAgentNameFilter = DefaultFilterValue;
+            SelectBotNameFilter = DefaultFilterValue;
         }
 
         public void Ok()
         {
             TryClose();
+        }
+
+        public void UpdateBotAgents(DictionaryUpdateArgs<string, BotAgentConnectionManager> args)
+        {
+            if (args.Action == DLinqAction.Insert)
+                SubscribeToModel(args.NewItem.RemoteAgent.AlertModel);
         }
 
         private bool AgentAndBotFilter(object sender)
@@ -132,26 +152,42 @@ namespace TickTrader.BotTerminal
 
                 Execute.BeginOnUIThread(() =>
                 {
-                    _wnd.OpenMdiWindow(this);
+                    if (Application.Current.MainWindow.WindowState != WindowState.Minimized)
+                        _wnd.OpenMdiWindow(this);
 
                     foreach (var a in record)
                         AddRecord(a);
                 });
 
-                foreach (var a in record)
-                    _logger.Info(a);
+                if (record.Count > 0 && !record.First().IsRemoteAgent)
+                    foreach (var a in record)
+                        _logger.Info(a);
             }
         }
 
         private void AddRecord(IAlertUpdateEventArgs record)
         {
             while (_alertBuffer.Count > MaxBufferSize)
-                _alertBuffer.Dequeue();
+                GetAlertItem();
 
-            _alertBuffer.Add(record);
+            SetAlertItem(record);
+        }
 
-            AgentsNames.Add(record.AgentName);
-            BotsNames.Add(record.InstanceId);
+        private IAlertUpdateEventArgs GetAlertItem()
+        {
+            var item = _alertBuffer.Dequeue();
+            AgentsNames.Remove(item.AgentName);
+            BotsNames.Remove(item.InstanceId);
+
+            return item;
+        }
+
+        private void SetAlertItem(IAlertUpdateEventArgs item)
+        {
+            _alertBuffer.Add(item);
+
+            AgentsNames.Add(item.AgentName);
+            BotsNames.Add(item.InstanceId);
         }
     }
 }

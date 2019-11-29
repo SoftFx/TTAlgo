@@ -36,11 +36,11 @@
 
                 <Label Content="Filters: " HorizontalContentAlignment="Right" Width="{Binding ElementName=TimeColumn, Path=ActualWidth}"/>
 
-                <ComboBox Grid.Column="1" ItemsSource="{Binding AgentsNames}" HorizontalAlignment="Left"
+                <ComboBox Grid.Column="1" ItemsSource="{Binding AgentsNames.ExistingItems}" HorizontalAlignment="Left"
                           Width="{Binding ElementName=AgentColumn, Path=ActualWidth}" SelectedValue="{Binding SelectAgentNameFilter}"
                           Margin="0 0 1 0"/>
 
-                <ComboBox Grid.Column="2" ItemsSource="{Binding BotsNames}" HorizontalAlignment="Left" 
+                <ComboBox Grid.Column="2" ItemsSource="{Binding BotsNames.ExistingItems}" HorizontalAlignment="Left" 
                           Width="{Binding ElementName=BotIdColumn, Path=ActualWidth}" SelectedValue="{Binding SelectBotNameFilter}"
                           Margin="0.5 0 0 0"/>
 
@@ -64,7 +64,7 @@
                                     Header="Agent" MinWidth="80"/>
                     <DataGridTextColumn x:Name="BotIdColumn" SortMemberPath="InstanceId" 
                                     Binding="{Binding InstanceId}"
-                                    Header="Instance" MinWidth="100"/>
+                                    Header="Instance" MinWidth="130"/>
                     <DataGridTemplateColumn Header="Message" Width="*" ClipboardContentBinding="{Binding Message}" 
                                             CellTemplate="{StaticResource AlertMessageCellTemplate}"/>
                 </DataGrid.Columns>
