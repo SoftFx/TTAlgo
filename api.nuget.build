@@ -4,6 +4,7 @@
 
   <property name="Configuration"		value="Release"							                 unless="${property::exists('Configuration')}" />
   <property name="Version"          value="1.0.0.0"                              unless="${property::exists('Version')}" />
+  <property name="NugetApiKey"      value="DON'T EVER PUSH REAL KEY TO GIT"      unless="${property::exists('NugetApiKey')}" />
 
   <property name="SolutionDir"		  value="d:\some\cool\path\"							     unless="${property::exists('SolutionDir')}" />
   <property name="ProjectName"      value="TickTrader.Algo.Api"                  unless="${property::exists('ProjectName')}" />
@@ -101,7 +102,7 @@
       <arg line="push" />
       <arg line="${OutputDir}${ProjectName}.${Version}.nupkg" />
       <arg line="-Source nuget.org" />
-      <arg line="-ApiKey 834d16fb-4069-41f6-83ae-c90572576442" />
+      <arg line="-ApiKey ${NugetApiKey}" />
       <arg line="-Verbosity detailed" />
     </exec>
 
