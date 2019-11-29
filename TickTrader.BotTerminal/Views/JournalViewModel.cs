@@ -28,7 +28,7 @@ namespace TickTrader.BotTerminal
             eventJournal = journal;
             Journal = CollectionViewSource.GetDefaultView(eventJournal.Records);
             Journal.Filter = new Predicate<object>(Filter);
-            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
+            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
         }
 
         public ICollectionView Journal { get; private set; }

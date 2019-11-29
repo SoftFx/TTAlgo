@@ -8,6 +8,8 @@ namespace TickTrader.Algo.Api
 {
     public abstract class Indicator : AlgoPlugin
     {
+        private string _loggerPrefix;
+
         public Indicator()
         {
         }
@@ -30,5 +32,41 @@ namespace TickTrader.Algo.Api
             Calculate();
             Calculate(!isUpdate);
         }
+
+        internal override void InvokeInit()
+        {
+            _loggerPrefix = $"{Id} ({Symbol.Name}, {TimeFrame})";
+            base.InvokeInit();
+        }
+
+
+        #region Logger
+
+        public void Print(string msg)
+        {
+            context.Logger.Print(AddLoggerPrefix(msg));
+        }
+
+        public void Print(string msg, params object[] parameters)
+        {
+            context.Logger.Print(AddLoggerPrefix(msg), parameters);
+        }
+
+        public void PrintError(string msg)
+        {
+            context.Logger.PrintError(AddLoggerPrefix(msg));
+        }
+
+        public void PrintError(string msg, params object[] parameters)
+        {
+            context.Logger.PrintError(AddLoggerPrefix(msg), parameters);
+        }
+
+        private string AddLoggerPrefix(string msg)
+        {
+            return $"{_loggerPrefix}: {msg}";
+        }
+
+        #endregion
     }
 }

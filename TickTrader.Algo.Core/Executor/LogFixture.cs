@@ -18,11 +18,14 @@ namespace TickTrader.Algo.Core
         private TimeKeyGenerator _keyGen = new TimeKeyGenerator();
         private Task _batchLinkTask;
         private AlgoTypes _type;
+        private string _indicatorPrefix;
 
         internal LogFixture(IFixtureContext context, AlgoTypes type)
         {
             _context = context;
             _type = type;
+            if (_type == AlgoTypes.Indicator)
+                _indicatorPrefix = $"{context.InstanceId} ({context.MainSymbolCode}, {context.TimeFrame})";
         }
 
         public void Start()
@@ -148,50 +151,67 @@ namespace TickTrader.Algo.Core
 
         public void OnInitialized()
         {
-            AddLogRecord(LogSeverities.Info, $"{GetPluginType()} initialized");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+            if (_type == AlgoTypes.Robot)
+            {
+                AddLogRecord(LogSeverities.Info, $"Bot initialized");
+                AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+            }
         }
 
         public void OnStart()
         {
-            AddLogRecord(LogSeverities.Info, $"{GetPluginType()} started");
+            if (_type == AlgoTypes.Robot)
+                AddLogRecord(LogSeverities.Info, $"Bot started");
+            else AddLogRecord(LogSeverities.Info, $"{_indicatorPrefix}: Indicator started");
         }
 
         public void OnStop()
         {
-            AddLogRecord(LogSeverities.Info, $"{GetPluginType()} stopped");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+            if (_type == AlgoTypes.Robot)
+            {
+                AddLogRecord(LogSeverities.Info, $"Bot stopped");
+                AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+            }
+            else AddLogRecord(LogSeverities.Info, $"{_indicatorPrefix}: Indicator stopped");
         }
 
         public void OnExit()
         {
-            AddLogRecord(LogSeverities.Info, $"{GetPluginType()} exited");
+            if (_type == AlgoTypes.Robot)
+                AddLogRecord(LogSeverities.Info, $"Bot exited");
         }
 
         public void OnAbort()
         {
-            AddLogRecord(LogSeverities.Info, $"{GetPluginType()} aborted");
-            AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+            if (_type == AlgoTypes.Robot)
+            {
+                AddLogRecord(LogSeverities.Info, $"Bot aborted");
+                AddLogRecord(LogSeverities.Info, $"Plugin version = {_context.Builder.Metadata.Descriptor.Version}");
+            }
         }
 
         public void OnConnected()
         {
-            AddLogRecord(LogSeverities.Info, "Connection restored.");
+            if (_type == AlgoTypes.Robot)
+                AddLogRecord(LogSeverities.Info, "Connection restored.");
         }
 
         public void OnDisconnected()
         {
-            AddLogRecord(LogSeverities.Error, "Connection lost!");
+            if (_type == AlgoTypes.Robot)
+                AddLogRecord(LogSeverities.Error, "Connection lost!");
         }
 
         public void OnConnectionInfo(string connectionInfo)
         {
-            AddLogRecord(LogSeverities.Info, $"Connected to {connectionInfo}");
+            if (_type == AlgoTypes.Robot)
+                AddLogRecord(LogSeverities.Info, $"Connected to {connectionInfo}");
         }
 
         public void UpdateStatus(string status)
         {
-            AddLogRecord(LogSeverities.CustomStatus, status);
+            if (_type == AlgoTypes.Robot)
+                AddLogRecord(LogSeverities.CustomStatus, status);
         }
 
         private void AddLogRecord(LogSeverities logSeverity, string message, string errorDetails = null)
@@ -208,16 +228,6 @@ namespace TickTrader.Algo.Core
             catch (Exception ex)
             {
                 _context.OnInternalException(ex);
-            }
-        }
-
-        private string GetPluginType()
-        {
-            switch (_type)
-            {
-                case AlgoTypes.Robot: return "Bot";
-                case AlgoTypes.Indicator: return "Indicator";
-                default: return "Unknow plugin";
             }
         }
     }

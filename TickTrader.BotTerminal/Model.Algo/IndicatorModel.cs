@@ -14,10 +14,13 @@ namespace TickTrader.BotTerminal
     internal class IndicatorModel : PluginModel, IIndicatorWriter
     {
         private IndicatorListenerProxy _indicatorListener;
+        private EventJournal _journal;
 
         public IndicatorModel(PluginConfig config, LocalAlgoAgent agent, IAlgoPluginHost host, IAlgoSetupContext setupContext)
             : base(config, agent, host, setupContext)
         {
+            _journal = agent.Shell.EventJournal;
+
             host.StartEvent += Host_StartEvent;
             host.StopEvent += Host_StopEvent;
 
@@ -88,6 +91,11 @@ namespace TickTrader.BotTerminal
         {
             switch (record.Severity)
             {
+                case LogSeverities.Info:
+                case LogSeverities.Error:
+                case LogSeverities.Custom:
+                    _journal.Add(EventMessage.Create(record));
+                    break;
                 case LogSeverities.Alert:
                     AlertModel.AddAlert(InstanceId, record);
                     break;

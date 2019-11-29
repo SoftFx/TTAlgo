@@ -34,5 +34,6 @@ namespace TickTrader.BotTerminal
         DockManagerService DockManagerService { get; }
         ConnectionManager ConnectionManager { get; }
         AlertViewModel AlertsManager { get; }
+        EventJournal EventJournal { get; }
     }
 }

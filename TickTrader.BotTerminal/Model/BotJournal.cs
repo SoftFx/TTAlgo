@@ -104,6 +104,11 @@ namespace TickTrader.BotTerminal
         {
             return $"{Type} | {Message}";
         }
+
+        public static BotMessage Create(PluginLogRecord record, string instanceId)
+        {
+            return new BotMessage(record.Time, instanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
+        }
     }
 
     internal class BotMessageTypeCounter

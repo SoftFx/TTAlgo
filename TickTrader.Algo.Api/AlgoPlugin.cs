@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Api
 
         protected virtual void Init() { }
 
-        internal void InvokeInit()
+        internal virtual void InvokeInit()
         {
             Init();
         }

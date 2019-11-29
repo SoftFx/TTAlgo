@@ -180,22 +180,7 @@ namespace TickTrader.BotTerminal
 
         private BotMessage Convert(PluginLogRecord record)
         {
-            return new BotMessage(record.Time, InstanceId, record.Message, Convert(record.Severity)) { Details = record.Details };
-        }
-
-        private JournalMessageType Convert(LogSeverities severity)
-        {
-            switch (severity)
-            {
-                case LogSeverities.Info: return JournalMessageType.Info;
-                case LogSeverities.Error: return JournalMessageType.Error;
-                case LogSeverities.Custom: return JournalMessageType.Custom;
-                case LogSeverities.Trade: return JournalMessageType.Trading;
-                case LogSeverities.TradeSuccess: return JournalMessageType.TradingSuccess;
-                case LogSeverities.TradeFail: return JournalMessageType.TradingFail;
-                case LogSeverities.Alert: return JournalMessageType.Alert;
-                default: return JournalMessageType.Info;
-            }
+            return BotMessage.Create(record, InstanceId);
         }
 
         private void OnBotExited()

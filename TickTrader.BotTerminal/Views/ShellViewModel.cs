@@ -288,6 +288,7 @@ namespace TickTrader.BotTerminal
         public ConnectionModel.States ConnectionState => cManager.Connection.State;
         public string CurrentServerName => cManager.Connection.CurrentServer;
         public string ProtocolName => cManager.Connection.CurrentProtocol;
+        public EventJournal EventJournal => eventJournal;
 
         public NotificationsViewModel Notifications { get; private set; }
 
