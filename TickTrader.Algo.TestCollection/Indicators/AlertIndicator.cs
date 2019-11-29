@@ -33,9 +33,5 @@ namespace TickTrader.Algo.TestCollection.Indicators
             }
 
         }
-
-        protected override void Calculate()
-        {            
-        }
     }
 }

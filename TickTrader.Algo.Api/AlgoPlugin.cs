@@ -50,7 +50,7 @@ namespace TickTrader.Algo.Api
 
         protected virtual void Init() { }
 
-        internal virtual void InvokeInit()
+        internal virtual void InvokeInit(bool isNested)
         {
             Init();
         }

@@ -64,6 +64,7 @@
     <Compile Include="Bots\FeedQueryBot.cs" />
     <Compile Include="Bots\ModifyLoopBot.cs" />
     <Compile Include="Bots\EventBot.cs" />
+    <Compile Include="Bots\NestedPrintIndicatorBot.cs" />
     <Compile Include="Bots\OpenCloseBot.cs" />
     <Compile Include="Bots\QuotePrintBot.cs" />
     <Compile Include="Bots\SplitViewBot.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
     <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Indicators\MultiplePrecisionIndicator.cs" />
+    <Compile Include="Indicators\PrintIndicator.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\PrintExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

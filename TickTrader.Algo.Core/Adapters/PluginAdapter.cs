@@ -85,9 +85,9 @@ namespace TickTrader.Algo.Core
                 AlgoPlugin.activator = this;
 
                 for (int i = nestedIndacators.Count - 1; i >= 0; i--)
-                    nestedIndacators[i].plugin.InvokeInit();
+                    nestedIndacators[i].plugin.InvokeInit(true);
 
-                plugin.InvokeInit();
+                plugin.InvokeInit(false);
             }
             finally
             {

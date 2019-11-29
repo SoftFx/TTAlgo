@@ -33,10 +33,11 @@ namespace TickTrader.Algo.Api
             Calculate(!isUpdate);
         }
 
-        internal override void InvokeInit()
+        internal override void InvokeInit(bool isNested)
         {
-            _loggerPrefix = $"{Id} ({Symbol.Name}, {TimeFrame})";
-            base.InvokeInit();
+            if (!isNested)
+                _loggerPrefix = $"{Id} ({Symbol.Name}, {TimeFrame})";
+            base.InvokeInit(isNested);
         }
 
 
@@ -64,6 +65,8 @@ namespace TickTrader.Algo.Api
 
         private string AddLoggerPrefix(string msg)
         {
+            if (_loggerPrefix == null)
+                _loggerPrefix = $"{GetType().Name} ({Symbol.Name}, {TimeFrame})";
             return $"{_loggerPrefix}: {msg}";
         }
 
