@@ -55,7 +55,7 @@ namespace TickTrader.Algo.Indicators.Other.DisplayDisconnect
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             SetMarker(pos, ++_count % 101);

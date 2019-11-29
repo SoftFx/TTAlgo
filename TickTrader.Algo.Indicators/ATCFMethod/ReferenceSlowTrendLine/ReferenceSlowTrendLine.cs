@@ -39,10 +39,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.ReferenceSlowTrendLine
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
-            Rstl[pos] = CalculateDigitalIndicator(Price);
+            Rstl[pos] = CalculateDigitalIndicator(isNewBar, Price);
             if (Price.Count > CountBars)
             {
                 Rstl[CountBars] = double.NaN;

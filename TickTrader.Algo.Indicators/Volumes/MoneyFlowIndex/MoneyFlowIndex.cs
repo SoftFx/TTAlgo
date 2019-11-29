@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var positive = 0.0;
@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Indicators.Volumes.MoneyFlowIndex
             {
                 positive = Bars.Volume[pos]*Bars.Typical[pos];
             }
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _positiveMa.UpdateLast(positive);
                 _negativeMa.UpdateLast(negative);

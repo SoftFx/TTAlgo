@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.MarketFacilitationIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var i = LastPositionChanged;
             MfiUpVolumeUp[i] = double.NaN;

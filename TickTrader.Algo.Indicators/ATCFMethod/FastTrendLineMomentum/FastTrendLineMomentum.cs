@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastTrendLineMomentum
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Ftlm[pos] = _fatl.Fatl[pos] - _rftl.Rftl[pos];

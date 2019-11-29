@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BullsPower
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Bulls[pos] = Bars.High[pos] - _ema.Average[pos];

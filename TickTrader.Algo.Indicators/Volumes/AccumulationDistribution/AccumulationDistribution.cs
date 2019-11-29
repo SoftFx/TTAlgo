@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Indicators.Volumes.AccumulationDistribution
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Ad[pos] = (Bars.Close[pos] - Bars.Low[pos]) - (Bars.High[pos] - Bars.Close[pos]);

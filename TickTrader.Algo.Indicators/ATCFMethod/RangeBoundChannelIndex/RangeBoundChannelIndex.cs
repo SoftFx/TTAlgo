@@ -80,12 +80,12 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
-            var val = CalculateDigitalIndicator(Price);
+            var val = CalculateDigitalIndicator(isNewBar, Price);
 
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _ma.UpdateLast(val);
                 _calcCache[Price.Count - 1] = val;

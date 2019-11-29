@@ -57,9 +57,9 @@ namespace TickTrader.Algo.Indicators.Trend.StandardDeviation
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _p2Sma.UpdateLast(Price[0]*Price[0]);
                 _p2Shifter.UpdateLast(_p2Sma.Average);

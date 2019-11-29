@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.MovingAverageOscillator
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             OsMa[pos] = _macd.MacdSeries[pos] - (double.IsNaN(_macd.Signal[pos]) ? 0.0 : _macd.Signal[pos]);

@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.WilliamsPercentRange
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Wpr[pos] = (PeriodHelper.FindMax(Bars.High, Period) - Bars.Close[pos])/

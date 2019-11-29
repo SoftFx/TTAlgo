@@ -41,7 +41,7 @@ namespace TickTrader.Algo.Indicators.Volumes.OnBalanceVolume
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             if (Price.Count > 1)

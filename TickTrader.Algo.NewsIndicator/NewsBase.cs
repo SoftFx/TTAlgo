@@ -20,7 +20,7 @@ namespace TickTrader.Algo.Indicators.NewsIndicator
 
         public abstract void InitializeNewsProviders();
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             LoadNews();
             Draw();

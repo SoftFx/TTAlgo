@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.Trend.Envelopes
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var val = _middleLine.Average[pos];

@@ -134,18 +134,18 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Fractals
             return false;
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var i = 2;
 
             if (IsFractalsUp(i))
                 SetMarker(i, Bars[i].High, true);
-            else if(!IsNewBar)
+            else if(!isNewBar)
                 ClearMarker(i, true);
 
             if (IsFractalsDown(i))
                 SetMarker(i, Bars[i].Low, false);
-            else if (!IsNewBar)
+            else if (!isNewBar)
                 ClearMarker(i, false);
         }
 

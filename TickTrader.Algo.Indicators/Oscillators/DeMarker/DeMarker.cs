@@ -43,11 +43,11 @@ namespace TickTrader.Algo.Indicators.Oscillators.DeMarker
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var deMax = Bars.Count > 1 && Bars[0].High > Bars[1].High ? Bars[0].High - Bars[1].High : 0.0;
             var deMin = Bars.Count > 1 && Bars[0].Low < Bars[1].Low ? Bars[1].Low - Bars[0].Low : 0.0;
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _smaDeMax.UpdateLast(deMax);
                 _smaDeMin.UpdateLast(deMin);

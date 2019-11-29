@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Indicators.Trend.BollingerBands
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var maVal = _ma.Average[_stdDev.LastPositionChanged];

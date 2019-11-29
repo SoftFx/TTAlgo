@@ -40,7 +40,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.CommodityChannelIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var average = _sma.Average[pos];

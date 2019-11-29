@@ -55,13 +55,13 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AcceleratorOscillator
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var ao = double.IsNaN(_ao.ValueUp[pos]) ? _ao.ValueDown[pos] : _ao.ValueUp[pos];
             if (!double.IsNaN(ao))
             {
-                if (!IsNewBar)
+                if (!isNewBar)
                 {
                     _aoSma.UpdateLast(ao);
                 }
