@@ -27,7 +27,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         [Output(DisplayName = "Typical (by symbol)", Target = OutputTargets.Window3, DefaultColor = Colors.Magenta, PlotType = PlotType.Histogram)]
         public DataSeries S6 { get; set; }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             S1[0] = Bars.High[0];
             S2[0] = Bars.Low[0];
