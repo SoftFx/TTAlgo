@@ -31,7 +31,7 @@ namespace TickTrader.BotTerminal
         private WindowManager _wnd;
         private IShell _shell;
         private bool _isRegistred = false;
-        private bool _lockBufferEnable = false;
+        private bool _updateBuffer = true;
 
         private string _selectAgentFilter = DefaultFilterValue;
         private string _selectBotFilter = DefaultFilterValue;
@@ -54,17 +54,17 @@ namespace TickTrader.BotTerminal
 
         public ObservableCounter<string> BotsNames { get; } = new ObservableCounter<string>(DefaultFilterValue);
 
-        public bool LockBuffer
+        public bool UpdateBuffer
         {
-            get => _lockBufferEnable;
+            get => _updateBuffer;
             set
             {
-                if (value == _lockBufferEnable)
+                if (value == _updateBuffer)
                     return;
 
-                _lockBufferEnable = value;
+                _updateBuffer = value;
 
-                if (!value && _lockBuffer.Count > 0)
+                if (value && _lockBuffer.Count > 0)
                 {
                     lock (_locker)
                     {
@@ -184,7 +184,7 @@ namespace TickTrader.BotTerminal
             {
                 var records = new List<IAlertUpdateEventArgs>(args);
 
-                if (!LockBuffer)
+                if (UpdateBuffer)
                 {
                     Execute.BeginOnUIThread(() =>
                     {

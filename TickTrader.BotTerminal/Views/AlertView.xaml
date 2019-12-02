@@ -45,8 +45,8 @@
                           Margin="0.5 0 0 0"/>
 
                 <StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <CheckBox VerticalAlignment="Center" Margin="5 0 0 0" IsChecked="{Binding LockBuffer}"/>
-                    <Label Content="Lock update" VerticalAlignment="Center"/>
+                    <CheckBox VerticalAlignment="Center" Margin="5 0 0 0" IsChecked="{Binding UpdateBuffer}"/>
+                    <Label Content="Auto Refresh" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <Button Grid.Column="4" Content="Show in folder" cal:Message.Attach="ShowInFolder" HorizontalAlignment="Right" 
