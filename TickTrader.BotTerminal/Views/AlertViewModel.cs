@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
+using Machinarium.Var;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,9 @@ using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
-    internal class AlertViewModel : Screen, IWindowModel
+    internal class AlertViewModel : Screen
     {
+        private const string WindowsId = "Tab_Alert";
         private const string DefaultFilterValue = "All";
         private const int MaxBufferSize = 500;
 
@@ -25,13 +27,14 @@ namespace TickTrader.BotTerminal
 
         private ObservableCircularList<IAlertUpdateEventArgs> _alertBuffer = new ObservableCircularList<IAlertUpdateEventArgs>();
         private WindowManager _wnd;
-        private Screen _shell;
+        private IShell _shell;
+        private bool _isRegistred = false;
 
         private string _selectAgentFilter = DefaultFilterValue;
         private string _selectBotFilter = DefaultFilterValue;
 
 
-        internal AlertViewModel(WindowManager wnd, ShellViewModel shell)
+        internal AlertViewModel(WindowManager wnd, IShell shell)
         {
             _wnd = wnd;
             _shell = shell;
@@ -41,6 +44,8 @@ namespace TickTrader.BotTerminal
             ObservableBuffer.Filter += new Predicate<object>(AgentAndBotFilter);
             DisplayName = "Alert";
         }
+
+        public bool IsOpened => _shell.DockManagerService.IsAlertOpened;
 
         public ObservableCounter<string> AgentsNames { get; } = new ObservableCounter<string>(DefaultFilterValue);
 
@@ -152,8 +157,8 @@ namespace TickTrader.BotTerminal
 
                 Execute.BeginOnUIThread(() =>
                 {
-                    if (Application.Current.MainWindow.WindowState != WindowState.Minimized)
-                        _wnd.OpenMdiWindow(this);
+                    if (_isRegistred && !IsOpened)
+                        _shell.DockManagerService.IsAlertOpened = true;
 
                     foreach (var a in record)
                         AddRecord(a);
@@ -188,6 +193,12 @@ namespace TickTrader.BotTerminal
 
             AgentsNames.Add(item.AgentName);
             BotsNames.Add(item.InstanceId);
+        }
+
+        public void RegisterAlertWindow()
+        {
+            _shell.DockManagerService.RegisterView(this, WindowsId);
+            _isRegistred = true;
         }
     }
 }

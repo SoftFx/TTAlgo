@@ -44,6 +44,7 @@ namespace TickTrader.BotTerminal
                     oldService.ShowViewEvent -= dockManager.ShowView;
                     oldService.RemoveViewEvent -= dockManager.RemoveView;
                     oldService.RemoveViewsEvent-= dockManager.RemoveViews;
+                    oldService.RegisterViewToLayout-= dockManager.RegisterView;
                 }
 
                 if (newService != null)
@@ -54,6 +55,7 @@ namespace TickTrader.BotTerminal
                     newService.ShowViewEvent += dockManager.ShowView;
                     newService.RemoveViewEvent += dockManager.RemoveView;
                     newService.RemoveViewsEvent += dockManager.RemoveViews;
+                    newService.RegisterViewToLayout += dockManager.RegisterView;
                 }
 
                 dockManager.UpdateViewsVisibility();
@@ -198,6 +200,7 @@ namespace TickTrader.BotTerminal
             {
                 var view = new LayoutAnchorable { ContentId = contentId, FloatingHeight = 400, FloatingWidth = 600, FloatingTop = 100, FloatingLeft = 100 };
                 InitView(view);
+
                 _anchorableViews.Add(contentId, view);
                 view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
                 view.AddToLayout(this, AnchorableShowStrategy.Right);
@@ -206,9 +209,35 @@ namespace TickTrader.BotTerminal
             else
             {
                 var view = _anchorableViews[contentId];
+
                 if (view.Content == null)
                     InitView(view);
+
                 view.Show();
+            }
+        }
+
+        private void RegisterView(IScreen screen, string key)
+        {
+            key = key ?? screen.DisplayName;
+
+            if (key == null)
+                return;
+
+            if (!_anchorableViews.ContainsKey(key))
+            {
+                var view = new LayoutAnchorable { ContentId = key, FloatingHeight = 400, FloatingWidth = 600, FloatingTop = 100, FloatingLeft = 100 };
+                SetScreenToLayout(view, screen);
+
+                _anchorableViews.Add(key, view);
+                view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
+                view.AddToLayout(this, AnchorableShowStrategy.Right);
+                view.Float();
+            }
+            else
+            {
+                var view = _anchorableViews[key];
+                SetScreenToLayout(view, screen);
             }
         }
 
@@ -246,7 +275,11 @@ namespace TickTrader.BotTerminal
 
         private void InitView(LayoutAnchorable view)
         {
-            var screen = DockManagerService.GetScreen(view.ContentId);
+            SetScreenToLayout(view, DockManagerService.GetScreen(view.ContentId));
+        }
+
+        private void SetScreenToLayout(LayoutAnchorable view, IScreen screen)
+        {
             if (screen != null)
             {
                 view.Title = screen.DisplayName;
