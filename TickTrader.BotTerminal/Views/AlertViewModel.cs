@@ -26,9 +26,12 @@ namespace TickTrader.BotTerminal
         private readonly object _locker = new object();
 
         private ObservableCircularList<IAlertUpdateEventArgs> _alertBuffer = new ObservableCircularList<IAlertUpdateEventArgs>();
+        private LinkedList<IAlertUpdateEventArgs> _lockBuffer = new LinkedList<IAlertUpdateEventArgs>();
+
         private WindowManager _wnd;
         private IShell _shell;
         private bool _isRegistred = false;
+        private bool _lockBufferEnable = false;
 
         private string _selectAgentFilter = DefaultFilterValue;
         private string _selectBotFilter = DefaultFilterValue;
@@ -50,6 +53,32 @@ namespace TickTrader.BotTerminal
         public ObservableCounter<string> AgentsNames { get; } = new ObservableCounter<string>(DefaultFilterValue);
 
         public ObservableCounter<string> BotsNames { get; } = new ObservableCounter<string>(DefaultFilterValue);
+
+        public bool LockBuffer
+        {
+            get => _lockBufferEnable;
+            set
+            {
+                if (value == _lockBufferEnable)
+                    return;
+
+                _lockBufferEnable = value;
+
+                if (!value && _lockBuffer.Count > 0)
+                {
+                    lock (_locker)
+                    {
+                        Execute.BeginOnUIThread(() =>
+                        {
+                            foreach (var m in _lockBuffer)
+                                AddRecord(m);
+
+                            _lockBuffer.Clear();
+                        });
+                    }
+                }
+            }
+        }
 
         public string SelectAgentNameFilter
         {
@@ -153,19 +182,27 @@ namespace TickTrader.BotTerminal
         {
             lock (_locker)
             {
-                var record = new List<IAlertUpdateEventArgs>(args);
+                var records = new List<IAlertUpdateEventArgs>(args);
 
-                Execute.BeginOnUIThread(() =>
+                if (!LockBuffer)
                 {
-                    if (_isRegistred && !IsOpened)
-                        _shell.DockManagerService.IsAlertOpened = true;
+                    Execute.BeginOnUIThread(() =>
+                    {
+                        if (_isRegistred && !IsOpened)
+                            _shell.DockManagerService.IsAlertOpened = true;
 
-                    foreach (var a in record)
-                        AddRecord(a);
-                });
+                        foreach (var a in records)
+                            AddRecord(a);
+                    });
+                }
+                else
+                {
+                    foreach (var a in records)
+                        _lockBuffer.Add(a);
+                }
 
-                if (record.Count > 0 && !record.First().IsRemoteAgent)
-                    foreach (var a in record)
+                if (records.Count > 0 && !records.First().IsRemoteAgent)
+                    foreach (var a in records)
                         _logger.Info(a);
             }
         }

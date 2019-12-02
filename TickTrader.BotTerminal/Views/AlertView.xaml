@@ -44,6 +44,11 @@
                           Width="{Binding ElementName=BotIdColumn, Path=ActualWidth}" SelectedValue="{Binding SelectBotNameFilter}"
                           Margin="0.5 0 0 0"/>
 
+                <StackPanel Grid.Column="3" Orientation="Horizontal">
+                    <CheckBox VerticalAlignment="Center" Margin="5 0 0 0" IsChecked="{Binding LockBuffer}"/>
+                    <Label Content="Lock update" VerticalAlignment="Center"/>
+                </StackPanel>
+
                 <Button Grid.Column="4" Content="Show in folder" cal:Message.Attach="ShowInFolder" HorizontalAlignment="Right" 
                         Width="90" HorizontalContentAlignment="Center" Margin="0 4"/>
                 <Button Grid.Column="5" Content="Clear" cal:Message.Attach="Clear" HorizontalAlignment="Right" Width="40" Margin="0 4 5 4"/>
@@ -65,7 +70,7 @@
                     <DataGridTextColumn x:Name="BotIdColumn" SortMemberPath="InstanceId" 
                                     Binding="{Binding InstanceId}"
                                     Header="Instance" MinWidth="130" Width="auto"/>
-                    <DataGridTemplateColumn Header="Message" Width="auto" MinWidth="120" ClipboardContentBinding="{Binding Message}" 
+                    <DataGridTemplateColumn Header="Message" Width="*" MinWidth="200" ClipboardContentBinding="{Binding Message}" 
                                             CellTemplate="{StaticResource AlertMessageCellTemplate}"/>
                 </DataGrid.Columns>
             </DataGrid>
