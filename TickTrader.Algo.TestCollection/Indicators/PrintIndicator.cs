@@ -19,7 +19,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         {
             if (!isNewBar)
             {
-                if (UseCount && _count < Count)
+                if (!UseCount || (UseCount && _count < Count))
                 {
                     Print($"Indicator info #{++_count}");
                     PrintError($"Indicator error #{++_count}");
