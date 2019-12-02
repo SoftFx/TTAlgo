@@ -198,7 +198,12 @@ namespace TickTrader.BotTerminal
                 else
                 {
                     foreach (var a in records)
+                    {
+                        if (_lockBuffer.Count >= MaxBufferSize)
+                            _lockBuffer.RemoveFirst();
+
                         _lockBuffer.Add(a);
+                    }
                 }
 
                 if (records.Count > 0 && !records.First().IsRemoteAgent)
