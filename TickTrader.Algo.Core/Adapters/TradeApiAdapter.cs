@@ -80,7 +80,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
                 resultEntity = new OrderResultEntity(code, null, null) { IsServerResponse = false };
             }
 
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
                 resultEntity = new OrderResultEntity(code, orderToCancel, null) { IsServerResponse = false };
             }
 
@@ -137,7 +137,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
                 resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
 
@@ -164,7 +164,7 @@ namespace TickTrader.Algo.Core
             else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
                 resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
 
@@ -220,12 +220,20 @@ namespace TickTrader.Algo.Core
             else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
                 resultEntity = new OrderResultEntity(code, orderToModify, null) { IsServerResponse = false };
             }
 
             _logger.LogOrderModifyResults(request, smbMetadata, resultEntity);
             return resultEntity;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task LeavePluginThread(bool delay)
+        {
+            if (delay)
+                await Task.Delay(5); //ugly hack to enable quotes snapshot updates
+            else await Task.Yield(); //free plugin thread to enable queue processing
         }
 
         private void PreprocessAndValidateOpenOrderRequest(OpenOrderRequest request, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
