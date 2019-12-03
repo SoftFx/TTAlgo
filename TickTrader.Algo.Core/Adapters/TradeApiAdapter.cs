@@ -730,9 +730,13 @@ namespace TickTrader.Algo.Core
         {
             var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
-            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden))
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden, out CalcErrorCodes error))
             {
-                code = OrderCmdResultCodes.NotEnoughMoney;
+                code = error.ToOrderError();
+
+                if (code == OrderCmdResultCodes.Ok)
+                    code = OrderCmdResultCodes.NotEnoughMoney;
+
                 return false;
             }
             return true;
