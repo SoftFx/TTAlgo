@@ -422,6 +422,7 @@ namespace TickTrader.Algo.Common.Model
                 while (await _updateQueue.Dequeue())
                 {
                     var update = CreateCacheUpdate(_updateQueue.Item);
+
                     await ApplyUpdate(update);
                 }
             }
