@@ -15,6 +15,9 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void Init()
         {
+            //Necessary for lazy initialization of the calculator
+            var calc = Account.CalculateOrderMargin(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, 0, 1, 0);
+
             Account.BalanceUpdated += () => PrintEventData("Account.BalanceUpdated");
             Account.Reset += () => PrintEventData("Account.Reset");
             Account.Orders.Activated += a => PrintEventData("Account.Orders.Activated", a);
