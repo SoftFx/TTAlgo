@@ -128,7 +128,7 @@ namespace TickTrader.BotTerminal
         public string Comment { get; protected set; }
         public int PriceDigits { get; protected set; }
         public int ProfitDigits { get; protected set; }
-        public double GrossProfitLoss { get; protected set; }
+        public double? GrossProfitLoss { get; protected set; }
         public double NetProfitLoss { get; protected set; }
         public bool IsPosition { get; protected set; }
         public bool IsMarket { get; protected set; }
@@ -160,7 +160,28 @@ namespace TickTrader.BotTerminal
         protected virtual AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
         {
             if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
-                return transaction.TransactionAmount > 0 ? AggregatedTransactionType.Deposit : AggregatedTransactionType.Withdrawal;
+            {
+                switch (transaction.TradeTransactionReason)
+                {
+                    case TradeTransactionReason.Dividend:
+                        return AggregatedTransactionType.Dividend;
+
+                    case TradeTransactionReason.TransferMoney:
+                        return AggregatedTransactionType.TransferFunds;
+
+                    case TradeTransactionReason.Split:
+                        return AggregatedTransactionType.Split;
+
+                    default:
+                        return transaction.TransactionAmount > 0 ? AggregatedTransactionType.Deposit : AggregatedTransactionType.Withdrawal;
+                }
+            }
+
+            if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
+            {
+                if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
+                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
+            }
 
             switch (transaction.TradeRecordType)
             {
@@ -173,7 +194,8 @@ namespace TickTrader.BotTerminal
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStopLimit : AggregatedTransactionType.SellStopLimit;
                 case OrderType.Stop:
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyStop : AggregatedTransactionType.SellStop;
-                default: return AggregatedTransactionType.Unknown;
+                default:
+                    return AggregatedTransactionType.Unknown;
             }
         }
 
@@ -252,7 +274,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual DateTime GetOpenTime(TradeReportEntity transaction)
         {
-            return transaction.OrderCreated;
+            return transaction.OpenTime;
         }
 
         protected virtual double GetNetProfiLoss(TradeReportEntity transaction)
@@ -260,9 +282,9 @@ namespace TickTrader.BotTerminal
             return transaction.TransactionAmount;
         }
 
-        protected virtual double GetGrossProfitLoss(TradeReportEntity transaction)
+        protected virtual double? GetGrossProfitLoss(TradeReportEntity transaction)
         {
-            return transaction.TransactionAmount - transaction.Swap - transaction.Commission;
+            return IsBalanceTransaction ? null : (double?)(transaction.TransactionAmount - transaction.Swap - transaction.Commission);
         }
 
         protected virtual double? GetSwap(TradeReportEntity transaction)
@@ -454,27 +476,27 @@ namespace TickTrader.BotTerminal
             return transaction.PosOpenPrice == 0 ? transaction.Price : transaction.PosOpenPrice;
         }
 
-        protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
-        {
-            var type = base.GetTransactionType(transaction);
+        //protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction)
+        //{
+        //    var type = base.GetTransactionType(transaction);
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
-            {
-                if (transaction.TradeTransactionReason == TradeTransactionReason.Dividend)
-                    type = AggregatedTransactionType.Dividend;
+        //    if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
+        //    {
+        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Dividend)
+        //            type = AggregatedTransactionType.Dividend;
 
-                if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
-                    type = AggregatedTransactionType.TransferFunds;
-            }
+        //        if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
+        //            type = AggregatedTransactionType.TransferFunds;
+        //    }
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
-            {
-                if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                    type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
-            }
+        //    if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
+        //    {
+        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
+        //            type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
+        //    }
 
-            return type;
-        }
+        //    return type;
+        //}
     }
 
     class GrossTransactionModel : TransactionReport
@@ -483,10 +505,11 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        protected override DateTime GetOpenTime(TradeReportEntity transaction)
-        {
-            return IsPosition ? transaction.PositionOpened : transaction.OrderCreated;
-        }
+        //protected override DateTime GetOpenTime(TradeReportEntity transaction)
+        //{
+        //    //return IsPosition ? transaction.PositionOpened : transaction.OrderCreated;
+        //    return transaction.OpenTime;
+        //}
 
         protected override double? GetOpenQuntity(TradeReportEntity transaction)
         {
@@ -569,30 +592,30 @@ namespace TickTrader.BotTerminal
             return transaction.Price;
         }
 
-        protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction) //after creation Splits and Dividends on Grosses make common
-        {
-            var type = base.GetTransactionType(transaction);
+        //protected override AggregatedTransactionType GetTransactionType(TradeReportEntity transaction) //after creation Splits and Dividends on Grosses make common
+        //{
+        //    var type = base.GetTransactionType(transaction);
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
-            {
-                if (transaction.TradeTransactionReason == TradeTransactionReason.Dividend)
-                    type = AggregatedTransactionType.Dividend;
+        //    if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction)
+        //    {
+        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Dividend)
+        //            type = AggregatedTransactionType.Dividend;
 
-                if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
-                    type = AggregatedTransactionType.TransferFunds;
-            }
+        //        if (transaction.TradeTransactionReason == TradeTransactionReason.TransferMoney)
+        //            type = AggregatedTransactionType.TransferFunds;
+        //    }
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction && transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                type = AggregatedTransactionType.Split;
+        //    if (transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction && transaction.TradeTransactionReason == TradeTransactionReason.Split)
+        //        type = AggregatedTransactionType.Split;
 
-            if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
-            {
-                if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
-                    type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
-            }
+        //    if (transaction.TradeTransactionReportType == TradeExecActions.TradeModified)
+        //    {
+        //        if (transaction.TradeTransactionReason == TradeTransactionReason.Split)
+        //            type = transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.SplitBuy : AggregatedTransactionType.SplitSell;
+        //    }
 
-            return type;
-        }
+        //    return type;
+        //}
 
         protected override double? GetClosePrice(TradeReportEntity transaction)
         {
