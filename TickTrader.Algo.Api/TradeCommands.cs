@@ -37,6 +37,7 @@ namespace TickTrader.Algo.Api
         InternalError       = 5,
         ConnectionError     = 6,
         Timeout             = 7,
+        TradeServerError    = 8,
         DealerReject        = 100,
         Unsupported         = 101,
         SymbolNotFound      = 102,

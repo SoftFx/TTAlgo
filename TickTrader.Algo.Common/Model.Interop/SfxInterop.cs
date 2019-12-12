@@ -851,6 +851,7 @@ namespace TickTrader.Algo.Common.Model
         {
             switch (reason)
             {
+                case RejectReason.InternalServerError: return Api.OrderCmdResultCodes.TradeServerError;
                 case RejectReason.DealerReject: return Api.OrderCmdResultCodes.DealerReject;
                 case RejectReason.UnknownSymbol: return Api.OrderCmdResultCodes.SymbolNotFound;
                 case RejectReason.UnknownOrder: return Api.OrderCmdResultCodes.OrderNotFound;
