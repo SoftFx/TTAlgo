@@ -42,10 +42,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                     //}
                     //else
                     //{
-                    //GetBounds(out DateTime from, out DateTime to);
+                    GetBounds(out DateTime from, out DateTime to);
 
-                    DateTime from = new DateTime(2019, 10, 9, 0, 0, 0, DateTimeKind.Utc);
-                    DateTime to = new DateTime(2019, 10, 9, 0, 30, 0, DateTimeKind.Utc);
+                    //DateTime from = new DateTime(2019, 10, 9, 0, 0, 0, DateTimeKind.Utc);
+                    //DateTime to = new DateTime(2019, 10, 9, 0, 30, 0, DateTimeKind.Utc);
 
                     if (TimeFrame == TimeFrames.Ticks || TimeFrame == TimeFrames.TicksLevel2)
                         PrintQuotes(from, to, TimeFrame == TimeFrames.TicksLevel2);

@@ -306,7 +306,7 @@ namespace TickTrader.Algo.Core
             {
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryBars(symbol, side, from, -pageSize, timeFrame);
+                    page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -325,7 +325,7 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
+                    page = FeedHistory.QueryBars(symbol, side, from, -pageSize, timeFrame);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)
