@@ -115,8 +115,7 @@ namespace TickTrader.Algo.Core
                 CounterCurrencyInfo = currencies.GetOrDefault(entity.CounterCurrencyCode) ?? Null.Currency;
 
                 PriceFormat = FormatExtentions.CreateTradeFormatInfo(entity.Digits);
-                AmountDigits = entity.ContractSizeFractional.E(1) ? -1
-                    : (entity.TradeVolumeStep * entity.ContractSizeFractional).Digits();
+                AmountDigits = (entity.TradeVolumeStep * entity.ContractSizeFractional).Digits();
             }
         }
     }
