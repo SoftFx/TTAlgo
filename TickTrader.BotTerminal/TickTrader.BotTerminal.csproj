@@ -212,6 +212,7 @@
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
     <Compile Include="Behaviors\DataGridColumnHide.cs" />
+    <Compile Include="Behaviors\DataGridHelper.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
@@ -276,6 +277,7 @@
       <DependentUpon>PathBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\PopupButton.cs" />
+    <Compile Include="Controls\SelectableTextBlock.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />

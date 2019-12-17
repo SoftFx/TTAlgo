@@ -18,38 +18,54 @@ namespace TickTrader.BotTerminal
 {
     class JournalViewModel : PropertyChangedBase
     {
-        private EventJournal eventJournal;
-        private string filterString;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private bool isEnabled = true;
+
+        private EventJournal _eventJournal;
+        private EventMessage _selectString;
+
+        private string _filterString;
+
+        private bool _isEnabled = true;
 
         public JournalViewModel(EventJournal journal)
         {
-            eventJournal = journal;
-            Journal = CollectionViewSource.GetDefaultView(eventJournal.Records);
+            _eventJournal = journal;
+            Journal = CollectionViewSource.GetDefaultView(_eventJournal.Records);
             Journal.Filter = new Predicate<object>(Filter);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
         }
 
         public ICollectionView Journal { get; private set; }
 
-        public string FilterString
+        public EventMessage SelectString
         {
-            get { return filterString; }
+            get => _selectString;
             set
             {
-                filterString = value;
+                _selectString = value;
+                NotifyOfPropertyChange(nameof(SelectString));
+            }
+        }
+
+        public string FilterString
+        {
+            get { return _filterString; }
+            set
+            {
+                _filterString = value;
                 NotifyOfPropertyChange(nameof(FilterString));
                 RefreshCollection();
+
+                FindPreviosSubstring(_eventJournal.Records.Last(), true);
             }
         }
 
         public bool IsJournalEnabled
         {
-            get => isEnabled;
+            get => _isEnabled;
             set
             {
-                isEnabled = value;
+                _isEnabled = value;
                 NotifyOfPropertyChange(nameof(IsJournalEnabled));
                 RefreshCollection();
             }
@@ -70,30 +86,66 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                logger.Warn(ex,"Failed to browse journal folder");
+                logger.Warn(ex, "Failed to browse journal folder");
             }
         }
 
         public void Clear()
         {
-            eventJournal.Clear();
+            _eventJournal.Clear();
         }
 
-        private bool Filter(object obj)
+        public void NextFoundMessage()
         {
-            if (!isEnabled)
-                return false;
-
-            var data = obj as EventMessage;
-            if (data != null)
-            {
-                if (!string.IsNullOrEmpty(filterString))
-                    return data.TimeKey.Timestamp.ToString("G").IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
-                        || data.Message.IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0;
-                return true;
-            }
-            return false;
+            FindNextSubstring(SelectString);
         }
+
+        public void PreviosFoundMessage()
+        {
+            FindPreviosSubstring(SelectString);
+        }
+
+        private void FindNextSubstring(EventMessage start, bool include = false)
+        {
+            int to = _eventJournal.Records.IndexOf(start);
+
+            if (to == -1)
+                return;
+
+            for (int i = to + (include ? 0 : 1); i < _eventJournal.Records.Count; ++i)
+            {
+                var record = _eventJournal.Records[i];
+                var index = record.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase);
+
+                if (index != -1)
+                {
+                    SelectString = record;
+                    break;
+                }
+            }
+        }
+
+        private void FindPreviosSubstring(EventMessage start, bool include = false)
+        {
+            int from = _eventJournal.Records.IndexOf(start);
+
+            if (from == -1)
+                return;
+
+            for (int i = from - (include ? 0 : 1); i > -1; --i)
+            {
+                var record = _eventJournal.Records[i];
+                var index = record.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase);
+
+                if (index != -1)
+                {
+                    SelectString = record;
+                    break;
+                }
+            }
+        }
+
+        private bool Filter(object obj) => _isEnabled;
     }
 
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
