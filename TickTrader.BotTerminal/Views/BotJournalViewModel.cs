@@ -13,13 +13,20 @@ namespace TickTrader.BotTerminal
 {
     class BotJournalViewModel : PropertyChangedBase
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private readonly SearchItemModel<BotMessage> _searchModel;
+
+        private BotMessage _selectString;
         private AlgoBotViewModel _bot;
         private BotMessageFilter _botJournalFilter = new BotMessageFilter();
-        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
 
         public BotJournalViewModel(AlgoBotViewModel bot)
         {
             _bot = bot;
+
+            _searchModel = new SearchItemModel<BotMessage>(_bot.Model.Journal.Records, _botJournalFilter.Filter);
 
             Journal = CollectionViewSource.GetDefaultView(_bot.Model.Journal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
@@ -70,6 +77,16 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public BotMessage SelectItem
+        {
+            get => _selectString;
+            set
+            {
+                _selectString = value;
+                NotifyOfPropertyChange(nameof(SelectItem));
+            }
+        }
+
         public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
         public bool IsRemote => _bot.Model.IsRemote;
 
@@ -90,10 +107,24 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public void FindNextMessage()
+        {
+            SelectItem = (BotMessage)_searchModel.FindNextSubstring(SelectItem, TextFilter);
+        }
+
+        public void FindPreviousMessage()
+        {
+            SelectItem = (BotMessage)_searchModel.FindPreviosSubstring(SelectItem, TextFilter);
+        }
+
         private void ApplyFilter()
         {
             if (Journal != null)
+            {
                 Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
+
+                SelectItem = (BotMessage)_searchModel.FindPreviosSubstring(null, TextFilter, true);
+            }
         }
     }
 
@@ -121,18 +152,7 @@ namespace TickTrader.BotTerminal
         public MessageTypeFilter MessageTypeCondition { get; set; }
         public bool IsEnabled { get; set; }
 
-        public bool Filter(BotMessage bMessage)
-        {
-            if (IsEnabled && bMessage != null)
-            {
-                return MatchesTypeFilter(bMessage.Type)
-                     && (string.IsNullOrEmpty(TextFilter)
-                     || (bMessage.TimeKey.Shift.ToString("G").IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
-                     || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
-                     || bMessage.Message.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0));
-            }
-            return false;
-        }
+        public bool Filter(BotMessage bMessage) => IsEnabled && bMessage != null && MatchesTypeFilter(bMessage.Type);
 
         private bool MatchesTypeFilter(JournalMessageType journalType)
         {

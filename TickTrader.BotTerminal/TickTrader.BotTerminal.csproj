@@ -408,6 +408,7 @@
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\NumberGenerator.cs" />
     <Compile Include="Model\PathHelper.cs" />
+    <Compile Include="Model\SearchItemModel.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />

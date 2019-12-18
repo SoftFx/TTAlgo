@@ -20,8 +20,10 @@ namespace TickTrader.BotTerminal
     {
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private readonly SearchItemModel<EventMessage> _searchModel;
+
         private EventJournal _eventJournal;
-        private EventMessage _selectString;
+        private EventMessage _selectItem;
 
         private string _filterString;
 
@@ -30,6 +32,8 @@ namespace TickTrader.BotTerminal
         public JournalViewModel(EventJournal journal)
         {
             _eventJournal = journal;
+            _searchModel = new SearchItemModel<EventMessage>(_eventJournal.Records);
+
             Journal = CollectionViewSource.GetDefaultView(_eventJournal.Records);
             Journal.Filter = new Predicate<object>(Filter);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
@@ -37,26 +41,26 @@ namespace TickTrader.BotTerminal
 
         public ICollectionView Journal { get; private set; }
 
-        public EventMessage SelectString
+        public EventMessage SelectItem
         {
-            get => _selectString;
+            get => _selectItem;
             set
             {
-                _selectString = value;
-                NotifyOfPropertyChange(nameof(SelectString));
+                _selectItem = value;
+                NotifyOfPropertyChange(nameof(SelectItem));
             }
         }
 
         public string FilterString
         {
-            get { return _filterString; }
+            get => _filterString;
             set
             {
                 _filterString = value;
                 NotifyOfPropertyChange(nameof(FilterString));
                 RefreshCollection();
 
-                FindPreviosSubstring(_eventJournal.Records.Last(), true);
+                SelectItem = (EventMessage)_searchModel.FindPreviosSubstring(null, FilterString, true);
             }
         }
 
@@ -95,54 +99,14 @@ namespace TickTrader.BotTerminal
             _eventJournal.Clear();
         }
 
-        public void NextFoundMessage()
+        public void FindNextItem()
         {
-            FindNextSubstring(SelectString);
+            SelectItem = (EventMessage)_searchModel.FindNextSubstring(SelectItem, FilterString);
         }
 
-        public void PreviosFoundMessage()
+        public void FindPreviuosItem()
         {
-            FindPreviosSubstring(SelectString);
-        }
-
-        private void FindNextSubstring(EventMessage start, bool include = false)
-        {
-            int to = _eventJournal.Records.IndexOf(start);
-
-            if (to == -1)
-                return;
-
-            for (int i = to + (include ? 0 : 1); i < _eventJournal.Records.Count; ++i)
-            {
-                var record = _eventJournal.Records[i];
-                var index = record.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase);
-
-                if (index != -1)
-                {
-                    SelectString = record;
-                    break;
-                }
-            }
-        }
-
-        private void FindPreviosSubstring(EventMessage start, bool include = false)
-        {
-            int from = _eventJournal.Records.IndexOf(start);
-
-            if (from == -1)
-                return;
-
-            for (int i = from - (include ? 0 : 1); i > -1; --i)
-            {
-                var record = _eventJournal.Records[i];
-                var index = record.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase);
-
-                if (index != -1)
-                {
-                    SelectString = record;
-                    break;
-                }
-            }
+            SelectItem = (EventMessage)_searchModel.FindPreviosSubstring(SelectItem, FilterString);
         }
 
         private bool Filter(object obj) => _isEnabled;
