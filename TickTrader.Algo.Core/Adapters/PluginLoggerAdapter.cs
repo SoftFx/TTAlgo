@@ -271,6 +271,11 @@ namespace TickTrader.Algo.Core
             Logger.OnPrintTrade(action + " " + amount.ToString("N", currency.Format) + " " + currency.Name);
         }
 
+        public void NotifyDividend(double amount, string currency, NumberFormatInfo format)
+        {
+            Logger.OnPrintTrade($"Dividend {amount.ToString("N", format)} {currency}");
+        }
+
         public void NotifyOrderFill(OrderAccessor order)
         {
             var smbInfo = order.SymbolInfo;

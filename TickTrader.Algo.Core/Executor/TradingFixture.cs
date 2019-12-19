@@ -152,8 +152,19 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
-                    context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
-                    context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                    var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
+
+                    if (report.Type == BalanceOperationType.DepositWithdrawal)
+                    {
+                        context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
+                        context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                    }
+
+                    if (report.Type == BalanceOperationType.Dividend)
+                    {
+                        context.Logger.NotifyDividend(report.Amount, currencyInfo.Name, ((CurrencyEntity)currencyInfo).Format);
+                        context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
+                    }
                 }
                 else if (accProxy.Type == Api.AccountTypes.Cash)
                 {
@@ -162,9 +173,12 @@ namespace TickTrader.Algo.Core
                     var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
-                        context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)currencyInfo);
-                        context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
-                        context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                        if (report.Type == BalanceOperationType.DepositWithdrawal)
+                        {
+                            context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)currencyInfo);
+                            context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
+                            context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                        }
                     }
                 }
             });
