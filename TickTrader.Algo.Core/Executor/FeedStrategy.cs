@@ -195,18 +195,17 @@ namespace TickTrader.Algo.Core
 
         IEnumerable<Bar> CustomFeedProvider.GetBars(string symbol, TimeFrames timeFrame, DateTime from, DateTime to, BarPriceType side, bool backwardOrder)
         {
-            const int pageSize = 100;
+            const int pageSize = 500;
             List<BarEntity> page;
-            int pageIndex;
+
+            int i = 0;
+            var timeRef = backwardOrder ? to : from;
 
             from = from.ToUniversalTime();
             to = to.ToUniversalTime().AddMilliseconds(-1);
 
             if (backwardOrder)
             {
-                var timeRef = to;
-                int i = 0;
-
                 while (true)
                 {
                     page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
@@ -220,37 +219,11 @@ namespace TickTrader.Algo.Core
                     if (page.Count != pageSize || i >= 0)
                         break;
 
-                    timeRef = page.First().OpenTime.AddMilliseconds(-1);
+                    timeRef = page.First().OpenTime;
                 }
-
-                //page = FeedHistory.QueryBars(symbol, side, to, -pageSize, timeFrame);
-                //pageIndex = page.Count - 1;
-
-                //while (true)
-                //{
-                //    if (pageIndex < 0)
-                //    {
-                //        if (page.Count < pageSize)
-                //            break; //last page
-                //        var timeRef = page.First().OpenTime.AddMilliseconds(-1);
-                //        page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
-                //        if (page.Count == 0)
-                //            break;
-                //        pageIndex = page.Count - 1;
-                //    } 
-
-                //    var item = page[pageIndex];
-                //    if (item.OpenTime < from)
-                //        break;
-                //    pageIndex--;
-                //    yield return item;
-                //}
             }
             else
             {
-                var timeRef = from;
-                int i = 0;
-
                 while (true)
                 {
                     page = FeedHistory.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
@@ -264,31 +237,8 @@ namespace TickTrader.Algo.Core
                     if (page.Count != pageSize || i != page.Count)
                         break;
 
-                    timeRef = page.Last().CloseTime.AddMilliseconds(1);
+                    timeRef = page.Last().CloseTime;
                 }
-
-                //page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
-                //pageIndex = 0;
-
-                //while (true)
-                //{
-                //    if (pageIndex >= page.Count)
-                //    {
-                //        if (page.Count < pageSize)
-                //            break; //last page
-                //        var timeRef = page.Last().CloseTime.AddMilliseconds(1);
-                //        page = FeedHistory.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
-                //        if (page.Count == 0)
-                //            break;
-                //        pageIndex = 0;
-                //    }
-
-                //    var item = page[pageIndex];
-                //    if (item.OpenTime > to)
-                //        break;
-                //    pageIndex++;
-                //    yield return item;
-                //}
             }
         }
 
