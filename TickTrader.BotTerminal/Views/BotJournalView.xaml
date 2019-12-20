@@ -19,7 +19,7 @@
                     </Border.Background>
                 </Border>
             </Border>
-            <l:SelectableTextBlock Grid.Column="1" FullText="{Binding Message}" ToSearch="{Binding DataContext.TextFilter, RelativeSource={RelativeSource AncestorType=DataGrid}}" TextWrapping="Wrap"/>
+            <l:SelectableTextBlock Grid.Column="1" FullText="{Binding Message}" ToSearch="{Binding DataContext.SearchModel.FilterString, RelativeSource={RelativeSource AncestorType=DataGrid}}" TextWrapping="Wrap"/>
         </Grid>
     </DataTemplate>
 
@@ -30,26 +30,31 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
-                <TextBox DockPanel.Dock="Left" Text="{Binding TextFilter, Delay=500, UpdateSourceTrigger=PropertyChanged}"
+            <StackPanel>
+                <DockPanel Grid.Row="0" Style="{DynamicResource DockPanelAsToolBarStyle}">
+                    <TextBox DockPanel.Dock="Left" Text="{Binding SearchModel.FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}"
                          Width="200" Style="{DynamicResource SearchTextBox_Style}"/>
-                <Button Content="&lt;" cal:Message.Attach="FindNextMessage" />
-                <Button Content="&gt;" cal:Message.Attach="FindPreviousMessage"/>
-                <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TypeFilter, Delay=200}" 
+                    <Button Content="&lt;" DataContext="{Binding SearchModel}" cal:Message.Attach="FindNextItem" />
+                    <Button Content="&gt;" DataContext="{Binding SearchModel}" cal:Message.Attach="FindPreviuosItem"/>
+                    <ComboBox Width="120" Margin="5 0 0 0" SelectedItem="{Binding TypeFilter, Delay=200}" 
                           ItemsSource="{Binding Source={l:EnumToItemSource {x:Type l:MessageTypeFilter}}}" IsEditable="False" SelectedIndex="0"/>
-                <CheckBox DockPanel.Dock="Left" Content="Enable" IsChecked="{Binding IsBotJournalEnabled}" Margin="5 0 0 0" VerticalAlignment="Center" />
+                    <CheckBox DockPanel.Dock="Left" Content="Enable" IsChecked="{Binding IsBotJournalEnabled}" Margin="5 0 0 0" VerticalAlignment="Center" />
 
-                <l:FlatButton DockPanel.Dock="Right" Margin="5 0 0 0" Padding="5 0" 
+                    <l:FlatButton DockPanel.Dock="Right" Margin="5 0 0 0" Padding="5 0" 
                           Style="{DynamicResource ShowBotLogsButtonStyle}"
                           cal:Message.Attach="Browse">
-                </l:FlatButton>
-                <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0"
+                    </l:FlatButton>
+                    <l:FlatButton DockPanel.Dock="Right" Content="Clear"  Padding="5 0"
                           Style="{DynamicResource PanelActionButtonStyle}"
                           cal:Message.Attach="Clear"/>
-            </DockPanel>
+                </DockPanel>
+                <TextBlock Text="{Binding SearchModel.MatchesResult, UpdateSourceTrigger=PropertyChanged}" 
+                           Visibility="{Binding SearchModel.HasResult, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVis}}"
+                           FontStyle="Italic" Margin="4 0"/>
+            </StackPanel>
 
             <DataGrid Name="BotJournal" Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding Journal}"
-                SelectedItem="{Binding SelectItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding SearchModel.SelectItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 l:DataGridHelper.FocusRow="{Binding Path=SelectedIndex, RelativeSource={RelativeSource Mode=Self}, UpdateSourceTrigger=PropertyChanged}"
                 EnableRowVirtualization="True"
                 AutoGenerateColumns="False" 

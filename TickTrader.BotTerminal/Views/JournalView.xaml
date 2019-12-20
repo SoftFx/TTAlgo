@@ -23,7 +23,7 @@
                     </Border.Background>
                 </Border>
             </Border>
-            <l:SelectableTextBlock Grid.Column="1" FullText="{Binding Message}" ToSearch="{Binding DataContext.FilterString, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+            <l:SelectableTextBlock Grid.Column="1" FullText="{Binding Message}" ToSearch="{Binding DataContext.SearchModel.FilterString, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
         </Grid>
     </DataTemplate>
 
@@ -34,21 +34,26 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <DockPanel Grid.Row="0" Margin="4" Style="{DynamicResource DockPanelAsToolBarStyle}">
-                <TextBox DockPanel.Dock="Left" Text="{Binding FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}" Width="200" Style="{DynamicResource SearchTextBox_Style}"/>
-                <Button Content="&lt;" cal:Message.Attach="FindNextItem" />
-                <Button Content="&gt;" cal:Message.Attach="FindPreviuosItem"/>
-                <CheckBox DockPanel.Dock="Left" Content="Enable" IsChecked="{Binding IsJournalEnabled}" Margin="5 0 0 0" VerticalAlignment="Center" />
-                <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
-                              Style="{DynamicResource PanelActionButtonStyle}"
-                              cal:Message.Attach="Browse"/>
-                <l:FlatButton DockPanel.Dock="Right" Content="Clear" Padding="5 0"
-                              Style="{DynamicResource PanelActionButtonStyle}"
-                              cal:Message.Attach="Clear"/>
-            </DockPanel>
+            <StackPanel>
+                <DockPanel Grid.Row="0" Margin="4" Style="{DynamicResource DockPanelAsToolBarStyle}">
+                    <TextBox DockPanel.Dock="Left" Text="{Binding SearchModel.FilterString, Delay=500, UpdateSourceTrigger=PropertyChanged}" Width="200" Style="{DynamicResource SearchTextBox_Style}"/>
+                    <Button Content="&lt;" DataContext="{Binding SearchModel}" cal:Message.Attach="FindNextItem" />
+                    <Button Content="&gt;" DataContext="{Binding SearchModel}" cal:Message.Attach="FindPreviuosItem"/>
+                    <CheckBox DockPanel.Dock="Left" Content="Enable" IsChecked="{Binding IsJournalEnabled}" Margin="5 0 0 0" VerticalAlignment="Center" />
+                    <l:FlatButton DockPanel.Dock="Right" Content="Show in folder" Margin="5 0 0 0" Padding="5 0" 
+                                  Style="{DynamicResource PanelActionButtonStyle}"
+                                  cal:Message.Attach="Browse"/>
+                    <l:FlatButton DockPanel.Dock="Right" Content="Clear" Padding="5 0"
+                                  Style="{DynamicResource PanelActionButtonStyle}"
+                                  cal:Message.Attach="Clear"/>
+                </DockPanel>
+                <TextBlock Text="{Binding SearchModel.MatchesResult, UpdateSourceTrigger=PropertyChanged}" 
+                           Visibility="{Binding SearchModel.HasResult, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BoolToVis}}"
+                           FontStyle="Italic" Margin="4 0"/>
+            </StackPanel>
 
             <DataGrid Name="Journal" Grid.Row="1" Style="{DynamicResource DataGrid_Style}" ItemsSource="{Binding Journal}" 
-                SelectedItem="{Binding SelectItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding SearchModel.SelectItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 l:DataGridHelper.FocusRow="{Binding Path=SelectedIndex, RelativeSource={RelativeSource Mode=Self}, UpdateSourceTrigger=PropertyChanged}"
                 AutoGenerateColumns="False" 
                 CanUserAddRows="False" 

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Machinarium.Qnil;
+using System.Collections.Specialized;
 
 namespace TickTrader.BotTerminal
 {
@@ -20,49 +21,25 @@ namespace TickTrader.BotTerminal
     {
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly SearchItemModel<EventMessage> _searchModel;
-
         private EventJournal _eventJournal;
-        private EventMessage _selectItem;
-
-        private string _filterString;
 
         private bool _isEnabled = true;
 
         public JournalViewModel(EventJournal journal)
         {
             _eventJournal = journal;
-            _searchModel = new SearchItemModel<EventMessage>(_eventJournal.Records);
 
             Journal = CollectionViewSource.GetDefaultView(_eventJournal.Records);
             Journal.Filter = new Predicate<object>(Filter);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
+
+            SearchModel = new SearchItemViewModel<EventMessage>(_eventJournal.Records, refresh: Journal.Refresh);
+            Journal.CollectionChanged += SearchModel.CalculateMatches;
         }
+
+        public SearchItemViewModel<EventMessage> SearchModel { get; }
 
         public ICollectionView Journal { get; private set; }
-
-        public EventMessage SelectItem
-        {
-            get => _selectItem;
-            set
-            {
-                _selectItem = value;
-                NotifyOfPropertyChange(nameof(SelectItem));
-            }
-        }
-
-        public string FilterString
-        {
-            get => _filterString;
-            set
-            {
-                _filterString = value;
-                NotifyOfPropertyChange(nameof(FilterString));
-                RefreshCollection();
-
-                SelectItem = (EventMessage)_searchModel.FindPreviosSubstring(null, FilterString, true);
-            }
-        }
 
         public bool IsJournalEnabled
         {
@@ -97,16 +74,6 @@ namespace TickTrader.BotTerminal
         public void Clear()
         {
             _eventJournal.Clear();
-        }
-
-        public void FindNextItem()
-        {
-            SelectItem = (EventMessage)_searchModel.FindNextSubstring(SelectItem, FilterString);
-        }
-
-        public void FindPreviuosItem()
-        {
-            SelectItem = (EventMessage)_searchModel.FindPreviosSubstring(SelectItem, FilterString);
         }
 
         private bool Filter(object obj) => _isEnabled;

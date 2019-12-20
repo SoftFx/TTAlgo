@@ -15,9 +15,6 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private readonly SearchItemModel<BotMessage> _searchModel;
-
-        private BotMessage _selectString;
         private AlgoBotViewModel _bot;
         private BotMessageFilter _botJournalFilter = new BotMessageFilter();
 
@@ -26,12 +23,14 @@ namespace TickTrader.BotTerminal
         {
             _bot = bot;
 
-            _searchModel = new SearchItemModel<BotMessage>(_bot.Model.Journal.Records, _botJournalFilter.Filter);
-
             Journal = CollectionViewSource.GetDefaultView(_bot.Model.Journal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
+
+            SearchModel = new SearchItemViewModel<BotMessage>(_bot.Model.Journal.Records, _botJournalFilter.Filter, ApplyFilter);
         }
+
+        public SearchItemViewModel<BotMessage> SearchModel { get; }
 
         public ICollectionView Journal { get; private set; }
 
@@ -44,20 +43,6 @@ namespace TickTrader.BotTerminal
                 {
                     _botJournalFilter.MessageTypeCondition = value;
                     NotifyOfPropertyChange(nameof(TypeFilter));
-                    ApplyFilter();
-                }
-            }
-        }
-
-        public string TextFilter
-        {
-            get { return _botJournalFilter.TextFilter; }
-            set
-            {
-                if (_botJournalFilter.TextFilter != value)
-                {
-                    _botJournalFilter.TextFilter = value;
-                    NotifyOfPropertyChange(nameof(TextFilter));
                     ApplyFilter();
                 }
             }
@@ -77,17 +62,8 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public BotMessage SelectItem
-        {
-            get => _selectString;
-            set
-            {
-                _selectString = value;
-                NotifyOfPropertyChange(nameof(SelectItem));
-            }
-        }
-
         public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+
         public bool IsRemote => _bot.Model.IsRemote;
 
         public void Clear()
@@ -107,23 +83,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void FindNextMessage()
-        {
-            SelectItem = (BotMessage)_searchModel.FindNextSubstring(SelectItem, TextFilter);
-        }
-
-        public void FindPreviousMessage()
-        {
-            SelectItem = (BotMessage)_searchModel.FindPreviosSubstring(SelectItem, TextFilter);
-        }
-
         private void ApplyFilter()
         {
             if (Journal != null)
             {
                 Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
 
-                SelectItem = (BotMessage)_searchModel.FindPreviosSubstring(null, TextFilter, true);
+                SearchModel.FullCalculateMatches();
             }
         }
     }
