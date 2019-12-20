@@ -52,6 +52,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 return Clone(CurrentType, 0, TradeExecActions.OrderFilled, execTime);
         }
 
+        public OrderVerifier Activate(DateTime execTime)
+        {
+            return Clone(CurrentType, RemVolume, TradeExecActions.OrderActivated, execTime);
+        }
+
         public OrderVerifier Close(DateTime execTime)
         {
             return Clone(CurrentType, 0, TradeExecActions.PositionClosed, execTime);
@@ -73,7 +78,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             return Clone(CurrentType, RemVolume, TradeExecActions.OrderExpired, execTime);
         }
 
-        private OrderVerifier Clone(OrderType newType, double newRemVolume, TradeExecActions action, DateTime trTimestamp)
+        public OrderVerifier Clone(OrderType newType, double newRemVolume, TradeExecActions action, DateTime trTimestamp)
         {
             return new OrderVerifier(OrderId, AccType, InitialType, newType, Side, ReqVolume, newRemVolume, Price, StopPrice, action, trTimestamp);
         }
@@ -82,47 +87,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         #region Verification
 
-        public void VerifyOrder(AccountDataProvider acc)
-        {
-            // TO DO
-        }
-
-        public void VerifyOrder(Order order)
-        {
-            // TO DO
-        }
-
-        public void VerifyEvent(OrderOpenedEventArgs args)
-        {
-            // TO DO
-        }
-
-        public void VerifyEvent(OrderFilledEventArgs args)
-        {
-            // TO DO
-        }
-
-        public void VerifyEvent(OrderClosedEventArgs args)
-        {
-            // TO DO
-        }
-
-        public void VerifyEvent(OrderCanceledEventArgs args)
-        {
-            // TO DO
-        }
-
-        public void VerifyEvent(OrderExpiredEventArgs args)
-        {
-            // TO DO
-        }
-
         public void VerifyTradeReport(TradeReport report)
         {
-            AssertEquals(OrderId, report.OrderId, "OrderId does not match!");
-            AssertEquals(TradeReportAction, report.ActionType, "ActionType does not match!");
-            AssertEquals(ReqVolume, report.OpenQuantity, "OpenQuantity does not match!");
-            AssertEquals(RemVolume, report.RemainingQuantity, "RemainingQuantity does not match!");
+            AssertEquals(OrderId, report.OrderId, $"OrderId does not match! {OrderId} vs {report.OrderId}");
+            AssertEquals(TradeReportAction, report.ActionType, $"ActionType does not match! {TradeReportAction} vs {report.ActionType}, Id = {OrderId}");
+            AssertEquals(ReqVolume, report.OpenQuantity, $"OpenQuantity does not match! {ReqVolume} vs {report.OpenQuantity}, Id = {OrderId}");
+            AssertEquals(RemVolume, report.RemainingQuantity, $"RemainingQuantity does not match! {RemVolume} vs {report.RemainingQuantity}, Id = {OrderId}");
         }
 
         private void AssertEquals<T>(T expected, T actual, string message)

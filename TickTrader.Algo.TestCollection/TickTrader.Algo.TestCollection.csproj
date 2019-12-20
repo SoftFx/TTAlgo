@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auto.Tests\CommentModel.cs" />
     <Compile Include="Auto.Tests\CompositeTradeApiTest.cs" />
     <Compile Include="Auto.Tests\OrderVerifier.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
