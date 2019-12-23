@@ -146,7 +146,7 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         private void GetBounds(out DateTime from, out DateTime to)
         {
-            DateTime now = DateTime.UtcNow;
+            DateTime now = UtcNow;
             DateTime today = now.Date;
 
             switch (Period)
