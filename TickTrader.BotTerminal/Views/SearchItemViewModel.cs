@@ -123,7 +123,7 @@ namespace TickTrader.BotTerminal
                 return;
 
             SelectItem = null;
-            FindPreviosSubstring(true);
+            //FindPreviosSubstring(true);
 
             foreach (var item in _list)
                 if (item.Message.IndexOf(FilterString) > -1)
