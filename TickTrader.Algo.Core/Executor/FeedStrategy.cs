@@ -202,10 +202,12 @@ namespace TickTrader.Algo.Core
             var timeRef = backwardOrder ? to : from;
 
             from = from.ToUniversalTime();
-            to = to.ToUniversalTime().AddMilliseconds(-1);
+            to = to.ToUniversalTime();
 
             if (backwardOrder)
             {
+                timeRef = timeRef.AddMilliseconds(-1); //do not include the right border in the segment
+
                 while (true)
                 {
                     page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
@@ -219,7 +221,7 @@ namespace TickTrader.Algo.Core
                     if (page.Count != pageSize || i >= 0)
                         break;
 
-                    timeRef = page.First().OpenTime;
+                    timeRef = page.First().CloseTime;
                 }
             }
             else
@@ -229,7 +231,7 @@ namespace TickTrader.Algo.Core
                     page = FeedHistory.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
 
                     for (i = 0; i < page.Count; ++i)
-                        if (page[i].OpenTime <= to)
+                        if (page[i].CloseTime <= to)
                             yield return page[i];
                         else
                             break;
@@ -237,7 +239,7 @@ namespace TickTrader.Algo.Core
                     if (page.Count != pageSize || i != page.Count)
                         break;
 
-                    timeRef = page.Last().CloseTime;
+                    timeRef = page.Last().OpenTime;
                 }
             }
         }
