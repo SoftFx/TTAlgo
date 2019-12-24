@@ -206,13 +206,14 @@ namespace TickTrader.Algo.Core
 
             if (backwardOrder)
             {
-                timeRef = timeRef.AddMilliseconds(-1); //do not include the right border in the segment
-
                 while (true)
                 {
                     page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
 
                     for (i = page.Count - 1; i >= 0; --i)
+                        if (page[i].CloseTime > to) //do not include the right border in the segment
+                            continue;
+                        else
                         if (page[i].OpenTime >= from)
                             yield return page[i];
                         else
