@@ -126,7 +126,7 @@ namespace TickTrader.BotTerminal
             //FindPreviosSubstring(true); //Sometimes XAML selects several lines, although SelectionMode="Single"
 
             foreach (var item in _list)
-                if (item.Message.IndexOf(FilterString) > -1)
+                if (item.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase) > -1)
                     CountMatches++;
         }
 
