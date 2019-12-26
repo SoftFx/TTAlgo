@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
                             if (!(item is EventMessage mes))
                                 continue;
 
-                            if (mes.Message.IndexOf(FilterString) >= 0)
+                            if (mes.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase) >= 0)
                                 CountMatches++;
                         }
 
@@ -99,7 +99,7 @@ namespace TickTrader.BotTerminal
                             if (!(item is EventMessage mes))
                                 continue;
 
-                            if (mes.Message.IndexOf(FilterString) >= 0)
+                            if (mes.Message.IndexOf(FilterString, StringComparison.CurrentCultureIgnoreCase) >= 0)
                                 CountMatches--;
                         }
 
