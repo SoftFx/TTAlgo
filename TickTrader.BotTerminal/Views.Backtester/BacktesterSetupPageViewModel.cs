@@ -362,6 +362,7 @@ namespace TickTrader.BotTerminal
         private void Setup_ConfigLoaded(PluginConfigViewModel config)
         {
             MainSymbolSetup.SelectedSymbol.Value = _catalog.GetSymbol(config.MainSymbol);
+            MainSymbolSetup.SelectedSymbolName.Value = MainSymbolSetup.SelectedSymbol.Value.Name;
             MainSymbolSetup.SelectedTimeframe.Value = config.SelectedTimeFrame;
         }
 
@@ -450,7 +451,7 @@ namespace TickTrader.BotTerminal
 
             foreach (var smb in AdditionalSymbols)
             {
-                var name = smb.SelectedSymbol.Value.Name;
+                var name = smb.SelectedSymbolName.Value;
 
                 if (unique.Contains(name))
                     throw new Exception("Duplicate symbol: " + name);

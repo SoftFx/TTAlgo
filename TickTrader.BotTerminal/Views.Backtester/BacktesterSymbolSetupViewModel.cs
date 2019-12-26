@@ -44,10 +44,16 @@ namespace TickTrader.BotTerminal
             SelectedTimeframe = AddProperty<TimeFrames>();
             SelectedPriceType = AddProperty<DownloadPriceChoices>();
             SelectedSymbol = AddValidable<SymbolData>();
+            SelectedSymbolName = AddValidable<string>();
             AvailableBases = AddProperty<List<TimeFrames>>();
 
-            if ((object)smbSource != null)
+            SelectedSymbolName.AddValidationRule((string str) => AvailableSymbols.FirstOrDefault(u => u.Name == str) != null, NotFoundMessage);
+
+            if (!(smbSource is null))
+            {
                 SelectedSymbol.Var = smbSource;
+                SelectedSymbolName.Value = SelectedSymbol.Value.Name;
+            }
 
             AvailableRange = AddProperty<Tuple<DateTime, DateTime>>();
             IsUpdating = _requestsCount.Var > 0;
@@ -68,12 +74,14 @@ namespace TickTrader.BotTerminal
                 TriggerOnChange(SelectedTimeframe.Var, a => UpdateAvailableRange(SelectedTimeframe.Value));
             }
 
+            TriggerOnChange(SelectedSymbolName.Var, a => UpdateSelectedSymbol(type));
+
             //TriggerOn(SelectedSymbol.Var.IsNull(), SelectDefaultSymbol);
             TriggerOn(isTicks, () => SelectedPriceType.Value = DownloadPriceChoices.Both);
 
             SelectDefaultSymbol();
 
-            IsValid = IsSymbolSelected & Error.IsEmpty() & !IsUpdating;
+            IsValid = IsSymbolSelected & Error.IsEmpty() & SelectedSymbolName.ErrorVar.IsNull() & !IsUpdating;
         }
 
         public SymbolSetupType SetupType { get; private set; }
@@ -81,6 +89,7 @@ namespace TickTrader.BotTerminal
         public IEnumerable<DownloadPriceChoices> AvailablePriceTypes => EnumHelper.AllValues<DownloadPriceChoices>();
         public Property<List<TimeFrames>> AvailableBases { get; }
         public IObservableList<SymbolData> AvailableSymbols { get; }
+        public Validable<string> SelectedSymbolName { get; }
         public Validable<SymbolData> SelectedSymbol { get; }
         public Property<TimeFrames> SelectedTimeframe { get; }
         public Property<DownloadPriceChoices> SelectedPriceType { get; }
@@ -97,6 +106,8 @@ namespace TickTrader.BotTerminal
         public event System.Action<BacktesterSymbolSetupViewModel> Removed;
         public event System.Action OnAdd;
 
+        public string NotFoundMessage => $"Symbol {SelectedSymbolName.Value} not found!";
+
         public string AsText()
         {
             var smb = SelectedSymbol.Value.InfoEntity;
@@ -105,6 +116,24 @@ namespace TickTrader.BotTerminal
 
             return string.Format("{0} {1}, commission={2} {3}, swapLong={4} swapShort={5} ",
                 smb.Name, SelectedTimeframe.Value, smb.Commission, smb.CommissionType, swapLong, swapShort);
+        }
+
+        public void UpdateSelectedSymbol(SymbolSetupType type)
+        {
+            _requestsCount.Value++;
+
+            var smb = AvailableSymbols.FirstOrDefault(u => u.Name == SelectedSymbolName.Value);
+            _errorProp.Value = null;
+
+            if (smb != null)
+                SelectedSymbol.Value = smb;
+            else
+            {
+                AvailableRange.Value = null;
+                _errorProp.Value = NotFoundMessage;
+            }
+
+            _requestsCount.Value--;
         }
 
         public async void UpdateAvailableRange(TimeFrames timeFrame)
@@ -325,7 +354,7 @@ namespace TickTrader.BotTerminal
 
         private void SelectDefaultSymbol()
         {
-            SelectedSymbol.Value = AvailableSymbols.FirstOrDefault();
+            SelectedSymbolName.Value = AvailableSymbols.Select(u => u.Name).FirstOrDefault();
         }
 
         public override void Dispose()
