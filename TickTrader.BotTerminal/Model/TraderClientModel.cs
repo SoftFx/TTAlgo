@@ -118,7 +118,7 @@ namespace TickTrader.BotTerminal
 
         private void Account_BalanceUpdated(BalanceOperationReport report)
         {
-            string action = report.Amount > 0 ? "Deposit" : "Withdrawal";
+            string action = report.Type == BalanceOperationType.Dividend ? "Devidend" : report.Amount > 0 ? "Deposit" : "Withdrawal";
             _journal.Trading($"{action} {report.Amount} {report.CurrencyCode}. Balance: {report.Balance} {report.CurrencyCode}");
         }
 

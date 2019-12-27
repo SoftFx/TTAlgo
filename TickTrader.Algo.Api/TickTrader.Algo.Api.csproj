@@ -49,6 +49,7 @@
     <Compile Include="AlgoPlugin.cs" />
     <Compile Include="Asset.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="BalanceDividend.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="Currency.cs" />
     <Compile Include="DiagnosticInfo.cs" />
