@@ -143,7 +143,7 @@ namespace TickTrader.BotTerminal
 
         public void AddSymbol()
         {
-            var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, HasCustomSymbol);
+            var model = new SymbolCfgEditorViewModel(null, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this) == true)
             {
@@ -154,7 +154,7 @@ namespace TickTrader.BotTerminal
 
         public void EditSymbol(SymbolData symbol)
         {
-            var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasCustomSymbol);
+            var model = new SymbolCfgEditorViewModel(((CustomSymbolData)symbol).Entity, _clientModel.SortedCurrenciesNames, HasSymbol);
 
             if (_wndManager.ShowDialog(model, this) == true)
             {
@@ -174,7 +174,8 @@ namespace TickTrader.BotTerminal
             {
                 smb = CustomSymbol.FromAlgo(symbol.InfoEntity);
             }
-            var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasCustomSymbol, true);
+
+            var model = new SymbolCfgEditorViewModel(smb, _clientModel.SortedCurrenciesNames, HasSymbol, true);
 
             if (_wndManager.ShowDialog(model, this) == true)
             {
@@ -217,9 +218,9 @@ namespace TickTrader.BotTerminal
             CanUpdateSizes = true;
         }
 
-        private bool HasCustomSymbol(string smbName)
+        private bool HasSymbol(string smbName)
         {
-            return _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Custom));
+            return _onlineManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Online)) || _customManagedSymbols.Snapshot.ContainsKey(new SymbolKey(smbName, SymbolOrigin.Custom));
         }
     }
 
