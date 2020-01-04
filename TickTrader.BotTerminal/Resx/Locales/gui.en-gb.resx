@@ -438,8 +438,8 @@
   <data name="Order_CurrentPrice" xml:space="preserve">
     <value>Current Price</value>
   </data>
-  <data name="Order_ExecutionTime" xml:space="preserve">
-    <value>Exec Time</value>
+  <data name="Order_OpenTime" xml:space="preserve">
+    <value>Time</value>
   </data>
   <data name="Order_Id" xml:space="preserve">
     <value>Id</value>
@@ -509,5 +509,14 @@
   </data>
   <data name="Tab_Alert" xml:space="preserve">
     <value>Alerts</value>
+  </data>
+  <data name="Order_ModifiedTime" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="Order_ParentOrderId" xml:space="preserve">
+    <value>Parent Order Id</value>
+  </data>
+  <data name="Order_ReqOpenPrice" xml:space="preserve">
+    <value>Req Open Price</value>
   </data>
 </root>

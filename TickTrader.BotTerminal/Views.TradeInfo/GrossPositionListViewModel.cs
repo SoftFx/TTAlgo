@@ -13,9 +13,15 @@ namespace TickTrader.BotTerminal
 {
     class GrossPositionListViewModel : AccountBasedViewModel
     {
-        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection)
+        private readonly bool _isBacktester;
+        private ProfileManager _profileManager;
+
+        public GrossPositionListViewModel(AccountModel model, IVarSet<string, SymbolModel> symbols, IConnectionStatusInfo connection, ProfileManager profileManager, bool isBacktester)
             : base(model, connection)
         {
+            _profileManager = profileManager;
+            _isBacktester = isBacktester;
+
             Positions = model.Orders
                 .Where((id, order) => order.OrderType == OrderType.Position)
                 .OrderBy((id, order) => id)
@@ -23,6 +29,12 @@ namespace TickTrader.BotTerminal
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;
+
+            if (_profileManager != null)
+            {
+                _profileManager.ProfileUpdated += UpdateProvider;
+                UpdateProvider();
+            }
         }
 
         protected override bool SupportsAccount(AccountTypes accType)
@@ -32,6 +44,7 @@ namespace TickTrader.BotTerminal
 
         public IObservableList<OrderViewModel> Positions { get; private set; }
         public bool AutoSizeColumns { get; set; }
+        public ViewModelStorageEntry StateProvider { get; private set; }
 
         private void PositionsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -41,6 +54,12 @@ namespace TickTrader.BotTerminal
                 foreach (var item in e.OldItems)
                     ((OrderViewModel)item).Dispose();
             }
+        }
+
+        private void UpdateProvider()
+        {
+            StateProvider = _profileManager.CurrentProfile.GetViewModelStorage(_isBacktester ? ViewModelStorageKeys.GrossPositionsBacktester : ViewModelStorageKeys.GrossPositions);
+            NotifyOfPropertyChange(nameof(StateProvider));
         }
     }
 }

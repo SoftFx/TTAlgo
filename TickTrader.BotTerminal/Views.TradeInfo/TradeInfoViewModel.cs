@@ -12,18 +12,18 @@ namespace TickTrader.BotTerminal
 {
     class TradeInfoViewModel: PropertyChangedBase
     {
-        public TradeInfoViewModel(TraderClientModel clientModel, ConnectionManager cManager, ProfileManager _profileStorageModel = null)
-            : this(clientModel.Account, clientModel.Symbols, clientModel.Currencies, clientModel, true, _profileStorageModel)
+        public TradeInfoViewModel(TraderClientModel clientModel, ConnectionManager cManager, ProfileManager profile = null)
+            : this(clientModel.Account, clientModel.Symbols, clientModel.Currencies, clientModel, true, profile)
         {
         }
 
         public TradeInfoViewModel(AccountModel accModel, IVarSet<string, SymbolModel> symbols,
-            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profileStorageModel = null, bool isBacktester = false)
+            IVarSet<string, CurrencyEntity> currencies, IConnectionStatusInfo connectionInfo, bool autoSizeColumns, ProfileManager profile = null, bool isBacktester = false)
         {
-            var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo, profileStorageModel, isBacktester);
-            var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo);
+            var netPositions = new NetPositionListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);
+            var grossPositions = new GrossPositionListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);
             Positions = new PositionListViewModel(netPositions, grossPositions);
-            Orders = new OrderListViewModel(accModel, symbols, connectionInfo, profileStorageModel, isBacktester);
+            Orders = new OrderListViewModel(accModel, symbols, connectionInfo, profile, isBacktester);
             Assets = new AssetsViewModel(accModel, currencies.Snapshot, connectionInfo);
             AccountStats = new AccountStatsViewModel(accModel, connectionInfo);
 

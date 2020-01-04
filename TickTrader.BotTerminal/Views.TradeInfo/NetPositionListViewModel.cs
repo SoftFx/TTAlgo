@@ -13,10 +13,6 @@ namespace TickTrader.BotTerminal
 {
     class NetPositionListViewModel : AccountBasedViewModel
     {
-        private const string StorageKey = "NetPositions";
-        private const string BacktesterStorageKey = "NetPositionsBacktester";
-
-
         private ProfileManager _profileManager;
         private bool _isBacktester;
 

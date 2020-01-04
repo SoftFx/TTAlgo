@@ -6,17 +6,76 @@
              xmlns:l="clr-namespace:TickTrader.BotTerminal"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    
+
     <Grid>
         <DataGrid Name="Positions" Style="{DynamicResource DataGridWithBusyIndicatorStyle}" ClipboardCopyMode="IncludeHeader" SelectionMode="Extended"
                   l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
+            <DataGrid.Resources>
+                <l:DataGridColumnHide x:Key="ParentOrderIdShow" Provider="{Binding StateProvider}" ColumnKey="ParentOrderId"/>
+                <l:DataGridColumnHide x:Key="ReqOpenPriceShow" Provider="{Binding StateProvider}" ColumnKey="ReqOpenPrice"/>
+                <l:DataGridColumnHide x:Key="CurrentPriceShow" Provider="{Binding StateProvider}" ColumnKey="CurrentPrice"/>
+                <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
+                <l:DataGridColumnHide x:Key="CommissionShow" Provider="{Binding StateProvider}" ColumnKey="Commission"/>
+                <l:DataGridColumnHide x:Key="TagShow" Provider="{Binding StateProvider}" ColumnKey="Tag"/>
+                <l:DataGridColumnHide x:Key="CommentShow" Provider="{Binding StateProvider}" ColumnKey="Comment"/>
+            </DataGrid.Resources>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="{l:Resx Copy}" Command="ApplicationCommands.Copy"></MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Show Parent Order Id" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ParentOrderIdShow}}"/>
+                    <MenuItem Header="Show Req Open Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqOpenPriceShow}}"/>
+                    <MenuItem Header="Show Current Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CurrentPriceShow}}"/>
+                    <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
+                    <MenuItem Header="Show Commission" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommissionShow}}"/>
+                    <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TagShow}}"/>
+                    <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommentShow}}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="ToolTipService.IsEnabled">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource NullOrEmptyToBool}">
+                                <Binding Path="Order.InstanceId"/>
+                                <Binding Path="Order.AmountLots"/>
+                                <Binding Path="Order.InitOrderType"/>
+                                <Binding Path="Order.MaxVisibleVolume"/>
+                                <Binding Path="Order.OrderExecutionOptionsStr"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+
+                    <Setter Property="ToolTip">
+                        <Setter.Value>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.InstanceId, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <TextBlock Text="Instance Id: " VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.InstanceId}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.AmountLots, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <TextBlock Text="Initial Volume: " VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.AmountLots}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.InitOrderType, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <TextBlock Text="Initial Type: " VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.InitOrderType}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OrderExecutionOptionsStr, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <TextBlock Text="Option: " VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.OrderExecutionOptionsStr}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}">
+                <!--<DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Style.Triggers>
@@ -27,12 +86,25 @@
                             </Style.Triggers>
                         </Style>
                     </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_ExecutionTime}" Width="100" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}" />
+                </DataGridTextColumn>-->
+
+                <DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_ParentOrderId}" Width="100" Visibility="{Binding Visibility, Source={StaticResource ParentOrderIdShow}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_OpenTime}" Width="100" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_ModifiedTime}" Width="100" Binding="{Binding Order.Modified, Converter={StaticResource FullDateTimeFormat}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="100" Binding="{Binding Order.Symbol}"/>
+
                 <DataGridTextColumn Header="{l:Resx Order_Side}" Width="100" Binding="{Binding Order.Side}"/>
-                <DataGridTextColumn Header="{l:Resx Order_Volume}" Binding="{Binding Order.RemainingAmount}"/>
-                <DataGridTextColumn Header="{l:Resx Order_Symbol}" Width="100" Binding="{Binding Order.Symbol}" />
-                <DataGridTextColumn Header="{l:Resx Order_Price}" Width="100">
+
+                <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="100" Binding="{Binding Order.RemainingAmount}"/>
+                <!-- ?? -->
+                <DataGridTextColumn Header="{l:Resx Order_ReqOpenPrice}" Width="100" Visibility="{Binding Visibility, Source={StaticResource ReqOpenPriceShow}}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="Order.Price"/>
@@ -40,9 +112,8 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_S_L}" Width="100" Binding="{Binding Order.StopLoss}" />
-                <DataGridTextColumn Header="{l:Resx Order_T_P}" Width="100" Binding="{Binding Order.TakeProfit}" />
-                <DataGridTextColumn Header="{l:Resx Order_CurrentPrice}" Width="100">
+
+                <DataGridTextColumn Header="{l:Resx Order_CurrentPrice}" Width="100" Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="CurrentPrice.Rate"/>
@@ -50,35 +121,22 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_P_L}" Width="100">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource AmountConverter}" >
-                            <Binding Path="Order.Profit"/>
-                            <Binding Path="ProfitDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                    <DataGridTextColumn.ClipboardContentBinding>
-                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                            <Binding Path="Order.Profit"/>
-                            <Binding Path="ProfitDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.ClipboardContentBinding>
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_Commission}" Width="100">
+
+                <DataGridTextColumn Header="{l:Resx Order_T_P}" Width="100" Binding="{Binding Order.TakeProfit}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_S_L}" Width="100" Binding="{Binding Order.StopLoss}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_Swap}" Width="100" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}" Binding="{Binding Order.Swap}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_Commission}" Width="100" Visibility="{Binding Visibility, Source={StaticResource CommissionShow}}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
                             <Binding Path="Order.Commission"/>
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
-                    <DataGridTextColumn.ClipboardContentBinding>
-                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                            <Binding Path="Order.Commission"/>
-                            <Binding Path="ProfitDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_Swap}" Width="100" Binding="{Binding Order.Swap}" />
+
                 <DataGridTextColumn Header="{l:Resx Order_Net_P_L}" Width="100">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource AmountConverter}" >
@@ -86,16 +144,11 @@
                             <Binding Path="ProfitDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
-                    <DataGridTextColumn.ClipboardContentBinding>
-                        <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                            <Binding Path="Order.NetProfit"/>
-                            <Binding Path="ProfitDigits"/>
-                        </MultiBinding>
-                    </DataGridTextColumn.ClipboardContentBinding>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="{l:Resx Order_Comment}" Width="100" Binding="{Binding Order.Comment}" />
-                <DataGridTextColumn Header="{l:Resx Order_Tag}" Width="100" Binding="{Binding Order.Tag}" />
-                <DataGridTextColumn Header="{l:Resx Order_InstanceId}" Width="100" Binding="{Binding Order.InstanceId}" />
+
+                <DataGridTextColumn Header="{l:Resx Order_Tag}" Width="100" Visibility="{Binding Visibility, Source={StaticResource TagShow}}" Binding="{Binding Order.Tag}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_Comment}" Width="100" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}" Binding="{Binding Order.Comment}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

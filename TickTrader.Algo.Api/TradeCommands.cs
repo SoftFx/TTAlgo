@@ -28,6 +28,8 @@ namespace TickTrader.Algo.Api
     {
         None                = 0,
         ImmediateOrCancel   = 1,
+        MarketWithSlippage  = 2,
+        HiddenIceberg       = 4,
     }
 
     public enum OrderCmdResultCodes

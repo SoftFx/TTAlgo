@@ -749,6 +749,7 @@ namespace TickTrader.Algo.Common.Model
             {
                 Symbol = record.Symbol,
                 Comment = record.Comment,
+                InitialType = Convert(record.InitialOrderType),
                 Type = Convert(record.OrderType),
                 ClientOrderId = record.ClientOrderId,
                 Price = record.Price,
@@ -775,10 +776,19 @@ namespace TickTrader.Algo.Common.Model
 
         private static OrderExecOptions GetOptions(SFX.ExecutionReport record)
         {
+            var result = OrderExecOptions.None;
             var isLimit = record.OrderType == SFX.OrderType.Limit || record.OrderType == SFX.OrderType.StopLimit;
+
             if (isLimit && record.ImmediateOrCancelFlag)
-                return OrderExecOptions.ImmediateOrCancel;
-            return OrderExecOptions.None;
+                result |= OrderExecOptions.ImmediateOrCancel;
+
+            if (record.MarketWithSlippage)
+                result |= OrderExecOptions.MarketWithSlippage;
+
+            if (record.MaxVisibleVolume >= 0)
+                result |= OrderExecOptions.HiddenIceberg;
+
+            return result;
         }
 
         private static List<ExecutionReport> ConvertToEr(List<SFX.ExecutionReport> reports, string operationId = null)

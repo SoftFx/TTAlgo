@@ -1,5 +1,4 @@
-﻿
-using Caliburn.Micro;
+﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using Machinarium.Var;
 using System;

@@ -71,6 +71,8 @@ namespace TickTrader.Algo.Core
         public OrderExecOptions Options { get; set; }
         public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
         public bool IsHidden => IsHiddenOrder(MaxVisibleVolume);
+        public bool MarketWithSlippdage => Options.HasFlag(OrderExecOptions.MarketWithSlippage);
+        public bool HiddenIceberg => Options.HasFlag(OrderExecOptions.HiddenIceberg);
 
         static OrderEntity() { Null = new NullOrder(); }
 
