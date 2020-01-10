@@ -17,6 +17,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private int _testCount;
         private int _errorCount;
 
+        private List<OrderSide> _orderSides;
+        private List<OrderType> _orderTypes;
+
         private readonly TimeSpan OpenEventTimeout = TimeSpan.FromSeconds(5);
         private readonly TimeSpan ActivateEventTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan FillEventTimeout = TimeSpan.FromSeconds(10);
@@ -46,26 +49,14 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             try
             {
-                _testCount = 0;
-                _errorCount = 0;
-
-                Account.Orders.Opened += a => OnEventFired(a);
-                Account.Orders.Filled += a => OnEventFired(a);
-                Account.Orders.Closed += a => OnEventFired(a);
-                Account.Orders.Expired += a => OnEventFired(a);
-                Account.Orders.Canceled += a => OnEventFired(a);
-                Account.Orders.Activated += a => OnEventFired(a);
-                Account.Orders.Modified += a => OnEventFired(a);
+                Init();
 
                 const string tag = "TAG";
-                var sides = new List<OrderSide>();
-                var types = new List<OrderType>();
-                InitSidesAndTypes(sides, types);
                 bool[] asyncModes = { false, true };
                 string[] tags = { null, tag };
 
-                foreach (var orderSide in sides)
-                    foreach (var orderType in types)
+                foreach (var orderSide in _orderSides)
+                    foreach (var orderType in _orderTypes)
                         foreach (var asyncMode in asyncModes)
                             foreach (var someTag in tags)
                             {
@@ -109,6 +100,24 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             PrintStatus();
 
             Exit();
+        }
+
+        private void Init()
+        {
+            _testCount = 0;
+            _errorCount = 0;
+
+            Account.Orders.Opened += a => OnEventFired(a);
+            Account.Orders.Filled += a => OnEventFired(a);
+            Account.Orders.Closed += a => OnEventFired(a);
+            Account.Orders.Expired += a => OnEventFired(a);
+            Account.Orders.Canceled += a => OnEventFired(a);
+            Account.Orders.Activated += a => OnEventFired(a);
+            Account.Orders.Modified += a => OnEventFired(a);
+
+            _orderSides = new List<OrderSide>();
+            _orderTypes = new List<OrderType>();
+            InitSidesAndTypes(_orderSides, _orderTypes);
         }
 
         private void PrintStatus()
@@ -695,9 +704,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             GetAddModifyPrices(orderType, orderSide, options, out var price, out var stopPrice, out var newPrice, out var newStopPrice);
 
-            var title = (isAsync) ? "Async test: " : "Test: ";
-            var postTitle = (tag == null) ? "" : " with tag";
-            postTitle += (options == OrderExecOptions.ImmediateOrCancel) ? " with IoC" : "";
+            var title = isAsync ? "Async test: " : "Test: ";
+            var postTitle = tag == null ? "" : " with tag";
+            postTitle += options == OrderExecOptions.ImmediateOrCancel ? " with IoC" : "";
             Order accOrder = null;
 
             try
