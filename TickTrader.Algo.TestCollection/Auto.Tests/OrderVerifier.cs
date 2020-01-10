@@ -85,6 +85,55 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         #endregion
 
+        #region Events Verification
+
+        public void VerifyEvent(OrderFilledEventArgs args)
+        {
+            AssertEquals(OrderId, args.NewOrder.Id, $"OrderId does not match!");
+            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match!");
+            AssertEquals(Side, args.NewOrder.Side, $"Side does not match!");
+            AssertEquals(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
+            AssertEquals(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
+        }
+
+        public void VerifyEvent(OrderActivatedEventArgs args)
+        {
+            AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(Side, args.Order.Side, $"Side does not match!");
+            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+        }
+
+        public void VerifyEvent(OrderClosedEventArgs args)
+        {
+            AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(Side, args.Order.Side, $"Side does not match!");
+            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+        }
+
+        public void VerifyEvent(OrderCanceledEventArgs args)
+        {
+            AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(Side, args.Order.Side, $"Side does not match!");
+            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+        }
+
+        public void VerifyEvent(OrderExpiredEventArgs args)
+        {
+            AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(Side, args.Order.Side, $"Side does not match!");
+            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+        }
+
+        #endregion
+
         #region Verification
 
         public void VerifyTradeReport(TradeReport report)

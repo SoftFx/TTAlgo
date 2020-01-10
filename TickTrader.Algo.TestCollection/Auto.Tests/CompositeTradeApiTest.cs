@@ -156,12 +156,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (type == OrderType.StopLimit)
             {
                 var activationArgs = await WaitEvent<OrderActivatedEventArgs>(ActivateEventTimeout);
-                _tradeRepVerifiers.Add(openVer.Activate(activationArgs.Order.Modified));
+                var actVer = openVer.Activate(activationArgs.Order.Modified);
+                _tradeRepVerifiers.Add(actVer);
+
+                actVer.VerifyEvent(activationArgs);
 
                 var openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
                 openVer = new OrderVerifier(openArgs.Order.Id, Account.Type, type, side, volume, price, null, openArgs.Order.Created);
             }
+
+            OrderVerifier fillVer = null;
 
             if (Account.Type == AccountTypes.Gross)
             {
@@ -170,18 +175,21 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
             else
             {
-                fillTime = (await WaitEvent<OrderFilledEventArgs>(FillEventTimeout)).NewOrder.Modified;
+                var fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
+                fillTime = fillArgs.OldOrder.Modified;
+                fillVer = openVer.Fill(fillTime);
+                if (type != OrderType.StopLimit)
+                    fillVer.VerifyEvent(fillArgs);
             }
-
-            var fillVer = openVer.Fill(fillTime);
 
             if (Account.Type == AccountTypes.Gross)
             {
                 var closeResp = await CloseOrderAsync(openVer.OrderId);
-                await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+                var args = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
                 ThrowIfCloseFailed(closeResp);
 
-                var closeVer = fillVer.Close(closeResp.TransactionTime);
+                var closeVer = openVer.Fill(closeResp.TransactionTime).Close(closeResp.TransactionTime);
+                closeVer.VerifyEvent(args);
 
                 _tradeRepVerifiers.Add(closeVer);
             }
@@ -271,7 +279,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             ThrowIfCancelFailed(cancelResp);
             var cancelVer = openVer.Cancel(cancelResp.TransactionTime);
 
-            await WaitEvent<OrderCanceledEventArgs>(CancelEventTimeout);
+            var args = await WaitEvent<OrderCanceledEventArgs>(CancelEventTimeout);
+            cancelVer.VerifyEvent(args);
 
             _tradeRepVerifiers.Add(cancelVer);
         }
@@ -820,190 +829,241 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task TestAddModifyComment(string orderId, bool isAsync, string postTitle = "")
         {
-            const string comment = "Comment";
-            const string newComment = "New comment";
-            var title = (isAsync) ? "Async test: " : "Test: ";
-            var order = Account.Orders[orderId];
+            try
+            {
+                const string comment = "Comment";
+                const string newComment = "New comment";
+                var title = (isAsync) ? "Async test: " : "Test: ";
+                var order = Account.Orders[orderId];
 
-            ++_testCount;
-            Print(title + "add comment " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, comment));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, comment));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, comment);
+                ++_testCount;
+                Print(title + "add comment " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, comment));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, comment));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, comment);
 
-            ++_testCount;
-            Print(title + "modify comment " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, newComment));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, newComment));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, newComment);
+                ++_testCount;
+                Print(title + "modify comment " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, newComment));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, newComment));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, newComment);
+            }
+            catch
+            {
 
+            }
         }
 
         private async Task TestAddModifyExpiration(string orderId, bool isAsync, string postTitle = "")
         {
-            var year = DateTime.Today.Year;
-            var month = DateTime.Today.Month;
-            var day = DateTime.Today.Day;
-            var expiration = new DateTime(year + 1, month, day);
-            var newExpiration = new DateTime(year + 2, month, day);
+            try
+            {
+                var year = DateTime.Today.Year;
+                var month = DateTime.Today.Month;
+                var day = DateTime.Today.Day;
+                var expiration = new DateTime(year + 1, month, day);
+                var newExpiration = new DateTime(year + 2, month, day);
 
-            var title = (isAsync) ? "Async test: " : "Test: ";
-            var order = Account.Orders[orderId];
+                var title = (isAsync) ? "Async test: " : "Test: ";
+                var order = Account.Orders[orderId];
 
-            ++_testCount;
-            Print(title + "add expiration " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, expiration));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, expiration));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, null, null, expiration);
+                ++_testCount;
+                Print(title + "add expiration " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, expiration));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, expiration));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, null, null, expiration);
 
-            ++_testCount;
-            Print(title + "modify expiration " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, newExpiration));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, newExpiration));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, null, null, newExpiration);
+                ++_testCount;
+                Print(title + "modify expiration " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, newExpiration));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, newExpiration));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, null, null, newExpiration);
+            }
+            catch
+            {
 
+            }
         }
 
         private async Task TestAddModifyMaxVisibleVolume(string orderId, bool isAsync, string postTitle = "")
         {
-            var order = Account.Orders[orderId];
-            var maxVisibleVolume = BaseOrderVolume;
-            var newMaxVisibleVolume = Symbol.MinTradeVolume;
-            var title = (isAsync) ? "Async test: " : "Test: ";
+            try
+            {
+                var order = Account.Orders[orderId];
+                var maxVisibleVolume = BaseOrderVolume;
+                var newMaxVisibleVolume = Symbol.MinTradeVolume;
+                var title = (isAsync) ? "Async test: " : "Test: ";
 
-            ++_testCount;
-            Print(title + "add maxVisibleVolume " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, maxVisibleVolume, null, null, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, maxVisibleVolume, null, null, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, maxVisibleVolume);
+                ++_testCount;
+                Print(title + "add maxVisibleVolume " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, maxVisibleVolume, null, null, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, maxVisibleVolume, null, null, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, maxVisibleVolume);
 
-            order = Account.Orders[orderId];
+                order = Account.Orders[orderId];
 
-            ++_testCount;
-            Print(title + "modify maxVisibleVolume " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, newMaxVisibleVolume, null, null, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, newMaxVisibleVolume, null, null, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, newMaxVisibleVolume);
+                ++_testCount;
+                Print(title + "modify maxVisibleVolume " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, newMaxVisibleVolume, null, null, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, newMaxVisibleVolume, null, null, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, newMaxVisibleVolume);
+            }
+            catch
+            {
 
+            }
         }
 
         private async Task TestAddModifyTakeProfit(string orderId, bool isAsync, string postTitle = "")
         {
-            double diff = PriceDelta * Symbol.Point;
-            var order = Account.Orders[orderId];
-            var takeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + diff * 4) : (Symbol.Bid - diff * 4);
-            var newTakeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + diff * 5) : (Symbol.Bid - diff * 5);
-            var title = (isAsync) ? "Async test: " : "Test: ";
+            try
+            {
+                double diff = PriceDelta * Symbol.Point;
+                var order = Account.Orders[orderId];
+                var takeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + diff * 4) : (Symbol.Bid - diff * 4);
+                var newTakeProfit = (order.Side == OrderSide.Buy) ? (Symbol.Ask + diff * 5) : (Symbol.Bid - diff * 5);
+                var title = (isAsync) ? "Async test: " : "Test: ";
 
-            ++_testCount;
-            Print(title + "add takeProfit " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, takeProfit, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, takeProfit, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, takeProfit);
+                ++_testCount;
+                Print(title + "add takeProfit " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, takeProfit, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, takeProfit, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, takeProfit);
 
-            ++_testCount;
-            Print(title + "modify takeProfit " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, newTakeProfit, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, newTakeProfit, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, newTakeProfit);
+                ++_testCount;
+                Print(title + "modify takeProfit " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, newTakeProfit, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, newTakeProfit, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, newTakeProfit);
+            }
+            catch
+            {
 
+            }
         }
 
         private async Task TestAddModifyStopLoss(string orderId, bool isAsync, string postTitle = "")
         {
-            double diff = PriceDelta * Symbol.Point;
-            var order = Account.Orders[orderId];
-            var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - diff * 4) : (Symbol.Ask + diff * 4);
-            var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - diff * 5) : (Symbol.Ask + diff * 5);
-            var title = (isAsync) ? "Async test: " : "Test: ";
+            try
+            {
+                double diff = PriceDelta * Symbol.Point;
+                var order = Account.Orders[orderId];
+                var stopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - diff * 4) : (Symbol.Ask + diff * 4);
+                var newStopLoss = (order.Side == OrderSide.Buy) ? (Symbol.Bid - diff * 5) : (Symbol.Ask + diff * 5);
+                var title = (isAsync) ? "Async test: " : "Test: ";
 
-            ++_testCount;
-            Print(title + "add stopLoss " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, stopLoss, null, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, stopLoss, null, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, stopLoss);
+                ++_testCount;
+                Print(title + "add stopLoss " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, stopLoss, null, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, stopLoss, null, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, stopLoss);
 
-            ++_testCount;
-            Print(title + "modify stopLoss " + order.Side + " " + order.Type + " order " + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, newStopLoss, null, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, newStopLoss, null, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, newStopLoss);
+                ++_testCount;
+                Print(title + "modify stopLoss " + order.Side + " " + order.Type + " order " + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, newStopLoss, null, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, newStopLoss, null, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, newStopLoss);
+            }
+            catch
+            {
 
+            }
         }
 
         private async Task TestModifyVolume(string orderId, bool isAsync, double newVolume, string postTitle = "")
         {
-            var title = (isAsync) ? "Async test: " : "Test: ";
-            var order = Account.Orders[orderId];
+            try
+            {
+                var title = (isAsync) ? "Async test: " : "Test: ";
+                var order = Account.Orders[orderId];
 
-            ++_testCount;
-            Print(title + "modify volume " + order.Side + " " + order.Type + " order" + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, null, newVolume));
-            else
-                ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, null, newVolume));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, newVolume, null, false, null);
+                ++_testCount;
+                Print(title + "modify volume " + order.Side + " " + order.Type + " order" + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, null, newVolume));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, null, newVolume));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, newVolume, null, false, null);
+            }
+            catch
+            {
+
+            }
         }
 
         private async Task TestModifyLimitPrice(string orderId, double newPrice, double? stopPrice, bool isAsync, string postTitle = "")
         {
-            var title = (isAsync) ? "Async test: " : "Test: ";
-            var order = Account.Orders[orderId];
+            try
+            {
+                var title = (isAsync) ? "Async test: " : "Test: ";
+                var order = Account.Orders[orderId];
 
-            ++_testCount;
-            Print(title + "modify limit price " + order.Side + " " + order.Type + " order" + postTitle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, newPrice, stopPrice, null, null, null, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, newPrice, stopPrice, null, null, null, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, newPrice, false, stopPrice);
+                ++_testCount;
+                Print(title + "modify limit price " + order.Side + " " + order.Type + " order" + postTitle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, newPrice, stopPrice, null, null, null, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, newPrice, stopPrice, null, null, null, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, newPrice, false, stopPrice);
+            }
+            catch
+            {
+
+            }
         }
 
         private async Task TestModifyStopPrice(string orderId, double? price, double newStopPrice, bool isAsync, string postTittle = "")
         {
-            var title = (isAsync) ? "Async test: " : "Test: ";
-            var order = Account.Orders[orderId];
+            try
+            {
+                var title = (isAsync) ? "Async test: " : "Test: ";
+                var order = Account.Orders[orderId];
 
-            ++_testCount;
-            Print(title + "modify stopPrice " + order.Side + " " + order.Type + " order" + postTittle);
-            if (isAsync)
-                ThrowOnError(await ModifyOrderAsync(order.Id, price, newStopPrice, null, null, null, null));
-            else
-                ThrowOnError(ModifyOrder(order.Id, price, newStopPrice, null, null, null, null));
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-            VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, price, false, newStopPrice);
+                ++_testCount;
+                Print(title + "modify stopPrice " + order.Side + " " + order.Type + " order" + postTittle);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, price, newStopPrice, null, null, null, null));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, price, newStopPrice, null, null, null, null));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, price, false, newStopPrice);
+            }
+            catch
+            {
+
+            }
         }
 
         private async Task TestCancelOrder(string orderId, OrderSide orderSide, OrderType orderType, string tag, bool isIoc, bool isAsync, OrderVerifier openVer)
