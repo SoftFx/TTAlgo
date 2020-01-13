@@ -55,11 +55,11 @@ namespace TickTrader.Algo.Indicators.Oscillators.MACD
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             MacdSeries[pos] = _fastEma.Average[pos] - _slowEma.Average[pos];
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _macdSma.UpdateLast(MacdSeries[pos]);
             }

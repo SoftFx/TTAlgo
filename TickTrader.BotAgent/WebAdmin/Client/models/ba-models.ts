@@ -40,6 +40,7 @@ export class AccountModel implements Serializable<AccountModel> {
 
 export class PackageModel implements Serializable<PackageModel> {
     public Name: string;
+    public DisplayName: string;
     public Created: Date;
     public IsValid: boolean;
     public Plugins: PluginModel[];
@@ -52,6 +53,7 @@ export class PackageModel implements Serializable<PackageModel> {
         this.Created = input.Created;
         this.IsValid = input.IsValid;
         this.Name = input.Name;
+        this.DisplayName = input.DisplayName;
         this.Plugins = input.Plugins ? input.Plugins.map(p => new PluginModel(input.Name).Deserialize(p)) : input.Plugins;
 
         return this;
@@ -98,7 +100,7 @@ export class PluginModel implements Serializable<PluginModel>{
     }
 }
 
-export enum LogEntryTypes { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
+export enum LogEntryTypes { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert }
 
 export class LogEntry implements Serializable<LogEntry> {
     public Time: Date;

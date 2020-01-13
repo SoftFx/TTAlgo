@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.Algo.Api;
-using TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
@@ -17,7 +12,9 @@ namespace TickTrader.Algo.Core
         public double? Price { get; set; }
         public double? StopPrice { get; set; }
         public double Volume { get; set; }
+        public double VolumeLots { get; set; }
         public double? MaxVisibleVolume { get; set; }
+        public double? MaxVisibleVolumeLots { get; set; }
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
         public DateTime? Expiration { get; set; }

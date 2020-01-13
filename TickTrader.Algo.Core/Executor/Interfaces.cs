@@ -80,6 +80,7 @@ namespace TickTrader.Algo.Core
 
     internal interface IFixtureContext
     {
+        string InstanceId { get; }
         PluginBuilder Builder { get; }
         AlgoMarketState MarketData { get; }
         FeedStrategy FeedStrategy { get; }

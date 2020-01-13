@@ -25,6 +25,8 @@ namespace TickTrader.BotAgent.BA.Models
         private static readonly TimeSpan ReconnectThreshold = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ReconnectThreshold_BadCreds = TimeSpan.FromMinutes(1);
 
+        private AlertStorage _alertStorage;
+
         private CancellationTokenSource _connectCancellation;
         private AsyncGate _requestGate;
         private ConnectionErrorInfo _lastError = ConnectionErrorInfo.Ok;
@@ -43,18 +45,21 @@ namespace TickTrader.BotAgent.BA.Models
         private int _startedBotsCount;
         private bool _shutdownRequested => _shutdownCompletedSrc != null;
 
-        public ClientModel(string address, string username, string password)
+        public ClientModel(string address, string username, string password, AlertStorage storage)
         {
             Address = address;
             Username = username;
             Password = password;
+
+            _alertStorage = storage;
         }
 
-        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider)
+        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage)
         {
             try
             {
                 _packageProvider = packageProvider;
+                _alertStorage = storage;
                 _requestGate = new AsyncGate();
                 _requestGate.OnWait += ManageConnection;
                 _requestGate.OnExit += KeepAlive;
@@ -112,6 +117,7 @@ namespace TickTrader.BotAgent.BA.Models
             }
         }
 
+        public AlertStorage AlertStorage { get; }
         public ConnectionStates ConnectionState { get; private set; }
         public ConnectionErrorInfo LastError => _lastError;
         public PluginTradeApiProvider.Handler PluginTradeApi { get; private set; }
@@ -456,7 +462,7 @@ namespace TickTrader.BotAgent.BA.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            if (bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id)))
+            if (bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id), _alertStorage))
             {
                 BotInitialized?.Invoke(bot);
             }

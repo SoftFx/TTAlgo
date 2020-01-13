@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.Momentum
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             if (Price.Count > pos + Period)

@@ -19,7 +19,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         public DataSeries Close { get; set; }
 
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             if (Bars.Count == High.Count)
             {

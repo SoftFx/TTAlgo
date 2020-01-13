@@ -80,6 +80,8 @@ namespace TickTrader.Algo.Protocol
 
         public bool CanGetBotLogs() => HasViewerAccess;
 
+        public bool CanGetAlerts() => HasViewerAccess;
+
         public bool CanGetBotFolderInfo(BotFolderId folderId)
         {
             switch (folderId)

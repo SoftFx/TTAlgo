@@ -33,6 +33,8 @@ namespace TickTrader.BotAgent.BA.Models
         private BotIdHelper _botIdHelper;
         private IFdkOptionsProvider _fdkOptionsProvider;
 
+        private AlertStorage _alertStorage;
+
         public static EnvService Environment => envService;
 
         public static string GetWorkingFolderFor(string botId)
@@ -45,6 +47,7 @@ namespace TickTrader.BotAgent.BA.Models
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
+            _alertStorage = new AlertStorage();
             _fdkOptionsProvider = fdkOptionsProvider;
 
             await _packageStorage.Library.WaitInit();
@@ -120,7 +123,7 @@ namespace TickTrader.BotAgent.BA.Models
             #endregion
 
             #region Bot Management
-
+            public IAlertStorage GetAlertStorage() => CallActorFlatten(a => a.GetAlertsStorage());
             public string GenerateBotId(string botDisplayName) => CallActorFlatten(a => a.AutogenerateBotId(botDisplayName));
             public BotModelInfo AddBot(AccountKey accountId, PluginConfig config) => CallActorFlatten(a => a.AddBot(accountId, config));
             public void ChangeBotConfig(string botId, PluginConfig config) => CallActorFlatten(a => a.GetBotOrThrow(botId).ChangeBotConfig(config));
@@ -179,8 +182,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password)
         {
-            var acc = new ClientModel(accountId.Server, accountId.Login, password);
-            await acc.Init(_packageStorage, _fdkOptionsProvider);
+            var acc = new ClientModel(accountId.Server, accountId.Login, password, _alertStorage);
+            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage);
 
             var testResult = await acc.TestConnection();
 
@@ -214,7 +217,7 @@ namespace TickTrader.BotAgent.BA.Models
                 throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
             else
             {
-                var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
+                var newAcc = new ClientModel(accountId.Server, accountId.Login, password, _alertStorage);
                 _accounts.Add(newAcc);
                 AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
 
@@ -294,7 +297,7 @@ namespace TickTrader.BotAgent.BA.Models
             acc.StateChanged += OnAccountStateChanged;
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
-            await acc.Init(_packageStorage, _fdkOptionsProvider);
+            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage);
         }
 
         private void OnBotStateChanged(TradeBotModel bot)
@@ -475,6 +478,8 @@ namespace TickTrader.BotAgent.BA.Models
                 _packageStorage.Remove(package);
             }
         }
+
+        private IAlertStorage GetAlertsStorage() => _alertStorage;
 
         private List<PluginInfo> GetAllPlugins()
         {

@@ -53,7 +53,7 @@ namespace TickTrader.Algo.Core
         public ITradeExecutor TradeExecutor { get; set; }
         public PluginExecutorConfig Config { get; } = new PluginExecutorConfig();
 
-        public event Action<BotLogRecord> LogUpdated;
+        public event Action<PluginLogRecord> LogUpdated;
         public event Action<TesterTradeTransaction> TradesUpdated;
         public event Action<TradeReportEntity> TradeHistoryUpdated;
         public event Action<RateUpdate> SymbolRateUpdated;
@@ -187,8 +187,8 @@ namespace TickTrader.Algo.Core
 
         private void MarshalUpdate(object update)
         {
-            if (update is BotLogRecord)
-                LogUpdated?.Invoke((BotLogRecord)update);
+            if (update is PluginLogRecord)
+                LogUpdated?.Invoke((PluginLogRecord)update);
             else if (update is TradeReportEntity)
                 TradeHistoryUpdated?.Invoke((TradeReportEntity)update);
             else if (update is TesterTradeTransaction)

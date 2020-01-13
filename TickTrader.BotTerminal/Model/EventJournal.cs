@@ -1,4 +1,5 @@
 ﻿using NLog;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotTerminal
 {
@@ -53,6 +54,11 @@ namespace TickTrader.BotTerminal
         public EventMessage(string message, JournalMessageType type) : this(message)
         {
             Type = type;
+        }
+
+        public static EventMessage Create(PluginLogRecord record)
+        {
+            return new EventMessage(record.Message) { TimeKey = record.Time, Type = Convert(record.Severity) };
         }
     }
 

@@ -154,6 +154,11 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod((b, p) => p.BalanceUpdated(), this);
         }
 
+        internal void FireBalanceDividendEvent(BalanceDividendEventArgsImpl args)
+        {
+            builder.InvokePluginMethod((b, p) => p.BalanceDividend(args), this);
+        }
+
         internal void FireResetEvent()
         {
             builder.InvokePluginMethod((b, p) => p.Reset(), this);
@@ -293,6 +298,7 @@ namespace TickTrader.Algo.Core
         public event Action<IOrderModel2> OrderRemoved = delegate { };
         //public event Action<IOrderModel2> OrderReplaced = delegate { };
         public event Action BalanceUpdated = delegate { };
+        public event Action<IBalanceDividendEventArgs> BalanceDividend = delegate { };
         public event Action Reset = delegate { };
         public event Action<IPositionModel2> PositionChanged;
         public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;
@@ -421,7 +427,7 @@ namespace TickTrader.Algo.Core
             {
                 var amount = volume * symbolAccessor.ContractSize;
 
-                return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side, price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume));
+                return builder.Calculator.HasEnoughMarginToOpenOrder(symbolAccessor, amount, type, side, price, stopPrice, OrderEntity.IsHiddenOrder(maxVisibleVolume), out _);
             }
             return false;
         }

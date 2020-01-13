@@ -46,8 +46,6 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (IoC == IocTypes.None)
                 options = OrderExecOptions.None;
 
-            ValidateVolume();
-
             var comment = string.IsNullOrWhiteSpace(Comment) ? null : Comment;
 
             if (string.IsNullOrWhiteSpace(OrderId))
@@ -60,31 +58,6 @@ namespace TickTrader.Algo.TestCollection.Bots
                 Status.WriteLine(ToObjectPropertiesString(result.ResultingOrder));
 
             Exit();
-        }
-
-        private void ValidateVolume()
-        {
-            if (Volume.HasValue)
-            {
-                if (Volume <= 0)
-                {
-                    Status.WriteLine("Ivalid parameter. Volume cannot be negative.");
-                    Exit();
-                    throw new Exception("Ivalid parameter. Volume cannot be negative.");
-                }
-                var order = Account.Orders[OrderId];
-                if (order?.IsNull ?? true)
-                    return;
-                var symbol = Symbols[order.Symbol];
-                if (symbol?.IsNull ?? true)
-                    return;
-                else if (Volume < symbol.MinTradeVolume)
-                {
-                    Status.WriteLine("Ivalid parameter. Volume is lower than MinTradeVolume.");
-                    Exit();
-                    throw new Exception("Ivalid parameter. Volume is lower than MinTradeVolume.");
-                }
-            }
         }
     }
 

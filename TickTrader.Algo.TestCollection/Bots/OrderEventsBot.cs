@@ -9,6 +9,9 @@ namespace TickTrader.Algo.TestCollection.Bots
     {
         protected override void OnStart()
         {
+            //Necessary for lazy initialization of the calculator
+            var calc = Account.CalculateOrderMargin(Symbol.Name, OrderType.Limit, OrderSide.Buy, 0.1, 0, 1, 0);
+
             Account.Orders.Canceled += OrdersOnCanceled;
             Account.Orders.Closed += OrdersOnClosed;
             Account.Orders.Expired += OrdersOnExpired;
@@ -16,6 +19,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Modified += OrdersOnModified;
             Account.Orders.Opened += OrdersOnOpened;
             Account.Orders.Activated += OrderActivated;
+
+            Account.NetPositions.Modified += PositionsModified;
         }
 
         protected override void OnStop()
@@ -27,6 +32,8 @@ namespace TickTrader.Algo.TestCollection.Bots
             Account.Orders.Modified -= OrdersOnModified;
             Account.Orders.Opened -= OrdersOnOpened;
             Account.Orders.Activated -= OrderActivated;
+
+            Account.NetPositions.Modified -= PositionsModified;
         }
 
 
@@ -53,6 +60,14 @@ namespace TickTrader.Algo.TestCollection.Bots
             sb.AppendLine($"Filled order #{args.OldOrder.Id}");
             sb.AppendLine(ToObjectPropertiesString("Old Order", args.OldOrder));
             sb.AppendLine(ToObjectPropertiesString("New Order", args.NewOrder));
+            Print(sb.ToString());
+        }
+
+        private void PositionsModified(NetPositionModifiedEventArgs args)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Modified position");
+            sb.AppendLine(ToObjectPropertiesString("New Position", args.NewPosition));
             Print(sb.ToString());
         }
 

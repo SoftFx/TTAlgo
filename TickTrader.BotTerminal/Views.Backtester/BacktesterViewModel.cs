@@ -396,9 +396,9 @@ namespace TickTrader.BotTerminal
             OptimizationResultsPage.Stop(tester);
         }
 
-        private BotLogRecord CreateInfoRecord(uint no, string message)
+        private PluginLogRecord CreateInfoRecord(uint no, string message)
         {
-            return new BotLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
+            return new PluginLogRecord(new TimeKey(_emulteFrom, no), LogSeverities.Info, message, null);
         }
 
         private void Executor_TradeHistoryUpdated(TradeReportEntity record)

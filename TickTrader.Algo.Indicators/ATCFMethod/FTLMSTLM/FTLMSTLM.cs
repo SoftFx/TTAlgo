@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FTLMSTLM
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Ftlm[pos] = _ftlm.Ftlm[pos];

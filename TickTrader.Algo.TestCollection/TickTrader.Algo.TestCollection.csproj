@@ -45,7 +45,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.1.2.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
+    <Reference Include="TickTrader.Algo.Api, Version=1.1.5.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
     </Reference>
@@ -57,6 +57,7 @@
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />
+    <Compile Include="Bots\CheckAlertBot.cs" />
     <Compile Include="Bots\DoingNothingBot.cs" />
     <Compile Include="Bots\GetIndicatorsInfoBot.cs" />
     <Compile Include="Bots\BufferPrintBot.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Bots\FeedQueryBot.cs" />
     <Compile Include="Bots\ModifyLoopBot.cs" />
     <Compile Include="Bots\EventBot.cs" />
+    <Compile Include="Bots\NestedPrintIndicatorBot.cs" />
     <Compile Include="Bots\OpenCloseBot.cs" />
     <Compile Include="Bots\QuotePrintBot.cs" />
     <Compile Include="Bots\SplitViewBot.cs" />
@@ -98,12 +100,14 @@
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Bots\CalculateOrderMarginBot.cs" />
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
+    <Compile Include="Indicators\AlertIndicator.cs" />
     <Compile Include="Indicators\BarSeriesIndicator.cs" />
     <Compile Include="Indicators\CustomHistogramIndicator.cs" />
     <Compile Include="Indicators\MultipleInputIndicator.cs" />
     <Compile Include="Indicators\MultipleOutputIndicator.cs" />
     <Compile Include="Indicators\DelayIndicator.cs" />
     <Compile Include="Indicators\MultiplePrecisionIndicator.cs" />
+    <Compile Include="Indicators\PrintIndicator.cs" />
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\PrintExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

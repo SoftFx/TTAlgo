@@ -25,9 +25,9 @@ namespace TickTrader.Algo.TestCollection.Indicators
             _rand = new Random();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
-            if (!IsUpdate)
+            if (isNewBar)
             {
                 ZeroLine1[0] = _rand.NextDouble() * 2;
                 ZeroLine2[0] = _rand.NextDouble() * 4;

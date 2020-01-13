@@ -57,12 +57,12 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FATLSignal
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Up[pos] = double.NaN;
             Down[pos] = double.NaN;
-            if (IsNewBar)
+            if (isNewBar)
             {
                 _prevTrend = _trend;
             }

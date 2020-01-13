@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Api.Math;
@@ -8,23 +9,23 @@ namespace TickTrader.Algo.Core
 {
     internal class TradeApiAdapter : TradeCommands
     {
-        private ITradeApi api;
-        private SymbolsCollection symbols;
-        private AccountAccessor account;
-        private PluginLoggerAdapter logger;
+        private ITradeApi _api;
+        private SymbolsCollection _symbols;
+        private AccountAccessor _account;
+        private PluginLoggerAdapter _logger;
 
         public TradeApiAdapter(SymbolsCollection symbols, AccountAccessor account, PluginLoggerAdapter logger)
         {
-            this.symbols = symbols;
-            this.account = account;
-            this.logger = logger;
-            api = Null.TradeApi;
+            _symbols = symbols;
+            _account = account;
+            _logger = logger;
+            _api = Null.TradeApi;
         }
 
         public ITradeApi ExternalApi
         {
-            get => api;
-            set => api = value ?? throw new InvalidOperationException("TradeApi cannot be null!");
+            get => _api;
+            set => _api = value ?? throw new InvalidOperationException("TradeApi cannot be null!");
         }
 
         public ICalculatorApi Calc { get; set; }
@@ -45,232 +46,130 @@ namespace TickTrader.Algo.Core
         {
             OrderResultEntity resultEntity;
             string encodedTag = CompositeTag.NewTag(IsolationTag, tag);
-            SymbolAccessor smbMetadata = null;
 
-            var logRequest = new OpenOrderRequest // mock request for logging
+            var code = OrderCmdResultCodes.Ok;
+
+            var request = new OpenOrderRequest
             {
                 Symbol = symbol,
                 Type = orderType,
                 Side = side,
+                VolumeLots = volumeLots,
+                MaxVisibleVolumeLots = maxVisibleVolumeLots,
                 Price = price,
                 StopPrice = stopPrice,
-                Volume = volumeLots,
-                TakeProfit = tp,
                 StopLoss = sl,
-            };
-
-            var orderToOpen = new MockOrder(symbol, orderType, side)
-            {
-                RemainingVolume = volumeLots,
-                RequestedVolume = volumeLots,
-                MaxVisibleVolume = maxVisibleVolumeLots ?? double.NaN,
-                Price = price ?? double.NaN,
-                StopPrice = stopPrice ?? double.NaN,
-                StopLoss = sl ?? double.NaN,
-                TakeProfit = tp ?? double.NaN,
+                TakeProfit = tp,
                 Comment = comment,
-                Tag = tag,
-                InstanceId = IsolationTag,
+                Options = options,
+                Tag = encodedTag,
+                Expiration = expiration,
             };
 
-            try
+            PreprocessAndValidateOpenOrderRequest(request, out var smbMetadata, ref code);
+
+            if (code == OrderCmdResultCodes.Ok)
             {
-                ValidateTradePersmission();
-                smbMetadata = GetSymbolOrThrow(symbol);
-                ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, side);
-
-                ValidateVolumeLots(volumeLots, smbMetadata);
-                ValidateMaxVisibleVolumeLots(maxVisibleVolumeLots, smbMetadata, orderType, volumeLots);
-                ValidateOptions(options, orderType);
-                volumeLots = RoundVolume(volumeLots, smbMetadata);
-                maxVisibleVolumeLots = RoundVolume(maxVisibleVolumeLots, smbMetadata);
-                double volume = ConvertVolume(volumeLots, smbMetadata);
-                double? maxVisibleVolume = ConvertNullableVolume(maxVisibleVolumeLots, smbMetadata);
-                price = RoundPrice(price, smbMetadata, side);
-                stopPrice = RoundPrice(stopPrice, smbMetadata, side);
-                sl = RoundPrice(sl, smbMetadata, side);
-                tp = RoundPrice(tp, smbMetadata, side);
-
-                if (orderType == OrderType.Market && price == null)
-                    price = GetMarketOpenPriceOrThrow(smbMetadata, side);
-
-                ValidatePrice(price, orderType == OrderType.Limit || orderType == OrderType.StopLimit);
-                ValidateStopPrice(stopPrice, orderType == OrderType.Stop || orderType == OrderType.StopLimit);
-                ValidateVolume(volume);
-                ValidateMaxVisibleVolume(maxVisibleVolume, orderType);
-                ValidateTp(tp);
-                ValidateSl(sl);
-
-                // Update mock request values
-                logRequest.Volume = volumeLots;
-                logRequest.Price = price;
-                logRequest.StopPrice = stopPrice;
-                logRequest.StopLoss = sl;
-                logRequest.TakeProfit = tp;
-
-                var request = new OpenOrderRequest
-                {
-                    Symbol = symbol,
-                    Type = orderType,
-                    Side = side,
-                    Price = price,
-                    StopPrice = stopPrice,
-                    Volume = volume,
-                    MaxVisibleVolume = maxVisibleVolume,
-                    TakeProfit = tp,
-                    StopLoss = sl,
-                    Comment = comment,
-                    Options = options,
-                    Tag = encodedTag,
-                    Expiration = expiration
-                };
-
-                ValidateMargin(request, smbMetadata);
-
-                logger.LogOrderOpening(logRequest, smbMetadata);
-
-                var orderResp = await api.OpenOrder(isAsync, request);
-
+                _logger.LogOrderOpening(request, smbMetadata);
+                var orderResp = await _api.OpenOrder(isAsync, request);
                 if (orderResp.ResultCode != OrderCmdResultCodes.Ok)
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToOpen, orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, null, orderResp.TransactionTime);
                 else
-                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, account.Leverage), orderResp.TransactionTime);
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage), orderResp.TransactionTime);
             }
-            catch (OrderValidationError ex)
+            else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToOpen, null) { IsServerResponse = false };
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
+                resultEntity = new OrderResultEntity(code, null, null) { IsServerResponse = false };
             }
 
-            logger.LogOrderOpenResults(resultEntity, logRequest, smbMetadata);
+            _logger.LogOrderOpenResults(resultEntity, request, smbMetadata);
             return resultEntity;
         }
 
         public async Task<OrderCmdResult> CancelOrder(bool isAsync, string orderId)
         {
-            Order orderToCancel = null;
+            OrderResultEntity resultEntity;
+            var code = OrderCmdResultCodes.Ok;
+            var request = new CancelOrderRequest { OrderId = orderId };
 
-            try
+            PreprocessAndValidateCancelOrderRequest(request, out var orderToCancel, ref code);
+
+            if (code == OrderCmdResultCodes.Ok)
             {
-                ValidateTradePersmission();
-                orderToCancel = GetOrderOrThrow(orderId);
-                var smbMetadata = GetSymbolOrThrow(orderToCancel.Symbol);
-                ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToCancel.Side);
+                _logger.LogOrderCanceling(request);
 
-                logger.PrintTrade("[Out] Canceling order #" + orderId);
+                var orderResp = await _api.CancelOrder(isAsync, request);
 
-                var request = new CancelOrderRequest { OrderId = orderId, Side = orderToCancel.Side };
-                var result = await api.CancelOrder(isAsync, request);
-
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
-                    logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " canceled");
-                else
-                    logger.PrintTradeFail("[In] FAILED Canceling order #" + orderId + " error=" + result.ResultCode);
-
-                return new OrderResultEntity(result.ResultCode, orderToCancel, result.TransactionTime);
+                resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToCancel, orderResp.TransactionTime);
             }
-            catch (OrderValidationError ex)
+            else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
-                logger.PrintTradeFail("[Self] FAILED Canceling order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToCancel, null) { IsServerResponse = false };
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
+                resultEntity = new OrderResultEntity(code, orderToCancel, null) { IsServerResponse = false };
             }
+
+            _logger.LogOrderCancelResults(request, resultEntity);
+            return resultEntity;
         }
 
         public async Task<OrderCmdResult> CloseOrder(bool isAsync, string orderId, double? closeVolumeLots)
         {
-            Order orderToClose = null;
+            OrderResultEntity resultEntity;
+            var code = OrderCmdResultCodes.Ok;
+            var request = new CloseOrderRequest { OrderId = orderId, VolumeLots = closeVolumeLots };
 
-            try
+            PreprocessAndValidateCloseOrderRequest(request, out var orderToClose, out var smbMetadata, ref code);
+
+            if (code == OrderCmdResultCodes.Ok)
             {
-                ValidateTradePersmission();
-                if (closeVolumeLots != null)
-                    ValidateVolume(closeVolumeLots.Value);
+                _logger.LogOrderClosing(request);
 
-                double? closeVolume = null;
-                orderToClose = GetOrderOrThrow(orderId);
-                var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
-                ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToClose.Side.Revert());
+                var orderResp = await _api.CloseOrder(isAsync, request);
 
-                if (closeVolumeLots != null)
-                {
-                    closeVolumeLots = RoundVolume(closeVolumeLots, smbMetadata);
-                    ValidateVolumeLots(closeVolumeLots, smbMetadata);
-                    closeVolume = ConvertVolume(closeVolumeLots.Value, smbMetadata);
-                }
-
-                ValidateVolume(closeVolume);
-
-                logger.PrintTrade("[Out] Closing order #" + orderId);
-
-                var request = new CloseOrderRequest { OrderId = orderId, Volume = closeVolume };
-
-                var result = await api.CloseOrder(isAsync, request);
-
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
-                {
-                    logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed");
-                    return new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, account.Leverage), result.TransactionTime);
-                }
+                if (orderResp.ResultCode == OrderCmdResultCodes.Ok)
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, new OrderAccessor(orderResp.ResultingOrder, smbMetadata, _account.Leverage), orderResp.TransactionTime);
                 else
-                {
-                    logger.PrintTradeFail("[Out] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
-                }
+                    resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToClose, orderResp.TransactionTime);
             }
-            catch (OrderValidationError ex)
+            else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
-                logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
+                resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
+
+            _logger.LogOrderCloseResults(request, resultEntity);
+            return resultEntity;
         }
 
         public async Task<OrderCmdResult> CloseOrderBy(bool isAsync, string orderId, string byOrderId)
         {
-            Order orderToClose = null;
+            OrderResultEntity resultEntity;
+            var code = OrderCmdResultCodes.Ok;
+            var request = new CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
 
-            try
+            PreprocessAndValidateCloseOrderByRequest(request, out var orderToClose, ref code);
+
+            if (code == OrderCmdResultCodes.Ok)
             {
-                ValidateTradePersmission();
+                _logger.LogOrderClosingBy(request);
 
-                orderToClose = GetOrderOrThrow(orderId);
-                Order orderByClose = GetOrderOrThrow(byOrderId);
+                var orderResp = await _api.CloseOrder(isAsync, request);
 
-                var smbMetadata = GetSymbolOrThrow(orderToClose.Symbol);
-                ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToClose.Side.Revert());
-
-                logger.PrintTrade("[Out] Closing order #" + orderId + " by order #" + byOrderId);
-
-                var request = new CloseOrderRequest { OrderId = orderId, ByOrderId = byOrderId };
-
-                var result = await api.CloseOrder(isAsync, request);
-
-                if (result.ResultCode == OrderCmdResultCodes.Ok)
-                {
-                    logger.PrintTradeSuccess("[In] SUCCESS: Order #" + orderId + " closed by order #" + byOrderId);
-                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
-                }
-                else
-                {
-                    logger.PrintTradeFail("[In] FAILED Closing order #" + orderId + " error=" + result.ResultCode);
-                    return new OrderResultEntity(result.ResultCode, orderToClose, result.TransactionTime);
-                }
+                resultEntity = new OrderResultEntity(orderResp.ResultCode, orderToClose, orderResp.TransactionTime);
             }
-            catch (OrderValidationError ex)
+            else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
-                logger.PrintTradeFail("[Self] FAILED Closing order #" + orderId + " by order #" + byOrderId + " error=" + ex.ErrorCode);
-                return new OrderResultEntity(ex.ErrorCode, orderToClose, null) { IsServerResponse = false };
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
+                resultEntity = new OrderResultEntity(code, orderToClose, null) { IsServerResponse = false };
             }
+
+            _logger.LogOrderCloseByResults(request, resultEntity);
+            return resultEntity;
         }
 
         public Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double price, double? sl, double? tp, string comment)
@@ -278,124 +177,241 @@ namespace TickTrader.Algo.Core
             return ModifyOrder(isAsync, orderId, price, null, null, sl, tp, comment, null, null, null);
         }
 
-        public async Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
+        public async Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp,
+            string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
         {
             OrderResultEntity resultEntity;
-            Order orderToModify = null;
-            SymbolAccessor smbMetadata = null;
 
-            var logRequest = new ReplaceOrderRequest // mock request for logging
+            var request = new ReplaceOrderRequest
             {
                 OrderId = orderId,
-                Symbol = "AAAAAA",
-                Type = OrderType.Market,
-                Side = OrderSide.Buy,
-                CurrentVolume = double.NaN,
-                NewVolume = volume,
+                CurrentVolumeLots = double.NaN,
+                NewVolumeLots = volume,
+                MaxVisibleVolumeLots = maxVisibleVolume,
+                VolumeChange = double.NaN,
                 Price = price,
                 StopPrice = stopPrice,
                 StopLoss = sl,
                 TakeProfit = tp,
+                Comment = comment,
+                Expiration = expiration,
+                Options = options,
             };
 
-            try
+            var code = OrderCmdResultCodes.Ok;
+
+            PreprocessAndValidateModifyOrderRequest(request, out var orderToModify, out var smbMetadata, ref code);
+
+            if (code == OrderCmdResultCodes.Ok)
             {
-                ValidateTradePersmission();
+                _logger.LogOrderModifying(request, smbMetadata);
 
-                orderToModify = GetOrderOrThrow(orderId);
-                smbMetadata = GetSymbolOrThrow(orderToModify.Symbol);
-                var orderType = orderToModify.Type;
-
-                // update mock request values
-                logRequest.Symbol = orderToModify.Symbol;
-                logRequest.Type = orderToModify.Type;
-                logRequest.Side = orderToModify.Side;
-                logRequest.CurrentVolume = orderToModify.RemainingVolume;
-
-                ValidateOptions(options, orderType);
-                ValidateTradeEnabled(smbMetadata);
-                ValidateQuotes(smbMetadata, orderToModify.Side);
-
-                //if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
-                //    ValidatePrice(price);
-
-                //if (orderType == OrderType.Stop || orderType == OrderType.StopLimit)
-                //    ValidateStopPrice(stopPrice);
-
-                double orderVolumeInLots = orderToModify.RemainingVolume;
-                double orderVolume = ConvertVolume(orderVolumeInLots, smbMetadata);
-
-                ValidateVolumeLots(volume, smbMetadata);
-                ValidateMaxVisibleVolumeLots(maxVisibleVolume, smbMetadata, orderType, volume ?? orderVolumeInLots);
-                volume = RoundVolume(volume, smbMetadata);
-                maxVisibleVolume = RoundVolume(maxVisibleVolume, smbMetadata);
-                double? newOrderVolume = ConvertNullableVolume(volume, smbMetadata);
-                double? orderMaxVisibleVolume = ConvertNullableVolume(maxVisibleVolume, smbMetadata);
-                double volumeChange = volume.HasValue ? ConvertVolume(volume.Value - orderVolumeInLots, smbMetadata) : 0;
-                price = RoundPrice(price, smbMetadata, orderToModify.Side);
-                stopPrice = RoundPrice(stopPrice, smbMetadata, orderToModify.Side);
-                sl = RoundPrice(sl, smbMetadata, orderToModify.Side);
-                tp = RoundPrice(tp, smbMetadata, orderToModify.Side);
-
-                ValidatePrice(price, false);
-                ValidateStopPrice(stopPrice, false);
-                ValidateVolume(newOrderVolume);
-                ValidateMaxVisibleVolume(orderMaxVisibleVolume, orderType);
-                ValidateTp(tp);
-                ValidateSl(sl);
-
-                // update mock request values
-                logRequest.NewVolume = volume;
-                logRequest.Price = price;
-                logRequest.StopPrice = stopPrice;
-                logRequest.StopLoss = sl;
-                logRequest.TakeProfit = tp;
-
-                var request = new ReplaceOrderRequest
-                {
-                    OrderId = orderId,
-                    Symbol = orderToModify.Symbol,
-                    Type = orderToModify.Type,
-                    Side = orderToModify.Side,
-                    CurrentVolume = orderVolume,
-                    NewVolume = newOrderVolume,
-                    VolumeChange = volumeChange,
-                    Price = price,
-                    StopPrice = stopPrice,
-                    StopLoss = sl,
-                    TakeProfit = tp,
-                    Comment = comment,
-                    Expiration = expiration,
-                    MaxVisibleVolume = orderMaxVisibleVolume,
-                    Options = options
-                };
-
-                ValidateMargin(request, smbMetadata);
-
-                logger.LogOrderModifying(logRequest, smbMetadata);
-
-                var result = await api.ModifyOrder(isAsync, request);
+                var result = await _api.ModifyOrder(isAsync, request);
 
                 if (result.ResultCode == OrderCmdResultCodes.Ok)
                 {
-                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, account.Leverage), result.TransactionTime);
+                    resultEntity = new OrderResultEntity(result.ResultCode, new OrderAccessor(result.ResultingOrder, smbMetadata, _account.Leverage), result.TransactionTime);
                 }
                 else
                 {
                     resultEntity = new OrderResultEntity(result.ResultCode, orderToModify, result.TransactionTime);
                 }
             }
-            catch (OrderValidationError ex)
+            else
             {
                 if (isAsync)
-                    await Task.Yield(); //free plugin thread to enable queue processing
-                resultEntity = new OrderResultEntity(ex.ErrorCode, orderToModify, null) { IsServerResponse = false };
+                    await LeavePluginThread(code == OrderCmdResultCodes.OffQuotes);
+                resultEntity = new OrderResultEntity(code, orderToModify, null) { IsServerResponse = false };
             }
 
-            logger.LogOrderModifyResults(logRequest, smbMetadata, resultEntity);
+            _logger.LogOrderModifyResults(request, smbMetadata, resultEntity);
             return resultEntity;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task LeavePluginThread(bool delay)
+        {
+            if (delay)
+                await Task.Delay(5); //ugly hack to enable quotes snapshot updates
+            else await Task.Yield(); //free plugin thread to enable queue processing
+        }
+
+        private void PreprocessAndValidateOpenOrderRequest(OpenOrderRequest request, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        {
+            smbMetadata = null;
+
+            var side = request.Side;
+            var type = request.Type;
+
+            if (!ValidateTradePersmission(ref code))
+                return;
+            if (!TryGetSymbol(request.Symbol, out smbMetadata, ref code))
+                return;
+            if (!ValidateTradeEnabled(smbMetadata, ref code))
+                return;
+            if (!ValidateQuotes(smbMetadata, side, ref code))
+                return;
+
+            if (!ValidateOptions(request.Options, type, ref code))
+                return;
+            if (!ValidateVolumeLots(request.VolumeLots, smbMetadata, ref code))
+                return;
+            if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleVolumeLots, smbMetadata, type, request.VolumeLots, ref code))
+                return;
+
+            request.VolumeLots = RoundVolume(request.VolumeLots, smbMetadata);
+            request.MaxVisibleVolumeLots = RoundVolume(request.MaxVisibleVolumeLots, smbMetadata);
+            request.Volume = ConvertVolume(request.VolumeLots, smbMetadata);
+            request.MaxVisibleVolume = ConvertNullableVolume(request.MaxVisibleVolumeLots, smbMetadata);
+            request.Price = RoundPrice(request.Price, smbMetadata, side);
+            request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
+            request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
+            request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
+
+            if (type == OrderType.Market && request.Price == null)
+            {
+                if (!TryGetMarketPrice(smbMetadata, side, out var marketPrice, ref code))
+                    return;
+                request.Price = marketPrice;
+            }
+
+            if (!ValidatePrice(request.Price, type == OrderType.Limit || type == OrderType.StopLimit, ref code))
+                return;
+            if (!ValidateStopPrice(request.StopPrice, type == OrderType.Stop || type == OrderType.StopLimit, ref code))
+                return;
+            if (!ValidateVolume(request.Volume, ref code))
+                return;
+            if (!ValidateMaxVisibleVolume(request.MaxVisibleVolume, type, ref code))
+                return;
+            if (!ValidateTp(request.TakeProfit, ref code))
+                return;
+            if (!ValidateSl(request.StopLoss, ref code))
+                return;
+
+            if (!ValidateMargin(request, smbMetadata, ref code))
+                return;
+        }
+
+        private void PreprocessAndValidateCancelOrderRequest(CancelOrderRequest request, out Order orderToCancel, ref OrderCmdResultCodes code)
+        {
+            orderToCancel = null;
+
+            if (!ValidateTradePersmission(ref code))
+                return;
+            if (!TryGetOrder(request.OrderId, out orderToCancel, ref code))
+                return;
+            if (!TryGetSymbol(orderToCancel.Symbol, out var smbMetadata, ref code))
+                return;
+            if (!ValidateTradeEnabled(smbMetadata, ref code))
+                return;
+            if (!ValidateQuotes(smbMetadata, orderToCancel.Side, ref code))
+                return;
+        }
+
+        private void PreprocessAndValidateCloseOrderRequest(CloseOrderRequest request, out Order orderToClose, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        {
+            orderToClose = null;
+            smbMetadata = null;
+
+            if (!ValidateTradePersmission(ref code))
+                return;
+            if (!TryGetOrder(request.OrderId, out orderToClose, ref code))
+                return;
+            if (!TryGetSymbol(orderToClose.Symbol, out smbMetadata, ref code))
+                return;
+            if (!ValidateTradeEnabled(smbMetadata, ref code))
+                return;
+            if (!ValidateQuotes(smbMetadata, orderToClose.Side.Revert(), ref code))
+                return;
+
+            if (!ValidateVolumeLots(request.VolumeLots, smbMetadata, ref code))
+                return;
+            request.VolumeLots = RoundVolume(request.VolumeLots, smbMetadata);
+            request.Volume = ConvertNullableVolume(request.VolumeLots, smbMetadata);
+
+            if (!ValidateVolume(request.Volume, ref code))
+                return;
+        }
+
+        private void PreprocessAndValidateCloseOrderByRequest(CloseOrderRequest request, out Order orderToClose, ref OrderCmdResultCodes code)
+        {
+            orderToClose = null;
+
+            if (!ValidateTradePersmission(ref code))
+                return;
+            if (!TryGetOrder(request.OrderId, out orderToClose, ref code))
+                return;
+            if (!TryGetOrder(request.ByOrderId, out var orderByClose, ref code))
+                return;
+            if (!TryGetSymbol(orderToClose.Symbol, out var smbMetadata, ref code))
+                return;
+            if (!ValidateTradeEnabled(smbMetadata, ref code))
+                return;
+            if (!ValidateQuotes(smbMetadata, orderToClose.Side.Revert(), ref code))
+                return;
+        }
+
+        private void PreprocessAndValidateModifyOrderRequest(ReplaceOrderRequest request, out Order orderToModify, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
+        {
+            orderToModify = null;
+            smbMetadata = null;
+
+            if (!ValidateTradePersmission(ref code))
+                return;
+            if (!TryGetOrder(request.OrderId, out orderToModify, ref code))
+                return;
+
+            var side = orderToModify.Side;
+            var type = orderToModify.Type;
+
+            request.Symbol = orderToModify.Symbol;
+            request.Type = type;
+            request.Side = side;
+            request.CurrentVolumeLots = orderToModify.RemainingVolume;
+
+            if (!TryGetSymbol(orderToModify.Symbol, out smbMetadata, ref code))
+                return;
+            if (!ValidateTradeEnabled(smbMetadata, ref code))
+                return;
+            if (!ValidateQuotes(smbMetadata, side, ref code))
+                return;
+
+            if (!ValidateOptions(request.Options, type, ref code))
+                return;
+            if (!ValidateVolumeLots(request.NewVolumeLots, smbMetadata, ref code))
+                return;
+            if (!ValidateMaxVisibleVolumeLots(request.MaxVisibleVolumeLots, smbMetadata, type, request.NewVolumeLots ?? request.CurrentVolumeLots, ref code))
+                return;
+
+            request.NewVolumeLots = RoundVolume(request.NewVolumeLots, smbMetadata);
+            request.MaxVisibleVolumeLots = RoundVolume(request.MaxVisibleVolumeLots, smbMetadata);
+            request.CurrentVolume = ConvertVolume(request.CurrentVolumeLots, smbMetadata);
+            request.NewVolume = ConvertNullableVolume(request.NewVolumeLots, smbMetadata);
+            request.MaxVisibleVolume = ConvertNullableVolume(request.MaxVisibleVolumeLots, smbMetadata);
+            request.VolumeChange = request.NewVolumeLots.HasValue ? ConvertVolume(request.NewVolumeLots.Value - request.CurrentVolumeLots, smbMetadata) : 0;
+            request.Price = RoundPrice(request.Price, smbMetadata, side);
+            request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
+            request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
+            request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
+
+            if (!ValidatePrice(request.Price, false, ref code))
+                return;
+            if (!ValidateStopPrice(request.StopPrice, false, ref code))
+                return;
+            if (!ValidateVolume(request.NewVolume, ref code))
+                return;
+            if (!ValidateMaxVisibleVolume(request.MaxVisibleVolume, type, ref code))
+                return;
+            if (!ValidateTp(request.TakeProfit, ref code))
+                return;
+            if (!ValidateSl(request.StopLoss, ref code))
+                return;
+
+            if (!ValidateMargin(request, smbMetadata, ref code))
+                return;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double? ConvertNullableVolume(double? volumeInLots, SymbolAccessor smbMetadata)
         {
             if (volumeInLots == null)
@@ -403,6 +419,7 @@ namespace TickTrader.Algo.Core
             return ConvertVolume(volumeInLots.Value, smbMetadata);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double ConvertVolume(double volumeInLots, SymbolAccessor smbMetadata)
         {
             var res = smbMetadata.ContractSize * volumeInLots;
@@ -418,51 +435,93 @@ namespace TickTrader.Algo.Core
             return res;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double RoundVolume(double volumeInLots, Symbol smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double? RoundVolume(double? volumeInLots, Symbol smbMetadata)
         {
             return volumeInLots.Floor(smbMetadata.TradeVolumeStep);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double RoundPrice(double price, Symbol smbMetadata, OrderSide side)
         {
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double? RoundPrice(double? price, Symbol smbMetadata, OrderSide side)
         {
             return side == OrderSide.Buy ? price.Ceil(smbMetadata.Digits) : price.Floor(smbMetadata.Digits);
         }
 
-        private TradeVolume ModifyVolume(TradeVolume oldVol, double byLots, Symbol smbInfo)
-        {
-            var lotSize = smbInfo.ContractSize;
-            var byUnits = lotSize * byLots;
-            return new TradeVolume(oldVol.Units - byUnits, oldVol.Lots - byLots);
-        }
-
         #region Validation
 
-        private SymbolAccessor GetSymbolOrThrow(string symbolName)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryGetSymbol(string symbolName, out SymbolAccessor smbMetadata, ref OrderCmdResultCodes code)
         {
-            var smbMetadata = symbols.GetOrDefault(symbolName);
+            smbMetadata = _symbols.GetOrDefault(symbolName);
             if (smbMetadata == null)
-                throw new OrderValidationError(OrderCmdResultCodes.SymbolNotFound);
-            return smbMetadata;
+            {
+                code = OrderCmdResultCodes.SymbolNotFound;
+                return false;
+            }
+            return true;
         }
 
-        private Order GetOrderOrThrow(string orderId)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryGetOrder(string orderId, out Order order, ref OrderCmdResultCodes code)
         {
-            var order = account.Orders.GetOrderOrNull(orderId);
+            order = _account.Orders.GetOrderOrNull(orderId);
             if (order == null)
-                throw new OrderValidationError(OrderCmdResultCodes.OrderNotFound);
-            return order;
+            {
+                code = OrderCmdResultCodes.OrderNotFound;
+                return false;
+            }
+            return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryGetMarketPrice(SymbolAccessor smb, OrderSide orderSide, out double price, ref OrderCmdResultCodes code)
+        {
+            price = double.NaN;
+            var rate = smb.LastQuote;
+
+            if (rate == null)
+            {
+                code = OrderCmdResultCodes.OffQuotes;
+                return false;
+            }
+
+            if (orderSide == OrderSide.Buy)
+            {
+                if (!rate.HasAsk)
+                {
+                    code = OrderCmdResultCodes.OffQuotes;
+                    return false;
+                }
+                price = rate.Ask;
+                return true;
+            }
+            else if (orderSide == OrderSide.Sell)
+            {
+                if (!rate.HasBid)
+                {
+                    code = OrderCmdResultCodes.OffQuotes;
+                    return false;
+                }
+                price = rate.Bid;
+                return true;
+            }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsInvalidValue(double val)
         {
             // Because TTS uses decimal for financial calculation
@@ -474,52 +533,82 @@ namespace TickTrader.Algo.Core
             return double.IsNaN(val) || double.IsInfinity(val);
         }
 
-        private void ValidateVolume(double volume)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateVolume(double volume, ref OrderCmdResultCodes code)
         {
             if (volume <= 0 || IsInvalidValue(volume))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+            {
+                code = OrderCmdResultCodes.IncorrectVolume;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateVolume(double? volume)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateVolume(double? volume, ref OrderCmdResultCodes code)
         {
             if (!volume.HasValue)
-                return;
+                return true;
 
             if (volume <= 0 || IsInvalidValue(volume.Value))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+            {
+                code = OrderCmdResultCodes.IncorrectVolume;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateMaxVisibleVolume(double? volume, OrderType orderType)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateMaxVisibleVolume(double? volume, OrderType orderType, ref OrderCmdResultCodes code)
         {
             if (!volume.HasValue)
-                return;
+                return true;
 
             if (volume < 0 || IsInvalidValue(volume.Value))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+            {
+                code = OrderCmdResultCodes.IncorrectMaxVisibleVolume;
+                return false;
+            }
 
             if (orderType == OrderType.Market)
-                throw new OrderValidationError(OrderCmdResultCodes.MarketWithMaxVisibleVolume);
+            {
+                code = OrderCmdResultCodes.MarketWithMaxVisibleVolume;
+                return false;
+            }
+
+            return true;
         }
 
-        private void ValidateVolumeLots(double volumeLots, Symbol smbMetadata)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateVolumeLots(double volumeLots, Symbol smbMetadata, ref OrderCmdResultCodes code)
         {
             if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+            {
+                code = OrderCmdResultCodes.IncorrectVolume;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateVolumeLots(double? volumeLots, Symbol smbMetadata)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateVolumeLots(double? volumeLots, Symbol smbMetadata, ref OrderCmdResultCodes code)
         {
             if (!volumeLots.HasValue)
-                return;
+                return true;
 
             if (volumeLots <= 0 || volumeLots < smbMetadata.MinTradeVolume || volumeLots > smbMetadata.MaxTradeVolume)
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectVolume);
+            {
+                code = OrderCmdResultCodes.IncorrectVolume;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, OrderType orderType, double? volumeLots)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateMaxVisibleVolumeLots(double? maxVisibleVolumeLots, Symbol smbMetadata, OrderType orderType, double? volumeLots, ref OrderCmdResultCodes code)
         {
             if (!maxVisibleVolumeLots.HasValue)
-                return;
+                return true;
 
             var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
                 || maxVisibleVolumeLots < 0
@@ -527,92 +616,144 @@ namespace TickTrader.Algo.Core
                 || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume;
 
             if (isIncorrectMaxVisibleVolume)
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+            {
+                code = OrderCmdResultCodes.IncorrectMaxVisibleVolume;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidatePrice(double? price, bool required)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidatePrice(double? price, bool required, ref OrderCmdResultCodes code)
         {
             if (required && price == null)
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+            {
+                code = OrderCmdResultCodes.IncorrectPrice;
+                return false;
+            }
 
             if (!price.HasValue)
-                return;
+                return true;
 
             if (price <= 0 || IsInvalidValue(price.Value))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectPrice);
+            {
+                code = OrderCmdResultCodes.IncorrectPrice;
+                return false;
+            }
+
+            return true;
         }
 
-        private void ValidateStopPrice(double? price, bool required)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateStopPrice(double? price, bool required, ref OrderCmdResultCodes code)
         {
             if (required && price == null)
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectStopPrice);
+            {
+                code = OrderCmdResultCodes.IncorrectStopPrice;
+                return false;
+            }
 
             if (!price.HasValue)
-                return;
+                return true;
 
             if (price <= 0 || IsInvalidValue(price.Value))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectStopPrice);
+            {
+                code = OrderCmdResultCodes.IncorrectStopPrice;
+                return false;
+            }
+
+            return true;
         }
 
-        private void ValidateTp(double? tp)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateTp(double? tp, ref OrderCmdResultCodes code)
         {
             if (tp == null)
-                return;
+                return true;
 
             if (tp.Value <= 0 || IsInvalidValue(tp.Value))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectTp);
+            {
+                code = OrderCmdResultCodes.IncorrectTp;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateSl(double? sl)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateSl(double? sl, ref OrderCmdResultCodes code)
         {
             if (sl == null)
-                return;
+                return true;
 
             if (sl.Value <= 0 || IsInvalidValue(sl.Value))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectSl);
+            {
+                code = OrderCmdResultCodes.IncorrectSl;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateOrderId(string orderId)
-        {
-            long parsedId;
-            if (!long.TryParse(orderId, out parsedId))
-                throw new OrderValidationError(OrderCmdResultCodes.IncorrectOrderId);
-        }
-
-        private void ValidateTradeEnabled(Symbol smbMetadata)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateTradeEnabled(Symbol smbMetadata, ref OrderCmdResultCodes code)
         {
             if (!smbMetadata.IsTradeAllowed)
-                throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
+            {
+                code = OrderCmdResultCodes.TradeNotAllowed;
+                return false;
+            }
+
+            return true;
         }
 
-        private void ValidateTradePersmission()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateTradePersmission(ref OrderCmdResultCodes code)
         {
             if (!Permissions.TradeAllowed)
-                throw new OrderValidationError(OrderCmdResultCodes.TradeNotAllowed);
+            {
+                code = OrderCmdResultCodes.TradeNotAllowed;
+                return false;
+            }
+
+            return true;
         }
 
-        private void ValidateOptions(OrderExecOptions? options, OrderType orderType)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateOptions(OrderExecOptions? options, OrderType orderType, ref OrderCmdResultCodes code)
         {
             if (options == null)
-                return;
+                return true;
 
             var isOrderTypeCompatibleToIoC = orderType == OrderType.Limit || orderType == OrderType.StopLimit;
 
             if (options == OrderExecOptions.ImmediateOrCancel && !isOrderTypeCompatibleToIoC)
-                throw new OrderValidationError(OrderCmdResultCodes.Unsupported);
+            {
+                code = OrderCmdResultCodes.Unsupported;
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateMargin(OpenOrderRequest request, SymbolAccessor symbol, ref OrderCmdResultCodes code)
         {
             var isHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
-            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden))
-                throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+            if (Calc != null && !Calc.HasEnoughMarginToOpenOrder(symbol, request.Volume, request.Type, request.Side, request.Price, request.StopPrice, isHidden, out CalcErrorCodes error))
+            {
+                code = error.ToOrderError();
+
+                if (code == OrderCmdResultCodes.Ok)
+                    code = OrderCmdResultCodes.NotEnoughMoney;
+
+                return false;
+            }
+            return true;
         }
 
-        private void ValidateMargin(ReplaceOrderRequest request, SymbolAccessor symbol)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateMargin(ReplaceOrderRequest request, SymbolAccessor symbol, ref OrderCmdResultCodes code)
         {
-            var oldOrder = account.Orders.GetOrderOrNull(request.OrderId);
+            var oldOrder = _account.Orders.GetOrderOrNull(request.OrderId);
 
             var newIsHidden = OrderEntity.IsHiddenOrder((decimal?)request.MaxVisibleVolume);
 
@@ -621,47 +762,41 @@ namespace TickTrader.Algo.Core
             var newStopPrice = request.StopPrice ?? oldOrder.StopPrice;
 
             if (Calc != null && !Calc.HasEnoughMarginToModifyOrder(oldOrder, symbol, newVol, newPrice, newStopPrice, newIsHidden))
-                throw new OrderValidationError(OrderCmdResultCodes.NotEnoughMoney);
+            {
+                code = OrderCmdResultCodes.NotEnoughMoney;
+                return false;
+            }
+
+            return true;
         }
 
-        private void ValidateQuotes(SymbolAccessor symbol, OrderSide side)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateQuotes(SymbolAccessor symbol, OrderSide side, ref OrderCmdResultCodes code)
         {
             var quote = symbol.LastQuote;
 
-            if (this.account.Type != AccountTypes.Cash && (!quote.HasBid || !quote.HasAsk))
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            if (_account.Type != AccountTypes.Cash && (!quote.HasBid || !quote.HasAsk))
+            {
+                code = OrderCmdResultCodes.OffQuotes;
+                return false;
+            }
 
             if (side == OrderSide.Sell && quote.IsBidIndicative)
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            {
+                code = OrderCmdResultCodes.OffQuotes;
+                return false;
+            }
 
             if (side == OrderSide.Buy && quote.IsAskIndicative)
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
+            {
+                code = OrderCmdResultCodes.OffQuotes;
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
-
-        private double GetMarketOpenPriceOrThrow(SymbolAccessor smb, OrderSide orderSide)
-        {
-            var rate = smb.LastQuote;
-
-            if (rate == null)
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
-
-            if (orderSide == OrderSide.Buy)
-            {
-                if (rate.HasAsk)
-                    return rate.Ask;
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
-            }
-            else if (orderSide == OrderSide.Sell)
-            {
-                if (rate.HasBid)
-                    return rate.Bid;
-                throw new OrderValidationError(OrderCmdResultCodes.OffQuotes);
-            }
-
-            throw new Exception("Unknown order side: " + orderSide);
-        }
     }
 
     internal class OrderValidationError : Exception

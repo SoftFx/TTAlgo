@@ -66,6 +66,8 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotStatusResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotStatusResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AlertBotsRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AlertBotsResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderInfoRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotFolderInfoResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest> __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_ClearBotFolderRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::TickTrader.Algo.Protocol.Grpc.Lib.ClearBotFolderRequest.Parser.ParseFrom);
@@ -266,6 +268,13 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsRequest,
         __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_BotLogsResponse);
 
+    static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse> __Method_GetAlerts = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetAlerts",
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AlertBotsRequest,
+        __Marshaller_TickTrader_Algo_Protocol_Grpc_Lib_AlertBotsResponse);
+
     static readonly grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse> __Method_GetBotFolderInfo = new grpc::Method<global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest, global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -441,6 +450,11 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsResponse> GetBotLogs(global::TickTrader.Algo.Protocol.Grpc.Lib.BotLogsRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse> GetAlerts(global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -903,6 +917,22 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetBotLogs, null, options, request);
       }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse GetAlerts(global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetAlerts(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse GetAlerts(global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetAlerts, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse> GetAlertsAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetAlertsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsResponse> GetAlertsAsync(global::TickTrader.Algo.Protocol.Grpc.Lib.AlertBotsRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetAlerts, null, options, request);
+      }
       public virtual global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoResponse GetBotFolderInfo(global::TickTrader.Algo.Protocol.Grpc.Lib.BotFolderInfoRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetBotFolderInfo(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -1006,6 +1036,7 @@ namespace TickTrader.Algo.Protocol.Grpc.Lib {
           .AddMethod(__Method_DownloadPackage, serviceImpl.DownloadPackage)
           .AddMethod(__Method_GetBotStatus, serviceImpl.GetBotStatus)
           .AddMethod(__Method_GetBotLogs, serviceImpl.GetBotLogs)
+          .AddMethod(__Method_GetAlerts, serviceImpl.GetAlerts)
           .AddMethod(__Method_GetBotFolderInfo, serviceImpl.GetBotFolderInfo)
           .AddMethod(__Method_ClearBotFolder, serviceImpl.ClearBotFolder)
           .AddMethod(__Method_DeleteBotFile, serviceImpl.DeleteBotFile)

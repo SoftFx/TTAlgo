@@ -13,9 +13,11 @@ namespace TickTrader.BotTerminal
 {
     class BotJournalViewModel : PropertyChangedBase
     {
+        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         private AlgoBotViewModel _bot;
         private BotMessageFilter _botJournalFilter = new BotMessageFilter();
-        private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
 
         public BotJournalViewModel(AlgoBotViewModel bot)
         {
@@ -24,7 +26,11 @@ namespace TickTrader.BotTerminal
             Journal = CollectionViewSource.GetDefaultView(_bot.Model.Journal.Records);
             Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
             Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
+
+            SearchModel = new SearchItemViewModel<BotMessage>(_bot.Model.Journal.Records, _botJournalFilter.Filter, ApplyFilter);
         }
+
+        public SearchItemViewModel<BotMessage> SearchModel { get; }
 
         public ICollectionView Journal { get; private set; }
 
@@ -37,20 +43,6 @@ namespace TickTrader.BotTerminal
                 {
                     _botJournalFilter.MessageTypeCondition = value;
                     NotifyOfPropertyChange(nameof(TypeFilter));
-                    ApplyFilter();
-                }
-            }
-        }
-
-        public string TextFilter
-        {
-            get { return _botJournalFilter.TextFilter; }
-            set
-            {
-                if (_botJournalFilter.TextFilter != value)
-                {
-                    _botJournalFilter.TextFilter = value;
-                    NotifyOfPropertyChange(nameof(TextFilter));
                     ApplyFilter();
                 }
             }
@@ -71,6 +63,7 @@ namespace TickTrader.BotTerminal
         }
 
         public bool CanBrowse => !_bot.Model.IsRemote || _bot.Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.BotLogs);
+
         public bool IsRemote => _bot.Model.IsRemote;
 
         public void Clear()
@@ -93,7 +86,11 @@ namespace TickTrader.BotTerminal
         private void ApplyFilter()
         {
             if (Journal != null)
+            {
                 Journal.Filter = msg => _botJournalFilter.Filter((BotMessage)msg);
+
+                SearchModel.FullCalculateMatches();
+            }
         }
     }
 
@@ -105,7 +102,8 @@ namespace TickTrader.BotTerminal
         Info,
         Trading,
         Error,
-        Custom
+        Custom,
+        Alert,
     }
 
     internal class BotMessageFilter
@@ -120,18 +118,7 @@ namespace TickTrader.BotTerminal
         public MessageTypeFilter MessageTypeCondition { get; set; }
         public bool IsEnabled { get; set; }
 
-        public bool Filter(BotMessage bMessage)
-        {
-            if (IsEnabled && bMessage != null)
-            {
-                return MatchesTypeFilter(bMessage.Type)
-                     && (string.IsNullOrEmpty(TextFilter)
-                     || (bMessage.TimeKey.Shift.ToString("G").IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
-                     || bMessage.Bot.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0
-                     || bMessage.Message.IndexOf(TextFilter, StringComparison.OrdinalIgnoreCase) >= 0));
-            }
-            return false;
-        }
+        public bool Filter(BotMessage bMessage) => IsEnabled && bMessage != null && MatchesTypeFilter(bMessage.Type);
 
         private bool MatchesTypeFilter(JournalMessageType journalType)
         {
@@ -142,6 +129,7 @@ namespace TickTrader.BotTerminal
                 case MessageTypeFilter.Trading: return journalType == JournalMessageType.Trading || journalType == JournalMessageType.TradingSuccess || journalType == JournalMessageType.TradingFail;
                 case MessageTypeFilter.Error: return journalType == JournalMessageType.Error;
                 case MessageTypeFilter.Custom: return journalType == JournalMessageType.Custom;
+                case MessageTypeFilter.Alert: return journalType == JournalMessageType.Alert;
                 default: return true;
             }
         }

@@ -36,6 +36,7 @@ namespace TickTrader.Algo.Api
         public double Ask { get { return Symbol.Ask; } }
         public TimeFrames TimeFrame { get { return context.TimeFrame; } }
         public IndicatorProvider Indicators { get { return context.Indicators; } }
+        public IAlertAPI Alert => context.Logger.Alert;
 
         /// <summary>
         /// Occurs when connection to server is lost.
@@ -49,7 +50,7 @@ namespace TickTrader.Algo.Api
 
         protected virtual void Init() { }
 
-        internal void InvokeInit()
+        internal virtual void InvokeInit(bool isNested)
         {
             Init();
         }

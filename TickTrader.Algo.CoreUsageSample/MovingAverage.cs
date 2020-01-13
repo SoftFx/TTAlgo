@@ -27,7 +27,7 @@ namespace TickTrader.Algo.CoreUsageSample
         [Parameter]
         public int Period { get; set; }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             if (Input.Count >= Period)
             {

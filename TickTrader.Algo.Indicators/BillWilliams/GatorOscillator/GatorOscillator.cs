@@ -94,9 +94,9 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
             InitializeIndicator();
         }
 
-        private void ProcessShifterValue(IShift shifter, double val, DataSeries series)
+        private void ProcessShifterValue(bool isNewBar, IShift shifter, double val, DataSeries series)
         {
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 shifter.UpdateLast(val);
             }
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
             series[shifter.Position] = shifter.Result;
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var lipsPos = Math.Max(_teethLips.LastPositionChanged, _lips.LastPositionChanged);
             var jawsPos = Math.Max(_jawsTeeth.LastPositionChanged, _jaws.LastPositionChanged);
@@ -145,23 +145,23 @@ namespace TickTrader.Algo.Indicators.BillWilliams.GatorOscillator
             }
             if (_lipsUp)
             {
-                ProcessShifterValue(_teethLipsUpShifter, lipsVal, TeethLipsUp);
-                ProcessShifterValue(_teethLipsDownShifter, double.NaN, TeethLipsDown);
+                ProcessShifterValue(isNewBar, _teethLipsUpShifter, lipsVal, TeethLipsUp);
+                ProcessShifterValue(isNewBar, _teethLipsDownShifter, double.NaN, TeethLipsDown);
             }
             if (!_lipsUp)
             {
-                ProcessShifterValue(_teethLipsUpShifter, double.NaN, TeethLipsUp);
-                ProcessShifterValue(_teethLipsDownShifter, lipsVal, TeethLipsDown);
+                ProcessShifterValue(isNewBar, _teethLipsUpShifter, double.NaN, TeethLipsUp);
+                ProcessShifterValue(isNewBar, _teethLipsDownShifter, lipsVal, TeethLipsDown);
             }
             if (_jawsUp)
             {
-                ProcessShifterValue(_jawsTeethUpShiter, jawsVal, JawsTeethUp);
-                ProcessShifterValue(_jawsTeethDownShiter, double.NaN, JawsTeethDown);
+                ProcessShifterValue(isNewBar, _jawsTeethUpShiter, jawsVal, JawsTeethUp);
+                ProcessShifterValue(isNewBar, _jawsTeethDownShiter, double.NaN, JawsTeethDown);
             }
             if (!_jawsUp)
             {
-                ProcessShifterValue(_jawsTeethUpShiter, double.NaN, JawsTeethUp);
-                ProcessShifterValue(_jawsTeethDownShiter, jawsVal, JawsTeethDown);
+                ProcessShifterValue(isNewBar, _jawsTeethUpShiter, double.NaN, JawsTeethUp);
+                ProcessShifterValue(isNewBar, _jawsTeethDownShiter, jawsVal, JawsTeethDown);
             }
         }
     }

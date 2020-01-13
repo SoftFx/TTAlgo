@@ -212,6 +212,7 @@
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
     <Compile Include="Behaviors\DataGridColumnHide.cs" />
+    <Compile Include="Behaviors\DataGridHelper.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
@@ -276,6 +277,7 @@
       <DependentUpon>PathBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\PopupButton.cs" />
+    <Compile Include="Controls\SelectableTextBlock.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
@@ -345,10 +347,13 @@
     <Compile Include="Lib\ListIndexer.cs" />
     <Compile Include="Lib\ComputerInfo.cs" />
     <Compile Include="Lib\ChartBarVector.cs" />
+    <Compile Include="Lib\ObservableSetWithCount.cs" />
     <Compile Include="Lib\UiUpdateTimer.cs" />
+    <Compile Include="Model.Algo\AlgoAlertModel.cs" />
     <Compile Include="Model.Algo\AlgoEnvironment.cs" />
     <Compile Include="Model.Algo\AlgoLogAdapter.cs" />
     <Compile Include="Model.Algo\BotListenerProxy.cs" />
+    <Compile Include="Model.Algo\IndicatorListenerProxy.cs" />
     <Compile Include="Model.Algo\LocalAlgoAgent.cs" />
     <Compile Include="Model.Algo\Outputs\DoubleSeriesModel.cs" />
     <Compile Include="Model.Algo\Outputs\MarkerSeriesModel.cs" />
@@ -403,6 +408,7 @@
     <Compile Include="Model\NumberFormat.cs" />
     <Compile Include="Model\NumberGenerator.cs" />
     <Compile Include="Model\PathHelper.cs" />
+    <Compile Include="Views\SearchItemViewModel.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
@@ -442,7 +448,7 @@
     <Compile Include="Lib\DataflowHelper.cs" />
     <Compile Include="Lib\DispatcherStateMachineSync.cs" />
     <Compile Include="Lib\ObservableDictionary.cs" />
-    <Compile Include="Lib\ObservableSrotedList.cs" />
+    <Compile Include="Lib\ObservableSortedList.cs" />
     <Compile Include="Lib\UiTaskScheduler.cs" />
     <Compile Include="Model.Charts\BarChatModel.cs" />
     <Compile Include="Model.Charts\ChartNavigator.cs" />
@@ -582,6 +588,7 @@
     </Compile>
     <Compile Include="Views.TradeInfo\AssetsViewModel.cs" />
     <Compile Include="Views.Algo\BotListViewModel.cs" />
+    <Compile Include="Views\AlertViewModel.cs" />
     <Compile Include="Views\ChartCollectionView.xaml.cs">
       <DependentUpon>ChartCollectionView.xaml</DependentUpon>
     </Compile>
@@ -1180,6 +1187,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views.Algo\BotListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AlertView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

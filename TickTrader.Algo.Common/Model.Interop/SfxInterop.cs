@@ -851,6 +851,7 @@ namespace TickTrader.Algo.Common.Model
         {
             switch (reason)
             {
+                case RejectReason.InternalServerError: return Api.OrderCmdResultCodes.TradeServerError;
                 case RejectReason.DealerReject: return Api.OrderCmdResultCodes.DealerReject;
                 case RejectReason.UnknownSymbol: return Api.OrderCmdResultCodes.SymbolNotFound;
                 case RejectReason.UnknownOrder: return Api.OrderCmdResultCodes.OrderNotFound;
@@ -1198,7 +1199,20 @@ namespace TickTrader.Algo.Common.Model
 
         public static BalanceOperationReport Convert(SFX.BalanceOperation op)
         {
-            return new BalanceOperationReport(op.Balance, op.TransactionCurrency, op.TransactionAmount);
+            return new BalanceOperationReport(op.Balance, op.TransactionCurrency, op.TransactionAmount, Convert(op.TransactionType));
+        }
+
+        public static BalanceOperationType Convert(SFX.BalanceTransactionType type)
+        {
+            switch (type)
+            {
+                case BalanceTransactionType.DepositWithdrawal:
+                    return BalanceOperationType.DepositWithdrawal;
+                case BalanceTransactionType.Dividend:
+                    return BalanceOperationType.Dividend;
+            }
+
+            throw new NotImplementedException("Unsupported balance transaction type: " + type);
         }
 
         public static PriceType ConvertBack(BarPriceType priceType)

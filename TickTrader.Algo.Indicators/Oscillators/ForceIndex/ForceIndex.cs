@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.ForceIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             if (Bars.Count > pos + 1)

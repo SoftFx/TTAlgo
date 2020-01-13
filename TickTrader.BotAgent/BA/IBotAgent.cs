@@ -60,6 +60,8 @@ namespace TickTrader.BotAgent.BA
         IBotLog GetBotLog(string botId);
         Task<IBotLog> GetBotLogAsync(string botId);
 
+        IAlertStorage GetAlertStorage();
+
         event Action<BotModelInfo, ChangeAction> BotChanged;
         event Action<BotModelInfo> BotStateChanged;
 
@@ -85,7 +87,7 @@ namespace TickTrader.BotAgent.BA
         string GetFileWritePath(string name);
     }
 
-    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail }
+    public enum LogEntryType { Info, Trading, Error, Custom, TradingSuccess, TradingFail, Alert }
 
     public interface ILogEntry
     {
@@ -100,6 +102,18 @@ namespace TickTrader.BotAgent.BA
         string Status { get; }
         Task<string> GetStatusAsync();
         Task<List<ILogEntry>> QueryMessagesAsync(DateTime from, int maxCount);
+    }
+
+    public interface IAlertEntry
+    {
+        TimeKey TimeUtc { get; }
+        string Message { get; }
+        string BotId { get; }
+    }
+
+    public interface IAlertStorage
+    {
+        Task<List<IAlertEntry>> QueryAlertsAsync(DateTime from, int maxCount);
     }
 
     public interface IFdkOptionsProvider

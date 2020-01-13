@@ -60,7 +60,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var plusDmi = 0.0;
             var minusDmi = 0.0;
@@ -98,7 +98,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
                     minusDmi = minusDmi/tr*100.0;
                 }
             }
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _plusMa.UpdateLast(plusDmi);
                 _minusMa.UpdateLast(minusDmi);
@@ -115,7 +115,7 @@ namespace TickTrader.Algo.Indicators.Trend.AverageDirectionalMovementIndex
             {
                 dx = 0.0;
             }
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _adxMa.UpdateLast(dx);
             }

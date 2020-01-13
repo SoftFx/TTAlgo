@@ -507,4 +507,7 @@
   <data name="OptMode_Genetic" xml:space="preserve">
     <value>Fast (genetic)</value>
   </data>
+  <data name="Tab_Alert" xml:space="preserve">
+    <value>Alerts</value>
+  </data>
 </root>

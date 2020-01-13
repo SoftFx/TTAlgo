@@ -13,43 +13,40 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Machinarium.Qnil;
+using System.Collections.Specialized;
 
 namespace TickTrader.BotTerminal
 {
     class JournalViewModel : PropertyChangedBase
     {
-        private EventJournal eventJournal;
-        private string filterString;
         private readonly Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        private bool isEnabled = true;
+
+        private EventJournal _eventJournal;
+
+        private bool _isEnabled = true;
 
         public JournalViewModel(EventJournal journal)
         {
-            eventJournal = journal;
-            Journal = CollectionViewSource.GetDefaultView(eventJournal.Records);
+            _eventJournal = journal;
+
+            Journal = CollectionViewSource.GetDefaultView(_eventJournal.Records);
             Journal.Filter = new Predicate<object>(Filter);
-            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "Time", Direction = ListSortDirection.Descending });
+            Journal.SortDescriptions.Add(new SortDescription { PropertyName = "TimeKey", Direction = ListSortDirection.Descending });
+
+            SearchModel = new SearchItemViewModel<EventMessage>(_eventJournal.Records, refresh: Journal.Refresh);
+            Journal.CollectionChanged += SearchModel.CalculateMatches;
         }
+
+        public SearchItemViewModel<EventMessage> SearchModel { get; }
 
         public ICollectionView Journal { get; private set; }
 
-        public string FilterString
-        {
-            get { return filterString; }
-            set
-            {
-                filterString = value;
-                NotifyOfPropertyChange(nameof(FilterString));
-                RefreshCollection();
-            }
-        }
-
         public bool IsJournalEnabled
         {
-            get => isEnabled;
+            get => _isEnabled;
             set
             {
-                isEnabled = value;
+                _isEnabled = value;
                 NotifyOfPropertyChange(nameof(IsJournalEnabled));
                 RefreshCollection();
             }
@@ -70,30 +67,16 @@ namespace TickTrader.BotTerminal
             }
             catch (Exception ex)
             {
-                logger.Warn(ex,"Failed to browse journal folder");
+                logger.Warn(ex, "Failed to browse journal folder");
             }
         }
 
         public void Clear()
         {
-            eventJournal.Clear();
+            _eventJournal.Clear();
         }
 
-        private bool Filter(object obj)
-        {
-            if (!isEnabled)
-                return false;
-
-            var data = obj as EventMessage;
-            if (data != null)
-            {
-                if (!string.IsNullOrEmpty(filterString))
-                    return data.TimeKey.Timestamp.ToString("G").IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0 
-                        || data.Message.IndexOf(filterString, StringComparison.OrdinalIgnoreCase) >= 0;
-                return true;
-            }
-            return false;
-        }
+        private bool Filter(object obj) => _isEnabled;
     }
 
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]

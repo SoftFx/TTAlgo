@@ -15,6 +15,7 @@ namespace TickTrader.BotTerminal
         private const int StatusUpdateTimeout = 1000;
         private const int LogsUpdateTimeout = 1000;
 
+
         private RemoteAlgoAgent _agent;
         private int _statusSubscriptionCnt;
         private int _logsSubscriptionCnt;
@@ -172,6 +173,7 @@ namespace TickTrader.BotTerminal
                 if (logs.Length > 0)
                 {
                     _lastLogTimeUtc = logs.Max(l => l.TimeUtc).Timestamp;
+
                     Journal.Add(logs.Select(Convert).ToList());
                 }
             }
@@ -179,6 +181,7 @@ namespace TickTrader.BotTerminal
             {
                 _logger.Error(ex, $"Failed to get bot logs {InstanceId} at {_agent.Name}");
             }
+
             _logsTimer?.Change(LogsUpdateTimeout, -1);
         }
 
@@ -197,6 +200,7 @@ namespace TickTrader.BotTerminal
                 case LogSeverity.Trade: return JournalMessageType.Trading;
                 case LogSeverity.TradeSuccess: return JournalMessageType.TradingSuccess;
                 case LogSeverity.TradeFail: return JournalMessageType.TradingFail;
+                case LogSeverity.Alert: return JournalMessageType.Alert;
                 default: return JournalMessageType.Info;
             }
         }

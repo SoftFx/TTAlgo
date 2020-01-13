@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Samples
         [Parameter]
         public int Depth { get; set; }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
         }
     }

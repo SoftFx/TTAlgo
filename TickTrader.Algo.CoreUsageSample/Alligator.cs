@@ -42,7 +42,7 @@ namespace TickTrader.Algo.CoreUsageSample
             _lips = new MovingAverage(Input.Median, LipsPeriod);
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var data = Input.Move[0];
 

@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.SlowTrendLineMomentum
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Stlm[pos] = _satl.Satl[pos] - _rstl.Rstl[pos];

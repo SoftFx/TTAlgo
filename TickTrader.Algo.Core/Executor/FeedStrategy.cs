@@ -197,59 +197,50 @@ namespace TickTrader.Algo.Core
         {
             const int pageSize = 500;
             List<BarEntity> page;
-            int pageIndex;
+
+            int i = 0;
+            var timeRef = backwardOrder ? to : from;
 
             from = from.ToUniversalTime();
-            to = to.ToUniversalTime().AddMilliseconds(-1);
+            to = to.ToUniversalTime();
 
             if (backwardOrder)
             {
-                page = FeedHistory.QueryBars(symbol, side, to, -pageSize, timeFrame);
-                pageIndex = page.Count - 1;
-
                 while (true)
                 {
-                    if (pageIndex < 0)
-                    {
-                        if (page.Count < pageSize)
-                            break; //last page
-                        var timeRef = page.First().OpenTime.AddMilliseconds(-1);
-                        page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
-                        if (page.Count == 0)
-                            break;
-                        pageIndex = page.Count - 1;
-                    } 
+                    page = FeedHistory.QueryBars(symbol, side, timeRef, -pageSize, timeFrame);
 
-                    var item = page[pageIndex];
-                    if (item.OpenTime < from)
+                    for (i = page.Count - 1; i >= 0; --i)
+                        if (page[i].CloseTime > to) //do not include the right border in the segment
+                            continue;
+                        else
+                        if (page[i].OpenTime >= from)
+                            yield return page[i];
+                        else
+                            break;
+
+                    if (page.Count != pageSize || i >= 0)
                         break;
-                    pageIndex--;
-                    yield return item;
+
+                    timeRef = page.First().CloseTime;
                 }
             }
             else
             {
-                page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
-                pageIndex = 0;
-
                 while (true)
                 {
-                    if (pageIndex >= page.Count)
-                    {
-                        if (page.Count < pageSize)
-                            break; //last page
-                        var timeRef = page.Last().CloseTime.AddMilliseconds(1);
-                        page = FeedHistory.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
-                        if (page.Count == 0)
-                            break;
-                        pageIndex = 0;
-                    }
+                    page = FeedHistory.QueryBars(symbol, side, timeRef, pageSize, timeFrame);
 
-                    var item = page[pageIndex];
-                    if (item.OpenTime > to)
+                    for (i = 0; i < page.Count; ++i)
+                        if (page[i].CloseTime <= to)
+                            yield return page[i];
+                        else
+                            break;
+
+                    if (page.Count != pageSize || i != page.Count)
                         break;
-                    pageIndex++;
-                    yield return item;
+
+                    timeRef = page.Last().OpenTime;
                 }
             }
         }
@@ -268,7 +259,7 @@ namespace TickTrader.Algo.Core
             {
                 if (backwardOrder)
                 {
-                    page = FeedHistory.QueryBars(symbol, side, from, -pageSize, timeFrame);
+                    page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
                     pageIndex = page.Count - 1;
 
                     while (pageIndex > 0)
@@ -287,7 +278,7 @@ namespace TickTrader.Algo.Core
                 }
                 else
                 {
-                    page = FeedHistory.QueryBars(symbol, side, from, pageSize, timeFrame);
+                    page = FeedHistory.QueryBars(symbol, side, from, -pageSize, timeFrame);
                     pageIndex = 0;
 
                     while (pageIndex < page.Count)

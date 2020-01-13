@@ -69,6 +69,8 @@ namespace TickTrader.BotTerminal
 
         public IShell Shell { get; }
 
+        public IAlertModel AlertModel { get; }
+
         public int RunningBotsCnt => _bots.Snapshot.Values.Count(b => !PluginStateHelper.IsStopped(b.State));
 
         public bool HasRunningBots => _bots.Snapshot.Values.Any(b => !PluginStateHelper.IsStopped(b.State));
@@ -99,6 +101,7 @@ namespace TickTrader.BotTerminal
             _plugins = new VarDictionary<PluginKey, PluginInfo>();
             _accounts = new VarDictionary<AccountKey, AccountModelInfo>();
             _bots = new VarDictionary<string, TradeBotModel>();
+            AlertModel = new AlgoAlertModel(Name);
             Bots = _bots.Select((k, v) => (ITradeBot)v);
 
             Library.PackageUpdated += LibraryOnPackageUpdated;

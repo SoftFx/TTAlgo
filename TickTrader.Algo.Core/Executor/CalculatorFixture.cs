@@ -11,7 +11,7 @@ namespace TickTrader.Algo.Core
 {
     public interface ICalculatorApi
     {
-        bool HasEnoughMarginToOpenOrder(SymbolAccessor symbol, double orderVol, OrderType type, OrderSide side, double? price, double? stopPrice, bool isHidden);
+        bool HasEnoughMarginToOpenOrder(SymbolAccessor symbol, double orderVol, OrderType type, OrderSide side, double? price, double? stopPrice, bool isHidden, out CalcErrorCodes error);
         bool HasEnoughMarginToModifyOrder(OrderAccessor oldOrder, SymbolAccessor smb, double newVolume, double? newPrice, double? newStopPrice, bool newIsHidden);
         double? GetSymbolMargin(string symbol, OrderSide side);
         double? CalculateOrderMargin(SymbolAccessor symbol, double orderVol, double? price, double? stopPrice, OrderType type, OrderSide side, bool isHidden);
@@ -266,9 +266,11 @@ namespace TickTrader.Algo.Core
 
         #region CalculatorApi implementation
 
-        public bool HasEnoughMarginToOpenOrder(SymbolAccessor symbol, double orderVol, OrderType type, OrderSide side, double? price, double? stopPrice, bool isHidden)
+        public bool HasEnoughMarginToOpenOrder(SymbolAccessor symbol, double orderVol, OrderType type, OrderSide side, double? price, double? stopPrice, bool isHidden, out CalcErrorCodes error)
         {
             LazyInit();
+
+            error = CalcErrorCodes.None;
 
             try
             {
@@ -276,7 +278,7 @@ namespace TickTrader.Algo.Core
                 {
                     //var calc = _state.GetCalculator(newOrder.Symbol, acc.BalanceCurrency);
                     //calc.UpdateMargin(newOrder, acc);
-                    var result = _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol.Name, type.ToBoType(), side.ToBoSide(), isHidden, out _, out var error);
+                    var result = _marginCalc.HasSufficientMarginToOpenOrder(orderVol, symbol.Name, type.ToBoType(), side.ToBoSide(), isHidden, out _, out error);
                     HandleMarginCalcError(error, symbol.Name);
                     return result;
                 }
@@ -287,7 +289,8 @@ namespace TickTrader.Algo.Core
                     return cashCalc.HasSufficientMarginToOpenOrder(type.ToBoType(), side.ToBoSide(), symbol, margin);
                 }
             }
-            catch (BL.NotEnoughMoneyException) { }
+            catch (BL.NotEnoughMoneyException)
+            {}
             catch (Exception ex)
             {
                 _context.Builder.Logger.OnError("Failed to calculate margin for new order", ex);

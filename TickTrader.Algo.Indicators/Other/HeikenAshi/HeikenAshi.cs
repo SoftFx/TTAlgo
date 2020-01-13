@@ -47,7 +47,7 @@ namespace TickTrader.Algo.Indicators.Other.HeikenAshi
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             if (Bars.Count > 1)

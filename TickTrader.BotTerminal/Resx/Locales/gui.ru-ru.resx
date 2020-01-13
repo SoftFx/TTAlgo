@@ -417,4 +417,7 @@
   <data name="ShowSwap" xml:space="preserve">
     <value>Показать Swap</value>
   </data>
+  <data name="Tab_Alert" xml:space="preserve">
+    <value>Предупреждения</value>
+  </data>
 </root>

@@ -51,7 +51,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.AwesomeOscillator
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var val = _fastSma.Average[pos] - _slowSma.Average[pos];

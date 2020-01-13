@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
             }
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             if (Bars.Count < KPeriod + 2)
@@ -99,7 +99,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
                 double num;
                 double denum;
                 ApplyPriceField(out num, out denum, pos);
-                if (!IsNewBar)
+                if (!isNewBar)
                 {
                     _numMa.UpdateLast(num);
                     _denumMa.UpdateLast(denum);
@@ -119,7 +119,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.StochasticOscillator
                 }
                 if (!double.IsNaN(Stoch[pos]))
                 {
-                    if (!IsNewBar)
+                    if (!isNewBar)
                     {
                         _dMa.UpdateLast(Stoch[pos]);
                     }

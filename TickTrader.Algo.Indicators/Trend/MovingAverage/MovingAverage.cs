@@ -58,9 +58,9 @@ namespace TickTrader.Algo.Indicators.Trend.MovingAverage
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 _maInstance.UpdateLast(Price[0]);
                 _shifter.UpdateLast(_maInstance.Average);

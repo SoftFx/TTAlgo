@@ -49,7 +49,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             var u = 0.0;
@@ -75,7 +75,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeStrengthIndex
             }
             else
             {
-                if (!IsNewBar)
+                if (!isNewBar)
                 {
                     _uMa.UpdateLast(u);
                     _dMa.UpdateLast(d);

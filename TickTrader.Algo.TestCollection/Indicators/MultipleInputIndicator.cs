@@ -31,7 +31,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         public DataSeries Output4 { get; set; }
 
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             Output1[0] = Input1[0];
             Output2[0] = Input2[0];

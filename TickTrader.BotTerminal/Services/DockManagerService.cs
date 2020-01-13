@@ -20,8 +20,9 @@ namespace TickTrader.BotTerminal
 
         event Action<string> RemoveViewEvent;
 
-        event System.Action RemoveViewsEvent;
+        event Action<IScreen, string> RegisterViewToLayout;
 
+        event System.Action RemoveViewsEvent;
 
         void ViewVisibilityChanged(string contentId, bool opened);
 
@@ -42,6 +43,7 @@ namespace TickTrader.BotTerminal
         public const string Tab_Trade = "Tab_Trade";
         public const string Tab_History = "Tab_History";
         public const string Tab_Journal = "Tab_Journal";
+        public const string Tab_Alert = "Tab_Alert";
 
 
         private AlgoEnvironment _algoEnv;
@@ -52,6 +54,7 @@ namespace TickTrader.BotTerminal
         private event Action<string> _showViewEvent;
         private event Action<string> _removeViewEvent;
         private event System.Action _removeViewsEvent;
+        private event Action<IScreen, string> _registerViewToLayout;
 
 
         #region Bindable properties
@@ -128,6 +131,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool IsAlertOpened
+        {
+            get { return _viewOpened[Tab_Alert]; }
+            set
+            {
+                if (_viewOpened[Tab_Alert] == value)
+                    return;
+
+                ToggleView(Tab_Alert);
+            }
+        }
+
         #endregion Bindable properties
 
 
@@ -143,6 +158,7 @@ namespace TickTrader.BotTerminal
                 {Tab_Trade, false },
                 {Tab_History, false },
                 {Tab_Journal, false },
+                {Tab_Alert, false },
             };
         }
 
@@ -205,6 +221,10 @@ namespace TickTrader.BotTerminal
             _removeViewsEvent?.Invoke();
         }
 
+        public void RegisterView(IScreen screen, string key)
+        {
+            _registerViewToLayout?.Invoke(screen, key);
+        }
 
         #region IDockManagerServiceProvider
 
@@ -230,6 +250,12 @@ namespace TickTrader.BotTerminal
         {
             add { _showViewEvent += value; }
             remove { _showViewEvent -= value; }
+        }
+
+        event Action<IScreen, string> IDockManagerServiceProvider.RegisterViewToLayout
+        {
+            add { _registerViewToLayout += value; }
+            remove { _registerViewToLayout -= value; }
         }
 
         event Action<string> IDockManagerServiceProvider.RemoveViewEvent
@@ -261,6 +287,7 @@ namespace TickTrader.BotTerminal
                 case Tab_Trade: NotifyOfPropertyChange(nameof(IsTradeOpened)); break;
                 case Tab_History: NotifyOfPropertyChange(nameof(IsHistoryOpened)); break;
                 case Tab_Journal: NotifyOfPropertyChange(nameof(IsJournalOpened)); break;
+                case Tab_Alert: NotifyOfPropertyChange(nameof(IsAlertOpened)); break;
             }
         }
 

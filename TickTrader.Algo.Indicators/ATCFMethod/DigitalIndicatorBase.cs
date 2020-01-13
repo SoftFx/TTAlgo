@@ -23,9 +23,9 @@ namespace TickTrader.Algo.Indicators.ATCFMethod
 
         protected abstract void SetupCoefficients();
 
-        protected double CalculateDigitalIndicator(DataSeries series)
+        protected double CalculateDigitalIndicator(bool isNewBar, DataSeries series)
         {
-            if (!IsNewBar)
+            if (!isNewBar)
             {
                 SeriesCache.First.Value = series[0];
             }

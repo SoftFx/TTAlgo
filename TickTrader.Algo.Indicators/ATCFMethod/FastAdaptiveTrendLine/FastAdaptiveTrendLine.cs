@@ -39,10 +39,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.FastAdaptiveTrendLine
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
-            Fatl[pos] = CalculateDigitalIndicator(Price);
+            Fatl[pos] = CalculateDigitalIndicator(isNewBar, Price);
             if (Price.Count > CountBars)
             {
                 Fatl[CountBars] = double.NaN;

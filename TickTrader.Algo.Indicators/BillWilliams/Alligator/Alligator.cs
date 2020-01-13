@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Indicators.BillWilliams.Alligator
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Jaws[pos] = _jaws.Average[pos];

@@ -28,7 +28,7 @@ namespace TickTrader.Algo.TestCollection.Indicators
         public DataSeries S6 { get; set; }
 
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             S1[0] = Bars[0].High;
             S2[0] = Bars[0].Low;

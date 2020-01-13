@@ -66,6 +66,7 @@ namespace TickTrader.Algo.Core.UnitTest
             bStrategy = new TimeSpanStrategy(TimePeriodStart, TimePeriodEnd);
         }
 
+        public string InstanceId => "Mock Plugin";
         public PluginBuilder Builder { get; private set; }
         public PluginLoggerAdapter Logger => Builder.LogAdapter;
         public string MainSymbolCode { get; set; }

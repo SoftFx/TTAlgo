@@ -55,10 +55,10 @@ namespace TickTrader.Algo.Indicators.Trend.ParabolicSAR
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
-            if (IsNewBar)
+            if (isNewBar)
             {
                 _prevAcceleration = _acceleration;
                 _prevLastLow = _lastLow;

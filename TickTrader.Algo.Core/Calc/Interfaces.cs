@@ -13,7 +13,7 @@ namespace TickTrader.Algo.Core.Calc
         None        = 0,
         OffQuote,
         OffCrossQuote,
-        NoCrossSymbol
+        NoCrossSymbol,
     }
 
     public interface IOrderCalcInfo

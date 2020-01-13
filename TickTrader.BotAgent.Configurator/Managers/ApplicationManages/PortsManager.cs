@@ -157,6 +157,13 @@ namespace TickTrader.BotAgent.Configurator
 
         private bool IsAgentPort(uint processId)
         {
+            //id 0 - System Idle Process
+            //id 4 - System Process
+            //id 8 - System Process (old version Windows)
+
+            if (processId == 0 || processId == 4 || processId == 8)
+                return false;
+
             var process = Process.GetProcessById((int)processId);
 
             return _service.IsServiceRunning && process.MainModule.FileName == _currentAgent.ExePath;

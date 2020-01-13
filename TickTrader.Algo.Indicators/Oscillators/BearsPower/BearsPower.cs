@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.BearsPower
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
             Bears[pos] = Bars.Low[pos] - _ema.Average[pos];

@@ -9,7 +9,7 @@ using TickTrader.Algo.Core.Lib;
 
 namespace TickTrader.Algo.Core
 {
-    internal class PluginLoggerAdapter : IPluginMonitor
+    internal class PluginLoggerAdapter : IPluginMonitor, IAlertAPI
     {
         private static NumberFormatInfo DefaultPriceFormat = FormatExtentions.CreateTradeFormatInfo(5);
 
@@ -22,14 +22,8 @@ namespace TickTrader.Algo.Core
 
         public IPluginLogger Logger
         {
-            get { return logger; }
-            set
-            {
-                if (value == null)
-                    throw new InvalidOperationException("Logger cannot be null!");
-
-                this.logger = value;
-            }
+            get => logger;
+            set => logger = value ?? throw new InvalidOperationException("Logger cannot be null!");
         }
 
         #region Logger Methods
@@ -79,7 +73,17 @@ namespace TickTrader.Algo.Core
             logger.OnPrintTradeFail(entry);
         }
 
+        public IAlertAPI Alert => this;
+
         #endregion
+
+
+        #region Alert API
+
+        void IAlertAPI.Print(string message) => logger.OnPrintAlert(message);
+
+        #endregion
+
 
         #region Trade Log Builder methods
 
@@ -96,10 +100,10 @@ namespace TickTrader.Algo.Core
         {
             var logEntry = new StringBuilder();
 
+            (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
             if (result.IsCompleted)
             {
                 var order = result.ResultingOrder;
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
                 logEntry.Append("SUCCESS: Opened ");
                 if (order != null)
                 {
@@ -121,22 +125,12 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
                 logEntry.Append("FAILED Opening ");
                 AppendOrderParams(logEntry, smbInfo, " Order to ", request);
                 logEntry.Append(" error=").Append(result.ResultCode);
 
                 PrintTradeFail(logEntry.ToString());
             }
-        }
-
-        public void NotifyOrderOpened(OrderAccessor order)
-        {
-            var logEntry = new StringBuilder();
-            logEntry.Append("Opened #").Append(order.Id).Append(' ');
-            AppendOrderParams(logEntry, order.SymbolInfo, " order ", order);
-
-            PrintTrade(logEntry.ToString());
         }
 
         public void LogOrderModifying(ReplaceOrderRequest request, SymbolAccessor smbInfo)
@@ -152,9 +146,9 @@ namespace TickTrader.Algo.Core
         {
             var logEntry = new StringBuilder();
 
+            (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
             if (result.IsCompleted)
             {
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
                 logEntry.Append("SUCCESS: Modified order #").Append(request.OrderId).Append(" to ");
                 if (result.ResultingOrder != null)
                 {
@@ -167,13 +161,79 @@ namespace TickTrader.Algo.Core
             }
             else
             {
-                (result.IsServerResponse ? logEntry.Append("[In]") : logEntry.Append("[Self]")).Append(" ");
                 logEntry.Append("FAILED Modifying order #").Append(request.OrderId).Append(" to ");
                 AppendOrderParams(logEntry, smbInfo, " ", request);
                 logEntry.Append(" error=").Append(result.ResultCode);
 
                 PrintTradeFail(logEntry.ToString());
             }
+        }
+
+        public void LogOrderCanceling(CancelOrderRequest request)
+        {
+            PrintTrade($"[Out] Canceling order #{request.OrderId}");
+        }
+
+        public void LogOrderCancelResults(CancelOrderRequest request, OrderResultEntity result)
+        {
+            var suffix = result.IsServerResponse ? "[In]" : "[Self]";
+            if (result.IsCompleted)
+            {
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} canceled");
+            }
+            else
+            {
+                PrintTradeFail($"{suffix} FAILED Canceling order #{request.OrderId} error={result.ResultCode}");
+            }
+        }
+
+        public void LogOrderClosing(CloseOrderRequest request)
+        {
+            PrintTrade($"[Out] Closing order #{request.OrderId}");
+        }
+
+        public void LogOrderCloseResults(CloseOrderRequest request, OrderResultEntity result)
+        {
+            var suffix = result.IsServerResponse ? "[In]" : "[Self]";
+            if (result.IsCompleted)
+            {
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed");
+            }
+            else
+            {
+                PrintTradeFail($"{suffix} FAILED Closing order #{request.OrderId} error={result.ResultCode}");
+            }
+        }
+
+        public void LogOrderClosingBy(CloseOrderRequest request)
+        {
+            PrintTrade($"[Out] Closing order #{request.OrderId} by order #{request.ByOrderId}");
+        }
+
+        public void LogOrderCloseByResults(CloseOrderRequest request, OrderResultEntity result)
+        {
+            var suffix = result.IsServerResponse ? "[In]" : "[Self]";
+            if (result.IsCompleted)
+            {
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed by order #{request.ByOrderId}");
+            }
+            else
+            {
+                PrintTradeFail($"{suffix} FAILED Closing order #{request.OrderId} by order #{request.ByOrderId} error={result.ResultCode}");
+            }
+        }
+
+        #endregion
+
+        #region Trade Log notifications methods
+
+        public void NotifyOrderOpened(OrderAccessor order)
+        {
+            var logEntry = new StringBuilder();
+            logEntry.Append("Opened #").Append(order.Id).Append(' ');
+            AppendOrderParams(logEntry, order.SymbolInfo, " order ", order);
+
+            PrintTrade(logEntry.ToString());
         }
 
         public void NotifyOrderModification(OrderAccessor order)
@@ -209,6 +269,11 @@ namespace TickTrader.Algo.Core
             string action = amount > 0 ? "Deposit" : "Withdrawal";
 
             Logger.OnPrintTrade(action + " " + amount.ToString("N", currency.Format) + " " + currency.Name);
+        }
+
+        public void NotifyDividend(double amount, string currency, NumberFormatInfo format)
+        {
+            Logger.OnPrintTrade($"Dividend {amount.ToString("N", format)} {currency}");
         }
 
         public void NotifyOrderFill(OrderAccessor order)
@@ -295,7 +360,7 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderRequest request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.Volume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.VolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ReplaceOrderRequest request)

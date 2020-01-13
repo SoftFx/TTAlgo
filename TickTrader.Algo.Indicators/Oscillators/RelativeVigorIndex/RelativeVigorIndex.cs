@@ -57,12 +57,12 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
             InitializeIndicator();
         }
 
-        protected override void Calculate()
+        protected override void Calculate(bool isNewBar)
         {
             var i = LastPositionChanged;
             if (!double.IsNaN(_moveTriMa.Average[i]))
             {
-                if (!IsNewBar)
+                if (!isNewBar)
                 {
                     _moveMa.UpdateLast(_moveTriMa.Average[i]);
                     _rangeMa.UpdateLast(_rangeTriMa.Average[i]);
@@ -83,7 +83,7 @@ namespace TickTrader.Algo.Indicators.Oscillators.RelativeVigorIndex
             }
             if (!double.IsNaN(RviAverage[i]))
             {
-                if (!IsNewBar)
+                if (!isNewBar)
                 {
                     _rviMa.UpdateLast(RviAverage[i]);
                 }
