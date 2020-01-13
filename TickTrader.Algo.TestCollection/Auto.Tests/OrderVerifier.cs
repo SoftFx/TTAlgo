@@ -94,6 +94,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(Side, args.NewOrder.Side, $"Side does not match!");
             AssertEquals(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
             AssertEquals(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
+            AssertEquals(ReqVolume, args.NewOrder.LastFillVolume, $"FillVolume does not match!");
         }
 
         public void VerifyEvent(OrderActivatedEventArgs args)
