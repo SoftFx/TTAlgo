@@ -19,7 +19,7 @@ namespace TickTrader.Algo.Core
         {
             var order = request.Order;
 
-            if (order.Type == OrderType.Limit && order.Options.IsFlagSet(OrderExecOptions.ImmediateOrCancel))
+            if (order.Type == OrderType.Limit && order.Options.IsFlagSet(OrderOptions.ImmediateOrCancel))
             {
                 var quote = request.CurrentRate;
 

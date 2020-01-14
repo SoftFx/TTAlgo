@@ -69,11 +69,11 @@ namespace TickTrader.Algo.Core
         public static Order Null { get; private set; }
         public double? StopPrice { get; set; }
         public decimal? MaxVisibleVolume { get; set; }
-        public OrderExecOptions Options { get; set; }
-        public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
+        public OrderOptions Options { get; set; }
+        public bool ImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
         public bool IsHidden => IsHiddenOrder(MaxVisibleVolume);
-        public bool MarketWithSlippdage => Options.HasFlag(OrderExecOptions.MarketWithSlippage);
-        public bool HiddenIceberg => Options.HasFlag(OrderExecOptions.HiddenIceberg);
+        public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
+        public bool HiddenIceberg => Options.HasFlag(OrderOptions.HiddenIceberg);
 
         static OrderEntity() { Null = new NullOrder(); }
 
@@ -143,6 +143,6 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get { return double.NaN; } }
         public double Margin => double.NaN;
         public double Profit => double.NaN;
-        public OrderExecOptions Options => OrderExecOptions.None;
+        public OrderOptions Options => OrderOptions.None;
     }
 }

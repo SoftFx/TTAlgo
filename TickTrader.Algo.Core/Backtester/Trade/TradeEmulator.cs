@@ -281,7 +281,6 @@ namespace TickTrader.Algo.Core
                         Options = options
                     };
 
-
                     // emulate server ping
                     await _scheduler.EmulateAsyncDelay(VirtualServerPing, true);
 
@@ -491,7 +490,7 @@ namespace TickTrader.Algo.Core
             orderEntity.UserTag = tag;
             orderEntity.InstanceId = _acc.InstanceId;
             orderEntity.Expiration = expiration;
-            orderEntity.Options = execOptions;
+            orderEntity.Options = execOptions.ToExec();
             //order.ReqOpenPrice = clientPrice;
             //order.ReqOpenAmount = clientAmount;
 
@@ -1609,7 +1608,7 @@ namespace TickTrader.Algo.Core
             //}
 
             OpenOrder(order.Calculator, OrderType.Limit, order.Side, order.Entity.RemainingVolume, null, order.Price,
-                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.Entity.Options, order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
+                order.StopPrice, order.StopLoss, order.TakeProfit, order.Comment, order.Entity.Options.ToExec(), order.Entity.UserTag, order.Expiration, OpenOrderOptions.SkipDealing);
         }
 
         private void ClosePosition(OrderAccessor position, BO.TradeTransReasons trReason, decimal? reqAmount, double? reqPrice,

@@ -21,8 +21,6 @@ namespace TickTrader.BotTerminal
 
         public enum Reasons { None = -1, DealerDecision, StopOut, Activated, CanceledByDealer, Expired }
 
-        public enum OrderExecutionOptions { None = -1, IoC, MarketWithSlippage, HiddenIceberg }
-
         public TransactionReport() { }
 
         public TransactionReport(TradeReportEntity transaction, SymbolModel symbol)
@@ -36,14 +34,15 @@ namespace TickTrader.BotTerminal
             IsPending = transaction.TradeRecordType == OrderType.Limit || transaction.TradeRecordType == OrderType.Stop || transaction.TradeRecordType == OrderType.StopLimit;
             IsBalanceTransaction = transaction.TradeTransactionReportType == TradeExecActions.BalanceTransaction;
 
-            if (IsSplitTransaction)
-                SplitRatio = GetSplitRatio(transaction);
-
             OrderId = GetId(transaction);
             PositionId = GetPositionId(transaction);
             ActionId = transaction.ActionId;
             OpenTime = GetOpenTime(transaction);
             Type = GetTransactionType(transaction);
+
+            if (IsSplitTransaction)
+                SplitRatio = GetSplitRatio(transaction);
+
             Side = GetTransactionSide(transaction);
             ActionType = transaction.TradeTransactionReportType;
             Symbol = GetSymbolOrCurrency(transaction);
@@ -363,19 +362,19 @@ namespace TickTrader.BotTerminal
 
         protected virtual string GetOrderExecutionOption(TradeReportEntity transaction)
         {
-            List<OrderExecutionOptions> options = new List<OrderExecutionOptions>();
+            var options = new List<OrderOptions>();
 
             if (transaction.ImmediateOrCancel && !IsSplitTransaction)
             {
                 Type = Type == AggregatedTransactionType.BuyLimit ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
-                options.Add(OrderExecutionOptions.IoC);
+                options.Add(OrderOptions.ImmediateOrCancel);
             }
 
             if (transaction.MarketWithSlippage)
-                options.Add(OrderExecutionOptions.MarketWithSlippage);
+                options.Add(OrderOptions.MarketWithSlippage);
 
             if (transaction.MaxVisibleQuantity >= 0)
-                options.Add(OrderExecutionOptions.HiddenIceberg);
+                options.Add(OrderOptions.HiddenIceberg);
 
             return string.Join(",", options);
         }

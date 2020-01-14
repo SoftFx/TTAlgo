@@ -775,19 +775,19 @@ namespace TickTrader.Algo.Common.Model
             };
         }
 
-        private static OrderExecOptions GetOptions(SFX.ExecutionReport record)
+        private static OrderOptions GetOptions(SFX.ExecutionReport record)
         {
-            var result = OrderExecOptions.None;
+            var result = OrderOptions.None;
             var isLimit = record.OrderType == SFX.OrderType.Limit || record.OrderType == SFX.OrderType.StopLimit;
 
             if (isLimit && record.ImmediateOrCancelFlag)
-                result |= OrderExecOptions.ImmediateOrCancel;
+                result |= OrderOptions.ImmediateOrCancel;
 
             if (record.MarketWithSlippage)
-                result |= OrderExecOptions.MarketWithSlippage;
+                result |= OrderOptions.MarketWithSlippage;
 
             if (record.MaxVisibleVolume >= 0)
-                result |= OrderExecOptions.HiddenIceberg;
+                result |= OrderOptions.HiddenIceberg;
 
             return result;
         }

@@ -452,7 +452,7 @@ namespace TickTrader.Algo.Common.Model
         public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
         public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
 
-        public OrderExecOptions ExecOptions { get; private set; }
+        public OrderOptions ExecOptions { get; private set; }
 
         #endregion
 
@@ -473,13 +473,13 @@ namespace TickTrader.Algo.Common.Model
         public BL.OrderCalculator Calculator { get; set; }
         bool BL.IOrderModel.IsCalculated { get { return CalculationError == null; } }
         decimal? BL.IOrderModel.MarginRateCurrent { get; set; }
-        
+
 
         BO.OrderTypes BL.ICommonOrder.Type
         {
             get => TickTraderToAlgo.Convert(orderType);
             set => throw new NotImplementedException();
-           
+
         }
 
         BO.OrderSides BL.ICommonOrder.Side
@@ -550,7 +550,7 @@ namespace TickTrader.Algo.Common.Model
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
             this.ExecOptions = record.Options;
-            this.OrderExecutionOptionsStr = GetOrderExecOptions(record);
+            this.OrderExecutionOptionsStr = record.Options.ToFullString();
             this.ReqOpenPrice = record.ReqOpenPrice;
             //if (record.ImmediateOrCancel)
             //{
@@ -592,7 +592,7 @@ namespace TickTrader.Algo.Common.Model
             this.ReqOpenPrice = report.ReqOpenPrice;
 
             if (report.ImmediateOrCancel)
-                ExecOptions = OrderExecOptions.ImmediateOrCancel;
+                ExecOptions = OrderOptions.ImmediateOrCancel;
 
             EssentialParametersChanged?.Invoke(this);
         }
@@ -623,31 +623,18 @@ namespace TickTrader.Algo.Common.Model
             return new TradeVolume(volume ?? double.NaN, volumeLots ?? double.NaN);
         }
 
-        private string GetOrderExecOptions(OrderEntity report)
-        {
-            var op = new List<OrderExecOptions>();
-
-            foreach (var e in EnumHelper.AllValues<OrderExecOptions>())
-            {
-                if (e != OrderExecOptions.None && report.Options.HasFlag(e))
-                    op.Add(e);
-            }
-
-            return string.Join(",", op);
-        }
-
         private string GetOrderExecOptions(ExecutionReport report)
         {
-            var op = new List<OrderExecOptions>();
+            var op = new List<OrderOptions>();
 
             if (report.ImmediateOrCancel)
-                op.Add(OrderExecOptions.ImmediateOrCancel);
+                op.Add(OrderOptions.ImmediateOrCancel);
 
             if (report.MarketWithSlippage)
-                op.Add(OrderExecOptions.MarketWithSlippage);
+                op.Add(OrderOptions.MarketWithSlippage);
 
             if (report.MaxVisibleVolume >= 0)
-                op.Add(OrderExecOptions.HiddenIceberg);
+                op.Add(OrderOptions.HiddenIceberg);
 
             return string.Join(",", op);
         }
