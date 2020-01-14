@@ -75,20 +75,18 @@
                 </Style>
             </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <!--<DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}">
+                <DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Order.HasError}" Value="True">
                                     <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
-                                    <Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />
+                                    <!--<Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />-->
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>-->
-
-                <DataGridTextColumn Header="{l:Resx Order_Id}" Width="100" Binding="{Binding Order.Id}"/>
+                </DataGridTextColumn>
 
                 <DataGridTextColumn Header="{l:Resx Order_ParentOrderId}" Width="100" Visibility="{Binding Visibility, Source={StaticResource ParentOrderIdShow}}"/>
 
@@ -100,9 +98,16 @@
 
                 <DataGridTextColumn Header="{l:Resx Order_Side}" Width="100" Binding="{Binding Order.Side}"/>
 
-                <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="100" Binding="{Binding Order.RemainingAmount}"/>
-                <!-- ?? -->
-                <DataGridTextColumn Header="{l:Resx Order_ReqOpenPrice}" Width="100" Visibility="{Binding Visibility, Source={StaticResource ReqOpenPriceShow}}"/>
+                <DataGridTextColumn Header="{l:Resx Order_Volume}" Width="100" Binding="{Binding Order.RemainingAmountLots}"/>
+
+                <DataGridTextColumn Header="{l:Resx Order_ReqOpenPrice}" Width="100" Visibility="{Binding Visibility, Source={StaticResource ReqOpenPriceShow}}">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <Binding Path="Order.ReqOpenPrice"/>
+                            <Binding Path="PriceDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
 
                 <DataGridTextColumn Header="{l:Resx Order_OpenPrice}" Width="100">
                     <DataGridTextColumn.Binding>
@@ -117,6 +122,15 @@
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PriceConverter}" >
                             <Binding Path="CurrentPrice.Rate"/>
+                            <Binding Path="PriceDigits"/>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Header="{l:Resx Order_PriceDeviation}" Width="100">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <Binding Path="DeviationPrice"/>
                             <Binding Path="PriceDigits"/>
                         </MultiBinding>
                     </DataGridTextColumn.Binding>

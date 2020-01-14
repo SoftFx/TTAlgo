@@ -49,6 +49,7 @@ namespace TickTrader.Algo.Common.Model
         public OrderSide OrderSide { get; set; }
         public double? Price { get; set; }
         public double Balance { get; set; }
+        public double? ReqOpenPrice { get; set; }
     }
 
     public enum ExecutionType

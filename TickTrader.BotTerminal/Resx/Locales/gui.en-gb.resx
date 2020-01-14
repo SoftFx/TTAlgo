@@ -442,7 +442,7 @@
     <value>Time</value>
   </data>
   <data name="Order_Id" xml:space="preserve">
-    <value>Id</value>
+    <value>ID</value>
   </data>
   <data name="Order_InstanceId" xml:space="preserve">
     <value>Instance Id</value>
@@ -469,7 +469,7 @@
     <value>Current Price</value>
   </data>
   <data name="Position_Id" xml:space="preserve">
-    <value>Id</value>
+    <value>ID</value>
   </data>
   <data name="Position_ModifiedTime" xml:space="preserve">
     <value>Modified</value>
@@ -514,9 +514,12 @@
     <value>Modified</value>
   </data>
   <data name="Order_ParentOrderId" xml:space="preserve">
-    <value>Parent Order Id</value>
+    <value>Parent ID</value>
   </data>
   <data name="Order_ReqOpenPrice" xml:space="preserve">
     <value>Req Open Price</value>
+  </data>
+  <data name="Order_PriceDeviation" xml:space="preserve">
+    <value>Price Deviation</value>
   </data>
 </root>

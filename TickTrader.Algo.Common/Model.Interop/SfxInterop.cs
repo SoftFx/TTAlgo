@@ -768,6 +768,7 @@ namespace TickTrader.Algo.Common.Model
                 Expiration = record.Expiration?.ToLocalTime(),
                 MaxVisibleVolume = (decimal?)record.MaxVisibleVolume,
                 ExecPrice = record.AveragePrice,
+                ReqOpenPrice = record.InitialPrice,
                 Options = GetOptions(record),
                 LastFillPrice = record.TradePrice,
                 LastFillVolume = record.TradeAmount,
@@ -844,6 +845,7 @@ namespace TickTrader.Algo.Common.Model
                 OrderSide = Convert(report.OrderSide),
                 Price = report.Price,
                 Balance = report.Balance ?? double.NaN,
+                ReqOpenPrice = report.InitialPrice,
             };
         }
 

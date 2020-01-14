@@ -53,7 +53,14 @@
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Order.StopPrice, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Stop Price: " VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Order.StopPrice}" VerticalAlignment="Center" />
+                                        <TextBlock VerticalAlignment="Center" >
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource PriceConverter}" >
+                                                    <Binding Path="Order.StopPrice"/>
+                                                    <Binding Path="PriceDigits"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
@@ -69,13 +76,13 @@
                     </Style>
                 </DataGrid.RowStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Id" Width="100" Binding="{Binding Order.Id}">
+                    <DataGridTextColumn Header="ID" Width="100" Binding="{Binding Order.Id}">
                         <DataGridTextColumn.CellStyle>
                             <Style TargetType="DataGridCell">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Order.HasError}" Value="True">
                                         <Setter Property="Foreground" Value="{DynamicResource Shell_ErrorForeground}"/>
-                                        <Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />
+                                        <!--<Setter Property="ToolTip" Value="{Binding Order.CalculationError.Description}" />-->
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -102,8 +109,6 @@
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="S/L" Width="100" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
-                    <DataGridTextColumn Header="T/P" Width="100" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
                     <DataGridTextColumn Header="Current price" Width="100" SortMemberPath="CurrentPrice.Rate"  Visibility="{Binding Visibility, Source={StaticResource CurrentPriceShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
@@ -120,6 +125,9 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="T/P" Width="100" Binding="{Binding Order.TakeProfit}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}"/>
+                    <DataGridTextColumn Header="S/L" Width="100" Binding="{Binding Order.StopLoss}" Visibility="{Binding Data.IsGrossAccount, Source={StaticResource ProxyElement}, Converter={StaticResource BoolToVis}}" />
                     <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding Order.Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
                     <DataGridTextColumn Header="Comment" Width="100" Binding="{Binding Order.Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>

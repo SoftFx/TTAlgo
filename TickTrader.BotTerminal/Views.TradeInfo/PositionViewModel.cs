@@ -12,8 +12,6 @@ namespace TickTrader.BotTerminal
 {
     class PositionViewModel : PropertyChangedBase, IDisposable
     {
-        private static IndificationNumberGenerator _numberGenerator = new IndificationNumberGenerator();
-
         public PositionViewModel(PositionModel position)
         {
             Position = position;
@@ -33,9 +31,6 @@ namespace TickTrader.BotTerminal
         {
         }
 
-        private string GetSortedNumber(PositionModel position)
-        {
-            return $"{position.Modified?.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{_numberGenerator.GetNumber(position.Modified.Value)}";
-        }
+        private string GetSortedNumber(PositionModel position) => $"{position.Modified?.ToString("dd.MM.yyyyHH:mm:ss.fff")}-{position.Id}";
     }
 }

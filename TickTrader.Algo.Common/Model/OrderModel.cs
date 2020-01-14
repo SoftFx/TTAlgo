@@ -36,6 +36,7 @@ namespace TickTrader.Algo.Common.Model
         private SymbolModel symbolModel;
         private BL.OrderError error;
         private double? execPrice;
+        private double? reqOpenPrice;
         private double? execAmount;
         private double? lastFillPrice;
         private double? lastFillAmount;
@@ -435,6 +436,19 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
+        public double? ReqOpenPrice
+        {
+            get => reqOpenPrice;
+            set
+            {
+                if (reqOpenPrice != value)
+                {
+                    this.reqOpenPrice = value;
+                    NotifyOfPropertyChange(nameof(ReqOpenPrice));
+                }
+            }
+        }
+
         public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
         public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
 
@@ -498,19 +512,20 @@ namespace TickTrader.Algo.Common.Model
                 StopPrice = (double?)StopPrice,
                 StopLoss = stopLoss,
                 TakeProfit = takeProfit,
-                Comment = this.Comment,
-                UserTag = this.Tag,
-                InstanceId = this.InstanceId,
-                Created = this.Created,
-                Modified = this.Modified,
+                Comment = Comment,
+                UserTag = Tag,
+                InstanceId = InstanceId,
+                Created = Created,
+                Modified = Modified,
                 ExecPrice = ExecPrice,
                 ExecVolume = ExecAmount,
                 LastFillPrice = LastFillPrice,
                 LastFillVolume = LastFillAmount,
-                Swap = (Swap ?? 0),
-                Commission = (Commission ?? 0),
+                Swap = Swap ?? 0,
+                Commission = Commission ?? 0,
                 Expiration = Expiration,
-                Options = ExecOptions
+                Options = ExecOptions,
+                ReqOpenPrice = ReqOpenPrice,
             };
         }
 
@@ -536,6 +551,7 @@ namespace TickTrader.Algo.Common.Model
             this.Commission = (decimal?)record.Commission;
             this.ExecOptions = record.Options;
             this.OrderExecutionOptionsStr = GetOrderExecOptions(record);
+            this.ReqOpenPrice = record.ReqOpenPrice;
             //if (record.ImmediateOrCancel)
             //{
             //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -573,6 +589,7 @@ namespace TickTrader.Algo.Common.Model
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
             this.OrderExecutionOptionsStr = GetOrderExecOptions(report);
+            this.ReqOpenPrice = report.ReqOpenPrice;
 
             if (report.ImmediateOrCancel)
                 ExecOptions = OrderExecOptions.ImmediateOrCancel;

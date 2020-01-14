@@ -50,6 +50,7 @@ namespace TickTrader.Algo.Core
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
         public double? Price { get; set; }
+        public double? ReqOpenPrice { get; set; }
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
         public string Comment { get; set; }
