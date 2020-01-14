@@ -36,7 +36,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private double CurrentVolume;
 
         [Parameter]
-        public bool UseDealerCmdApi { get; set; }
+        public bool IncludeADCases { get; set; }
 
         [Parameter(DefaultValue = 0.1)]
         public double BaseOrderVolume { get; set; }
@@ -55,6 +55,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                         foreach (var asyncMode in _asyncModes)
                             foreach (var someTag in _tags)
                             {
+                                if (Account.Type == AccountTypes.Cash && orderType == OrderType.Market)
+                                    continue;
                                 try
                                 {
                                     if (orderType != OrderType.Market)
@@ -64,7 +66,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                                     if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
                                         await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.ImmediateOrCancel);
 
-                                    if (UseDealerCmdApi && orderType != OrderType.Stop && orderType != OrderType.StopLimit)
+                                    if (IncludeADCases && orderType != OrderType.Stop && orderType != OrderType.StopLimit)
                                     {
                                         await PerformCommentsTest(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
                                         if (orderType == OrderType.Limit)
@@ -236,7 +238,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!((type == OrderType.Limit || type == OrderType.StopLimit) && options == OrderExecOptions.ImmediateOrCancel))
                 await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
-            await WaitEvent<OrderClosedEventArgs>(TPSLEventTimeout);
+            await WaitEvent<OrderClosedEventArgs>(TPSLEventTimeout, true);
             _tradeRepVerifiers.Add(openVer.Close(openVer.TradeReportTimestamp));
         }
 
@@ -268,7 +270,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!((type == OrderType.Limit || type == OrderType.StopLimit) && options == OrderExecOptions.ImmediateOrCancel))
                 await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
-            await WaitEvent<OrderClosedEventArgs>(TPSLEventTimeout);
+            await WaitEvent<OrderClosedEventArgs>(TPSLEventTimeout, true);
             _tradeRepVerifiers.Add(openVer.Close(openVer.TradeReportTimestamp));
         }
 
@@ -331,13 +333,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double? GetSLPrice(OrderSide side)
         {
-            var delta = 2 * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 5 * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
             return side == OrderSide.Buy ? Symbol.Ask + delta : Symbol.Bid - delta;
         }
 
         private double GetTPPrice(OrderSide side)
         {
-            var delta = 2 * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 5 * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
             return side == OrderSide.Buy ? Symbol.Bid - delta : Symbol.Ask + delta;
         }
 
@@ -534,22 +536,32 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         #region Event Verification
 
-        private async Task<TArgs> WaitEvent<TArgs>(TimeSpan waitTimeout)
+        private async Task<TArgs> WaitEvent<TArgs>(TimeSpan waitTimeout, bool skipModify = false)
         {
-            _eventWaiter = new TaskCompletionSource<object>();
-
+            object argsObj;
             var delayTask = Task.Delay(waitTimeout);
-            var eventTask = _eventWaiter.Task;
 
-            var completedFirst = await Task.WhenAny(delayTask, eventTask);
+            while (true)
+            {
+                _eventWaiter = new TaskCompletionSource<object>();
 
-            if (completedFirst == delayTask)
-                throw new Exception($"Timeout reached while wating for event {typeof(TArgs).Name}");
+                var eventTask = _eventWaiter.Task;
 
-            var argsObj = await eventTask;
+                var completedFirst = await Task.WhenAny(delayTask, eventTask);
 
-            if (argsObj is TArgs)
-                return (TArgs)argsObj;
+                if (completedFirst == delayTask)
+                    throw new Exception($"Timeout reached while wating for event {typeof(TArgs).Name}");
+
+                argsObj = await eventTask;
+
+                if (argsObj is TArgs)
+                    return (TArgs)argsObj;
+
+                if (skipModify && argsObj is OrderModifiedEventArgs)
+                    continue;
+
+                break;
+            }
 
             throw new Exception($"Unexpected event: Received {argsObj.GetType().Name} while expecting {typeof(TArgs).Name}");
         }

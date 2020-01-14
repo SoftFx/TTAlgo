@@ -90,7 +90,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderFilledEventArgs args)
         {
             AssertEquals(OrderId, args.NewOrder.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match!");
+            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match! {CurrentType} vs {args.NewOrder.Type}");
             AssertEquals(Side, args.NewOrder.Side, $"Side does not match!");
             AssertEquals(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
             AssertEquals(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
