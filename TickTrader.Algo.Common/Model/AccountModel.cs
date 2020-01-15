@@ -166,13 +166,14 @@ namespace TickTrader.Algo.Common.Model
                 {
                     case OrderStatus.Calculated:
                     case OrderStatus.Filled:
-                        if (!double.IsNaN(report.Balance))
-                        {
-                            Balance = report.Balance;
-                            OnBalanceChanged();
-                        }
+                        UpdateBalance(report.Balance);
                         break;
                 }
+            }
+
+            if (Type == AccountTypes.Gross)
+            {
+                UpdateBalance(report.Balance);
             }
 
             if (Type == AccountTypes.Cash)
@@ -180,6 +181,15 @@ namespace TickTrader.Algo.Common.Model
                 foreach (var asset in report.Assets)
                     UpdateAsset(asset);
             }
+        }
+
+        private void UpdateBalance(double balance)
+        {
+            if (double.IsNaN(balance))
+                return;
+
+            Balance = balance;
+            OnBalanceChanged();
         }
 
         private void UpdateAsset(AssetEntity assetInfo)
