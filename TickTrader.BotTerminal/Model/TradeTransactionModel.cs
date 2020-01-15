@@ -431,6 +431,9 @@ namespace TickTrader.BotTerminal
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderFilled && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
                 return Reasons.StopOut;
 
+            if (transaction.TradeTransactionReportType == TradeExecActions.PositionClosed && transaction.TradeTransactionReason == TradeTransactionReason.StopOut)
+                return Reasons.StopOut;
+
             if (transaction.TradeTransactionReportType == TradeExecActions.OrderActivated && transaction.TradeTransactionReason == TradeTransactionReason.DealerDecision &&
                 transaction.ReqOrderType == OrderType.StopLimit)
             {
