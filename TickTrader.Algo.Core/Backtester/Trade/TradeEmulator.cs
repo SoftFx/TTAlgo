@@ -2260,7 +2260,7 @@ namespace TickTrader.Algo.Core
                 //    throw new OrderValidationError("'FillOrKill' flag is not supported for market orders", FaultCodes.InvalidOption);
 
                 if (maxVisibleVolume.HasValue)
-                    throw new OrderValidationError("Max visible amount is not valid for market orders", OrderCmdResultCodes.IncorrectMaxVisibleVolume);
+                    throw new OrderValidationError("Max visible amount is not valid for market orders", OrderCmdResultCodes.MaxVisibleVolumeNotSupported);
 
                 if (price != null)
                     ValidateLimitPrice(price.Value, symbol);

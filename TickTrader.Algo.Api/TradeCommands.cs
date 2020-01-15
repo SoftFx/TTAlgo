@@ -70,6 +70,8 @@ namespace TickTrader.Algo.Api
         CloseOnlyTrading = 119,
         MarketWithMaxVisibleVolume = 120,
         InvalidAmountChange = 121,
+        CannotBeModified = 122,
+        MaxVisibleVolumeNotSupported = 123,
     }
 
     public static class OrderOptionExtension

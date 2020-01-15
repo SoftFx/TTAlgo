@@ -891,13 +891,13 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.IncorrectPricePrecision;
                             else if (message.EndsWith("because close-only mode on"))
                                 return Api.OrderCmdResultCodes.CloseOnlyTrading;
-                            else if (message == "Max visible amount is not valid for market orders")
-                                return Api.OrderCmdResultCodes.MarketWithMaxVisibleVolume;
+                            else if (message == "Max visible amount is not valid for market orders" || message.StartsWith("Max visible amount is valid only for"))
+                                return Api.OrderCmdResultCodes.MaxVisibleVolumeNotSupported;
                             else if (message.StartsWith("Order Not Found"))
                                 return Api.OrderCmdResultCodes.OrderNotFound;
                             else if (message.StartsWith("Invalid order type"))
                                 return Api.OrderCmdResultCodes.Unsupported;
-                            else if (message.StartsWith("Invalid AmountChange"))
+                            else if (message.StartsWith("Invalid AmountChange") || message == "Cannot modify amount.")
                                 return Api.OrderCmdResultCodes.InvalidAmountChange;
                         }
                         break;
