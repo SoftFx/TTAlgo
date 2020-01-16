@@ -478,6 +478,7 @@ namespace TickTrader.BotTerminal
             {
                 case OrderType.Market:
                 case OrderType.Position:
+                    return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
                 case OrderType.Limit:
                     return transaction.TradeRecordSide == OrderSide.Buy ? AggregatedTransactionType.BuyLimitCanceled : AggregatedTransactionType.SellLimitCanceled;
                 case OrderType.StopLimit:
