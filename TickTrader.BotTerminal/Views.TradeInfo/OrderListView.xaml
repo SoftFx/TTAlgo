@@ -70,6 +70,10 @@
                                         <TextBlock Text="Expiration: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding Order.Expiration, Converter={StaticResource FullDateTimeFormat}}" VerticalAlignment="Center" />
                                     </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OrderExecutionOptionsStr, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="Expiration: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Order.OrderExecutionOptionsStr}" VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </StackPanel>
                             </Setter.Value>
                         </Setter>
