@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Core
 
         internal bool HasOption(OrderExecOptions option)
         {
-            return Entity.Options.HasFlag(option);
+            return Entity.Options.HasFlag(option.ToExec());
         }
 
         #region Emulation

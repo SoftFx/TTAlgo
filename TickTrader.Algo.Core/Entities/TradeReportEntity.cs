@@ -112,6 +112,8 @@ namespace TickTrader.Algo.Core
         public OrderType ReqOrderType { get; set; }
         public double? SplitRatio { get; set; }
         public double Tax { get; set; }
+
+        public bool IsEmulatedEntity { get; set; }
         #endregion
     }
 

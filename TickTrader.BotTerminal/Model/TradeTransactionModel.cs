@@ -572,10 +572,12 @@ namespace TickTrader.BotTerminal
             if (transaction.PositionId != null)
             {
                 UniqueId = GetUniqueId(transaction, transaction.PositionId, out _);
-                ParentOrderId = OrderId;
+
+                if (!transaction.IsEmulatedEntity) //from Backtester grids OrderId is invalid
+                    ParentOrderId = OrderId;
             }
 
-            if (UniqueId.ActionNo != null)
+            if (UniqueId.ActionNo != null && !transaction.IsEmulatedEntity) //from Backtester grids OrderId is invalid
                 ParentOrderId = OrderId;
         }
 
