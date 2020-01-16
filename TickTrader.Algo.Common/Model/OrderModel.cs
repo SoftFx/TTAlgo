@@ -572,7 +572,7 @@ namespace TickTrader.Algo.Common.Model
             this.InitOrderType = report.InitialOrderType;
             this.Side = report.OrderSide;
             this.MaxVisibleVolume = report.MaxVisibleVolume.ToDecimalSafe();
-            this.Price = (report.OrderType == OrderType.Stop ? report.StopPrice : report.Price).ToDecimalSafe();
+            this.Price = (report.OrderType == OrderType.Stop || report.OrderType == OrderType.StopLimit ? report.StopPrice : report.Price).ToDecimalSafe();
             this.LimitPrice = (report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null).ToDecimalSafe();
             this.StopPrice = report.StopPrice.ToDecimalSafe();
             this.Created = report.Created;
