@@ -536,8 +536,8 @@ namespace TickTrader.Algo.Common.Model
             this.OrderType = record.Type;
             this.InitOrderType = record.InitialType;
             this.Side = record.Side;
-            this.MaxVisibleVolume = (decimal?)record.MaxVisibleVolume;
-            this.Price = (decimal?)(record.Type == OrderType.Stop ? record.StopPrice : record.Price);
+            this.MaxVisibleVolume = record.MaxVisibleVolume;
+            this.Price = (decimal?)(record.Type == OrderType.Stop || record.Type == OrderType.StopLimit ? record.StopPrice : record.Price);
             this.LimitPrice = (decimal?)(record.Type == OrderType.StopLimit || record.Type == OrderType.Limit ? record.Price : null);
             this.StopPrice = (decimal?)record.StopPrice;
             this.Created = record.Created;
