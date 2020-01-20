@@ -14,6 +14,10 @@ namespace TickTrader.BotTerminal
             var symbols = metadata?.Symbols;
             if ((symbols?.Count ?? 0) == 0)
                 symbols = new List<SymbolKey> { defaultSymbol };
+
+            if (!symbols.ContainMainToken())
+                symbols.Insert(0, SpecialSymbols.MainSymbolPlaceholder.GetKey());
+
             return symbols;
         }
 
@@ -28,6 +32,11 @@ namespace TickTrader.BotTerminal
         {
             return availableSymbols.FirstOrDefault(s => s.Origin == info.Origin && s.Name == info.Name)
                 ?? availableSymbols.First();
+        }
+
+        public static bool ContainMainToken(this IReadOnlyList<SymbolKey> availableSymbols)
+        {
+            return availableSymbols.FirstOrDefault(u => u.Name == SpecialSymbols.MainSymbol && u.Origin == SymbolOrigin.Token) != null;
         }
     }
 

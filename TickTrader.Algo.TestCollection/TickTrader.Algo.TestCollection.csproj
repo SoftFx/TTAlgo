@@ -63,6 +63,7 @@
     <Compile Include="Bots\BufferPrintBot.cs" />
     <Compile Include="Bots\LifecycleTradeBot.cs" />
     <Compile Include="Bots\FeedQueryBot.cs" />
+    <Compile Include="Bots\MainTokenTestBot.cs" />
     <Compile Include="Bots\ModifyLoopBot.cs" />
     <Compile Include="Bots\EventBot.cs" />
     <Compile Include="Bots\NestedPrintIndicatorBot.cs" />

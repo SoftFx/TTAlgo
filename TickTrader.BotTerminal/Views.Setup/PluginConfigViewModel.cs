@@ -76,6 +76,7 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _mainSymbol = value;
+
                 NotifyOfPropertyChange(nameof(MainSymbol));
             }
         }
@@ -185,6 +186,7 @@ namespace TickTrader.BotTerminal
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
+            MainSymbol = setupMetadata.DefaultSymbol;
 
             _paramsFileHistory.SetContext(plugin.ToString());
 
@@ -194,8 +196,7 @@ namespace TickTrader.BotTerminal
         public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
-                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
 
             if (!IsEmulation)
             {
@@ -314,7 +315,7 @@ namespace TickTrader.BotTerminal
 
         public IResult LoadParamsFrom(FileHistory.Entry historyItem)
         {
-            var ex  = LoadParamsFromFile(historyItem.FullPath);
+            var ex = LoadParamsFromFile(historyItem.FullPath);
 
             if (ex != null)
             {
@@ -357,7 +358,7 @@ namespace TickTrader.BotTerminal
         private void Init()
         {
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
-            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol);
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
 

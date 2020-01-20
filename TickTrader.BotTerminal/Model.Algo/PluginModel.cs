@@ -78,7 +78,7 @@ namespace TickTrader.BotTerminal
                 ChangeState(PluginStates.Starting);
 
                 LockResources();
-                Setup = new PluginSetupModel(PluginRef, Agent, SetupContext);
+                Setup = new PluginSetupModel(PluginRef, Agent, SetupContext, Config.MainSymbol);
                 Setup.Load(Config);
 
                 _executor = CreateExecutor();

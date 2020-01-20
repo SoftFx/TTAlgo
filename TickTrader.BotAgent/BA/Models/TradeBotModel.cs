@@ -236,7 +236,7 @@ namespace TickTrader.BotAgent.BA.Models
 
                 executor = _ref.CreateExecutor();
 
-                var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext());
+                var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext(), Config.MainSymbol);
                 setupModel.Load(Config);
 
                 var feedAdapter = _client.CreatePluginFeedAdapter();

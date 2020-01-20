@@ -5,7 +5,7 @@ namespace TickTrader.Algo.Common.Model.Setup
 {
     public static class SpecialSymbols
     {
-        public const string MainSymbol = "[main symbol]";
+        public const string MainSymbol = "[Main Symbol]";
 
 
         public static SymbolToken MainSymbolPlaceholder => new SymbolToken(MainSymbol, SymbolOrigin.Token, null);
