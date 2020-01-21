@@ -74,18 +74,6 @@
                                             CellTemplate="{StaticResource AlertMessageCellTemplate}"/>
                 </DataGrid.Columns>
             </DataGrid>
-
-            <!--<l:FlatButton Grid.Row="3" Grid.Column="0" Margin="6 6"
-                      Content="Clear"
-                      cal:Message.Attach="Clear"
-                      Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>-->
-
-            <!--<l:FlatButton Grid.Row="3" Grid.Column="2" Margin="6"
-                      Content="OK"
-                      cal:Message.Attach="Ok"
-                      Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>-->
         </Grid>
     </ControlTemplate>
 

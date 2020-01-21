@@ -226,13 +226,14 @@ namespace TickTrader.BotTerminal
 
             if (!_anchorableViews.ContainsKey(key))
             {
-                var view = new LayoutAnchorable { ContentId = key, FloatingHeight = 400, FloatingWidth = 600, FloatingTop = 100, FloatingLeft = 100 };
+                var view = new LayoutAnchorable { ContentId = key, FloatingHeight = 400, FloatingWidth = 620, FloatingTop = 100, FloatingLeft = 100 };
                 SetScreenToLayout(view, screen);
 
                 _anchorableViews.Add(key, view);
                 view.PropertyChanged += OnLayoutAnchorablePropertyChanged;
                 view.AddToLayout(this, AnchorableShowStrategy.Right);
                 view.Float();
+                view.Hide();
             }
             else
             {
