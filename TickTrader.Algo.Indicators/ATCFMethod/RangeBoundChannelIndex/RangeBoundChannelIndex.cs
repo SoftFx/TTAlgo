@@ -21,22 +21,22 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.LawnGreen, Precision = 6)]
+        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.Teal, Precision = 6)]
         public DataSeries Rbci { get; set; }
 
-        [Output(DisplayName = "+2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        [Output(DisplayName = "+2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries UpperBound2 { get; set; }
 
-        [Output(DisplayName = "+Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        [Output(DisplayName = "+Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries UpperBound { get; set; }
 
         [Output(DisplayName = "Middle", Target = OutputTargets.Window1, DefaultColor = Colors.Cyan, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries Middle { get; set; }
 
-        [Output(DisplayName = "-Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        [Output(DisplayName = "-Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries LowerBound { get; set; }
 
-        [Output(DisplayName = "-2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        [Output(DisplayName = "-2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries LowerBound2 { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
