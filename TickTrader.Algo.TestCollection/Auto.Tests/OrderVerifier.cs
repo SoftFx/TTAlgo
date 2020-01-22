@@ -52,6 +52,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 return Clone(CurrentType, 0, TradeExecActions.OrderFilled, execTime);
         }
 
+        public OrderVerifier Fill(double volume, DateTime execTime)
+        {
+            var newVolume = ReqVolume - volume;
+            return Clone(CurrentType, newVolume, TradeExecActions.OrderFilled, execTime);
+        }
+
         public OrderVerifier Activate(DateTime execTime)
         {
             return Clone(CurrentType, RemVolume, TradeExecActions.OrderActivated, execTime);

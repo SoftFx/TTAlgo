@@ -30,9 +30,16 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
     [JsonObject(MemberSerialization.OptIn)]
     internal class ConfirmCommentModel : CommentActionModel
     {
-        public ConfirmCommentModel() : base("Confirm")
-        {
+        [JsonProperty]
+        private readonly double? Price;
 
+        [JsonProperty]
+        private readonly double? Volume;
+
+        public ConfirmCommentModel(double? price, double? volume) : base("Confirm")
+        {
+            Price = price;
+            Volume = volume;
         }
     }
 
