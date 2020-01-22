@@ -6,59 +6,48 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
-    internal class AnotherSma : SMA
-    {
-        public double Sum => _sum;
-
-        public AnotherSma(int period) : base(period)
-        {
-        }
-
-        protected override void SetCurrentResult()
-        {
-            Average = _sum/Period;
-        }
-    }
-
-    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index", Version = "1.1")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index", Version = "2.0")]
     public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndex
     {
-        private IMA _ma;
-        private List<double> _calcCache;
+        private IMA _stdMa, _std2Ma;
+        private double _coeff, _coeff2;
 
-        [Parameter(DefaultValue = 18, DisplayName = "STD")]
-        public int Std { get; set; }
+        [Parameter(DefaultValue = 100, DisplayName = "Deviation Period")]
+        public int DeviationPeriod { get; set; }
 
-        [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
-        public int CountBars { get; set; }
+        [Parameter(DefaultValue = 2.0, DisplayName = "Deviation Coeff")]
+        public double DeviationCoeff { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
 
-        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.Teal, Precision = 6)]
+        [Output(DisplayName = "RBCI", Target = OutputTargets.Window1, DefaultColor = Colors.LawnGreen, Precision = 6)]
         public DataSeries Rbci { get; set; }
 
-        [Output(DisplayName = "Upper Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
-        public DataSeries UpperBound { get; set; }
-
-        [Output(DisplayName = "Lower Bound", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
-        public DataSeries LowerBound { get; set; }
-
-        [Output(DisplayName = "Upper Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        [Output(DisplayName = "+2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries UpperBound2 { get; set; }
 
-        [Output(DisplayName = "Lower Bound 2", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        [Output(DisplayName = "+Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        public DataSeries UpperBound { get; set; }
+
+        [Output(DisplayName = "Middle", Target = OutputTargets.Window1, DefaultColor = Colors.Cyan, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        public DataSeries Middle { get; set; }
+
+        [Output(DisplayName = "-Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
+        public DataSeries LowerBound { get; set; }
+
+        [Output(DisplayName = "-2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.Orange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries LowerBound2 { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
 
         public RangeBoundChannelIndex() { }
 
-        public RangeBoundChannelIndex(DataSeries price, int std, int countBars)
+        public RangeBoundChannelIndex(DataSeries price, int deviationPeriod, double deviationCoeff)
         {
             Price = price;
-            Std = std;
-            CountBars = countBars;
+            DeviationPeriod = deviationPeriod;
+            DeviationCoeff = deviationCoeff;
 
             InitializeIndicator();
         }
@@ -70,9 +59,12 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         private void InitializeIndicator()
         {
-            _ma = new AnotherSma(CountBars);
-            _ma.Init();
-            _calcCache = new List<double>();
+            _stdMa = MABase.CreateMaInstance(DeviationPeriod, MovingAverageMethod.Simple);
+            _stdMa.Init();
+            _std2Ma = MABase.CreateMaInstance(DeviationPeriod, MovingAverageMethod.Simple);
+            _std2Ma.Init();
+            _coeff = DeviationCoeff / 2;
+            _coeff2 = DeviationCoeff;
         }
 
         protected override void Init()
@@ -83,48 +75,47 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         protected override void Calculate(bool isNewBar)
         {
             var pos = LastPositionChanged;
-            var val = CalculateDigitalIndicator(isNewBar, Price);
+            var val = -CalculateDigitalIndicator(isNewBar, Price);
+
+            if (Price.Count < Coefficients.Length)
+            {
+                Rbci[pos] = double.NaN;
+                return;
+            }
+
+            Rbci[pos] = val;
 
             if (!isNewBar)
             {
-                _ma.UpdateLast(val);
-                _calcCache[Price.Count - 1] = val;
+                _stdMa.UpdateLast(val);
+                _std2Ma.UpdateLast(val * val);
             }
             else
             {
-                _ma.Add(val);
-                _calcCache.Add(val);
+                _stdMa.Add(val);
+                _std2Ma.Add(val * val);
             }
 
-            if (Price.Count > CountBars)
+            if (Price.Count < Coefficients.Length + DeviationPeriod)
             {
-                Rbci[CountBars] = double.NaN;
-                UpperBound[CountBars] = double.NaN;
-                LowerBound[CountBars] = double.NaN;
-                UpperBound2[CountBars] = double.NaN;
-                LowerBound2[CountBars] = double.NaN;
+                Middle[pos] = double.NaN;
+                UpperBound[pos] = double.NaN;
+                LowerBound[pos] = double.NaN;
+                UpperBound2[pos] = double.NaN;
+                LowerBound2[pos] = double.NaN;
+                return;
             }
 
-            var stdMa = new AnotherSma(Std);
-            var std2Ma = new AnotherSma(Std);
-            stdMa.Init();
-            std2Ma.Init();
+            var average = _stdMa.Average;
+            var average2 = _std2Ma.Average;
 
-            for (var i = Math.Min(Price.Count, CountBars) - 1; i >= 0; i--)
-            {
-                var rbci = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
-                Rbci[pos + i] = rbci;
-                stdMa.Add(rbci);
-                std2Ma.Add(rbci*rbci);
-                var tmp = (std2Ma.Sum + stdMa.Average*stdMa.Average*Std - 2*stdMa.Average*stdMa.Sum)/(Std - 1);
+            Middle[pos] = average;
+            var deviation = DeviationPeriod == 1 ? 0.0 : Math.Sqrt(average2 - average * average);
 
-                var deviation = Math.Sqrt(tmp);
-
-                UpperBound[pos + i] = deviation;
-                LowerBound[pos + i] = -deviation;
-                UpperBound2[pos + i] = 2*deviation;
-                LowerBound2[pos + i] = -2*deviation;
-            }
+            UpperBound[pos] = average + _coeff * deviation;
+            LowerBound[pos] = average - _coeff * deviation;
+            UpperBound2[pos] = average + _coeff2 * deviation;
+            LowerBound2[pos] = average - _coeff2 * deviation;
         }
 
         protected override void SetupCoefficients()

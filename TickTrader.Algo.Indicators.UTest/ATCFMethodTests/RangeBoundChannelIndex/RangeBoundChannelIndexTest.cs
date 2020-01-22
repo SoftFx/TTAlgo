@@ -6,122 +6,92 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
     [TestClass]
     public class RangeBoundChannelIndexTest : TestBase
     {
-        private void TestMeasures(string symbol, string timeframe, int std, int countBars)
+        private void TestMeasures(string symbol, string timeframe, int deviationPeriod, double deviationCoeff)
         {
             var dir = PathHelper.MeasuresDir("ATCFMethod", "RangeBoundChannelIndex");
             var test =
                 new RangeBoundChannelIndexTestCase(typeof (ATCFMethod.RangeBoundChannelIndex.RangeBoundChannelIndex),
-                    symbol, $"{dir}bids_{symbol}_{timeframe}_{std}_{countBars}.bin",
-                    $"{dir}RBCI_{symbol}_{timeframe}_{std}_{countBars}", std, countBars);
+                    symbol, $"{dir}bids_{symbol}_{timeframe}_{deviationPeriod}_{deviationCoeff:F2}.bin",
+                    $"{dir}RBCI_{symbol}_{timeframe}_{deviationPeriod}_{deviationCoeff:F2}", deviationPeriod, deviationCoeff);
             LaunchTestCase(test);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_18_300()
+        public void TestMeasuresEURUSD_H1_100_2_50()
         {
-            TestMeasures("AUDJPY", "M30", 18, 300);
+            TestMeasures("EURUSD", "H1", 100, 2.5);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_18_1250()
+        public void TestMeasuresGBPUSD_H1_87_1_42()
         {
-            TestMeasures("AUDJPY", "M30", 18, 1250);
+            TestMeasures("GBPUSD", "H1", 87, 1.42);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_18_2500()
+        public void TestMeasuresAUDJPY_H1_1_2_00()
         {
-            TestMeasures("AUDJPY", "M30", 18, 2500);
+            TestMeasures("AUDJPY", "H1", 1, 2.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_10_300()
+        public void TestMeasuresAUDJPY_M5_100_0_00()
         {
-            TestMeasures("AUDJPY", "M30", 10, 300);
+            TestMeasures("AUDJPY", "M5", 100, 0.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_10_1250()
+        public void TestMeasuresAUDNZD_M1_50_23_00()
         {
-            TestMeasures("AUDJPY", "M30", 10, 1250);
+            TestMeasures("AUDNZD", "M1", 50, 23.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDJPY_M30_10_2500()
+        public void TestMeasuresAUDNZD_M15_66_66_00()
         {
-            TestMeasures("AUDJPY", "M30", 10, 2500);
+            TestMeasures("AUDNZD", "M15", 66, 66.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_25_300()
+        public void TestMeasuresBTCUSD_M1_61_17_00()
         {
-            TestMeasures("AUDNZD", "M15", 25, 300);
+            TestMeasures("BTCUSD", "M1", 61, 17.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_25_1250()
+        public void TestMeasuresEURUSD_M5_153_4_20()
         {
-            TestMeasures("AUDNZD", "M15", 25, 1250);
+            TestMeasures("EURUSD", "M5", 153, 4.2);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_25_2500()
+        public void TestMeasuresEURUSD_M30_200_3_00()
         {
-            TestMeasures("AUDNZD", "M15", 25, 2500);
+            TestMeasures("EURUSD", "M30", 200, 3.0);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_35_300()
+        public void TestMeasuresGBPCHF_M1_33_1_01()
         {
-            TestMeasures("AUDNZD", "M15", 35, 300);
+            TestMeasures("GBPCHF", "M1", 33, 1.01);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_35_1250()
+        public void TestMeasuresGBPCHF_M5_77_0_33()
         {
-            TestMeasures("AUDNZD", "M15", 35, 1250);
+            TestMeasures("GBPCHF", "M5", 77, 0.33);
         }
 
         [TestMethod]
-        public void TestMeasuresAUDNZD_M15_35_2500()
+        public void TestMeasuresUSDCAD_H1_99_0_00()
         {
-            TestMeasures("AUDNZD", "M15", 35, 2500);
+            TestMeasures("USDCAD", "H1", 99, 0.00);
         }
 
         [TestMethod]
-        public void TestMeasuresEURUSD_H1_5_300()
+        public void TestMeasuresUSDCAD_M15_21_1_00()
         {
-            TestMeasures("EURUSD", "H1", 5, 300);
-        }
-
-        [TestMethod]
-        public void TestMeasuresEURUSD_H1_5_1250()
-        {
-            TestMeasures("EURUSD", "H1", 5, 1250);
-        }
-
-        [TestMethod]
-        public void TestMeasuresEURUSD_H1_5_2500()
-        {
-            TestMeasures("EURUSD", "H1", 5, 2500);
-        }
-
-        [TestMethod]
-        public void TestMeasuresEURUSD_H1_40_300()
-        {
-            TestMeasures("EURUSD", "H1", 40, 300);
-        }
-
-        [TestMethod]
-        public void TestMeasuresEURUSD_H1_40_1250()
-        {
-            TestMeasures("EURUSD", "H1", 40, 1250);
-        }
-
-        [TestMethod]
-        public void TestMeasuresEURUSD_H1_40_2500()
-        {
-            TestMeasures("EURUSD", "H1", 40, 2500);
+            TestMeasures("USDCAD", "M15", 21, 1.00);
         }
     }
 }

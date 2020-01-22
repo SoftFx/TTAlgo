@@ -7,21 +7,21 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
 {
     public class RangeBoundChannelIndexTestCase : DigitalIndicatorTestCase
     {
-        public int Std { get; protected set; }
-        public int CountBars { get; protected set; }
+        public int DeviationPeriod { get; protected set; }
+        public double DeviationCoeff { get; protected set; }
 
         public RangeBoundChannelIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
-            int std, int countBars) : base(indicatorType, symbol, quotesPath, answerPath, 40)
+            int deviationPeriod, double deviationCoeff) : base(indicatorType, symbol, quotesPath, answerPath, 48)
         {
-            Std = std;
-            CountBars = countBars;
+            DeviationPeriod = deviationPeriod;
+            DeviationCoeff = deviationCoeff;
             Epsilon = 6e-9;
         }
 
         protected override void SetupParameters()
         {
-            SetParameter("CountBars", CountBars);
-            SetParameter("Std", Std);
+            SetParameter("DeviationPeriod", DeviationPeriod);
+            SetParameter("DeviationCoeff", DeviationCoeff);
         }
 
         protected override void SetupInput()
@@ -32,10 +32,11 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
         protected override void GetOutput()
         {
             PutOutputToBuffer("Rbci", 0);
-            PutOutputToBuffer("UpperBound", 1);
-            PutOutputToBuffer("LowerBound", 2);
-            PutOutputToBuffer("UpperBound2", 3);
-            PutOutputToBuffer("LowerBound2", 4);
+            PutOutputToBuffer("UpperBound2", 1);
+            PutOutputToBuffer("UpperBound", 2);
+            PutOutputToBuffer("Middle", 3);
+            PutOutputToBuffer("LowerBound", 4);
+            PutOutputToBuffer("LowerBound2", 5);
         }
     }
 }

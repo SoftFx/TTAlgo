@@ -218,42 +218,6 @@
     <EmbeddedResource Include="TestsData\ATCFMethodTests\PerfectCommodityChannelIndex\PCCI_EURNZD_M15.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\PerfectCommodityChannelIndex\PCCI_EURUSD_H1.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\PerfectCommodityChannelIndex\PCCI_USDCHF_M30.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M30_10_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M30_10_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M30_10_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M30_18_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M30_18_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M30_18_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_25_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_25_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_25_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_35_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_35_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_35_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_40_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_40_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_40_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_5_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_5_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_5_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M30_10_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M30_10_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M30_10_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M30_18_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M30_18_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M30_18_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_25_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_25_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_25_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_35_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_35_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_35_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_40_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_40_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_40_300.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_5_1250.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_5_2500.bin" />
-    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_5_300.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\ReferenceFastTrendLine\bids_AUDCAD_H1.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\ReferenceFastTrendLine\bids_AUDJPY_M30.bin" />
     <EmbeddedResource Include="TestsData\ATCFMethodTests\ReferenceFastTrendLine\bids_AUDNZD_M15.bin" />
@@ -702,6 +666,32 @@
     <EmbeddedResource Include="TestsData\BillWilliamsTests\MarketFacilitationIndex\BWMFI_EURNZD_M15.bin" />
     <EmbeddedResource Include="TestsData\BillWilliamsTests\MarketFacilitationIndex\BWMFI_EURUSD_H1.bin" />
     <EmbeddedResource Include="TestsData\BillWilliamsTests\MarketFacilitationIndex\BWMFI_USDCHF_M30.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_H1_1_2.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDJPY_M5_100_0.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M15_66_66.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_AUDNZD_M1_50_23.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_BTCUSD_M1_61_17.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_M30_200_3.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_M5_153_4.20.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_GBPCHF_M1_33_1.01.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_GBPCHF_M5_77_0.33.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_H1_1_2.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDJPY_M5_100_0.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M15_66_66.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_AUDNZD_M1_50_23.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_BTCUSD_M1_61_17.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_M30_200_3.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_M5_153_4.20.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_GBPCHF_M1_33_1.01.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_GBPCHF_M5_77_0.33.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_EURUSD_H1_100_2.50.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_GBPUSD_H1_87_1.42.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_EURUSD_H1_100_2.50.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_GBPUSD_H1_87_1.42.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_USDCAD_H1_99_0.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\bids_USDCAD_M15_21_1.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_USDCAD_H1_99_0.00.bin" />
+    <EmbeddedResource Include="TestsData\ATCFMethodTests\RangeBoundChannelIndex\RBCI_USDCAD_M15_21_1.00.bin" />
     <None Include="TestsData\Extractors\AT&amp;CF Method\Fast Adaptive Trend Line.mq4" />
     <None Include="TestsData\Extractors\AT&amp;CF Method\Fast Trend Line Momentum.mq4" />
     <None Include="TestsData\Extractors\AT&amp;CF Method\FATL Signal.mq4" />
@@ -2180,6 +2170,7 @@
       <Name>TickTrader.Algo.Indicators</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

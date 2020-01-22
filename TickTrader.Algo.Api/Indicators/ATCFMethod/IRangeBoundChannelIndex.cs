@@ -2,9 +2,9 @@
 {
     public interface IRangeBoundChannelIndex
     {
-        int Std { get; }
+        int DeviationPeriod { get; }
 
-        int CountBars { get; }
+        double DeviationCoeff { get; }
 
         DataSeries Price { get; }
 
