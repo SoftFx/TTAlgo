@@ -366,7 +366,18 @@ namespace TickTrader.BotTerminal
 
             if (transaction.ImmediateOrCancel && !IsSplitTransaction)
             {
-                Type = Type == AggregatedTransactionType.BuyLimit ? AggregatedTransactionType.Buy : AggregatedTransactionType.Sell;
+                switch (Type)
+                {
+                    case AggregatedTransactionType.BuyLimit:
+                        Type = AggregatedTransactionType.Buy;
+                        break;
+                    case AggregatedTransactionType.SellLimit:
+                        Type = AggregatedTransactionType.Sell;
+                        break;
+                    default:
+                        break;
+                }
+
                 options.Add(OrderOptions.ImmediateOrCancel);
             }
 
