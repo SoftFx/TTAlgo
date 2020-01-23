@@ -545,9 +545,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private Task<Lib.AlertBotsResponse> GetAlertsInternal(Lib.AlertBotsRequest request, CallOptions options)
         {
-            return VersionSpec.SupportAlerts
-                ? _client.GetAlertsAsync(request, options).ResponseAsync
-                : Task.FromResult(new Lib.AlertBotsResponse());
+            return _client.GetAlertsAsync(request, options).ResponseAsync;
         }
 
         private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, CallOptions options)
@@ -820,6 +818,8 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount)
         {
+            if (!VersionSpec.SupportAlerts)
+                return new AlertRecordInfo[0];
             var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, new Lib.AlertBotsRequest { LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();
