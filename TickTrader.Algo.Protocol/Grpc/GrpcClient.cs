@@ -545,7 +545,9 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private Task<Lib.AlertBotsResponse> GetAlertsInternal(Lib.AlertBotsRequest request, CallOptions options)
         {
-            return _client.GetAlertsAsync(request, options).ResponseAsync;
+            return VersionSpec.SupportAlerts
+                ? _client.GetAlertsAsync(request, options).ResponseAsync
+                : Task.FromResult(new Lib.AlertBotsResponse());
         }
 
         private Task<Lib.BotFolderInfoResponse> GetBotFolderInfoInternal(Lib.BotFolderInfoRequest request, CallOptions options)
