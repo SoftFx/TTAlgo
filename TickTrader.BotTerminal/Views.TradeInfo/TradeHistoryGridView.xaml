@@ -371,6 +371,24 @@
 
                     <DataGridTextColumn Header="Close Volume" Width="100" Binding="{Binding CloseQuantity}"/>
 
+                    <DataGridTextColumn Header="TP" Width="100">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
+                                <Binding Path="TakeProfit"/>
+                                <Binding Path="PriceDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="SL" Width="100">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
+                                <Binding Path="StopLoss"/>
+                                <Binding Path="PriceDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn Header="Req Close Price" Width="100" Visibility="{Binding Visibility, Source={StaticResource ReqClosePriceShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
