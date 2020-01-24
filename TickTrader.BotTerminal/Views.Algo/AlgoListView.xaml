@@ -93,72 +93,90 @@
     <ControlTemplate x:Key="AlgoListView.Classic">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="1.5*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <ComboBox Grid.Row="0" Grid.Column="0"
+            <TextBox Grid.Row="0" Grid.Column="0"  Text="{Binding FilterString, UpdateSourceTrigger=PropertyChanged, Delay=100}"/>
+            <ComboBox Grid.Row="0" Grid.Column="1"
                       ItemsSource="{Binding AvailableAgents}"
                       SelectedItem="{Binding SelectedAgent}"
-                      DisplayMemberPath="Name" />
-            <ComboBox Grid.Row="0" Grid.Column="1"
-                      ItemsSource="{Binding AvaliableViewTypes}"
-                      SelectedItem="{Binding SelectedViewType}" />
-            <Border Name="PluginsView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0" Visibility="Hidden">
+                      DisplayMemberPath="Name" 
+                      Margin="4 0 0 0"/>
+            <Border Name="PluginsView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0">
                 <Border.Resources>
-                    <CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Plugins}">
+                    <!--<CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Plugins}">
                         <CollectionViewSource.SortDescriptions>
+                            <scm:SortDescription PropertyName="Group"/>
                             <scm:SortDescription PropertyName="PackageDisplayName"/>
                             <scm:SortDescription PropertyName="DisplayName"/>
-                            <!--<scm:SortDescription PropertyName="Category" />
-                            <scm:SortDescription PropertyName="DisplayName" />-->
+                            --><!--<scm:SortDescription PropertyName="Category" />
+                            <scm:SortDescription PropertyName="DisplayName" />--><!--
                         </CollectionViewSource.SortDescriptions>
                         <CollectionViewSource.GroupDescriptions>
                             <PropertyGroupDescription PropertyName="Group"/>
-                            <PropertyGroupDescription PropertyName="Folder"/>
-                            <PropertyGroupDescription PropertyName="PackageDisplayName"/>
+                            --><!--<PropertyGroupDescription PropertyName="Folder"/>--><!--
+                            <PropertyGroupDescription PropertyName="PackageNameWithoutExtension"/>
                         </CollectionViewSource.GroupDescriptions>
-                    </CollectionViewSource>
+                    </CollectionViewSource>-->
 
-                    <HierarchicalDataTemplate x:Key="LevelPackage" ItemsSource="{Binding Items}">
-                        <TextBlock Text="{Binding Name}"/>
-                        <HierarchicalDataTemplate.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderThickness="0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />
-                                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding Description}"/>
-                                        <i:Interaction.Behaviors>
-                                            <l:DragBehavior/>
-                                        </i:Interaction.Behaviors>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </HierarchicalDataTemplate.ItemTemplate>
-                    </HierarchicalDataTemplate>
 
-                    <HierarchicalDataTemplate x:Key="LevelFolder" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource LevelPackage}">
+                    <!--<HierarchicalDataTemplate x:Key="LevelFolder" ItemsSource="{Binding Items}" ItemTemplate="{StaticResource LevelPackage}">
                         <TextBlock Text="{Binding Name}"/>
-                    </HierarchicalDataTemplate>
+                    </HierarchicalDataTemplate>-->
 
                 </Border.Resources>
-                <TreeView ItemsSource="{Binding Source={StaticResource PluginGroupViewSrc}, Path=Groups}" BorderThickness="0">
+                <TreeView ItemsSource="{Binding PluginsView.Groups}" BorderThickness="0">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">
-                            <Setter Property="IsExpanded" Value="False"/>
+                            <Setter Property="IsExpanded" Value="True"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
+                    <TreeView.Resources>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Style.Setters>
+                                <Setter Property="ToolTip" Value="{Binding PackagePath}" />
+                            </Style.Setters>
+                        </Style>
+                    </TreeView.Resources>
                     <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding Items}" ItemTemplate="{StaticResource LevelFolder}">
+                        <HierarchicalDataTemplate ItemsSource="{Binding Items}">
                             <TextBlock Text="{Binding Name}"/>
+                            <HierarchicalDataTemplate.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                                    <TextBlock Text="{Binding Name}" ToolTip="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext.Items[0].FullPackagePath}"/>
+                                    <HierarchicalDataTemplate.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderThickness="0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <StackPanel.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Download package..." cal:Message.Attach="DownloadPackage" 
+                                                              Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
+                                                            <MenuItem Header="Upload package..." cal:Message.Attach="UploadPackage"
+                                                              Visibility="{Binding IsLocal, Converter={StaticResource BoolToVis}}"/>
+                                                            <MenuItem Header="Remove package" cal:Message.Attach="RemovePackage"/>
+                                                        </ContextMenu>
+                                                    </StackPanel.ContextMenu>
+                                                    <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Path=DisplayName}" ToolTip="{Binding Description}"/>
+                                                    <i:Interaction.Behaviors>
+                                                        <l:DragBehavior/>
+                                                    </i:Interaction.Behaviors>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </HierarchicalDataTemplate.ItemTemplate>
+                                </HierarchicalDataTemplate>
+                            </HierarchicalDataTemplate.ItemTemplate>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
             </Border>
-            <Border Name="PackagesView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0" Visibility="Hidden">
+            <!--<Border Name="PackagesView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0" Visibility="Hidden">
                 <Border.Resources>
                     <CollectionViewSource x:Key="PluginGroupViewSrc" Source="{Binding Packages}">
                         <CollectionViewSource.SortDescriptions>
@@ -204,9 +222,9 @@
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
-            </Border>
+            </Border>-->
         </Grid>
-        <ControlTemplate.Triggers>
+        <!--<ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding SelectedViewType}" Value="{x:Static l:AlgoListViewType.Plugins}">
                 <Setter TargetName="PluginsView" Property="Visibility" Value="Visible" />
                 <Setter TargetName="PackagesView" Property="Visibility" Value="Hidden" />
@@ -215,7 +233,7 @@
                 <Setter TargetName="PluginsView" Property="Visibility" Value="Hidden" />
                 <Setter TargetName="PackagesView" Property="Visibility" Value="Visible" />
             </DataTrigger>
-        </ControlTemplate.Triggers>
+        </ControlTemplate.Triggers>-->
     </ControlTemplate>
 
     <Style x:Key="AlgoListViewStyle" TargetType="UserControl">

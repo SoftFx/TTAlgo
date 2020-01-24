@@ -23,6 +23,10 @@ namespace TickTrader.BotTerminal
 
         public string PackageDisplayName { get; }
 
+        public string PackageNameWithoutExtension { get; }
+
+        public string FullPackagePath { get; }
+
         public string Category => Info.Descriptor.Category;
 
         public AlgoTypes Type => Info.Descriptor.Type;
@@ -40,14 +44,18 @@ namespace TickTrader.BotTerminal
             Agent = agent;
 
             PackageDisplayName = Info.Key.PackageName;
+
             var packagePath = "Unknown path";
+
             if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
             {
                 PackageDisplayName = packageInfo.Identity.FileName;
                 packagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
+                FullPackagePath = $"Full path: {packageInfo.Identity.FilePath}";
             }
 
-            Description = string.Join(Environment.NewLine, Info.Descriptor.Description, string.Empty, $"Agent {Agent.Name}. Package {PackageDisplayName} at {packagePath}").Trim();
+            PackageNameWithoutExtension = GetPathWithoutExtension(PackageDisplayName);
+            Description = string.Join(Environment.NewLine, Info.Descriptor.Description, string.Empty, $"Package {PackageDisplayName} at {packagePath}").Trim();
 
             switch (Type)
             {
@@ -76,5 +84,7 @@ namespace TickTrader.BotTerminal
                     break;
             }
         }
+
+        private string GetPathWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);
     }
 }

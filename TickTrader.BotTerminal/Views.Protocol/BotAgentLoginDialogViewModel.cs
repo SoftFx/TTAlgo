@@ -211,7 +211,7 @@ namespace TickTrader.BotTerminal
                 && !string.IsNullOrWhiteSpace(_port);
             if (_isValid)
             {
-                if (_agentName.Equals("Local", StringComparison.OrdinalIgnoreCase)
+                if (_agentName.Equals(LocalAlgoAgent.LocalAgentName, StringComparison.OrdinalIgnoreCase)
                     || _agentName.Contains("/"))
                 {
                     _isValid = false;
