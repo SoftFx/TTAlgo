@@ -344,7 +344,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         #region config.proto
 
-        public static Lib.Property Convert(this Property property)
+        public static Lib.Property Convert(this Property property, string mainSymbol, VersionSpec version = null)
         {
             var res = new Lib.Property
             {
@@ -356,7 +356,7 @@ namespace TickTrader.Algo.Protocol.Grpc
                     res.Parameter = parameter.Convert();
                     break;
                 case Input input:
-                    res.Input = input.Convert();
+                    res.Input = input.Convert(version, mainSymbol);
                     break;
                 case Output output:
                     res.Output = output.Convert();
@@ -481,20 +481,30 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        public static Lib.SymbolConfig Convert(this SymbolConfig config)
+        public static Lib.SymbolConfig Convert(this SymbolConfig config, VersionSpec version, string mainSymbol = "")
         {
+            var name = config.Name;
+
+            if (config.Origin == SymbolOrigin.Token)
+            {
+                if (version != null && version.SupportMainToken)
+                    name = mainSymbol;
+                else
+                    throw new UnsupportedException($"\"{SpecialSymbols.MainSymbol}\" token not supported by current agent version");
+            }
+
             return new Lib.SymbolConfig
             {
-                Name = Convert(config.Name),
+                Name = Convert(name),
                 Origin = config.Origin.Convert(),
             };
         }
 
-        public static Lib.Input Convert(this Input input)
+        public static Lib.Input Convert(this Input input, VersionSpec version, string mainSymbol = "")
         {
             var res = new Lib.Input
             {
-                SelectedSymbol = input.SelectedSymbol.Convert(),
+                SelectedSymbol = input.SelectedSymbol.Convert(version, mainSymbol),
             };
             switch (input)
             {
@@ -622,18 +632,18 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.PluginConfig Convert(this PluginConfig config)
+        public static Lib.PluginConfig Convert(this PluginConfig config, VersionSpec version = null)
         {
             var res = new Lib.PluginConfig
             {
                 Key = config.Key.Convert(),
                 TimeFrame = config.TimeFrame.Convert(),
-                MainSymbol = config.MainSymbol.Convert(),
+                MainSymbol = config.MainSymbol.Convert(version),
                 SelectedMapping = config.SelectedMapping.Convert(),
                 InstanceId = Convert(config.InstanceId),
                 Permissions = config.Permissions.Convert(),
             };
-            res.Properties.AddRange(config.Properties.Select(Convert));
+            res.Properties.AddRange(config.Properties.Select(u => u.Convert(res.MainSymbol.Name, version)));
             return res;
         }
 
@@ -942,10 +952,10 @@ namespace TickTrader.Algo.Protocol.Grpc
             };
         }
 
-        public static Lib.BotModelInfo Convert(this BotModelInfo bot)
+        public static Lib.BotModelInfo Convert(this BotModelInfo bot, VersionSpec version = null)
         {
             var res = bot.ConvertLight();
-            res.Config = bot.Config.Convert();
+            res.Config = bot.Config.Convert(version);
             res.Descriptor_ = bot.Descriptor?.ConvertLight();
             return res;
         }
@@ -1095,10 +1105,10 @@ namespace TickTrader.Algo.Protocol.Grpc
             return res;
         }
 
-        public static Lib.UpdateInfo Convert(this UpdateInfo<BotModelInfo> update)
+        public static Lib.UpdateInfo Convert(this UpdateInfo<BotModelInfo> update, VersionSpec version = null)
         {
             var res = ((UpdateInfo)update).Convert();
-            res.Bot = new Lib.BotUpdateInfo { Bot = update.Value.Convert() };
+            res.Bot = new Lib.BotUpdateInfo { Bot = update.Value.Convert(version) };
             return res;
         }
 

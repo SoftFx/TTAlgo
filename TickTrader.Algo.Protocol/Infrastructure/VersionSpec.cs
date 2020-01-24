@@ -15,6 +15,7 @@
 
         public bool SupportAlerts => CurrentVersion > 0;
 
+        public bool SupportMainToken => CurrentVersion > 0;
 
         internal VersionSpec()
         {

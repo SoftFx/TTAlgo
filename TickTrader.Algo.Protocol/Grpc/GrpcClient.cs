@@ -617,7 +617,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task AddBot(AccountKey account, PluginConfig config)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new Lib.AddBotRequest { Account = account.Convert(), Config = config.Convert() });
+            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new Lib.AddBotRequest { Account = account.Convert(), Config = config.Convert(VersionSpec) });
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -641,7 +641,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task ChangeBotConfig(string botId, PluginConfig newConfig)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert() });
+            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert(VersionSpec) });
             FailForNonSuccess(response.ExecResult);
         }
 

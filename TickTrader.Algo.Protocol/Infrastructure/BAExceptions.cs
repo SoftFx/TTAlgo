@@ -14,4 +14,11 @@ namespace TickTrader.Algo.Protocol
         {
         }
     }
+
+    public class UnsupportedException : BAException
+    {
+        public UnsupportedException(string message) : base(message)
+        {
+        }
+    }
 }
