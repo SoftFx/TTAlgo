@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
             SetupPage.InitToken();
 
             //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Info.Key);
+            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.PluginInfo.Key);
             //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
             _descriptorCache = pluginRef.Metadata.Descriptor;

@@ -60,12 +60,12 @@ namespace TickTrader.BotTerminal
         {
             PluginsView = CollectionViewSource.GetDefaultView(SelectedAgent.Plugins.AsObservable());
 
-            PluginsView.SortDescriptions.Add(new SortDescription("Group", ListSortDirection.Ascending));
-            PluginsView.SortDescriptions.Add(new SortDescription("PackageDisplayName", ListSortDirection.Ascending));
-            PluginsView.SortDescriptions.Add(new SortDescription("DisplayName", ListSortDirection.Ascending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.GroupLevelHeader, ListSortDirection.Descending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.PackageLevelHeader, ListSortDirection.Ascending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.BotLevelHeader, ListSortDirection.Ascending));
 
-            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
-            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription("PackageNameWithoutExtension"));
+            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.GroupLevelHeader));
+            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.PackageLevelHeader));
 
             PluginsView.Filter = new Predicate<object>(Filter);
 
