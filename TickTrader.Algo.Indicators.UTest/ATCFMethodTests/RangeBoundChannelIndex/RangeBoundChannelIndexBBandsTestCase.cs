@@ -5,12 +5,12 @@ using TickTrader.Algo.Api.Indicators;
 
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelIndex
 {
-    public class RangeBoundChannelIndexTestCase : DigitalIndicatorTestCase
+    public class RangeBoundChannelIndexBBandsTestCase : DigitalIndicatorTestCase
     {
         public int DeviationPeriod { get; protected set; }
         public double DeviationCoeff { get; protected set; }
 
-        public RangeBoundChannelIndexTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
+        public RangeBoundChannelIndexBBandsTestCase(Type indicatorType, string symbol, string quotesPath, string answerPath,
             int deviationPeriod, double deviationCoeff) : base(indicatorType, symbol, quotesPath, answerPath, 48)
         {
             DeviationPeriod = deviationPeriod;
@@ -32,11 +32,11 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
         protected override void GetOutput()
         {
             PutOutputToBuffer("Rbci", 0);
-            PutOutputToBuffer("UpperBound2", 1);
-            PutOutputToBuffer("UpperBound", 2);
+            PutOutputToBuffer("Plus2Sigma", 1);
+            PutOutputToBuffer("PlusSigma", 2);
             PutOutputToBuffer("Middle", 3);
-            PutOutputToBuffer("LowerBound", 4);
-            PutOutputToBuffer("LowerBound2", 5);
+            PutOutputToBuffer("MinusSigma", 4);
+            PutOutputToBuffer("Minus2Sigma", 5);
         }
     }
 }

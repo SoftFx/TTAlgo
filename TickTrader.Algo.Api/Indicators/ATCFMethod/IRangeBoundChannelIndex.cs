@@ -1,10 +1,10 @@
 ﻿namespace TickTrader.Algo.Api.Indicators
 {
-    public interface IRangeBoundChannelIndex
+    public interface IRangeBoundChannelIndexAvg
     {
-        int DeviationPeriod { get; }
+        int Std { get; }
 
-        double DeviationCoeff { get; }
+        int CountBars { get; }
 
         DataSeries Price { get; }
 
@@ -17,6 +17,32 @@
         DataSeries UpperBound2 { get; }
 
         DataSeries LowerBound2 { get; }
+
+        int LastPositionChanged { get; }
+
+
+        bool HasEnoughBars(int barsCount);
+    }
+
+    public interface IRangeBoundChannelIndexBBands
+    {
+        int DeviationPeriod { get; }
+
+        double DeviationCoeff { get; }
+
+        DataSeries Price { get; }
+
+        DataSeries Rbci { get; }
+
+        DataSeries Plus2Sigma { get; }
+
+        DataSeries PlusSigma { get; }
+
+        DataSeries Middle { get; }
+
+        DataSeries MinusSigma { get; }
+
+        DataSeries Minus2Sigma { get; }
 
         int LastPositionChanged { get; }
 

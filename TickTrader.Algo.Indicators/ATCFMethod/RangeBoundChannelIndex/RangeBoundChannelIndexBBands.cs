@@ -6,8 +6,8 @@ using TickTrader.Algo.Indicators.Trend.MovingAverage;
 
 namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 {
-    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index", Version = "2.0")]
-    public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndex
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index BBands", Version = "2.0")]
+    public class RangeBoundChannelIndexBBands : DigitalIndicatorBase, IRangeBoundChannelIndexBBands
     {
         private IMA _stdMa, _std2Ma;
         private double _coeff, _coeff2;
@@ -25,25 +25,25 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         public DataSeries Rbci { get; set; }
 
         [Output(DisplayName = "+2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
-        public DataSeries UpperBound2 { get; set; }
+        public DataSeries Plus2Sigma { get; set; }
 
         [Output(DisplayName = "+Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
-        public DataSeries UpperBound { get; set; }
+        public DataSeries PlusSigma { get; set; }
 
         [Output(DisplayName = "Middle", Target = OutputTargets.Window1, DefaultColor = Colors.Cyan, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
         public DataSeries Middle { get; set; }
 
         [Output(DisplayName = "-Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
-        public DataSeries LowerBound { get; set; }
+        public DataSeries MinusSigma { get; set; }
 
         [Output(DisplayName = "-2Sigma", Target = OutputTargets.Window1, DefaultColor = Colors.DarkOrange, DefaultLineStyle = LineStyles.DotsRare, Precision = 6)]
-        public DataSeries LowerBound2 { get; set; }
+        public DataSeries Minus2Sigma { get; set; }
 
         public int LastPositionChanged { get { return 0; } }
 
-        public RangeBoundChannelIndex() { }
+        public RangeBoundChannelIndexBBands() { }
 
-        public RangeBoundChannelIndex(DataSeries price, int deviationPeriod, double deviationCoeff)
+        public RangeBoundChannelIndexBBands(DataSeries price, int deviationPeriod, double deviationCoeff)
         {
             Price = price;
             DeviationPeriod = deviationPeriod;
@@ -99,10 +99,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             if (Price.Count < Coefficients.Length + DeviationPeriod)
             {
                 Middle[pos] = double.NaN;
-                UpperBound[pos] = double.NaN;
-                LowerBound[pos] = double.NaN;
-                UpperBound2[pos] = double.NaN;
-                LowerBound2[pos] = double.NaN;
+                PlusSigma[pos] = double.NaN;
+                MinusSigma[pos] = double.NaN;
+                Plus2Sigma[pos] = double.NaN;
+                Minus2Sigma[pos] = double.NaN;
                 return;
             }
 
@@ -112,10 +112,10 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             Middle[pos] = average;
             var deviation = DeviationPeriod == 1 ? 0.0 : Math.Sqrt(average2 - average * average);
 
-            UpperBound[pos] = average + _coeff * deviation;
-            LowerBound[pos] = average - _coeff * deviation;
-            UpperBound2[pos] = average + _coeff2 * deviation;
-            LowerBound2[pos] = average - _coeff2 * deviation;
+            PlusSigma[pos] = average + _coeff * deviation;
+            MinusSigma[pos] = average - _coeff * deviation;
+            Plus2Sigma[pos] = average + _coeff2 * deviation;
+            Minus2Sigma[pos] = average - _coeff2 * deviation;
         }
 
         protected override void SetupCoefficients()

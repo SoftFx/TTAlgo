@@ -4,13 +4,13 @@ using TickTrader.Algo.Indicators.UTest.Utility;
 namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelIndex
 {
     [TestClass]
-    public class RangeBoundChannelIndexTest : TestBase
+    public class RangeBoundChannelIndexBBandsTest : TestBase
     {
         private void TestMeasures(string symbol, string timeframe, int deviationPeriod, double deviationCoeff)
         {
-            var dir = PathHelper.MeasuresDir("ATCFMethod", "RangeBoundChannelIndex");
+            var dir = PathHelper.MeasuresDir("ATCFMethod", "RangeBoundChannelIndexBBands");
             var test =
-                new RangeBoundChannelIndexTestCase(typeof (ATCFMethod.RangeBoundChannelIndex.RangeBoundChannelIndex),
+                new RangeBoundChannelIndexBBandsTestCase(typeof (ATCFMethod.RangeBoundChannelIndex.RangeBoundChannelIndexBBands),
                     symbol, $"{dir}bids_{symbol}_{timeframe}_{deviationPeriod}_{deviationCoeff:F2}.bin",
                     $"{dir}RBCI_{symbol}_{timeframe}_{deviationPeriod}_{deviationCoeff:F2}", deviationPeriod, deviationCoeff);
             LaunchTestCase(test);
