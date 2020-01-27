@@ -110,7 +110,7 @@
                 <TreeView ItemsSource="{Binding PluginsView.Groups}" BorderThickness="0">
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="{x:Type TreeViewItem}">
-                            <Setter Property="IsExpanded" Value="True"/>
+                            <Setter Property="IsExpanded" Value="False"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
                     <TreeView.Resources>
@@ -130,10 +130,10 @@
                                             <ContextMenu cal:Bind.ModelWithoutContext="{Binding Items[0]}">
                                                 <MenuItem Header="Download..." 
                                                           cal:Message.Attach="DownloadPackage"
-                                                          Visibility="{Binding Items[0].IsRemote, Converter={StaticResource BoolToVis}}"/>
+                                                          IsEnabled="{Binding Items[0].IsRemote}"/>
                                                 <MenuItem Header="Upload..." 
                                                           cal:Message.Attach="UploadPackage"
-                                                          Visibility="{Binding Items[0].IsLocal, Converter={StaticResource BoolToVis}}"/>
+                                                          IsEnabled="{Binding Items[0].IsLocal}"/>
                                                 <MenuItem Header="Remove"
                                                           cal:Message.Attach="RemovePackage"/>
                                             </ContextMenu>
@@ -146,9 +146,9 @@
                                                     <StackPanel.ContextMenu>
                                                         <ContextMenu>
                                                             <MenuItem Header="Download package..." cal:Message.Attach="DownloadPackage" 
-                                                              Visibility="{Binding IsRemote, Converter={StaticResource BoolToVis}}"/>
+                                                              IsEnabled="{Binding IsRemote}"/>
                                                             <MenuItem Header="Upload package..." cal:Message.Attach="UploadPackage"
-                                                              Visibility="{Binding IsLocal, Converter={StaticResource BoolToVis}}"/>
+                                                              IsEnabled="{Binding IsLocal}"/>
                                                             <MenuItem Header="Remove package" cal:Message.Attach="RemovePackage"/>
                                                         </ContextMenu>
                                                     </StackPanel.ContextMenu>
