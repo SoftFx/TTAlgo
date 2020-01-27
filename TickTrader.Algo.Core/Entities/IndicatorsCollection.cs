@@ -32,9 +32,9 @@ namespace TickTrader.Algo.Core
             return new Indicators.ATCFMethod.PerfectCommodityChannelIndex.PerfectCommodityChannelIndex(price, countBars);
         }
 
-        public IRangeBoundChannelIndexAvg RangeBoundChannelIndexAvg(DataSeries price, int std = 18, int countBars = 300)
+        public IRangeBoundChannelIndexAvg RangeBoundChannelIndexAvg(DataSeries price, int std = 18, int countBars = 300, CalcFrequency frequency = CalcFrequency.M1)
         {
-            return new Indicators.ATCFMethod.RangeBoundChannelIndex.RangeBoundChannelIndex(price, std, countBars);
+            return new Indicators.ATCFMethod.RangeBoundChannelIndex.RangeBoundChannelIndex(price, std, countBars, frequency);
         }
 
         public IRangeBoundChannelIndexBBands RangeBoundChannelIndexBBands(DataSeries price, int deviationPeriod = 100, double deviationCoeff = 2.0)

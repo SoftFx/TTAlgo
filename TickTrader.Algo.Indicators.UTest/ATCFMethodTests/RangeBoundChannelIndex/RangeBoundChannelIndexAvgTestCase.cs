@@ -22,6 +22,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
         {
             SetParameter("CountBars", CountBars);
             SetParameter("Std", Std);
+            SetParameter("Frequency", CalcFrequency.EveryTick);
         }
 
         protected override void SetupInput()

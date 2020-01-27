@@ -292,33 +292,6 @@ namespace TickTrader.Algo.Api
 
         #endregion
 
-        #region Timer
-
-        public DateTime Now => context.TimerApi.Now;
-        public DateTime UtcNow => context.TimerApi.UtcNow;
-
-        public Timer CreateTimer(int periodMs, Action<Timer> callback)
-        {
-            return CreateTimer(TimeSpan.FromMilliseconds(periodMs), callback);
-        }
-
-        public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
-        {
-            return context.TimerApi.CreateTimer(period, callback);
-        }
-
-        public Task Delay(int periodMs)
-        {
-            return context.TimerApi.Delay(TimeSpan.FromMilliseconds(periodMs));
-        }
-
-        public Task Delay(TimeSpan period)
-        {
-            return context.TimerApi.Delay(period);
-        }
-
-        #endregion
-
         #region Setup
 
         /// <summary>

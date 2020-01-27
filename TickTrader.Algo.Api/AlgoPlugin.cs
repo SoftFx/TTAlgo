@@ -38,6 +38,33 @@ namespace TickTrader.Algo.Api
         public IndicatorProvider Indicators { get { return context.Indicators; } }
         public IAlertAPI Alert => context.Logger.Alert;
 
+        #region Timer
+
+        public DateTime Now => context.TimerApi.Now;
+        public DateTime UtcNow => context.TimerApi.UtcNow;
+
+        public Timer CreateTimer(int periodMs, Action<Timer> callback)
+        {
+            return CreateTimer(TimeSpan.FromMilliseconds(periodMs), callback);
+        }
+
+        public Timer CreateTimer(TimeSpan period, Action<Timer> callback)
+        {
+            return context.TimerApi.CreateTimer(period, callback);
+        }
+
+        public Task Delay(int periodMs)
+        {
+            return context.TimerApi.Delay(TimeSpan.FromMilliseconds(periodMs));
+        }
+
+        public Task Delay(TimeSpan period)
+        {
+            return context.TimerApi.Delay(period);
+        }
+
+        #endregion
+
         /// <summary>
         /// Occurs when connection to server is lost.
         /// </summary>

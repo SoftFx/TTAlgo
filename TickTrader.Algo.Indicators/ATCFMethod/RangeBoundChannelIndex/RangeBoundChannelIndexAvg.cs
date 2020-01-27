@@ -25,12 +25,16 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
     {
         private IMA _ma;
         private List<double> _calcCache;
+        private DateTime _lastCalculated;
 
         [Parameter(DefaultValue = 18, DisplayName = "STD")]
         public int Std { get; set; }
 
         [Parameter(DefaultValue = 300, DisplayName = "CountBars")]
         public int CountBars { get; set; }
+
+        [Parameter(DefaultValue = CalcFrequency.M1, DisplayName = "Calculation Frequency")]
+        public CalcFrequency Frequency { get; set; }
 
         [Input]
         public DataSeries Price { get; set; }
@@ -54,11 +58,12 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
 
         public RangeBoundChannelIndex() { }
 
-        public RangeBoundChannelIndex(DataSeries price, int std, int countBars)
+        public RangeBoundChannelIndex(DataSeries price, int std, int countBars, CalcFrequency frequency)
         {
             Price = price;
             Std = std;
             CountBars = countBars;
+            Frequency = frequency;
 
             InitializeIndicator();
         }
@@ -73,6 +78,7 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             _ma = new AnotherSma(CountBars);
             _ma.Init();
             _calcCache = new List<double>();
+            _lastCalculated = DateTime.MinValue;
         }
 
         protected override void Init()
@@ -89,12 +95,29 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             {
                 _ma.UpdateLast(val);
                 _calcCache[Price.Count - 1] = val;
+                switch (Frequency)
+                {
+                    case CalcFrequency.EveryTick:
+                        break;
+                    case CalcFrequency.EveryBar:
+                        return;
+                    case CalcFrequency.S5:
+                        if (Now - _lastCalculated < TimeSpan.FromSeconds(5))
+                            return;
+                        break;
+                    case CalcFrequency.M1:
+                        if (Now - _lastCalculated < TimeSpan.FromMinutes(1))
+                            return;
+                        break;
+                }
             }
             else
             {
                 _ma.Add(val);
                 _calcCache.Add(val);
             }
+
+            _lastCalculated = Now;
 
             if (Price.Count > CountBars)
             {

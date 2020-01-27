@@ -6,6 +6,8 @@
 
         int CountBars { get; }
 
+        CalcFrequency Frequency { get; set; }
+
         DataSeries Price { get; }
 
         DataSeries Rbci { get; }

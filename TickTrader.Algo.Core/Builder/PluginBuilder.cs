@@ -38,7 +38,7 @@ namespace TickTrader.Algo.Core
 
             PluginProxy = PluginAdapter.Create(descriptor, this);
             Diagnostics = Null.Diagnostics;
-            TimerApi = Null.TimerApi;
+            TimerApi = new SimpleTimerFixture();
 
             syncContext.OnAsyncAction = OnPluginThread;
 
