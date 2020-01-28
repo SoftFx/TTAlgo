@@ -15,7 +15,7 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
         {
             Std = std;
             CountBars = countBars;
-            Epsilon = 6e-9;
+            Epsilon = 2e-8;
         }
 
         protected override void SetupParameters()
@@ -37,6 +37,18 @@ namespace TickTrader.Algo.Indicators.UTest.ATCFMethodTests.RangeBoundChannelInde
             PutOutputToBuffer("LowerBound", 2);
             PutOutputToBuffer("UpperBound2", 3);
             PutOutputToBuffer("LowerBound2", 4);
+        }
+
+        protected override void InvokeCheckAnswer(string answerPath)
+        {
+            var metaAnswer = ReadAnswer(answerPath);
+            for (var k = 0; k < Quotes.Count; k++)
+            {
+                var v = Quotes.Count - CountBars - 1;
+                if (k > v && k < v + Std) // Skip checking values when there is no data for Std interval
+                    continue;
+                CheckAnswerUnit(k, metaAnswer);
+            }
         }
     }
 }

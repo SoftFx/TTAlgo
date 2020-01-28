@@ -20,12 +20,13 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
         }
     }
 
-    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index Avg", Version = "1.2")]
+    [Indicator(Category = "AT&CF Method", DisplayName = "Range Bound Channel Index Avg", Version = "1.3")]
     public class RangeBoundChannelIndex : DigitalIndicatorBase, IRangeBoundChannelIndexAvg
     {
         private IMA _ma;
+        private AnotherSma _stdMa, _std2Ma;
         private List<double> _calcCache;
-        private DateTime _lastCalculated;
+        private DateTime _lastUpdated;
 
         [Parameter(DefaultValue = 18, DisplayName = "STD")]
         public int Std { get; set; }
@@ -78,7 +79,12 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             _ma = new AnotherSma(CountBars);
             _ma.Init();
             _calcCache = new List<double>();
-            _lastCalculated = DateTime.MinValue;
+            _lastUpdated = DateTime.MinValue;
+
+            _stdMa = new AnotherSma(Std);
+            _std2Ma = new AnotherSma(Std);
+            _stdMa.Init();
+            _std2Ma.Init();
         }
 
         protected override void Init()
@@ -94,7 +100,29 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
             if (!isNewBar)
             {
                 _ma.UpdateLast(val);
+                _stdMa.UpdateLast(val);
+                _std2Ma.UpdateLast(val * val);
                 _calcCache[Price.Count - 1] = val;
+            }
+            else
+            {
+                _ma.Add(val);
+                _stdMa.Add(val);
+                _std2Ma.Add(val * val);
+                _calcCache.Add(val);
+            }
+
+            var tmp = (_std2Ma.Sum - _stdMa.Average * _stdMa.Sum) / (Std - 1);
+
+            var deviation = Math.Sqrt(tmp);
+
+            UpperBound[pos] = deviation;
+            LowerBound[pos] = -deviation;
+            UpperBound2[pos] = 2 * deviation;
+            LowerBound2[pos] = -2 * deviation;
+
+            if (!isNewBar)
+            {
                 switch (Frequency)
                 {
                     case CalcFrequency.EveryTick:
@@ -102,22 +130,17 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                     case CalcFrequency.EveryBar:
                         return;
                     case CalcFrequency.S5:
-                        if (Now - _lastCalculated < TimeSpan.FromSeconds(5))
+                        if (Now - _lastUpdated < TimeSpan.FromSeconds(5))
                             return;
                         break;
                     case CalcFrequency.M1:
-                        if (Now - _lastCalculated < TimeSpan.FromMinutes(1))
+                        if (Now - _lastUpdated < TimeSpan.FromMinutes(1))
                             return;
                         break;
                 }
             }
-            else
-            {
-                _ma.Add(val);
-                _calcCache.Add(val);
-            }
 
-            _lastCalculated = Now;
+            _lastUpdated = Now;
 
             if (Price.Count > CountBars)
             {
@@ -128,26 +151,32 @@ namespace TickTrader.Algo.Indicators.ATCFMethod.RangeBoundChannelIndex
                 LowerBound2[CountBars] = double.NaN;
             }
 
-            var stdMa = new AnotherSma(Std);
-            var std2Ma = new AnotherSma(Std);
-            stdMa.Init();
-            std2Ma.Init();
-
             for (var i = Math.Min(Price.Count, CountBars) - 1; i >= 0; i--)
             {
                 var rbci = _ma.Average - _calcCache[Price.Count - (pos + i) - 1];
                 Rbci[pos + i] = rbci;
-                stdMa.Add(rbci);
-                std2Ma.Add(rbci * rbci);
-                var tmp = (std2Ma.Sum + stdMa.Average * stdMa.Average * Std - 2 * stdMa.Average * stdMa.Sum) / (Std - 1);
-
-                var deviation = Math.Sqrt(tmp);
-
-                UpperBound[pos + i] = deviation;
-                LowerBound[pos + i] = -deviation;
-                UpperBound2[pos + i] = 2 * deviation;
-                LowerBound2[pos + i] = -2 * deviation;
             }
+
+            // Old calculation logic for values lying inside (CountBars, CountBars + Std) interval
+            //var stdMa = new AnotherSma(Std);
+            //var std2Ma = new AnotherSma(Std);
+            //stdMa.Init();
+            //std2Ma.Init();
+            //pos = Math.Min(Price.Count - 1, CountBars - 1);
+            //for (var i = 0; i < Math.Min(pos, Std); i++)
+            //{
+            //    var rbci = Rbci[pos - i];
+            //    stdMa.Add(rbci);
+            //    std2Ma.Add(rbci * rbci);
+            //    var tmp2 = (std2Ma.Sum - stdMa.Average * stdMa.Average * Std) / (Std - 1);
+
+            //    var deviation2 = Math.Sqrt(tmp2);
+
+            //    UpperBound[pos - i] = deviation2;
+            //    LowerBound[pos - i] = -deviation2;
+            //    UpperBound2[pos - i] = 2 * deviation2;
+            //    LowerBound2[pos - i] = -2 * deviation2;
+            //}
         }
 
         protected override void SetupCoefficients()

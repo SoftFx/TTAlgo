@@ -43,8 +43,8 @@ namespace TickTrader.BotTerminal
                     oldService.ToggleViewEvent -= dockManager.ToggleView;
                     oldService.ShowViewEvent -= dockManager.ShowView;
                     oldService.RemoveViewEvent -= dockManager.RemoveView;
-                    oldService.RemoveViewsEvent-= dockManager.RemoveViews;
-                    oldService.RegisterViewToLayout-= dockManager.RegisterView;
+                    oldService.RemoveViewsEvent -= dockManager.RemoveViews;
+                    oldService.RegisterViewToLayout -= dockManager.RegisterView;
                 }
 
                 if (newService != null)
@@ -113,14 +113,18 @@ namespace TickTrader.BotTerminal
 
         private void OnLayoutAnchorablePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
-            if (sender is LayoutAnchorable && args.PropertyName == "IsHidden")
+            if (sender is LayoutAnchorable && 
+                (args.PropertyName == nameof(LayoutAnchorable.IsHidden)
+                || args.PropertyName == nameof(LayoutAnchorable.IsAutoHidden)))
             {
                 var view = (LayoutAnchorable)sender;
-                DockManagerService?.ViewVisibilityChanged(view.ContentId, !view.IsHidden);
+                var isHidden = IsViewHidden(view);
+
+                DockManagerService?.ViewVisibilityChanged(view.ContentId, !isHidden);
                 var screen = view.Content as IScreen;
                 if (screen != null)
                 {
-                    if (view.IsHidden)
+                    if (isHidden)
                     {
                         screen.Deactivate(false);
                     }
@@ -187,6 +191,10 @@ namespace TickTrader.BotTerminal
                 {
                     view.Show();
                 }
+                else if (view.IsAutoHidden)
+                {
+                    view.ToggleAutoHide();
+                }
                 else
                 {
                     view.Hide();
@@ -213,7 +221,14 @@ namespace TickTrader.BotTerminal
                 if (view.Content == null)
                     InitView(view);
 
-                view.Show();
+                if (view.IsAutoHidden)
+                {
+                    view.ToggleAutoHide();
+                }
+                else
+                {
+                    view.Show();
+                }
             }
         }
 
@@ -270,7 +285,7 @@ namespace TickTrader.BotTerminal
         {
             foreach (var view in _anchorableViews.Values)
             {
-                DockManagerService.ViewVisibilityChanged(view.ContentId, !view.IsHidden);
+                DockManagerService.ViewVisibilityChanged(view.ContentId, !IsViewHidden(view));
             }
         }
 
@@ -286,6 +301,11 @@ namespace TickTrader.BotTerminal
                 view.Title = screen.DisplayName;
                 view.Content = screen;
             }
+        }
+
+        private bool IsViewHidden(LayoutAnchorable view)
+        {
+            return (!view.IsHidden && view.IsAutoHidden) ? true : view.IsHidden;
         }
     }
 }
