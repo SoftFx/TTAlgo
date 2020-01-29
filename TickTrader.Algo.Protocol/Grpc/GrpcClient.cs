@@ -693,6 +693,9 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task UploadPackage(PackageKey package, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
+            if (_client == null || _channel.State == ChannelState.Shutdown)
+                throw new ConnectionFailedException("Connection failed");
+
             progressListener.Init((long)offset * chunkSize);
 
             var request = new Lib.UploadPackageRequest

@@ -21,4 +21,11 @@ namespace TickTrader.Algo.Protocol
         {
         }
     }
+
+    public class ConnectionFailedException : BAException
+    {
+        public ConnectionFailedException(string message) : base(message)
+        {
+        }
+    }
 }

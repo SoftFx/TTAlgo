@@ -22,7 +22,6 @@ namespace TickTrader.BotTerminal
         private bool _hasPendingRequest;
         private string _error;
 
-
         public IObservableList<AlgoPackageViewModel> LocalPackages { get; }
 
         public AlgoPackageViewModel SelectedPackage
@@ -176,6 +175,11 @@ namespace TickTrader.BotTerminal
                 await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.Identity.FilePath, progressListener);
                 TryClose();
             }
+            catch (ConnectionFailedException exx)
+            {
+                Error = GetErrorConnectionMessage();
+                _logger.Error(exx, Error);
+            }
             catch (Exception ex)
             {
                 Error = ex.Message;
@@ -269,5 +273,7 @@ namespace TickTrader.BotTerminal
             if (package.Key.Name == FileName?.ToLowerInvariant())
                 Validate();
         }
+
+        private string GetErrorConnectionMessage() => $"Error connecting to agent: {SelectedBotAgent.Name}";
     }
 }
