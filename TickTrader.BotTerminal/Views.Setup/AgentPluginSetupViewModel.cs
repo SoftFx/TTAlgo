@@ -384,7 +384,7 @@ namespace TickTrader.BotTerminal
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
-                Setup = new PluginConfigViewModel(SelectedPlugin.Info, metadata, SelectedAgent.Model.IdProvider, Mode);
+                Setup = new PluginConfigViewModel(SelectedPlugin.PluginInfo, metadata, SelectedAgent.Model.IdProvider, Mode);
                 Init();
                 if (Bot != null)
                     Setup.Load(Bot.Config);

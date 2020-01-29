@@ -40,7 +40,7 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                _algoEnv.LocalAgentVM.OpenBotSetup(null, algoBot.Info.Key);
+                _algoEnv.LocalAgentVM.OpenBotSetup(null, algoBot.PluginInfo.Key);
             }
             var algoPackage = o as AlgoPackageViewModel;
             if (algoPackage != null)

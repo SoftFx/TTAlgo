@@ -12,7 +12,6 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel Agent { get; }
 
-
         public PackageKey Key => Info.Key;
 
         public PackageIdentity Identity => Info.Identity;
@@ -33,7 +32,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsRemote => Agent.Model.IsRemote;
 
-        public bool IsLocal =>!Agent.Model.IsRemote;
+        public bool IsLocal => !Agent.Model.IsRemote;
 
         public bool CanUploadPackage => IsLocal;
 

@@ -3,26 +3,20 @@ using Machinarium.Qnil;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
-    public enum AlgoListViewType
-    {
-        Plugins = 0,
-        Packages = 1,
-    }
-
-
     internal class AlgoListViewModel : PropertyChangedBase
     {
+        private string _filterString;
         private AlgoAgentViewModel _selectedAgent;
-        private AlgoListViewType _selectedViewType;
-
 
         public IObservableList<AlgoAgentViewModel> AvailableAgents { get; }
 
@@ -36,38 +30,61 @@ namespace TickTrader.BotTerminal
 
                 _selectedAgent = value;
                 NotifyOfPropertyChange(nameof(SelectedAgent));
-                NotifyOfPropertyChange(nameof(Packages));
-                NotifyOfPropertyChange(nameof(Plugins));
+                PluginViewUpdate();
             }
         }
 
-        public IObservableList<AlgoPackageViewModel> Packages => SelectedAgent.PackageList;
-
-        public IObservableList<AlgoPluginViewModel> Plugins => SelectedAgent.Plugins.AsObservable();
-
-        public AlgoListViewType[] AvaliableViewTypes { get; }
-
-        public AlgoListViewType SelectedViewType
+        public string FilterString
         {
-            get { return _selectedViewType; }
+            get => _filterString;
             set
             {
-                if (_selectedViewType == value)
+                if (value == _filterString)
                     return;
 
-                _selectedViewType = value;
-                NotifyOfPropertyChange(nameof(SelectedViewType));
+                _filterString = value;
+                NotifyOfPropertyChange(nameof(FilterString));
+                PluginsView.Refresh();
             }
         }
 
+        public ICollectionView PluginsView { get; private set; }
 
         public AlgoListViewModel(AlgoEnvironment algoEnv)
         {
             AvailableAgents = algoEnv.Agents.AsObservable();
             SelectedAgent = AvailableAgents.First();
-
-            AvaliableViewTypes = Enum.GetValues(typeof(AlgoListViewType)).Cast<AlgoListViewType>().ToArray();
-            SelectedViewType = AlgoListViewType.Plugins;
         }
+
+        private void PluginViewUpdate()
+        {
+            PluginsView = CollectionViewSource.GetDefaultView(SelectedAgent.Plugins.AsObservable());
+
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.GroupLevelHeader, ListSortDirection.Descending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.PackageLevelHeader, ListSortDirection.Ascending));
+            PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.BotLevelHeader, ListSortDirection.Ascending));
+
+            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.GroupLevelHeader));
+            PluginsView.GroupDescriptions.Add(new PropertyGroupDescription(AlgoPluginViewModel.PackageLevelHeader));
+
+            PluginsView.Filter = new Predicate<object>(Filter);
+
+            NotifyOfPropertyChange(nameof(PluginsView));
+        }
+
+        private bool Filter(object obj)
+        {
+            if (obj is AlgoPluginViewModel vm)
+            {
+                if (string.IsNullOrEmpty(_filterString))
+                    return true;
+
+                return FindMatches(vm.DisplayName) || FindMatches(vm.PackageDisplayName);
+            }
+
+            return false;
+        }
+
+        private bool FindMatches(string str) => str.ToLower().Contains(_filterString.ToLower());
     }
 }

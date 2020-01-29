@@ -332,8 +332,8 @@ namespace TickTrader.BotTerminal
             _localWnd.OpenOrActivateWindow(SetupWndKey, () =>
             {
                 _openedPluginSetup = PluginSetup == null
-                    ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo())
-                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.Info, this, this.GetSetupContextInfo(), PluginSetup.Save());
+                    ? new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo())
+                    : new BacktesterPluginSetupViewModel(_env.LocalAgent, SelectedPlugin.Value.PluginInfo, this, this.GetSetupContextInfo(), PluginSetup.Save());
                 //_localWnd.OpenMdiWindow(wndKey, _openedPluginSetup);
                 _openedPluginSetup.Setup.MainSymbol = MainSymbolSetup.SelectedSymbol.Value.ToSymbolToken();
                 _openedPluginSetup.Setup.SelectedTimeFrame = MainSymbolSetup.SelectedTimeframe.Value;

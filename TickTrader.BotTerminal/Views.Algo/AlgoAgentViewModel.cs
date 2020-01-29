@@ -215,7 +215,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey);
+                var model = new UploadPackageViewModel(_algoEnv, packageKey, Name);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)
