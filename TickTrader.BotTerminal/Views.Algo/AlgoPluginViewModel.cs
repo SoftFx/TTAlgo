@@ -7,6 +7,7 @@ using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core.Metadata;
 using System.Diagnostics;
+using System.Windows;
 
 namespace TickTrader.BotTerminal
 {
@@ -55,8 +56,6 @@ namespace TickTrader.BotTerminal
         public bool IsRemote => Agent.Model.IsRemote;
 
         public bool IsLocal => !Agent.Model.IsRemote;
-
-        public bool IsFolderAvaible => IsLocal && PackagePath != UnknownPath;
 
         public AlgoPluginViewModel(PluginInfo info, AlgoAgentViewModel agent)
         {
@@ -113,6 +112,11 @@ namespace TickTrader.BotTerminal
         public void OpenFolder()
         {
             Process.Start(PackagePath);
+        }
+
+        public void CopyPath()
+        {
+            Clipboard.SetText(PackagePath);
         }
 
         private string GetPathWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);

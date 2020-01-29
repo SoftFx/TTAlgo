@@ -162,17 +162,9 @@ namespace TickTrader.BotTerminal
         public UploadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName)
             : this(algoEnv)
         {
-            SelectedPackage = LocalPackages.FirstOrDefault(p => p.Key.Equals(packageKey));
-            SelectedBotAgent = BotAgents.FirstOrDefault(a => a.Name == agentName);
+            SelectedPackage = LocalPackages.FirstOrDefault(p => agentName == LocalAlgoAgent.LocalAgentName ? p.Key.Equals(packageKey) : p.Key.Name == packageKey.Name);
+            SelectedBotAgent = BotAgents.FirstOrDefault(a => agentName == LocalAlgoAgent.LocalAgentName ? true : a.Name == agentName);
         }
-
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey)
-            : this(algoEnv)
-        {
-            SelectedPackage = LocalPackages.FirstOrDefault(p => p.Key.Equals(packageKey));
-            SelectedBotAgent = BotAgents.FirstOrDefault();
-        }
-
 
         public async void Ok()
         {

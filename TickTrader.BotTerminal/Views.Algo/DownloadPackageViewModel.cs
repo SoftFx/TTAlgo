@@ -163,7 +163,7 @@ namespace TickTrader.BotTerminal
             : this(algoEnv)
         {
             SelectedBotAgent = BotAgents.FirstOrDefault(a => a.Name == agentName);
-            SelectedPackage = Packages.FirstOrDefault(p => p.Key.Equals(packageKey)) ?? Packages.FirstOrDefault();
+            SelectedPackage = Packages?.FirstOrDefault(p => p.Key.Equals(packageKey)) ?? Packages?.FirstOrDefault();
         }
 
 
