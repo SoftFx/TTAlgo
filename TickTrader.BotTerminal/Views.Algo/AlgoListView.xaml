@@ -125,7 +125,7 @@
                             <TextBlock Text="{Binding Name}"/>
                             <HierarchicalDataTemplate.ItemTemplate>
                                 <HierarchicalDataTemplate ItemsSource="{Binding Items}">
-                                    <TextBlock Text="{Binding Name}" ToolTip="{Binding Items[0].FullPackagePath}">
+                                    <TextBlock Text="{Binding Name}" ToolTip="{Binding Items[0].DisplayPackagePath}">
                                         <TextBlock.ContextMenu>
                                             <ContextMenu cal:Bind.ModelWithoutContext="{Binding Items[0]}">
                                                 <MenuItem Header="Download..." 
@@ -136,6 +136,10 @@
                                                           IsEnabled="{Binding Items[0].IsLocal}"/>
                                                 <MenuItem Header="Remove"
                                                           cal:Message.Attach="RemovePackage"/>
+                                                <Separator/>
+                                                <MenuItem Header="Open folder"
+                                                          cal:Message.Attach="OpenFolder"
+                                                          IsEnabled="{Binding Items[0].IsFolderAvaible}"/>
                                             </ContextMenu>
                                         </TextBlock.ContextMenu>
                                     </TextBlock>
@@ -145,11 +149,18 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <StackPanel.ContextMenu>
                                                         <ContextMenu>
-                                                            <MenuItem Header="Download package..." cal:Message.Attach="DownloadPackage" 
-                                                              IsEnabled="{Binding IsRemote}"/>
-                                                            <MenuItem Header="Upload package..." cal:Message.Attach="UploadPackage"
-                                                              IsEnabled="{Binding IsLocal}"/>
-                                                            <MenuItem Header="Remove package" cal:Message.Attach="RemovePackage"/>
+                                                            <MenuItem Header="Download package..." 
+                                                                cal:Message.Attach="DownloadPackage" 
+                                                                IsEnabled="{Binding IsRemote}"/>
+                                                            <MenuItem Header="Upload package..." 
+                                                                cal:Message.Attach="UploadPackage"
+                                                                IsEnabled="{Binding IsLocal}"/>
+                                                            <MenuItem Header="Remove package" 
+                                                                cal:Message.Attach="RemovePackage"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Open folder" 
+                                                                cal:Message.Attach="OpenFolder"
+                                                                IsEnabled="{Binding IsFolderAvaible}"/>
                                                         </ContextMenu>
                                                     </StackPanel.ContextMenu>
                                                     <ContentControl Margin="2,0" Style="{StaticResource PluginIconStyle}" />

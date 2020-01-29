@@ -6,12 +6,14 @@ using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
 using TickTrader.Algo.Core.Metadata;
-
+using System.Diagnostics;
 
 namespace TickTrader.BotTerminal
 {
     internal class AlgoPluginViewModel : PropertyChangedBase
     {
+        private const string UnknownPath = "Unknown path";
+
         public const string GroupLevelHeader = nameof(CurrentGroup);
         public const string PackageLevelHeader = nameof(PackageNameWithoutExtension);
         public const string BotLevelHeader = nameof(DisplayName);
@@ -36,7 +38,9 @@ namespace TickTrader.BotTerminal
 
         public string PackageNameWithoutExtension { get; }
 
-        public string FullPackagePath { get; }
+        public string PackagePath { get; }
+
+        public string DisplayPackagePath { get; }
 
         public string Category => PluginInfo.Descriptor.Category;
 
@@ -52,6 +56,7 @@ namespace TickTrader.BotTerminal
 
         public bool IsLocal => !Agent.Model.IsRemote;
 
+        public bool IsFolderAvaible => IsLocal && PackagePath != UnknownPath;
 
         public AlgoPluginViewModel(PluginInfo info, AlgoAgentViewModel agent)
         {
@@ -60,18 +65,18 @@ namespace TickTrader.BotTerminal
 
             PackageDisplayName = PluginInfo.Key.PackageName;
 
-            var packagePath = "Unknown path";
+            PackagePath = UnknownPath;
 
             if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
             {
                 PackageInfo = packageInfo;
                 PackageDisplayName = packageInfo.Identity.FileName;
-                packagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
-                FullPackagePath = $"Full path: {packageInfo.Identity.FilePath}";
+                PackagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
+                DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}";
             }
 
             PackageNameWithoutExtension = GetPathWithoutExtension(PackageDisplayName);
-            Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageDisplayName} at {packagePath}").Trim();
+            Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageDisplayName} at {PackagePath}").Trim();
 
             CurrentGroup = (GroupType)Type;
 
@@ -103,6 +108,11 @@ namespace TickTrader.BotTerminal
         public void DownloadPackage()
         {
             Agent.OpenDownloadPackageDialog(PackageInfo.Key);
+        }
+
+        public void OpenFolder()
+        {
+            Process.Start(PackagePath);
         }
 
         private string GetPathWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);
