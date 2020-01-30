@@ -175,10 +175,10 @@ namespace TickTrader.BotTerminal
                 await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.Identity.FilePath, progressListener);
                 TryClose();
             }
-            catch (ConnectionFailedException exx)
+            catch (ConnectionFailedException)
             {
                 Error = GetErrorConnectionMessage();
-                _logger.Error(exx, Error);
+                _logger.Error(Error);
             }
             catch (Exception ex)
             {
