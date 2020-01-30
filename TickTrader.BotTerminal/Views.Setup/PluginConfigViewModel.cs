@@ -38,6 +38,7 @@ namespace TickTrader.BotTerminal
         private IPluginIdProvider _idProvider;
         private bool _allowTrade;
         private bool _isolate;
+        private bool _visible;
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
 
@@ -45,6 +46,20 @@ namespace TickTrader.BotTerminal
         public bool IsEmulation { get; set; }
 
         public bool EnableFeedSetup => !IsFixedFeed && Descriptor.SetupMainSymbol;
+
+        public bool Visible
+        {
+            get => _visible;
+
+            set
+            {
+                if (_visible == value)
+                    return;
+
+                _visible = value;
+                NotifyOfPropertyChange(nameof(Visible));
+            }
+        }
 
         public TimeFrames SelectedTimeFrame
         {
@@ -187,6 +202,7 @@ namespace TickTrader.BotTerminal
             _idProvider = idProvider;
             Mode = mode;
             MainSymbol = setupMetadata.DefaultSymbol;
+            Visible = true;
 
             _paramsFileHistory.SetContext(plugin.ToString());
 

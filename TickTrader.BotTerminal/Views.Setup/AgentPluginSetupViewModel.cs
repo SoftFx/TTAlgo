@@ -391,6 +391,9 @@ namespace TickTrader.BotTerminal
 
                 NotifyOfPropertyChange(nameof(Setup));
             }
+            else
+                if (Setup != null)
+                    Setup.Visible = false;
         }
 
         private async Task UploadBotFiles(PluginConfig config)

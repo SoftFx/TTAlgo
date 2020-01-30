@@ -536,9 +536,9 @@
             </Grid.RowDefinitions>
 
             <TextBlock Name="ErrorText" TextWrapping="Wrap" Text="{l:ResxBinding Descriptor.Error, Prefix=PluginError_}"
-                       Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+                       Foreground="{DynamicResource Shell_WarningForeground}" Margin="4" Visibility="{Binding Visible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BoolToVis}}"/>
 
-            <StackPanel Grid.Row="1">
+            <StackPanel Grid.Row="1" Visibility="{Binding Visible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
                 <StackPanel Name="ToolButtons" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,3,15,0">
                     <l:DropDownMenuButton x:Name="LoadParamsButton" Content="Load..." Height="21" Width="65" Margin="0,0,7,0"
                                           ItemsSource="{Binding ConfigLoadHistory.Value}"
