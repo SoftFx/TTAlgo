@@ -11,7 +11,7 @@ namespace TickTrader.BotTerminal
     {
         public static IReadOnlyList<SymbolKey> GetAvaliableSymbols(this AccountMetadataInfo metadata, SymbolKey defaultSymbol)
         {
-            var symbols = metadata?.Symbols;
+            var symbols = metadata?.Symbols.OrderBy(u => u.Name).ToList();
             if ((symbols?.Count ?? 0) == 0)
                 symbols = new List<SymbolKey> { defaultSymbol };
 
