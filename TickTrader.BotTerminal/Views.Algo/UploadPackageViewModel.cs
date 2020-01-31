@@ -2,6 +2,7 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.IO;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Repository;
@@ -14,31 +15,19 @@ namespace TickTrader.BotTerminal
         private readonly static ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         private AlgoEnvironment _algoEnv;
-        private AlgoPackageViewModel _selectedPackage;
         private AlgoAgentViewModel _selectedBotAgent;
+        private string _fileNameSource;
         private string _fileName;
+        private string _filePath;
         private bool _overwriteFile;
         private bool _isValid;
         private bool _hasPendingRequest;
         private string _error;
 
-        public IObservableList<AlgoPackageViewModel> LocalPackages { get; }
-
-        public AlgoPackageViewModel SelectedPackage
-        {
-            get { return _selectedPackage; }
-            set
-            {
-                if (_selectedPackage == value)
-                    return;
-
-                _selectedPackage = value;
-                NotifyOfPropertyChange(nameof(SelectedPackage));
-                UpdateFileName();
-            }
-        }
+        public IObservableList<AlgoPackageViewModel> Packages { get; }
 
         public IObservableList<AlgoAgentViewModel> BotAgents { get; }
+
 
         public AlgoAgentViewModel SelectedBotAgent
         {
@@ -56,9 +45,25 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public string FileNameSource
+        {
+            get { return _fileNameSource; }
+            set
+            {
+                if (_fileNameSource == value)
+                    return;
+
+                _fileNameSource = value;
+                _fileName = value;
+                NotifyOfPropertyChange(nameof(FileNameSource));
+                NotifyOfPropertyChange(nameof(FileName));
+                Validate();
+            }
+        }
+
         public string FileName
         {
-            get { return _fileName; }
+            get => _fileName;
             set
             {
                 if (_fileName == value)
@@ -67,6 +72,20 @@ namespace TickTrader.BotTerminal
                 _fileName = value;
                 NotifyOfPropertyChange(nameof(FileName));
                 Validate();
+            }
+        }
+
+
+        public string FilePath
+        {
+            get => _filePath;
+            set
+            {
+                if (_filePath == value)
+                    return;
+
+                _filePath = value;
+                NotifyOfPropertyChange(nameof(FilePath));
             }
         }
 
@@ -99,8 +118,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool IsEnabled => !_hasPendingRequest;
-
         public bool IsValid
         {
             get { return _isValid; }
@@ -115,10 +132,6 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanOk => !_hasPendingRequest && _isValid;
-
-        public bool HasError { get; set; }
-
         public string Error
         {
             get { return _error; }
@@ -128,11 +141,21 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _error = value;
-                HasError = !string.IsNullOrEmpty(_error);
-                NotifyOfPropertyChange(nameof(Error));
-                NotifyOfPropertyChange(nameof(HasError));
+                UpdateErrors();
             }
         }
+
+        public bool CanOk => !_hasPendingRequest && _isValid;
+
+        public bool IsEnabled => !_hasPendingRequest;
+
+        public bool HasError => !HasFileSourceError && !HasFileError ? !string.IsNullOrEmpty(_error) : false;
+
+        public string FullPackagePath => Path.Combine(FilePath, FileNameSource);
+
+        public bool HasFileSourceError { get; set; }
+
+        public bool HasFileError { get; set; }
 
         public ProgressViewModel UploadProgress { get; }
 
@@ -143,36 +166,37 @@ namespace TickTrader.BotTerminal
 
             DisplayName = "Upload package";
 
-            LocalPackages = _algoEnv.LocalAgentVM.Packages.Where(
-                p => p.Location == RepositoryLocation.LocalRepository
-                || p.Location == RepositoryLocation.CommonRepository).AsObservable();
+            Packages = _algoEnv.LocalAgentVM.Packages.AsObservable();
             BotAgents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
 
             UploadProgress = new ProgressViewModel();
         }
 
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName)
-            : this(algoEnv)
+        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName) : this(algoEnv)
         {
-            SelectedPackage = LocalPackages.First();
+            UpdateFilePaths(Packages.First()?.Identity ?? null);
             SelectedBotAgent = BotAgents.FirstOrDefault(a => a.Name == agentName);
         }
 
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName)
-            : this(algoEnv)
+        public UploadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName) : this(algoEnv)
         {
-            SelectedPackage = LocalPackages.FirstOrDefault(p => agentName == LocalAlgoAgent.LocalAgentName ? p.Key.Equals(packageKey) : p.Key.Name == packageKey.Name);
+            UpdateFilePaths(Packages.FirstOrDefault(p => agentName == LocalAlgoAgent.LocalAgentName ? p.Key.Equals(packageKey) : p.Key.Name == packageKey.Name)?.Identity ?? null);
             SelectedBotAgent = BotAgents.FirstOrDefault(a => agentName == LocalAlgoAgent.LocalAgentName ? true : a.Name == agentName);
         }
 
         public async void Ok()
         {
             HasPendingRequest = true;
+
             try
             {
-                UploadProgress.SetMessage($"Uploading package {SelectedPackage.Key.Name} from {SelectedPackage.Key.Location} to {SelectedBotAgent.Name}");
-                var progressListener = new FileProgressListenerAdapter(UploadProgress, SelectedPackage.Identity.Size);
-                await SelectedBotAgent.Model.UploadPackage(FileName, SelectedPackage.Identity.FilePath, progressListener);
+                UploadProgress.SetMessage($"Uploading package {FileName} to {SelectedBotAgent.Name}");
+
+                var fileIdentity = PackageIdentity.Create(new FileInfo(FullPackagePath));
+                var progressListener = new FileProgressListenerAdapter(UploadProgress, fileIdentity.Size);
+
+                await SelectedBotAgent.Model.UploadPackage(FileName, FullPackagePath, progressListener);
+
                 TryClose();
             }
             catch (ConnectionFailedException)
@@ -185,6 +209,7 @@ namespace TickTrader.BotTerminal
                 Error = ex.Message;
                 _logger.Error(ex, "Failed to upload package");
             }
+
             HasPendingRequest = false;
         }
 
@@ -193,7 +218,6 @@ namespace TickTrader.BotTerminal
             TryClose();
         }
 
-
         protected override void OnDeactivate(bool close)
         {
             DeinitAlgoAgent(SelectedBotAgent);
@@ -201,25 +225,43 @@ namespace TickTrader.BotTerminal
             base.OnDeactivate(close);
         }
 
-
-        private void UpdateFileName()
+        private void UpdateFilePaths(PackageIdentity identity)
         {
-            FileName = SelectedPackage?.Identity.FileName;
+            if (identity == null)
+            {
+                FilePath = Environment.CurrentDirectory;
+                return;
+            }
+
+            FilePath = Path.GetDirectoryName(identity.FilePath);
+            FileNameSource = identity.FileName;
         }
 
         private void Validate()
         {
-            if (SelectedPackage == null || SelectedBotAgent == null || string.IsNullOrEmpty(FileName))
+            Error = null;
+            HasFileError = false;
+            HasFileSourceError = false;
+
+            if (SelectedBotAgent == null)
             {
-                Error = null;
                 IsValid = false;
                 return;
             }
 
-            if (!PackageWatcher.IsFileSupported(FileName))
+            if (!ValidateFileName(FileNameSource))
             {
-                Error = "File extension is not supported. Supported extensions are .ttalgo and .dll";
+                HasFileSourceError = true;
                 IsValid = false;
+                UpdateErrors();
+                return;
+            }
+
+            if (!ValidateFileName(FileName, true))
+            {
+                HasFileError = true;
+                IsValid = false;
+                UpdateErrors();
                 return;
             }
 
@@ -240,7 +282,6 @@ namespace TickTrader.BotTerminal
                 }
             }
 
-            Error = null;
             IsValid = true;
         }
 
@@ -262,18 +303,45 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        private void BotAgentPackagesUpdated(DictionaryUpdateArgs<PackageKey, PackageInfo> args)
+        private bool ValidateFileName(string name, bool source = false)
         {
-            if (args.Key.Name == FileName?.ToLowerInvariant())
-                Validate();
+            if (string.IsNullOrEmpty(name))
+                Error = "File name is required";
+            else
+            if (!source && !File.Exists(FullPackagePath))
+                Error = "Package not found";
+            else
+            if (!PackageWatcher.IsFileSupported(name))
+                Error = "File extension is not supported. Supported extensions are .ttalgo and .dll";
+            else
+            {
+                var incorrectSymbols = Path.GetInvalidFileNameChars();
+
+                if (!name.All(s => !incorrectSymbols.Contains(s)))
+                    Error = "File name contains invalid characters";
+            }
+
+            return string.IsNullOrEmpty(Error);
         }
 
-        private void BotAgentPackageStateChanged(PackageInfo package)
+        private void UpdateErrors()
         {
-            if (package.Key.Name == FileName?.ToLowerInvariant())
-                Validate();
+            NotifyOfPropertyChange(nameof(Error));
+            NotifyOfPropertyChange(nameof(HasError));
+            NotifyOfPropertyChange(nameof(HasFileSourceError));
+            NotifyOfPropertyChange(nameof(HasFileError));
         }
 
         private string GetErrorConnectionMessage() => $"Error connecting to agent: {SelectedBotAgent.Name}";
+
+        private void BotAgentPackagesUpdated(DictionaryUpdateArgs<PackageKey, PackageInfo> args) => TriggerValidate(args.Key.Name);
+
+        private void BotAgentPackageStateChanged(PackageInfo package) => TriggerValidate(package.Key.Name);
+
+        private void TriggerValidate(string name)
+        {
+            if (name == FileNameSource?.ToLowerInvariant())
+                Validate();
+        }
     }
 }

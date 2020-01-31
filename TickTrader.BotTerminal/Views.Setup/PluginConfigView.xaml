@@ -238,7 +238,7 @@
                                Foreground="{DynamicResource Shell_PrimaryForeground}" ToolTip="{Binding FilePath}" />
             <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
                 <i:Interaction.Behaviors>
-                    <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" Filter="{Binding Filter}"/>
+                    <l:OpenFileDialogBehavior FileName="{Binding FilePath}" Filter="{Binding Filter}"/>
                 </i:Interaction.Behaviors>
             </l:FlatButton>
         </Grid>

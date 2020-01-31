@@ -164,7 +164,7 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName))
+                    if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName.Trim()))
                     {
                         // BotAgent name is saved regardless to login success, should enter edit mode
                         _isEdit = true;
