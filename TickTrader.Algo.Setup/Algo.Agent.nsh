@@ -6,8 +6,8 @@
 !define AGENT_BINDIR "..\TickTrader.BotAgent\bin\Release\net462\publish"
 !define AGENT_EXE "TickTrader.BotAgent.exe"
 
-!define SERVICE_NAME_BASE "_sfxBotAgent"
-!define SERVICE_DISPLAY_NAME "_sfxBotAgent"
+!define SERVICE_NAME_BASE "_TTBotAgent"
+!define SERVICE_DISPLAY_NAME "_TTBotAgent"
 
 !define CONFIGURATOR_NAME "Configurator"
 !define CONFIGURATOR_DISPLAY_NAME "${AGENT_NAME} config tool"
@@ -247,7 +247,7 @@ var Configurator_Installed
 
     DetailPrint "Creating BotAgent service"
     ${Log} "Creating BotAgent service $Agent_ServiceId"
-    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME} ${PRODUCT_BUILD}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80 $Agent_ServiceError
+    ${InstallService} $Agent_ServiceId "${SERVICE_DISPLAY_NAME}" "16" "2" "$Agent_InstDir\${AGENT_EXE}" 80 $Agent_ServiceError
     ${If} $Agent_ServiceError == ${NO_ERR_MSG}
         ${ConfigureService} $Agent_ServiceId "${AGENT_DISPLAY_NAME} ${PRODUCT_BUILD} $Agent_InstDir" $Agent_ServiceError
         ${If} $Agent_ServiceError == ${NO_ERR_MSG}
