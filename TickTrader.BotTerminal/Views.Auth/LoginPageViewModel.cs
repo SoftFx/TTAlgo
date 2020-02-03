@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
                 isConnecting = value;
                 NotifyOfPropertyChange(nameof(IsConnecting));
                 NotifyOfPropertyChange(nameof(IsEditable));
-                NotifyOfPropertyChange(nameof(CanConnect));
+                NotifyOfPropertyChange(nameof(CanConnectProp));
             }
         }
 
@@ -147,7 +147,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public bool CanConnect { get { return isValid && !isConnecting; } }
+        public bool CanConnectProp { get { return isValid && !isConnecting; } }
 
         public string Password
         {
@@ -182,6 +182,9 @@ namespace TickTrader.BotTerminal
 
         public async void Connect()
         {
+            if (!CanConnectProp)
+                return;
+
             IsConnecting = true;
             Error = null;
             try
@@ -196,7 +199,6 @@ namespace TickTrader.BotTerminal
                 logger.Error(ex, "Connect Failed.");
                 Error = ConnectionErrorInfo.UnknownNoText;
             }
-
             IsConnecting = false;
         }
 
@@ -228,7 +230,7 @@ namespace TickTrader.BotTerminal
         private void ValidateState()
         {
             isValid = !string.IsNullOrWhiteSpace(login) && !string.IsNullOrWhiteSpace(server) && !string.IsNullOrEmpty(password);
-            NotifyOfPropertyChange(nameof(CanConnect));
+            NotifyOfPropertyChange(nameof(CanConnectProp));
         }
     }
 

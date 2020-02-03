@@ -223,6 +223,7 @@
     <Compile Include="Behaviors\DragDrop\TransparentContainer.xaml.cs">
       <DependentUpon>TransparentContainer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Behaviors\InputBindingTrigger.cs" />
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
     <Compile Include="Behaviors\CopyTextBehavior.cs" />

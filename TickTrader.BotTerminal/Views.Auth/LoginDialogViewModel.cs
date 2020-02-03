@@ -27,6 +27,10 @@ namespace TickTrader.BotTerminal
         }
 
         public LoginPageViewModel LoginPage { get; private set; }
+
+        public void Connect() => LoginPage.Connect();
+
+        public void Stop() => TryClose();
     }
 
     internal interface ILoginDialogPage
