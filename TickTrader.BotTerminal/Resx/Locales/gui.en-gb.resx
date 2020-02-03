@@ -361,7 +361,7 @@
     <value>Load profile</value>
   </data>
   <data name="Menu_SaveProfile" xml:space="preserve">
-    <value>Save profile as</value>
+    <value>Save profile</value>
   </data>
   <data name="Menu_Profile" xml:space="preserve">
     <value>Profile</value>
