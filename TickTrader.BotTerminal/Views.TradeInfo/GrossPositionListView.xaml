@@ -88,7 +88,7 @@
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
 
-                <DataGridTextColumn Header="{l:Resx Order_ParentOrderId}" Width="100" Visibility="{Binding Visibility, Source={StaticResource ParentOrderIdShow}}"/>
+                <DataGridTextColumn Header="{l:Resx Order_ParentOrderId}" Width="100" Binding="{Binding Order.ParentOrderId}" Visibility="{Binding Visibility, Source={StaticResource ParentOrderIdShow}}"/>
 
                 <DataGridTextColumn Header="{l:Resx Order_OpenTime}" Width="100" Binding="{Binding Order.Created, Converter={StaticResource FullDateTimeFormat}}"/>
 

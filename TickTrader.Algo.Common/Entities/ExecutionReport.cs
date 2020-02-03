@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Common.Model
     public class ExecutionReport
     {
         public string OrderId { get; set; }
+        public string ParentOrderId { get; set; }
         //public DateTime ExecTime { get; set; }
         public DateTime? Expiration { get; set; }
         public DateTime? Created { get; set; }

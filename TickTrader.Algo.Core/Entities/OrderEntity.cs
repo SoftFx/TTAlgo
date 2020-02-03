@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Core
             Swap = src.Swap;
             Commission = src.Commission;
             Options = src.Options;
+            ParentOrderId = src.ParentOrderId;
         }
 
         public string Id { get; private set; }
@@ -59,6 +60,7 @@ namespace TickTrader.Algo.Core
         public DateTime? Modified { get; set; }
         public string UserTag { get; set; }
         public string InstanceId { get; set; }
+        public string ParentOrderId { get; set; }
         public bool IsNull { get { return false; } }
         public double? ExecPrice { get; set; }
         public double? ExecVolume { get; set; }

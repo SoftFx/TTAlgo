@@ -42,6 +42,7 @@ namespace TickTrader.Algo.Common.Model
         private double? lastFillAmount;
         private DateTime? modified;
         private string orderExecutionOptionsStr;
+        private string parentOrderId;
 
         public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
         {
@@ -270,6 +271,18 @@ namespace TickTrader.Algo.Common.Model
                 {
                     instanceId = value;
                     NotifyOfPropertyChange(nameof(InstanceId));
+                }
+            }
+        }
+        public string ParentOrderId
+        {
+            get { return parentOrderId; }
+            private set
+            {
+                if (parentOrderId != value)
+                {
+                    parentOrderId = value;
+                    NotifyOfPropertyChange(nameof(ParentOrderId));
                 }
             }
         }
@@ -526,6 +539,7 @@ namespace TickTrader.Algo.Common.Model
                 Expiration = Expiration,
                 Options = ExecOptions,
                 ReqOpenPrice = ReqOpenPrice,
+                ParentOrderId = ParentOrderId,
             };
         }
 
@@ -552,6 +566,7 @@ namespace TickTrader.Algo.Common.Model
             this.ExecOptions = record.Options;
             this.OrderExecutionOptionsStr = record.Options.ToFullString();
             this.ReqOpenPrice = record.ReqOpenPrice;
+            this.ParentOrderId = record.ParentOrderId;
             //if (record.ImmediateOrCancel)
             //{
             //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -590,6 +605,7 @@ namespace TickTrader.Algo.Common.Model
             this.LastFillAmount = report.TradeAmount;
             this.OrderExecutionOptionsStr = GetOrderExecOptions(report);
             this.ReqOpenPrice = report.ReqOpenPrice;
+            this.ParentOrderId = report.ParentOrderId;
 
             if (report.ImmediateOrCancel)
                 ExecOptions = OrderOptions.ImmediateOrCancel;

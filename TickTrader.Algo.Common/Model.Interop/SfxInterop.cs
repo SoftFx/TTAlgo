@@ -772,6 +772,7 @@ namespace TickTrader.Algo.Common.Model
                 Options = GetOptions(record),
                 LastFillPrice = record.TradePrice,
                 LastFillVolume = record.TradeAmount,
+                ParentOrderId = record.ParentOrderId,
             };
         }
 
@@ -808,6 +809,7 @@ namespace TickTrader.Algo.Common.Model
             return new ExecutionReport()
             {
                 OrderId = report.OrderId,
+                ParentOrderId = report.ParentOrderId,
                 // ExecTime = report.???
                 TradeRequestId = operationId,
                 Expiration = report.Expiration?.ToLocalTime(),
