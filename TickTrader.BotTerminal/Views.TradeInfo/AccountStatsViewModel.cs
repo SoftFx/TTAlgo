@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private AccountModel account;
         private string currencyFormatStr;
-        private string precentFormatStr = "{0:F2}%";
+        private string precentFormatStr = "{0:N2}%";
 
         public AccountStatsViewModel(AccountModel acc, IConnectionStatusInfo cManager)
         {
