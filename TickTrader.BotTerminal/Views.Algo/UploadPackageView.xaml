@@ -38,30 +38,12 @@
                 <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
                 <Label Grid.Row="1" Content="Package"/>
                 <Grid Grid.Row="2">
-                    <Grid.Resources>
-                        <Style TargetType="TextBox">
-                            <Style.Setters>
-                                <Setter Property="Height" Value="22"/>
-                                <Setter Property="Padding" Value="2"/>
-                            </Style.Setters>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasFileSourceError}" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource Dialog_ErrorBackground}"/>
-                                    <Setter Property="ToolTip" Value="{Binding Error}"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding HasFileSourceError}" Value="False">
-                                    <Setter Property="ToolTip" Value="{Binding FilePath}"/>
-                                </DataTrigger>
-
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Resources>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Name="input" Text="{Binding FileNameSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Shell_PrimaryForeground}" IsEnabled="{Binding IsEnabled}"/>
+                    <ComboBox Text="{Binding FileNameSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Shell_PrimaryForeground}" IsEnabled="{Binding IsEnabled}" ItemsSource="{Binding PackageNames}" ToolTip="{Binding FilePath}"/>
                     <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0" IsEnabled="{Binding IsEnabled}">
                         <i:Interaction.Behaviors>
                             <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" FileName="{Binding FileNameSource}"/>

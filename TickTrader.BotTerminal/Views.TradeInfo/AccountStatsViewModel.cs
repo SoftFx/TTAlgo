@@ -51,7 +51,10 @@ namespace TickTrader.BotTerminal
                 Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
                 Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
                 Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
-                MarginLevel = FormatPrecent(FloorNumber(calc.MarginLevel, 2));
+
+                var marginLevel = FloorNumber(calc.MarginLevel, 2);
+                MarginLevel = Math.Abs(marginLevel) >= 1e-3m ? FormatPrecent(marginLevel) : "-";
+
                 FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
                 Swap = FormatNumber(calc.Swap);
                 IsFloatingLoss = calc.Floating < 0;
