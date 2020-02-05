@@ -230,6 +230,7 @@ namespace TickTrader.BotTerminal
         private void ValidateState()
         {
             isValid = !string.IsNullOrWhiteSpace(login) && !string.IsNullOrWhiteSpace(server) && !string.IsNullOrEmpty(password);
+            Error = null;
             NotifyOfPropertyChange(nameof(CanConnectProp));
         }
     }
