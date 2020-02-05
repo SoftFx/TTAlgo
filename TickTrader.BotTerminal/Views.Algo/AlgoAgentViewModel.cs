@@ -2,11 +2,13 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -19,7 +21,6 @@ namespace TickTrader.BotTerminal
 
         private IAlgoAgent _agentModel;
         private AlgoEnvironment _algoEnv;
-
 
         public IAlgoAgent Model => _agentModel;
 
@@ -137,6 +138,17 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var bots = Bots.Where(u => u.Plugin.IsFromPackage(package)).AsObservable();
+
+                if (bots.Any(u => u.IsRunning))
+                {
+                    _algoEnv.Shell.ShowDialog(DialogMode.FailRemovePackage);
+                    return;
+                }
+
+                foreach (var id in bots.Select(u => u.InstanceId).ToList())
+                    RemoveBot(id).Forget();
+
                 await _agentModel.RemovePackage(package);
             }
             catch (Exception ex)

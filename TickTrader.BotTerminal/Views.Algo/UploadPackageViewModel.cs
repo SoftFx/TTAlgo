@@ -236,7 +236,7 @@ namespace TickTrader.BotTerminal
         {
             if (identity == null)
             {
-                FilePath = Environment.CurrentDirectory;
+                FilePath = EnvService.Instance.AlgoRepositoryFolder;
                 return;
             }
 

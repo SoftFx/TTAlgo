@@ -136,7 +136,7 @@ namespace TickTrader.BotTerminal
             try
             {
                 if (Connection.IsOnline)
-                    _client.ClearCache();
+                    ClearCache();
 
                 var result = await Connection.Connect(login, password, server, cToken);
 
@@ -163,10 +163,13 @@ namespace TickTrader.BotTerminal
             await Connection.Disconnect();
 
             if (!_loginFlag)
-            {
-                SetLoggedIn(false);
-                _client.ClearCache();
-            }
+                ClearCache();
+        }
+
+        private void ClearCache()
+        {
+            SetLoggedIn(false);
+            _client.ClearCache();
         }
 
         private void SetLoggedIn(bool value)

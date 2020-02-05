@@ -69,6 +69,7 @@ namespace TickTrader.BotTerminal
             if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
             {
                 PackageInfo = packageInfo;
+
                 PackageDisplayName = packageInfo.Identity.FileName;
                 PackagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
                 DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}";

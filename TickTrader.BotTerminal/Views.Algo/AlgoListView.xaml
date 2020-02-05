@@ -145,7 +145,7 @@
                                         </TextBlock.ContextMenu>
                                     </TextBlock>
                                     <HierarchicalDataTemplate.ItemTemplate>
-                                        <DataTemplate x:Name="tem">
+                                        <DataTemplate>
                                             <Border BorderThickness="0">
                                                 <StackPanel Orientation="Horizontal">
                                                     <StackPanel.ContextMenu>

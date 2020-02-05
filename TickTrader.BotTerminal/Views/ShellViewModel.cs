@@ -161,7 +161,7 @@ namespace TickTrader.BotTerminal
 
             if (ConnectionLock.IsLocked)
             {
-                var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, ShootMode.Logout);
+                var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, DialogMode.Logout);
                 wndManager.ShowDialog(exit, this);
 
                 isConfirmed = exit.IsConfirmed;
@@ -209,7 +209,7 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, ShootMode.Exit);
+            var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, DialogMode.Exit);
             wndManager.ShowDialog(exit, this);
             if (exit.IsConfirmed)
             {
@@ -264,6 +264,12 @@ namespace TickTrader.BotTerminal
         public void ShowChart(string smb, ChartPeriods period)
         {
             Charts.OpenOrActivate(smb, period);
+        }
+
+        public void ShowDialog(DialogMode mode)
+        {
+            var dialog = new ExitDialogViewModel(false, mode);
+            wndManager.ShowDialog(dialog, this);
         }
 
         public TradeInfoViewModel Trade { get; }

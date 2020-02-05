@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Core.Repository;
 
 namespace TickTrader.BotTerminal
 {
@@ -12,12 +13,13 @@ namespace TickTrader.BotTerminal
 
         public AlgoAgentViewModel Agent { get; }
 
-
         public string InstanceId => Model.InstanceId;
 
         public AccountKey Account => Model.Account;
 
         public PluginStates State => Model.State;
+
+        public PluginKey Plugin => Model.Config.Key;
 
         public bool IsRunning => PluginStateHelper.IsRunning(Model.State) || Agent.Model.IsRemote && Model.State == PluginStates.Starting;
 
@@ -40,7 +42,6 @@ namespace TickTrader.BotTerminal
         public bool CanCopyTo => Agent.Model.AccessManager.CanDownloadPackage() && Agent.Model.AccessManager.CanGetBotFolderInfo(BotFolderId.AlgoData) && Agent.Model.AccessManager.CanDownloadBotFile(BotFolderId.AlgoData);
 
         public bool CanAddBot => Agent.Model.AccessManager.CanAddBot();
-
 
         public AlgoBotViewModel(ITradeBot bot, AlgoAgentViewModel agent)
         {

@@ -89,7 +89,15 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _selectedPlugin = value;
+
+                if (Mode == PluginSetupMode.Edit && _selectedPlugin == null)
+                {
+                    TryClose();
+                    return;
+                }
+
                 NotifyOfPropertyChange(nameof(SelectedPlugin));
+                NotifyOfPropertyChange(nameof(CanOk));
                 UpdateSetup();
             }
         }
@@ -100,7 +108,7 @@ namespace TickTrader.BotTerminal
 
         public bool PluginIsStopped => Bot == null ? true : PluginStateHelper.IsStopped(Bot.State);
 
-        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest
+        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest && SelectedPlugin != null
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddBot() : SelectedAgent.Model.AccessManager.CanChangeBotConfig());
 
         public bool RunBot
@@ -179,7 +187,6 @@ namespace TickTrader.BotTerminal
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? (Agents.Any() ? Agents.First() : null);
             SelectedAccount = Accounts.FirstOrDefault(a => a.Key.Equals(accountKey)) ?? (Accounts.Any() ? Accounts.First() : null);
             SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? (Plugins.Any() ? Plugins.First() : null);
-
             PluginType = GetPluginTypeDisplayName(Type);
 
             ShowFileProgress = false;
@@ -393,7 +400,7 @@ namespace TickTrader.BotTerminal
             }
             else
                 if (Setup != null)
-                    Setup.Visible = false;
+                Setup.Visible = false;
         }
 
         private async Task UploadBotFiles(PluginConfig config)
