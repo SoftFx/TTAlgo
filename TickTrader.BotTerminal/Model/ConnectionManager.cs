@@ -135,6 +135,9 @@ namespace TickTrader.BotTerminal
 
             try
             {
+                if (Connection.IsOnline)
+                    _client.ClearCache();
+
                 var result = await Connection.Connect(login, password, server, cToken);
 
                 if (result.Code == ConnectionErrorCodes.None)

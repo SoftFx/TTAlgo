@@ -58,7 +58,7 @@ namespace TickTrader.BotTerminal
 
         private void PluginViewUpdate()
         {
-            PluginsView = CollectionViewSource.GetDefaultView(SelectedAgent.Plugins.AsObservable());
+            PluginsView = CollectionViewSource.GetDefaultView(SelectedAgent.Plugins?.AsObservable());
 
             PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.GroupLevelHeader, ListSortDirection.Descending));
             PluginsView.SortDescriptions.Add(new SortDescription(AlgoPluginViewModel.PackageLevelHeader, ListSortDirection.Ascending));

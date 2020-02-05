@@ -35,8 +35,8 @@ namespace TickTrader.BotTerminal
                 if (account.Calc != null)
                     account.Calc.Updated -= Calc_Updated;
 
-                //IsStatsVisible = false;
-                //NotifyOfPropertyChange(nameof(IsStatsVisible));
+                IsStatsVisible = false;
+                NotifyOfPropertyChange(nameof(IsStatsVisible));
             };
         }
 
@@ -59,15 +59,20 @@ namespace TickTrader.BotTerminal
                 Swap = FormatNumber(calc.Swap);
                 IsFloatingLoss = calc.Floating < 0;
 
-                NotifyOfPropertyChange(nameof(Equity));
-                NotifyOfPropertyChange(nameof(Margin));
-                NotifyOfPropertyChange(nameof(Profit));
-                NotifyOfPropertyChange(nameof(Swap));
-                NotifyOfPropertyChange(nameof(Floating));
-                NotifyOfPropertyChange(nameof(FreeMargin));
-                NotifyOfPropertyChange(nameof(MarginLevel));
-                NotifyOfPropertyChange(nameof(IsFloatingLoss));
+                UpdateProperies();
             }
+        }
+
+        private void UpdateProperies()
+        {
+            NotifyOfPropertyChange(nameof(Equity));
+            NotifyOfPropertyChange(nameof(Margin));
+            NotifyOfPropertyChange(nameof(Profit));
+            NotifyOfPropertyChange(nameof(Swap));
+            NotifyOfPropertyChange(nameof(Floating));
+            NotifyOfPropertyChange(nameof(FreeMargin));
+            NotifyOfPropertyChange(nameof(MarginLevel));
+            NotifyOfPropertyChange(nameof(IsFloatingLoss));
         }
 
         private string FormatNumber(double number)
