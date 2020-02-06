@@ -9,11 +9,12 @@
         Icon="{StaticResource MainAppIcon}"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="ToolWindow"
         Background="{DynamicResource Dialog_Background}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" MinHeight="50"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel MaxWidth="400" Orientation="Vertical" Grid.Row="0" Margin="10" VerticalAlignment="Center">
