@@ -354,6 +354,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="90"/>
@@ -361,13 +362,22 @@
                 <ColumnDefinition Width="90"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="Instance Id:" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <Label Grid.Row="0" Grid.Column="0" Content="Instance Id" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
                      Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
             <Label Grid.Row="2" Grid.Column="0" Content="Isolate bot" />
             <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <Label Grid.Row="2" Grid.Column="2" Content="AllowTrade" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
             <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
+
+            <Grid Grid.Row="4" Grid.ColumnSpan="4" Name="AutoRunGroup" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Start bot" />
+                <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            </Grid>
         </Grid>
         <ControlTemplate.Triggers>
             <DataTrigger Binding="{Binding IsInstanceIdValid}" Value="False">
@@ -376,6 +386,15 @@
             <DataTrigger Binding="{Binding IsEditMode}" Value="True">
                 <Setter TargetName="InstanceIdTxt" Property="IsEnabled" Value="False" />
             </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsBot}" Value="True"/>
+                    <Condition Binding="{Binding IsEditMode}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.Setters>
+                    <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
+                </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
@@ -410,7 +429,7 @@
                     <TextBlock Text="{Binding Name}"/>
                 </DataTemplate>
             </Grid.Resources>
-            
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
@@ -421,12 +440,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="90"/>
             </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="TimeFrame" />
-            <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" IsEditable="False" Margin="0"
-                      SelectedItem="{Binding SelectedTimeFrame}"
-                      ItemsSource="{Binding AvailableTimeFrames}"/>
-            <Label Grid.Row="2" Grid.Column="0" Content="Main Symbol" />
-            <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="False" Margin="0"
+            <Label Grid.Row="0" Grid.Column="0" Content="Main Symbol" />
+            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="False" Margin="0"
                       SelectedValue="{Binding MainSymbol}"
                       ItemTemplate="{StaticResource SymbolComboItemTemplate}"
                       ItemsSource="{Binding Source={StaticResource SymbolsCollection}}"
@@ -435,10 +450,15 @@
                     <GroupStyle HeaderTemplate="{StaticResource SymbolComboGroupTemplate}" />
                 </ComboBox.GroupStyle>
             </ComboBox>
-            <ComboBox Grid.Row="2" Grid.Column="2" IsEditable="False" Margin="2,0,0,0"
+            <ComboBox Grid.Row="0" Grid.Column="2" IsEditable="False" Margin="2,0,0,0"
                       ItemsSource="{Binding AvailableMappings}"
                       SelectedValue="{Binding SelectedMapping}"
                       DisplayMemberPath="DisplayName"/>
+
+            <Label Grid.Row="2" Grid.Column="0" Content="TimeFrame" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" IsEditable="False" Margin="0"
+                      SelectedItem="{Binding SelectedTimeFrame}"
+                      ItemsSource="{Binding AvailableTimeFrames}"/>
         </Grid>
     </ControlTemplate>
 
@@ -514,8 +534,10 @@
                 <l:FlatButton Content="Cancel"
                               cal:Message.Attach="Cancel"
                               Grid.Column="1" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>
-                --><!--<l:FlatButton x:Name="Reset" Content="Reset"
-                          Grid.Column="0" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>--><!--
+                -->
+    <!--<l:FlatButton x:Name="Reset" Content="Reset"
+                          Grid.Column="0" Style="{DynamicResource PluginSetupPage_ButtonStyle}"/>-->
+    <!--
             </Grid>
         </Grid
     </ControlTemplate> -->
@@ -529,7 +551,7 @@
     <!-- Classic Template  -->
 
     <ControlTemplate x:Key="PluginConfigView.Classic">
-        <Grid Background="{TemplateBinding Background}">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -537,23 +559,23 @@
 
             <TextBlock Name="ErrorText" TextWrapping="Wrap" Text="{l:ResxBinding Descriptor.Error, Prefix=PluginError_}"
                        Foreground="{DynamicResource Shell_WarningForeground}" Margin="4" Visibility="{Binding Visible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BoolToVis}}"/>
-
             <StackPanel Grid.Row="1" Visibility="{Binding Visible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
-                <StackPanel Name="ToolButtons" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,3,15,0">
-                    <l:DropDownMenuButton x:Name="LoadParamsButton" Content="Load..." Height="21" Width="65" Margin="0,0,7,0"
-                                          ItemsSource="{Binding ConfigLoadHistory.Value}"
-                                          cal:Message.Attach="[Event Click] = [Action LoadParams]; [Event ItemClick] = [Action LoadParamsFrom(LoadParamsButton.ClickedItem)]"/>
-                    <Button Content="Save..." cal:Message.Attach="SaveParams" Height="21" Width="65"/>
-                </StackPanel>
                 <GroupBox Name="DescriptionGroup" Header="Description" Margin="4">
                     <TextBlock TextWrapping="Wrap" Text="{Binding Descriptor.Description}" Margin="3"/>
                 </GroupBox>
-                <GroupBox Name="GeneralGroup" Header="General" Margin="4" Visibility="Visible">
-                    <Control Template="{StaticResource GeneralSettings}" />
-                </GroupBox>
+
                 <GroupBox Name="MainSymbolGroup" Header="Main Symbol" Margin="4" Visibility="Collapsed">
                     <Control Template="{StaticResource MainSymbolSettings}" />
                 </GroupBox>
+
+                <StackPanel Name="ToolButtons" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,3,15,0">
+                    <l:DropDownMenuButton x:Name="LoadParamsButton" Content="Load..." Height="21" Width="65" Margin="0,0,7,0"
+                                          ItemsSource="{Binding ConfigLoadHistory.Value}"
+                                          cal:Message.Attach="[Event Click] = [Action LoadParams]; [Event ItemClick] = [Action LoadParamsFrom(LoadParamsButton.ClickedItem)]"
+                                          ToolTip="Load Bot Settings"/>
+                    <Button Content="Save..." cal:Message.Attach="SaveParams" Height="21" Width="65" ToolTip="Save Bot Settings"/>
+                </StackPanel>
+
                 <Grid Name="ParamsGroup" Margin="4">
                     <GroupBox Header="Parameters">
                         <ItemsControl IsTabStop="False" ItemsSource="{Binding Parameters}"
@@ -610,9 +632,6 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding EnableFeedSetup}" Value="True">
                 <Setter TargetName="MainSymbolGroup" Property="Visibility" Value="Visible"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding IsEmulation}" Value="True">
-                <Setter TargetName="GeneralGroup" Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>

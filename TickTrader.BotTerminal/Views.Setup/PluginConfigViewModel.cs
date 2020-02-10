@@ -39,6 +39,7 @@ namespace TickTrader.BotTerminal
         private bool _allowTrade;
         private bool _isolate;
         private bool _visible;
+        private bool _runBot;
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
 
@@ -188,6 +189,19 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool RunBot
+        {
+            get { return _runBot; }
+            set
+            {
+                if (_runBot == value)
+                    return;
+
+                _runBot = value;
+                NotifyOfPropertyChange(nameof(RunBot));
+            }
+        }
+
         private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
 
         public event System.Action ValidityChanged = delegate { };
@@ -203,6 +217,7 @@ namespace TickTrader.BotTerminal
             Mode = mode;
             MainSymbol = setupMetadata.DefaultSymbol;
             Visible = true;
+            RunBot = true;
 
             _paramsFileHistory.SetContext(plugin.ToString());
 

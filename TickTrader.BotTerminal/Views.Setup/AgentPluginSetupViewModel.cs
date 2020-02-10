@@ -21,7 +21,6 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private bool _runBot;
         private AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
         private AlgoAccountViewModel _selectedAccount;
@@ -111,19 +110,6 @@ namespace TickTrader.BotTerminal
         public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest && SelectedPlugin != null
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddBot() : SelectedAgent.Model.AccessManager.CanChangeBotConfig());
 
-        public bool RunBot
-        {
-            get { return _runBot; }
-            set
-            {
-                if (_runBot == value)
-                    return;
-
-                _runBot = value;
-                NotifyOfPropertyChange(nameof(RunBot));
-            }
-        }
-
         public AlgoTypes Type { get; }
 
         public string PluginType { get; }
@@ -191,8 +177,6 @@ namespace TickTrader.BotTerminal
 
             ShowFileProgress = false;
             FileProgress = new ProgressViewModel();
-
-            RunBot = true;
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext)
@@ -209,6 +193,10 @@ namespace TickTrader.BotTerminal
 
             DisplayName = $"Settings - {bot.InstanceId}";
         }
+
+        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null);
+
+        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog();
 
         public void Reset()
         {
@@ -229,7 +217,7 @@ namespace TickTrader.BotTerminal
                     else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
                     await UploadBotFiles(config);
                     SelectedAgent.OpenBotState(config.InstanceId);
-                    if (RunBot)
+                    if (Setup.RunBot)
                         await SelectedAgent.Model.StartBot(config.InstanceId);
                 }
                 else
