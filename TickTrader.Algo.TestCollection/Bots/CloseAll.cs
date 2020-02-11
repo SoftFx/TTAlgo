@@ -39,7 +39,13 @@ namespace TickTrader.Algo.TestCollection.Bots
             else if (Account.Type == AccountTypes.Net)
             {
                 foreach (var position in Account.NetPositions)
-                    await OpenOrderAsync(position.Symbol, OrderType.Market, Invert(position.Side), Volume ?? position.Volume, null, 1, null);
+                    if (!string.IsNullOrEmpty(PositionId))
+                    {
+                        if (position.Id == PositionId)
+                            await OpenOrderAsync(position.Symbol, OrderType.Market, Invert(position.Side), Volume ?? position.Volume, null, 1, null);
+                    }
+                    else
+                        await OpenOrderAsync(position.Symbol, OrderType.Market, Invert(position.Side), Volume ?? position.Volume, null, 1, null);
             }
             else
                 Print("This script works only for Net or Gross accounts!");
