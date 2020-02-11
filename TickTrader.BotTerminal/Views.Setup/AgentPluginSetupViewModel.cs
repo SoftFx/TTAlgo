@@ -14,6 +14,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using System.Threading;
+using System.Collections.Specialized;
 
 namespace TickTrader.BotTerminal
 {
@@ -182,7 +183,7 @@ namespace TickTrader.BotTerminal
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext)
             : this(algoEnv, agentName, accountKey, pluginKey, type, setupContext, PluginSetupMode.New)
         {
-            DisplayName = $"Setting New {PluginType}";
+            DisplayName = Type == AlgoTypes.Robot ? $"New Bot Instance" : $"Setting New {PluginType}";
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
@@ -191,10 +192,10 @@ namespace TickTrader.BotTerminal
             Bot = bot;
             UpdateSetup();
 
-            DisplayName = $"Settings - {bot.InstanceId}";
+            DisplayName = $"{bot.InstanceId} Bot Instance";
         }
 
-        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null);
+        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null, this);
 
         public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog();
 

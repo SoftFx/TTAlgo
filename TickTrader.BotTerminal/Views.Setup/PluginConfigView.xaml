@@ -569,11 +569,11 @@
                 </GroupBox>
 
                 <StackPanel Name="ToolButtons" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,3,15,0">
-                    <l:DropDownMenuButton x:Name="LoadParamsButton" Content="Load..." Height="21" Width="65" Margin="0,0,7,0"
+                    <l:DropDownMenuButton x:Name="LoadParamsButton" Content="Load settings..." Height="21" Width="110" Margin="0,0,7,0"
                                           ItemsSource="{Binding ConfigLoadHistory.Value}"
                                           cal:Message.Attach="[Event Click] = [Action LoadParams]; [Event ItemClick] = [Action LoadParamsFrom(LoadParamsButton.ClickedItem)]"
                                           ToolTip="Load Bot Settings"/>
-                    <Button Content="Save..." cal:Message.Attach="SaveParams" Height="21" Width="65" ToolTip="Save Bot Settings"/>
+                    <Button Content="Save settings..." cal:Message.Attach="SaveParams" Height="21" Width="110" ToolTip="Save Bot Settings"/>
                 </StackPanel>
 
                 <Grid Name="ParamsGroup" Margin="4">

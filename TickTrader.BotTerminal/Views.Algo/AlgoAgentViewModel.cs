@@ -158,11 +158,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account)
+        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, Name);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)

@@ -137,7 +137,7 @@
                     </TabItem.Header>
                     <TabItem.Content>
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
-                            <ContentControl cal:View.Model="{Binding Setup}" />
+                            <ContentControl cal:View.Model="{Binding Setup}" IsEnabled="{Binding PluginIsStopped}"/>
                         </ScrollViewer>
                     </TabItem.Content>
                 </TabItem>

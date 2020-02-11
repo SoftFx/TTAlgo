@@ -11,6 +11,7 @@ namespace TickTrader.BotTerminal
     {
         private AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
+        private AgentPluginSetupViewModel _selectedPlugin;
         private string _login;
         private string _password;
         private string _server;
@@ -177,10 +178,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName)
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName, AgentPluginSetupViewModel plugin = null)
         {
             _algoEnv = algoEnv;
             _account = account;
+            _selectedPlugin = plugin;
 
             IsEditable = true;
 
@@ -212,6 +214,11 @@ namespace TickTrader.BotTerminal
                 if (_account == null)
                     await SelectedAgent.Model.AddAccount(new AccountKey(Server, Login), Password);
                 else await SelectedAgent.Model.ChangeAccount(_account.Key, Password);
+
+                if (_selectedPlugin != null && _selectedPlugin.SelectedAgent.Name == SelectedAgent.Name)
+                {
+                    _selectedPlugin.SelectedAccount = _selectedPlugin.Accounts.FirstOrDefault(a => a.Login == Login) ?? (_selectedPlugin.Accounts.Any() ? _selectedPlugin.Accounts.First() : null);
+                }
             }
             catch (Exception ex)
             {
