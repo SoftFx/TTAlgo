@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
     {
         void OpenChart(string smb);
         void ShowChart(string smb, ChartPeriods period);
-        void ShowDialog(DialogMode mode);
+        void ShowDialog(DialogMode mode, string title = null, string message = null, string error = null);
         void Connect(AccountAuthEntry creds);
 
         iOrderUi OrderCommands { get; }

@@ -155,28 +155,6 @@ namespace TickTrader.BotTerminal
         public bool CanConnect { get; private set; }
         public bool CanDisconnect { get; private set; }
 
-        public void ShootBots(out bool isConfirmed)
-        {
-            isConfirmed = true;
-
-            if (ConnectionLock.IsLocked)
-            {
-                var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, DialogMode.Logout);
-                wndManager.ShowDialog(exit, this);
-
-                isConfirmed = exit.IsConfirmed;
-                if (isConfirmed)
-                {
-                    storage.ProfileManager.Stop();
-                    if (exit.HasStartedBots)
-                    {
-                        var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
-                        wndManager.ShowDialog(shutdown, this);
-                    }
-                }
-            }
-        }
-
         public void Connect()
         {
             ShootBots(out var isConfirmed);
@@ -207,24 +185,43 @@ namespace TickTrader.BotTerminal
         //        //Shutdown();
         //}
 
-        public override void CanClose(Action<bool> callback)
+        public void ShootBots(out bool isConfirmed)
         {
-            var exit = new ExitDialogViewModel(algoEnv.LocalAgent.HasRunningBots, DialogMode.Exit);
-            wndManager.ShowDialog(exit, this);
-            if (exit.IsConfirmed)
+            isConfirmed = true;
+
+            if (ConnectionLock.IsLocked)
             {
-                storage.ProfileManager.Stop();
-                if (exit.HasStartedBots)
-                {
-                    var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
-                    wndManager.ShowDialog(shutdown, this);
-                }
+                var exit = new ConfirmationDialogViewModel(DialogMode.YesNo, DialogMessages.LogoutTitle, DialogMessages.LogoutMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
+                wndManager.ShowDialog(exit, this);
+
+                isConfirmed = exit.DialogResult == DialogResult.OK;
+
+                if (isConfirmed)
+                    StopTerminal();
             }
-            callback(exit.IsConfirmed);
         }
 
-        public void ManageAccounts()
+        public override void CanClose(Action<bool> callback)
         {
+            var exit = new ConfirmationDialogViewModel(DialogMode.YesNo, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
+            wndManager.ShowDialog(exit, this);
+
+            var isConfirmed = exit.DialogResult == DialogResult.OK;
+
+            if (isConfirmed)
+                StopTerminal();
+
+            callback(isConfirmed);
+        }
+
+        private void StopTerminal()
+        {
+            storage.ProfileManager.Stop();
+            if (algoEnv.LocalAgent.HasRunningBots)
+            {
+                var shutdown = new ShutdownDialogViewModel(algoEnv.LocalAgent);
+                wndManager.ShowDialog(shutdown, this);
+            }
         }
 
         public void Connect(AccountAuthEntry creds = null)
@@ -266,9 +263,9 @@ namespace TickTrader.BotTerminal
             Charts.OpenOrActivate(smb, period);
         }
 
-        public void ShowDialog(DialogMode mode)
+        public void ShowDialog(DialogMode mode, string title, string message, string error)
         {
-            var dialog = new ExitDialogViewModel(false, mode);
+            var dialog = new ConfirmationDialogViewModel(mode, title, message, error);
             wndManager.ShowDialog(dialog, this);
         }
 

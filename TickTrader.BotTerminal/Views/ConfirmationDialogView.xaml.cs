@@ -17,9 +17,9 @@ namespace TickTrader.BotTerminal
     /// <summary>
     /// Interaction logic for OpenOrderDialogView.xaml
     /// </summary>
-    public partial class ExitDialogView : Window
+    public partial class ConfirmationDialogView : Window
     {
-        public ExitDialogView()
+        public ConfirmationDialogView()
         {
             InitializeComponent();
         }

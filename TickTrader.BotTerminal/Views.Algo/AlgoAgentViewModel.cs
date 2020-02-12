@@ -142,7 +142,7 @@ namespace TickTrader.BotTerminal
 
                 if (bots.Any(u => u.IsRunning))
                 {
-                    _algoEnv.Shell.ShowDialog(DialogMode.FailRemovePackage);
+                    _algoEnv.Shell.ShowDialog(DialogMode.OK, DialogMessages.FailedTitle, null, DialogMessages.RemovePackageError);
                     return;
                 }
 

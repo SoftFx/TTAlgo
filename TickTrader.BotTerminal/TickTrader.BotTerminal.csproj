@@ -606,8 +606,8 @@
     <Compile Include="Views\BotJournalViewModel.cs" />
     <Compile Include="Views.FeedStorage\SymbolManagerViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
-    <Compile Include="Views\ExitDialogView.xaml.cs">
-      <DependentUpon>ExitDialogView.xaml</DependentUpon>
+    <Compile Include="Views\ConfirmationDialogView.xaml.cs">
+      <DependentUpon>ConfirmationDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.TradeInfo\TradeInfoView.xaml.cs">
       <DependentUpon>TradeInfoView.xaml</DependentUpon>
@@ -643,7 +643,7 @@
     <Compile Include="Views\SymbolView.xaml.cs">
       <DependentUpon>SymbolView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ExitDialogViewModel.cs" />
+    <Compile Include="Views\ConfirmationDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeInfoViewModel.cs" />
   </ItemGroup>
@@ -1226,7 +1226,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ExitDialogView.xaml">
+    <Page Include="Views\ConfirmationDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
