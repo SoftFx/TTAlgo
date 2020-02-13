@@ -133,12 +133,6 @@ namespace TickTrader.BotTerminal
                 wnd.Activate();
             }
 
-            public void SetWindowTopmost(object rootModel, bool state)
-            {
-                var wnd = _windows.GetOrDefault(rootModel);
-                wnd.Topmost = state;
-            }
-
             public Window GetWindow(object rootModel)
             {
                 return _windows.GetOrDefault(rootModel);
