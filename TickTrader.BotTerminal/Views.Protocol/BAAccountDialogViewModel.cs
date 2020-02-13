@@ -49,7 +49,10 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _login = value;
+                _password = null;
+
                 NotifyOfPropertyChange(nameof(Login));
+                NotifyOfPropertyChange(nameof(Password));
                 ValidateState();
             }
         }
@@ -193,6 +196,8 @@ namespace TickTrader.BotTerminal
             {
                 IsNewMode = true;
                 DisplayName = "Add account";
+
+                SelectedServer = Servers.FirstOrDefault();
             }
             else
             {
