@@ -101,6 +101,11 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("bot"), DialogMessages.GetRemoveMessage("bot"));
+
+                if (result != DialogResult.OK)
+                    return;
+
                 await _agentModel.RemoveBot(botId, cleanLog, cleanAlgoData);
                 _algoEnv.Shell.DockManagerService.RemoveView(ContentIdProvider.Generate(Name, botId));
             }
@@ -114,6 +119,11 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("account"), DialogMessages.GetRemoveMessage("account"), DialogMessages.RemoveBotSourceWarning);
+
+                if (result != DialogResult.OK)
+                    return;
+
                 await _agentModel.RemoveAccount(account);
             }
             catch (Exception ex)
@@ -138,6 +148,11 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("package"), DialogMessages.GetRemoveMessage("package"), DialogMessages.RemoveBotSourceWarning);
+
+                if (result != DialogResult.OK)
+                    return;
+
                 var bots = Bots.Where(u => u.Plugin.IsFromPackage(package)).AsObservable();
 
                 if (bots.Any(u => u.IsRunning))

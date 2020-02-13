@@ -263,10 +263,12 @@ namespace TickTrader.BotTerminal
             Charts.OpenOrActivate(smb, period);
         }
 
-        public void ShowDialog(DialogMode mode, string title, string message, string error)
+        public DialogResult ShowDialog(DialogMode mode, string title, string message, string error)
         {
             var dialog = new ConfirmationDialogViewModel(mode, title, message, error);
             wndManager.ShowDialog(dialog, this);
+
+            return dialog.DialogResult;
         }
 
         public TradeInfoViewModel Trade { get; }

@@ -84,8 +84,12 @@ namespace TickTrader.BotTerminal
 
         public void RemoveBotAgent()
         {
-            _algoEnv.BotAgentManager.Remove(Agent.Name);
+            var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("agent"), DialogMessages.GetRemoveMessage("agent"), DialogMessages.RemoveBotSourceWarning);
 
+            if (result != DialogResult.OK)
+                return;
+
+            _algoEnv.BotAgentManager.Remove(Agent.Name);
         }
 
         public void ConnectBotAgent()
