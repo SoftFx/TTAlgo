@@ -97,14 +97,17 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
+        public async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false, bool showDialog = true)
         {
             try
             {
-                var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("bot"), DialogMessages.GetRemoveMessage("bot"));
+                if (showDialog)
+                {
+                    var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("bot"), DialogMessages.GetRemoveMessage("bot"));
 
-                if (result != DialogResult.OK)
-                    return;
+                    if (result != DialogResult.OK)
+                        return;
+                }
 
                 await _agentModel.RemoveBot(botId, cleanLog, cleanAlgoData);
                 _algoEnv.Shell.DockManagerService.RemoveView(ContentIdProvider.Generate(Name, botId));
@@ -162,7 +165,7 @@ namespace TickTrader.BotTerminal
                 }
 
                 foreach (var id in bots.Select(u => u.InstanceId).ToList())
-                    RemoveBot(id).Forget();
+                    RemoveBot(id, showDialog: false).Forget();
 
                 await _agentModel.RemovePackage(package);
             }
