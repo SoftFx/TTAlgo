@@ -191,7 +191,7 @@ namespace TickTrader.BotTerminal
 
             if (ConnectionLock.IsLocked)
             {
-                var exit = new ConfirmationDialogViewModel(DialogMode.YesNo, DialogMessages.LogoutTitle, DialogMessages.LogoutMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
+                var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, DialogMode.Question, DialogMessages.LogoutTitle, DialogMessages.LogoutMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
                 wndManager.ShowDialog(exit, this);
 
                 isConfirmed = exit.DialogResult == DialogResult.OK;
@@ -203,7 +203,7 @@ namespace TickTrader.BotTerminal
 
         public override void CanClose(Action<bool> callback)
         {
-            var exit = new ConfirmationDialogViewModel(DialogMode.YesNo, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
+            var exit = new ConfirmationDialogViewModel(DialogButton.YesNo, DialogMode.Question, DialogMessages.ExitTitle, DialogMessages.ExitMessage, algoEnv.LocalAgent.HasRunningBots ? DialogMessages.BotsWorkError : null);
             wndManager.ShowDialog(exit, this);
 
             var isConfirmed = exit.DialogResult == DialogResult.OK;
@@ -263,9 +263,9 @@ namespace TickTrader.BotTerminal
             Charts.OpenOrActivate(smb, period);
         }
 
-        public DialogResult ShowDialog(DialogMode mode, string title, string message, string error)
+        public DialogResult ShowDialog(DialogButton buttons, DialogMode mode, string title, string message, string error)
         {
-            var dialog = new ConfirmationDialogViewModel(mode, title, message, error);
+            var dialog = new ConfirmationDialogViewModel(buttons, mode, title, message, error);
             wndManager.ShowDialog(dialog, this);
 
             return dialog.DialogResult;

@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:l="clr-namespace:TickTrader.BotTerminal"
         xmlns:cal="http://www.caliburnproject.org"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Icon="{StaticResource MainAppIcon}"
+        Icon="{Binding WindowIcon}"
         SizeToContent="WidthAndHeight"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
@@ -24,8 +25,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
-        
+
         <Style x:Key="FlatButtonDefault" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Width" Value="100"/>
@@ -38,12 +38,12 @@
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
 
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Mode}" Value="OK">
+                <DataTrigger Binding="{Binding Buttons}" Value="OK">
                     <Setter Property="Grid.ColumnSpan" Value="2"/>
                     <Setter Property="HorizontalAlignment" Value="Center"/>
                 </DataTrigger>
 
-                <DataTrigger Binding="{Binding Mode}" Value="YesNo">
+                <DataTrigger Binding="{Binding Buttons}" Value="YesNo">
                     <Setter Property="Content" Value="Yes"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -56,11 +56,11 @@
             <Setter Property="HighlightBackground" Value="{DynamicResource Dialog_ButtonHighlightBackground}"/>
 
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Mode}" Value="OK">
+                <DataTrigger Binding="{Binding Buttons}" Value="OK">
                     <Setter Property="Visibility" Value="Collapsed"/>
                 </DataTrigger>
-                
-                <DataTrigger Binding="{Binding Mode}" Value="YesNo">
+
+                <DataTrigger Binding="{Binding Buttons}" Value="YesNo">
                     <Setter Property="Content" Value="No"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -73,10 +73,19 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel MaxWidth="400" Orientation="Vertical" Margin="10 5" VerticalAlignment="Center">
-            <TextBlock Text="{Binding DialogMessage}"/>
-            <TextBlock Text="{Binding DialogError}" Foreground="{DynamicResource Dialog_ErrorForeground}" Margin="10 5"/>
-        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <fa:ImageAwesome Height="40" Width="40" Margin="30 20 10 20" Icon="{Binding Icon}"/>
+
+            <StackPanel Grid.Column="1" MaxWidth="400" Orientation="Vertical" Margin="10 5" VerticalAlignment="Center">
+                <TextBlock Text="{Binding DialogMessage}"/>
+                <TextBlock Text="{Binding DialogError}" Foreground="{DynamicResource Dialog_ErrorForeground}" Margin="10 5"/>
+            </StackPanel>
+        </Grid>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

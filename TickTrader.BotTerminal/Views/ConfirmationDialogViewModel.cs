@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using FontAwesome.WPF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,11 @@ using System.Windows.Media;
 
 namespace TickTrader.BotTerminal
 {
-    enum DialogMode { OK, YesNo, OKCancel }
+    enum DialogButton { OK, YesNo, OKCancel }
 
     enum DialogResult { None, OK, No, Cancel }
+
+    enum DialogMode { Info, Question, Warning, Error }
 
     static class DialogMessages
     {
@@ -34,19 +37,44 @@ namespace TickTrader.BotTerminal
     {
         public DialogResult DialogResult = DialogResult.None;
 
+        public DialogButton Buttons { get; }
+
         public DialogMode Mode { get; }
 
         public string DialogMessage { get; }
 
         public string DialogError { get; }
 
+        public ImageSource WindowIcon { get; }
 
-        public ConfirmationDialogViewModel(DialogMode mode, string displayName = null, string message = null, string error = null)
+        public FontAwesomeIcon Icon { get; }
+
+        public ConfirmationDialogViewModel(DialogButton buttons, DialogMode mode, string displayName = null, string message = null, string error = null)
         {
-            Mode = mode;
+            Buttons = buttons;
             DisplayName = displayName;
             DialogMessage = message;
             DialogError = error;
+
+            Mode = mode;
+
+            switch (Mode)
+            {
+                case DialogMode.Warning:
+                    Icon = FontAwesomeIcon.ExclamationTriangle;
+                    break;
+                case DialogMode.Error:
+                    Icon = FontAwesomeIcon.TimesCircle;
+                    break;
+                case DialogMode.Question:
+                    Icon = FontAwesomeIcon.QuestionCircleOutline;
+                    break;
+                default:
+                    Icon = FontAwesomeIcon.Info;
+                    break;
+            }
+
+            WindowIcon = ImageAwesome.CreateImageSource(Icon, Brushes.Black, 19);
         }
 
         public void OK()

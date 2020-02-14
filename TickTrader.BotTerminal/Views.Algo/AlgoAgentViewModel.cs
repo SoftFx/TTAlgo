@@ -103,7 +103,7 @@ namespace TickTrader.BotTerminal
             {
                 if (showDialog)
                 {
-                    var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("bot"), DialogMessages.GetRemoveMessage("bot"));
+                    var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("bot"), DialogMessages.GetRemoveMessage("bot"));
 
                     if (result != DialogResult.OK)
                         return;
@@ -122,7 +122,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("account"), DialogMessages.GetRemoveMessage("account"), DialogMessages.RemoveBotSourceWarning);
+                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("account"), DialogMessages.GetRemoveMessage("account"), DialogMessages.RemoveBotSourceWarning);
 
                 if (result != DialogResult.OK)
                     return;
@@ -151,7 +151,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var result = _algoEnv.Shell.ShowDialog(DialogMode.YesNo, DialogMessages.GetRemoveTitle("package"), DialogMessages.GetRemoveMessage("package"), DialogMessages.RemoveBotSourceWarning);
+                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("package"), DialogMessages.GetRemoveMessage("package"), DialogMessages.RemoveBotSourceWarning);
 
                 if (result != DialogResult.OK)
                     return;
@@ -160,7 +160,7 @@ namespace TickTrader.BotTerminal
 
                 if (bots.Any(u => u.IsRunning))
                 {
-                    _algoEnv.Shell.ShowDialog(DialogMode.OK, DialogMessages.FailedTitle, null, DialogMessages.RemovePackageError);
+                    _algoEnv.Shell.ShowDialog(DialogButton.OK, DialogMode.Error, DialogMessages.FailedTitle, DialogMessages.RemovePackageError);
                     return;
                 }
 
