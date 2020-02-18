@@ -189,15 +189,17 @@ namespace TickTrader.Algo.Core
 
         public void LogOrderClosing(CloseOrderRequest request)
         {
-            PrintTrade($"[Out] Closing order #{request.OrderId}");
+            var postfix = request.Volume != 0 ? $", volume={request.Volume}" : "";
+            PrintTrade($"[Out] Closing order #{request.OrderId}{postfix}");
         }
 
         public void LogOrderCloseResults(CloseOrderRequest request, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
+            var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : "";
             if (result.IsCompleted)
             {
-                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed");
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed{postfix}");
             }
             else
             {

@@ -564,7 +564,7 @@ namespace TickTrader.Algo.Core
             if (!volume.HasValue)
                 return true;
 
-            if (volume < 0 || IsInvalidValue(volume.Value))
+            if (IsInvalidValue(volume.Value))
             {
                 code = OrderCmdResultCodes.IncorrectMaxVisibleVolume;
                 return false;
@@ -611,7 +611,6 @@ namespace TickTrader.Algo.Core
                 return true;
 
             var isIncorrectMaxVisibleVolume = orderType == OrderType.Stop
-                || maxVisibleVolumeLots < 0
                 || (maxVisibleVolumeLots > 0 && maxVisibleVolumeLots < smbMetadata.MinTradeVolume)
                 || maxVisibleVolumeLots > smbMetadata.MaxTradeVolume;
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
@@ -20,7 +21,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             OrderId = orderId;
             AccType = accType;
             InitialType = initialType;
-            CurrentType = currentType;
+            if (accType == AccountTypes.Cash)
+            {
+                if (currentType == OrderType.Market)
+                    CurrentType = OrderType.Limit;
+                else if (currentType == OrderType.Stop)
+                    CurrentType = OrderType.StopLimit;
+                else
+                    CurrentType = currentType;
+            }
+            else
+                CurrentType = currentType;
             Side = side;
             ReqVolume = reqVolume;
             RemVolume = remVolume;
@@ -96,11 +107,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderFilledEventArgs args)
         {
             AssertEquals(OrderId, args.NewOrder.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match! {CurrentType} vs {args.NewOrder.Type}");
+            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match!");
             AssertEquals(Side, args.NewOrder.Side, $"Side does not match!");
-            AssertEquals(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
-            AssertEquals(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
-            AssertEquals(ReqVolume, args.NewOrder.LastFillVolume, $"FillVolume does not match!");
+            AssertEqualsDouble(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
+            AssertEqualsDouble(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
+            AssertEqualsDouble(ReqVolume, args.NewOrder.LastFillVolume, $"FillVolume does not match!");
         }
 
         public void VerifyEvent(OrderActivatedEventArgs args)
@@ -108,8 +119,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
             AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
-            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
-            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+            AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
         }
 
         public void VerifyEvent(OrderClosedEventArgs args)
@@ -117,8 +128,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
             AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
-            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
-            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+            AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
         }
 
         public void VerifyEvent(OrderCanceledEventArgs args)
@@ -126,8 +137,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
             AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
-            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
-            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+            AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
         }
 
         public void VerifyEvent(OrderExpiredEventArgs args)
@@ -135,8 +146,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
             AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
-            AssertEquals(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
-            AssertEquals(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
+            AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
+            AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
         }
 
         #endregion
@@ -147,13 +158,19 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             AssertEquals(OrderId, report.OrderId, $"OrderId does not match! {OrderId} vs {report.OrderId}");
             AssertEquals(TradeReportAction, report.ActionType, $"ActionType does not match! {TradeReportAction} vs {report.ActionType}, Id = {OrderId}");
-            AssertEquals(ReqVolume, report.OpenQuantity, $"OpenQuantity does not match! {ReqVolume} vs {report.OpenQuantity}, Id = {OrderId}");
-            AssertEquals(RemVolume, report.RemainingQuantity, $"RemainingQuantity does not match! {RemVolume} vs {report.RemainingQuantity}, Id = {OrderId}");
+            AssertEqualsDouble(ReqVolume, report.OpenQuantity, $"OpenQuantity does not match! {ReqVolume} vs {report.OpenQuantity}, Id = {OrderId}");
+            AssertEqualsDouble(RemVolume, report.RemainingQuantity, $"RemainingQuantity does not match! {RemVolume} vs {report.RemainingQuantity}, Id = {OrderId}");
         }
 
         private void AssertEquals<T>(T expected, T actual, string message)
         {
             if (!expected.Equals(actual))
+                throw new Exception(message);
+        }
+
+        private void AssertEqualsDouble(double expected, double actual, string message)
+        {
+            if (!expected.E(actual))
                 throw new Exception(message);
         }
 
