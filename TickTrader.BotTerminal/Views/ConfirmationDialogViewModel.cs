@@ -2,10 +2,14 @@
 using FontAwesome.WPF;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace TickTrader.BotTerminal
 {
@@ -45,9 +49,7 @@ namespace TickTrader.BotTerminal
 
         public string DialogError { get; }
 
-        public ImageSource WindowIcon { get; }
-
-        public FontAwesomeIcon Icon { get; }
+        public ImageSource Icon { get; }
 
         public ConfirmationDialogViewModel(DialogButton buttons, DialogMode mode, string displayName = null, string message = null, string error = null)
         {
@@ -55,26 +57,8 @@ namespace TickTrader.BotTerminal
             DisplayName = displayName;
             DialogMessage = message;
             DialogError = error;
-
             Mode = mode;
-
-            switch (Mode)
-            {
-                case DialogMode.Warning:
-                    Icon = FontAwesomeIcon.ExclamationTriangle;
-                    break;
-                case DialogMode.Error:
-                    Icon = FontAwesomeIcon.TimesCircle;
-                    break;
-                case DialogMode.Question:
-                    Icon = FontAwesomeIcon.QuestionCircleOutline;
-                    break;
-                default:
-                    Icon = FontAwesomeIcon.Info;
-                    break;
-            }
-
-            WindowIcon = ImageAwesome.CreateImageSource(Icon, Brushes.Black, 19);
+            Icon = (ImageSource)Application.Current.TryFindResource($"{Mode}Icon"); //Key icons are located in Resx/Images/Paths
         }
 
         public void OK()

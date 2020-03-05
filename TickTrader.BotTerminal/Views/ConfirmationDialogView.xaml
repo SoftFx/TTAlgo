@@ -7,17 +7,16 @@
         xmlns:cal="http://www.caliburnproject.org"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Icon="{Binding WindowIcon}"
+        Icon="{Binding Icon}"
         SizeToContent="WidthAndHeight"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource Dialog_Background}">
-
     <Window.Resources>
         <Style TargetType="TextBlock">
             <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="TextAlignment" Value="Left"/>
 
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Text, Converter={StaticResource NullOrEmptyToBool}}" Value="True">
@@ -79,11 +78,11 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
 
-            <fa:ImageAwesome Height="40" Width="40" Margin="30 20 10 20" Icon="{Binding Icon}"/>
+            <Image Height="40" Width="40" Margin="25 20" Source="{Binding Icon}"/>
 
-            <StackPanel Grid.Column="1" MaxWidth="400" Orientation="Vertical" Margin="10 5" VerticalAlignment="Center">
+            <StackPanel Grid.Column="1" MaxWidth="400" Orientation="Vertical" Margin="0 5 25 0" VerticalAlignment="Center">
                 <TextBlock Text="{Binding DialogMessage}"/>
-                <TextBlock Text="{Binding DialogError}" Foreground="{DynamicResource Dialog_ErrorForeground}" Margin="10 5"/>
+                <TextBlock Text="{Binding DialogError}" Foreground="{DynamicResource Dialog_ErrorForeground}" Margin="0 5"/>
             </StackPanel>
         </Grid>
 

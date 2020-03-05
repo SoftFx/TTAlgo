@@ -122,7 +122,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("account"), DialogMessages.GetRemoveMessage("account"), DialogMessages.RemoveBotSourceWarning);
+                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Warning, DialogMessages.GetRemoveTitle("account"), DialogMessages.GetRemoveMessage("account"), DialogMessages.RemoveBotSourceWarning);
 
                 if (result != DialogResult.OK)
                     return;
@@ -151,7 +151,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("package"), DialogMessages.GetRemoveMessage("package"), DialogMessages.RemoveBotSourceWarning);
+                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Warning, DialogMessages.GetRemoveTitle("package"), DialogMessages.GetRemoveMessage("package"), DialogMessages.RemoveBotSourceWarning);
 
                 if (result != DialogResult.OK)
                     return;
