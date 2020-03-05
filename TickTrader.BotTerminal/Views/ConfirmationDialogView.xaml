@@ -26,8 +26,9 @@
         </Style>
 
         <Style x:Key="FlatButtonDefault" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonMainStyle}">
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="Width" Value="100"/>
+            <Setter Property="Margin" Value="5 0 5 5"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="25"/>
         </Style>
 
         <Style x:Key="OKBtn" TargetType="l:FlatButton" BasedOn="{StaticResource FlatButtonDefault}">
@@ -44,6 +45,7 @@
 
                 <DataTrigger Binding="{Binding Buttons}" Value="YesNo">
                     <Setter Property="Content" Value="Yes"/>
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -61,6 +63,17 @@
 
                 <DataTrigger Binding="{Binding Buttons}" Value="YesNo">
                     <Setter Property="Content" Value="No"/>
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ButtonPanel" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Buttons}" Value="OK">
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -86,14 +99,9 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-
-            <l:FlatButton Grid.Column="0" cal:Message.Attach="OK" Style="{StaticResource OKBtn}"/>
-            <l:FlatButton Grid.Column="1" cal:Message.Attach="Cancel" Style="{StaticResource CancelBtn}"/>
-        </Grid>
+        <StackPanel Grid.Row="1" Style="{StaticResource ButtonPanel}">
+            <l:FlatButton cal:Message.Attach="OK" Style="{StaticResource OKBtn}"/>
+            <l:FlatButton cal:Message.Attach="Cancel" Style="{StaticResource CancelBtn}"/>
+        </StackPanel>
     </Grid>
 </Window>
