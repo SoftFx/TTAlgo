@@ -54,17 +54,17 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.ColumnSpan="2" Content="Log In" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
-        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Account number"/>
-        <ComboBox Grid.Row="2" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
+        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Server"/>
+        <ComboBox Grid.Row="2" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
+                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding IsEditable}"/>
+        <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Account number"/>
+        <ComboBox Grid.Row="4" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
                   ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
                   IsEditable="True"
                   IsEnabled="{Binding IsEditable}"/>
-        <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Account password"/>
-        <PasswordBox Grid.Row="4" Grid.ColumnSpan="2" Name="PasswordInput" IsEnabled="{Binding IsEditable}"/>
-        <Label Grid.Row="5" Grid.ColumnSpan="2" Content="Server"/>
-        <ComboBox Grid.Row="6" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
-                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding IsEditable}"/>
+        <Label Grid.Row="5" Grid.ColumnSpan="2" Content="Account password"/>
+        <PasswordBox Grid.Row="6" Grid.ColumnSpan="2" Name="PasswordInput" IsEnabled="{Binding IsEditable}"/>
         <CheckBox Grid.Row="9" Grid.ColumnSpan="2" Name="SavePassword" Content="Remember Password"/>
         <TextBlock Grid.Row="10" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{l:ResxBinding ErrorCode, Prefix=ConnectionErrorCode_}"

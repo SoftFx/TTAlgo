@@ -43,21 +43,21 @@
         <ComboBox Grid.Row="2" DisplayMemberPath="Name"
                   ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
                   IsEnabled="{Binding CanChangeAccountKey}"/>
-        <Label Grid.Row="3" Content="Account"/>
+        <Label Grid.Row="3" Content="Server"/>
+        <!--<TextBox Grid.Row="8" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}" 
+                 IsEnabled="{Binding CanChangeAccountKey}"/>-->
+        <ComboBox Grid.Row="4" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding Servers}" SelectedItem="{Binding SelectedServer}" TextSearch.TextPath="Address"
+                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding CanChangeAccountKey}"/>
+        <Label Grid.Row="5" Content="Account"/>
         <!--<TextBox Grid.Row="4" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   IsEnabled="{Binding CanChangeAccountKey}"/>-->
-        <ComboBox Grid.Row="4" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
+        <ComboBox Grid.Row="6" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
                   ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
                   IsEditable="True" IsEnabled="{Binding CanChangeAccountKey}"/>
-        <Label Grid.Row="5" Content="Password"/>
-        <PasswordBox Grid.Row="6" Name="PasswordInput" IsEnabled="{Binding IsEditable}" />
-        <Label Grid.Row="7" Content="Server"/>
-        <!--<TextBox Grid.Row="8" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}" 
-                 IsEnabled="{Binding CanChangeAccountKey}"/>-->
-        <ComboBox Grid.Row="8" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
-                  ItemsSource="{Binding Servers}" SelectedItem="{Binding SelectedServer}" TextSearch.TextPath="Address"
-                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding CanChangeAccountKey}"/>
+        <Label Grid.Row="7" Content="Password"/>
+        <PasswordBox Grid.Row="8" Name="PasswordInput" IsEnabled="{Binding IsEditable}" />
         <TextBlock Grid.Row="11" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
