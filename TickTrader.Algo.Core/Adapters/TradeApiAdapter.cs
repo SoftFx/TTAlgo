@@ -670,7 +670,7 @@ namespace TickTrader.Algo.Core
             if (tp == null)
                 return true;
 
-            if (tp.Value <= 0 || IsInvalidValue(tp.Value))
+            if (tp.Value < 0 || IsInvalidValue(tp.Value))
             {
                 code = OrderCmdResultCodes.IncorrectTp;
                 return false;
@@ -684,7 +684,7 @@ namespace TickTrader.Algo.Core
             if (sl == null)
                 return true;
 
-            if (sl.Value <= 0 || IsInvalidValue(sl.Value))
+            if (sl.Value < 0 || IsInvalidValue(sl.Value))
             {
                 code = OrderCmdResultCodes.IncorrectSl;
                 return false;

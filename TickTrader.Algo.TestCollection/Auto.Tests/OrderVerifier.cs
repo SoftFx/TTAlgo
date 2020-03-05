@@ -65,7 +65,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderVerifier Fill(double volume, DateTime execTime)
         {
-            var newVolume = ReqVolume - volume;
+            var newVolume = RemVolume - volume;
             return Clone(CurrentType, newVolume, TradeExecActions.OrderFilled, execTime);
         }
 
@@ -85,9 +85,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             return Clone(CurrentType, newVolume, TradeExecActions.PositionClosed, execTime);
         }
 
-        public OrderVerifier Cancel(DateTime execTime)
+        public OrderVerifier Cancel(DateTime execTime, double filledVolume = 0)
         {
-            return Clone(CurrentType, RemVolume, TradeExecActions.OrderCanceled, execTime);
+            return Clone(CurrentType, RemVolume - filledVolume, TradeExecActions.OrderCanceled, execTime);
         }
 
         public OrderVerifier Expire(DateTime execTime)
@@ -111,7 +111,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(Side, args.NewOrder.Side, $"Side does not match!");
             AssertEqualsDouble(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
             AssertEqualsDouble(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
-            AssertEqualsDouble(ReqVolume, args.NewOrder.LastFillVolume, $"FillVolume does not match!");
         }
 
         public void VerifyEvent(OrderActivatedEventArgs args)

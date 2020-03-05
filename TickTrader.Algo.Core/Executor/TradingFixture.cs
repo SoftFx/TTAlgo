@@ -242,9 +242,11 @@ namespace TickTrader.Algo.Core
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
                     context.Logger.NotifyOrderOpened(clone);
+                if (order.Type == OrderType.Position)
+                {
+                    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                }
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
-                //if (order.Type == OrderType.Position)
-                //    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
