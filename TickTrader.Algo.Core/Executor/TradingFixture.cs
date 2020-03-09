@@ -130,7 +130,8 @@ namespace TickTrader.Algo.Core
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
                 eReport.OrderCopy.Type = OrderType.Position;
-                eReport.Action = OrderEntityAction.Added;
+                if (eReport.ExecAction != OrderExecAction.Canceled)
+                    eReport.Action = OrderEntityAction.Added;
             }
 
             if (eReport.Action == OrderEntityAction.Added)

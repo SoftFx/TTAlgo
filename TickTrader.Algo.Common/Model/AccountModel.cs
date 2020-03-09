@@ -367,7 +367,7 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = accType == AccountTypes.Gross && report.InitialOrderType == OrderType.Market;
+                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.InitialOrderType == OrderType.Market);
                     if (!ignoreCalculate)
                     {
                         if (orders.ContainsKey(report.OrderId))
@@ -405,11 +405,11 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
-                        if (report.ImmediateOrCancel)
-                            return OnIocFilled(report);
-
                         if (Type != AccountTypes.Gross)
                         {
+                            if (report.ImmediateOrCancel)
+                               return OnIocFilled(report);
+
                             if (report.LeavesVolume != 0)
                                 return OnOrderUpdated(report, OrderExecAction.Filled);
 
