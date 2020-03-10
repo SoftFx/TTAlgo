@@ -106,7 +106,7 @@ namespace TickTrader.BotTerminal
 
         private double? GetMaxVisibleVolume(TradeReportEntity transaction)
         {
-            return transaction.MaxVisibleQuantity;
+            return transaction.MaxVisibleQuantity / LotSize;
         }
 
         public TradeReportKey UniqueId { get; protected set; }
@@ -293,12 +293,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual double GetNetProfiLoss(TradeReportEntity transaction)
         {
-            return transaction.TransactionAmount;
+            return transaction.TransactionAmount / LotSize;
         }
 
         protected virtual double? GetGrossProfitLoss(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? null : (double?)(transaction.TransactionAmount - transaction.Swap - transaction.Commission);
+            return IsBalanceTransaction ? null : (double?)(transaction.TransactionAmount - transaction.Swap - transaction.Commission) / LotSize;
         }
 
         protected virtual double? GetSwap(TradeReportEntity transaction)
@@ -324,7 +324,7 @@ namespace TickTrader.BotTerminal
         protected virtual double? GetVolume(TradeReportEntity transaction)
         {
             if (IsBalanceTransaction)
-                return transaction.TransactionAmount;
+                return transaction.TransactionAmount / LotSize;
 
             if (IsSplitTransaction)
                 return (transaction.Quantity == 0 ? transaction.PositionQuantity : transaction.Quantity) / LotSize;
@@ -657,7 +657,7 @@ namespace TickTrader.BotTerminal
             }
             else if (IsBalanceTransaction)
             {
-                AssetI = transaction.TransactionAmount;
+                AssetI = transaction.TransactionAmount / LotSize;
                 AssetICurrency = transaction.TransactionCurrency;
 
                 AssetII = 0;
@@ -730,7 +730,7 @@ namespace TickTrader.BotTerminal
 
         protected override double? GetCloseQuantity(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? (double?)null : transaction.OrderLastFillAmount;
+            return IsBalanceTransaction ? (double?)null : transaction.OrderLastFillAmount / LotSize;
         }
 
         protected override double? GetOpenQuntity(TradeReportEntity transaction)

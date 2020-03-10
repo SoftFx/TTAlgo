@@ -165,6 +165,9 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
+
+        public decimal? MaxVisibleVolumeToLots => maxVisibleVolume.HasValue ? maxVisibleVolume / (decimal)LotSize : null;
+
         public decimal? StopPrice
         {
             get { return stopPrice; }

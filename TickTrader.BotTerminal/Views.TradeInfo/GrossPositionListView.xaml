@@ -40,7 +40,7 @@
                                 <Binding Path="Order.InstanceId"/>
                                 <Binding Path="Order.AmountLots"/>
                                 <Binding Path="Order.InitOrderType"/>
-                                <Binding Path="Order.MaxVisibleVolume"/>
+                                <Binding Path="Order.MaxVisibleVolumeToLots"/>
                                 <Binding Path="Order.OrderExecutionOptionsStr"/>
                             </MultiBinding>
                         </Setter.Value>
@@ -61,9 +61,9 @@
                                     <TextBlock Text="Initial Type: " VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding Order.InitOrderType}" VerticalAlignment="Center" />
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.MaxVisibleVolumeToLots, Converter={StaticResource NullOrEmptyToVis}}">
                                     <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding Order.MaxVisibleVolume}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.MaxVisibleVolumeToLots}" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Visibility="{Binding Order.OrderExecutionOptionsStr, Converter={StaticResource NullOrEmptyToVis}}">
                                     <TextBlock Text="Option: " VerticalAlignment="Center" />
