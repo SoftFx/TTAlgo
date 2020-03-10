@@ -155,10 +155,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public void VerifyTradeReport(TradeReport report)
         {
-            AssertEquals(OrderId, report.OrderId, $"OrderId does not match! {OrderId} vs {report.OrderId}");
-            AssertEquals(TradeReportAction, report.ActionType, $"ActionType does not match! {TradeReportAction} vs {report.ActionType}, Id = {OrderId}");
-            AssertEqualsDouble(ReqVolume, report.OpenQuantity, $"OpenQuantity does not match! {ReqVolume} vs {report.OpenQuantity}, Id = {OrderId}");
-            AssertEqualsDouble(RemVolume, report.RemainingQuantity, $"RemainingQuantity does not match! {RemVolume} vs {report.RemainingQuantity}, Id = {OrderId}");
+            AssertEquals(OrderId, report.OrderId, $"OrderId does not match! {OrderId} vs {report.OrderId}, Action - {report.ActionType}");
+            AssertEquals(TradeReportAction, report.ActionType, $"ActionType does not match! {TradeReportAction} vs {report.ActionType}, Id = {OrderId}, Action - {report.ActionType}");
+            AssertEqualsDouble(ReqVolume, report.OpenQuantity, $"OpenQuantity does not match! {ReqVolume} vs {report.OpenQuantity}, Id = {OrderId}, Action - {report.ActionType}");
+            AssertEqualsDouble(RemVolume, report.RemainingQuantity, $"RemainingQuantity does not match! {RemVolume} vs {report.RemainingQuantity}, Id = {OrderId}, Action - {report.ActionType}");
         }
 
         private void AssertEquals<T>(T expected, T actual, string message)
