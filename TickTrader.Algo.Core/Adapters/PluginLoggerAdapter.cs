@@ -189,7 +189,7 @@ namespace TickTrader.Algo.Core
 
         public void LogOrderClosing(CloseOrderRequest request)
         {
-            var postfix = request.Volume != 0 ? $", volume={request.Volume}" : "";
+            var postfix = (request.Volume.HasValue && request.Volume != 0) ? $", volume={request.Volume}" : "";
             PrintTrade($"[Out] Closing order #{request.OrderId}{postfix}");
         }
 
