@@ -245,7 +245,13 @@ namespace TickTrader.Algo.Core
                     context.Logger.NotifyOrderOpened(clone);
                 if (order.Type == OrderType.Position)
                 {
-                    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                    OrderAccessor prevOrder = null;
+                    if (eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != order.Id)
+                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId);
+                    if (prevOrder != null)
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(prevOrder, prevOrder)));
+                    else
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(order, order)));
                 }
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
             }
