@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
             Positions = model.Orders
                 .Where((id, order) => order.OrderType == OrderType.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol)))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model))
                 .AsObservable();
 
             Positions.CollectionChanged += PositionsCollectionChanged;

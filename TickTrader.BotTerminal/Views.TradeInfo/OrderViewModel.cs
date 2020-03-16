@@ -12,15 +12,17 @@ namespace TickTrader.BotTerminal
 {
     class OrderViewModel : PropertyChangedBase, IDisposable
     {
+        private AccountModel account;
         private SymbolModel symbol;
 
-        public OrderViewModel(OrderModel order, SymbolModel symbol)
+        public OrderViewModel(OrderModel order, SymbolModel symbol, AccountModel account)
         {
             this.symbol = symbol;
+            this.account = account;
 
             Order = order;
             PriceDigits = symbol?.PriceDigits ?? 5;
-            ProfitDigits = symbol?.QuoteCurrencyDigits ?? 2;
+            ProfitDigits = account.BalanceDigits;
 
             order.EssentialParametersChanged += o =>
             {

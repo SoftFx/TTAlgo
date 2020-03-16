@@ -293,12 +293,12 @@ namespace TickTrader.BotTerminal
 
         protected virtual double GetNetProfiLoss(TradeReportEntity transaction)
         {
-            return transaction.TransactionAmount / LotSize;
+            return transaction.TransactionAmount;
         }
 
         protected virtual double? GetGrossProfitLoss(TradeReportEntity transaction)
         {
-            return IsBalanceTransaction ? null : (double?)(transaction.TransactionAmount - transaction.Swap - transaction.Commission) / LotSize;
+            return IsBalanceTransaction ? null : (double?)(transaction.TransactionAmount - transaction.Swap - transaction.Commission);
         }
 
         protected virtual double? GetSwap(TradeReportEntity transaction)
