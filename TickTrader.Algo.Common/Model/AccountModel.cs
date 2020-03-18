@@ -367,10 +367,16 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    if (orders.ContainsKey(report.OrderId))
-                        return OnOrderUpdated(report, OrderExecAction.Opened);
+                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.InitialOrderType == OrderType.Market);
+                    if (!ignoreCalculate)
+                    {
+                        if (orders.ContainsKey(report.OrderId))
+                            return OnOrderUpdated(report, OrderExecAction.Opened);
+                        else
+                            return OnOrderAdded(report, OrderExecAction.Opened);
+                    }
                     else
-                        return OnOrderAdded(report, OrderExecAction.Opened);
+                        break;
 
                 case ExecutionType.Split:
                     return OnOrderUpdated(report, OrderExecAction.Splitted);
@@ -399,14 +405,16 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
-                        if (report.ImmediateOrCancel)
-                            return OnIocFilled(report);
-
-                        if (report.LeavesVolume != 0)
-                            return OnOrderUpdated(report, OrderExecAction.Filled);
-
                         if (Type != AccountTypes.Gross)
+                        {
+                            if (report.ImmediateOrCancel)
+                               return OnIocFilled(report);
+
+                            if (report.LeavesVolume != 0)
+                                return OnOrderUpdated(report, OrderExecAction.Filled);
+
                             return OnOrderRemoved(report, OrderExecAction.Filled);
+                        }
                     }
                     else if (report.OrderType == OrderType.Position)
                     {
@@ -493,7 +501,7 @@ namespace TickTrader.Algo.Common.Model
         /// bread ration: position updates should be joined with exec reports to be atomic
         private OrderUpdateAction JoinWithPosition(OrderUpdateAction update)
         {
-            if ((Type == AccountTypes.Net || Type == AccountTypes.Gross) && update.ExecAction == OrderExecAction.Filled)
+            if ((Type == AccountTypes.Gross) && update.ExecAction == OrderExecAction.Filled)
             {
                 _updateWatingForPosition = update;
                 return null;

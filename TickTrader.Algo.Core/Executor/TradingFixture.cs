@@ -130,7 +130,8 @@ namespace TickTrader.Algo.Core
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
                 eReport.OrderCopy.Type = OrderType.Position;
-                eReport.Action = OrderEntityAction.Added;
+                if (eReport.ExecAction != OrderExecAction.Canceled)
+                    eReport.Action = OrderEntityAction.Added;
             }
 
             if (eReport.Action == OrderEntityAction.Added)
@@ -242,9 +243,19 @@ namespace TickTrader.Algo.Core
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
                     context.Logger.NotifyOrderOpened(clone);
+                if (clone.Type == OrderType.Position)
+                {
+                    OrderAccessor prevOrder = null;
+                    if (eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != clone.Id)
+                    {
+                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId).Clone();
+                    }
+                    if (prevOrder != null)
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(prevOrder, prevOrder)));
+                    else
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                }
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
-                //if (order.Type == OrderType.Position)
-                //    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {
