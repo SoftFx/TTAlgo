@@ -515,19 +515,19 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double? GetSLPrice(OrderSide side)
         {
-            var delta = 5 * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 5 * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
             return side == OrderSide.Buy ? RoundedSymbolAsk + delta : RoundedSymbolBid - delta;
         }
 
         private double GetTPPrice(OrderSide side)
         {
-            var delta = 5 * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 5 * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
             return side == OrderSide.Buy ? RoundedSymbolBid - delta : RoundedSymbolAsk + delta;
         }
 
         private double? GetImmExecPrice(OrderSide side, OrderType type)
         {
-            var delta = Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 2 * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
 
             if (type == OrderType.Market)
                 return RoundedSymbolBid - delta;
@@ -540,7 +540,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double? GetImmExecStopPrice(OrderSide side, OrderType type)
         {
-            var delta = Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 2 * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
 
             if (type != OrderType.Stop && type != OrderType.StopLimit)
                 return null;
@@ -550,7 +550,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double? GetDoNotExecPrice(OrderSide side, OrderType type)
         {
-            var delta = PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 2 * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
 
             if (type == OrderType.Limit || type == OrderType.StopLimit)
             {
@@ -565,7 +565,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private double? GetDoNotExecStopPrice(OrderSide side, OrderType type)
         {
-            var delta = PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
+            var delta = 2 * PriceDelta * Symbol.Point * Math.Max(1, 10 - Symbol.Digits); //Math.Max it is necessary that orders are not executed on symbols with large price jumps
 
             if (type == OrderType.Stop || type == OrderType.StopLimit)
             {

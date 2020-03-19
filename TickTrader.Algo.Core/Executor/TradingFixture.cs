@@ -248,7 +248,7 @@ namespace TickTrader.Algo.Core
                     OrderAccessor prevOrder = null;
                     if (eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != clone.Id)
                     {
-                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId).Clone();
+                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId)?.Clone();
                     }
                     if (prevOrder != null)
                         context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(prevOrder, prevOrder)));
