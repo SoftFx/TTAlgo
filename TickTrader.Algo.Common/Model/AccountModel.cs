@@ -408,7 +408,7 @@ namespace TickTrader.Algo.Common.Model
                         if (Type != AccountTypes.Gross)
                         {
                             if (report.ImmediateOrCancel)
-                               return OnIocFilled(report);
+                                return OnIocFilled(report);
 
                             if (report.LeavesVolume != 0)
                                 return OnOrderUpdated(report, OrderExecAction.Filled);
@@ -501,7 +501,7 @@ namespace TickTrader.Algo.Common.Model
         /// bread ration: position updates should be joined with exec reports to be atomic
         private OrderUpdateAction JoinWithPosition(OrderUpdateAction update)
         {
-            if ((Type == AccountTypes.Gross) && update.ExecAction == OrderExecAction.Filled)
+            if ((Type == AccountTypes.Gross || Type == AccountTypes.Net) && update.ExecAction == OrderExecAction.Filled)
             {
                 _updateWatingForPosition = update;
                 return null;
@@ -567,7 +567,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         [Serializable]
-        private class OrderUpdateAction: EntityCacheUpdate
+        private class OrderUpdateAction : EntityCacheUpdate
         {
             private ExecutionReport _report;
             private OrderExecAction _execAction;
