@@ -187,8 +187,7 @@ namespace TickTrader.Algo.Core
 
         private void DataProvider_PositionUpdated(PositionExecReport report)
         {
-            if (report.ExecAction == OrderExecAction.Splitted) // Modify execute with order
-                UpdatePosition(report.PositionInfo, report.ExecAction);
+            UpdatePosition(report.PositionInfo, report.ExecAction);
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -224,7 +223,7 @@ namespace TickTrader.Algo.Core
             System.Diagnostics.Debug.WriteLine($"ER: {eReport.Action} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
 
             if (eReport.NetPosition != null)
-                UpdatePosition(eReport.NetPosition, eReport.ExecAction);
+                UpdatePosition(eReport.NetPosition, eReport.ExecAction); // applied position bounded to order fill
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecAction.Activated)

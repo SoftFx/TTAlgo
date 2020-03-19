@@ -596,7 +596,7 @@ namespace TickTrader.Algo.Common.Model
 
             public void Apply(EntityCache cache)
             {
-                _netPositionUpdate?.Apply(cache);
+                //_netPositionUpdate?.Apply(cache); // position changes will be applied in trading fixture during order update
                 _grossPositionUpdate?.Apply(cache);
                 cache.Account.UpdateOrder(_execAction, _entityAction, _report, _netPositionUpdate?.Postion);
                 cache.Account.UpdateBalance(_report);
