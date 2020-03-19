@@ -76,20 +76,9 @@ namespace TickTrader.Algo.Core
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accInfo = _dataProvider.AccountInfo;
-
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
-            builder.Account.Orders.Clear();
-            builder.Account.NetPositions.Clear();
-            builder.Account.Assets.Clear();
-
-            builder.Account.Update(accInfo, currencies);
-
-            foreach (var order in _dataProvider.GetOrders())
-                builder.Account.Orders.Add(order, _account);
-            foreach (var position in _dataProvider.GetPositions())
-                builder.Account.NetPositions.UpdatePosition(position.PositionInfo);
+            builder.Account.Init(_dataProvider, currencies);
         }
 
         public void Stop()

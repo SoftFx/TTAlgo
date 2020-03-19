@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
         {
             get
             {
-                OnTradeInfoAccess();
+                OnCalcAccess();
                 return _assets;
             }
         }
@@ -251,12 +251,17 @@ namespace TickTrader.Algo.Core
 
         private MarginAccountCalc GetCalc()
         {
+            OnCalcAccess();
+            return MarginCalc;
+        }
+
+        private void OnCalcAccess()
+        {
             if (MarginCalc == null)
             {
                 OnTradeInfoAccess();
                 CalcRequested?.Invoke();
             }
-            return MarginCalc;
         }
 
         internal void OnTradeInfoAccess()
@@ -268,6 +273,22 @@ namespace TickTrader.Algo.Core
                 _assets = new AssetsCollection(builder);
                 TradeInfoRequested?.Invoke();
             }
+        }
+
+        internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, Currency> currencies)
+        {
+            var accInfo = dataProvider.AccountInfo;
+
+            _orders.Clear();
+            _positions.Clear();
+            _assets.Clear();
+
+            Update(accInfo, currencies);
+
+            foreach (var order in dataProvider.GetOrders())
+                _orders.Add(order, this);
+            foreach (var position in dataProvider.GetPositions())
+                _positions.UpdatePosition(position.PositionInfo);
         }
 
         #endregion
