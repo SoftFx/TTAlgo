@@ -231,21 +231,21 @@ namespace TickTrader.Algo.Common.Model
             _updateWatingForPosition = null;
 
             if (update == null)
-                return GetPositionUpdateEntity(report);
+                return GetPositionUpdateEntity(report, true);
             else
-                update.Add(GetPositionUpdateEntity(report));
+                update.Add(GetPositionUpdateEntity(report, false));
 
             return update;
         }
 
-        private PositionUpdateAction GetPositionUpdateEntity(PositionEntity report)
+        private PositionUpdateAction GetPositionUpdateEntity(PositionEntity report, bool notify)
         {
             if (report.IsEmpty)
-                return new PositionUpdateAction(report, OrderEntityAction.Removed);
+                return new PositionUpdateAction(report, OrderEntityAction.Removed, notify);
             else if (!positions.ContainsKey(report.Symbol))
-                return new PositionUpdateAction(report, OrderEntityAction.Added);
+                return new PositionUpdateAction(report, OrderEntityAction.Added, notify);
             else
-                return new PositionUpdateAction(report, OrderEntityAction.Updated);
+                return new PositionUpdateAction(report, OrderEntityAction.Updated, notify);
         }
 
         private OrderUpdateAction DequeueWatingUpdate()
@@ -255,19 +255,21 @@ namespace TickTrader.Algo.Common.Model
             return update;
         }
 
-        public void UpdatePosition(PositionEntity position)
+        public void UpdatePosition(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
-            PositionUpdate?.Invoke(model, position.Type);
+            if (notify)
+                PositionUpdate?.Invoke(model, position.Type);
         }
 
-        public void OnPositionAdded(PositionEntity position)
+        public void OnPositionAdded(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
-            PositionUpdate?.Invoke(model, OrderExecAction.Opened);
+            if (notify)
+                PositionUpdate?.Invoke(model, OrderExecAction.Opened);
         }
 
-        public void RemovePosition(PositionEntity position)
+        public void RemovePosition(PositionEntity position, bool notify)
         {
             PositionModel model;
 
@@ -275,7 +277,8 @@ namespace TickTrader.Algo.Common.Model
                 return;
 
             positions.Remove(model.Symbol);
-            PositionUpdate?.Invoke(model, OrderExecAction.Closed);
+            if (notify)
+                PositionUpdate?.Invoke(model, OrderExecAction.Closed);
         }
 
         private PositionModel UpsertPosition(PositionEntity position)
@@ -596,7 +599,7 @@ namespace TickTrader.Algo.Common.Model
 
             public void Apply(EntityCache cache)
             {
-                //_netPositionUpdate?.Apply(cache); // position changes will be applied in trading fixture during order update
+                _netPositionUpdate?.Apply(cache);
                 _grossPositionUpdate?.Apply(cache);
                 cache.Account.UpdateOrder(_execAction, _entityAction, _report, _netPositionUpdate?.Postion);
                 cache.Account.UpdateBalance(_report);
@@ -626,23 +629,25 @@ namespace TickTrader.Algo.Common.Model
         {
             private PositionEntity _report;
             private OrderEntityAction _entityAction;
+            private bool _notify;
 
             public PositionEntity Postion => _report;
 
-            public PositionUpdateAction(PositionEntity report, OrderEntityAction action)
+            public PositionUpdateAction(PositionEntity report, OrderEntityAction action, bool notify)
             {
                 _report = report;
                 _entityAction = action;
+                _notify = notify;
             }
 
             public void Apply(EntityCache cache)
             {
                 if (_entityAction == OrderEntityAction.Added)
-                    cache.Account.OnPositionAdded(_report);
+                    cache.Account.OnPositionAdded(_report, _notify);
                 else if (_entityAction == OrderEntityAction.Updated)
-                    cache.Account.UpdatePosition(_report);
+                    cache.Account.UpdatePosition(_report, _notify);
                 else if (_entityAction == OrderEntityAction.Removed)
-                    cache.Account.RemovePosition(_report);
+                    cache.Account.RemovePosition(_report, _notify);
             }
         }
     }

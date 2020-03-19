@@ -78,9 +78,9 @@ namespace TickTrader.BotTerminal
             if (tt.NetPositionUpdate != null)
             {
                 if (tt.NetPositionUpdate.Volume == 0)
-                    _client.Acc.RemovePosition(tt.NetPositionUpdate);
+                    _client.Acc.RemovePosition(tt.NetPositionUpdate, true);
                 else
-                    _client.Acc.UpdatePosition(tt.NetPositionUpdate);
+                    _client.Acc.UpdatePosition(tt.NetPositionUpdate, true);
             }
 
             if (tt.Balance != null)
