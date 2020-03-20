@@ -376,7 +376,7 @@ namespace TickTrader.Algo.Core
 
             logEntry.Append(type)
                 .Append(suffix).Append(side)
-                .Append(" ").AppendNumber(volumeLots);
+                .Append(" ").Append(volumeLots.ToString("F15").TrimEnd('0'));
             if (smbInfo != null)
                 logEntry.Append(" ").Append(smbInfo.Name);
 

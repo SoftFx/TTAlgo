@@ -128,14 +128,13 @@ namespace TickTrader.Algo.Common.Model
                 if (this.amount != value)
                 {
                     this.amount = value;
-                    this.AmountLots = AmountToLots(value);
                     NotifyOfPropertyChange(nameof(Amount));
                     NotifyOfPropertyChange(nameof(AmountLots));
                 }
             }
         }
 
-        public double AmountLots { get; private set; } = 0;
+        public string AmountLots => SymbolModel == null ? "" : (Amount / SymbolModel.LotSize).ToString("F15").TrimEnd('0');
 
         public double Price
         {
@@ -221,14 +220,6 @@ namespace TickTrader.Algo.Common.Model
         IPositionSide IPositionModel.Short { get { return Short; } }
 
         #endregion
-
-        private double AmountToLots(double volume)
-        {
-            if (SymbolModel == null)
-                return double.NaN;
-
-            return volume / SymbolModel.LotSize;
-        }
 
         public class PositionSide : IPositionSide
         {
