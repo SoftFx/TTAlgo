@@ -12,12 +12,12 @@ namespace TickTrader.BotTerminal
 {
     class PositionViewModel : PropertyChangedBase, IDisposable
     {
-        public PositionViewModel(PositionModel position)
+        public PositionViewModel(PositionModel position, AccountModel account)
         {
             Position = position;
 
             PriceDigits = position?.SymbolModel?.PriceDigits ?? 5;
-            ProfitDigits = position?.SymbolModel?.QuoteCurrencyDigits ?? 2;
+            ProfitDigits = account.BalanceDigits;
             SortedNumber = GetSortedNumber(position);
         }
 

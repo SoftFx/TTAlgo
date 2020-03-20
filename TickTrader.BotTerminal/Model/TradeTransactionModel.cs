@@ -23,10 +23,10 @@ namespace TickTrader.BotTerminal
 
         public TransactionReport() { }
 
-        public TransactionReport(TradeReportEntity transaction, SymbolModel symbol)
+        public TransactionReport(TradeReportEntity transaction, SymbolModel symbol, int profitDigits)
         {
             PriceDigits = symbol?.PriceDigits ?? -1;
-            ProfitDigits = symbol?.QuoteCurrencyDigits ?? -1;
+            ProfitDigits = profitDigits;
             LotSize = symbol?.LotSize ?? 1;
 
             IsPosition = transaction.TradeRecordType == OrderType.Position;
@@ -93,13 +93,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, SymbolModel symbol = null)
+        public static TransactionReport Create(AccountTypes accountType, TradeReportEntity tTransaction, int balanceDigits, SymbolModel symbol = null)
         {
             switch (accountType)
             {
-                case AccountTypes.Gross: return new GrossTransactionModel(tTransaction, symbol);
-                case AccountTypes.Net: return new NetTransactionModel(tTransaction, symbol);
-                case AccountTypes.Cash: return new CashTransactionModel(tTransaction, symbol);
+                case AccountTypes.Gross: return new GrossTransactionModel(tTransaction, symbol, balanceDigits);
+                case AccountTypes.Net: return new NetTransactionModel(tTransaction, symbol, balanceDigits);
+                case AccountTypes.Cash: return new CashTransactionModel(tTransaction, symbol, balanceDigits);
                 default: throw new NotSupportedException(accountType.ToString());
             }
         }
@@ -529,7 +529,7 @@ namespace TickTrader.BotTerminal
 
     class NetTransactionModel : TransactionReport
     {
-        public NetTransactionModel(TradeReportEntity transaction, SymbolModel model) : base(transaction, model) { }
+        public NetTransactionModel(TradeReportEntity transaction, SymbolModel model, int profitDigits) : base(transaction, model, profitDigits) { }
 
         protected override double? GetOpenPrice(TradeReportEntity transaction)
         {
@@ -578,7 +578,7 @@ namespace TickTrader.BotTerminal
 
     class GrossTransactionModel : TransactionReport
     {
-        public GrossTransactionModel(TradeReportEntity transaction, SymbolModel symbol) : base(transaction, symbol)
+        public GrossTransactionModel(TradeReportEntity transaction, SymbolModel symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
             if (transaction.PositionId != null)
             {
@@ -637,8 +637,10 @@ namespace TickTrader.BotTerminal
 
     class CashTransactionModel : TransactionReport
     {
-        public CashTransactionModel(TradeReportEntity transaction, SymbolModel symbol) : base(transaction, symbol)
+        public CashTransactionModel(TradeReportEntity transaction, SymbolModel symbol, int profitDigits) : base(transaction, symbol, profitDigits)
         {
+            ProfitDigits = symbol?.QuoteCurrencyDigits ?? -1;
+
             if (GetTransactionSide(transaction) == TransactionSide.Buy)
             {
                 AssetI = transaction.DstAssetMovement ?? 0;

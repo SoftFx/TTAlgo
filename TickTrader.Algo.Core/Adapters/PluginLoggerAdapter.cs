@@ -11,7 +11,8 @@ namespace TickTrader.Algo.Core
 {
     internal class PluginLoggerAdapter : IPluginMonitor, IAlertAPI
     {
-        private static NumberFormatInfo DefaultPriceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+        private static readonly NumberFormatInfo DefaultPriceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+        private static readonly string DefaultVolumeFormat = $"0.{new string('#', 15)}";
 
         private IPluginLogger logger;
 
@@ -376,7 +377,7 @@ namespace TickTrader.Algo.Core
 
             logEntry.Append(type)
                 .Append(suffix).Append(side)
-                .Append(" ").Append(volumeLots.ToString("F15").TrimEnd('0'));
+                .Append(" ").AppendNumber(volumeLots, DefaultVolumeFormat);
             if (smbInfo != null)
                 logEntry.Append(" ").Append(smbInfo.Name);
 

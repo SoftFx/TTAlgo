@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TickTrader.BusinessLogic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Lib;
@@ -12,6 +8,8 @@ namespace TickTrader.Algo.Common.Model
 {
     public class PositionModel : ObservableObject, TickTrader.BusinessLogic.IPositionModel
     {
+        private static readonly string DefaultVolumeFormat = $"0.{new string('#', 15)}";
+
         private decimal commission;
         private decimal agentCommission;
         private string symbol;
@@ -134,7 +132,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public string AmountLots => SymbolModel == null ? "" : (Amount / SymbolModel.LotSize).ToString("F15").TrimEnd('0');
+        public string AmountLots => SymbolModel == null ? "" : (Amount / SymbolModel.LotSize).ToString(DefaultVolumeFormat);
 
         public double Price
         {
