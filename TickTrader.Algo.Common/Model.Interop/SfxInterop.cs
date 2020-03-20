@@ -72,7 +72,7 @@ namespace TickTrader.Algo.Common.Model
                 connectAttempts: connectAttempts, reconnectAttempts: reconnectAttempts, connectInterval: connectInterval, heartbeatInterval: heartbeatInterval, logDirectory: logsDir);
 
             _feedProxy.InitTaskAdapter();
-            _tradeProxy.InitTaskAdapter();
+            _tradeProxy.InitTaskAdapter(rep => ExecutionReport?.Invoke(ConvertToEr(rep)));
             _feedHistoryProxy.InitTaskAdapter();
             _tradeHistoryProxy.InitTaskAdapter();
 

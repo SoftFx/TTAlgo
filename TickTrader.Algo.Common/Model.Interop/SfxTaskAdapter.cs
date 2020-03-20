@@ -199,8 +199,12 @@ namespace TickTrader.Algo.Common.Model
 
         #region Trade
 
-        public static void InitTaskAdapter(this FDK.Client.OrderEntry client)
+        private static Action<FDK2.ExecutionReport> _execReportHandler;
+
+        public static void InitTaskAdapter(this FDK.Client.OrderEntry client, Action<FDK2.ExecutionReport> execReportHandler)
         {
+            _execReportHandler = execReportHandler;
+
             client.ConnectResultEvent += (c, d) => SetCompleted(d);
             client.ConnectErrorEvent += (c, d, ex) => SetFailed(d, ex);
 
@@ -436,7 +440,8 @@ namespace TickTrader.Algo.Common.Model
 
             public void OnReport(FDK2.ExecutionReport report)
             {
-                _reports.Add(report);
+                _execReportHandler?.Invoke(report);
+                //_reports.Add(report);
                 if (report.Last)
                     SetResult(_reports);
             }
