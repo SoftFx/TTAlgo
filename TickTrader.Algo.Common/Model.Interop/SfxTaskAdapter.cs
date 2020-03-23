@@ -1,8 +1,6 @@
 ﻿using ActorSharp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TickTrader.Algo.Common.Info;
@@ -197,149 +195,6 @@ namespace TickTrader.Algo.Common.Model
 
         #endregion
 
-        #region Trade
-
-        private static Action<FDK2.ExecutionReport> _execReportHandler;
-
-        public static void InitTaskAdapter(this FDK.Client.OrderEntry client, Action<FDK2.ExecutionReport> execReportHandler)
-        {
-            _execReportHandler = execReportHandler;
-
-            client.ConnectResultEvent += (c, d) => SetCompleted(d);
-            client.ConnectErrorEvent += (c, d, ex) => SetFailed(d, ex);
-
-            client.LoginResultEvent += (c, d) => SetCompleted(d);
-            client.LoginErrorEvent += (c, d, ex) => SetFailed(d, ex);
-
-            client.LogoutResultEvent += (c, d, i) => SetCompleted(d, i);
-            client.LogoutErrorEvent += (c, d, ex) => SetFailed<LogoutInfo>(d, ex);
-
-            client.DisconnectResultEvent += (c, d, t) => SetCompleted(d, t);
-
-            client.AccountInfoResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.AccountInfoErrorEvent += (c, d, ex) => SetFailed<AccountInfo>(d, ex);
-
-            //client.OrdersBeginResultEvent += (c, d, c) =>
-            client.OrdersResultEvent += (c, d, r) => ((BlockingChannel<OrderEntity>)d).Write(SfxInterop.Convert(r));
-            client.OrdersEndResultEvent += (c, d) => ((BlockingChannel<OrderEntity>)d).Close();
-            client.OrdersErrorEvent += (c, d, ex) => ((BlockingChannel<OrderEntity>)d).Close(ex);
-
-            client.PositionsResultEvent += (c, d, r) => SetCompleted(d, r);
-            client.PositionsErrorEvent += (c, d, ex) => SetFailed<Position[]>(d, ex);
-
-            client.NewOrderResultEvent += (c, d, r) => SetOrderResult(d, r);
-            client.NewOrderErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
-
-            client.CancelOrderResultEvent += (c, d, r) => SetOrderResult(d, r);
-            client.CancelOrderErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
-
-            client.ReplaceOrderResultEvent += (c, d, r) => SetOrderResult(d, r);
-            client.ReplaceOrderErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
-
-            client.ClosePositionResultEvent += (c, d, r) => SetOrderResult(d, r);
-            client.ClosePositionErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
-
-            client.ClosePositionByResultEvent += (c, d, r) => SetOrderResult(d, r);
-            client.ClosePositionByErrorEvent += (c, d, ex) => SetOrderFail(d, ex);
-        }
-
-        public static Task ConnectAsync(this FDK.Client.OrderEntry client, string address)
-        {
-            var taskSrc = new TaskCompletionSource<object>();
-            client.ConnectAsync(taskSrc, address);
-            return taskSrc.Task;
-        }
-
-        public static Task LoginAsync(this FDK.Client.OrderEntry client, string username, string password, string deviceId, string appId, string sessionId)
-        {
-            var taskSrc = new TaskCompletionSource<object>();
-            client.LoginAsync(taskSrc, username, password, deviceId, appId, sessionId);
-            return taskSrc.Task;
-        }
-
-        public static Task LogoutAsync(this FDK.Client.OrderEntry client, string message)
-        {
-            var taskSrc = new TaskCompletionSource<LogoutInfo>();
-            client.LogoutAsync(taskSrc, message);
-            return taskSrc.Task;
-        }
-
-        public static Task DisconnectAsync(this FDK.Client.OrderEntry client, string text)
-        {
-            var taskSrc = new TaskCompletionSource<string>();
-            client.DisconnectAsync(taskSrc, text);
-            return taskSrc.Task;
-        }
-
-        public static Task<AccountInfo> GetAccountInfoAsync(this FDK.Client.OrderEntry client)
-        {
-            var taskSrc = new TaskCompletionSource<AccountInfo>();
-            client.GetAccountInfoAsync(taskSrc);
-            return taskSrc.Task;
-        }
-
-        public static void GetOrdersAsync(this FDK.Client.OrderEntry client, BlockingChannel<ExecutionReport> stream)
-        {
-            client.GetOrdersAsync(stream);
-        }
-
-        public static Task<Position[]> GetPositionsAsync(this FDK.Client.OrderEntry client)
-        {
-            var taskSrc = new TaskCompletionSource<Position[]>();
-            client.GetPositionsAsync(taskSrc);
-            return taskSrc.Task;
-        }
-
-        public static Task<List<FDK2.ExecutionReport>> NewOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string symbol, OrderType type, OrderSide side,
-            double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool immediateOrCancel, double? slippage)
-        {
-            var taskSrc = new OrderResultSource();
-            client.NewOrderAsync(taskSrc, clientOrderId, symbol, type, side, qty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
-            return taskSrc.Task;
-        }
-
-        public static Task<List<FDK2.ExecutionReport>> CancelOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string origClientOrderId, string orderId)
-        {
-            var taskSrc = new OrderResultSource();
-            client.CancelOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId);
-            return taskSrc.Task;
-        }
-
-        public static Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
-            OrderSide side, double newQty, double qty, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage)
-        {
-            var taskSrc = new OrderResultSource();
-            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, newQty, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, false, qty, comment, tag, magic, immediateOrCancel, slippage);
-            return taskSrc.Task;
-        }
-
-        public static Task<List<FDK2.ExecutionReport>> ReplaceOrderAsync(this FDK.Client.OrderEntry client, string clientOrderId, string origClientOrderId, string orderId, string symbol, OrderType type,
-            OrderSide side, double qtyChange, double? maxVisibleQty, double? price, double? stopPrice, OrderTimeInForce? timeInForce, DateTime? expireTime, double? stopLoss,
-            double? takeProfit, string comment, string tag, int? magic, bool? immediateOrCancel, double? slippage)
-        {
-            var taskSrc = new OrderResultSource();
-            client.ReplaceOrderAsync(taskSrc, clientOrderId, origClientOrderId, orderId, symbol, type, side, qtyChange, maxVisibleQty, price, stopPrice, timeInForce, expireTime?.ToUniversalTime(), stopLoss, takeProfit, comment, tag, magic, immediateOrCancel, slippage);
-            return taskSrc.Task;
-        }
-
-        public static Task<List<FDK2.ExecutionReport>> ClosePositionAsync(this FDK.Client.OrderEntry client, string clientOrderId, string orderId, double? qty)
-        {
-            var taskSrc = new OrderResultSource();
-            client.ClosePositionAsync(taskSrc, clientOrderId, orderId, qty);
-            return taskSrc.Task;
-        }
-
-        public static Task<List<FDK2.ExecutionReport>> ClosePositionByAsync(this FDK.Client.OrderEntry client, string clientOrderId, string orderId, string byOrderId)
-        {
-            var taskSrc = new OrderResultSource();
-            client.ClosePositionByAsync(taskSrc, clientOrderId, orderId, byOrderId);
-            return taskSrc.Task;
-        }
-
-        #endregion
-
         #region Trade History
 
         public static void InitTaskAdapter(this FDK.Client.TradeCapture client)
@@ -409,45 +264,12 @@ namespace TickTrader.Algo.Common.Model
 
         #region Helpers
 
-        private static void SetCompleted(object state)
+        internal static void SetCompleted(object state)
         {
             SetCompleted<object>(state, null);
         }
 
-        private static void SetOrderResult(object state, FDK2.ExecutionReport result)
-        {
-            ((OrderResultSource)state).OnReport(result);
-        }
-
-        private static void SetOrderFail(object state, Exception ex)
-        {
-            var eex = ex as ExecutionException;
-            if (eex != null)
-            {
-                var report = eex.Report;
-                if (report.OrderType == OrderType.Market && report.OrderStatus == FDK2.OrderStatus.Rejected && report.InitialVolume != report.LeavesVolume)
-                {
-                    ((OrderResultSource)state).OnReport(report);
-                    return;
-                }
-            }
-            ((OrderResultSource)state).SetException(Convert(ex));
-        }
-
-        private class OrderResultSource : TaskCompletionSource<List<FDK2.ExecutionReport>>
-        {
-            private List<FDK2.ExecutionReport> _reports = new List<FDK2.ExecutionReport>();
-
-            public void OnReport(FDK2.ExecutionReport report)
-            {
-                _execReportHandler?.Invoke(report);
-                //_reports.Add(report);
-                if (report.Last)
-                    SetResult(_reports);
-            }
-        }
-
-        private static void SetCompleted<T>(object state, T result)
+        internal static void SetCompleted<T>(object state, T result)
         {
             if (state != null)
             {
@@ -456,12 +278,12 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static void SetFailed(object state, Exception ex)
+        internal static void SetFailed(object state, Exception ex)
         {
             SetFailed<object>(state, ex);
         }
 
-        private static void SetFailed<T>(object state, Exception ex)
+        internal static void SetFailed<T>(object state, Exception ex)
         {
             if (state != null)
             {
@@ -470,7 +292,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static Exception Convert(Exception ex)
+        internal static Exception Convert(Exception ex)
         {
             if (ex is RejectException)
                 return new InteropException(ex.Message, ConnectionErrorCodes.RejectedByServer);
