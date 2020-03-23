@@ -61,6 +61,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                                 try
                                 {
                                     await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.None, someTag);
+                                    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                                        await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
 
                                     await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
                                     if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
@@ -69,7 +71,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                                     if (IncludeADCases)
                                     {
                                         await PerformCommentsTest(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
-                                        if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
+                                        if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
                                             await PerformCommentsTest(orderType, orderSide, asyncMode, someTag, OrderExecOptions.ImmediateOrCancel);
                                     }
                                 }
@@ -764,8 +766,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             if (_eventWaiter == null)
             {
-                PrintError($"Unexpected event: {args.GetType().Name}");
-                return;
+                throw new Exception($"Unexpected event: {args.GetType().Name}");
             }
 
             // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
@@ -934,8 +935,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             CurrentVolume = BaseOrderVolume;
 
-            bool isInstantOrder = IsImmidiateFill(orderType, options);
-
             GetAddModifyPrices(orderType, orderSide, options, out var price, out var stopPrice, out var newPrice, out var newStopPrice);
 
             var title = isAsync ? "Async test: " : "Test: ";
@@ -948,7 +947,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 ++_testCount;
                 Print($"{title} open {orderSide} {orderType} order{postTitle}");
                 var openVerifier = await OpenAndCheck(orderType, orderSide, CurrentVolume, price, isAsync, tag, stopPrice: stopPrice, options: options);
-                if (IsImmidiateFill(orderType, options))
+
+                accOrder = Account.Orders[openVerifier.OrderId];
+
+                var realOrderType = orderType;
+                if (Account.Type == AccountTypes.Cash && orderType == OrderType.Stop)
+                    realOrderType = OrderType.StopLimit;
+                else if (Account.Type == AccountTypes.Gross && IsImmidiateFill(orderType, options) && orderType != OrderType.StopLimit)
+                    realOrderType = OrderType.Position;
+
+                bool isInstantOrder = IsImmidiateFill(orderType, options) && realOrderType != OrderType.StopLimit;
+
+                if (isInstantOrder)
                 {
                     var fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
                     OrderVerifier fillVerifier = openVerifier.Fill(fillArgs.OldOrder.Modified);
@@ -959,14 +969,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                     else
                         _tradeRepVerifiers.Add(fillVerifier);
                 }
-
-                accOrder = Account.Orders[openVerifier.OrderId];
-
-                var realOrderType = orderType;
-                if (Account.Type == AccountTypes.Cash && orderType == OrderType.Stop)
-                    realOrderType = OrderType.StopLimit;
-                else if (Account.Type == AccountTypes.Gross && isInstantOrder)
-                    realOrderType = OrderType.Position;
 
                 if (!isInstantOrder || Account.Type == AccountTypes.Gross)
                     VerifyOrder(accOrder.Id, realOrderType, orderSide, CurrentVolume, price, isInstantOrder, stopPrice, null, null, null, null, tag);
