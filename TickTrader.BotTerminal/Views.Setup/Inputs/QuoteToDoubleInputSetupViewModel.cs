@@ -38,6 +38,12 @@ namespace TickTrader.BotTerminal
             return input;
         }
 
+        public override void Reset()
+        {
+            base.Reset();
+
+            SelectedSymbol = SetupMetadata.DefaultSymbol; // Quote inputs does not support Main Symbol token
+        }
 
         protected override MappingInfo GetMapping(MappingKey mappingKey)
         {

@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
     {
         private AccountModel account;
         private string currencyFormatStr;
-        private string precentFormatStr = "{0:F2}%";
+        private string precentFormatStr = "{0:N2}%";
 
         public AccountStatsViewModel(AccountModel acc, IConnectionStatusInfo cManager)
         {
@@ -35,8 +35,8 @@ namespace TickTrader.BotTerminal
                 if (account.Calc != null)
                     account.Calc.Updated -= Calc_Updated;
 
-                //IsStatsVisible = false;
-                //NotifyOfPropertyChange(nameof(IsStatsVisible));
+                IsStatsVisible = false;
+                NotifyOfPropertyChange(nameof(IsStatsVisible));
             };
         }
 
@@ -51,20 +51,28 @@ namespace TickTrader.BotTerminal
                 Margin = FormatNumber(CeilNumber(calc.Margin, account.BalanceDigits));
                 Profit = FormatNumber(FloorNumber(calc.Profit, account.BalanceDigits));
                 Floating = FormatNumber(FloorNumber(calc.Floating, account.BalanceDigits));
-                MarginLevel = FormatPrecent(FloorNumber(calc.MarginLevel, 2));
+
+                var marginLevel = FloorNumber(calc.MarginLevel, 2);
+                MarginLevel = Math.Abs(marginLevel) >= 1e-3m ? FormatPrecent(marginLevel) : "-";
+
                 FreeMargin = FormatNumber(FloorNumber(calc.Equity - calc.Margin, account.BalanceDigits));
                 Swap = FormatNumber(calc.Swap);
                 IsFloatingLoss = calc.Floating < 0;
 
-                NotifyOfPropertyChange(nameof(Equity));
-                NotifyOfPropertyChange(nameof(Margin));
-                NotifyOfPropertyChange(nameof(Profit));
-                NotifyOfPropertyChange(nameof(Swap));
-                NotifyOfPropertyChange(nameof(Floating));
-                NotifyOfPropertyChange(nameof(FreeMargin));
-                NotifyOfPropertyChange(nameof(MarginLevel));
-                NotifyOfPropertyChange(nameof(IsFloatingLoss));
+                UpdateProperies();
             }
+        }
+
+        private void UpdateProperies()
+        {
+            NotifyOfPropertyChange(nameof(Equity));
+            NotifyOfPropertyChange(nameof(Margin));
+            NotifyOfPropertyChange(nameof(Profit));
+            NotifyOfPropertyChange(nameof(Swap));
+            NotifyOfPropertyChange(nameof(Floating));
+            NotifyOfPropertyChange(nameof(FreeMargin));
+            NotifyOfPropertyChange(nameof(MarginLevel));
+            NotifyOfPropertyChange(nameof(IsFloatingLoss));
         }
 
         private string FormatNumber(double number)

@@ -60,7 +60,7 @@
                     <Grid.Resources>
                         <CollectionViewSource x:Key="PluginsCollection" Source="{Binding Plugins}">
                             <CollectionViewSource.GroupDescriptions>
-                                <PropertyGroupDescription PropertyName="Group"/>
+                                <PropertyGroupDescription PropertyName="CurrentGroup"/>
                             </CollectionViewSource.GroupDescriptions>
                         </CollectionViewSource>
                     </Grid.Resources>

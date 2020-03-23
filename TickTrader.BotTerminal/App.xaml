@@ -62,9 +62,9 @@
                 <ResourceDictionary Source="Views.Chart/BotStateView.xaml" />
                 <ResourceDictionary Source="Views.Chart/BotListOverlayView.xaml" />
 
+                <ResourceDictionary Source="Views.Setup/PluginConfigView.xaml" />
                 <ResourceDictionary Source="Views.Setup/AgentPluginSetupView.xaml" />
                 <ResourceDictionary Source="Views.Setup/LocalPluginSetupView.xaml" />
-                <ResourceDictionary Source="Views.Setup/PluginConfigView.xaml" />
 
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryView.xaml" />
                 <ResourceDictionary Source="Views.TradeInfo/TradeHistoryGridView.xaml" />

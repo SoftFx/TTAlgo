@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
             Orders = model.Orders
                 .Where((id, order) => order.OrderType != OrderType.Position)
                 .OrderBy((id, order) => id)
-                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol)))
+                .Select(o => new OrderViewModel(o, symbols.GetOrDefault(o.Symbol), model))
                 .AsObservable();
 
             _profileManager = profile;

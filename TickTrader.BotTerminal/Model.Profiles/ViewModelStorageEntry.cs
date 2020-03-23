@@ -83,6 +83,8 @@ namespace TickTrader.BotTerminal
 
     internal static class ViewModelStorageKeys
     {
+        public const string GrossPositions = "GrossPositions";
+        public const string GrossPositionsBacktester = "GrossPositionsBacktester";
         public const string NetPositions = "NetPositions";
         public const string NetPositionsBacktester = "NetPositionsBacktester";
         public const string Orders = "Orders";

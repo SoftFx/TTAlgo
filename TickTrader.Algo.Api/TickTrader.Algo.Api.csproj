@@ -49,6 +49,7 @@
     <Compile Include="AlgoPlugin.cs" />
     <Compile Include="Asset.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="BalanceDividend.cs" />
     <Compile Include="Bar.cs" />
     <Compile Include="Currency.cs" />
     <Compile Include="DiagnosticInfo.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Indicators\Trend\IParabolicSar.cs" />
     <Compile Include="Indicators\Trend\IStandardDeviation.cs" />
     <Compile Include="Indicators\Utility\AppliedPrice.cs" />
+    <Compile Include="Indicators\Utility\CalcFrequency.cs" />
     <Compile Include="Indicators\Volumes\IAccumulationDistribution.cs" />
     <Compile Include="Indicators\Volumes\IMoneyFlowIndex.cs" />
     <Compile Include="Indicators\Volumes\IOnBalanceVolume.cs" />

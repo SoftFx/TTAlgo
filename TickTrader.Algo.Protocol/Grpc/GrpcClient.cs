@@ -617,7 +617,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task AddBot(AccountKey account, PluginConfig config)
         {
-            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new Lib.AddBotRequest { Account = account.Convert(), Config = config.Convert() });
+            var response = await ExecuteUnaryRequestAuthorized(AddBotInternal, new Lib.AddBotRequest { Account = account.Convert(), Config = config.Convert(VersionSpec) });
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -641,7 +641,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task ChangeBotConfig(string botId, PluginConfig newConfig)
         {
-            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert() });
+            var response = await ExecuteUnaryRequestAuthorized(ChangeBotConfigInternal, new Lib.ChangeBotConfigRequest { BotId = ToGrpc.Convert(botId), NewConfig = newConfig.Convert(VersionSpec) });
             FailForNonSuccess(response.ExecResult);
         }
 
@@ -693,6 +693,9 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task UploadPackage(PackageKey package, string srcPath, int chunkSize, int offset, IFileProgressListener progressListener)
         {
+            if (_client == null || _channel.State == ChannelState.Shutdown)
+                throw new ConnectionFailedException("Connection failed");
+
             progressListener.Init((long)offset * chunkSize);
 
             var request = new Lib.UploadPackageRequest
@@ -818,6 +821,8 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         public override async Task<AlertRecordInfo[]> GetAlerts(DateTime lastLogTimeUtc, int maxCount)
         {
+            if (!VersionSpec.SupportAlerts)
+                return new AlertRecordInfo[0];
             var response = await ExecuteUnaryRequestAuthorized(GetAlertsInternal, new Lib.AlertBotsRequest { LastLogTimeUtc = lastLogTimeUtc.Convert(), MaxCount = maxCount });
             FailForNonSuccess(response.ExecResult);
             return response.Logs.Select(ToAlgo.Convert).ToArray();

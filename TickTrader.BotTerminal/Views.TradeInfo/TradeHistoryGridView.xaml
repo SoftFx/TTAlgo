@@ -121,7 +121,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Width="100" Binding="{Binding UniqueId}"/>
 
-                    <DataGridTextColumn Header="Time" Width="130" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding SortedNumber}"/>
+                    <DataGridTextColumn Header="Time" Width="130" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" SortMemberPath="{Binding CloseSortedNumber}"/>
 
                     <DataGridTextColumn Header="Type" Width="100" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
 
@@ -218,61 +218,186 @@
                       SelectionMode="Extended" ClipboardCopyMode="IncludeHeader"
                       Visibility="{Binding Data.IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"
                       l:DataGridExt.AutoSize="{Binding AutoSizeColumns}">
+                <DataGrid.Resources>
+                    <l:DataGridColumnHide x:Key="ParentIDShow" Provider="{Binding StateProvider}" ColumnKey="ParentID"/>
+                    <l:DataGridColumnHide x:Key="ReqOpenVolumeShow" Provider="{Binding StateProvider}" ColumnKey="ReqOpenVolume"/>
+                    <l:DataGridColumnHide x:Key="ReqOpenPriceShow" Provider="{Binding StateProvider}" ColumnKey="ReqOpenPrice"/>
+                    <l:DataGridColumnHide x:Key="OpenSlippageShow" Provider="{Binding StateProvider}" ColumnKey="OpenSlippage" IsColumnEnabled="{Binding IsSlippageSupported}"/>
+                    <l:DataGridColumnHide x:Key="CloseTimeShow" Provider="{Binding StateProvider}" ColumnKey="CloseTime"/>
+                    <l:DataGridColumnHide x:Key="ReqCloseVolumeShow" Provider="{Binding StateProvider}" ColumnKey="ReqCloseVolume"/>
+                    <l:DataGridColumnHide x:Key="ReqClosePriceShow" Provider="{Binding StateProvider}" ColumnKey="ReqClosePrice"/>
+                    <l:DataGridColumnHide x:Key="CloseSlippageShow" Provider="{Binding StateProvider}" ColumnKey="CloseSlippage" IsColumnEnabled="{Binding IsSlippageSupported}"/>
+                    <l:DataGridColumnHide x:Key="CommissionShow" Provider="{Binding StateProvider}" ColumnKey="Commission"/>
+                    <l:DataGridColumnHide x:Key="SwapShow" Provider="{Binding StateProvider}" ColumnKey="Swap"/>
+                    <l:DataGridColumnHide x:Key="TaxesShow" Provider="{Binding StateProvider}" ColumnKey="Taxes"/>
+                    <l:DataGridColumnHide x:Key="FeesShow" Provider="{Binding StateProvider}" ColumnKey="Fees"/>
+                    <l:DataGridColumnHide x:Key="TagShow" Provider="{Binding StateProvider}" ColumnKey="Tag"/>
+                    <l:DataGridColumnHide x:Key="CommentShow" Provider="{Binding StateProvider}" ColumnKey="Comment"/>
+                </DataGrid.Resources>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"></MenuItem>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"/>
+                        <Separator/>
+                        <MenuItem Header="Show Parent ID" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ParentIDShow}}"/>
+                        <MenuItem Header="Req Open Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqOpenVolumeShow}}"/>
+                        <MenuItem Header="Req Open Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqOpenPriceShow}}"/>
+                        <MenuItem Header="Show Open Slippage" IsCheckable="True" DataContext="{StaticResource OpenSlippageShow}" IsChecked="{Binding IsShown}"
+                                  Visibility="{Binding IsColumnEnabled, Converter={StaticResource boolToVisibilityConverter}}"/>
+                        <MenuItem Header="Show Close Time" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CloseTimeShow}}"/>
+                        <MenuItem Header="Req Close Volume" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqCloseVolumeShow}}"/>
+                        <MenuItem Header="Req Close Price" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource ReqClosePriceShow}}"/>
+                        <MenuItem Header="Show Close Slippage" IsCheckable="True" DataContext="{StaticResource CloseSlippageShow}" IsChecked="{Binding IsShown}"
+                                  Visibility="{Binding IsColumnEnabled, Converter={StaticResource boolToVisibilityConverter}}"/>
+                        <MenuItem Header="Show Commision" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommissionShow}}"/>
+                        <MenuItem Header="Show Swap" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource SwapShow}}"/>
+                        <MenuItem Header="Show Taxes" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TaxesShow}}"/>
+                        <MenuItem Header="Show Fees" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource FeesShow}}"/>
+                        <MenuItem Header="Show Tag" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource TagShow}}"/>
+                        <MenuItem Header="Show Comment" IsCheckable="True" IsChecked="{Binding IsShown, Source={StaticResource CommentShow}}"/>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="ToolTipService.IsEnabled">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource NullOrEmptyToBool}" >
+                                    <Binding Path="Reason"/>
+                                    <Binding Path="InstanceId"/>
+                                    <Binding Path="OpenQuantity"/>
+                                    <Binding Path="InitialType"/>
+                                    <Binding Path="MaxVisibleVolume"/>
+                                    <Binding Path="OrderExecutionOption"/>
+                                    <!--<Binding Path="SplitReqVolume"/>
+                                    <Binding Path="SplitReqPrice"/>-->
+                                    <Binding Path="SplitRatio"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="ToolTip">
+                            <Setter.Value>
+                                <StackPanel>
+                                    <StackPanel Visibility="{Binding IsNotSplitTransaction, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding InstanceId, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Instance ID: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding InstanceId}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding Reason, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Reason: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Reason, Converter={StaticResource PascalSplitString}}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding OpenQuantity, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Initial Volume: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding OpenQuantity}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding InitialType, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Initial Type: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding InitialType}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding MaxVisibleVolume, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Max Visible Volume: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding MaxVisibleVolume}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOption, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Option: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding OrderExecutionOption}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <StackPanel Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}">
+                                        <!--<StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqPrice, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Req Price: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding SplitReqPrice}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding SplitReqVolume, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Req Volume: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding SplitReqVolume}" VerticalAlignment="Center"/>
+                                        </StackPanel>-->
+                                        <StackPanel Orientation="Horizontal" Visibility="{Binding SplitRatio, Converter={StaticResource NullOrEmptyToVis}}">
+                                            <TextBlock Text="Split Ratio: " VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding SplitRatio}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Order" Width="85" Binding="{Binding UniqueId}"/>
-                    <!--OrderId and PositionId for Gross Account-->
-                    <!--<DataGridTextColumn Header="Order" Width="100" Binding="{Binding OrderId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
-                    <!--<DataGridTextColumn Header="Position" Width="100" Binding="{Binding PositionId}" Visibility="{Binding IsGrossAccount.Value, Source={StaticResource ProxyContext}, Converter={StaticResource BoolToVis}}"/>-->
-                    <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="OpenTime">
+
+                    <DataGridTextColumn Header="ID" Width="100" Binding="{Binding UniqueId}"/>
+
+                    <DataGridTextColumn Header="Parent ID" Width="100" Binding="{Binding ParentOrderId}" Visibility="{Binding Visibility, Source={StaticResource ParentIDShow}}"/>
+
+                    <DataGridTextColumn Header="Open Time" Width="130" SortMemberPath="{Binding OpenSortedNumber}" Binding="{Binding OpenTime, Converter={StaticResource FullDateTimeFormat}}"/>
+
+                    <DataGridTextColumn Header="Type" Width="100" Binding="{Binding Type, Converter={StaticResource PascalSplitString}}"/>
+
+                    <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}"/>
+
+                    <DataGridTextColumn Header="Req Open Volume" Width="100" Binding="{Binding ReqOpenVolume}" Visibility="{Binding Visibility, Source={StaticResource ReqOpenVolumeShow}}"/>
+
+                    <DataGridTextColumn Header="Open Volume" Width="100" Binding="{Binding OpenQuantity}"/>
+
+                    <DataGridTextColumn Header="Req Open Price" Width="100" Visibility="{Binding Visibility, Source={StaticResource ReqOpenPriceShow}}">
                         <DataGridTextColumn.Binding>
-                            <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
-                                <Binding Path="OpenTime"/>
-                                <Binding Path="Data.ConvertTimeToLocal" Source="{StaticResource ProxyContext}"/>
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
+                                <Binding Path="ReqOpenPrice"/>
+                                <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Type" Width="70" Binding="{Binding Type}"/>
-                    <DataGridTextColumn Header="Trx Type" Width="100" Binding="{Binding ActionType}" />
-                    <DataGridTextColumn Header="Symbol" Width="100" Binding="{Binding Symbol}" />
-                    <DataGridTextColumn Header="Initial Volume" Width="70" Binding="{Binding OpenQuantity}" />
-                    <DataGridTextColumn Header="Open Price" Width="100" SortMemberPath="OpenPrice">
+
+                    <DataGridTextColumn Header="Open Price" Width="100">
                         <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="OpenPrice"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="S/L" Width="100" SortMemberPath="StopLoss">
+
+                    <DataGridTextColumn Header="Open Slippage" Width="100" Visibility="{Binding Visibility, Source={StaticResource OpenSlippageShow}}">
                         <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                <Binding Path="StopLoss"/>
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
+                                <Binding Path="OpenSlippage"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="T/P" Width="100" SortMemberPath="TakeProfit">
+
+                    <DataGridTextColumn Header="Close Time" Width="130" SortMemberPath="{Binding CloseSortedNumber}" Binding="{Binding CloseTime, Converter={StaticResource FullDateTimeFormat}}" Visibility="{Binding Visibility, Source={StaticResource CloseTimeShow}}"/>
+
+                    <DataGridTextColumn Header="Req Close Volume" Width="100" Binding="{Binding ReqCloseVolume}" Visibility="{Binding Visibility, Source={StaticResource ReqCloseVolumeShow}}"/>
+
+                    <DataGridTextColumn Header="Close Volume" Width="100" Binding="{Binding CloseQuantity}"/>
+
+                    <DataGridTextColumn Header="TP" Width="100">
                         <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource PriceConverter}" >
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="TakeProfit"/>
                                 <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Close Time" Width="130" SortMemberPath="CloseTime">
+
+                    <DataGridTextColumn Header="SL" Width="100">
                         <DataGridTextColumn.Binding>
-                            <MultiBinding  Converter="{StaticResource KindAwareFullDateTime}">
-                                <Binding Path="CloseTime"/>
-                                <Binding Path="Data.ConvertTimeToLocal" Source="{StaticResource ProxyContext}"/>
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
+                                <Binding Path="StopLoss"/>
+                                <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Trade Volume" Width="70" Binding="{Binding CloseQuantity}" />
+
+                    <DataGridTextColumn Header="Req Close Price" Width="100" Visibility="{Binding Visibility, Source={StaticResource ReqClosePriceShow}}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource AmountConverter}" >
+                                <Binding Path="ReqClosePrice"/>
+                                <Binding Path="PriceDigits"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn Header="Close Price" Width="100" SortMemberPath="ClosePrice">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceConverter}" >
@@ -281,65 +406,52 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Remaining Volume" Width="70" Binding="{Binding RemainingQuantity}" />
-                    <DataGridTextColumn Header="Gross P/L" Width="100" SortMemberPath="GrossProfitLoss">
+
+                    <DataGridTextColumn Header="Close Slippage" Width="100" Visibility="{Binding Visibility, Source={StaticResource CloseSlippageShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
-                                <Binding Path="GrossProfitLoss"/>
-                                <Binding Path="ProfitDigits"/>
+                                <Binding Path="CloseSlippage"/>
+                                <Binding Path="PriceDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
-                        <DataGridTextColumn.ClipboardContentBinding>
-                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="GrossProfitLoss"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Commission" Width="100" SortMemberPath="Commission">
+
+                    <DataGridTextColumn Header="Remaining Volume" Width="100" Binding="{Binding RemainingQuantity}"/>
+
+                    <DataGridTextColumn Header="Commission" Width="100" SortMemberPath="Commission" Visibility="{Binding Visibility, Source={StaticResource CommissionShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Commission"/>
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
-                        <DataGridTextColumn.ClipboardContentBinding>
-                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="Commission"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Swap" Width="100" SortMemberPath="Swap">
+
+                    <DataGridTextColumn Header="Swap" Width="100" Visibility="{Binding Visibility, Source={StaticResource SwapShow}}">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="Swap"/>
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
-                        <DataGridTextColumn.ClipboardContentBinding>
-                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="Swap"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Net P/L" Width="100" SortMemberPath="NetProfitLoss">
+
+                    <DataGridTextColumn Header="Net P/L" Width="100">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource AmountConverter}" >
                                 <Binding Path="NetProfitLoss"/>
                                 <Binding Path="ProfitDigits"/>
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
-                        <DataGridTextColumn.ClipboardContentBinding>
-                            <MultiBinding Converter="{StaticResource ClipboardNumberConverter}" >
-                                <Binding Path="NetProfitLoss"/>
-                                <Binding Path="ProfitDigits"/>
-                            </MultiBinding>
-                        </DataGridTextColumn.ClipboardContentBinding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Comment" Width="140" Binding="{Binding Comment}" />
-                    <DataGridTextColumn Header="Max Visible Volume" Width="70" Binding="{Binding MaxVisibleVolume}"/>
+
+                    <DataGridTextColumn Header="Taxes" Width="100" Binding="{Binding Taxes}" Visibility="{Binding Visibility, Source={StaticResource TaxesShow}}"/>
+
+                    <DataGridTextColumn Header="Fees" Width="100" Binding="{Binding Fees}" Visibility="{Binding Visibility, Source={StaticResource FeesShow}}"/>
+
+                    <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding Tag}" Visibility="{Binding Visibility, Source={StaticResource TagShow}}"/>
+
+                    <DataGridTextColumn Header="Comment" Width="100" Binding="{Binding Comment}" Visibility="{Binding Visibility, Source={StaticResource CommentShow}}"/>
                 </DataGrid.Columns>
             </DataGrid>
             <DataGrid Name="cashGrid" ItemsSource="{Binding Items.Value}" AutoGenerateColumns="False" HorizontalAlignment="Stretch"

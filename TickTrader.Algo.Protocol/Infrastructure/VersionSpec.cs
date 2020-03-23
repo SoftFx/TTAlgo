@@ -4,7 +4,7 @@
     {
         public static int MajorVersion => 1;
 
-        public static int MinorVersion => 0;
+        public static int MinorVersion => 1;
 
         public static string LatestVersion => $"{MajorVersion}.{MinorVersion}";
 
@@ -13,6 +13,9 @@
 
         public string CurrentVersionStr => $"{MajorVersion}.{CurrentVersion}";
 
+        public bool SupportAlerts => CurrentVersion > 0;
+
+        public bool SupportMainToken => CurrentVersion > 0;
 
         internal VersionSpec()
         {

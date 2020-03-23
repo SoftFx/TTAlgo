@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Common.Model.Setup
         public QuoteToBarInputSetupModel(InputMetadata metadata, ISymbolInfo mainSymbol, IAlgoSetupMetadata setupMetadata, IAlgoSetupContext setupContext)
             : base(metadata, mainSymbol, setupMetadata, setupContext)
         {
+            SelectedSymbol = mainSymbol; // Quotes Input does not support Main Symbol token
         }
 
         public override void Load(Property srcProperty)

@@ -47,6 +47,7 @@ namespace TickTrader.Algo.Api
         bool HasEnoughMarginToOpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None);
 
         event Action BalanceUpdated;
+        event Action<IBalanceDividendEventArgs> BalanceDividend;
         /// <summary>
         /// This event signals that all data is updated by fresh snapshots coming from server.
         /// Usually happens when connection to server is lost and then restored back.

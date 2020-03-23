@@ -11,6 +11,7 @@ namespace TickTrader.Algo.Common.Model
     public class ExecutionReport
     {
         public string OrderId { get; set; }
+        public string ParentOrderId { get; set; }
         //public DateTime ExecTime { get; set; }
         public DateTime? Expiration { get; set; }
         public DateTime? Created { get; set; }
@@ -49,6 +50,7 @@ namespace TickTrader.Algo.Common.Model
         public OrderSide OrderSide { get; set; }
         public double? Price { get; set; }
         public double Balance { get; set; }
+        public double? ReqOpenPrice { get; set; }
     }
 
     public enum ExecutionType

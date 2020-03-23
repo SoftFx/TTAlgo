@@ -24,35 +24,47 @@
 
     <Grid Margin="5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>   <!-- 0 Title  -->
-            <RowDefinition Height="Auto"/> <!-- 1 Account label -->
-            <RowDefinition Height="Auto"/> <!-- 2 Account Input -->
-            <RowDefinition Height="Auto"/> <!-- 3 Password label -->
-            <RowDefinition Height="Auto"/> <!-- 4 Password Input -->
-            <RowDefinition Height="Auto"/> <!-- 5 Server label -->
-            <RowDefinition Height="Auto"/> <!-- 6 Server input -->
-            <RowDefinition Height="15"/>   <!-- 7 Some space  -->
-            <RowDefinition Height="Auto"/> <!-- 8 Check box  -->
-            <RowDefinition Height="Auto"/> <!-- 9 Check box  -->
-            <RowDefinition Height="*"/>    <!-- 10 Some space and error message  -->
-            <RowDefinition Height="Auto"/> <!-- 11 Connect button  -->
+            <RowDefinition Height="50"/>
+            <!-- 0 Title  -->
+            <RowDefinition Height="Auto"/>
+            <!-- 1 Account label -->
+            <RowDefinition Height="Auto"/>
+            <!-- 2 Account Input -->
+            <RowDefinition Height="Auto"/>
+            <!-- 3 Password label -->
+            <RowDefinition Height="Auto"/>
+            <!-- 4 Password Input -->
+            <RowDefinition Height="Auto"/>
+            <!-- 5 Server label -->
+            <RowDefinition Height="Auto"/>
+            <!-- 6 Server input -->
+            <RowDefinition Height="15"/>
+            <!-- 7 Some space  -->
+            <RowDefinition Height="Auto"/>
+            <!-- 8 Check box  -->
+            <RowDefinition Height="Auto"/>
+            <!-- 9 Check box  -->
+            <RowDefinition Height="*"/>
+            <!-- 10 Some space and error message  -->
+            <RowDefinition Height="Auto"/>
+            <!-- 11 Connect button  -->
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.ColumnSpan="2" Content="Log In" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
-        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Account number"/>
-        <ComboBox Grid.Row="2" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
+        <Label Grid.Row="1" Grid.ColumnSpan="2" Content="Server"/>
+        <ComboBox Grid.Row="2" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
+                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding IsEditable}"/>
+        <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Account number"/>
+        <ComboBox Grid.Row="4" Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}"
                   ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
                   ItemTemplate="{DynamicResource AccountAuthInfoTemplate}" TextSearch.TextPath="Login"
                   IsEditable="True"
                   IsEnabled="{Binding IsEditable}"/>
-        <Label Grid.Row="3" Grid.ColumnSpan="2" Content="Account password"/>
-        <PasswordBox Grid.Row="4" Grid.ColumnSpan="2" Name="PasswordInput" IsEnabled="{Binding IsEditable}" />
-        <Label Grid.Row="5" Grid.ColumnSpan="2" Content="Server"/>
-        <ComboBox Grid.Row="6" Name="Servers" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}"
-                  IsEditable="True" DisplayMemberPath="Name" IsEnabled="{Binding IsEditable}"/>
+        <Label Grid.Row="5" Grid.ColumnSpan="2" Content="Account password"/>
+        <PasswordBox Grid.Row="6" Grid.ColumnSpan="2" Name="PasswordInput" IsEnabled="{Binding IsEditable}"/>
         <CheckBox Grid.Row="9" Grid.ColumnSpan="2" Name="SavePassword" Content="Remember Password"/>
         <TextBlock Grid.Row="10" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                    Text="{l:ResxBinding ErrorCode, Prefix=ConnectionErrorCode_}"
@@ -66,8 +78,10 @@
                    Visibility="{Binding ShowErrorText, Converter={StaticResource BoolToVis}}"/>
         <l:FlatButton Grid.Row="11" Margin="8"
                       x:Name="Connect"
-                      Content="Connect" 
+                      Content="Connect"
+                      IsEnabled="{Binding CanConnectProp, UpdateSourceTrigger=PropertyChanged}"
                       Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}">
+        </l:FlatButton>
     </Grid>
 </UserControl>

@@ -475,7 +475,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             return new SymbolConfig
             {
-                Name = config.Name,
+                Name = config.Origin == Lib.SymbolConfig.Types.SymbolOrigin.Special ? SpecialSymbols.MainSymbol : config.Name,
                 Origin = config.Origin.Convert(),
             };
         }

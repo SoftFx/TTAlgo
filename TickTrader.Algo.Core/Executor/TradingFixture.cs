@@ -76,20 +76,9 @@ namespace TickTrader.Algo.Core
             _dataProvider.BalanceUpdated += DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated += DataProvider_PositionUpdated;
 
-            var accInfo = _dataProvider.AccountInfo;
-
             currencies = builder.Currencies.CurrencyListImp.ToDictionary(c => c.Name);
 
-            builder.Account.Orders.Clear();
-            builder.Account.NetPositions.Clear();
-            builder.Account.Assets.Clear();
-
-            builder.Account.Update(accInfo, currencies);
-
-            foreach (var order in _dataProvider.GetOrders())
-                builder.Account.Orders.Add(order, _account);
-            foreach (var position in _dataProvider.GetPositions())
-                builder.Account.NetPositions.UpdatePosition(position.PositionInfo);
+            builder.Account.Init(_dataProvider, currencies);
         }
 
         public void Stop()
@@ -130,7 +119,8 @@ namespace TickTrader.Algo.Core
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
                 eReport.OrderCopy.Type = OrderType.Position;
-                eReport.Action = OrderEntityAction.Added;
+                if (eReport.ExecAction != OrderExecAction.Canceled)
+                    eReport.Action = OrderEntityAction.Added;
             }
 
             if (eReport.Action == OrderEntityAction.Added)
@@ -152,8 +142,19 @@ namespace TickTrader.Algo.Core
                 if (accProxy.Type == Api.AccountTypes.Gross || accProxy.Type == Api.AccountTypes.Net)
                 {
                     accProxy.Balance = (decimal)report.Balance;
-                    context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
-                    context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                    var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
+
+                    if (report.Type == BalanceOperationType.DepositWithdrawal)
+                    {
+                        context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)accProxy.BalanceCurrencyInfo);
+                        context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                    }
+
+                    if (report.Type == BalanceOperationType.Dividend)
+                    {
+                        context.Logger.NotifyDividend(report.Amount, currencyInfo.Name, ((CurrencyEntity)currencyInfo).Format);
+                        context.EnqueueEvent(builder => accProxy.FireBalanceDividendEvent(new BalanceDividendEventArgsImpl(report)));
+                    }
                 }
                 else if (accProxy.Type == Api.AccountTypes.Cash)
                 {
@@ -162,9 +163,12 @@ namespace TickTrader.Algo.Core
                     var currencyInfo = currencies.GetOrStub(report.CurrencyCode);
                     if (assetChange != AssetChangeType.NoChanges)
                     {
-                        context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)currencyInfo);
-                        context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
-                        context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                        if (report.Type == BalanceOperationType.DepositWithdrawal)
+                        {
+                            context.Logger.NotifyDespositWithdrawal(report.Amount, (CurrencyEntity)currencyInfo);
+                            context.EnqueueEvent(builder => accProxy.Assets.FireModified(new AssetUpdateEventArgsImpl(asset)));
+                            context.EnqueueEvent(builder => accProxy.FireBalanceUpdateEvent());
+                        }
                     }
                 }
             });
@@ -172,8 +176,7 @@ namespace TickTrader.Algo.Core
 
         private void DataProvider_PositionUpdated(PositionExecReport report)
         {
-            if (report.ExecAction == OrderExecAction.Splitted) // Modify execute with order
-                UpdatePosition(report.PositionInfo, report.ExecAction);
+            UpdatePosition(report.PositionInfo, report.ExecAction);
         }
 
         private void DataProvider_OrderUpdated(OrderExecReport eReport)
@@ -193,7 +196,7 @@ namespace TickTrader.Algo.Core
             var oldPos = positions.GetPositionOrNull(position.Symbol);
             var clone = oldPos?.Clone() ?? PositionAccessor.CreateEmpty(position.Symbol, _symbols.GetOrDefault, accProxy.Leverage);
             var pos = positions.UpdatePosition(position);
-            var isClosed = action == OrderExecAction.Closed;
+            var isClosed = action == OrderExecAction.Closed || pos.IsEmpty;
 
             if (action == OrderExecAction.Splitted)
             {
@@ -209,7 +212,7 @@ namespace TickTrader.Algo.Core
             System.Diagnostics.Debug.WriteLine($"ER: {eReport.Action} {(eReport.OrderCopy != null ? $"#{eReport.OrderCopy.Id} {eReport.OrderCopy.Type}" : "no order copy")}");
 
             if (eReport.NetPosition != null)
-                UpdatePosition(eReport.NetPosition, eReport.ExecAction);
+                UpdatePosition(eReport.NetPosition, eReport.ExecAction); // applied position bounded to order fill
 
             var orderCollection = builder.Account.Orders;
             if (eReport.ExecAction == OrderExecAction.Activated)
@@ -228,9 +231,19 @@ namespace TickTrader.Algo.Core
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
                     context.Logger.NotifyOrderOpened(clone);
+                if (clone.Type == OrderType.Position)
+                {
+                    OrderAccessor prevOrder = null;
+                    if (eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != clone.Id)
+                    {
+                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId)?.Clone();
+                    }
+                    if (prevOrder != null)
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(prevOrder, prevOrder)));
+                    else
+                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                }
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
-                //if (order.Type == OrderType.Position)
-                //    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
             }
             else if (eReport.ExecAction == OrderExecAction.Closed)
             {

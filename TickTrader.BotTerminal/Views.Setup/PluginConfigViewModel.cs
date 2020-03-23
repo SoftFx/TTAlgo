@@ -38,6 +38,8 @@ namespace TickTrader.BotTerminal
         private IPluginIdProvider _idProvider;
         private bool _allowTrade;
         private bool _isolate;
+        private bool _visible;
+        private bool _runBot;
 
         public IEnumerable<TimeFrames> AvailableTimeFrames { get; private set; }
 
@@ -45,6 +47,20 @@ namespace TickTrader.BotTerminal
         public bool IsEmulation { get; set; }
 
         public bool EnableFeedSetup => !IsFixedFeed && Descriptor.SetupMainSymbol;
+
+        public bool Visible
+        {
+            get => _visible;
+
+            set
+            {
+                if (_visible == value)
+                    return;
+
+                _visible = value;
+                NotifyOfPropertyChange(nameof(Visible));
+            }
+        }
 
         public TimeFrames SelectedTimeFrame
         {
@@ -76,6 +92,7 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _mainSymbol = value;
+
                 NotifyOfPropertyChange(nameof(MainSymbol));
             }
         }
@@ -172,6 +189,19 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool RunBot
+        {
+            get { return _runBot; }
+            set
+            {
+                if (_runBot == value)
+                    return;
+
+                _runBot = value;
+                NotifyOfPropertyChange(nameof(RunBot));
+            }
+        }
+
         private List<InputSetupViewModel> ActiveInputs => _selectedTimeFrame == TimeFrames.Ticks ? _tickBasedInputs : _barBasedInputs;
 
         public event System.Action ValidityChanged = delegate { };
@@ -185,6 +215,9 @@ namespace TickTrader.BotTerminal
             SetupMetadata = setupMetadata;
             _idProvider = idProvider;
             Mode = mode;
+            MainSymbol = setupMetadata.DefaultSymbol;
+            Visible = true;
+            RunBot = true;
 
             _paramsFileHistory.SetContext(plugin.ToString());
 
@@ -194,8 +227,7 @@ namespace TickTrader.BotTerminal
         public void Load(PluginConfig cfg)
         {
             SelectedTimeFrame = cfg.TimeFrame;
-            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol)
-                ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
+            MainSymbol = AvailableSymbols.GetSymbolOrDefault(cfg.MainSymbol) ?? AvailableSymbols.GetSymbolOrAny(SetupMetadata.DefaultSymbol);
 
             if (!IsEmulation)
             {
@@ -314,7 +346,7 @@ namespace TickTrader.BotTerminal
 
         public IResult LoadParamsFrom(FileHistory.Entry historyItem)
         {
-            var ex  = LoadParamsFromFile(historyItem.FullPath);
+            var ex = LoadParamsFromFile(historyItem.FullPath);
 
             if (ex != null)
             {
@@ -357,7 +389,7 @@ namespace TickTrader.BotTerminal
         private void Init()
         {
             AvailableTimeFrames = SetupMetadata.Api.TimeFrames;
-            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol);
+            AvailableSymbols = SetupMetadata.Account.GetAvaliableSymbols(SetupMetadata.Context.DefaultSymbol).Where(u => u.Origin != SymbolOrigin.Token).ToList();
             AvailableMappings = SetupMetadata.Mappings.BarToBarMappings;
 
 

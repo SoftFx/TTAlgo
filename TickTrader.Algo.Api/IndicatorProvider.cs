@@ -16,7 +16,9 @@ namespace TickTrader.Algo.Api
 
         IPerfectCommodityChannelIndex PerfectCommodityChannelIndex(DataSeries price, int countBars = 300);
 
-        IRangeBoundChannelIndex RangeBoundChannelIndex(DataSeries price, int std = 18, int countBars = 300);
+        IRangeBoundChannelIndexAvg RangeBoundChannelIndexAvg(DataSeries price, int std = 18, int countBars = 300, CalcFrequency frequency = CalcFrequency.M1);
+
+        IRangeBoundChannelIndexBBands RangeBoundChannelIndexBBands(DataSeries price, int deviationPeriod = 100, double deviationCoeff = 2.0);
 
         IReferenceFastTrendLine ReferenceFastTrendLine(DataSeries price, int countBars = 300);
 

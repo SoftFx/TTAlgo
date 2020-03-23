@@ -71,6 +71,7 @@ namespace TickTrader.Algo.Core.Repository
             return ext == ".ttalgo" || ext == ".dll";
         }
 
+        public static string GetPackageExtensionsString() => "Packages|*.ttalgo|All Files|*.*";
 
         public void Start()
         {

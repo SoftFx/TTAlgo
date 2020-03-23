@@ -173,7 +173,7 @@ namespace TickTrader.BotTerminal
             SetupPage.InitToken();
 
             //var packageRef = _env.LocalAgent.Library.GetPackageRef(SelectedPlugin.Value.Info.Key.GetPackageKey());
-            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.Info.Key);
+            var pluginRef = _env.LocalAgent.Library.GetPluginRef(SetupPage.SelectedPlugin.Value.PluginInfo.Key);
             //var pluginSetupModel = new PluginSetupModel(pluginRef, this, this);
 
             _descriptorCache = pluginRef.Metadata.Descriptor;
@@ -407,7 +407,7 @@ namespace TickTrader.BotTerminal
             var symbols = _testingSymbols.Select(kv => new SymbolModel(kv.Value, currencies)).ToDictionary(m => m.Name);
 
             var accType = SetupPage.Settings.AccType;
-            var trRep = TransactionReport.Create(accType, record, symbols.GetOrDefault(record.Symbol));
+            var trRep = TransactionReport.Create(accType, record, 5, symbols.GetOrDefault(record.Symbol));
             TradeHistoryPage.Append(trRep);
             ChartPage.Append(accType, trRep);
         }

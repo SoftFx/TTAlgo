@@ -166,13 +166,14 @@ namespace TickTrader.Algo.Common.Model
                 {
                     case OrderStatus.Calculated:
                     case OrderStatus.Filled:
-                        if (!double.IsNaN(report.Balance))
-                        {
-                            Balance = report.Balance;
-                            OnBalanceChanged();
-                        }
+                        UpdateBalance(report.Balance);
                         break;
                 }
+            }
+
+            if (Type == AccountTypes.Gross)
+            {
+                UpdateBalance(report.Balance);
             }
 
             if (Type == AccountTypes.Cash)
@@ -180,6 +181,15 @@ namespace TickTrader.Algo.Common.Model
                 foreach (var asset in report.Assets)
                     UpdateAsset(asset);
             }
+        }
+
+        private void UpdateBalance(double balance)
+        {
+            if (double.IsNaN(balance))
+                return;
+
+            Balance = balance;
+            OnBalanceChanged();
         }
 
         private void UpdateAsset(AssetEntity assetInfo)
@@ -221,21 +231,21 @@ namespace TickTrader.Algo.Common.Model
             _updateWatingForPosition = null;
 
             if (update == null)
-                return GetPositionUpdateEntity(report);
+                return GetPositionUpdateEntity(report, true);
             else
-                update.Add(GetPositionUpdateEntity(report));
+                update.Add(GetPositionUpdateEntity(report, false));
 
             return update;
         }
 
-        private PositionUpdateAction GetPositionUpdateEntity(PositionEntity report)
+        private PositionUpdateAction GetPositionUpdateEntity(PositionEntity report, bool notify)
         {
             if (report.IsEmpty)
-                return new PositionUpdateAction(report, OrderEntityAction.Removed);
+                return new PositionUpdateAction(report, OrderEntityAction.Removed, notify);
             else if (!positions.ContainsKey(report.Symbol))
-                return new PositionUpdateAction(report, OrderEntityAction.Added);
+                return new PositionUpdateAction(report, OrderEntityAction.Added, notify);
             else
-                return new PositionUpdateAction(report, OrderEntityAction.Updated);
+                return new PositionUpdateAction(report, OrderEntityAction.Updated, notify);
         }
 
         private OrderUpdateAction DequeueWatingUpdate()
@@ -245,19 +255,21 @@ namespace TickTrader.Algo.Common.Model
             return update;
         }
 
-        public void UpdatePosition(PositionEntity position)
+        public void UpdatePosition(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
-            PositionUpdate?.Invoke(model, position.Type);
+            if (notify)
+                PositionUpdate?.Invoke(model, position.Type);
         }
 
-        public void OnPositionAdded(PositionEntity position)
+        public void OnPositionAdded(PositionEntity position, bool notify)
         {
             var model = UpsertPosition(position);
-            PositionUpdate?.Invoke(model, OrderExecAction.Opened);
+            if (notify)
+                PositionUpdate?.Invoke(model, OrderExecAction.Opened);
         }
 
-        public void RemovePosition(PositionEntity position)
+        public void RemovePosition(PositionEntity position, bool notify)
         {
             PositionModel model;
 
@@ -265,7 +277,8 @@ namespace TickTrader.Algo.Common.Model
                 return;
 
             positions.Remove(model.Symbol);
-            PositionUpdate?.Invoke(model, OrderExecAction.Closed);
+            if (notify)
+                PositionUpdate?.Invoke(model, OrderExecAction.Closed);
         }
 
         private PositionModel UpsertPosition(PositionEntity position)
@@ -357,10 +370,16 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    if (orders.ContainsKey(report.OrderId))
-                        return OnOrderUpdated(report, OrderExecAction.Opened);
+                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.InitialOrderType == OrderType.Market);
+                    if (!ignoreCalculate)
+                    {
+                        if (orders.ContainsKey(report.OrderId))
+                            return OnOrderUpdated(report, OrderExecAction.Opened);
+                        else
+                            return OnOrderAdded(report, OrderExecAction.Opened);
+                    }
                     else
-                        return OnOrderAdded(report, OrderExecAction.Opened);
+                        break;
 
                 case ExecutionType.Split:
                     return OnOrderUpdated(report, OrderExecAction.Splitted);
@@ -389,14 +408,16 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
-                        if (report.ImmediateOrCancel)
-                            return OnIocFilled(report);
-
-                        if (report.LeavesVolume != 0)
-                            return OnOrderUpdated(report, OrderExecAction.Filled);
-
                         if (Type != AccountTypes.Gross)
+                        {
+                            if (report.ImmediateOrCancel)
+                                return OnIocFilled(report);
+
+                            if (report.LeavesVolume != 0)
+                                return OnOrderUpdated(report, OrderExecAction.Filled);
+
                             return OnOrderRemoved(report, OrderExecAction.Filled);
+                        }
                     }
                     else if (report.OrderType == OrderType.Position)
                     {
@@ -483,7 +504,7 @@ namespace TickTrader.Algo.Common.Model
         /// bread ration: position updates should be joined with exec reports to be atomic
         private OrderUpdateAction JoinWithPosition(OrderUpdateAction update)
         {
-            if ((Type == AccountTypes.Net || Type == AccountTypes.Gross) && update.ExecAction == OrderExecAction.Filled)
+            if ((Type == AccountTypes.Gross || Type == AccountTypes.Net) && update.ExecAction == OrderExecAction.Filled)
             {
                 _updateWatingForPosition = update;
                 return null;
@@ -549,7 +570,7 @@ namespace TickTrader.Algo.Common.Model
         }
 
         [Serializable]
-        private class OrderUpdateAction: EntityCacheUpdate
+        private class OrderUpdateAction : EntityCacheUpdate
         {
             private ExecutionReport _report;
             private OrderExecAction _execAction;
@@ -608,23 +629,25 @@ namespace TickTrader.Algo.Common.Model
         {
             private PositionEntity _report;
             private OrderEntityAction _entityAction;
+            private bool _notify;
 
             public PositionEntity Postion => _report;
 
-            public PositionUpdateAction(PositionEntity report, OrderEntityAction action)
+            public PositionUpdateAction(PositionEntity report, OrderEntityAction action, bool notify)
             {
                 _report = report;
                 _entityAction = action;
+                _notify = notify;
             }
 
             public void Apply(EntityCache cache)
             {
                 if (_entityAction == OrderEntityAction.Added)
-                    cache.Account.OnPositionAdded(_report);
+                    cache.Account.OnPositionAdded(_report, _notify);
                 else if (_entityAction == OrderEntityAction.Updated)
-                    cache.Account.UpdatePosition(_report);
+                    cache.Account.UpdatePosition(_report, _notify);
                 else if (_entityAction == OrderEntityAction.Removed)
-                    cache.Account.RemovePosition(_report);
+                    cache.Account.RemovePosition(_report, _notify);
             }
         }
     }

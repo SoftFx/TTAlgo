@@ -301,7 +301,7 @@ namespace TickTrader.BotTerminal
 
         private TransactionReport CreateReportModel(TradeReportEntity tTransaction)
         {
-            return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, GetSymbolFor(tTransaction));
+            return TransactionReport.Create(_tradeClient.Account.Type.Value, tTransaction, _tradeClient.Account.BalanceDigits, GetSymbolFor(tTransaction));
         }
 
         private SymbolModel GetSymbolFor(TradeReportEntity transaction)

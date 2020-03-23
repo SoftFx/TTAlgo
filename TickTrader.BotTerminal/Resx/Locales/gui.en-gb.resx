@@ -361,7 +361,7 @@
     <value>Load profile</value>
   </data>
   <data name="Menu_SaveProfile" xml:space="preserve">
-    <value>Save profile as</value>
+    <value>Save profile</value>
   </data>
   <data name="Menu_Profile" xml:space="preserve">
     <value>Profile</value>
@@ -438,11 +438,11 @@
   <data name="Order_CurrentPrice" xml:space="preserve">
     <value>Current Price</value>
   </data>
-  <data name="Order_ExecutionTime" xml:space="preserve">
-    <value>Exec Time</value>
+  <data name="Order_OpenTime" xml:space="preserve">
+    <value>Time</value>
   </data>
   <data name="Order_Id" xml:space="preserve">
-    <value>Id</value>
+    <value>ID</value>
   </data>
   <data name="Order_InstanceId" xml:space="preserve">
     <value>Instance Id</value>
@@ -469,7 +469,7 @@
     <value>Current Price</value>
   </data>
   <data name="Position_Id" xml:space="preserve">
-    <value>Id</value>
+    <value>ID</value>
   </data>
   <data name="Position_ModifiedTime" xml:space="preserve">
     <value>Modified</value>
@@ -509,5 +509,17 @@
   </data>
   <data name="Tab_Alert" xml:space="preserve">
     <value>Alerts</value>
+  </data>
+  <data name="Order_ModifiedTime" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="Order_ParentOrderId" xml:space="preserve">
+    <value>Parent ID</value>
+  </data>
+  <data name="Order_ReqOpenPrice" xml:space="preserve">
+    <value>Req Open Price</value>
+  </data>
+  <data name="Order_PriceDeviation" xml:space="preserve">
+    <value>Price Deviation</value>
   </data>
 </root>

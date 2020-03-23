@@ -25,6 +25,8 @@ namespace TickTrader.BotTerminal
 {
     internal class LocalAlgoAgent : IAlgoAgent, IAlgoSetupMetadata, IAlgoPluginHost, IAlgoSetupContext
     {
+        public const string LocalAgentName = "BotTerminal";
+
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly ApiMetadataInfo _apiMetadata = ApiMetadataInfo.CreateCurrentMetadata();
         private static readonly ISymbolInfo _defaultSymbol = new SymbolToken("none");
@@ -39,7 +41,7 @@ namespace TickTrader.BotTerminal
         private VarDictionary<string, TradeBotModel> _bots;
         private PreferencesStorageModel _preferences;
 
-        public string Name => "Local";
+        public string Name => LocalAgentName;
 
         public bool IsRemote => false;
 

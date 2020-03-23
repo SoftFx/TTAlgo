@@ -10,6 +10,9 @@
         public static void Greater(double expected, double real, string message)
         {
             Assert.IsTrue(expected > real, message);
+            //if (expected > real)
+            //    return;
+            //System.Console.WriteLine(message);
         }
     }
 }

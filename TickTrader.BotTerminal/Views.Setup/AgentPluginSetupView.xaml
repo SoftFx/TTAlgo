@@ -11,7 +11,7 @@
         <Grid Margin="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -23,13 +23,15 @@
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Agents}"
                       DisplayMemberPath="Name"
-                      SelectedItem="{Binding SelectedAgent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="Account" />
-            <ComboBox Grid.Row="2" Grid.Column="1" IsEditable="False"
+                      SelectedItem="{Binding SelectedAgent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Label Grid.Row="1" Grid.Column="0" Content="Account" Foreground="{DynamicResource Shell_PrimaryForeground}"/>
+            <ComboBox Grid.Row="1" Grid.Column="1" IsEditable="False"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Accounts}"
                       DisplayMemberPath="DisplayName"
-                      SelectedItem="{Binding SelectedAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                      SelectedItem="{Binding SelectedAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0 5 0 0"/>
+            <Button Grid.Row="2" Grid.Column="1" Content="Add..." cal:Message.Attach="AddNewAccount" Height="21" Width="65" HorizontalAlignment="Right" Margin="0 6 0 0"/>
         </Grid>
     </ControlTemplate>
 
@@ -37,17 +39,22 @@
         <Grid Margin="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="90"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" />
-            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="True"
+            <Label Grid.Row="0" Grid.Column="0" Content="{Binding PluginType}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                      IsEditable="True"
                       IsEnabled="{Binding IsNewMode}"
                       ItemsSource="{Binding Plugins}"
                       SelectedItem="{Binding SelectedPlugin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       DisplayMemberPath="DisplayName"/>
+            <Button Grid.Row="2" Grid.ColumnSpan="4" Content="Upload..." cal:Message.Attach="UploadNewPlugin" Height="21" Width="65" HorizontalAlignment="Right" Margin="0 5 0 0"/>
         </Grid>
     </ControlTemplate>
 
@@ -98,41 +105,50 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
-                <StackPanel IsEnabled="{Binding PluginIsStopped}">
-                    <GroupBox Name="LaunchTargetGroup" Header="Run on" Margin="4" Visibility="Collapsed">
-                        <Control Template="{StaticResource LaunchTargetSelection}" />
-                    </GroupBox>
-                    <GroupBox Name="PluginGroup" Header="{Binding PluginType}" Margin="4">
-                        <Control Template="{StaticResource PluginSelection}" />
-                    </GroupBox>
+            <TabControl>
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="General"/>
+                    </TabItem.Header>
+                    <TabItem.Content>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
+                            <StackPanel IsEnabled="{Binding PluginIsStopped}">
+                                <GroupBox Name="LaunchTargetGroup" Header="Run on" Margin="4" Visibility="Collapsed">
+                                    <Control Template="{StaticResource LaunchTargetSelection}" />
+                                </GroupBox>
 
-                    <ContentControl cal:View.Model="{Binding Setup}" />
+                                <GroupBox Name="PluginGroup" Header="{Binding PluginType}" Margin="4">
+                                    <Control Template="{StaticResource PluginSelection}" />
+                                </GroupBox>
 
-                    <GroupBox Name="AutoRunGroup" Margin="4" Visibility="Collapsed">
-                        <Grid Margin="3">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Start bot" />
-                            <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-                        </Grid>
-                    </GroupBox>
+                                <GroupBox Name="GeneralGroup" Header="Run settings" Margin="4" Visibility="Visible">
+                                    <Control DataContext="{Binding Setup}" Template="{StaticResource GeneralSettings}" />
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem.Content>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="Inputs"/>
+                    </TabItem.Header>
+                    <TabItem.Content>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsTabStop="False">
+                            <ContentControl cal:View.Model="{Binding Setup}" IsEnabled="{Binding PluginIsStopped}"/>
+                        </ScrollViewer>
+                    </TabItem.Content>
+                </TabItem>
+            </TabControl>
 
-                    <TextBlock TextWrapping="Wrap" Text="{Binding RequestError}" Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+            <StackPanel Grid.Row="1">
+                <TextBlock TextWrapping="Wrap" Text="{Binding RequestError}" Foreground="{DynamicResource Shell_WarningForeground}" Margin="4"/>
+                <ContentControl cal:View.Model="{Binding FileProgress}" Visibility="{Binding ShowFileProgress, Converter={StaticResource BoolToVis}}" />
+            </StackPanel>
 
-                    <ContentControl cal:View.Model="{Binding FileProgress}" Visibility="{Binding ShowFileProgress, Converter={StaticResource BoolToVis}}" />
-                </StackPanel>
-            </ScrollViewer>
-
-            <Grid Name="ButtonsPanel" Grid.Row="1">
+            <Grid Name="ButtonsPanel" Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -150,15 +166,6 @@
             <DataTrigger Binding="{Binding Type}" Value="Robot">
                 <Setter TargetName="LaunchTargetGroup" Property="Visibility" Value="Visible"/>
             </DataTrigger>
-            <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding Type}" Value="Robot"/>
-                    <Condition Binding="{Binding IsEditMode}" Value="False"/>
-                </MultiDataTrigger.Conditions>
-                <MultiDataTrigger.Setters>
-                    <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
-                </MultiDataTrigger.Setters>
-            </MultiDataTrigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
@@ -169,7 +176,7 @@
         <Setter Property="WindowStyle" Value="ToolWindow" />
         <Setter Property="ResizeMode" Value="CanResize" />
         <Setter Property="Width" Value="300"/>
-        <Setter Property="Height" Value="300"/>
+        <Setter Property="MinHeight" Value="400"/>
     </Style>
 
     <!-- Old Style -->

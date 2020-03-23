@@ -162,8 +162,8 @@ namespace TickTrader.BotTerminal
         public DownloadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName)
             : this(algoEnv)
         {
-            SelectedBotAgent = BotAgents.FirstOrDefault(a => a.Name == agentName);
-            SelectedPackage = Packages.FirstOrDefault(p => p.Key.Equals(packageKey)) ?? Packages.FirstOrDefault();
+            SelectedBotAgent = BotAgents.FirstOrDefault(a => agentName == LocalAlgoAgent.LocalAgentName ? true : a.Name == agentName);
+            SelectedPackage = Packages?.FirstOrDefault(p => p.Key.Equals(packageKey)) ?? Packages?.FirstOrDefault();
         }
 
 

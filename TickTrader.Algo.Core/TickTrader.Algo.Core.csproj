@@ -116,6 +116,7 @@
     <Compile Include="Backtester\Trade\TradeEmulator.cs" />
     <Compile Include="Backtester\Feed\TickSeriesReader.cs" />
     <Compile Include="Buffers\ProxyBuffer2.cs" />
+    <Compile Include="Builder\SimpleTimerFixture.cs" />
     <Compile Include="Builder\SimplifiedBuilder.cs" />
     <Compile Include="Calc\CashAccountCalculator.cs" />
     <Compile Include="Calc\Conversion\ConversionManager.cs" />

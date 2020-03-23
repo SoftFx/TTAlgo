@@ -157,14 +157,14 @@ namespace TickTrader.BotTerminal
 
             try
             {
-                Error = await _botAgentManager.Connect(_agentName, _login, _password, _server, int.Parse(_port));
+                Error = await _botAgentManager.Connect(_agentName.Trim(), _login.Trim(), _password, _server.Trim(), int.Parse(_port));
                 if (!HasError)
                 {
                     TryClose();
                 }
                 else
                 {
-                    if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName))
+                    if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName.Trim()))
                     {
                         // BotAgent name is saved regardless to login success, should enter edit mode
                         _isEdit = true;
@@ -211,13 +211,13 @@ namespace TickTrader.BotTerminal
                 && !string.IsNullOrWhiteSpace(_port);
             if (_isValid)
             {
-                if (_agentName.Equals("Local", StringComparison.OrdinalIgnoreCase)
+                if (_agentName.Trim().Equals(LocalAlgoAgent.LocalAgentName, StringComparison.OrdinalIgnoreCase)
                     || _agentName.Contains("/"))
                 {
                     _isValid = false;
                     Error = "Invalid name";
                 }
-                if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName))
+                if (!_isEdit && _botAgentManager.BotAgents.ContainsKey(_agentName.Trim()))
                 {
                     _isValid = false;
                     Error = "Duplicate name";

@@ -56,7 +56,7 @@ namespace TickTrader.Algo.Core
         {
             get
             {
-                OnTradeInfoAccess();
+                OnCalcAccess();
                 return _assets;
             }
         }
@@ -154,6 +154,11 @@ namespace TickTrader.Algo.Core
             builder.InvokePluginMethod((b, p) => p.BalanceUpdated(), this);
         }
 
+        internal void FireBalanceDividendEvent(BalanceDividendEventArgsImpl args)
+        {
+            builder.InvokePluginMethod((b, p) => p.BalanceDividend(args), this);
+        }
+
         internal void FireResetEvent()
         {
             builder.InvokePluginMethod((b, p) => p.Reset(), this);
@@ -246,12 +251,17 @@ namespace TickTrader.Algo.Core
 
         private MarginAccountCalc GetCalc()
         {
+            OnCalcAccess();
+            return MarginCalc;
+        }
+
+        private void OnCalcAccess()
+        {
             if (MarginCalc == null)
             {
                 OnTradeInfoAccess();
                 CalcRequested?.Invoke();
             }
-            return MarginCalc;
         }
 
         internal void OnTradeInfoAccess()
@@ -263,6 +273,22 @@ namespace TickTrader.Algo.Core
                 _assets = new AssetsCollection(builder);
                 TradeInfoRequested?.Invoke();
             }
+        }
+
+        internal void Init(IAccountInfoProvider dataProvider, Dictionary<string, Currency> currencies)
+        {
+            var accInfo = dataProvider.AccountInfo;
+
+            _orders.Clear();
+            _positions.Clear();
+            _assets.Clear();
+
+            Update(accInfo, currencies);
+
+            foreach (var order in dataProvider.GetOrders())
+                _orders.Add(order, this);
+            foreach (var position in dataProvider.GetPositions())
+                _positions.UpdatePosition(position.PositionInfo);
         }
 
         #endregion
@@ -293,6 +319,7 @@ namespace TickTrader.Algo.Core
         public event Action<IOrderModel2> OrderRemoved = delegate { };
         //public event Action<IOrderModel2> OrderReplaced = delegate { };
         public event Action BalanceUpdated = delegate { };
+        public event Action<IBalanceDividendEventArgs> BalanceDividend = delegate { };
         public event Action Reset = delegate { };
         public event Action<IPositionModel2> PositionChanged;
         public event Action<BL.IAssetModel, BL.AssetChangeTypes> AssetsChanged;

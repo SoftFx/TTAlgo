@@ -156,9 +156,11 @@ namespace TickTrader.BotTerminal
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
-                Setup = new PluginConfigViewModel(Info, metadata, Agent.IdProvider, Mode);
-                Setup.IsFixedFeed = true;
-                Setup.IsEmulation = true;
+                Setup = new PluginConfigViewModel(Info, metadata, Agent.IdProvider, Mode)
+                {
+                    IsFixedFeed = true,
+                    IsEmulation = true
+                };
                 Init();
                 if (Config != null)
                     Setup.Load(Config);

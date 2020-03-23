@@ -9,7 +9,7 @@ using System.Windows.Data;
 
 namespace TickTrader.BotTerminal
 {
-    public class NullToBoolConverter : IMultiValueConverter
+    public class NullToBoolConverter : IValueConverter, IMultiValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

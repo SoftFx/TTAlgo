@@ -39,6 +39,7 @@ namespace TickTrader.Algo.Core
             Swap = src.Swap;
             Commission = src.Commission;
             Options = src.Options;
+            ParentOrderId = src.ParentOrderId;
         }
 
         public string Id { get; private set; }
@@ -50,6 +51,7 @@ namespace TickTrader.Algo.Core
         public OrderType Type { get; set; }
         public OrderSide Side { get; set; }
         public double? Price { get; set; }
+        public double? ReqOpenPrice { get; set; }
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
         public string Comment { get; set; }
@@ -58,6 +60,7 @@ namespace TickTrader.Algo.Core
         public DateTime? Modified { get; set; }
         public string UserTag { get; set; }
         public string InstanceId { get; set; }
+        public string ParentOrderId { get; set; }
         public bool IsNull { get { return false; } }
         public double? ExecPrice { get; set; }
         public double? ExecVolume { get; set; }
@@ -68,9 +71,11 @@ namespace TickTrader.Algo.Core
         public static Order Null { get; private set; }
         public double? StopPrice { get; set; }
         public decimal? MaxVisibleVolume { get; set; }
-        public OrderExecOptions Options { get; set; }
-        public bool ImmediateOrCancel => Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
+        public OrderOptions Options { get; set; }
+        public bool ImmediateOrCancel => Options.HasFlag(OrderOptions.ImmediateOrCancel);
         public bool IsHidden => IsHiddenOrder(MaxVisibleVolume);
+        public bool MarketWithSlippdage => Options.HasFlag(OrderOptions.MarketWithSlippage);
+        public bool HiddenIceberg => Options.HasFlag(OrderOptions.HiddenIceberg);
 
         static OrderEntity() { Null = new NullOrder(); }
 
@@ -140,6 +145,6 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get { return double.NaN; } }
         public double Margin => double.NaN;
         public double Profit => double.NaN;
-        public OrderExecOptions Options => OrderExecOptions.None;
+        public OrderOptions Options => OrderOptions.None;
     }
 }

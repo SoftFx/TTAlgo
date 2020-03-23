@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Protocol.Grpc
         protected override Task StartServer()
         {
             GrpcEnvironment.SetLogger(new GrpcLoggerAdapter(Logger));
-            _impl = new BotAgentServerImpl(AgentServer, _jwtProvider, Logger, Settings.ProtocolSettings.LogMessages);
+            _impl = new BotAgentServerImpl(AgentServer, _jwtProvider, Logger, Settings.ProtocolSettings.LogMessages, VersionSpec);
             var creds = new SslServerCredentials(new[] { new KeyCertificatePair(CertificateProvider.ServerCertificate, CertificateProvider.ServerKey), }); //,CertificateProvider.RootCertificate, true);
             _server = new GrpcCore.Server
             {
@@ -60,10 +60,11 @@ namespace TickTrader.Algo.Protocol.Grpc
         private ILogger _logger;
         private MessageFormatter _messageFormatter;
         private Dictionary<string, ServerSession.Handler> _sessions;
+        private VersionSpec _version;
 
-
-        public BotAgentServerImpl(IBotAgentServer botAgent, IJwtProvider jwtProvider, ILogger logger, bool logMessages)
+        public BotAgentServerImpl(IBotAgentServer botAgent, IJwtProvider jwtProvider, ILogger logger, bool logMessages, VersionSpec version)
         {
+            _version = version;
             _botAgent = botAgent;
             _jwtProvider = jwtProvider;
             _logger = logger;
@@ -761,7 +762,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
             try
             {
-                res.Bots.AddRange(_botAgent.GetBotList().Select(ToGrpc.Convert));
+                res.Bots.AddRange(_botAgent.GetBotList().Select(u => ToGrpc.Convert(u, _version)));
             }
             catch (Exception ex)
             {
@@ -1480,7 +1481,7 @@ namespace TickTrader.Algo.Protocol.Grpc
 
         private void OnBotUpdate(UpdateInfo<BotModelInfo> update)
         {
-            SendUpdate(update.Convert());
+            SendUpdate(update.Convert(_version));
         }
 
         private void OnBotStateUpdate(BotModelInfo bot)

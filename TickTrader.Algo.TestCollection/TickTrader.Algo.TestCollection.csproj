@@ -45,12 +45,13 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TickTrader.Algo.Api, Version=1.1.4.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
+    <Reference Include="TickTrader.Algo.Api, Version=1.1.5.0, Culture=neutral, PublicKeyToken=90b5c26c2d37a2da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\TickTrader.Algo.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auto.Tests\CommentModel.cs" />
     <Compile Include="Auto.Tests\CompositeTradeApiTest.cs" />
     <Compile Include="Auto.Tests\OrderVerifier.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Bots\BufferPrintBot.cs" />
     <Compile Include="Bots\LifecycleTradeBot.cs" />
     <Compile Include="Bots\FeedQueryBot.cs" />
+    <Compile Include="Bots\MainTokenTestBot.cs" />
     <Compile Include="Bots\ModifyLoopBot.cs" />
     <Compile Include="Bots\EventBot.cs" />
     <Compile Include="Bots\NestedPrintIndicatorBot.cs" />

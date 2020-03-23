@@ -86,7 +86,7 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume => _entity.LastFillVolume / _lotSize ?? double.NaN;
         public double Margin => CalculateMargin();
         public double Profit => CalculateProfit();
-        public OrderExecOptions Options => _entity.Options;
+        public OrderOptions Options => _entity.Options;
         public decimal CashMargin { get; set; }
 
         public bool IsPending => Type == OrderType.Limit || Type == OrderType.StopLimit || Type == OrderType.Stop;
@@ -146,7 +146,7 @@ namespace TickTrader.Algo.Core
 
         internal bool HasOption(OrderExecOptions option)
         {
-            return Entity.Options.HasFlag(option);
+            return Entity.Options.HasFlag(option.ToExec());
         }
 
         #region Emulation

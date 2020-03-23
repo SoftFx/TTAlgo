@@ -40,6 +40,6 @@ namespace TickTrader.Algo.Core
         public double LastFillVolume { get; set; }
         public double Margin { get; set; }
         public double Profit { get; set; }
-        public OrderExecOptions Options { get; set; }
+        public OrderOptions Options { get; set; }
     }
 }

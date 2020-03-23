@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Core;
@@ -11,6 +12,7 @@ namespace TickTrader.Algo.Common.Model
     {
         private string clientOrderId;
         private OrderType orderType;
+        private OrderType initOrderType;
         private decimal amount;
         private decimal amountRemaining;
         public OrderSide side;
@@ -34,10 +36,13 @@ namespace TickTrader.Algo.Common.Model
         private SymbolModel symbolModel;
         private BL.OrderError error;
         private double? execPrice;
+        private double? reqOpenPrice;
         private double? execAmount;
         private double? lastFillPrice;
         private double? lastFillAmount;
         private DateTime? modified;
+        private string orderExecutionOptionsStr;
+        private string parentOrderId;
 
         public OrderModel(OrderEntity record, IOrderDependenciesResolver resolver)
         {
@@ -160,6 +165,9 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
         }
+
+        public decimal? MaxVisibleVolumeToLots => maxVisibleVolume.HasValue ? maxVisibleVolume / (decimal)LotSize : null;
+
         public decimal? StopPrice
         {
             get { return stopPrice; }
@@ -266,6 +274,18 @@ namespace TickTrader.Algo.Common.Model
                 {
                     instanceId = value;
                     NotifyOfPropertyChange(nameof(InstanceId));
+                }
+            }
+        }
+        public string ParentOrderId
+        {
+            get { return parentOrderId; }
+            private set
+            {
+                if (parentOrderId != value)
+                {
+                    parentOrderId = value;
+                    NotifyOfPropertyChange(nameof(ParentOrderId));
                 }
             }
         }
@@ -404,10 +424,51 @@ namespace TickTrader.Algo.Common.Model
         }
 
         public double? LastFillAmountLots { get; private set; }
+
+        public string OrderExecutionOptionsStr
+        {
+            get => orderExecutionOptionsStr;
+            set
+            {
+                if (orderExecutionOptionsStr == value)
+                    return;
+
+                orderExecutionOptionsStr = value;
+
+                NotifyOfPropertyChange(nameof(OrderExecutionOptionsStr));
+            }
+        }
+
+        public OrderType InitOrderType
+        {
+            get { return initOrderType; }
+            set
+            {
+                if (initOrderType != value)
+                {
+                    this.initOrderType = value;
+                    NotifyOfPropertyChange(nameof(InitOrderType));
+                }
+            }
+        }
+
+        public double? ReqOpenPrice
+        {
+            get => reqOpenPrice;
+            set
+            {
+                if (reqOpenPrice != value)
+                {
+                    this.reqOpenPrice = value;
+                    NotifyOfPropertyChange(nameof(ReqOpenPrice));
+                }
+            }
+        }
+
         public string MarginCurrency => symbolModel?.BaseCurrency?.Name;
         public string ProfitCurrency => symbolModel?.QuoteCurrency?.Name;
 
-        public OrderExecOptions ExecOptions { get; private set; }
+        public OrderOptions ExecOptions { get; private set; }
 
         #endregion
 
@@ -428,13 +489,13 @@ namespace TickTrader.Algo.Common.Model
         public BL.OrderCalculator Calculator { get; set; }
         bool BL.IOrderModel.IsCalculated { get { return CalculationError == null; } }
         decimal? BL.IOrderModel.MarginRateCurrent { get; set; }
-        
+
 
         BO.OrderTypes BL.ICommonOrder.Type
         {
             get => TickTraderToAlgo.Convert(orderType);
             set => throw new NotImplementedException();
-           
+
         }
 
         BO.OrderSides BL.ICommonOrder.Side
@@ -467,19 +528,21 @@ namespace TickTrader.Algo.Common.Model
                 StopPrice = (double?)StopPrice,
                 StopLoss = stopLoss,
                 TakeProfit = takeProfit,
-                Comment = this.Comment,
-                UserTag = this.Tag,
-                InstanceId = this.InstanceId,
-                Created = this.Created,
-                Modified = this.Modified,
+                Comment = Comment,
+                UserTag = Tag,
+                InstanceId = InstanceId,
+                Created = Created,
+                Modified = Modified,
                 ExecPrice = ExecPrice,
                 ExecVolume = ExecAmount,
                 LastFillPrice = LastFillPrice,
                 LastFillVolume = LastFillAmount,
-                Swap = (Swap ?? 0),
-                Commission = (Commission ?? 0),
+                Swap = Swap ?? 0,
+                Commission = Commission ?? 0,
                 Expiration = Expiration,
-                Options = ExecOptions
+                Options = ExecOptions,
+                ReqOpenPrice = ReqOpenPrice,
+                ParentOrderId = ParentOrderId,
             };
         }
 
@@ -488,9 +551,10 @@ namespace TickTrader.Algo.Common.Model
             this.Amount = record.RequestedVolume;
             this.RemainingAmount = record.RemainingVolume;
             this.OrderType = record.Type;
+            this.InitOrderType = record.InitialType;
             this.Side = record.Side;
-            this.MaxVisibleVolume = (decimal?)record.MaxVisibleVolume;
-            this.Price = (decimal?)(record.Type == OrderType.Stop ? record.StopPrice : record.Price);
+            this.MaxVisibleVolume = record.MaxVisibleVolume;
+            this.Price = (decimal?)(record.Type == OrderType.Stop || record.Type == OrderType.StopLimit ? record.StopPrice : record.Price);
             this.LimitPrice = (decimal?)(record.Type == OrderType.StopLimit || record.Type == OrderType.Limit ? record.Price : null);
             this.StopPrice = (decimal?)record.StopPrice;
             this.Created = record.Created;
@@ -503,6 +567,9 @@ namespace TickTrader.Algo.Common.Model
             this.Swap = (decimal?)record.Swap;
             this.Commission = (decimal?)record.Commission;
             this.ExecOptions = record.Options;
+            this.OrderExecutionOptionsStr = record.Options.ToFullString();
+            this.ReqOpenPrice = record.ReqOpenPrice;
+            this.ParentOrderId = record.ParentOrderId;
             //if (record.ImmediateOrCancel)
             //{
             //    this.RemainingAmount = (decimal)(record.InitialVolume - record.Volume);
@@ -520,9 +587,10 @@ namespace TickTrader.Algo.Common.Model
             this.Amount = report.InitialVolume.ToDecimalSafe() ?? 0M;
             this.RemainingAmount = report.LeavesVolume.ToDecimalSafe() ?? 0M;
             this.OrderType = report.OrderType;
+            this.InitOrderType = report.InitialOrderType;
             this.Side = report.OrderSide;
             this.MaxVisibleVolume = report.MaxVisibleVolume.ToDecimalSafe();
-            this.Price = (report.OrderType == OrderType.Stop ? report.StopPrice : report.Price).ToDecimalSafe();
+            this.Price = (report.OrderType == OrderType.Stop || report.OrderType == OrderType.StopLimit ? report.StopPrice : report.Price).ToDecimalSafe();
             this.LimitPrice = (report.OrderType == OrderType.StopLimit || report.OrderType == OrderType.Limit ? report.Price : null).ToDecimalSafe();
             this.StopPrice = report.StopPrice.ToDecimalSafe();
             this.Created = report.Created;
@@ -538,9 +606,12 @@ namespace TickTrader.Algo.Common.Model
             this.ExecAmount = report.ExecutedVolume.AsNullable();
             this.LastFillPrice = report.TradePrice;
             this.LastFillAmount = report.TradeAmount;
+            this.OrderExecutionOptionsStr = GetOrderExecOptions(report);
+            this.ReqOpenPrice = report.ReqOpenPrice;
+            this.ParentOrderId = report.ParentOrderId;
 
             if (report.ImmediateOrCancel)
-                ExecOptions = OrderExecOptions.ImmediateOrCancel;
+                ExecOptions = OrderOptions.ImmediateOrCancel;
 
             EssentialParametersChanged?.Invoke(this);
         }
@@ -569,6 +640,22 @@ namespace TickTrader.Algo.Common.Model
         private TradeVolume ToVolume(double? volume, double? volumeLots)
         {
             return new TradeVolume(volume ?? double.NaN, volumeLots ?? double.NaN);
+        }
+
+        private string GetOrderExecOptions(ExecutionReport report)
+        {
+            var op = new List<OrderOptions>();
+
+            if (report.ImmediateOrCancel)
+                op.Add(OrderOptions.ImmediateOrCancel);
+
+            if (report.MarketWithSlippage)
+                op.Add(OrderOptions.MarketWithSlippage);
+
+            if (report.MaxVisibleVolume >= 0)
+                op.Add(OrderOptions.HiddenIceberg);
+
+            return string.Join(",", op);
         }
     }
 

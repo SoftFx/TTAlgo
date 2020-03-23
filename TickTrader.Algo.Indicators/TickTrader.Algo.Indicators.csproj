@@ -51,7 +51,8 @@
     <Compile Include="ATCFMethod\FATLSignal\FATLSignal.cs" />
     <Compile Include="ATCFMethod\FTLMSTLM\FTLMSTLM.cs" />
     <Compile Include="ATCFMethod\PerfectCommodityChannelIndex\PerfectCommodityChannelIndex.cs" />
-    <Compile Include="ATCFMethod\RangeBoundChannelIndex\RangeBoundChannelIndex.cs" />
+    <Compile Include="ATCFMethod\RangeBoundChannelIndex\RangeBoundChannelIndexAvg.cs" />
+    <Compile Include="ATCFMethod\RangeBoundChannelIndex\RangeBoundChannelIndexBBands.cs" />
     <Compile Include="ATCFMethod\ReferenceFastTrendLine\ReferenceFastTrendLine.cs" />
     <Compile Include="ATCFMethod\ReferenceSlowTrendLine\ReferenceSlowTrendLine.cs" />
     <Compile Include="ATCFMethod\SlowAdaptiveTrendLine\SlowAdaptiveTrendLine.cs" />

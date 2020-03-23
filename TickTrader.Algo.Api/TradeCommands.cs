@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TickTrader.Algo.Api
@@ -30,6 +31,15 @@ namespace TickTrader.Algo.Api
         ImmediateOrCancel   = 1,
     }
 
+    [Flags]
+    public enum OrderOptions
+    {
+        None = 0,
+        ImmediateOrCancel = 1,
+        MarketWithSlippage = 2,
+        HiddenIceberg = 4,
+    }
+
     public enum OrderCmdResultCodes
     {
         Ok                  = 0,
@@ -37,6 +47,7 @@ namespace TickTrader.Algo.Api
         InternalError       = 5,
         ConnectionError     = 6,
         Timeout             = 7,
+        TradeServerError    = 8,
         DealerReject        = 100,
         Unsupported         = 101,
         SymbolNotFound      = 102,
@@ -59,5 +70,47 @@ namespace TickTrader.Algo.Api
         CloseOnlyTrading = 119,
         MarketWithMaxVisibleVolume = 120,
         InvalidAmountChange = 121,
+        CannotBeModified = 122,
+        MaxVisibleVolumeNotSupported = 123,
+    }
+
+    public static class OrderOptionExtension
+    {
+        public static OrderExecOptions ToExec(this OrderOptions options)
+        {
+            switch (options)
+            {
+                case OrderOptions.ImmediateOrCancel:
+                    return OrderExecOptions.ImmediateOrCancel;
+
+                default:
+                    return OrderExecOptions.None;
+            }
+        }
+
+        public static OrderOptions ToExec(this OrderExecOptions options)
+        {
+            switch (options)
+            {
+                case OrderExecOptions.ImmediateOrCancel:
+                    return OrderOptions.ImmediateOrCancel;
+
+                default:
+                    return OrderOptions.None;
+            }
+        }
+
+        public static string ToFullString(this OrderOptions options)
+        {
+            var op = new System.Collections.Generic.List<OrderOptions>();
+
+            foreach (var e in Enum.GetValues(typeof(OrderOptions)).Cast<OrderOptions>())
+            {
+                if (e != OrderOptions.None && options.HasFlag(e))
+                    op.Add(e);
+            }
+
+            return string.Join(",", op);
+        }
     }
 }

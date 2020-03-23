@@ -77,21 +77,10 @@
                         <Control Template="{StaticResource PluginSelection}" />
                     </GroupBox>
 
-                    <ContentControl cal:View.Model="{Binding Setup}" />
-
-                    <GroupBox Name="AutoRunGroup" Margin="4" Visibility="Collapsed">
-                        <Grid Margin="3">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Start bot" />
-                            <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-                        </Grid>
+                    <GroupBox Header="General" Margin="4">
+                        <Control DataContext="{Binding Setup}" Template="{StaticResource GeneralSettings}"/>
                     </GroupBox>
+                    <ContentControl cal:View.Model="{Binding Setup}" />
                 </StackPanel>
             </ScrollViewer>
 
@@ -109,17 +98,6 @@
                         Grid.Column="1"/>
             </Grid>
         </Grid>
-        <ControlTemplate.Triggers>
-            <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding Type}" Value="Robot"/>
-                    <Condition Binding="{Binding IsEditMode}" Value="False"/>
-                </MultiDataTrigger.Conditions>
-                <MultiDataTrigger.Setters>
-                    <Setter TargetName="AutoRunGroup" Property="Visibility" Value="Visible"/>
-                </MultiDataTrigger.Setters>
-            </MultiDataTrigger>
-        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <!-- Common Style -->

@@ -430,7 +430,7 @@ namespace TickTrader.Algo.Core
                 {
                     case OrderType.Market:
                         order.Type = OrderType.Limit;
-                        order.Options |= OrderExecOptions.ImmediateOrCancel;
+                        order.Options |= OrderOptions.ImmediateOrCancel;
                         break;
                     case OrderType.Stop:
                         order.Type = OrderType.StopLimit;

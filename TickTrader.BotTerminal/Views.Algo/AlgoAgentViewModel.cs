@@ -2,11 +2,13 @@
 using Machinarium.Qnil;
 using NLog;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Common.Model.Setup;
+using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Metadata;
 using TickTrader.Algo.Core.Repository;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -19,7 +21,6 @@ namespace TickTrader.BotTerminal
 
         private IAlgoAgent _agentModel;
         private AlgoEnvironment _algoEnv;
-
 
         public IAlgoAgent Model => _agentModel;
 
@@ -96,10 +97,18 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false)
+        public async Task RemoveBot(string botId, bool cleanLog = false, bool cleanAlgoData = false, bool showDialog = true)
         {
             try
             {
+                if (showDialog)
+                {
+                    var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("bot"), DialogMessages.GetRemoveMessage("bot"));
+
+                    if (result != DialogResult.OK)
+                        return;
+                }
+
                 await _agentModel.RemoveBot(botId, cleanLog, cleanAlgoData);
                 _algoEnv.Shell.DockManagerService.RemoveView(ContentIdProvider.Generate(Name, botId));
             }
@@ -113,6 +122,11 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Warning, DialogMessages.GetRemoveTitle("account"), DialogMessages.GetRemoveMessage("account"), DialogMessages.RemoveBotSourceWarning);
+
+                if (result != DialogResult.OK)
+                    return;
+
                 await _agentModel.RemoveAccount(account);
             }
             catch (Exception ex)
@@ -137,6 +151,22 @@ namespace TickTrader.BotTerminal
         {
             try
             {
+                var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Warning, DialogMessages.GetRemoveTitle("package"), DialogMessages.GetRemoveMessage("package"), DialogMessages.RemoveBotSourceWarning);
+
+                if (result != DialogResult.OK)
+                    return;
+
+                var bots = Bots.Where(u => u.Plugin.IsFromPackage(package)).AsObservable();
+
+                if (bots.Any(u => u.IsRunning))
+                {
+                    _algoEnv.Shell.ShowDialog(DialogButton.OK, DialogMode.Error, DialogMessages.FailedTitle, DialogMessages.RemovePackageError);
+                    return;
+                }
+
+                foreach (var id in bots.Select(u => u.InstanceId).ToList())
+                    RemoveBot(id, showDialog: false).Forget();
+
                 await _agentModel.RemovePackage(package);
             }
             catch (Exception ex)
@@ -146,11 +176,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account)
+        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, Name);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)
@@ -215,7 +245,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey);
+                var model = new UploadPackageViewModel(_algoEnv, packageKey, Name);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)

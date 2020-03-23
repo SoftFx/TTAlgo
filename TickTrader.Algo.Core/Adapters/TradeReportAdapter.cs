@@ -52,6 +52,7 @@ namespace TickTrader.Algo.Core
             entity.Symbol = symbol.Name;
             entity.ActionType = repType;
             entity.Id = key.ToString();
+            entity.IsEmulatedEntity = true;
             return new TradeReportAdapter(entity, symbol);
         }
 

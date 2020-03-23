@@ -11,7 +11,8 @@ namespace TickTrader.Algo.Core
 {
     internal class PluginLoggerAdapter : IPluginMonitor, IAlertAPI
     {
-        private static NumberFormatInfo DefaultPriceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+        private static readonly NumberFormatInfo DefaultPriceFormat = FormatExtentions.CreateTradeFormatInfo(5);
+        private static readonly string DefaultVolumeFormat = $"0.{new string('#', 15)}";
 
         private IPluginLogger logger;
 
@@ -189,15 +190,17 @@ namespace TickTrader.Algo.Core
 
         public void LogOrderClosing(CloseOrderRequest request)
         {
-            PrintTrade($"[Out] Closing order #{request.OrderId}");
+            var postfix = (request.Volume.HasValue && request.Volume != 0) ? $", volume={request.Volume}" : "";
+            PrintTrade($"[Out] Closing order #{request.OrderId}{postfix}");
         }
 
         public void LogOrderCloseResults(CloseOrderRequest request, OrderResultEntity result)
         {
             var suffix = result.IsServerResponse ? "[In]" : "[Self]";
+            var postfix = result.ResultingOrder.RemainingVolume != 0 ? $", remaining volume={result.ResultingOrder.RemainingVolume}" : "";
             if (result.IsCompleted)
             {
-                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed");
+                PrintTradeSuccess($"{suffix} SUCCESS: Order #{request.OrderId} closed{postfix}");
             }
             else
             {
@@ -269,6 +272,11 @@ namespace TickTrader.Algo.Core
             string action = amount > 0 ? "Deposit" : "Withdrawal";
 
             Logger.OnPrintTrade(action + " " + amount.ToString("N", currency.Format) + " " + currency.Name);
+        }
+
+        public void NotifyDividend(double amount, string currency, NumberFormatInfo format)
+        {
+            Logger.OnPrintTrade($"Dividend {amount.ToString("N", format)} {currency}");
         }
 
         public void NotifyOrderFill(OrderAccessor order)
@@ -369,7 +377,7 @@ namespace TickTrader.Algo.Core
 
             logEntry.Append(type)
                 .Append(suffix).Append(side)
-                .Append(" ").AppendNumber(volumeLots);
+                .Append(" ").AppendNumber(volumeLots, DefaultVolumeFormat);
             if (smbInfo != null)
                 logEntry.Append(" ").Append(smbInfo.Name);
 

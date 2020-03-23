@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
             var algoBot = o as AlgoPluginViewModel;
             if (algoBot != null)
             {
-                Agent.OpenBotSetup(null, algoBot.Info.Key);
+                Agent.OpenBotSetup(null, algoBot.PluginInfo.Key);
             }
             var algoPackage = o as AlgoPackageViewModel;
             if (algoPackage != null)
@@ -84,8 +84,12 @@ namespace TickTrader.BotTerminal
 
         public void RemoveBotAgent()
         {
-            _algoEnv.BotAgentManager.Remove(Agent.Name);
+            var result = _algoEnv.Shell.ShowDialog(DialogButton.YesNo, DialogMode.Question, DialogMessages.GetRemoveTitle("agent"), DialogMessages.GetRemoveMessage("agent"));
 
+            if (result != DialogResult.OK)
+                return;
+
+            _algoEnv.BotAgentManager.Remove(Agent.Name);
         }
 
         public void ConnectBotAgent()

@@ -14,6 +14,7 @@ using TickTrader.Algo.Api;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using System.Threading;
+using System.Collections.Specialized;
 
 namespace TickTrader.BotTerminal
 {
@@ -21,7 +22,6 @@ namespace TickTrader.BotTerminal
     {
         private static readonly Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private bool _runBot;
         private AlgoEnvironment _algoEnv;
         private AlgoAgentViewModel _selectedAgent;
         private AlgoAccountViewModel _selectedAccount;
@@ -89,7 +89,15 @@ namespace TickTrader.BotTerminal
                     return;
 
                 _selectedPlugin = value;
+
+                if (Mode == PluginSetupMode.Edit && _selectedPlugin == null)
+                {
+                    TryClose();
+                    return;
+                }
+
                 NotifyOfPropertyChange(nameof(SelectedPlugin));
+                NotifyOfPropertyChange(nameof(CanOk));
                 UpdateSetup();
             }
         }
@@ -100,21 +108,8 @@ namespace TickTrader.BotTerminal
 
         public bool PluginIsStopped => Bot == null ? true : PluginStateHelper.IsStopped(Bot.State);
 
-        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest
+        public bool CanOk => (Setup?.IsValid ?? false) && PluginIsStopped && !_hasPendingRequest && SelectedPlugin != null
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddBot() : SelectedAgent.Model.AccessManager.CanChangeBotConfig());
-
-        public bool RunBot
-        {
-            get { return _runBot; }
-            set
-            {
-                if (_runBot == value)
-                    return;
-
-                _runBot = value;
-                NotifyOfPropertyChange(nameof(RunBot));
-            }
-        }
 
         public AlgoTypes Type { get; }
 
@@ -179,19 +174,16 @@ namespace TickTrader.BotTerminal
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName) ?? (Agents.Any() ? Agents.First() : null);
             SelectedAccount = Accounts.FirstOrDefault(a => a.Key.Equals(accountKey)) ?? (Accounts.Any() ? Accounts.First() : null);
             SelectedPlugin = Plugins.FirstOrDefault(i => i.Key.Equals(pluginKey)) ?? (Plugins.Any() ? Plugins.First() : null);
-
             PluginType = GetPluginTypeDisplayName(Type);
 
             ShowFileProgress = false;
             FileProgress = new ProgressViewModel();
-
-            RunBot = true;
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, AccountKey accountKey, PluginKey pluginKey, AlgoTypes type, SetupContextInfo setupContext)
             : this(algoEnv, agentName, accountKey, pluginKey, type, setupContext, PluginSetupMode.New)
         {
-            DisplayName = $"Setting New {PluginType}";
+            DisplayName = Type == AlgoTypes.Robot ? $"New Bot Instance" : $"Setting New {PluginType}";
         }
 
         public AgentPluginSetupViewModel(AlgoEnvironment algoEnv, string agentName, ITradeBot bot)
@@ -200,8 +192,12 @@ namespace TickTrader.BotTerminal
             Bot = bot;
             UpdateSetup();
 
-            DisplayName = $"Settings - {bot.InstanceId}";
+            DisplayName = $"{bot.InstanceId} Bot Instance";
         }
+
+        public void AddNewAccount() => SelectedAgent.OpenAccountSetup(null, this);
+
+        public void UploadNewPlugin() => SelectedAgent.OpenUploadPackageDialog();
 
         public void Reset()
         {
@@ -222,7 +218,7 @@ namespace TickTrader.BotTerminal
                     else await SelectedAgent.Model.ChangeBotConfig(config.InstanceId, config);
                     await UploadBotFiles(config);
                     SelectedAgent.OpenBotState(config.InstanceId);
-                    if (RunBot)
+                    if (Setup.RunBot)
                         await SelectedAgent.Model.StartBot(config.InstanceId);
                 }
                 else
@@ -384,13 +380,16 @@ namespace TickTrader.BotTerminal
 
                 if (Setup != null)
                     Setup.ValidityChanged -= Validate;
-                Setup = new PluginConfigViewModel(SelectedPlugin.Info, metadata, SelectedAgent.Model.IdProvider, Mode);
+                Setup = new PluginConfigViewModel(SelectedPlugin.PluginInfo, metadata, SelectedAgent.Model.IdProvider, Mode);
                 Init();
                 if (Bot != null)
                     Setup.Load(Bot.Config);
 
                 NotifyOfPropertyChange(nameof(Setup));
             }
+            else
+                if (Setup != null)
+                Setup.Visible = false;
         }
 
         private async Task UploadBotFiles(PluginConfig config)

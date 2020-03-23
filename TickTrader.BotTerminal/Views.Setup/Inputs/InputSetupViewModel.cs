@@ -43,7 +43,7 @@ namespace TickTrader.BotTerminal
             SetMetadata(descriptor);
         }
 
-        public InputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata)
+        public InputSetupViewModel(InputDescriptor descriptor, SetupMetadata setupMetadata, SymbolKey _mainSymbol = null)
             : this(descriptor, setupMetadata.DefaultSymbol)
         {
             SetupMetadata = setupMetadata;
@@ -54,7 +54,7 @@ namespace TickTrader.BotTerminal
 
         public override void Reset()
         {
-            SelectedSymbol = AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
+            SelectedSymbol = AvailableSymbols.ContainMainToken() ? AvailableSymbols.First() : AvailableSymbols.GetSymbolOrAny(_defaultSymbol);
         }
 
 

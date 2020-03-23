@@ -92,6 +92,9 @@
     <Reference Include="Caliburn.Micro.Platform.Core, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.1.0\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FontAwesome.WPF, Version=4.7.0.37774, Culture=neutral, PublicKeyToken=0758b07a11a4f466, processorArchitecture=MSIL">
+      <HintPath>..\packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.3.4\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -212,6 +215,7 @@
     <Compile Include="Behaviors\BindingsManager.cs" />
     <Compile Include="Behaviors\CancellableSelectionBehavior.cs" />
     <Compile Include="Behaviors\DataGridColumnHide.cs" />
+    <Compile Include="Behaviors\DataGridHelper.cs" />
     <Compile Include="Behaviors\DragDrop\DragBehavior.cs" />
     <Compile Include="Behaviors\DragDrop\DragSource.cs" />
     <Compile Include="Behaviors\DragDrop\DropBehavior.cs" />
@@ -222,6 +226,7 @@
     <Compile Include="Behaviors\DragDrop\TransparentContainer.xaml.cs">
       <DependentUpon>TransparentContainer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Behaviors\InputBindingTrigger.cs" />
     <Compile Include="Behaviors\OpenFileDialogBehavior.cs" />
     <Compile Include="Behaviors\SaveFileDialogBeahvior.cs" />
     <Compile Include="Behaviors\CopyTextBehavior.cs" />
@@ -276,6 +281,7 @@
       <DependentUpon>PathBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\PopupButton.cs" />
+    <Compile Include="Controls\SelectableTextBlock.cs" />
     <Compile Include="Controls\ShadowPortal.cs" />
     <Compile Include="Controls\SplitterPanel.cs" />
     <Compile Include="Controls\TabControl.cs" />
@@ -404,8 +410,8 @@
     <Compile Include="Model\ModelExtentions.cs" />
     <Compile Include="Model\NotificationCenter.cs" />
     <Compile Include="Model\NumberFormat.cs" />
-    <Compile Include="Model\NumberGenerator.cs" />
     <Compile Include="Model\PathHelper.cs" />
+    <Compile Include="Views\SearchItemViewModel.cs" />
     <Compile Include="Model\SymbolCatalog.cs" />
     <Compile Include="Model\SymbolData.cs" />
     <Compile Include="Model.Algo\TradeBotModel.cs" />
@@ -603,8 +609,8 @@
     <Compile Include="Views\BotJournalViewModel.cs" />
     <Compile Include="Views.FeedStorage\SymbolManagerViewModel.cs" />
     <Compile Include="Views\JournalViewModel.cs" />
-    <Compile Include="Views\ExitDialogView.xaml.cs">
-      <DependentUpon>ExitDialogView.xaml</DependentUpon>
+    <Compile Include="Views\ConfirmationDialogView.xaml.cs">
+      <DependentUpon>ConfirmationDialogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views.TradeInfo\TradeInfoView.xaml.cs">
       <DependentUpon>TradeInfoView.xaml</DependentUpon>
@@ -640,7 +646,7 @@
     <Compile Include="Views\SymbolView.xaml.cs">
       <DependentUpon>SymbolView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ExitDialogViewModel.cs" />
+    <Compile Include="Views\ConfirmationDialogViewModel.cs" />
     <Compile Include="Views\SymbolViewModel.cs" />
     <Compile Include="Views.TradeInfo\TradeInfoViewModel.cs" />
   </ItemGroup>
@@ -1223,7 +1229,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ExitDialogView.xaml">
+    <Page Include="Views\ConfirmationDialogView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
