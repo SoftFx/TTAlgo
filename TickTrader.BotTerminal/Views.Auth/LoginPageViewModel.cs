@@ -76,12 +76,15 @@ namespace TickTrader.BotTerminal
             {
                 server = value;
                 NotifyOfPropertyChange(nameof(Server));
+                NotifyOfPropertyChange(nameof(Accounts));
+
+                SelectedAccount = Accounts.FirstOrDefault();
                 ValidateState();
             }
         }
 
         public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
-        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.OrderBy(u => long.Parse(u.Login));
+        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Name == Server).OrderBy(u => long.Parse(u.Login));
 
         public bool SavePassword
         {
@@ -166,7 +169,8 @@ namespace TickTrader.BotTerminal
             set
             {
                 if (value != null)
-                    ApplyAccount(value);
+                    ApplyAccount(value, false);
+
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             }
         }
@@ -211,12 +215,14 @@ namespace TickTrader.BotTerminal
         //        Password = null;
         //}
 
-        private void ApplyAccount(AccountAuthEntry acc)
+        private void ApplyAccount(AccountAuthEntry acc, bool applyServer = true)
         {
             Login = acc.Login;
             Password = acc.Password;
-            Server = acc.Server.Name;
             SavePassword = acc.Password != null;
+
+            if (applyServer)
+                server = acc.Server.Name;
         }
 
         private string ResolveServerAddress()
