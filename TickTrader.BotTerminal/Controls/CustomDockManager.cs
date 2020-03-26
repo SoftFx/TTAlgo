@@ -227,7 +227,9 @@ namespace TickTrader.BotTerminal
                 }
                 else
                 {
-                    view.Hide(); //necessary to display the window in the foreground
+                    if (view.CanHide)
+                        view.Hide(); //necessary to display the window in the foreground
+
                     view.Show();
                 }
             }
