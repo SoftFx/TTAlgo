@@ -185,14 +185,14 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void SaveNewServer(string name)
+        public void SaveNewServer(string adress)
         {
-            if (Servers.Any(u => u.Name == name))
+            if (Servers.Any(u => u.Address == adress))
                 return;
 
             Configuration config = AuthConfigSection.GetConfig();
             var section = AuthConfigSection.GetCfgSection(config);
-            Servers.Add(new ServerAuthEntry(section.Servers.AddElement(name)));
+            Servers.Add(new ServerAuthEntry(section.Servers.AddElement(adress)));
             config.Save(ConfigurationSaveMode.Modified);
         }
 
