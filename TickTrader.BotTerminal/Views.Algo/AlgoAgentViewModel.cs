@@ -176,11 +176,11 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null)
+        public void OpenAccountSetup(AccountModelInfo account, AgentPluginSetupViewModel selectedPlugin = null, bool allowedChangeAgentKey = true)
         {
             try
             {
-                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin);
+                var model = new BAAccountDialogViewModel(_algoEnv, account, Name, selectedPlugin, allowedChangeAgentKey);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AccountSetupWindow", model);
             }
             catch (Exception ex)
@@ -228,11 +228,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog()
+        public void OpenUploadPackageDialog(bool allowedChangeAgentKey = true)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, Name);
+                var model = new UploadPackageViewModel(_algoEnv, Name, allowedChangeAgentKey);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)

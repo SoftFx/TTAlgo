@@ -42,7 +42,7 @@
         <Label Grid.Row="1" Content="Bot Agent"/>
         <ComboBox Grid.Row="2" DisplayMemberPath="Name"
                   ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
-                  IsEnabled="{Binding CanChangeAccountKey}"/>
+                  IsEnabled="{Binding CanChangeAgentKey}"/>
         <Label Grid.Row="3" Content="Server"/>
         <!--<TextBox Grid.Row="8" Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}" 
                  IsEnabled="{Binding CanChangeAccountKey}"/>-->

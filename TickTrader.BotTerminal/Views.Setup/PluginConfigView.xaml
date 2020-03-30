@@ -354,7 +354,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="90"/>
@@ -365,18 +364,33 @@
             <Label Grid.Row="0" Grid.Column="0" Content="Instance Id" Foreground="{DynamicResource Shell_PrimaryForeground}" />
             <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Name="InstanceIdTxt"
                      Text="{Binding InstanceId, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
-            <Label Grid.Row="2" Grid.Column="0" Content="Isolate bot" />
-            <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
-            <Label Grid.Row="2" Grid.Column="2" Content="AllowTrade" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
-            <CheckBox Grid.Row="2" Grid.Column="3" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
 
-            <Grid Grid.Row="4" Grid.ColumnSpan="4" Name="AutoRunGroup" Visibility="Collapsed">
+            <Grid Grid.Row="2" Grid.ColumnSpan="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="110"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Start bot" />
-                <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+
+                <Label Grid.Column="0" Content="Isolate bot" />
+                <CheckBox Grid.Column="1" IsChecked="{Binding Isolated}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                <Label Grid.Column="2" Content="AllowTrade" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
+                <CheckBox Grid.Column="3" IsChecked="{Binding AllowTrade}" Foreground="{DynamicResource Shell_PrimaryForeground}" Visibility="{Binding IsBot, Converter={StaticResource BoolToVis}}"/>
+
+                <Grid Grid.Row="2" Grid.ColumnSpan="4" Name="AutoRunGroup" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Content="Start immediately"/>
+                    <CheckBox Grid.Column="1" IsChecked="{Binding RunBot}" Foreground="{DynamicResource Shell_PrimaryForeground}" />
+                </Grid>
             </Grid>
         </Grid>
         <ControlTemplate.Triggers>

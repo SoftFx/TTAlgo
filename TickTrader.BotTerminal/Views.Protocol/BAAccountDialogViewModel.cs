@@ -101,9 +101,13 @@ namespace TickTrader.BotTerminal
             }
         }
 
+        public bool AllowedChangeAgentKey { get; }
+
         public bool IsNewMode { get; }
 
-        public bool CanChangeAccountKey => IsNewMode && IsEditable;
+        public bool CanChangeAgentKey => AllowedChangeAgentKey && CanChangeAccountKey;
+
+        public bool CanChangeAccountKey =>  IsNewMode && IsEditable;
 
         public bool CanOk => _isValid && IsEditable 
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddAccount() : SelectedAgent.Model.AccessManager.CanChangeAccount());
@@ -181,13 +185,14 @@ namespace TickTrader.BotTerminal
         }
 
 
-        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName, AgentPluginSetupViewModel plugin = null)
+        public BAAccountDialogViewModel(AlgoEnvironment algoEnv, AccountModelInfo account, string agentName, AgentPluginSetupViewModel plugin = null, bool allowedChangeAgentKey = true)
         {
             _algoEnv = algoEnv;
             _account = account;
             _selectedPlugin = plugin;
 
             IsEditable = true;
+            AllowedChangeAgentKey = allowedChangeAgentKey;
 
             Agents = _algoEnv.BotAgents.Select(b => b.Agent).AsObservable();
             SelectedAgent = Agents.FirstOrDefault(a => a.Name == agentName);

@@ -119,6 +119,7 @@ namespace TickTrader.BotTerminal
                 _hasPendingRequest = value;
                 NotifyOfPropertyChange(nameof(HasPendingRequest));
                 NotifyOfPropertyChange(nameof(IsEnabled));
+                NotifyOfPropertyChange(nameof(IsEnabledBotAgentName));
                 NotifyOfPropertyChange(nameof(CanOk));
             }
         }
@@ -152,6 +153,10 @@ namespace TickTrader.BotTerminal
 
         public bool CanOk => !_hasPendingRequest && _isValid;
 
+        public bool AllowedChangeAgentKey { get; }
+
+        public bool IsEnabledBotAgentName => AllowedChangeAgentKey && IsEnabled;
+
         public bool IsEnabled => !_hasPendingRequest;
 
         public bool HasError => !string.IsNullOrEmpty(_error);
@@ -163,11 +168,12 @@ namespace TickTrader.BotTerminal
         public ProgressViewModel UploadProgress { get; }
 
 
-        private UploadPackageViewModel(AlgoEnvironment algoEnv)
+        private UploadPackageViewModel(AlgoEnvironment algoEnv, bool allowedChageAgentKey)
         {
             _algoEnv = algoEnv;
 
             DisplayName = "Upload package";
+            AllowedChangeAgentKey = allowedChageAgentKey;
 
             Packages = _algoEnv.LocalAgentVM.Packages.Where(u => u.Location == RepositoryLocation.LocalRepository ||
                                                             u.Location == RepositoryLocation.CommonRepository).
@@ -179,13 +185,13 @@ namespace TickTrader.BotTerminal
             InitAlgoAgent(algoEnv.LocalAgentVM);
         }
 
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName) : this(algoEnv)
+        public UploadPackageViewModel(AlgoEnvironment algoEnv, string agentName, bool allowedChageAgentKey = true) : this(algoEnv, allowedChageAgentKey)
         {
             UpdateFilePaths(Packages.First() ?? null);
             SelectedBotAgent = BotAgents.FirstOrDefault(a => a.Name == agentName);
         }
 
-        public UploadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName) : this(algoEnv)
+        public UploadPackageViewModel(AlgoEnvironment algoEnv, PackageKey packageKey, string agentName, bool allowedChageAgentKey = true) : this(algoEnv, allowedChageAgentKey)
         {
             UpdateFilePaths(_algoEnv.LocalAgentVM.Packages.AsObservable().FirstOrDefault(p => agentName == LocalAlgoAgent.LocalAgentName ? p.Key.Equals(packageKey) : p.Key.Name == packageKey.Name)?.Identity ?? null);
             SelectedBotAgent = BotAgents.FirstOrDefault(a => agentName == LocalAlgoAgent.LocalAgentName ? true : a.Name == agentName);

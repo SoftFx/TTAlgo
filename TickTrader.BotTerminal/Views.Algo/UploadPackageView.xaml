@@ -51,7 +51,7 @@
                     </l:FlatButton>
                 </Grid>
                 <Label Grid.Row="3" Content="Bot Agent"/>
-                <ComboBox Grid.Row="4" IsEnabled="{Binding IsEnabled}"
+                <ComboBox Grid.Row="4" IsEnabled="{Binding IsEnabledBotAgentName}"
                       ItemsSource="{Binding BotAgents}"
                       DisplayMemberPath="Name"
                       SelectedItem="{Binding SelectedBotAgent}" />

@@ -198,11 +198,11 @@ namespace TickTrader.BotTerminal
             Error = null;
             try
             {
-                string address = ResolveServerAddress();
-                Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
+                string address = ResolveServerAddress().Trim();
+                Error = await cManager.Connect(login.Trim(), password, address, savePassword, CancellationToken.None);
                 if (Error.Code == ConnectionErrorCodes.None)
                 {
-                    cManager.SaveNewServer(Server);
+                    cManager.SaveNewServer(address);
                     Done();
                 }
             }
