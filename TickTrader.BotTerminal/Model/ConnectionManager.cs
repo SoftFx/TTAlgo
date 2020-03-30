@@ -205,6 +205,8 @@ namespace TickTrader.BotTerminal
 
             foreach (var acc in authStorage.Accounts.Values)
                 Accounts.Add(CreateEntry(acc));
+
+            Accounts.Select(u => u.Server.Address).Distinct().Except(Servers.Select(u => u.Address)).Foreach(u => SaveNewServer(u)); //add cached servers
         }
 
         private void SaveLogin(AccountAuthEntry entry)
