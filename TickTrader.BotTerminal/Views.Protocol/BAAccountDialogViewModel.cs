@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using Machinarium.Qnil;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using TickTrader.Algo.Common.Info;
@@ -81,6 +82,7 @@ namespace TickTrader.BotTerminal
 
                 _server = value;
                 NotifyOfPropertyChange(nameof(Server));
+                NotifyOfPropertyChange(nameof(Accounts));
                 ValidateState();
             }
         }
@@ -167,7 +169,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public ObservableCollection<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts;
+        public IEnumerable<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == Server);
 
         public AccountAuthEntry SelectedAccount
         {
