@@ -408,16 +408,16 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
-                        if (Type != AccountTypes.Gross)
-                        {
-                            if (report.ImmediateOrCancel)
-                                return OnIocFilled(report);
+                        if (report.ImmediateOrCancel)
+                            return OnIocFilled(report);
 
-                            if (report.LeavesVolume != 0)
-                                return OnOrderUpdated(report, OrderExecAction.Filled);
+                        if (report.LeavesVolume != 0)
+                            return OnOrderUpdated(report, OrderExecAction.Filled);
 
+                        if (Type == AccountTypes.Gross)
+                            return OnOrderUpdated(report, OrderExecAction.Filled);
+                        else
                             return OnOrderRemoved(report, OrderExecAction.Filled);
-                        }
                     }
                     else if (report.OrderType == OrderType.Position)
                     {
@@ -487,7 +487,19 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
-            return JoinWithPosition(new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated));
+            var orderUpdate = JoinWithPosition(new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated));
+
+            if (report.ExecutionType == ExecutionType.Calculated)
+            {
+                var waitingUpdate = DequeueWatingUpdate();
+                if (waitingUpdate != null)
+                {
+                    waitingUpdate.Add(orderUpdate);
+                    return waitingUpdate;
+                }
+            }
+
+            return orderUpdate;
         }
 
         private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
@@ -600,9 +612,9 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 _netPositionUpdate?.Apply(cache);
-                _grossPositionUpdate?.Apply(cache);
                 cache.Account.UpdateOrder(_execAction, _entityAction, _report, _netPositionUpdate?.Postion);
                 cache.Account.UpdateBalance(_report);
+                _grossPositionUpdate?.Apply(cache);
             }
         }
 

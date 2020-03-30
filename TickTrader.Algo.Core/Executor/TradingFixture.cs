@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
-            var instantOrder = orderType == OrderType.Market || (orderType == OrderType.Limit && eReport.OrderCopy.ImmediateOrCancel);
+            var instantOrder = orderType == OrderType.Market;// || (orderType == OrderType.Limit && eReport.OrderCopy.ImmediateOrCancel);
 
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
@@ -231,17 +231,10 @@ namespace TickTrader.Algo.Core
                 var isOwnOrder = CallListener(eReport);
                 if (!isOwnOrder && !IsInvisible(clone))
                     context.Logger.NotifyOrderOpened(clone);
-                if (clone.Type == OrderType.Position)
+                bool fillFired = eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != clone.Id && eReport.OrderCopy.RemainingVolume < eReport.OrderCopy.RequestedVolume;
+                if (clone.Type == OrderType.Position && clone.InitialType == OrderType.Market)
                 {
-                    OrderAccessor prevOrder = null;
-                    if (eReport.OrderCopy.ParentOrderId != null && eReport.OrderCopy.ParentOrderId != clone.Id)
-                    {
-                        prevOrder = orderCollection.GetOrderOrNull(eReport.OrderCopy.ParentOrderId)?.Clone();
-                    }
-                    if (prevOrder != null)
-                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(prevOrder, prevOrder)));
-                    else
-                        context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
+                    context.EnqueueEvent(b => b.Account.Orders.FireOrderFilled(new OrderFilledEventArgsImpl(clone, clone)));
                 }
                 context.EnqueueEvent(b => b.Account.Orders.FireOrderOpened(new OrderOpenedEventArgsImpl(clone)));
             }

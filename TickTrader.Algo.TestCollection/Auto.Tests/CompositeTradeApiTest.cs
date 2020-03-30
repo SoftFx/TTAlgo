@@ -60,13 +60,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                             {
                                 try
                                 {
-                                    await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.None, someTag);
-                                    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                        await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
+                                    //await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.None, someTag);
+                                    //if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                                    //    await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
 
-                                    await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
-                                    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                        await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.ImmediateOrCancel);
+                                    //await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
+                                    //if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                                    //    await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.ImmediateOrCancel);
 
                                     if (IncludeADCases)
                                     {
@@ -508,8 +508,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             var verifier = new OrderVerifier(resp.ResultingOrder.Id, Account.Type, type, side, volume, price, stopPrice, resp.TransactionTime);
 
-            bool hasPendingOrder = type == OrderType.Market || (type == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel);
-            if (!(hasPendingOrder && Account.Type == AccountTypes.Gross))
+            if (!(type == OrderType.Market && Account.Type == AccountTypes.Gross))
                 await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
             return verifier;
@@ -696,7 +695,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 throw new Exception($"Report count does not match expected number! {reports.Count} vs {verifiers.Count}");
 
             // For debug usage
-            //Print($"{string.Join("\n", reports.Zip(verifiers, (r, v) => v.OrderId + " " + v.TradeReportAction + ", " + r.OrderId + " " + r.ActionType))}");
+            Print($"{string.Join("\n", reports.Zip(verifiers, (r, v) => v.OrderId + " " + v.TradeReportAction + ", " + r.OrderId + " " + r.ActionType))}");
 
             for (int i = 0; i < reports.Count; i++)
             {
@@ -1543,13 +1542,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             OrderVerifier firstPositionVerifier = null;
             OrderVerifier secondPositionVerifier = null;
 
-            if ((type == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel) && Account.Type == AccountTypes.Gross)
-            {
-                await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
-                openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
-                firstPositionVerifier = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, side, customVolume, price, null, openArgs.Order.Created);
-            }
-
             var fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
             var fillVer = openVer.Fill(customVolume, fillArgs.NewOrder.Modified);
             if (Account.Type != AccountTypes.Gross)
@@ -1558,8 +1550,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (Account.Type == AccountTypes.Gross)
             {
                 openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
-                if (!(type == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel))
-                    firstPositionVerifier = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, side, customVolume, price, null, openArgs.Order.Created);
+                firstPositionVerifier = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, side, customVolume, price, null, openArgs.Order.Created);
             }
 
             if ((Account.Type == AccountTypes.Cash && type == OrderType.Market) || (type == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel))
@@ -1578,7 +1569,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 if (Account.Type == AccountTypes.Gross)
                 {
                     newOpenArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout, true);
-                    firstPositionVerifier = new OrderVerifier(newOpenArgs.Order.Id, Account.Type, OrderType.Position, side, customVolume, price, null, openArgs.Order.Created);
 
                     secondPositionVerifier = new OrderVerifier(newOpenArgs.Order.Id, Account.Type, OrderType.Position, side, volume - customVolume, price, null, newOpenArgs.Order.Created);
                 }
@@ -1586,7 +1576,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             if (Account.Type == AccountTypes.Gross)
             {
-                var closeResp = await CloseOrderAsync(openArgs.Order.Id);
+                var closeResp = await CloseOrderAsync(firstPositionVerifier.OrderId);
                 await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
                 ThrowIfCloseFailed(closeResp);
 
@@ -1596,7 +1586,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
                 if (!IsImmidiateFill(type, options))
                 {
-                    closeResp = await CloseOrderAsync(newOpenArgs.Order.Id);
+                    closeResp = await CloseOrderAsync(secondPositionVerifier.OrderId);
                     await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
                     ThrowIfCloseFailed(closeResp);
 
