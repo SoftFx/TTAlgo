@@ -15,13 +15,14 @@ namespace TickTrader.BotTerminal
             get { return (ServerElementCollection)this["servers"]; }
         }
 
-        public static AuthConfigSection GetCfgSection()
+        public static AuthConfigSection GetCfgSection(Configuration config = null)
         {
-            AuthConfigSection section = ConfigurationManager.GetSection("auth.config") as AuthConfigSection;
-            if (section == null)
+            if (!((config?.GetSection("auth.config") ?? ConfigurationManager.GetSection("auth.config")) is AuthConfigSection section))
                 throw new ConfigurationErrorsException("Section auth.config is not found in the application configuration file.");
             return section;
         }
+
+        public static Configuration GetConfig() => ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
     }
 
     [ConfigurationCollection(typeof(ServerElement), AddItemName = "server")]
@@ -36,6 +37,14 @@ namespace TickTrader.BotTerminal
         {
             return ((ServerElement)element).Address;
         }
+
+        public ServerElement AddElement(string name)
+        {
+            LockItem = false;
+            var newServer = new ServerElement() { Name = name, Address = name, Color = "#0075D8" };
+            BaseAdd(newServer);
+            return newServer;
+        }
     }
 
     public class ServerElement : ConfigurationElement
@@ -44,24 +53,28 @@ namespace TickTrader.BotTerminal
         public string Name
         {
             get { return (string)this["name"]; }
+            set { this["name"] = value; }
         }
 
         [ConfigurationProperty("short", IsRequired = false)]
         public string ShortName
         {
             get { return (string)this["short"]; }
+            set { this["short"] = value; }
         }
 
         [ConfigurationProperty("address", IsRequired = true)]
         public string Address
         {
             get { return (string)this["address"]; }
+            set { this["address"] = value; }
         }
 
         [ConfigurationProperty("color", IsRequired = true)]
         public string Color
         {
             get { return (string)this["color"]; }
+            set { this["color"] = value; }
         }
     }
 }

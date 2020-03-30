@@ -14,6 +14,7 @@ using TickTrader.BotTerminal.Lib;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Core.Lib;
+using System.Configuration;
 
 namespace TickTrader.BotTerminal
 {
@@ -182,6 +183,17 @@ namespace TickTrader.BotTerminal
                 else
                     LoggedOut?.Invoke();
             }
+        }
+
+        public void SaveNewServer(string name)
+        {
+            if (Servers.Any(u => u.Name == name))
+                return;
+
+            Configuration config = AuthConfigSection.GetConfig();
+            var section = AuthConfigSection.GetCfgSection(config);
+            Servers.Add(new ServerAuthEntry(section.Servers.AddElement(name)));
+            config.Save(ConfigurationSaveMode.Modified);
         }
 
         private void InitAuthData()

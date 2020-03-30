@@ -170,6 +170,11 @@ namespace TickTrader.BotTerminal
             {
                 if (value != null)
                     ApplyAccount(value, false);
+                else
+                {
+                    Login = "";
+                    Password = "";
+                }
 
                 NotifyOfPropertyChange(nameof(SelectedAccount));
             }
@@ -196,7 +201,10 @@ namespace TickTrader.BotTerminal
                 string address = ResolveServerAddress();
                 Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
                 if (Error.Code == ConnectionErrorCodes.None)
+                {
+                    cManager.SaveNewServer(Server);
                     Done();
+                }
             }
             catch (Exception ex)
             {
