@@ -109,7 +109,7 @@ namespace TickTrader.BotTerminal
 
         public bool CanChangeAgentKey => AllowedChangeAgentKey && CanChangeAccountKey;
 
-        public bool CanChangeAccountKey =>  IsNewMode && IsEditable;
+        public bool CanChangeAccountKey => IsNewMode && IsEditable;
 
         public bool CanOk => _isValid && IsEditable 
             && (IsNewMode ? SelectedAgent.Model.AccessManager.CanAddAccount() : SelectedAgent.Model.AccessManager.CanChangeAccount());
@@ -169,7 +169,7 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public IEnumerable<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == Server);
+        public IEnumerable<AccountAuthEntry> Accounts => _algoEnv.Shell.ConnectionManager.Accounts.Where(u => u.Server.Address == Server.Trim());
 
         public AccountAuthEntry SelectedAccount
         {

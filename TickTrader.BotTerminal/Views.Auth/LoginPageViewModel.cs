@@ -74,6 +74,9 @@ namespace TickTrader.BotTerminal
             get { return server; }
             set
             {
+                if (server == value)
+                    return;
+
                 server = value;
                 NotifyOfPropertyChange(nameof(Server));
                 NotifyOfPropertyChange(nameof(Accounts));
@@ -84,7 +87,7 @@ namespace TickTrader.BotTerminal
         }
 
         public ObservableCollection<ServerAuthEntry> Servers { get { return cManager.Servers; } }
-        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Name == Server).OrderBy(u => long.Parse(u.Login));
+        public IEnumerable<AccountAuthEntry> Accounts => cManager.Accounts.Where(u => u.Server.Address == ResolveServerAddress()).OrderBy(u => long.Parse(u.Login));
 
         public bool SavePassword
         {
@@ -198,8 +201,8 @@ namespace TickTrader.BotTerminal
             Error = null;
             try
             {
-                string address = ResolveServerAddress().Trim();
-                Error = await cManager.Connect(login.Trim(), password, address, savePassword, CancellationToken.None);
+                string address = ResolveServerAddress();
+                Error = await cManager.Connect(login, password, address, savePassword, CancellationToken.None);
                 if (Error.Code == ConnectionErrorCodes.None)
                 {
                     cManager.SaveNewServer(address);
@@ -213,15 +216,6 @@ namespace TickTrader.BotTerminal
             }
             IsConnecting = false;
         }
-
-        //private void RefreshAccount()
-        //{
-        //    var acc =  Accounts.FirstOrDefault(a => a.Login == login);
-        //    if (acc != null)
-        //        ApplyAccount(acc);
-        //    else
-        //        Password = null;
-        //}
 
         private void ApplyAccount(AccountAuthEntry acc, bool applyServer = true)
         {

@@ -31,4 +31,5 @@
     <l:MessageTypeToBrushConverter x:Key="MsgTypeToBrush"/>
     <l:PascalCaseSplitConverter x:Key="PascalSplitString"/>
     <l:TextLengthComparisonConverter x:Key="TextLengthComparison"/>
+    <l:BackTrimStringConverter x:Key="TrimValue"/>
 </ResourceDictionary>
