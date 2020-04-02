@@ -57,7 +57,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderVerifier Fill(DateTime execTime)
         {
-            if (AccType == AccountTypes.Gross)
+            if (AccType == AccountTypes.Gross && InitialType == OrderType.Market)
                 return Clone(OrderType.Position, ReqVolume, TradeExecActions.OrderFilled, execTime);
             else
                 return Clone(CurrentType, 0, TradeExecActions.OrderFilled, execTime);
@@ -107,7 +107,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderFilledEventArgs args)
         {
             AssertEquals(OrderId, args.NewOrder.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match!");
+            AssertEquals(CurrentType, args.NewOrder.Type, $"CurrentType does not match! {CurrentType} vs {args.NewOrder.Type}");
             AssertEquals(Side, args.NewOrder.Side, $"Side does not match!");
             AssertEqualsDouble(ReqVolume, args.NewOrder.RequestedVolume, $"ReqVolume does not match!");
             AssertEqualsDouble(RemVolume, args.NewOrder.RemainingVolume, $"RemVolume does not match!");
@@ -116,7 +116,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderActivatedEventArgs args)
         {
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match! {CurrentType} vs {args.Order.Type}");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
             AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
             AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderClosedEventArgs args)
         {
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match! {CurrentType} vs {args.Order.Type}");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
             AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
             AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
@@ -134,7 +134,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderCanceledEventArgs args)
         {
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match! {CurrentType} vs {args.Order.Type}");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
             AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
             AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
@@ -143,7 +143,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public void VerifyEvent(OrderExpiredEventArgs args)
         {
             AssertEquals(OrderId, args.Order.Id, $"OrderId does not match!");
-            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match!");
+            AssertEquals(CurrentType, args.Order.Type, $"CurrentType does not match! {CurrentType} vs {args.Order.Type}");
             AssertEquals(Side, args.Order.Side, $"Side does not match!");
             AssertEqualsDouble(ReqVolume, args.Order.RequestedVolume, $"ReqVolume does not match!");
             AssertEqualsDouble(RemVolume, args.Order.RemainingVolume, $"RemVolume does not match!");
@@ -155,7 +155,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public void VerifyTradeReport(TradeReport report)
         {
-            AssertEquals(OrderId, report.OrderId, $"OrderId does not match! {OrderId} vs {report.OrderId}, Action - {report.ActionType}");
+            if (CurrentType == OrderType.Position)
+                AssertEquals(OrderId, report.PositionId, $"PositionId does not match! {OrderId} vs {report.PositionId}, Action - {report.ActionType}");
+            else
+                AssertEquals(OrderId, report.OrderId, $"OrderId does not match! {OrderId} vs {report.OrderId}, Action - {report.ActionType}");
             AssertEquals(TradeReportAction, report.ActionType, $"ActionType does not match! {TradeReportAction} vs {report.ActionType}, Id = {OrderId}, Action - {report.ActionType}");
             AssertEqualsDouble(ReqVolume, report.OpenQuantity, $"OpenQuantity does not match! {ReqVolume} vs {report.OpenQuantity}, Id = {OrderId}, Action - {report.ActionType}");
             AssertEqualsDouble(RemVolume, report.RemainingQuantity, $"RemainingQuantity does not match! {RemVolume} vs {report.RemainingQuantity}, Id = {OrderId}, Action - {report.ActionType}");

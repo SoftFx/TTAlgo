@@ -114,7 +114,7 @@ namespace TickTrader.Algo.Core
         {
             var accProxy = context.Builder.Account;
             var orderType = eReport.OrderCopy.Type;
-            var instantOrder = orderType == OrderType.Market;// || (orderType == OrderType.Limit && eReport.OrderCopy.ImmediateOrCancel);
+            var instantOrder = orderType == OrderType.Market;;
 
             if (instantOrder && accProxy.Type == AccountTypes.Gross) // workaround for Gross accounts
             {
