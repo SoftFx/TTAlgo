@@ -22,6 +22,8 @@ namespace TickTrader.Algo.Core
 
         public string ReportId => Entity.Id;
         public string OrderId => Entity.OrderId;
+        public string PositionId => Entity.PositionId;
+        public string PositionById => Entity.PositionById;
         public DateTime ReportTime => Entity.ReportTime;
         public DateTime OpenTime => Entity.OpenTime;
         public TradeRecordTypes Type => Entity.Type;

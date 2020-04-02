@@ -10,6 +10,8 @@ namespace TickTrader.Algo.Api
     {
         string ReportId { get; }
         string OrderId { get; }
+        string PositionId { get; }
+        string PositionById { get; }
         DateTime ReportTime { get; }
         DateTime OpenTime { get; }
         TradeRecordTypes Type { get; }
