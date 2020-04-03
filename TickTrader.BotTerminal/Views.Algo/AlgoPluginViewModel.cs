@@ -72,11 +72,13 @@ namespace TickTrader.BotTerminal
 
                 PackageDisplayName = packageInfo.Identity.FileName;
                 PackagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
-                DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}{Environment.NewLine}Last modified: {packageInfo.Identity.LastModifiedUtc}";
+                DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}";
             }
 
             PackageNameWithoutExtension = GetPathWithoutExtension(PackageDisplayName);
-            Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageDisplayName} at {PackagePath}").Trim();
+            Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, 
+                string.Empty, $"Package {PackageDisplayName} at {PackagePath}",
+                $"Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)").Trim();
 
             CurrentGroup = (GroupType)Type;
 
