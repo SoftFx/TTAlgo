@@ -7,81 +7,96 @@
     <ControlTemplate x:Key="UploadPackageView.Classic">
         <Border Background="{TemplateBinding Background}">
             <Grid Margin="5">
-                <Grid.Resources>
-                    <Style TargetType="TextBox">
-                        <Style.Setters>
-                            <Setter Property="Height" Value="22"/>
-                            <Setter Property="Padding" Value="2"/>
-                        </Style.Setters>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding HasFileError}" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource Dialog_ErrorBackground}"/>
-                                <Setter Property="ToolTip" Value="{Binding Error}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="50" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="15"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
-                <Label Grid.Row="1" Content="Package"/>
-                <Grid Grid.Row="2">
+
+                <Label Grid.Row="0" Content="{Binding DisplayName}" 
+                       FontSize="26"
+                       VerticalAlignment="Center" 
+                       Style="{DynamicResource DialogPageTitleLabelStyle}"/>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Bot Agent:"/>
+                    <Label Grid.Column="1" Content="{Binding SelectedBotAgent.Name}"/>
+                </Grid>
+
+                <Label Grid.Row="2" Content="Package" VerticalAlignment="Bottom"/>
+                <Grid Grid.Row="3" IsEnabled="{Binding IsEnabled}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ComboBox Text="{Binding FileNameSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=300}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Shell_PrimaryForeground}" IsEnabled="{Binding IsEnabled}" ItemsSource="{Binding PackageNames}" ToolTip="{Binding FilePath}"/>
-                    <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0" IsEnabled="{Binding IsEnabled}">
+
+                    <ComboBox Text="{Binding FileNameSource}" 
+                              HorizontalAlignment="Stretch" 
+                              Margin="5 0 0 0"
+                              Foreground="{DynamicResource Shell_PrimaryForeground}" 
+                              ItemsSource="{Binding Packages}" 
+                              DisplayMemberPath="FileName"  
+                              ToolTip="{Binding FilePathSource}"/>
+
+                    <l:FlatButton Grid.Column="1" 
+                                  Content="..." 
+                                  Style="{DynamicResource ParamUtilityButtonStyle}" 
+                                  Padding="3 0 3 0">
                         <i:Interaction.Behaviors>
-                            <l:OpenFileDialogBehavior FilePath="{Binding FilePath}" FileName="{Binding FileNameSource}"/>
+                            <l:OpenFileDialogBehavior FilePath="{Binding FilePathSource}" FileName="{Binding FileNameSource}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>
-                <Label Grid.Row="3" Content="Bot Agent"/>
-                <ComboBox Grid.Row="4" IsEnabled="{Binding IsEnabledBotAgentName}"
-                      ItemsSource="{Binding BotAgents}"
-                      DisplayMemberPath="Name"
-                      SelectedItem="{Binding SelectedBotAgent}" />
-                <Label Grid.Row="5" Content="File Name"/>
 
-                <TextBox Grid.Row="6" IsEnabled="{Binding IsEnabled}"
-                     Text="{Binding FileName, UpdateSourceTrigger=PropertyChanged}" />
+                <Grid Grid.Row="4" Margin="0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
 
-                <CheckBox Grid.Row="8" Margin="0,0,0,4" IsEnabled="{Binding IsEnabled}"
-                  Content="Overwrite file" IsChecked="{Binding OverwriteFile}" />
+                    <Label Content="File Name:"/>
+                    <Label Grid.Column="1" Content="{Binding FileName}" />
+                </Grid>
 
-                <TextBlock Grid.Row="9" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                   Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                   Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
-                <ContentControl Grid.Row="10" cal:View.Model="{Binding UploadProgress}" Visibility="{Binding HasPendingRequest, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Grid.Row="6"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Bottom"
+                           Text="{Binding Error}"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource Shell_WarningForeground}"
+                           Margin="10 5"
+                           Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
 
-                <Grid Grid.Row="11">
+                <ContentControl Grid.Row="7"
+                                cal:View.Model="{Binding UploadProgress}"
+                                Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVisInv}}"/>
+
+                <Grid Grid.Row="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <l:FlatButton Grid.Column="0" Margin="8,8,4,8"
-                      cal:Message.Attach="Ok" Content="Ok"
-                      Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
-                      IsEnabled="{Binding CanOk}"/>
-                    <l:FlatButton Grid.Column="1" Margin="4,8,8,8"
-                      cal:Message.Attach="Cancel" Content="Cancel" 
-                      Background="{DynamicResource Dialog_ButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+                    <l:FlatButton Grid.Column="0" Margin="8 0"
+                                  cal:Message.Attach="Ok" Content="Ok"
+                                  Background="{DynamicResource Dialog_OkButtonBackground}"
+                                  HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
+                                  IsEnabled="{Binding IsEnabled}"/>
+                    <l:FlatButton Grid.Column="1" Margin="8 0"
+                                  cal:Message.Attach="Cancel" Content="Cancel" 
+                                  Background="{DynamicResource Dialog_ButtonBackground}"
+                                  HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
                 </Grid>
             </Grid>
         </Border>
@@ -103,12 +118,13 @@
         <Setter Property="Width" Value="380"/>
         <Setter Property="ResizeMode" Value="NoResize"/>
         <Style.Resources>
-            <Style TargetType="CheckBox">
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="Padding" Value="0"/>
-            </Style>
             <Style TargetType="ComboBox">
                 <Setter Property="Height" Value="22"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="13"/>
             </Style>
         </Style.Resources>
     </Style>

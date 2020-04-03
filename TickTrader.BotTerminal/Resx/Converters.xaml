@@ -3,6 +3,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <l:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    <l:BooleanToVisibilityConverter x:Key="BoolToVisInv" Invert="True"/>
     <l:BooleanToVisibilityConverter x:Key="LeastOneBoolToVisible" ConversionMode="LeastOne"/>
     <l:NullToVisibilityConverter x:Key="NullOrEmptyToVis"/>
     <l:NullToBoolConverter x:Key="NullOrEmptyToBool"/>

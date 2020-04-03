@@ -228,37 +228,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenUploadPackageDialog(bool allowedChangeAgentKey = true)
+        public void OpenUploadPackageDialog(PackageKey package = null, string agentName = null)
         {
             try
             {
-                var model = new UploadPackageViewModel(_algoEnv, Name, allowedChangeAgentKey);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to open upload package dialog");
-            }
-        }
-
-        public void OpenUploadPackageDialog(PackageKey packageKey)
-        {
-            try
-            {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey, Name);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to open upload package dialog");
-            }
-        }
-
-        public void OpenUploadPackageDialog(PackageKey packageKey, string agentName)
-        {
-            try
-            {
-                var model = new UploadPackageViewModel(_algoEnv, packageKey, agentName);
+                var model = new UploadPackageViewModel(_algoEnv, agentName ?? Name, package);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoUploadPackageWindow", model);
             }
             catch (Exception ex)

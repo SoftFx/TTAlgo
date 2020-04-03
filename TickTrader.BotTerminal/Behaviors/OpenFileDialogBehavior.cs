@@ -35,7 +35,7 @@ namespace TickTrader.BotTerminal
         public static readonly DependencyProperty FilterProperty = DependencyProperty.Register("Filter", typeof(string), typeof(OpenFileDialogBehavior),
             new FrameworkPropertyMetadata()
             {
-                DefaultValue = PackageWatcher.GetPackageExtensionsString(),
+                DefaultValue = PackageWatcher.GetPackageExtensions,
             });
 
         public OpenFileDialogBehavior()
