@@ -72,7 +72,7 @@ namespace TickTrader.BotTerminal
 
                 PackageDisplayName = packageInfo.Identity.FileName;
                 PackagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
-                DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}";
+                DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}{Environment.NewLine}Last modified: {packageInfo.Identity.LastModifiedUtc}";
             }
 
             PackageNameWithoutExtension = GetPathWithoutExtension(PackageDisplayName);
