@@ -107,8 +107,9 @@ namespace TickTrader.BotTerminal
             Packages = _algoEnv.LocalAgentVM.Packages.Where(u => IsDefaultFolder(u.Location)).Select(u => u.Identity).AsObservable();
 
             SelectedBotAgent = _algoEnv.BotAgents.Where(b => b.Agent.Name == agentName).AsObservable().FirstOrDefault()?.Agent;
-            UpdatePackageSource(Packages?.FirstOrDefault(u => u.FileName.ToLowerInvariant() == package?.Name.ToLowerInvariant()));
+            UpdatePackageSource(Packages?.FirstOrDefault(u => GetDefaultPath(u, package)));
 
+            SelectedBotAgent.Packages.Updated += UpdatePackageTarget;
             IsEnabled = true;
         }
 
@@ -118,6 +119,9 @@ namespace TickTrader.BotTerminal
 
             try
             {
+                if (FileNameSource == null)
+                    throw new Exception("Please select a package.");
+
                 UploadProgress.SetMessage($"Uploading package {FileName} to {SelectedBotAgent.Name}");
 
                 var fileSize = Packages.FirstOrDefault(u => u.FileName == FileNameSource).Size;
@@ -127,15 +131,15 @@ namespace TickTrader.BotTerminal
 
                 TryClose();
             }
-            catch (ConnectionFailedException)
+            catch (ConnectionFailedException ex)
             {
                 Error = $"Error connecting to agent: {SelectedBotAgent.Name}";
-                _logger.Error(Error);
+                _logger.Error(ex, Error);
             }
             catch (Exception ex)
             {
-                Error = ex.Message;
-                _logger.Error(ex, "Failed to upload package");
+                Error = $"{ex.Message} Failed to upload package";
+                _logger.Error(ex, Error);
             }
 
             IsEnabled = true;
@@ -146,6 +150,7 @@ namespace TickTrader.BotTerminal
         protected override void OnDeactivate(bool close)
         {
             DeinitWatcher();
+            SelectedBotAgent.Packages.Updated -= UpdatePackageTarget;
 
             base.OnDeactivate(close);
         }
@@ -156,8 +161,13 @@ namespace TickTrader.BotTerminal
             FileNameSource = identity?.FileName ?? Packages.FirstOrDefault()?.FileName;
         }
 
+        private void UpdatePackageTarget(ListUpdateArgs<AlgoPackageViewModel> args) => NotifyOfPropertyChange(nameof(FileName));
+
         private string GenerateFileName(string name) //File name generation as in Windows (a.ttalgo, a - Copy.ttalgo, a - Copy (2).ttalgo)
         {
+            if (name == null)
+                return null;
+
             var ext = Path.GetExtension(name);
             name = Path.GetFileNameWithoutExtension(name);
             var step = 0;
@@ -177,6 +187,8 @@ namespace TickTrader.BotTerminal
         private bool CheckName(string name) => SelectedBotAgent.PackageList.Any(p => p.Identity.FileName == name);
 
         private bool IsDefaultFolder(RepositoryLocation path) => path == RepositoryLocation.LocalRepository || path == RepositoryLocation.CommonRepository;
+
+        private bool GetDefaultPath(PackageIdentity identity, PackageKey key) => key != null ? identity.FileName.ToLowerInvariant() == key.Name.ToLowerInvariant() : true;
 
         private void InitWatcher()
         {
@@ -210,8 +222,7 @@ namespace TickTrader.BotTerminal
 
             UploadPackages();
 
-            if (Packages.Any(u => u.FileName == selectedFile))
-                FileNameSource = selectedFile;
+            FileNameSource = Packages.Any(u => u.FileName == selectedFile) ? selectedFile : Packages.FirstOrDefault()?.FileName;
         }
 
         private void UploadPackages()
