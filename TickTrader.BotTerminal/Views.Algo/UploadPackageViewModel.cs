@@ -227,7 +227,7 @@ namespace TickTrader.BotTerminal
         {
             try
             {
-                Packages = Directory.GetFiles(FilePathSource, FileNameTemplate).Select(u => PackageIdentity.Create(new FileInfo(u)));
+                Packages = Directory.GetFiles(FilePathSource, FileNameTemplate).Select(u => PackageIdentity.CreateInvalid(new FileInfo(u)));
                 NotifyOfPropertyChange(nameof(Packages));
             }
             catch (Exception ex)
