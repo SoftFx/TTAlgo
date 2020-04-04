@@ -201,7 +201,6 @@ namespace TickTrader.BotTerminal
             _watcher.Created += UploadPackagesArg;
             _watcher.Deleted += UploadPackagesArg;
             _watcher.Renamed += UploadPackagesArg;
-            _watcher.Changed += UploadPackagesArg;
         }
 
         private void DeinitWatcher()
@@ -212,7 +211,6 @@ namespace TickTrader.BotTerminal
             _watcher.Created -= UploadPackagesArg;
             _watcher.Deleted -= UploadPackagesArg;
             _watcher.Renamed -= UploadPackagesArg;
-            _watcher.Changed -= UploadPackagesArg;
             _watcher.Dispose();
         }
 
@@ -227,8 +225,15 @@ namespace TickTrader.BotTerminal
 
         private void UploadPackages()
         {
-            Packages = Directory.GetFiles(FilePathSource, FileNameTemplate).Select(u => PackageIdentity.Create(new FileInfo(u)));
-            NotifyOfPropertyChange(nameof(Packages));
+            try
+            {
+                Packages = Directory.GetFiles(FilePathSource, FileNameTemplate).Select(u => PackageIdentity.Create(new FileInfo(u)));
+                NotifyOfPropertyChange(nameof(Packages));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
         }
     }
 }
