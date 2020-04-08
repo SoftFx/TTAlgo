@@ -33,4 +33,5 @@
     <l:PascalCaseSplitConverter x:Key="PascalSplitString"/>
     <l:TextLengthComparisonConverter x:Key="TextLengthComparison"/>
     <l:BackTrimStringConverter x:Key="TrimValue"/>
+    <l:GetFileNameFromPath x:Key="GetFileName"/>
 </ResourceDictionary>

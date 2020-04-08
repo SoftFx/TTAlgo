@@ -292,6 +292,7 @@
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToGridLengthConverter.cs" />
     <Compile Include="Converters\FallbackConverter.cs" />
+    <Compile Include="Converters\GetFileNameFromPath.cs" />
     <Compile Include="Converters\LogSeverityToBrushConverter.cs" />
     <Compile Include="Converters\MessageTypeToBrushConverter.cs" />
     <Compile Include="Converters\ColorRef.cs" />

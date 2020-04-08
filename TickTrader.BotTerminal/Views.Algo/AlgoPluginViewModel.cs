@@ -16,8 +16,9 @@ namespace TickTrader.BotTerminal
         private const string UnknownPath = "Unknown path";
 
         public const string GroupLevelHeader = nameof(CurrentGroup);
-        public const string PackageLevelHeader = nameof(PackageNameWithoutExtension);
+        public const string PackageLevelHeader = nameof(FullPackagePath);
         public const string BotLevelHeader = nameof(DisplayName);
+
 
         public enum FolderType { Common, Local, Embedded }
 
@@ -37,13 +38,11 @@ namespace TickTrader.BotTerminal
 
         public string PackageDisplayName { get; }
 
-        public string PackageNameWithoutExtension { get; }
+        public string FullPackagePath { get; }
 
-        public string PackagePath { get; }
+        public string PackageDirectory { get; }
 
         public string DisplayPackagePath { get; }
-
-        public string Category => PluginInfo.Descriptor.Category;
 
         public AlgoTypes Type => PluginInfo.Descriptor.Type;
 
@@ -64,21 +63,20 @@ namespace TickTrader.BotTerminal
 
             PackageDisplayName = PluginInfo.Key.PackageName;
 
-            PackagePath = UnknownPath;
+            PackageDirectory = UnknownPath;
 
             if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
             {
                 PackageInfo = packageInfo;
 
                 PackageDisplayName = packageInfo.Identity.FileName;
-                PackagePath = Path.GetDirectoryName(packageInfo.Identity.FilePath);
-                DisplayPackagePath = $"Full path: {packageInfo.Identity.FilePath}";
-                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description,
-                    string.Empty, $"Package {PackageDisplayName} at {PackagePath}",
-                    $"Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)").Trim();
-            }
+                FullPackagePath = packageInfo.Identity.FilePath;
 
-            PackageNameWithoutExtension = GetPathWithoutExtension(PackageDisplayName);
+                PackageDirectory = Path.GetDirectoryName(FullPackagePath);
+
+                DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
+                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageDisplayName} at {PackageDirectory}").Trim();
+            }
 
             CurrentGroup = (GroupType)Type;
 
@@ -114,14 +112,12 @@ namespace TickTrader.BotTerminal
 
         public void OpenFolder()
         {
-            Process.Start(PackagePath);
+            Process.Start(PackageDirectory);
         }
 
         public void CopyPath()
         {
-            Clipboard.SetText(PackagePath);
+            Clipboard.SetText(PackageDirectory);
         }
-
-        private string GetPathWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);
     }
 }

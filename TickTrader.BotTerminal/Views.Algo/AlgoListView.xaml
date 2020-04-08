@@ -113,19 +113,12 @@
                             <Setter Property="IsExpanded" Value="False"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
-                    <TreeView.Resources>
-                        <Style TargetType="{x:Type TreeViewItem}">
-                            <Style.Setters>
-                                <Setter Property="ToolTip" Value="{Binding PackagePath}" />
-                            </Style.Setters>
-                        </Style>
-                    </TreeView.Resources>
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate ItemsSource="{Binding Items}">
                             <TextBlock Text="{Binding Name}"/>
                             <HierarchicalDataTemplate.ItemTemplate>
                                 <HierarchicalDataTemplate ItemsSource="{Binding Items}">
-                                    <TextBlock Text="{Binding Name}" ToolTip="{Binding Items[0].DisplayPackagePath}">
+                                    <TextBlock Text="{Binding Name, Converter={StaticResource GetFileName}}" ToolTip="{Binding Items[0].DisplayPackagePath}">
                                         <TextBlock.ContextMenu>
                                             <ContextMenu cal:Bind.ModelWithoutContext="{Binding Items[0]}">
                                                 <MenuItem Header="Download..." 
