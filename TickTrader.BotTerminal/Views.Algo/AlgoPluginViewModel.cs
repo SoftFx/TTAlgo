@@ -15,8 +15,9 @@ namespace TickTrader.BotTerminal
     {
         private const string UnknownPath = "Unknown path";
 
-        public const string GroupLevelHeader = nameof(CurrentGroup);
+        public const string LevelHeader = nameof(CurrentGroup);
         public const string PackageLevelHeader = nameof(FullPackagePath);
+        public const string SortPackageLevelHeader = nameof(PackageName);
         public const string BotLevelHeader = nameof(DisplayName);
 
 
@@ -36,11 +37,11 @@ namespace TickTrader.BotTerminal
 
         public string DisplayName => PluginInfo.Descriptor.UiDisplayName;
 
-        public string PackageDisplayName { get; }
-
-        public string FullPackagePath { get; }
+        public string PackageName { get; }
 
         public string PackageDirectory { get; }
+
+        public string FullPackagePath { get; }
 
         public string DisplayPackagePath { get; }
 
@@ -61,7 +62,7 @@ namespace TickTrader.BotTerminal
             PluginInfo = info;
             Agent = agent;
 
-            PackageDisplayName = PluginInfo.Key.PackageName;
+            PackageName = PluginInfo.Key.PackageName;
 
             PackageDirectory = UnknownPath;
 
@@ -69,13 +70,13 @@ namespace TickTrader.BotTerminal
             {
                 PackageInfo = packageInfo;
 
-                PackageDisplayName = packageInfo.Identity.FileName;
+                PackageName = packageInfo.Identity.FileName;
                 FullPackagePath = packageInfo.Identity.FilePath;
 
                 PackageDirectory = Path.GetDirectoryName(FullPackagePath);
 
                 DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
-                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageDisplayName} at {PackageDirectory}").Trim();
+                Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
             }
 
             CurrentGroup = (GroupType)Type;
