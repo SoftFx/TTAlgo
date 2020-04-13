@@ -241,11 +241,12 @@ namespace TickTrader.Algo.Protocol.Grpc
                 });
         }
 
-        private async void ListenToUpdates(IAsyncStreamReader<Lib.UpdateInfo> updateStream)
+        private async void ListenToUpdates(AsyncServerStreamingCall<Lib.UpdateInfo> updateCall)
         {
             _updateStreamCancelTokenSrc = new CancellationTokenSource();
             try
             {
+                var updateStream = updateCall.ResponseStream;
                 while (await updateStream.MoveNext(_updateStreamCancelTokenSrc.Token))
                 {
                     var update = updateStream.Current;
@@ -285,6 +286,10 @@ namespace TickTrader.Algo.Protocol.Grpc
             {
                 Logger.Error(ex, "Update stream failed");
                 OnConnectionError("Update stream failed");
+            }
+            finally
+            {
+                updateCall.Dispose();
             }
         }
 
@@ -359,8 +364,8 @@ namespace TickTrader.Algo.Protocol.Grpc
             }
         }
 
-        private Task<IAsyncStreamReader<TResponse>> ExecuteServerStreamingRequestAuthorized<TRequest, TResponse>(
-            Func<TRequest, CallOptions, Task<IAsyncStreamReader<TResponse>>> requestAction, TRequest request)
+        private Task<AsyncServerStreamingCall<TResponse>> ExecuteServerStreamingRequestAuthorized<TRequest, TResponse>(
+            Func<TRequest, CallOptions, Task<AsyncServerStreamingCall<TResponse>>> requestAction, TRequest request)
             where TRequest : IMessage
             where TResponse : IMessage
         {
@@ -426,9 +431,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.GetSnapshotAsync(request, options).ResponseAsync;
         }
 
-        private Task<IAsyncStreamReader<Lib.UpdateInfo>> SubscribeToUpdatesInternal(Lib.SubscribeToUpdatesRequest request, CallOptions options)
+        private Task<AsyncServerStreamingCall<Lib.UpdateInfo>> SubscribeToUpdatesInternal(Lib.SubscribeToUpdatesRequest request, CallOptions options)
         {
-            return Task.FromResult(_client.SubscribeToUpdates(request, options).ResponseStream);
+            return Task.FromResult(_client.SubscribeToUpdates(request, options));
         }
 
         private Task<Lib.ApiMetadataResponse> GetApiMetadataInternal(Lib.ApiMetadataRequest request, CallOptions options)
@@ -528,9 +533,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.RemovePackageAsync(request, options).ResponseAsync;
         }
 
-        private Task<IAsyncStreamReader<Lib.DownloadPackageResponse>> DownloadPackageInternal(Lib.DownloadPackageRequest request, CallOptions options)
+        private Task<AsyncServerStreamingCall<Lib.DownloadPackageResponse>> DownloadPackageInternal(Lib.DownloadPackageRequest request, CallOptions options)
         {
-            return Task.FromResult(_client.DownloadPackage(request, options).ResponseStream);
+            return Task.FromResult(_client.DownloadPackage(request, options));
         }
 
         private Task<Lib.BotStatusResponse> GetBotStatusInternal(Lib.BotStatusRequest request, CallOptions options)
@@ -563,9 +568,9 @@ namespace TickTrader.Algo.Protocol.Grpc
             return _client.DeleteBotFileAsync(request, options).ResponseAsync;
         }
 
-        private Task<IAsyncStreamReader<Lib.DownloadBotFileResponse>> DownloadBotFileInternal(Lib.DownloadBotFileRequest request, CallOptions options)
+        private Task<AsyncServerStreamingCall<Lib.DownloadBotFileResponse>> DownloadBotFileInternal(Lib.DownloadBotFileRequest request, CallOptions options)
         {
-            return Task.FromResult(_client.DownloadBotFile(request, options).ResponseStream);
+            return Task.FromResult(_client.DownloadBotFile(request, options));
         }
 
         private async Task<AsyncClientStreamingCall<Lib.UploadBotFileRequest, Lib.UploadBotFileResponse>> UploadBotFileInternal(Lib.UploadBotFileRequest request, CallOptions options)
@@ -749,16 +754,6 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             progressListener.Init((long)offset * chunkSize);
 
-            var fileReader = await ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal,
-                new Lib.DownloadPackageRequest
-                {
-                    Package = new Lib.PackageDetails
-                    {
-                        Key = package.Convert(),
-                        ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
-                    }
-                });
-
             var buffer = new byte[chunkSize];
             string oldDstPath = null;
             if (File.Exists(dstPath))
@@ -788,19 +783,37 @@ namespace TickTrader.Algo.Protocol.Grpc
                         stream.Write(buffer, 0, chunkSize);
                     }
                 }
-                while (await fileReader.MoveNext())
+
+                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadPackageInternal,
+                new Lib.DownloadPackageRequest
                 {
-                    var response = fileReader.Current;
-                    _messageFormatter.LogServerResponse(Logger, response);
-                    FailForNonSuccess(response.ExecResult);
-                    if (!response.Chunk.Binary.IsEmpty)
+                    Package = new Lib.PackageDetails
                     {
-                        response.Chunk.Binary.CopyTo(buffer, 0);
-                        progressListener.IncrementProgress(response.Chunk.Binary.Length);
-                        stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                        Key = package.Convert(),
+                        ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
                     }
-                    if (response.Chunk.IsFinal)
-                        break;
+                });
+                var fileReader = serverCall.ResponseStream;
+                try
+                {
+                    while (await fileReader.MoveNext())
+                    {
+                        var response = fileReader.Current;
+                        _messageFormatter.LogServerResponse(Logger, response);
+                        FailForNonSuccess(response.ExecResult);
+                        if (!response.Chunk.Binary.IsEmpty)
+                        {
+                            response.Chunk.Binary.CopyTo(buffer, 0);
+                            progressListener.IncrementProgress(response.Chunk.Binary.Length);
+                            stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                        }
+                        if (response.Chunk.IsFinal)
+                            break;
+                    }
+                }
+                finally
+                {
+                    serverCall.Dispose();
                 }
             }
         }
@@ -851,18 +864,6 @@ namespace TickTrader.Algo.Protocol.Grpc
         {
             progressListener.Init((long)offset * chunkSize);
 
-            var fileReader = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal,
-                new Lib.DownloadBotFileRequest
-                {
-                    File = new Lib.BotFileDetails
-                    {
-                        BotId = ToGrpc.Convert(botId),
-                        FolderId = folderId.Convert(),
-                        FileName = ToGrpc.Convert(fileName),
-                        ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
-                    }
-                });
-
             var buffer = new byte[chunkSize];
             string oldDstPath = null;
             if (File.Exists(dstPath))
@@ -892,19 +893,39 @@ namespace TickTrader.Algo.Protocol.Grpc
                         stream.Write(buffer, 0, chunkSize);
                     }
                 }
-                while (await fileReader.MoveNext())
+
+                var serverCall = await ExecuteServerStreamingRequestAuthorized(DownloadBotFileInternal,
+                new Lib.DownloadBotFileRequest
                 {
-                    var response = fileReader.Current;
-                    _messageFormatter.LogServerResponse(Logger, response);
-                    FailForNonSuccess(response.ExecResult);
-                    if (!response.Chunk.Binary.IsEmpty)
+                    File = new Lib.BotFileDetails
                     {
-                        response.Chunk.Binary.CopyTo(buffer, 0);
-                        progressListener.IncrementProgress(response.Chunk.Binary.Length);
-                        stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                        BotId = ToGrpc.Convert(botId),
+                        FolderId = folderId.Convert(),
+                        FileName = ToGrpc.Convert(fileName),
+                        ChunkSettings = new Lib.FileChunkSettings { Size = chunkSize, Offset = offset },
                     }
-                    if (response.Chunk.IsFinal)
-                        break;
+                });
+                var fileReader = serverCall.ResponseStream;
+                try
+                {
+                    while (await fileReader.MoveNext())
+                    {
+                        var response = fileReader.Current;
+                        _messageFormatter.LogServerResponse(Logger, response);
+                        FailForNonSuccess(response.ExecResult);
+                        if (!response.Chunk.Binary.IsEmpty)
+                        {
+                            response.Chunk.Binary.CopyTo(buffer, 0);
+                            progressListener.IncrementProgress(response.Chunk.Binary.Length);
+                            stream.Write(buffer, 0, response.Chunk.Binary.Length);
+                        }
+                        if (response.Chunk.IsFinal)
+                            break;
+                    }
+                }
+                finally
+                {
+                    serverCall.Dispose();
                 }
             }
         }
