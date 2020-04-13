@@ -61,6 +61,7 @@ namespace TickTrader.Algo.Core.Repository
                 var res2 = PackageLocation.CompareTo(other.PackageLocation);
                 if (res2 == 0)
                     return DescriptorId.CompareTo(DescriptorId);
+                return res2;
             }
             return res1;
         }

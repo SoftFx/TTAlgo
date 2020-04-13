@@ -175,36 +175,36 @@ namespace Machinarium.UnitTest
             Assert.AreEqual(2, groupByVal.Snapshot[2].Snapshot["key3"]);
         }
 
-        //   [TestMethod]
-        //   public void SortedDictionaryRemovedTest()
-        //{
-        //       var src = new VarDictionary<PluginKey, TestNode>();
+        [TestMethod]
+        public void SortedDictionaryRemovedTest()
+        {
+            var src = new VarDictionary<PluginKey, TestNode>();
 
-        //       src.Add(new PluginKey("33", RepositoryLocation.LocalRepository, "aaa"), new TestNode("aaa", "Local"));
-        //       src.Add(new PluginKey("33", RepositoryLocation.LocalRepository, "bbb"), new TestNode("bbb", "Local"));
-        //       src.Add(new PluginKey("33", RepositoryLocation.CommonRepository, "aaa"), new TestNode("aaa", "Common"));
-        //       src.Add(new PluginKey("33", RepositoryLocation.CommonRepository, "bbb"), new TestNode("bbb", "Common"));
+            src.Add(new PluginKey("33", RepositoryLocation.LocalRepository, "aaa"), new TestNode("aaa", "Local"));
+            src.Add(new PluginKey("33", RepositoryLocation.LocalRepository, "bbb"), new TestNode("bbb", "Local"));
+            src.Add(new PluginKey("33", RepositoryLocation.CommonRepository, "aaa"), new TestNode("aaa", "Common"));
+            src.Add(new PluginKey("33", RepositoryLocation.CommonRepository, "bbb"), new TestNode("bbb", "Common"));
 
-        //       var sortedSrc = src.OrderBy((k, v) => v.DisplayName).Select(u => u.DisplayName);
+            var sortedSrc = src.OrderBy((k, v) => v.DisplayName).Select(u => u.FullName);
 
-        //       src.Remove(new PluginKey("33", RepositoryLocation.LocalRepository, "aaa"));
-        //       src.Remove(new PluginKey("33", RepositoryLocation.LocalRepository, "bbb"));
+            src.Remove(new PluginKey("33", RepositoryLocation.LocalRepository, "aaa"));
+            src.Remove(new PluginKey("33", RepositoryLocation.LocalRepository, "bbb"));
 
-        //       var checkPluginList = new List<PluginKey>()
-        //       {
-        //           new PluginKey("33", RepositoryLocation.CommonRepository, "aaa"),
-        //           new PluginKey("33", RepositoryLocation.CommonRepository, "bbb"),
-        //       };
+            var checkPluginList = new List<PluginKey>()
+               {
+                   new PluginKey("33", RepositoryLocation.CommonRepository, "aaa"),
+                   new PluginKey("33", RepositoryLocation.CommonRepository, "bbb"),
+               };
 
-        //       var checkNameList = new List<string>()
-        //       {
-        //           "aaa Common",
-        //           "bbb Common",
-        //       };
+            var checkNameList = new List<string>()
+               {
+                   "aaa Common",
+                   "bbb Common",
+               };
 
-        //       AssertEqual(src.Keys.Snapshot, checkPluginList);
-        //       AssertEqual(sortedSrc.Snapshot, checkNameList);
-        //   }
+            AssertEqual(src.Keys.Snapshot, checkPluginList);
+            AssertEqual(sortedSrc.Snapshot, checkNameList);
+        }
 
         private class TestNode
         {
