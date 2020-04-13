@@ -47,7 +47,6 @@ namespace TickTrader.BotTerminal
                     FileName = FileName,
                     InitialDirectory = FilePath,
                     Filter = Filter,
-                    OverwritePrompt = false, //used in DownloadPackageViewModel
                 };
 
                 if (dialog.ShowDialog(Window.GetWindow(this)) == true)

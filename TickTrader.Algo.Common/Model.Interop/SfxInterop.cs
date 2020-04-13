@@ -904,6 +904,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.Unsupported;
                             else if (message.StartsWith("Invalid AmountChange") || message == "Cannot modify amount.")
                                 return Api.OrderCmdResultCodes.InvalidAmountChange;
+                            else if (message == "Account Is Readonly")
+                                return Api.OrderCmdResultCodes.ReadOnlyAccount;
                         }
                         break;
                     }

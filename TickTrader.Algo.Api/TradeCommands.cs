@@ -72,6 +72,7 @@ namespace TickTrader.Algo.Api
         InvalidAmountChange = 121,
         CannotBeModified = 122,
         MaxVisibleVolumeNotSupported = 123,
+        ReadOnlyAccount = 124,
     }
 
     public static class OrderOptionExtension
