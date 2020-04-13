@@ -13,55 +13,76 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+
                 <Label Grid.Row="0" Content="{Binding DisplayName}" FontSize="26" VerticalAlignment="Center" Style="{DynamicResource DialogPageTitleLabelStyle}"/>
-                <Label Grid.Row="1" Content="Bot Agent"/>
-                <ComboBox Grid.Row="2" IsEnabled="{Binding IsEnabled}"
-                      ItemsSource="{Binding BotAgents}"
-                      DisplayMemberPath="Name"
-                      SelectedItem="{Binding SelectedBotAgent}" />
-                <Label Grid.Row="3" Content="Package"/>
-                <ComboBox Grid.Row="4" IsEnabled="{Binding IsEnabled}"
-                      ItemsSource="{Binding Packages}"
-                      DisplayMemberPath="DisplayName"
-                      SelectedItem="{Binding SelectedPackage}" />
-                <Label Grid.Row="5" Content="File Name"/>
-                <Grid Grid.Row="6">
+                <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" IsEnabled="False"
-                             HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                             Text="{Binding FileName, UpdateSourceTrigger=PropertyChanged}" />
-                    <l:FlatButton Grid.Column="1" Content="..." Style="{DynamicResource ParamUtilityButtonStyle}" Padding="3,0,3,0">
+
+                    <Label Content="Bot Agent:"/>
+                    <Label Grid.Column="1" Content="{Binding SelectedBotAgent.Name}"/>
+                </Grid>
+
+                <Label Grid.Row="2" Content="Package"/>
+                <ComboBox Grid.Row="3" IsEnabled="{Binding IsEnabled}"
+                          Margin="5 0 0 0"
+                          ItemsSource="{Binding Packages}"
+                          DisplayMemberPath="FileName"
+                          Text="{Binding FileNameSource}" />
+
+                <Grid Grid.Row="4" Margin="0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Content="File Name"/>
+                    <Label Grid.Column="1"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             Content="{Binding FileNameTarget}"/>
+                    <l:FlatButton Grid.Column="2" 
+                                  Content="..." 
+                                  Style="{DynamicResource ParamUtilityButtonStyle}" 
+                                  Padding="3 0 3 0"
+                                  Height="22">
                         <i:Interaction.Behaviors>
-                            <l:SaveFileDialogBeahvior FilePath="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" Filter="{Binding FileFilter}"/>
+                            <l:SaveFileDialogBeahvior FilePath="{Binding SelectedFolder}" FileName="{Binding FileNameTarget}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>
-                <TextBlock Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                   Text="{Binding Error}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                   Foreground="{DynamicResource Shell_WarningForeground}" Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
-                <ContentControl Grid.Row="8" cal:View.Model="{Binding DownloadProgress}" Visibility="{Binding HasPendingRequest, Converter={StaticResource BoolToVis}}" />
-                <Grid Grid.Row="9">
+
+                <TextBlock Grid.Row="6" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                           Text="{Binding Error}" 
+                           TextWrapping="Wrap" 
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource Shell_WarningForeground}" 
+                           Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}"/>
+
+                <ContentControl Grid.Row="7" cal:View.Model="{Binding DownloadProgress}" Visibility="{Binding IsEnabled, Converter={StaticResource BoolToVisInv}}" />
+
+                <Grid Grid.Row="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <l:FlatButton Grid.Column="0" Margin="8,8,4,8"
-                      cal:Message.Attach="Ok" Content="Ok"
-                      Background="{DynamicResource Dialog_OkButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"/>
+                                  cal:Message.Attach="Ok" Content="Ok"
+                                  Background="{DynamicResource Dialog_OkButtonBackground}"
+                                  HighlightBackground="{DynamicResource Dialog_OkButtonHighlightBackground}"
+                                  IsEnabled="{Binding IsEnabled}"/>
                     <l:FlatButton Grid.Column="1" Margin="4,8,8,8"
-                      cal:Message.Attach="Cancel" Content="Cancel" 
-                      Background="{DynamicResource Dialog_ButtonBackground}"
-                      HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
+                                  cal:Message.Attach="Cancel" Content="Cancel" 
+                                  Background="{DynamicResource Dialog_ButtonBackground}"
+                                  HighlightBackground="{DynamicResource Dialog_ButtonHighlightBackground}"/>
                 </Grid>
             </Grid>
         </Border>
@@ -83,16 +104,17 @@
         <Setter Property="Width" Value="380"/>
         <Setter Property="ResizeMode" Value="NoResize"/>
         <Style.Resources>
-            <Style TargetType="CheckBox">
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="Padding" Value="0"/>
-            </Style>
             <Style TargetType="ComboBox">
                 <Setter Property="Height" Value="22"/>
             </Style>
             <Style TargetType="TextBox">
                 <Setter Property="Height" Value="22"/>
                 <Setter Property="Padding" Value="2"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="13"/>
             </Style>
         </Style.Resources>
     </Style>

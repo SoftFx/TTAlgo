@@ -63,8 +63,8 @@ namespace TickTrader.BotTerminal
             Agent = agent;
 
             PackageName = PluginInfo.Key.PackageName;
-
             PackageDirectory = UnknownPath;
+            CurrentGroup = (GroupType)Type;
 
             if (Agent.Model.Packages.Snapshot.TryGetValue(info.Key.GetPackageKey(), out var packageInfo))
             {
@@ -78,8 +78,6 @@ namespace TickTrader.BotTerminal
                 DisplayPackagePath = $"Full path: {FullPackagePath}{Environment.NewLine}Last modified: {PackageInfo.Identity.LastModifiedUtc} (UTC)";
                 Description = string.Join(Environment.NewLine, PluginInfo.Descriptor.Description, string.Empty, $"Package {PackageName} at {PackageDirectory}").Trim();
             }
-
-            CurrentGroup = (GroupType)Type;
 
             switch (PluginInfo.Key.PackageLocation)
             {

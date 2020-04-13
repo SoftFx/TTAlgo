@@ -47,14 +47,14 @@
                               Foreground="{DynamicResource Shell_PrimaryForeground}" 
                               ItemsSource="{Binding Packages}" 
                               DisplayMemberPath="FileName"  
-                              ToolTip="{Binding FilePathSource}"/>
+                              ToolTip="{Binding SelectedFolder}"/>
 
                     <l:FlatButton Grid.Column="1" 
                                   Content="..." 
                                   Style="{DynamicResource ParamUtilityButtonStyle}" 
                                   Padding="3 0 3 0">
                         <i:Interaction.Behaviors>
-                            <l:OpenFileDialogBehavior FilePath="{Binding FilePathSource}" FileName="{Binding FileNameSource}"/>
+                            <l:OpenFileDialogBehavior FilePath="{Binding SelectedFolder}" FileName="{Binding FileNameSource}"/>
                         </i:Interaction.Behaviors>
                     </l:FlatButton>
                 </Grid>
@@ -66,7 +66,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Content="File Name:"/>
-                    <Label Grid.Column="1" Content="{Binding FileName}" />
+                    <Label Grid.Column="1" Content="{Binding FileNameTarget}" />
                 </Grid>
 
                 <TextBlock Grid.Row="6"

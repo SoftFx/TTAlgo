@@ -241,24 +241,11 @@ namespace TickTrader.BotTerminal
             }
         }
 
-        public void OpenDownloadPackageDialog()
+        public void OpenDownloadPackageDialog(PackageKey packageKey = null)
         {
             try
             {
-                var model = new DownloadPackageViewModel(_algoEnv, Name);
-                _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to open download package dialog");
-            }
-        }
-
-        public void OpenDownloadPackageDialog(PackageKey packageKey)
-        {
-            try
-            {
-                var model = new DownloadPackageViewModel(_algoEnv, packageKey, Name);
+                var model = new DownloadPackageViewModel(_algoEnv, Name, packageKey);
                 _algoEnv.Shell.ToolWndManager.OpenMdiWindow("AlgoDownloadPackageWindow", model);
             }
             catch (Exception ex)
