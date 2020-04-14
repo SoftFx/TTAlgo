@@ -53,6 +53,8 @@ namespace TickTrader.BotTerminal
 
         public GroupType CurrentGroup { get; }
 
+        public string Category => PluginInfo.Descriptor.Category; //used in ContextMenu AddIndicator/AddBot
+
         public bool IsRemote => Agent.Model.IsRemote;
 
         public bool IsLocal => !Agent.Model.IsRemote;
