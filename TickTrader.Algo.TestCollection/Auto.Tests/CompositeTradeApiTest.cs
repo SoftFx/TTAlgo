@@ -19,7 +19,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private List<OrderSide> _orderSides;
         private List<OrderType> _orderTypes;
-        private List<string> _tags;
+        private string _tag;
         private List<bool> _asyncModes;
 
         private static readonly TimeSpan OpenEventTimeout = TimeSpan.FromSeconds(5);
@@ -30,8 +30,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private static readonly TimeSpan CancelEventTimeout = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan CloseEventTimeout = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
-        private static readonly TimeSpan PauseBetweenOpenOrders = TimeSpan.FromSeconds(1);
-        private static readonly TimeSpan PauseBetweenOrders = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan PauseBetweenOpenOrders = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan PauseBetweenOrders = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan PauseBeforeLoadingTradeReports = TimeSpan.FromSeconds(15);
 
         private double CurrentVolume;
 
@@ -52,38 +53,41 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             try
             {
                 InitOrderParams();
+                foreach (var asyncMode in _asyncModes)
+                {
+                    //foreach (var orderSide in _orderSides)
+                    //    foreach (var orderType in _orderTypes)
+                    //    {
+                    //        try
+                    //        {
+                    //            await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.None, _tag);
+                    //            if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                    //                await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, _tag);
+                    //            await PerformExecutionTests(orderType, orderSide, asyncMode, _tag, OrderExecOptions.None);
+                    //            if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                    //                await PerformExecutionTests(orderType, orderSide, asyncMode, _tag, OrderExecOptions.ImmediateOrCancel);
 
-                foreach (var orderSide in _orderSides)
-                    foreach (var orderType in _orderTypes)
-                        foreach (var asyncMode in _asyncModes)
-                            foreach (var someTag in _tags)
-                            {
-                                try
-                                {
-                                    await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.None, someTag);
-                                    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                        await PerfomAddModifyTests(orderType, orderSide, asyncMode, OrderExecOptions.ImmediateOrCancel, someTag);
+                    //            if (IncludeADCases)
+                    //            {
+                    //                await PerformCommentsTest(orderType, orderSide, asyncMode, _tag, OrderExecOptions.None);
+                    //                if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                    //                    await PerformCommentsTest(orderType, orderSide, asyncMode, _tag, OrderExecOptions.ImmediateOrCancel);
+                    //            }
+                    //        }
+                    //        catch (Exception ex)
+                    //        {
+                    //            ++_errorCount;
+                    //            PrintError(ex.Message);
+                    //        }
 
-                                    await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
-                                    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                        await PerformExecutionTests(orderType, orderSide, asyncMode, someTag, OrderExecOptions.ImmediateOrCancel);
+                    //        PrintStatus();
+                    //    }
+                    if (Account.Type == AccountTypes.Gross)
+                        await TryPerformTest(() => TestCloseBy(asyncMode, _tag));
+                }
 
-                                    if (IncludeADCases)
-                                    {
-                                        await PerformCommentsTest(orderType, orderSide, asyncMode, someTag, OrderExecOptions.None);
-                                        if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                            await PerformCommentsTest(orderType, orderSide, asyncMode, someTag, OrderExecOptions.ImmediateOrCancel);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    ++_errorCount;
-                                    PrintError(ex.Message);
-                                }
-
-                                PrintStatus();
-                            }
-
+                Print("Waiting for trade reports to load...");
+                await Delay(PauseBeforeLoadingTradeReports);
                 // History test
                 ReportsIteratorTest();
                 await DoQueryTests(false);
@@ -117,9 +121,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             _orderSides = new List<OrderSide>();
             _orderTypes = new List<OrderType>();
 
-            const string tag = "TAG";
+            _tag = "TAG";
             _asyncModes = new List<bool> { false, true };
-            _tags = new List<string> { null, tag };
 
             InitSidesAndTypes(_orderSides, _orderTypes);
         }
@@ -147,7 +150,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
                 if (!IsImmidiateFill(orderType, options))
                 {
-                    await TryPerformTest(() => TestCancel(orderType, orderSide, asyncMode, tag, options, true));
+                    await TryPerformTest(() => TestCancel(orderType, orderSide, asyncMode, tag, options));
                 }
             }
 
@@ -382,7 +385,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             _tradeRepVerifiers.Add(openVer.Close(openVer.TradeReportTimestamp));
         }
 
-        private async Task TestCancel(OrderType type, OrderSide side, bool asyncMode, string tag, OrderExecOptions options, bool testTPSLCombination = false)
+        private async Task TestCancel(OrderType type, OrderSide side, bool asyncMode, string tag, OrderExecOptions options)
         {
             await Delay(PauseBetweenOrders);
 
@@ -391,16 +394,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             var stopPrice = GetDoNotExecStopPrice(side, type);
             double? tp = null;
             double? sl = null;
-            if (testTPSLCombination)
+            if (Account.Type == AccountTypes.Gross)
             {
                 tp = GetTPPrice(side);
                 sl = GetSLPrice(side);
-                Print($"Test: TakeProfit and StopLoss combination with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
             }
-            else
-            {
-                Print($"Test: Cancel with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
-            }
+
+            Print($"Test: Cancel with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
 
             var openVer = await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options, tp: tp, sl: sl);
 
@@ -485,6 +485,115 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             _tradeRepVerifiers.Add(expVer);
         }
 
+        private async Task TestCloseBy(bool asyncMode, string tag)
+        {
+            await Delay(PauseBetweenOpenOrders);
+
+            var volume = BaseOrderVolume;
+            var doubleVolume = BaseOrderVolume * 2;
+
+            Print($"Test: {(asyncMode ? "async" : "non-async")} close by, tag = {tag}");
+
+            var openVer = await OpenAndCheck(OrderType.Market, OrderSide.Buy, volume, null, asyncMode, tag);
+
+            var fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
+            var fillTime = fillArgs.OldOrder.Modified;
+            var fillVer = openVer.Fill(fillTime);
+            fillVer.VerifyEvent(fillArgs);
+            _tradeRepVerifiers.Add(fillVer);
+
+            var openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+            var singleBuyPositionVer = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, OrderSide.Buy, volume, openArgs.Order.Price, null, openArgs.Order.Created);
+
+
+            openVer = await OpenAndCheck(OrderType.Market, OrderSide.Buy, doubleVolume, null, asyncMode, tag);
+
+            fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
+            fillTime = fillArgs.OldOrder.Modified;
+            fillVer = openVer.Fill(fillTime);
+            fillVer.VerifyEvent(fillArgs);
+            _tradeRepVerifiers.Add(fillVer);
+
+            openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+            var doubleBuyPositionVer = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, OrderSide.Buy, doubleVolume, openArgs.Order.Price, null, openArgs.Order.Created);
+
+
+            openVer = await OpenAndCheck(OrderType.Market, OrderSide.Sell, volume, null, asyncMode, tag);
+
+            fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
+            fillTime = fillArgs.OldOrder.Modified;
+            fillVer = openVer.Fill(fillTime);
+            fillVer.VerifyEvent(fillArgs);
+            _tradeRepVerifiers.Add(fillVer);
+
+            openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+            var singleSellPositionVer = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, OrderSide.Sell, volume, openArgs.Order.Price, null, openArgs.Order.Created);
+
+
+            openVer = await OpenAndCheck(OrderType.Market, OrderSide.Sell, doubleVolume, null, asyncMode, tag);
+
+            fillArgs = await WaitEvent<OrderFilledEventArgs>(FillEventTimeout);
+            fillTime = fillArgs.OldOrder.Modified;
+            fillVer = openVer.Fill(fillTime);
+            fillVer.VerifyEvent(fillArgs);
+            _tradeRepVerifiers.Add(fillVer);
+
+            openArgs = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+            var doubleSellPositionVer = new OrderVerifier(openArgs.Order.Id, Account.Type, OrderType.Position, OrderSide.Sell, doubleVolume, openArgs.Order.Price, null, openArgs.Order.Created);
+
+
+            ++_testCount;
+            Print($"Test: close small position by big position");
+            if (asyncMode)
+                await CloseOrderByAsync(singleBuyPositionVer.OrderId, doubleSellPositionVer.OrderId);
+            else
+                CloseOrderBy(singleBuyPositionVer.OrderId, doubleSellPositionVer.OrderId);
+
+            var closeArgs = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+            doubleSellPositionVer = doubleSellPositionVer.Close(volume, closeArgs.Order.Modified);
+            doubleSellPositionVer.VerifyEvent(closeArgs);
+            _tradeRepVerifiers.Add(doubleSellPositionVer);
+
+            closeArgs = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+            singleBuyPositionVer = singleBuyPositionVer.Close(closeArgs.Order.Modified);
+            singleBuyPositionVer.VerifyEvent(closeArgs);
+            _tradeRepVerifiers.Add(singleBuyPositionVer);
+
+            ++_testCount;
+            Print($"Test: close big position by small position");
+            if (asyncMode)
+                await CloseOrderByAsync(doubleBuyPositionVer.OrderId, doubleSellPositionVer.OrderId);
+            else
+                CloseOrderBy(doubleBuyPositionVer.OrderId, doubleSellPositionVer.OrderId);
+
+            closeArgs = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+            doubleBuyPositionVer = doubleBuyPositionVer.Close(volume, closeArgs.Order.Modified);
+            doubleBuyPositionVer.VerifyEvent(closeArgs);
+            _tradeRepVerifiers.Add(doubleBuyPositionVer);
+
+            closeArgs = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+            doubleSellPositionVer = doubleSellPositionVer.Close(closeArgs.Order.Modified);
+            doubleSellPositionVer.VerifyEvent(closeArgs);
+            _tradeRepVerifiers.Add(doubleSellPositionVer);
+
+            ++_testCount;
+            Print($"Test: close even positions");
+            if (asyncMode)
+                await CloseOrderByAsync(singleSellPositionVer.OrderId, doubleBuyPositionVer.OrderId);
+            else
+                CloseOrderBy(singleSellPositionVer.OrderId, doubleBuyPositionVer.OrderId);
+
+            closeArgs = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+            singleSellPositionVer = singleSellPositionVer.Close(closeArgs.Order.Modified);
+            singleSellPositionVer.VerifyEvent(closeArgs);
+            _tradeRepVerifiers.Add(singleSellPositionVer);
+
+            closeArgs = await WaitEvent<OrderClosedEventArgs>(CloseEventTimeout);
+            doubleBuyPositionVer = doubleBuyPositionVer.Close(closeArgs.Order.Modified);
+            doubleBuyPositionVer.VerifyEvent(closeArgs);
+            _tradeRepVerifiers.Add(doubleBuyPositionVer);
+        }
+
         private async Task<OrderVerifier> OpenAndCheck(OrderType type, OrderSide side, double volume, double? price, bool asyncMode, string tag, DateTime? expiration = null, double? maxVisible = null, double? stopPrice = null, double? sl = null, double? tp = null, OrderExecOptions options = OrderExecOptions.None, string comment = null)
         {
             OrderCmdResult resp;
@@ -496,7 +605,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             var verifier = new OrderVerifier(resp.ResultingOrder.Id, Account.Type, type, side, volume, price, stopPrice, resp.TransactionTime);
 
-            if (!(type == OrderType.Market && Account.Type == AccountTypes.Gross))
+            bool immediateOrder = type == OrderType.Market;
+
+            if (!(immediateOrder && Account.Type == AccountTypes.Gross))
                 await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
             return verifier;
@@ -754,12 +865,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (_eventWaiter == null)
             {
                 throw new Exception($"Unexpected event: {args.GetType().Name}");
-            }
 
-            // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
-            var waiterCopy = _eventWaiter;
-            _eventWaiter = null;
-            waiterCopy.SetResult(args);
+                // Swap with this for debug usage
+                //Print($"Unexpected event: {args.GetType().Name}");
+            }
+            else
+            {
+                // note: function may start wating for new event inside SetResult(), so _eventWaiter = null should be before SetResult()
+                var waiterCopy = _eventWaiter;
+                _eventWaiter = null;
+                waiterCopy.SetResult(args);
+            }
         }
 
         #endregion
@@ -856,7 +972,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                         throw new ApplicationException($"Verification failed - order #{orderId} has a comment: {order.Comment}");
                     break;
                 case OrderFields.Expiration:
-                    if (order.Expiration != null)
+                    if (order.Expiration != DateTime.MinValue)
                         throw new ApplicationException($"Verification failed - order #{orderId} has an expiration: {order.Expiration}");
                     break;
                 case OrderFields.MaxVisibleVolume:
@@ -1156,15 +1272,15 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
                 VerifyOrder(order.Id, order.Type, order.Side, CurrentVolume, null, false, null, null, null, null, null, null, newExpiration);
 
-                //++_testCount;
-                //Print($"{title}delete expiration {order.Side} {order.Type} order {postTitle}");
-                //var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                //if (isAsync)
-                //    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, epoch));
-                //else
-                //    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, epoch));
-                //await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
-                //VerifyFieldDeleted(order.Id, "expiration");
+                ++_testCount;
+                Print($"{title}delete expiration {order.Side} {order.Type} order {postTitle}");
+                var secondBeforeEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(-1);
+                if (isAsync)
+                    ThrowOnError(await ModifyOrderAsync(order.Id, null, null, null, null, null, null, secondBeforeEpoch));
+                else
+                    ThrowOnError(ModifyOrder(order.Id, null, null, null, null, null, null, secondBeforeEpoch));
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+                VerifyFieldDeleted(order.Id, OrderFields.Expiration);
             }
             catch (Exception ex)
             {
