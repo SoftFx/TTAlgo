@@ -370,7 +370,7 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.InitialOrderType == OrderType.Market);
+                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.OrderType == OrderType.Market);
                     if (!ignoreCalculate)
                     {
                         if (orders.ContainsKey(report.OrderId))
@@ -429,11 +429,7 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Market)
                     {
-                        if (Type == AccountTypes.Gross)
-                            return MockMarkedFilled(report);
-
-                        if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
-                            return OnMarketFilled(report, OrderExecAction.Filled);
+                        return OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
