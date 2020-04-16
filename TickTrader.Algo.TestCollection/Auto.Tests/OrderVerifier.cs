@@ -57,10 +57,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderVerifier Fill(DateTime execTime)
         {
-            if (AccType == AccountTypes.Gross && InitialType == OrderType.Market)
-                return Clone(OrderType.Position, ReqVolume, TradeExecActions.OrderFilled, execTime);
-            else
-                return Clone(CurrentType, 0, TradeExecActions.OrderFilled, execTime);
+            return Clone(CurrentType, 0, TradeExecActions.OrderFilled, execTime);
         }
 
         public OrderVerifier Fill(double volume, DateTime execTime)

@@ -32,7 +32,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private static readonly TimeSpan ExpirationEventTimeout = TimeSpan.FromSeconds(25);
         private static readonly TimeSpan PauseBetweenOpenOrders = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan PauseBetweenOrders = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan PauseBeforeAndAfterTests = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan PauseBeforeAndAfterTests = TimeSpan.FromSeconds(10);
 
         private double CurrentVolume;
 
@@ -44,6 +44,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         [Parameter]
         public bool CleanUpOrdersAfterTests { get; set; }
+
+        [Parameter(DefaultValue = 3)]
+        public int TestCaseAttempts { get; set; }
 
         [Parameter(DefaultValue = 0.1)]
         public double BaseOrderVolume { get; set; }
@@ -621,10 +624,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             var verifier = new OrderVerifier(resp.ResultingOrder.Id, Account.Type, type, side, volume, price, stopPrice, resp.TransactionTime);
 
-            bool immediateOrder = type == OrderType.Market;
-
-            if (!(immediateOrder && Account.Type == AccountTypes.Gross))
-                await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+            await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
             return verifier;
         }
@@ -648,7 +648,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (type == OrderType.Market)
                 return RoundedSymbolBid - delta;
 
-            if (type == OrderType.Limit || type == OrderType.StopLimit)
+            if (type == OrderType.Limit || type == OrderType.StopLimit || (Account.Type == AccountTypes.Cash && type == OrderType.Stop))
                 return side == OrderSide.Buy ? RoundedSymbolAsk + delta : RoundedSymbolBid - delta;
             else
                 return null;
@@ -1058,7 +1058,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             ++_testCount;
             int attemptsFailed = 0;
-            while (attemptsFailed < 3)
+            while (attemptsFailed < TestCaseAttempts)
             {
                 try
                 {
@@ -1068,7 +1068,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 catch (Exception ex)
                 {
                     ++attemptsFailed;
-                    if (attemptsFailed == 3)
+                    if (attemptsFailed == TestCaseAttempts)
                     {
                         ++_errorCount;
                         PrintError(ex.Message);
