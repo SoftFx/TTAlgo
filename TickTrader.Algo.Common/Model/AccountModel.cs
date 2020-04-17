@@ -370,7 +370,7 @@ namespace TickTrader.Algo.Common.Model
                     break;
 
                 case ExecutionType.Calculated:
-                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.InitialOrderType == OrderType.Market);
+                    bool ignoreCalculate = (accType == AccountTypes.Gross && report.OrderType == OrderType.Market);
                     if (!ignoreCalculate)
                     {
                         if (orders.ContainsKey(report.OrderId))
@@ -408,16 +408,16 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Limit || report.OrderType == OrderType.Stop)
                     {
-                        if (Type != AccountTypes.Gross)
-                        {
-                            if (report.ImmediateOrCancel)
-                                return OnIocFilled(report);
+                        if (report.ImmediateOrCancel)
+                            return OnIocFilled(report);
 
-                            if (report.LeavesVolume != 0)
-                                return OnOrderUpdated(report, OrderExecAction.Filled);
+                        if (report.LeavesVolume != 0)
+                            return OnOrderUpdated(report, OrderExecAction.Filled);
 
+                        if (Type == AccountTypes.Gross)
+                            return OnOrderUpdated(report, OrderExecAction.Filled);
+                        else
                             return OnOrderRemoved(report, OrderExecAction.Filled);
-                        }
                     }
                     else if (report.OrderType == OrderType.Position)
                     {
@@ -429,11 +429,7 @@ namespace TickTrader.Algo.Common.Model
                     }
                     else if (report.OrderType == OrderType.Market)
                     {
-                        if (Type == AccountTypes.Gross)
-                            return MockMarkedFilled(report);
-
-                        if (Type == AccountTypes.Net || Type == AccountTypes.Cash)
-                            return OnMarketFilled(report, OrderExecAction.Filled);
+                        return OnMarketFilled(report, OrderExecAction.Filled);
                     }
                     break;
             }
@@ -487,7 +483,20 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
-            return JoinWithPosition(new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated));
+            var orderUpdate = new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated);
+
+            // For gross stop/limit full fills: position opening is performed by updating old order, not adding new order
+            if (report.OrderType == OrderType.Position && report.ExecutionType == ExecutionType.Calculated)
+            {
+                var waitingUpdate = DequeueWatingUpdate();
+                if (waitingUpdate != null)
+                {
+                    waitingUpdate.Add(orderUpdate);
+                    return waitingUpdate;
+                }
+            }
+
+            return JoinWithPosition(orderUpdate);
         }
 
         private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
@@ -600,9 +609,9 @@ namespace TickTrader.Algo.Common.Model
             public void Apply(EntityCache cache)
             {
                 _netPositionUpdate?.Apply(cache);
-                _grossPositionUpdate?.Apply(cache);
                 cache.Account.UpdateOrder(_execAction, _entityAction, _report, _netPositionUpdate?.Postion);
                 cache.Account.UpdateBalance(_report);
+                _grossPositionUpdate?.Apply(cache);
             }
         }
 

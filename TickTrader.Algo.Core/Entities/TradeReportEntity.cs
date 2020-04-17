@@ -12,6 +12,8 @@ namespace TickTrader.Algo.Core
     public class TradeReportEntity
     {
         public string OrderId { get; set; }
+        public string PositionId { get; set; }
+        public string PositionById { get; set; }
         public DateTime OpenTime { get; set; }
         public TradeRecordTypes Type { get; set; }
         public TradeExecActions ActionType { get; set; }
@@ -97,8 +99,6 @@ namespace TickTrader.Algo.Core
         public double PosOpenPrice { get; set; }
         public double PosOpenReqPrice { get; set; }
         public DateTime PositionOpened { get; set; }
-        public string PositionById { get; set; }
-        public string PositionId { get; set; }
         public double? ReqCloseQuantity { get; set; }
         public double? ReqClosePrice { get; set; }
         public double? ReqOpenQuantity { get; set; }

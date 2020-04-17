@@ -522,6 +522,7 @@ namespace TickTrader.Algo.Common.Model
                 RequestedVolume = Amount,
                 MaxVisibleVolume = MaxVisibleVolume,
                 Symbol = Symbol,
+                InitialType = initOrderType,
                 Type = orderType,
                 Side = Side,
                 Price = (double?)LimitPrice ?? (double?)Price,

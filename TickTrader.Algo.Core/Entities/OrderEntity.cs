@@ -20,6 +20,7 @@ namespace TickTrader.Algo.Core
             RemainingVolume = src.RemainingVolume;
             MaxVisibleVolume = src.MaxVisibleVolume;
             Symbol = src.Symbol;
+            InitialType = src.InitialType;
             Type = src.Type;
             Side = src.Side;
             Price = src.Price;
