@@ -485,7 +485,8 @@ namespace TickTrader.Algo.Common.Model
         {
             var orderUpdate = JoinWithPosition(new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated));
 
-            if (report.ExecutionType == ExecutionType.Calculated)
+            // For gross stop/limit full fills: position opening is performed by updating old order, not adding new order
+            if (report.OrderType == OrderType.Position && report.ExecutionType == ExecutionType.Calculated)
             {
                 var waitingUpdate = DequeueWatingUpdate();
                 if (waitingUpdate != null)
