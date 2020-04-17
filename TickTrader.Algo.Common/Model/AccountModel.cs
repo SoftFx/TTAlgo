@@ -483,7 +483,7 @@ namespace TickTrader.Algo.Common.Model
 
         private OrderUpdateAction OnOrderUpdated(ExecutionReport report, OrderExecAction algoAction)
         {
-            var orderUpdate = JoinWithPosition(new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated));
+            var orderUpdate = new OrderUpdateAction(report, algoAction, OrderEntityAction.Updated);
 
             // For gross stop/limit full fills: position opening is performed by updating old order, not adding new order
             if (report.OrderType == OrderType.Position && report.ExecutionType == ExecutionType.Calculated)
@@ -496,7 +496,7 @@ namespace TickTrader.Algo.Common.Model
                 }
             }
 
-            return orderUpdate;
+            return JoinWithPosition(orderUpdate);
         }
 
         private OrderUpdateAction OnOrderRejected(ExecutionReport report, OrderExecAction algoAction)
