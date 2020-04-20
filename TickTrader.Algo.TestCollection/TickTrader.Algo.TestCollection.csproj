@@ -98,7 +98,6 @@
     <Compile Include="Bots\OpenMarket.cs" />
     <Compile Include="Bots\SubscriptionTestBot.cs" />
     <Compile Include="Bots\SymbolInfoBot.cs" />
-    <Compile Include="Bots\TradeCommandsTest.cs" />
     <Compile Include="Bots\TradeHistoryBot.cs" />
     <Compile Include="Bots\CalculateOrderMarginBot.cs" />
     <Compile Include="Bots\Trade\ExecuteLimits.cs" />
