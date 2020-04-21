@@ -159,26 +159,21 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await TryPerformTest(() => TestFill(orderType, orderSide, asyncMode, tag, options));
 
-            if (orderType == OrderType.Limit && options == OrderExecOptions.ImmediateOrCancel)
+            if (options == OrderExecOptions.ImmediateOrCancel)
                 await TryPerformTest(() => TestRejectIoc(orderType, orderSide, asyncMode, tag, options));
 
             if (Account.Type == AccountTypes.Gross)
             {
                 await TryPerformTest(() => TestTP(orderType, orderSide, asyncMode, tag, options));
                 await TryPerformTest(() => TestSL(orderType, orderSide, asyncMode, tag, options));
-
                 if (!IsImmidiateFill(orderType, options))
-                {
                     await TryPerformTest(() => TestCancel(orderType, orderSide, asyncMode, tag, options));
-                }
             }
 
             if (!IsImmidiateFill(orderType, options))
             {
                 await TryPerformTest(() => TestFillByModify(orderType, orderSide, asyncMode, tag, options));
                 await TryPerformTest(() => TestCancel(orderType, orderSide, asyncMode, tag, options));
-                if (orderType == OrderType.Limit || orderType == OrderType.StopLimit)
-                    await TryPerformTest(() => TestCancelModifyIoc(orderType, orderSide, asyncMode, tag, options));
                 await TryPerformTest(() => TestExpire(orderType, orderSide, asyncMode, tag, options));
             }
         }
@@ -191,10 +186,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             var price = GetImmExecPrice(side, type);
             var stopPrice = GetImmExecStopPrice(side, type);
             var isStopLimit = type == OrderType.StopLimit || (type == OrderType.Stop && Account.Type == AccountTypes.Cash);
+            var tp = GetSLPrice(side);
+            var sl = GetTPPrice(side);
 
             Print($"Test: Fill with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
 
-            var openVer = await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options);
+            var openVer = await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options, tp: tp, sl: sl);
 
             DateTime fillTime = openVer.TradeReportTimestamp;
 
@@ -415,8 +412,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             double? sl = null;
             if (Account.Type == AccountTypes.Gross)
             {
-                tp = GetTPPrice(side);
-                sl = GetSLPrice(side);
+                tp = GetSLPrice(side);
+                sl = GetTPPrice(side);
+                Print($"Test: TakeProfit and StopLoss combination with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
+            }
+            else
+            {
+                Print($"Test: Cancel with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
             }
 
             Print($"Test: Cancel with options {type}, {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}, options: {options}");
@@ -437,22 +439,39 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await Delay(PauseBetweenOrders);
 
-            var volume = BaseOrderVolume;
-            var price = GetDoNotExecPrice(side, type);
-            var stopPrice = GetDoNotExecStopPrice(side, type);
-
-            Print($"Test: Reject Limit Ioc with options {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}");
-
-            try
+            if (type == OrderType.Limit)
             {
-                await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options);
-            }
-            catch
-            {
-                return;
-            }
+                var volume = BaseOrderVolume;
+                var price = GetDoNotExecPrice(side, type);
+                var stopPrice = GetDoNotExecStopPrice(side, type);
 
-            throw new Exception("Order not rejected!");
+                Print($"Test: Reject Limit Ioc with options {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}");
+
+                try
+                {
+                    await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options);
+                }
+                catch
+                {
+                    return;
+                }
+
+                throw new Exception("Order not rejected!");
+            }
+            else if (type == OrderType.StopLimit)
+            {
+                var volume = BaseOrderVolume;
+                var price = GetDoNotExecPrice(side, type);
+                var stopPrice = GetImmExecStopPrice(side, type);
+
+                Print($"Test: Cancel StopLimit Ioc with options {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}");
+
+                var ver = await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options);
+
+                var actArgs = await WaitEvent<OrderActivatedEventArgs>(ActivateEventTimeout);
+                ver = ver.Activate(actArgs.Order.Modified);
+                _tradeRepVerifiers.Add(ver);
+            }
         }
 
         private async Task TestCancelModifyIoc(OrderType type, OrderSide side, bool asyncMode, string tag, OrderExecOptions options)
@@ -463,7 +482,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             var price = GetDoNotExecPrice(side, type);
             var stopPrice = GetDoNotExecStopPrice(side, type);
 
-            Print($"Test: Cancel Limit with Ioc flag modification with options {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}");
+            Print($"Test: Cancel {type} with Ioc flag modification with options {side}, {(asyncMode ? "async" : "non-async")}, tag = {tag}");
 
             var openVer = await OpenAndCheck(type, side, volume, price, asyncMode, tag, stopPrice: stopPrice, options: options);
 
