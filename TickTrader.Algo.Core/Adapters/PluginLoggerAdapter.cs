@@ -353,25 +353,25 @@ namespace TickTrader.Algo.Core
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.RemainingVolume, order.Price, order.StopPrice, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
         private void AppendIocOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, Order order)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, order.Type, order.Side, order.LastFillVolume, order.LastFillPrice, double.NaN, order.StopLoss, order.TakeProfit, order.Slippage);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OpenOrderRequest request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.VolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.VolumeLots, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
         private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, ReplaceOrderRequest request)
         {
-            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit);
+            AppendOrderParams(logEntry, smbInfo, suffix, request.Type, request.Side, request.NewVolume ?? request.CurrentVolume, request.Price ?? double.NaN, request.StopPrice ?? double.NaN, request.StopLoss, request.TakeProfit, request.Slippage);
         }
 
-        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp)
+        private void AppendOrderParams(StringBuilder logEntry, SymbolAccessor smbInfo, string suffix, OrderType type, OrderSide side, double volumeLots, double price, double stopPrice, double? sl, double? tp, double? slippage)
         {
             var priceFormat = smbInfo?.PriceFormat ?? DefaultPriceFormat;
 
@@ -381,18 +381,15 @@ namespace TickTrader.Algo.Core
             if (smbInfo != null)
                 logEntry.Append(" ").Append(smbInfo.Name);
 
-            if ((tp != null && !double.IsNaN(tp.Value)) || (sl != null && !double.IsNaN(sl.Value)))
-            {
-                logEntry.Append(" (");
-                if (sl != null)
-                    logEntry.Append("SL:").AppendNumber(sl.Value, priceFormat);
-                if (sl != null && tp != null)
-                    logEntry.Append(", ");
-                if (tp != null)
-                    logEntry.Append("TP:").AppendNumber(tp.Value, priceFormat);
+            var extraParams = new StringBuilder();
+            AppendExstraParams(extraParams, tp, "TP", priceFormat);
+            AppendExstraParams(extraParams, sl, "SL", priceFormat);
+            AppendExstraParams(extraParams, slippage, "Slippage");
 
-                logEntry.Append(")");
-            }
+            if (extraParams.Length != 0)
+                extraParams.Append(")");
+
+            logEntry.Append(extraParams);
 
             if (!double.IsNaN(price))
                 logEntry.Append(" at price ").AppendNumber(price, priceFormat);
@@ -406,6 +403,18 @@ namespace TickTrader.Algo.Core
             }
         }
 
+        private void AppendExstraParams(StringBuilder str, double? value, string name, NumberFormatInfo format = null)
+        {
+            if (value == null || double.IsNaN(value.Value))
+                return;
+
+            str.Append(str.Length == 0 ? " (" : ", ").Append($"{name}:");
+
+            if (format == null)
+                str.AppendNumber(value.Value);
+            else
+                str.AppendNumber(value.Value, format);
+        }
         #endregion
     }
 }

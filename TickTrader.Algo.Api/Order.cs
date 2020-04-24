@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Api
         double StopPrice { get; }
         double StopLoss { get; }
         double TakeProfit { get; }
+        double Slippage { get; }
         bool IsNull { get; }
         string Comment { get; }
         string Tag { get; }

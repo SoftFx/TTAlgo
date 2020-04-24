@@ -440,7 +440,7 @@ namespace TickTrader.Algo.Common.Model
                 var ioc = GetIoC(r.Options);
 
                 return _tradeProxyAdapter.NewOrderAsync(r.OperationId, r.Symbol, Convert(r.Type), Convert(r.Side), r.Volume, r.MaxVisibleVolume,
-                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, null);
+                    r.Price, r.StopPrice, timeInForce, r.Expiration, r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, ioc, r.Slippage);
             });
         }
 
@@ -456,12 +456,12 @@ namespace TickTrader.Algo.Common.Model
                 return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                     r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.VolumeChange,
                     r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
+                    r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
             }
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.ReplaceOrderAsync(r.OperationId, "",
                 r.OrderId, r.Symbol, Convert(r.Type), Convert(r.Side), r.NewVolume ?? r.CurrentVolume, r.CurrentVolume,
                 r.MaxVisibleVolume, r.Price, r.StopPrice, GetTimeInForceReplace(r.Options, r.Expiration), r.Expiration,
-                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), null));
+                r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
         }
 
         public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
@@ -763,6 +763,7 @@ namespace TickTrader.Algo.Common.Model
                 Modified = record.Modified,
                 StopLoss = record.StopLoss,
                 TakeProfit = record.TakeProfit,
+                Slippage = record.Slippage,
                 Commission = (decimal)record.Commission,
                 ExecVolume = record.ExecutedVolume,
                 UserTag = record.Tag,
@@ -821,6 +822,7 @@ namespace TickTrader.Algo.Common.Model
                 RejectReason = Convert(report.RejectReason, report.Text ?? ""),
                 TakeProfit = report.TakeProfit,
                 StopLoss = report.StopLoss,
+                Slippage = report.Slippage,
                 Text = report.Text,
                 Comment = report.Comment,
                 Tag = report.Tag,
@@ -1144,6 +1146,7 @@ namespace TickTrader.Algo.Common.Model
                 TradeTransactionReason = Convert(report.TradeTransactionReason),
                 SplitRatio = report.SplitRatio,
                 Tax = report.Tax,
+                Slippage = report.Slippage,
             };
         }
 

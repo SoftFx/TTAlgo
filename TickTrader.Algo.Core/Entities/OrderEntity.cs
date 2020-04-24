@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Core
             StopPrice = src.StopPrice;
             StopLoss = src.StopLoss;
             TakeProfit = src.TakeProfit;
+            Slippage = src.Slippage;
             Comment = src.Comment;
             Created = src.Created;
             Modified = src.Modified;
@@ -55,6 +56,7 @@ namespace TickTrader.Algo.Core
         public double? ReqOpenPrice { get; set; }
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
+        public double? Slippage { get; set; }
         public string Comment { get; set; }
         public DateTime? Expiration { get; set; }
         public DateTime? Created { get; set; }
@@ -133,6 +135,7 @@ namespace TickTrader.Algo.Core
         public double StopPrice { get { return double.NaN; } }
         public double StopLoss { get { return double.NaN; } }
         public double TakeProfit { get { return double.NaN; } }
+        public double Slippage => double.NaN;
         public string Comment { get { return ""; } }
         public string Tag { get { return ""; } }
         public string InstanceId { get { return ""; } }

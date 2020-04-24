@@ -27,6 +27,7 @@ namespace TickTrader.Algo.Core
         public double StopPrice { get; set; }
         public double StopLoss { get; set; }
         public double TakeProfit { get; set; }
+        public double Slippage { get; set; }
         public bool IsNull => false;
         public string Comment { get; set; }
         public string Tag { get; set; }

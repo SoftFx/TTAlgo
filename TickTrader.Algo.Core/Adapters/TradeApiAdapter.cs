@@ -38,11 +38,11 @@ namespace TickTrader.Algo.Core
             var limPrice = type != OrderType.Stop ? price : (double?)null;
             var stopPrice = type == OrderType.Stop ? price : (double?)null;
 
-            return OpenOrder(isAsync, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
+            return OpenOrder(isAsync, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null, null);
         }
 
         public async Task<OrderCmdResult> OpenOrder(bool isAsync, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
+            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration, double? slippage)
         {
             OrderResultEntity resultEntity;
             string encodedTag = CompositeTag.NewTag(IsolationTag, tag);
@@ -61,6 +61,7 @@ namespace TickTrader.Algo.Core
                 StopLoss = sl,
                 TakeProfit = tp,
                 Comment = comment,
+                Slippage = slippage,
                 Options = options,
                 Tag = encodedTag,
                 Expiration = expiration,
@@ -174,11 +175,11 @@ namespace TickTrader.Algo.Core
 
         public Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ModifyOrder(isAsync, orderId, price, null, null, sl, tp, comment, null, null, null);
+            return ModifyOrder(isAsync, orderId, price, null, null, sl, tp, comment, null, null, null, null);
         }
 
         public async Task<OrderCmdResult> ModifyOrder(bool isAsync, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp,
-            string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
+            string comment, DateTime? expiration, double? volume, OrderExecOptions? options, double? slippage)
         {
             OrderResultEntity resultEntity;
 
@@ -193,6 +194,7 @@ namespace TickTrader.Algo.Core
                 StopPrice = stopPrice,
                 StopLoss = sl,
                 TakeProfit = tp,
+                Slippage = slippage,
                 Comment = comment,
                 Expiration = expiration,
                 Options = options,
@@ -286,6 +288,8 @@ namespace TickTrader.Algo.Core
             if (!ValidateTp(request.TakeProfit, ref code))
                 return;
             if (!ValidateSl(request.StopLoss, ref code))
+                return;
+            if (!ValidateSlippage(request.Slippage, smbMetadata.DefaultSlippage, ref code))
                 return;
 
             if (!ValidateMargin(request, smbMetadata, ref code))
@@ -393,6 +397,7 @@ namespace TickTrader.Algo.Core
             request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
             request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
             request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
+            request.Slippage = RoundPrice(request.Slippage, smbMetadata, side);
 
             if (!ValidatePrice(request.Price, false, ref code))
                 return;
@@ -405,6 +410,8 @@ namespace TickTrader.Algo.Core
             if (!ValidateTp(request.TakeProfit, ref code))
                 return;
             if (!ValidateSl(request.StopLoss, ref code))
+                return;
+            if (!ValidateSlippage(request.Slippage, smbMetadata.DefaultSlippage, ref code))
                 return;
 
             if (!ValidateMargin(request, smbMetadata, ref code))
@@ -673,6 +680,20 @@ namespace TickTrader.Algo.Core
             if (tp.Value < 0 || IsInvalidValue(tp.Value))
             {
                 code = OrderCmdResultCodes.IncorrectTp;
+                return false;
+            }
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ValidateSlippage(double? slippage, double maxSlippage, ref OrderCmdResultCodes code)
+        {
+            if (slippage == null)
+                return true;
+
+            if (slippage.Value < 0 || IsInvalidValue(slippage.Value) || slippage.Value.Gt(maxSlippage))
+            {
+                code = OrderCmdResultCodes.IncorrectSlippage;
                 return false;
             }
             return true;

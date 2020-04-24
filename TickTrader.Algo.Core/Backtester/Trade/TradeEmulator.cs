@@ -121,11 +121,11 @@ namespace TickTrader.Algo.Core
             var limPrice = type != OrderType.Stop ? price : (double?)null;
             var stopPrice = type == OrderType.Stop ? price : (double?)null;
 
-            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null);
+            return OpenOrder(isAysnc, symbol, type, side, volumeLots, null, limPrice, stopPrice, sl, tp, comment, options, tag, null, null);
         }
 
         public Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType orderType, OrderSide side, double volumeLots, double? maxVisibleVolumeLots, double? price, double? stopPrice,
-            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration)
+            double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration, double? slippage)
         {
             return ExecTradeRequest(isAysnc, async () =>
             {
@@ -236,10 +236,10 @@ namespace TickTrader.Algo.Core
 
         public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment)
         {
-            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null, null);
+            return ModifyOrder(isAysnc, orderId, price, null, null, sl, tp, comment, null, null, null, null);
         }
 
-        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options)
+        public Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options, double? slippage)
         {
             return ExecTradeRequest(isAysnc, async () =>
             {

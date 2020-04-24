@@ -72,6 +72,7 @@ namespace TickTrader.Algo.Core
         public double Price => _entity.Price ?? double.NaN;
         public double StopPrice => _entity.StopPrice ?? double.NaN;
         public double StopLoss => _entity.StopLoss ?? double.NaN;
+        public double Slippage => _entity.Slippage ?? double.NaN;
         public double TakeProfit => _entity.TakeProfit ?? double.NaN;
         public bool IsNull => false;
         public string Comment => _entity.Comment;

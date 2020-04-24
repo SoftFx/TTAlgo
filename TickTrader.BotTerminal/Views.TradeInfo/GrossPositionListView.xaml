@@ -69,6 +69,10 @@
                                     <TextBlock Text="Option: " VerticalAlignment="Center" />
                                     <TextBlock Text="{Binding Order.OrderExecutionOptionsStr}" VerticalAlignment="Center" />
                                 </StackPanel>
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Order.Slippage, Converter={StaticResource NullOrEmptyToVis}}">
+                                    <TextBlock Text="Slippage: " VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Order.Slippage}" VerticalAlignment="Center" />
+                                </StackPanel>
                             </StackPanel>
                         </Setter.Value>
                     </Setter>

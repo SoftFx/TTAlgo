@@ -21,6 +21,7 @@ namespace TickTrader.Algo.Core
         public double? MaxVisibleVolumeLots { get; set; }
         public double? StopLoss { get; set; }
         public double? TakeProfit { get; set; }
+        public double? Slippage { get; set; }
         public string Comment { get; set; }
         public string Tag { get; set; }
         public DateTime? Expiration { get; set; }

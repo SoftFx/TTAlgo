@@ -32,6 +32,9 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Take Profit", DefaultValue = null, IsRequired = false)]
         public double? TakeProfit { get; set; }
 
+        [Parameter(DisplayName = "Slippage", DefaultValue = null, IsRequired = false)]
+        public double? Slippage { get; set; }
+
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
         public int? ExpirationTimeout { get; set; }
 
@@ -52,7 +55,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                 OrderId = Account.Orders.FirstOrDefault()?.Id;
 
             var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options);
+                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options, Slippage);
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(result.ResultingOrder));
