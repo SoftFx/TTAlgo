@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         private double RoundedSymbolAsk { get => Symbol.Ask.Round(Symbol.Digits); }
         private double RoundedSymbolBid { get => Symbol.Bid.Round(Symbol.Digits); }
 
+        private Stopwatch _st = new Stopwatch();
+
         [Parameter]
         public bool IncludeADCases { get; set; }
 
@@ -62,6 +65,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             try
             {
                 InitOrderParams();
+                _st.Start();
                 foreach (var asyncMode in _asyncModes)
                 {
                     foreach (var orderSide in _orderSides)
@@ -77,12 +81,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                                 if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
                                     await PerformExecutionTests(orderType, orderSide, asyncMode, _tag, OrderExecOptions.ImmediateOrCancel);
 
-                                if (IncludeADCases)
-                                {
-                                    await PerformCommentsTest(orderType, orderSide, asyncMode, _tag, OrderExecOptions.None);
-                                    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
-                                        await PerformCommentsTest(orderType, orderSide, asyncMode, _tag, OrderExecOptions.ImmediateOrCancel);
-                                }
+                                //if (IncludeADCases)
+                                //{
+                                //    await PerformCommentsTest(orderType, orderSide, asyncMode, _tag, OrderExecOptions.None);
+                                //    if (orderType == OrderType.StopLimit || orderType == OrderType.Limit)
+                                //        await PerformCommentsTest(orderType, orderSide, asyncMode, _tag, OrderExecOptions.ImmediateOrCancel);
+                                //}
                             }
                             catch (Exception ex)
                             {
@@ -92,17 +96,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
                             PrintStatus();
                         }
-                    if (Account.Type == AccountTypes.Gross)
-                        await TryPerformTest(() => TestCloseBy(asyncMode, _tag));
+                    //if (Account.Type == AccountTypes.Gross)
+                    //    await TryPerformTest(() => TestCloseBy(asyncMode, _tag));
                 }
 
-                Print("Waiting for trade reports to load...");
-                await Delay(PauseBeforeAndAfterTests);
-                // History test
-                ReportsIteratorTest();
-                await DoQueryTests(false);
-                await DoQueryTests(true);
-
+                //Print("Waiting for trade reports to load...");
+                //await Delay(PauseBeforeAndAfterTests);
+                //// History test
+                //ReportsIteratorTest();
+                //await DoQueryTests(false);
+                //await DoQueryTests(true);
+                _st.Stop();
+                Status.WriteLine($"Total time: {_st.ElapsedMilliseconds}");
             }
             catch (Exception ex)
             {
@@ -1671,6 +1676,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 stopPrice = GetDoNotExecStopPrice(side, type);
 
             var customVolume = 0.2 * BaseOrderVolume;
+
             var remVolume = 0.8 * BaseOrderVolume;
 
             CommentModel commentModel = new CommentModel();
