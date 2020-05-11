@@ -69,6 +69,11 @@ namespace TickTrader.Algo.Core.Calc
         {
             _market.CurrenciesChanged -= InitRounding;
 
+            Info.OrderAdded -= AddOrder;
+            Info.OrderRemoved -= RemoveOrder;
+            Info.OrdersAdded -= AddOrdersBunch;
+            Info.PositionChanged -= UpdateNetPos;
+
             foreach (var smbCalc in _bySymbolMap.Values)
                 DisposeCalc(smbCalc);
 
