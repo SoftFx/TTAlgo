@@ -81,7 +81,8 @@
     <Compile Include="Backtester\DelayedEventsQueue.cs" />
     <Compile Include="Backtester\Feed\FeedEventSeries.cs" />
     <Compile Include="Backtester\Feed\FeedReader.cs" />
-    <Compile Include="Backtester\Optimization\BruteforceStrategy.cs" />
+    <Compile Include="Backtester\Optimization\Strategies\AnnialingStrategy.cs" />
+    <Compile Include="Backtester\Optimization\Strategies\BruteforceStrategy.cs" />
     <Compile Include="Backtester\Optimization\MetricProvider.cs" />
     <Compile Include="Backtester\Optimization\OptCaseReport.cs" />
     <Compile Include="Backtester\Optimization\OptCaseConfig.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Backtester\Optimization\Params\ParamSeekSet.cs" />
     <Compile Include="Backtester\Optimization\Params\RangeParamSet.cs" />
     <Compile Include="Backtester\Optimization\Params\EnumParamSet.cs" />
+    <Compile Include="Backtester\Optimization\Strategies\GeneticStrategy.cs" />
     <Compile Include="Backtester\Optimizer.cs" />
     <Compile Include="Backtester\Feed\SeriesReader.cs" />
     <Compile Include="Backtester\ScheduleEmulator.cs" />

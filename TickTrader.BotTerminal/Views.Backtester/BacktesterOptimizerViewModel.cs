@@ -25,7 +25,7 @@ namespace TickTrader.BotTerminal
         private PluginDescriptor _descriptor;
         private WindowManager _localWnd;
 
-        public enum OptimizationAlgorithms { Bruteforce, Genetic }
+        public enum OptimizationAlgorithms { Bruteforce, Genetic, Annialing }
 
         public BacktesterOptimizerViewModel(WindowManager manager, BoolVar isRunning)
         {
@@ -59,7 +59,18 @@ namespace TickTrader.BotTerminal
             foreach (var param in Parameters)
                 param.Apply(optimizer);
 
-            optimizer.SetSeekStrategy(new BruteforceStrategy());
+            switch (AlgorithmProp.Value)
+            {
+                case OptimizationAlgorithms.Bruteforce:
+                    optimizer.SetSeekStrategy(new BruteforceStrategy());
+                    break;
+                case OptimizationAlgorithms.Genetic:
+                    optimizer.SetSeekStrategy(new GeneticStrategy());
+                    break;
+                case OptimizationAlgorithms.Annialing:
+                    optimizer.SetSeekStrategy(new AnnialingStrategy());
+                    break;
+            }
         }
 
         public void SetPluign(PluginDescriptor descriptor, PluginSetupModel setup)
