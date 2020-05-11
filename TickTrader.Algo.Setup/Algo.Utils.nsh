@@ -338,7 +338,7 @@ var LogFile
 ;--------------------------------------------
 ;-----.NET Framework installation-----
 
-!define FRAMEWORK_LINK "http://go.microsoft.com/fwlink/?linkid=780596"
+!define FRAMEWORK_LINK "http://go.microsoft.com/fwlink/?LinkId=863262"
 
 var Framework_InstallNeeded
 var Framework_Installed
@@ -358,10 +358,10 @@ var Framework_RebootNeeded
         StrCpy $7 "not found"
         ReadRegDWORD $7 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" "Release"
         ${Log} "Installed .NET Framework build $7"
-        ${If} $7 >= 394802
+        ${If} $7 >= 461808
             ${Log} "No need to install new .NET Framework"
         ${Else}
-            ${Log} ".NET Framework 4.6.2 should be installed"
+            ${Log} ".NET Framework 4.7.2 should be installed"
             StrCpy $Framework_InstallNeeded ${TRUE}
             StrCpy $Framework_Installed ${FALSE}
         ${EndIf}
@@ -382,14 +382,14 @@ var Framework_RebootNeeded
         StrCpy $Framework_InstallNeeded ${FALSE}
         StrCpy $Framework_Installed ${FALSE}
         StrCpy $Framework_RebootNeeded ${FALSE}
-        NSISdl::download ${FRAMEWORK_LINK} "$TEMP\dotNET462Web.exe"
-        ${If} ${FileExists} "$TEMP\dotNET462Web.exe"
+        NSISdl::download ${FRAMEWORK_LINK} "$TEMP\dotNET472Web.exe"
+        ${If} ${FileExists} "$TEMP\dotNET472Web.exe"
             ${Log} ".NET installation loaded successfully"
             StrCpy $Framework_Installed ${TRUE}
             ${If} ${Silent}
-                ExecWait "$TEMP\dotNET462Web.exe /q /norestart" $7
+                ExecWait "$TEMP\dotNET472Web.exe /q /norestart" $7
             ${Else}
-                ExecWait "$TEMP\dotNET462Web.exe /showrmui /passive /norestart" $7
+                ExecWait "$TEMP\dotNET472Web.exe /showrmui /passive /norestart" $7
             ${EndIf}
             ${Log} ".NET installation exit code $7"
             ${If} $7 == 1641
