@@ -50,7 +50,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void OnStart()
         {
             var res = OpenOrder(Symbol.Name, Type, Side, Volume, MaxVisibleVolume, Price, StopPrice, StopLoss, TakeProfit, Comment, Options, Tag,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Slippage);
+                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null);//, Slippage);
             Status.WriteLine($"ResultCode = {res.ResultCode}");
             if (res.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
