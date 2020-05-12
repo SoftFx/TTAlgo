@@ -13,6 +13,10 @@ namespace TickTrader.Algo.Core
         public Dictionary<string, object> Params { get; } = new Dictionary<string, object>();
         public long Id { get; }
 
+        public double Result { get; set; }
+
+        public int Size => Params.Count;
+
         public OptCaseConfig(long id)
         {
             Id = id;

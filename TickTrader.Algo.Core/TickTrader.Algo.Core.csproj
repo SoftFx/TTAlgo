@@ -50,6 +50,9 @@
       <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -81,6 +84,7 @@
     <Compile Include="Backtester\DelayedEventsQueue.cs" />
     <Compile Include="Backtester\Feed\FeedEventSeries.cs" />
     <Compile Include="Backtester\Feed\FeedReader.cs" />
+    <Compile Include="Backtester\Optimization\Generator.cs" />
     <Compile Include="Backtester\Optimization\Strategies\AnnialingStrategy.cs" />
     <Compile Include="Backtester\Optimization\Strategies\BruteforceStrategy.cs" />
     <Compile Include="Backtester\Optimization\MetricProvider.cs" />

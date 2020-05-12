@@ -9,8 +9,11 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public abstract class ParamSeekStrategy
     {
+        protected Generator generator;
+
         internal void OnInit(Dictionary<string, ParamSeekSet> parameters)
         {
+            generator = new Generator();
             Params = parameters;
         }
 
