@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class BruteforceStrategy : ParamSeekStrategy
     {
-        private IEnumerator<OptCaseConfig> _e;
+        private IEnumerator<Params> _e;
         private long _casesLeft;
 
         public override long CaseCount => Params.Values.Aggregate(1, (s, p) => s * p.Size);
@@ -42,12 +42,12 @@ namespace TickTrader.Algo.Core
             return _casesLeft;
         }
 
-        private IEnumerable<OptCaseConfig> GetCases()
+        private IEnumerable<Params> GetCases()
         {
             for (long i = 0; i < CaseCount; i++)
             {
                 var rm = i;
-                var cfgCase = new OptCaseConfig(i);
+                var cfgCase = new Params(i);
 
                 foreach (var p in Params)
                 {

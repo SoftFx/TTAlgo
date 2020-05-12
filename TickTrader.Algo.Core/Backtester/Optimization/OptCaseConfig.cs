@@ -8,28 +8,37 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class OptCaseConfig : IEnumerable<KeyValuePair<string, object>>
+    public class Params : IEnumerable<KeyValuePair<string, object>>, ICloneable
     {
-        public Dictionary<string, object> Params { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
+
         public long Id { get; }
 
-        public double Result { get; set; }
+        public double? Result { get; set; }
 
-        public int Size => Params.Count;
+        public int Count => Parameters.Count;
 
-        public OptCaseConfig(long id)
+        public Params(long id)
         {
             Id = id;
         }
 
         public void Add(string paramId, object paramVal)
         {
-            Params.Add(paramId, paramVal);
+            Parameters.Add(paramId, paramVal);
+        }
+
+        public string this[int index]
+        {
+            get
+            {
+                return Parameters.Keys.ToList()[index];
+            }
         }
 
         public void Apply(IPluginSetupTarget target)
         {
-            foreach (var pair in Params)
+            foreach (var pair in Parameters)
                 target.SetParameter(pair.Key, pair.Value);
         }
 
@@ -37,12 +46,22 @@ namespace TickTrader.Algo.Core
 
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
-            return Params.GetEnumerator();
+            return Parameters.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return Params.GetEnumerator();
+            return Parameters.GetEnumerator();
+        }
+
+        public object Clone()
+        {
+            var copy = new Params(Id);
+
+            foreach (var p in this)
+                copy.Add(p.Key, p.Value);
+            
+            return copy;
         }
 
         #endregion

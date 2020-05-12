@@ -26,6 +26,6 @@ namespace TickTrader.Algo.Core
 
     public interface IBacktestQueue
     {
-        void Enqueue(OptCaseConfig caseCfg);
+        void Enqueue(Params caseCfg);
     }
 }

@@ -165,7 +165,7 @@ namespace TickTrader.Algo.Core
             private int _idSeed;
             private CancellationTokenSource _cancelSrc = new CancellationTokenSource();
             private Action<OptCaseReport, long> _repHandler;
-            private TransformBlock<OptCaseConfig, OptCaseReport> _workerBlock;
+            private TransformBlock<Params, OptCaseReport> _workerBlock;
             private ActionBlock<OptCaseReport> _controlBlock;
             private Exception _fatalError;
 
@@ -228,7 +228,7 @@ namespace TickTrader.Algo.Core
                 }
             }
 
-            private OptCaseReport Backtest(OptCaseConfig caseCfg)
+            private OptCaseReport Backtest(Params caseCfg)
             {
                 var emFixture = SetupEmulation();
                 caseCfg.Apply(emFixture.Executor);
@@ -300,7 +300,7 @@ namespace TickTrader.Algo.Core
                 return emFixture;
             }
 
-            private OptCaseReport FilleReport(OptCaseConfig cfg, PluginBuilder builder, BacktesterCollector collector, Exception error)
+            private OptCaseReport FilleReport(Params cfg, PluginBuilder builder, BacktesterCollector collector, Exception error)
             {
                 var metric = 0d;
 
@@ -327,7 +327,7 @@ namespace TickTrader.Algo.Core
                 workerOptions.MaxMessagesPerTask = 1;
                 workerOptions.CancellationToken = _cancelSrc.Token;
 
-                _workerBlock = new TransformBlock<OptCaseConfig, OptCaseReport>((Func<OptCaseConfig, OptCaseReport>)Backtest, workerOptions);
+                _workerBlock = new TransformBlock<Params, OptCaseReport>((Func<Params, OptCaseReport>)Backtest, workerOptions);
             }
 
             private void CreateControlBlock()
@@ -400,7 +400,7 @@ namespace TickTrader.Algo.Core
             IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata() => CommonSettings.Symbols.Values;
             IEnumerable<CurrencyEntity> IPluginMetadata.GetCurrencyMetadata() => CommonSettings.Currencies.Values;
 
-            void IBacktestQueue.Enqueue(OptCaseConfig caseCfg)
+            void IBacktestQueue.Enqueue(Params caseCfg)
             {
                 _workerBlock.Post(caseCfg);
             }
