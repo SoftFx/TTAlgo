@@ -234,7 +234,7 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                executor = _ref.CreateExecutor();
+                //executor = _ref.CreateExecutor();
 
                 var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext(), Config.MainSymbol);
                 setupModel.Load(Config);

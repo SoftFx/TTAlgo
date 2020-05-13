@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Core
 {
     public class Optimizer : CrossDomainObject, IPluginSetupTarget, ITestExecController
     {
+        private readonly PluginContainer _container;
         private readonly AlgoPluginRef _ref;
         private readonly OptimizerCore _core;
         private readonly ISynchronizationContext _sync;
@@ -23,10 +24,11 @@ namespace TickTrader.Algo.Core
 
         public Optimizer(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
+            _container = PluginContainer.Load(pluginRef.PackagePath, pluginRef.IsIsolated);
             _ref = pluginRef;
             _sync = updatesSync;
-            _core = _ref.CreateObject<OptimizerCore>();
-            _core.Factory = _ref.CreateExecutorFactory();
+            _core = _container.CreateObject<OptimizerCore>();
+            _core.Factory = _container.CreateExecutorFactory(pluginRef.Id);
             _core.InitBarStrategy(BarPriceType.Bid);
             IsIsolated = pluginRef.IsIsolated;
         }
@@ -63,6 +65,16 @@ namespace TickTrader.Algo.Core
             strategy.OnInit(_params);
             _seekStrategy = strategy;
             //_core.SetStrategy(strategy);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _container.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
 
         public async Task Run(CancellationToken cToken)

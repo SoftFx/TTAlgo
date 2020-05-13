@@ -132,11 +132,11 @@
     <Compile Include="Calc\SideCalc.cs" />
     <Compile Include="Calc\SymbolCalc.cs" />
     <Compile Include="Container\AlgoSandbox.cs" />
-    <Compile Include="Container\DllLoader.cs" />
-    <Compile Include="Container\PackageLoader.cs" />
     <Compile Include="Backtester\Backtester.cs" />
     <Compile Include="Backtester\Feed\FeedEmulator.cs" />
     <Compile Include="Backtester\InvokeEmulator.cs" />
+    <Compile Include="Container\PluginContainer.cs" />
+    <Compile Include="Container\PluginLoader.cs" />
     <Compile Include="CoreExtentions.cs" />
     <Compile Include="Entities.Requests\CancelOrderRequest.cs" />
     <Compile Include="Entities.Requests\CloseOrderRequest.cs" />
@@ -233,7 +233,6 @@
     <Compile Include="Lib\FlipGate.cs" />
     <Compile Include="Lib\FormatExtentions.cs" />
     <Compile Include="Lib\IoHelper.cs" />
-    <Compile Include="Container\PlguinContainer.cs" />
     <Compile Include="Lib\LinqExtentions.cs" />
     <Compile Include="Lib\PagedGate.cs" />
     <Compile Include="Lib\QueueGate.cs" />

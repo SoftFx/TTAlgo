@@ -102,7 +102,7 @@ namespace TickTrader.Algo.Core.Repository
     }
 
 
-    public class IsolatedAlgoPackageRef : AlgoPackageRef
+    internal class IsolatedAlgoPackageRef : AlgoPackageRef
     {
         private int _refCount;
 

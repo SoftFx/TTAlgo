@@ -95,8 +95,10 @@ namespace TickTrader.Algo.Common.Model
 
         public void AddAssemblyAsPackage(Assembly assembly)
         {
+            var location = assembly.Location;
+
             var packageRef = new AlgoPackageRef(Path.GetFileName(assembly.Location).ToLowerInvariant(), RepositoryLocation.Embedded,
-                PackageIdentity.Create(new FileInfo(assembly.Location)), AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m)));
+                PackageIdentity.Create(new FileInfo(assembly.Location)), AlgoAssemblyInspector.FindPlugins(assembly).Select(m => new AlgoPluginRef(m, assembly.Location)));
 
             RepositoryOnAdded(packageRef);
         }

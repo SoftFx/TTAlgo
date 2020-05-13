@@ -14,21 +14,22 @@ namespace TickTrader.Algo.Core.Container
 {
     internal class AlgoSandbox : CrossDomainObject
     {
-        private IPluginLoader loader;
+        private IPluginLoader _loader;
         private List<Assembly> _loadedAssemblies = new List<Assembly>();
 
-        public AlgoSandbox(IPluginLoader src, bool isolated)
+        public AlgoSandbox(string packagePath, bool isolated)
         {
-            this.loader = src;
-
             try
             {
                 //CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
                 //CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-                src.Init();
-                LoadAndInspect(src.MainAssemblyName);
+
+                _loader = PluginLoader.CreateForPath(packagePath);
+                _loader.Init();
+                LoadAndInspect(_loader.MainAssemblyName);
+
                 if (isolated)
                 {
                     AlgoAssemblyInspector.FindReductions(Assembly.Load(ReductionCollection.EmbeddedReductionsAssemblyName)); // loading default reductions in plugin domain
@@ -68,11 +69,11 @@ namespace TickTrader.Algo.Core.Container
         {
             string pdbFileName = Path.GetFileNameWithoutExtension(assemblyFileName) + ".pdb";
 
-            byte[] assemblyBytes = loader.GetFileBytes(assemblyFileName);
-            byte[] symbolsBytes = loader.GetFileBytes(pdbFileName);
+            byte[] assemblyBytes = _loader.GetFileBytes(assemblyFileName);
+            byte[] symbolsBytes = _loader.GetFileBytes(pdbFileName);
 
             if (assemblyBytes == null)
-                throw new FileNotFoundException($"Package {loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
+                throw new FileNotFoundException($"Package {_loader.MainAssemblyName} is missing required file '{assemblyFileName}'");
 
             var assembly = Assembly.Load(assemblyBytes, symbolsBytes);
             _loadedAssemblies.Add(assembly);
@@ -108,12 +109,5 @@ namespace TickTrader.Algo.Core.Container
                 return null;
             }
         }
-    }
-
-    internal interface IPluginLoader
-    {
-        string MainAssemblyName { get; }
-        byte[] GetFileBytes(string packageLocalPath);
-        void Init();
     }
 }
