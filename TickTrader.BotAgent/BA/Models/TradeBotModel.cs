@@ -23,7 +23,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         private ClientModel _client;
         private Task _stopTask;
-        private PluginExecutorCore executor;
+        private PluginExecutor executor;
         private BotLog.ControlHandler _botLog;
         private AlgoData _algoData;
         private AlgoPluginRef _ref;
@@ -234,7 +234,7 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                //executor = _ref.CreateExecutor();
+                executor = new PluginExecutor(_ref, null);
 
                 var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext(), Config.MainSymbol);
                 setupModel.Load(Config);
@@ -242,24 +242,24 @@ namespace TickTrader.BotAgent.BA.Models
                 var feedAdapter = _client.CreatePluginFeedAdapter();
                 executor.Feed = feedAdapter;
                 executor.FeedHistory = feedAdapter;
-                executor.InitBarStrategy(Algo.Api.BarPriceType.Bid);
-                executor.MainSymbolCode = setupModel.MainSymbol.Id;
-                executor.TimeFrame = setupModel.SelectedTimeFrame;
+                executor.Config.InitBarStrategy(Algo.Api.BarPriceType.Bid);
+                executor.Config.MainSymbolCode = setupModel.MainSymbol.Id;
+                executor.Config.TimeFrame = setupModel.SelectedTimeFrame;
                 executor.Metadata = feedAdapter;
-                executor.InitSlidingBuffering(4000);
+                executor.Config.InitSlidingBuffering(4000);
 
-                executor.InvokeStrategy = new PriorityInvokeStartegy();
+                executor.Config.InvokeStrategy = new PriorityInvokeStartegy();
                 executor.AccInfoProvider = _client.PluginTradeInfo;
                 executor.TradeExecutor = _client.PluginTradeApi;
                 executor.TradeHistoryProvider = _client.PluginTradeHistory.AlgoAdapter;
-                executor.BotWorkingFolder = AlgoData.Folder;
-                executor.WorkingFolder = AlgoData.Folder;
-                executor.InstanceId = Id;
-                executor.Permissions = Permissions;
+                executor.Config.BotWorkingFolder = AlgoData.Folder;
+                executor.Config.WorkingFolder = AlgoData.Folder;
+                executor.Config.InstanceId = Id;
+                executor.Config.Permissions = Permissions;
                 _botListener = new BotListenerProxy(executor, OnBotExited, _botLog.GetWriter());
 
                 setupModel.SetWorkingFolder(AlgoData.Folder);
-                setupModel.Apply(executor);
+                setupModel.Apply(executor.Config);
 
                 executor.Start();
                 _botListener.Start();

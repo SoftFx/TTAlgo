@@ -256,16 +256,9 @@ namespace TickTrader.BotAgent.BA.Models
         {
             public LogWriter(Ref<BotLog> logRef) : base(logRef) { }
 
-            public void LogMesssages(IEnumerable<PluginLogRecord> records)
+            public void LogMesssage(PluginLogRecord record)
             {
-                CallActor(a =>
-                {
-                    foreach (var rec in records)
-                    {
-                        if (rec.Severity != LogSeverities.CustomStatus)
-                            a.WriteLog(Convert(rec.Severity), rec.Message);
-                    }
-                });
+                CallActor(a => a.WriteLog(Convert(record.Severity), record.Message));
             }
 
             public void Trace(string status) => CallActor(a => a._logger.Trace(status));

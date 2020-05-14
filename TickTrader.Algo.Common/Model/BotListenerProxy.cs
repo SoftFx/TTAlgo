@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Core.Lib;
 
@@ -11,7 +7,7 @@ namespace TickTrader.Algo.Common.Model
 {
     public interface IBotWriter
     {
-        void LogMesssages(IEnumerable<PluginLogRecord> records);
+        void LogMesssage(PluginLogRecord record);
 
         void UpdateStatus(string status);
 
@@ -21,22 +17,22 @@ namespace TickTrader.Algo.Common.Model
 
     public class BotListenerProxy : CrossDomainObject
     {
-        private PluginExecutorCore _executor;
+        private PluginExecutor _executor;
         private Action _onStopped;
         private IBotWriter _writer;
-        private object _sync = new object();
         private string _currentStatus;
         private Timer _timer;
 
 
-        public BotListenerProxy(PluginExecutorCore executor, Action onStopped, IBotWriter writer)
+        public BotListenerProxy(PluginExecutor executor, Action onStopped, IBotWriter writer)
         {
             _executor = executor;
             _onStopped = onStopped;
             _writer = writer;
 
-            executor.IsRunningChanged += Executor_IsRunningChanged;
-            executor.InitLogging().NewRecords += ListenerProxy_NewRecords;
+            executor.Config.IsLoggingEnabled = true;
+            executor.Stopped += Executor_Stopped;
+            executor.LogUpdated += Executor_LogUpdated;
         }
 
 
@@ -64,56 +60,35 @@ namespace TickTrader.Algo.Common.Model
 
             if (disposing)
             {
-                _executor.IsRunningChanged -= Executor_IsRunningChanged;
-                _executor.InitLogging().NewRecords -= ListenerProxy_NewRecords;
+                _executor.Stopped -= Executor_Stopped;
+                _executor.LogUpdated -= Executor_LogUpdated;
             }
 
             base.Dispose(disposing);
         }
 
 
-        private void ListenerProxy_NewRecords(PluginLogRecord[] records)
+        private void Executor_LogUpdated(PluginLogRecord record)
         {
-            lock (_sync)
+            if (record.Severity != LogSeverities.CustomStatus)
+                _writer.LogMesssage(record);
+            else
             {
-                var messages = new List<PluginLogRecord>(records.Length);
-                string status = null;
-
-                foreach (var record in records)
-                {
-                    if (record.Severity != LogSeverities.CustomStatus)
-                        messages.Add(record);
-                    else
-                        status = record.Message;
-                }
-
-                if (status != null && _currentStatus != status)
-                {
-                    _currentStatus = status;
-                    _writer.UpdateStatus(status);
-                }
-
-                if (messages.Count > 0)
-                {
-                    _writer.LogMesssages(messages);
-                }
+                _currentStatus = record.Message;
+                _writer.UpdateStatus(record.Message);
             }
         }
 
-        private void Executor_IsRunningChanged(PluginExecutorCore exec)
+        private void Executor_Stopped(PluginExecutor executor)
         {
-            if (!exec.IsRunning)
-                _onStopped();
+            _onStopped();
         }
 
         private void LogStatus(object state)
         {
-            lock (_sync)
+            if (!string.IsNullOrWhiteSpace(_currentStatus))
             {
-                if (!string.IsNullOrWhiteSpace(_currentStatus))
-                {
-                    _writer.Trace(string.Join(Environment.NewLine, "Status snapshot", _currentStatus, ""));
-                }
+                _writer.Trace(string.Join(Environment.NewLine, "Status snapshot", _currentStatus, ""));
             }
         }
     }
