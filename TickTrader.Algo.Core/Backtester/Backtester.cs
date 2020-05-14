@@ -185,8 +185,8 @@ namespace TickTrader.Algo.Core
         {
             base.Dispose();
 
-            _executor?.Dispose();
             _control.Dispose();
+            _executor?.Dispose();
         }
 
         public TestingStatistics GetStats()

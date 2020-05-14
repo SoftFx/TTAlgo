@@ -26,6 +26,22 @@ namespace TickTrader.Algo.Core
             _pluginRef = pluginRef;
             _syncContext = updatesSync;
             IsIsolated = pluginRef.IsIsolated;
+
+            _container = PluginContainer.Load(_pluginRef.PackagePath, _pluginRef.IsIsolated);
+            Core = _container.CreateExecutor(_pluginRef.Id);
+
+            Core.IsGlobalMarshalingEnabled = true;
+            Core.IsBunchingRequired = IsIsolated || _syncContext != null;
+
+            Core.MarshalUpdate = MarshalUpdate;
+            Core.MarshalUpdates = MarshalUpdatesToContext;
+            Core.Stopped += () =>
+            {
+                if (_syncContext != null)
+                    _syncContext.Invoke(() => Stopped?.Invoke(this));
+                else
+                    Stopped?.Invoke(this);
+            };
         }
 
         internal PluginExecutorCore Core { get; private set; }
@@ -56,38 +72,13 @@ namespace TickTrader.Algo.Core
 
         public void Start()
         {
-            if (_container != null)
-                throw new Exception("Plugin already started");
-
-            _container = PluginContainer.Load(_pluginRef.PackagePath, _pluginRef.IsIsolated);
-            Core = _container.CreateExecutor(_pluginRef.Id);
-
-            Core.IsGlobalMarshalingEnabled = true;
-            Core.IsBunchingRequired = IsIsolated || _syncContext != null;
-
-            Core.MarshalUpdate = MarshalUpdate;
-            Core.MarshalUpdates = MarshalUpdatesToContext;
-            Core.Stopped += () =>
-            {
-                if (_syncContext != null)
-                    _syncContext.Invoke(() => Stopped?.Invoke(this));
-                else
-                    Stopped?.Invoke(this);
-            };
-
             ConfigurateCore();
             Core.Start();
         }
 
         public void Stop()
         {
-            if (_container == null)
-                throw new Exception("Plugin already stopped");
-
             Core.Stop();
-
-            _container.Dispose();
-            _container = null;
         }
 
         public Task StopAsync()
@@ -122,6 +113,7 @@ namespace TickTrader.Algo.Core
         public override void Dispose()
         {
             DisposeProxies();
+            _container.Dispose();
             base.Dispose();
         }
 
