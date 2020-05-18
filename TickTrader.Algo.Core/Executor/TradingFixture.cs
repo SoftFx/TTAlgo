@@ -263,10 +263,9 @@ namespace TickTrader.Algo.Core
                 {
                     var order = ApplyOrderEntity(eReport, orderCollection);
                     var clone = order.Clone();
-                    var args = new OrderCanceledEventArgsImpl(clone);
                     if (!IsInvisible(clone))
                         context.Logger.NotifyOrderExpiration(clone);
-                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(args));
+                    context.EnqueueEvent(b => orderCollection.FireOrderExpired(new OrderExpiredEventArgsImpl(clone)));
                 }
             }
             else if (eReport.ExecAction == OrderExecAction.Modified)

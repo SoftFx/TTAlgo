@@ -32,7 +32,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Take Profit", DefaultValue = null, IsRequired = false)]
         public double? TakeProfit { get; set; }
 
-        [Parameter(DisplayName = "Slippage", DefaultValue = null, IsRequired = false)]
+        [Parameter(DisplayName = "Slippage (fraction)", DefaultValue = null, IsRequired = false)]
         public double? Slippage { get; set; }
 
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]

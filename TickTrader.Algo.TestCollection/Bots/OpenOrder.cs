@@ -35,7 +35,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Stop Loss", DefaultValue = null, IsRequired = false)]
         public double? StopLoss { get; set; }
 
-        [Parameter(DisplayName = "Slippage", DefaultValue = null, IsRequired = false)]
+        [Parameter(DisplayName = "Slippage (fraction)", DefaultValue = null, IsRequired = false)]
         public double? Slippage { get; set; }
 
         [Parameter(DisplayName = "Take Profit", DefaultValue = null, IsRequired = false)]

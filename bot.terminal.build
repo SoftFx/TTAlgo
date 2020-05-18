@@ -1,6 +1,6 @@
 <project name="TickTrader Algo" default="help">
 
-  <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\"      unless="${property::exists('MSBuildDir')}" />
+  <property name="MSBuildDir"          value="c:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\16.0\Bin\"      unless="${property::exists('MSBuildDir')}" />
   <property name="NSIS_Path"           value="c:\Program Files (x86)\NSIS\"      unless="${property::exists('NSIS_Path')}" />
   <property name="WinScpPath"          value="c:\Program Files (x86)\WinSCP\WinSCP.com" unless="${property::exists('WinScpPath')}" />
 
@@ -24,7 +24,7 @@
   <property name="CoreBinDir"          value="${SourcesDir}TickTrader.Algo.Core\bin\${Configuration}" />
   <property name="VsPackageBinDir"     value="${SourcesDir}TickTrader.Algo.VS.Package\bin\${Configuration}"/>
   <property name="TerminalBinDir"      value="${SourcesDir}TickTrader.BotTerminal\bin\${Configuration}\" />
-  <property name="AgentBinDir"         value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net462\publish\" />
+  <property name="AgentBinDir"         value="${SourcesDir}TickTrader.BotAgent\bin\${Configuration}\net472\publish\" />
   <property name="ConfiguratorBinDir"  value="${SourcesDir}TickTrader.BotAgent.Configurator\bin\${Configuration}\" />
 
   <property name="CoreZipFile"         value="${OutputFolder}Core ${Build}.zip" />
@@ -288,7 +288,7 @@
       <arg value="build" />
       <arg value="path=${SourcesDir}${Package.Name}\bin\${Configuration}"/>
       <arg value="main=${Package.Name}.dll"/>
-      <arg value="runtime=.NETFramework,Version=v4.5.2" />
+      <arg value="runtime=.NETFramework,Version=v4.7.2" />
       <arg value="ide=VS14.0" />
       <arg value="project=${SourcesDir}${Package.Name}\${Package.Name}.csproj" />
       <arg value="workspace=${SolutionFile}" />

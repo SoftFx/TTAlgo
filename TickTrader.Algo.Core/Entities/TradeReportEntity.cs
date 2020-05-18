@@ -61,6 +61,10 @@ namespace TickTrader.Algo.Core
         public bool IsEmulatedEntity { get; set; }
         public bool MarketWithSlippage { get; set; }
         public bool ImmediateOrCancel { get; set; }
+        public double? ReqCloseQuantity { get; set; }
+        public double? ReqClosePrice { get; set; }
+        public double? ReqOpenQuantity { get; set; }
+        public double? ReqOpenPrice { get; set; }
 
         public int ActionId { get; set; }
 
@@ -105,10 +109,6 @@ namespace TickTrader.Algo.Core
         public double PositionLastQuantity => CloseQuantity;
         public double PosOpenReqPrice { get; set; }
         public DateTime PositionOpened { get; set; }
-        public double? ReqCloseQuantity { get; set; }
-        public double? ReqClosePrice { get; set; }
-        public double? ReqOpenQuantity { get; set; }
-        public double? ReqOpenPrice { get; set; }
         public DateTime OrderModified { get; set; }
         public DateTime OrderCreated { get; set; }
         public bool IsReducedOpenCommission { get; set; }

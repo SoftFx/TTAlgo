@@ -411,7 +411,7 @@ namespace TickTrader.Algo.Core
             str.Append(str.Length == 0 ? " (" : ", ").Append($"{name}:");
 
             if (format == null)
-                str.AppendNumber(value.Value);
+                str.Append(value.Value.ToString("0.#########################"));
             else
                 str.AppendNumber(value.Value, format);
         }

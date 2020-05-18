@@ -100,7 +100,7 @@ namespace TickTrader.Algo.Api
         }
 
         [Obsolete]
-        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
+        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
             return context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment, options, tag);
         }
@@ -171,7 +171,7 @@ namespace TickTrader.Algo.Api
             return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null,  string comment = "", string tag = null)
+        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null, string comment = "", string tag = null)
         {
             return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
