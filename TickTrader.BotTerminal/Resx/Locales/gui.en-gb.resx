@@ -502,10 +502,10 @@
     <value>max Balance</value>
   </data>
   <data name="OptMode_Bruteforce" xml:space="preserve">
-    <value>Slow (brute-force)</value>
+    <value>Brute-force (slow)</value>
   </data>
   <data name="OptMode_Genetic" xml:space="preserve">
-    <value>Fast (genetic)</value>
+    <value>Genetic (fast)</value>
   </data>
   <data name="Tab_Alert" xml:space="preserve">
     <value>Alerts</value>
@@ -521,5 +521,8 @@
   </data>
   <data name="Order_PriceDeviation" xml:space="preserve">
     <value>Price Deviation</value>
+  </data>
+  <data name="OptMode_Annealing" xml:space="preserve">
+    <value>Simulated Annealing (fast)</value>
   </data>
 </root>

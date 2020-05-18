@@ -1,0 +1,135 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cal="http://www.caliburnproject.org"
+                    xmlns:l="clr-namespace:TickTrader.BotTerminal"
+                    xmlns:core="clr-namespace:TickTrader.Algo.Core;assembly=TickTrader.Algo.Core">
+
+    <ControlTemplate x:Key="OptimizerAlgorithmSetup.Classic">
+        <Grid Background="{TemplateBinding Background}" MinWidth="350">
+            <Grid.Resources>
+                <Style TargetType="TextBox">
+                    <Setter Property="Margin" Value="5 0 5 5"/>
+                </Style>
+
+                <Style TargetType="ComboBox">
+                    <Setter Property="Margin" Value="5 0 5 5"/>
+                </Style>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid Name="GenConfigPanel" DataContext="{Binding GenConfig}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" Content="CountGenInPopulations"/>
+                    <TextBox Grid.Column="0" Grid.Row="1" Text="{Binding CountGenInPopulations}"/>
+
+                    <Label Grid.Column="1" Grid.Row="0" Content="CountSurvivingGen"/>
+                    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding CountSurvivingGen}"/>
+
+                    <Label Grid.Column="0" Grid.Row="2" Content="CountMutationGen"/>
+                    <TextBox Grid.Column="0" Grid.Row="3" Text="{Binding CountMutationGen}"/>
+
+                    <Label Grid.Column="1" Grid.Row="2" Content="CountGeneration"/>
+                    <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding CountGeneration}"/>
+
+                    <Label Grid.Column="0" Grid.Row="4" Content="MutationMode"/>
+                    <ComboBox Grid.Column="0" Grid.Row="5" ItemsSource="{l:EnumToItemSource {x:Type core:MutationMode}}" SelectedValue="{Binding MutationMode}"/>
+
+                    <Label Grid.Column="1" Grid.Row="4" Content="SurvivingMode"/>
+                    <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{l:EnumToItemSource {x:Type core:SurvivingMode}}" SelectedValue="{Binding SurvivingMode}"/>
+
+                    <Label Grid.Column="0" Grid.Row="6" Content="ReproductionMode"/>
+                    <ComboBox Grid.Column="0" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:RepropuctionMode}}" SelectedValue="{Binding ReproductionMode}"/>
+                </Grid>
+                <Grid Name="AnnConfigPanel" Visibility="Collapsed" DataContext="{Binding AnnConfig}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" Content="InitialTemperature"/>
+                    <TextBox Grid.Column="0" Grid.Row="1" Text="{Binding InitialTemperature}"/>
+
+                    <Label Grid.Column="1" Grid.Row="0" Content="DeltaTemparature"/>
+                    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding DeltaTemparature}"/>
+
+                    <Label Grid.Column="0" Grid.Row="2" Content="InnerIterationCount"/>
+                    <TextBox Grid.Column="0" Grid.Row="3" Text="{Binding InnerIterationCount}"/>
+
+                    <Label Grid.Column="1" Grid.Row="2" Content="OutherIterationCount"/>
+                    <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding OutherIterationCount}"/>
+
+                    <Label Grid.Column="0" Grid.Row="4" Content="VeryFastTempDecrement"/>
+                    <TextBox Grid.Column="0" Grid.Row="5" Text="{Binding VeryFastTempDecrement}"/>
+
+                    <Label Grid.Column="1" Grid.Row="4" Content="DecreaseConditionMode"/>
+                    <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{l:EnumToItemSource {x:Type core:DecreaseConditionMode}}" SelectedValue="{Binding DecreaseConditionMode}"/>
+
+                    <Label Grid.Column="0" Grid.Row="6" Content="MethodForT"/>
+                    <ComboBox Grid.Column="0" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:SimulatedAnnialingMethod}}" SelectedValue="{Binding MethodForT}"/>
+
+                    <Label Grid.Column="1" Grid.Row="6" Content="MethodForG"/>
+                    <ComboBox Grid.Column="1" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:SimulatedAnnialingMethod}}" SelectedValue="{Binding MethodForG}"/>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0 20 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Content="Ok" Grid.Column="0" IsEnabled="{Binding IsValid.Value}"
+                        cal:Message.Attach="Ok"
+                        Style="{StaticResource Backtester.Classic.DlgButtonStyle}"/>
+                <Button Content="Cancel"
+                        cal:Message.Attach="Cancel"
+                        Style="{StaticResource Backtester.Classic.DlgButtonStyle}"
+                        Grid.Column="1"/>
+            </Grid>
+        </Grid>
+
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding Algo}" Value="{x:Static l:OptimizationAlgorithms.Genetic}">
+                <Setter TargetName="GenConfigPanel" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="AnnConfigPanel" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Algo}" Value="{x:Static l:OptimizationAlgorithms.Annealing}">
+                <Setter TargetName="GenConfigPanel" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="AnnConfigPanel" Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="OptimizerAlgorithmSetupViewStyle.Classic" TargetType="Window">
+        <Setter Property="Template" Value="{StaticResource OptimizerAlgorithmSetup.Classic}"/>
+        <Setter Property="ResizeMode" Value="NoResize"/>
+        <Setter Property="SizeToContent" Value="WidthAndHeight"/>
+        <Setter Property="Background" Value="{DynamicResource Dialog_Background}"/>
+    </Style>
+</ResourceDictionary>

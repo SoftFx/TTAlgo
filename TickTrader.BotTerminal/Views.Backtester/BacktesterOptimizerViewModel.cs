@@ -12,6 +12,9 @@ using TickTrader.Algo.Core.Metadata;
 
 namespace TickTrader.BotTerminal
 {
+
+    public enum OptimizationAlgorithms { Bruteforce, Genetic, Annealing }
+
     internal class BacktesterOptimizerViewModel : Page
     {
         private static readonly Dictionary<string, MetricProvider> MetricSelectors = new Dictionary<string, MetricProvider>();
@@ -21,11 +24,12 @@ namespace TickTrader.BotTerminal
             MetricSelectors.Add("Equity", new MetricProvider.Equity());
             MetricSelectors.Add("Custom", new MetricProvider.Custom());
         }
+        
+        private readonly GenConfig _genConfig = new GenConfig();
+        private readonly AnnConfig _annConfig = new AnnConfig();
 
         private PluginDescriptor _descriptor;
         private WindowManager _localWnd;
-
-        public enum OptimizationAlgorithms { Bruteforce, Genetic, Annialing }
 
         public BacktesterOptimizerViewModel(WindowManager manager, BoolVar isRunning)
         {
@@ -40,6 +44,19 @@ namespace TickTrader.BotTerminal
             SelectedMetric.Value = MetricSelectors.First();
 
             CanSetup = !isRunning;
+
+
+            _genConfig = new GenConfig()
+            {
+                CountGenInPopulations = 10,
+                CountSurvivingGen = 5,
+                CountMutationGen = 10,
+                CountGeneration = 100,
+
+                MutationMode = MutationMode.Step,
+                SurvivingMode = SurvivingMode.Uniform,
+                ReproductionMode = RepropuctionMode.IndividualGen,
+            };
         }
 
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
@@ -65,10 +82,10 @@ namespace TickTrader.BotTerminal
                     optimizer.SetSeekStrategy(new BruteforceStrategy());
                     break;
                 case OptimizationAlgorithms.Genetic:
-                    optimizer.SetSeekStrategy(new GeneticStrategy());
+                    optimizer.SetSeekStrategy(new GeneticStrategy(_genConfig));
                     break;
-                case OptimizationAlgorithms.Annialing:
-                    optimizer.SetSeekStrategy(new AnnialingStrategy());
+                case OptimizationAlgorithms.Annealing:
+                    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig));
                     break;
             }
         }
@@ -97,6 +114,16 @@ namespace TickTrader.BotTerminal
             //IsOptimizatioPossibleProp.Value = canOptimize;
             //if (!canOptimize)
             //    ModeProp.Value = OptimizationAlgorythm.Disabled;
+        }
+
+        public async void OpenAlgoSetup()
+        {
+            var setupWndModel = new OptimizerAlgorithmSetupViewModel(AlgorithmProp.Value, _annConfig, _genConfig);
+
+            _localWnd.OpenMdiWindow("SetupAuxWnd", setupWndModel);
+
+            //if (await setupWndModel.Result)
+                
         }
 
         public IEnumerable<ParameterDescriptor> GetSelectedParams()

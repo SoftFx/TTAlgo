@@ -10,18 +10,15 @@ namespace TickTrader.Algo.Core
     public class BruteforceStrategy : ParamSeekStrategy
     {
         private IEnumerator<Params> _e;
-        private long _casesLeft;
+        //private long _casesLeft;
 
-        public override long CaseCount => Params.Values.Aggregate(1, (s, p) => s * p.Size);
+        public override long CaseCount => InitParams.Values.Aggregate(1, (s, p) => s * p.Size);
 
         public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
-            _casesLeft = CaseCount;
+            SetQueue(queue);
 
-            if (_casesLeft <= 0)
-                return;
-
-            int firstPartSize = (int)Math.Min(_casesLeft, (long)degreeOfParallelism * 2);
+            int firstPartSize = (int)Math.Min(CaseCount, (long)degreeOfParallelism * 2);
 
             _e = GetCases().GetEnumerator();
 
@@ -29,16 +26,15 @@ namespace TickTrader.Algo.Core
             {
                 if (!_e.MoveNext())
                     break;
-                queue.Enqueue(_e.Current);
+
+                SendParams(_e.Current);
             }
         }
 
-        public override long OnCaseCompleted(OptCaseReport report, IBacktestQueue queue)
+        public override long OnCaseCompleted(OptCaseReport report)
         {
             if (_e.MoveNext())
-                queue.Enqueue(_e.Current);
-
-            _casesLeft--;
+                SendParams(_e.Current);
             return _casesLeft;
         }
 
@@ -49,7 +45,7 @@ namespace TickTrader.Algo.Core
                 var rm = i;
                 var cfgCase = new Params(i);
 
-                foreach (var p in Params)
+                foreach (var p in InitParams)
                 {
                     var set = p.Value;
                     var valCount = set.Size;

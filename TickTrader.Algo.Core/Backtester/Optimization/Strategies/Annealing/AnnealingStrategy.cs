@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class AnnialingStrategy : ParamSeekStrategy
+    public class AnnealingStrategy : ParamSeekStrategy
     {
         private AnnConfig _config;
         private Params _currentBestSet;
@@ -22,28 +22,33 @@ namespace TickTrader.Algo.Core
 
         public override long CaseCount => 100;
 
+        public AnnealingStrategy(AnnConfig config)
+        {
+            _config = config;
+        }
+
         public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
             _casesLeft = CaseCount;
 
-            _config = new AnnConfig()
-            {
-                InitialTemperature = 100, // boltzman: 1
-                DeltaTemparature = 0.1,
-                InnerIterationCount = 1,
-                OutherIterationCount = 1000000,
-                VeryFastTempDecrement = 0.1,
-                DecreaseConditionMode = DecreaseConditionMode.ImproveAnswer,
-                MethodForT = SimulatedAnnialingMethod.VeryFast,
-                MethodForG = SimulatedAnnialingMethod.VeryFast,
-            };
+            //_config = new AnnConfig()
+            //{
+            //    InitialTemperature = 100, // boltzman: 1
+            //    DeltaTemparature = 0.1,
+            //    InnerIterationCount = 1,
+            //    OutherIterationCount = 1000000,
+            //    VeryFastTempDecrement = 0.1,
+            //    DecreaseConditionMode = DecreaseConditionMode.ImproveAnswer,
+            //    MethodForT = SimulatedAnnialingMethod.VeryFast,
+            //    MethodForG = SimulatedAnnialingMethod.VeryFast,
+            //};
 
             _currentStepInnerCycle = 0;
             _currentStep = 1;
 
             _currentBestSet = new Params(0);
 
-            foreach (var p in Params)
+            foreach (var p in InitParams)
                 _currentBestSet.Add(p.Key, p.Value);
 
             _currentSet = _currentBestSet;
@@ -52,7 +57,7 @@ namespace TickTrader.Algo.Core
             _currentTemp = _config.InitialTemperature;
         }
 
-        public override long OnCaseCompleted(OptCaseReport report, IBacktestQueue queue)
+        public override long OnCaseCompleted(OptCaseReport report)
         {
             _casesLeft--;
 
@@ -77,7 +82,7 @@ namespace TickTrader.Algo.Core
 
             CalculateSet();
 
-            queue.Enqueue(_currentSet);
+            //queue.Enqueue(_currentSet);
 
             return _casesLeft;
         }
@@ -171,38 +176,5 @@ namespace TickTrader.Algo.Core
             else
                 return Math.Exp((double)(_currentBestSet.Result - _currentSet.Result) / _currentTemp) >= generator.GetPart(); // h = e^(-deltaE/T) - при поиске минимума
         }
-    }
-
-    public class AnnConfig
-    {
-        public double InitialTemperature { get; set; }
-
-        public double DeltaTemparature { get; set; }
-
-        public long InnerIterationCount { get; set; }
-
-        public long OutherIterationCount { get; set; }
-
-        public double VeryFastTempDecrement { get; set; }
-
-        public DecreaseConditionMode DecreaseConditionMode { get; set; }
-
-        public SimulatedAnnialingMethod MethodForT { get; set; }
-
-        public SimulatedAnnialingMethod MethodForG { get; set; }
-    }
-
-    public enum DecreaseConditionMode
-    {
-        ImproveAnswer,
-        FullCycle,
-    }
-
-    public enum SimulatedAnnialingMethod
-    {
-        Custom,
-        Boltzmann,
-        Cauchy,
-        VeryFast,
     }
 }

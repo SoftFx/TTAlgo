@@ -12,49 +12,60 @@ namespace TickTrader.Algo.Core
         private GenConfig _config;
         private int _currentCaseNumber = 0;
         private int _pointer = 0;
-        private long _casesLeft;
+        //private long _casesLeft;
         private List<Params> _container = new List<Params>();
-
+        private int _receivedCount = 0;
 
         public int SurvivingSize => _config?.CountSurvivingGen ?? 0;
 
         public int PopulationSize => _config?.CountGenInPopulations ?? 0;
 
-        public override long CaseCount => 100;
+        public override long CaseCount => _config.CountGenInPopulations * _config.CountGeneration;
+
+
+        public GeneticStrategy(GenConfig config)
+        {
+            _config = config;
+        }
 
         public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
-            _casesLeft = CaseCount;
-
-            _config = new GenConfig()
-            {
-                CountGenInPopulations = 10,
-                CountSurvivingGen = 5,
-                CountMutationGen = 10,
-                CountGeneration = 100,
-
-                MutationMode = MutationMode.Step,
-                SurvivingMode = SurvivingMode.Uniform,
-                ReproductionMode = RepropuctionMode.IndividualGen,
-            };
+            SetQueue(queue);
+            //_casesLeft = CaseCount;
 
             GenerateFirstSet();
-
-            _container.Foreach(u => queue.Enqueue(u));
         }
 
-        public override long OnCaseCompleted(OptCaseReport report, IBacktestQueue queue)
+        public override long OnCaseCompleted(OptCaseReport report)
         {
-            _casesLeft--;
+            if (++_receivedCount == PopulationSize)
+            {
+                do
+                {
+                    GenerateNewGeneration();
 
-            if (_pointer < _container.Count)
-                _container[_pointer].Result = report.MetricVal;
-            else
-                GenerateNewGeneration();
+                    _receivedCount = 0;
 
-            if (_casesLeft > 0)
-                queue.Enqueue(_container[_pointer++]);
+                    foreach (var g in _container)
+                    {
+                        if (!SendParams(g))
+                            _receivedCount++;
+                    }
+                }
+                while (_receivedCount == PopulationSize);
+            }
+            //_casesLeft--;
 
+            //if (_pointer < _container.Count)
+            //    //_container[_pointer].Result = report.MetricVal;
+            //else
+
+
+            //if (_casesLeft > 0)
+            //    ;
+            //    //queue.Enqueue(_container[_pointer++]);
+
+            //return SendParams(_container[_pointer++]);
             return _casesLeft;
         }
 
@@ -169,14 +180,17 @@ namespace TickTrader.Algo.Core
             {
                 var gen = new Params(_currentCaseNumber);
 
-                foreach (var v in Params)
+                foreach (var v in InitParams)
                 {
                     var value = v.Value;
                     gen.Add(v.Key, v.Value.GetParamValue(generator.GetInt(value.Size)));
                 }
 
+                SendParams(gen);
                 _container.Add(gen);
             }
+
+            //_container.Foreach(u => );
         }
 
 
@@ -184,7 +198,7 @@ namespace TickTrader.Algo.Core
         private void StepMutation(int index, string key)
         {
             //_container[index].Parameters[key] = Params[key].GetParamValue(generator.GetBool() ? 1 : -1);
-            _container[index].Parameters[key] = Params[key].GetParamValue(generator.GetInt(Params[key].Size));
+            _container[index].Parameters[key] = InitParams[key].GetParamValue(generator.GetInt(InitParams[key].Size));
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,42 +214,5 @@ namespace TickTrader.Algo.Core
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //private void AlphaMutation(int index, int indexParam) => _container[index][indexParam] = BestSet[indexParam].FullCopy();
-    }
-
-    public class GenConfig
-    {
-        public int CountGenInPopulations { get; set; }
-
-        public int CountSurvivingGen { get; set; }
-
-        public int CountMutationGen { get; set; }
-
-        public int CountGeneration { get; set; }
-
-        public MutationMode MutationMode { get; set; }
-
-        public SurvivingMode SurvivingMode { get; set; }
-
-        public RepropuctionMode ReproductionMode { get; set; }
-    }
-
-    public enum MutationMode
-    {
-        Step,
-        Jump,
-        AlphaGen,
-    }
-
-    public enum SurvivingMode
-    {
-        Roulette,
-        Uniform,
-        SigmaClipping,
-    }
-
-    public enum RepropuctionMode
-    {
-        IndividualGen,
-        CommonGen,
     }
 }

@@ -273,7 +273,7 @@ namespace TickTrader.Algo.Core
                     }
                 }
 
-                var casesLeft = SeekStrategy.OnCaseCompleted(report, this);
+                var casesLeft = SeekStrategy.OnCaseCompleted(report);
                 if (casesLeft <= 0)
                     _workerBlock.Complete();
 

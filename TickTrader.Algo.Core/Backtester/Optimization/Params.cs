@@ -18,6 +18,11 @@ namespace TickTrader.Algo.Core
 
         public int Count => Parameters.Count;
 
+        public Params()
+        {
+            Id = -1;
+        }
+
         public Params(long id)
         {
             Id = id;
@@ -52,6 +57,11 @@ namespace TickTrader.Algo.Core
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Parameters.GetEnumerator();
+        }
+
+        public override int GetHashCode()
+        {
+            return Parameters.Values.GetHashCode();
         }
 
         public object Clone()
