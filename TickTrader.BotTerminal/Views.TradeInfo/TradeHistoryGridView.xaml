@@ -89,7 +89,7 @@
                                                 <TextBlock.Text>
                                                     <MultiBinding Converter="{StaticResource PriceConverter}" >
                                                         <Binding Path="PosRemainingPrice"/>
-                                                        <Binding Path="PriceDigits"/>
+                                                        <Binding Path="ProfitDigits"/>
                                                     </MultiBinding>
                                                 </TextBlock.Text>
                                             </TextBlock>
@@ -100,14 +100,7 @@
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
-                                            <TextBlock VerticalAlignment="Center">
-                                                <TextBlock.Text>
-                                                    <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                        <Binding Path="ReqSlippage"/>
-                                                        <Binding Path="PriceDigits"/>
-                                                    </MultiBinding>
-                                                </TextBlock.Text>
-                                            </TextBlock>
+                                            <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </StackPanel>
 
@@ -312,14 +305,7 @@
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
-                                            <TextBlock VerticalAlignment="Center">
-                                                <TextBlock.Text>
-                                                    <MultiBinding Converter="{StaticResource PriceConverter}" >
-                                                        <Binding Path="ReqSlippage"/>
-                                                        <Binding Path="PriceDigits"/>
-                                                    </MultiBinding>
-                                                </TextBlock.Text>
-                                            </TextBlock>
+                                            <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Visibility="{Binding OrderExecutionOption, Converter={StaticResource NullOrEmptyToVis}}">
                                             <TextBlock Text="Option: " VerticalAlignment="Center" />
@@ -496,6 +482,7 @@
                                     <Binding Path="SplitReqVolume"/>
                                     <Binding Path="SplitReqPrice"/>
                                     <Binding Path="SplitRatio"/>
+                                    <Binding Path="ReqSlippage"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
@@ -513,6 +500,10 @@
                                     <StackPanel Orientation="Horizontal" Visibility="{Binding SplitRatio, Converter={StaticResource NullOrEmptyToVis}}">
                                         <TextBlock Text="Split Ratio: " VerticalAlignment="Center" />
                                         <TextBlock Text="{Binding SplitRatio}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding ReqSlippage, Converter={StaticResource NullOrEmptyToVis}}">
+                                        <TextBlock Text="ReqSlippage: " VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding ReqSlippage, Converter={StaticResource Round}}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </StackPanel>
                             </Setter.Value>

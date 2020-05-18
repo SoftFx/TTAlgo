@@ -23,6 +23,7 @@
     <l:NumberConverter x:Key="PriceConverter" Type="Price" />
     <l:NumberConverter x:Key="AmountConverter" Type="Currency" />
     <l:NumberConverter x:Key="ClipboardNumberConverter" Type="Price" />
+    <l:DoubleRoundConverter x:Key="Round"/>
     <l:StringFormatConverter x:Key="StringFormat"/>
     <l:DoubleCmpConverter x:Key="CmpL" Mode="Less"/>
     <l:DoubleCmpConverter x:Key="CmpLe" Mode="LessOrEqual"/>
