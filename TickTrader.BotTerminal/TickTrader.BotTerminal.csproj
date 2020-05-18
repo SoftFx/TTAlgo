@@ -291,6 +291,7 @@
     <Compile Include="Converters\BoolConverters.cs" />
     <Compile Include="Converters\DateTimeConverters.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\DoubleRoundConverter.cs" />
     <Compile Include="Converters\DoubleToGridLengthConverter.cs" />
     <Compile Include="Converters\FallbackConverter.cs" />
     <Compile Include="Converters\GetFileNameFromPath.cs" />

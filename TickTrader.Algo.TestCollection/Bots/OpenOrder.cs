@@ -35,7 +35,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Stop Loss", DefaultValue = null, IsRequired = false)]
         public double? StopLoss { get; set; }
 
-        [Parameter(DisplayName = "Slippage", DefaultValue = null, IsRequired = false)]
+        [Parameter(DisplayName = "Slippage (fraction)", DefaultValue = null, IsRequired = false)]
         public double? Slippage { get; set; }
 
         [Parameter(DisplayName = "Take Profit", DefaultValue = null, IsRequired = false)]
@@ -50,7 +50,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         protected override void OnStart()
         {
             var res = OpenOrder(Symbol.Name, Type, Side, Volume, MaxVisibleVolume, Price, StopPrice, StopLoss, TakeProfit, Comment, Options, Tag,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null);//, Slippage);
+                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Slippage);
             Status.WriteLine($"ResultCode = {res.ResultCode}");
             if (res.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));

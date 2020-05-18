@@ -94,20 +94,20 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.OpenOrder(false, symbol, type, side, volume, price, sl, tp, comment, options, tag).Result;
         }
 
-        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume = null, double? price = null, double? stopPrice = null, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null, DateTime? expiration = null)//, double? slippage = null)
+        public OrderCmdResult OpenOrder(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume = null, double? price = null, double? stopPrice = null, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null, DateTime? expiration = null, double? slippage = null)
         {
-            return context.TradeApi.OpenOrder(false, symbol, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag, expiration, null/*slippage*/).Result;
+            return context.TradeApi.OpenOrder(false, symbol, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag, expiration, slippage).Result;
         }
 
         [Obsolete]
-        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side,  double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
+        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double volume, double price, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null)
         {
             return context.TradeApi.OpenOrder(true, symbol, type, side, volume, price, sl, tp, comment, options, tag);
         }
 
-        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null, DateTime? expiration = null)//, double? slippage = null)
+        public Task<OrderCmdResult> OpenOrderAsync(string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl = null, double? tp = null, string comment = "", OrderExecOptions options = OrderExecOptions.None, string tag = null, DateTime? expiration = null, double? slippage = null)
         {
-            return context.TradeApi.OpenOrder(true, symbol, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag, expiration, null/*slippage*/);
+            return context.TradeApi.OpenOrder(true, symbol, type, side, volume, maxVisibleVolume, price, stopPrice, sl, tp, comment, options, tag, expiration, slippage);
         }
 
         public OrderCmdResult CloseOrder(string orderId, double? volume = null)
@@ -145,9 +145,9 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.ModifyOrder(false, orderId, price, sl, tp, comment).Result;
         }
 
-        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null)//, double? slippage = null)
+        public OrderCmdResult ModifyOrder(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null, double? slippage = null)
         {
-            return context.TradeApi.ModifyOrder(false, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration, volume, options, null/*slippage*/).Result;
+            return context.TradeApi.ModifyOrder(false, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration, volume, options, slippage).Result;
         }
 
         [Obsolete]
@@ -156,9 +156,9 @@ namespace TickTrader.Algo.Api
             return context.TradeApi.ModifyOrder(true, orderId, price, sl, tp, comment);
         }
 
-        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null)//, double? slippage = null)
+        public Task<OrderCmdResult> ModifyOrderAsync(string orderId, double? price, double? stopPrice, double? maxVisibleVolume = null, double? sl = null, double? tp = null, string comment = "", DateTime? expiration = null, double? volume = null, OrderExecOptions? options = null, double? slippage = null)
         {
-            return context.TradeApi.ModifyOrder(true, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration, volume, options, null/*slippage*/);
+            return context.TradeApi.ModifyOrder(true, orderId, price, stopPrice, maxVisibleVolume, sl, tp, comment, expiration, volume, options, slippage);
         }
 
         #endregion
@@ -171,7 +171,7 @@ namespace TickTrader.Algo.Api
             return OpenOrder(Symbol.Name, OrderType.Market, OrderSide.Sell, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }
 
-        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null,  string comment = "", string tag = null)
+        public OrderCmdResult MarketSell(string symbol, double volume, double? sl = null, double? tp = null, string comment = "", string tag = null)
         {
             return OpenOrder(symbol, OrderType.Market, OrderSide.Sell, volume, tp: tp, sl: sl, comment: comment, tag: tag);
         }

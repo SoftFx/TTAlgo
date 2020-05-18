@@ -289,7 +289,7 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateSl(request.StopLoss, ref code))
                 return;
-            if (!ValidateSlippage(request.Slippage, smbMetadata.DefaultSlippage, ref code))
+            if (!ValidateSlippage(request.Slippage, ref code))
                 return;
 
             if (!ValidateMargin(request, smbMetadata, ref code))
@@ -397,7 +397,6 @@ namespace TickTrader.Algo.Core
             request.StopPrice = RoundPrice(request.StopPrice, smbMetadata, side);
             request.StopLoss = RoundPrice(request.StopLoss, smbMetadata, side);
             request.TakeProfit = RoundPrice(request.TakeProfit, smbMetadata, side);
-            request.Slippage = RoundPrice(request.Slippage, smbMetadata, side);
 
             if (!ValidatePrice(request.Price, false, ref code))
                 return;
@@ -411,7 +410,7 @@ namespace TickTrader.Algo.Core
                 return;
             if (!ValidateSl(request.StopLoss, ref code))
                 return;
-            if (!ValidateSlippage(request.Slippage, smbMetadata.DefaultSlippage, ref code))
+            if (!ValidateSlippage(request.Slippage, ref code))
                 return;
 
             if (!ValidateMargin(request, smbMetadata, ref code))
@@ -686,12 +685,12 @@ namespace TickTrader.Algo.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ValidateSlippage(double? slippage, double maxSlippage, ref OrderCmdResultCodes code)
+        private bool ValidateSlippage(double? slippage, ref OrderCmdResultCodes code)
         {
             if (slippage == null)
                 return true;
 
-            if (slippage.Value < 0 || IsInvalidValue(slippage.Value) || slippage.Value.Gt(maxSlippage))
+            if (slippage.Value < 0 || IsInvalidValue(slippage.Value))
             {
                 code = OrderCmdResultCodes.IncorrectSlippage;
                 return false;
