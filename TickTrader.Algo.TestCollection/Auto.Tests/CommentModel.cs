@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,28 +8,19 @@ using System.Threading.Tasks;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
-    internal abstract class CommentActionModel
+    internal class CommentActionModel
     {
         [JsonProperty]
         protected readonly string Type;
 
-        protected CommentActionModel(string type)
+        public CommentActionModel(ADCases type)
         {
-            Type = type;
+            Type = type.ToString();
         }
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    internal class RejectCommentModel : CommentActionModel
-    {
-        public RejectCommentModel() : base("Reject")
-        {
-
-        }
-    }
-
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class ConfirmCommentModel : CommentActionModel
+    internal class OrderCommentActionModel : CommentActionModel
     {
         [JsonProperty]
         private readonly double? Price;
@@ -36,55 +28,33 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         [JsonProperty]
         private readonly double? Volume;
 
-        public ConfirmCommentModel(double? price, double? volume) : base("Confirm")
+        public OrderCommentActionModel(ADCases type, double? volume = null, double? price = null) : base(type)
         {
             Price = price;
             Volume = volume;
         }
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class CancelCommentModel : CommentActionModel
+    internal class CommentModelManager : IEnumerable<CommentActionModel>
     {
-        public CancelCommentModel() : base("Cancel")
+        private List<CommentActionModel> _actions;
+
+        public CommentModelManager()
         {
-
-        }
-    }
-
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class ActivateCommentModel : CommentActionModel
-    {
-        [JsonProperty]
-        private readonly double? Price;
-
-        [JsonProperty]
-        private readonly double? Volume;
-
-        public ActivateCommentModel(double? price, double? volume) : base("Activate")
-        {
-            Price = price;
-            Volume = volume;
-        }
-    }
-
-    internal class CommentModel
-    {
-        private List<CommentActionModel> actions;
-
-        public CommentModel()
-        {
-            actions = new List<CommentActionModel>();
+            _actions = new List<CommentActionModel>();
         }
 
         public void Add(CommentActionModel action)
         {
-            actions.Add(action);
+            _actions.Add(action);
         }
 
-        public string Serialize()
-        {
-            return JsonConvert.SerializeObject(actions);
-        }
+        public string GetComment() => $"json:{JsonConvert.SerializeObject(_actions)}";
+
+        public IEnumerator<CommentActionModel> GetEnumerator() => _actions.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _actions.GetEnumerator();
     }
+
+    public enum ADCases { Reject, Confirm, Cancel, Activate }
 }

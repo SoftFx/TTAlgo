@@ -40,6 +40,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,9 +54,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auto.Tests\Extensions.cs" />
+    <Compile Include="Auto.Tests\OrderTemplate.cs" />
+    <Compile Include="Auto.Tests\TestParamsSet.cs" />
     <Compile Include="Auto.Tests\CommentModel.cs" />
     <Compile Include="Auto.Tests\CompositeTradeApiTest.cs" />
-    <Compile Include="Auto.Tests\OrderVerifier.cs" />
+    <Compile Include="Auto.Tests\HistoryOrderTemplate.cs" />
     <Compile Include="Bots\AccDisplayBot.cs" />
     <Compile Include="Bots\ApiCheckerBot.cs" />
     <Compile Include="Bots\BotStatusWriter.cs" />
@@ -112,6 +118,9 @@
     <Compile Include="Lib\DateTimeExt.cs" />
     <Compile Include="Lib\PrintExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

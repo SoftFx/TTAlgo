@@ -900,7 +900,7 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.CloseOnlyTrading;
                             else if (message == "Max visible amount is not valid for market orders" || message.StartsWith("Max visible amount is valid only for"))
                                 return Api.OrderCmdResultCodes.MaxVisibleVolumeNotSupported;
-                            else if (message.StartsWith("Order Not Found"))
+                            else if (message.StartsWith("Order Not Found") || message.EndsWith("was not found."))
                                 return Api.OrderCmdResultCodes.OrderNotFound;
                             else if (message.StartsWith("Invalid order type") || message.Contains("is not supported"))
                                 return Api.OrderCmdResultCodes.Unsupported;
@@ -913,7 +913,7 @@ namespace TickTrader.Algo.Common.Model
                     }
                 case RejectReason.None:
                     {
-                        if (message != null && message.StartsWith("Order Not Found"))
+                        if (message != null && (message.StartsWith("Order Not Found") || message.EndsWith("not found.")))
                             return Api.OrderCmdResultCodes.OrderNotFound;
                         return Api.OrderCmdResultCodes.Ok;
                     }
