@@ -24,6 +24,8 @@ namespace TickTrader.Algo.Core
 
         protected override T GetValue(int valNo)
         {
+            valNo = Math.Min(valNo, _selectedValues.Count - 1);
+            valNo = Math.Max(valNo, 0);
             return _selectedValues[valNo];
         }
 

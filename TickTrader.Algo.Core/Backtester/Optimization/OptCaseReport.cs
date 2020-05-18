@@ -9,7 +9,7 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class OptCaseReport
     {
-        public OptCaseReport(Params cfg, double metric, TestingStatistics stats, Exception error = null)
+        public OptCaseReport(ParamsMessage cfg, double metric, TestingStatistics stats, Exception error = null)
         {
             Config = cfg;
             MetricVal = metric;
@@ -17,7 +17,7 @@ namespace TickTrader.Algo.Core
             ExecError = error;
         }
 
-        public Params Config { get; }
+        public ParamsMessage Config { get; }
         public double MetricVal { get; }
         public Exception ExecError { get; }
         public TestingStatistics Stats { get; }

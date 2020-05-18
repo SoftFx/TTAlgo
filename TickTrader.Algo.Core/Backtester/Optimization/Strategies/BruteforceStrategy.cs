@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class BruteforceStrategy : ParamSeekStrategy
+    public class BruteforceStrategy : OptimizationAlgorithm
     {
-        private IEnumerator<Params> _e;
+        private IEnumerator<ParamsMessage> _e;
         //private long _casesLeft;
 
         public override long CaseCount => InitParams.Values.Aggregate(1, (s, p) => s * p.Size);
@@ -33,17 +33,15 @@ namespace TickTrader.Algo.Core
 
         public override long OnCaseCompleted(OptCaseReport report)
         {
-            if (_e.MoveNext())
-                SendParams(_e.Current);
-            return _casesLeft;
+            return _e.MoveNext() ? SendParams(_e.Current) : 0;
         }
 
-        private IEnumerable<Params> GetCases()
+        private IEnumerable<ParamsMessage> GetCases()
         {
             for (long i = 0; i < CaseCount; i++)
             {
                 var rm = i;
-                var cfgCase = new Params(i);
+                var cfgCase = new ParamsMessage(i);
 
                 foreach (var p in InitParams)
                 {

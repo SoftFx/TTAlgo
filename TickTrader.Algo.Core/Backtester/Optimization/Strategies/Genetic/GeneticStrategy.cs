@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class GeneticStrategy : ParamSeekStrategy
+    public class GeneticStrategy : OptimizationAlgorithm
     {
         private GenConfig _config;
-        private int _currentCaseNumber = 0;
-        private int _pointer = 0;
+        //private int _currentCaseNumber = 0;
+        //private int _pointer = 0;
         //private long _casesLeft;
         private List<Params> _container = new List<Params>();
         private int _receivedCount = 0;
@@ -31,13 +32,26 @@ namespace TickTrader.Algo.Core
         public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
             SetQueue(queue);
-            //_casesLeft = CaseCount;
-
             GenerateFirstSet();
+        }
+
+        private void GenerateFirstSet()
+        {
+            for (int i = 0; i < PopulationSize; ++i)
+            {
+                var gen = Set.Copy();
+
+                gen.ForEach(u => u.Up(generator.GetInt(u.StepsCount)));
+
+                _container.Add(gen);
+                SendParams(gen, ref _receivedCount);
+            }
         }
 
         public override long OnCaseCompleted(OptCaseReport report)
         {
+            SetResult(report.Config, report.MetricVal);
+
             if (++_receivedCount == PopulationSize)
             {
                 do
@@ -45,30 +59,18 @@ namespace TickTrader.Algo.Core
                     GenerateNewGeneration();
 
                     _receivedCount = 0;
+                    _container.ForEach(u => SendParams(u, ref _receivedCount));
 
-                    foreach (var g in _container)
-                    {
-                        if (!SendParams(g))
-                            _receivedCount++;
-                    }
+                    if (AlgoCompleate)
+                        return 0;
                 }
                 while (_receivedCount == PopulationSize);
             }
-            //_casesLeft--;
 
-            //if (_pointer < _container.Count)
-            //    //_container[_pointer].Result = report.MetricVal;
-            //else
-
-
-            //if (_casesLeft > 0)
-            //    ;
-            //    //queue.Enqueue(_container[_pointer++]);
-
-            //return SendParams(_container[_pointer++]);
             return _casesLeft;
         }
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void GenerateNewGeneration()
         {
             var gens = SurvivingGen();
@@ -77,59 +79,55 @@ namespace TickTrader.Algo.Core
             {
                 (int x, int y) = generator.GetRandomPair(gens.Count);
 
-                RepropuctionGen(_container[x], _container[y], gens);
+                gens.Add(RepropuctionGen(_container[x], _container[y]));
             }
 
-            _pointer = 0;
             _container = gens;
 
             MutationGen();
         }
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private List<Params> SurvivingGen()
         {
             var generation = new List<Params>(PopulationSize);
 
             switch (_config.SurvivingMode)
             {
-                //case SurvivingMode.Roulette:
-                //    Roulette(generation);
-                //    break;
+                case SurvivingMode.Roulette:
+                    Roulette(generation);
+                    break;
                 case SurvivingMode.Uniform:
                     UniformSurviving(generation);
                     break;
-                    //case SurvivingMode.SigmaClipping:
-                    //    SigmaClipping(generation);
-                    //    break;
+                case SurvivingMode.SigmaClipping:
+                    SigmaClipping(generation);
+                    break;
             }
 
             return generation;
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void RepropuctionGen(Params first, Params second, List<Params> gens)
+        private Params RepropuctionGen(Params first, Params second)
         {
             var crossover = generator.GetInt(1, first.Count);
 
-            var gen = new Params(++_currentCaseNumber);
+            var reproduction = new Params();
 
             switch (_config.ReproductionMode)
             {
-                //case RepropuctionMode.CommonGen:
-                //    gen.AddRange(first.Take(crossover));
-                //    gen.AddRange(second.Skip(crossover));
-                //    break;
+                case RepropuctionMode.CommonGen:
+                    reproduction.AddRange(first.Take(crossover));
+                    reproduction.AddRange(second.Skip(crossover));
+                    break;
                 case RepropuctionMode.IndividualGen:
-                    foreach (var p in first.Parameters.Take(crossover))
-                        gen.Add(p.Key, p.Value);
-                    foreach (var p in second.Parameters.Skip(crossover))
-                        gen.Add(p.Key, p.Value);
-                    //gen.AddCopyRange(first.Take(crossover));
-                    //gen.AddCopyRange(second.Skip(crossover));
+                    reproduction.AddCopyRange(first.Take(crossover));
+                    reproduction.AddCopyRange(second.Skip(crossover));
                     break;
             }
 
-            gens.Add(gen);
+            return reproduction;
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -141,78 +139,85 @@ namespace TickTrader.Algo.Core
             {
                 int index = generator.GetInt(_container.Count);
                 int indexParam = generator.GetInt(_container[index].Count);
-                //var gen = _container[index][indexParam];
-                string key = _container[index][indexParam];
+                var gen = _container[index][indexParam];
 
                 switch (_config.MutationMode)
                 {
                     case MutationMode.Step:
-                        StepMutation(index, key);
+                        StepMutation(gen);
                         break;
-                        //case MutationMode.Jump:
-                        //    JumpMutation(gen);
-                        //    break;
-                        //case MutationMode.AlphaGen:
-                        //    AlphaMutation(index, indexParam);
-                        //    break;
+                    case MutationMode.Jump:
+                        JumpMutation(gen);
+                        break;
+                    case MutationMode.AlphaGen:
+                        AlphaMutation(index, indexParam);
+                        break;
                 }
             }
         }
 
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UniformSurviving(List<Params> gens)
         {
-            var a = _container.OrderBy(_ => generator.GetInt()).ToList();
+            gens.AddRange(_container.OrderBy(_ => generator.GetInt()).Take(SurvivingSize));
+        }
 
-            for (int i = 0; i < SurvivingSize; ++i, ++_currentCaseNumber)
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Roulette(List<Params> gens)
+        {
+            var normalizeDelta = -Math.Min(-0.0, _container.Min(u => u.Result.Value));
+
+            GiveChance(gens, (x) => x + normalizeDelta);
+        }
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SigmaClipping(List<Params> gens)
+        {
+            var normalizeDelta = -Math.Min(-0.0, _container.Min(u => u.Result.Value));
+            var mean = _container.Sum(u => u.Result.Value + normalizeDelta) / PopulationSize;
+            var err = _container.Sum(u => Math.Pow(u.Result.Value + normalizeDelta - mean, 2)) / (PopulationSize - 1);
+            err = 2 * Math.Sqrt(err);
+
+            GiveChance(gens, (x) => 1.0 + (x + normalizeDelta - mean) / err);
+        }
+
+        private void GiveChance(List<Params> gens, Func<double, double> calculateF)
+        {
+            var sorted = _container.OrderByDescending(u => calculateF(u.Result.Value)).ToList();
+            var totalResult = _container.Sum(u => calculateF(u.Result.Value));
+
+            gens.AddRange(sorted.Take(SurvivingSize));
+
+            for (int i = SurvivingSize; i < PopulationSize; ++i)
             {
-                var gen = new Params(_currentCaseNumber);
+                var chance = generator.GetPart();
 
-                foreach (var v in a[i])
-                    gen.Add(v.Key, v.Value);
-
-                gens.Add(gen);
+                if ((calculateF(sorted[i].Result.Value) / totalResult).Gte(chance))
+                    gens[i - SurvivingSize] = sorted[i];
             }
         }
 
-        private void GenerateFirstSet()
-        {
-            for (int i = 0; i < PopulationSize; ++i, ++_currentCaseNumber)
-            {
-                var gen = new Params(_currentCaseNumber);
-
-                foreach (var v in InitParams)
-                {
-                    var value = v.Value;
-                    gen.Add(v.Key, v.Value.GetParamValue(generator.GetInt(value.Size)));
-                }
-
-                SendParams(gen);
-                _container.Add(gen);
-            }
-
-            //_container.Foreach(u => );
-        }
-
-
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void StepMutation(int index, string key)
+        private void StepMutation(AlgoParameter gen)
         {
-            //_container[index].Parameters[key] = Params[key].GetParamValue(generator.GetBool() ? 1 : -1);
-            _container[index].Parameters[key] = InitParams[key].GetParamValue(generator.GetInt(InitParams[key].Size));
+            if (generator.GetBool())
+                gen.Up();
+            else
+                gen.Down();
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //private void JumpMutation(Parameter gen)
-        //{
-        //    var jump = (int)((gen.Max - gen.Min) / gen.Step);
+        private void JumpMutation(AlgoParameter gen)
+        {
+            var jump = (int)((gen.Max - gen.Min) / gen.Step);
 
-        //    if (generator.GetBool())
-        //        gen.Up(jump);
-        //    else
-        //        gen.Down(jump);
-        //}
+            if (generator.GetBool())
+                gen.Up(jump);
+            else
+                gen.Down(jump);
+        }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //private void AlphaMutation(int index, int indexParam) => _container[index][indexParam] = BestSet[indexParam].FullCopy();
+        private void AlphaMutation(int index, int indexParam) => _container[index][indexParam] = BestSet[indexParam].FullCopy();
     }
 }

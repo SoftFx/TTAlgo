@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public class AnnealingStrategy : ParamSeekStrategy
+    public class AnnealingStrategy : OptimizationAlgorithm
     {
         private AnnConfig _config;
-        private Params _currentBestSet;
-        private Params _currentSet;
+        private ParamsMessage _currentBestSet;
+        private ParamsMessage _currentSet;
         private int _currentStepInnerCycle = 0;
         public double _currentTemp;
         public bool _updateSet;
@@ -46,7 +46,7 @@ namespace TickTrader.Algo.Core
             _currentStepInnerCycle = 0;
             _currentStep = 1;
 
-            _currentBestSet = new Params(0);
+            _currentBestSet = new ParamsMessage(0);
 
             foreach (var p in InitParams)
                 _currentBestSet.Add(p.Key, p.Value);
@@ -64,7 +64,7 @@ namespace TickTrader.Algo.Core
             if (!_currentBestSet.Result.HasValue || _currentBestSet.Result < report.MetricVal || AcceptState())
             {
                 _updateSet = true;
-                _currentBestSet = (Params)_currentSet.Clone();
+               // _currentBestSet = (ParamsMessage)_currentSet.Clone();
                 _currentBestSet.Result = report.MetricVal;
             }
 
@@ -92,7 +92,7 @@ namespace TickTrader.Algo.Core
         {
             _updateSet = false;
 
-            var set = new Params(++_currentCaseNumber);
+            var set = new ParamsMessage(++_currentCaseNumber);
 
             foreach (var state in _currentSet)
             {
