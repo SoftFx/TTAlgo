@@ -92,10 +92,10 @@
                     <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{l:EnumToItemSource {x:Type core:DecreaseConditionMode}}" SelectedValue="{Binding DecreaseConditionMode}"/>
 
                     <Label Grid.Column="0" Grid.Row="6" Content="MethodForT"/>
-                    <ComboBox Grid.Column="0" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:SimulatedAnnialingMethod}}" SelectedValue="{Binding MethodForT}"/>
+                    <ComboBox Grid.Column="0" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:SimulatedAnnealingMethod}}" SelectedValue="{Binding MethodForT}"/>
 
                     <Label Grid.Column="1" Grid.Row="6" Content="MethodForG"/>
-                    <ComboBox Grid.Column="1" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:SimulatedAnnialingMethod}}" SelectedValue="{Binding MethodForG}"/>
+                    <ComboBox Grid.Column="1" Grid.Row="7" ItemsSource="{l:EnumToItemSource {x:Type core:SimulatedAnnealingMethod}}" SelectedValue="{Binding MethodForG}"/>
                 </Grid>
             </Grid>
 

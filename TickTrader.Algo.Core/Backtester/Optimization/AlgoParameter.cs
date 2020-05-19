@@ -12,11 +12,7 @@ namespace TickTrader.Algo.Core
     {
         private double _cur;
 
-        //private Stack<double> _stack = new Stack<double>();
-
         public bool IsStub { get; protected set; }
-
-        public Type Type { get; }
 
         public double Step { get; }
 
@@ -45,11 +41,6 @@ namespace TickTrader.Algo.Core
         public AlgoParameter()
         {
             IsStub = true;
-        }
-
-        public AlgoParameter(double curent)
-        {
-            Current = curent;
         }
 
         public AlgoParameter(double min, double max, double step)

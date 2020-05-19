@@ -10,11 +10,8 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class GeneticStrategy : OptimizationAlgorithm
     {
-        private GenConfig _config;
-        //private int _currentCaseNumber = 0;
-        //private int _pointer = 0;
-        //private long _casesLeft;
         private List<Params> _container = new List<Params>();
+        private GenConfig _config;
         private int _receivedCount = 0;
 
         public int SurvivingSize => _config?.CountSurvivingGen ?? 0;

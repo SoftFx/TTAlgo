@@ -43,30 +43,21 @@ namespace TickTrader.Algo.Core
             return (first, second);
         }
 
-        public double GetNormalNumber()
+        public double GetNormalNumber(double mean, double variance)
         {
             while (true)
             {
                 double e1 = GetExponentialNumber(), e2 = GetExponentialNumber();
 
                 if (e2 > Math.Pow(e1 - 1, 2) / 2)
-                    return GetPart() < 0.5 ? -Math.Abs(e1) : Math.Abs(e1);
+                    return mean + (GetPart() < 0.5 ? -1 : 1) * Math.Abs(e1) *
+                        Math.Sqrt(variance);
             }
-
         }
 
         public double GetCauchyNumber() => Math.Tan(Math.PI * (GetPart() - 0.5));
 
         private double GetExponentialNumber() => -Math.Log(GetPart());
-
-        //public Parameter GetParameter(double maxValue, int stepNumber)
-        //{
-        //    var step = Math.Round(GetDouble(maxValue) / 10, stepNumber);
-        //    var min = GetWithCondition(() => GetDoubleInRange(-maxValue, maxValue), (x) => x.Lte(maxValue - step));
-        //    var max = GetWithCondition(() => GetDoubleInRange(-maxValue, maxValue), (x) => x.Gte(min));
-
-        //    return new Parameter(min, max, step);
-        //}
 
         public double GetDoubleWithCondition(double maxValue, Predicate<double> pred) => GetWithCondition(() => GetDouble(maxValue), pred);
 

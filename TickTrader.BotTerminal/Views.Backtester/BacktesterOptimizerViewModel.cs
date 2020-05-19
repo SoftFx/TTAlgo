@@ -24,7 +24,7 @@ namespace TickTrader.BotTerminal
             MetricSelectors.Add("Equity", new MetricProvider.Equity());
             MetricSelectors.Add("Custom", new MetricProvider.Custom());
         }
-        
+
         private readonly GenConfig _genConfig = new GenConfig();
         private readonly AnnConfig _annConfig = new AnnConfig();
 
@@ -57,6 +57,12 @@ namespace TickTrader.BotTerminal
                 SurvivingMode = SurvivingMode.Uniform,
                 ReproductionMode = RepropuctionMode.IndividualGen,
             };
+
+            _annConfig = new AnnConfig()
+            {
+                InitialTemperature = 100,
+                DeltaTemparature = 0.1,
+            };
         }
 
         public ObservableCollection<ParamSeekSetupModel> Parameters { get; } = new ObservableCollection<ParamSeekSetupModel>();
@@ -85,14 +91,14 @@ namespace TickTrader.BotTerminal
                     optimizer.SetSeekStrategy(new GeneticStrategy(_genConfig));
                     break;
                 case OptimizationAlgorithms.Annealing:
-                    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig));
+                    optimizer.SetSeekStrategy(new AnnealingStrategy(_annConfig, _descriptor.Parameters.Count));
                     break;
             }
         }
 
         public void SetPluign(PluginDescriptor descriptor, PluginSetupModel setup)
         {
-            _descriptor = new PluginDescriptor();
+            _descriptor = descriptor;
 
             Parameters.Clear();
 
@@ -121,9 +127,6 @@ namespace TickTrader.BotTerminal
             var setupWndModel = new OptimizerAlgorithmSetupViewModel(AlgorithmProp.Value, _annConfig, _genConfig);
 
             _localWnd.OpenMdiWindow("SetupAuxWnd", setupWndModel);
-
-            //if (await setupWndModel.Result)
-                
         }
 
         public IEnumerable<ParameterDescriptor> GetSelectedParams()

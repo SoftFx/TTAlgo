@@ -9,66 +9,68 @@ namespace TickTrader.Algo.Core
     [Serializable]
     public class AnnealingStrategy : OptimizationAlgorithm
     {
-        private AnnConfig _config;
-        private ParamsMessage _currentBestSet;
-        private ParamsMessage _currentSet;
+        private const double Error = 1e-5;
+
+        private readonly AnnConfig _config;
+        private readonly long _caseCount;
+        private double _currentTemp;
+        private int _currentStep = 1;
         private int _currentStepInnerCycle = 0;
-        public double _currentTemp;
-        public bool _updateSet;
-        private int _currentStep;
 
-        private int _currentCaseNumber = 0;
-        private long _casesLeft;
+        public override long CaseCount => _caseCount;
 
-        public override long CaseCount => 100;
-
-        public AnnealingStrategy(AnnConfig config)
+        public AnnealingStrategy(AnnConfig config, int paramsCount)
         {
             _config = config;
+            _currentTemp = _config.InitialTemperature;
+
+            var caseCount = 0.0;
+
+            switch (_config.MethodForT)
+            {
+                case SimulatedAnnealingMethod.Custom:
+                    if (_config.DecreaseConditionMode == DecreaseConditionMode.ImproveAnswer)
+                        caseCount = _config.InitialTemperature / _config.DeltaTemparature;
+                    else
+                    if (_config.DecreaseConditionMode == DecreaseConditionMode.FullCycle)
+                        caseCount = _config.InitialTemperature * _config.InnerIterationCount / _config.DeltaTemparature;
+                    break;
+                case SimulatedAnnealingMethod.Boltzmann:
+                    caseCount = Math.Exp(_config.InitialTemperature / Error - 1.0);
+                    break;
+                case SimulatedAnnealingMethod.Cauchy:
+                    caseCount = _config.InitialTemperature / Error;
+                    break;
+                case SimulatedAnnealingMethod.VeryFast:
+                    caseCount = Math.Pow(-Math.Log(Error / _config.InitialTemperature) / _config.VeryFastTempDecrement, paramsCount);
+                    break;
+            }
+
+            _caseCount = _config.OutherIterationCount.HasValue
+                ? (int)Math.Max(double.IsInfinity(caseCount) ? _config.OutherIterationCount.Value : caseCount, _config.OutherIterationCount.Value)
+                : (int)caseCount;
         }
 
         public override void Start(IBacktestQueue queue, int degreeOfParallelism)
         {
-            _casesLeft = CaseCount;
-
-            //_config = new AnnConfig()
-            //{
-            //    InitialTemperature = 100, // boltzman: 1
-            //    DeltaTemparature = 0.1,
-            //    InnerIterationCount = 1,
-            //    OutherIterationCount = 1000000,
-            //    VeryFastTempDecrement = 0.1,
-            //    DecreaseConditionMode = DecreaseConditionMode.ImproveAnswer,
-            //    MethodForT = SimulatedAnnialingMethod.VeryFast,
-            //    MethodForG = SimulatedAnnialingMethod.VeryFast,
-            //};
-
-            _currentStepInnerCycle = 0;
-            _currentStep = 1;
-
-            _currentBestSet = new ParamsMessage(0);
-
-            foreach (var p in InitParams)
-                _currentBestSet.Add(p.Key, p.Value);
-
-            _currentSet = _currentBestSet;
-            queue.Enqueue(_currentBestSet);
-
-            _currentTemp = _config.InitialTemperature;
+            SetQueue(queue);
+            SendParams(Set, ref _currentStep);
         }
 
         public override long OnCaseCompleted(OptCaseReport report)
         {
-            _casesLeft--;
+            SetResult(report.Config, report.MetricVal);
 
-            if (!_currentBestSet.Result.HasValue || _currentBestSet.Result < report.MetricVal || AcceptState())
+            if (Set == BestSet || AcceptState())
             {
-                _updateSet = true;
-               // _currentBestSet = (ParamsMessage)_currentSet.Clone();
-                _currentBestSet.Result = report.MetricVal;
+                if (Set != BestSet)
+                    BestSet = Set.Copy();
+
+                if (_config.DecreaseConditionMode == DecreaseConditionMode.ImproveAnswer)
+                    DecreaseTemperature();
             }
 
-            if (_currentTemp <= 1e-5 || _currentStep > _config.OutherIterationCount)
+            if (_currentTemp <= Error || _currentStep > _config.OutherIterationCount)
                 return 0;
 
             if (_config.DecreaseConditionMode == DecreaseConditionMode.FullCycle && _currentStepInnerCycle++ >= _config.InnerIterationCount)
@@ -77,104 +79,100 @@ namespace TickTrader.Algo.Core
                 DecreaseTemperature();
             }
 
-            if (_config.DecreaseConditionMode == DecreaseConditionMode.ImproveAnswer && _updateSet)
-                DecreaseTemperature();
+            do
+            {
+                int send = 0;
+                CalculateSet();
 
-            CalculateSet();
+                SendParams(Set, ref send);
 
-            //queue.Enqueue(_currentSet);
+                if (send == 0)
+                    return _casesLeft;
 
-            return _casesLeft;
+                if (AlgoCompleate)
+                    return 0;
+            }
+            while (true);
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CalculateSet()
         {
-            _updateSet = false;
+            const int maxIteration = 10;
 
-            var set = new ParamsMessage(++_currentCaseNumber);
-
-            foreach (var state in _currentSet)
+            foreach (var state in Set)
             {
                 var iteration = 0;
 
-                while (iteration++ < 10)
+                while (iteration++ < maxIteration)
                 {
-                    if (state.Value is ConstParam)
-                    {
-                        set.Add(state.Key, state.Value);
-                        break;
-                    }
-
                     double up = 0;
 
                     switch (_config.MethodForG)
                     {
-                        case SimulatedAnnialingMethod.Custom:
+                        case SimulatedAnnealingMethod.Custom:
                             up = (Math.Pow(1 + 1 / _currentTemp, 2 * generator.GetPart() - 1) - 1) * _currentTemp;
                             break;
-                        case SimulatedAnnialingMethod.Boltzmann:
-                            up = _currentTemp * generator.GetNormalNumber();
+                        case SimulatedAnnealingMethod.Boltzmann:
+                            up = generator.GetNormalNumber(state.Current, _currentTemp);
                             break;
-                        case SimulatedAnnialingMethod.Cauchy:
+                        case SimulatedAnnealingMethod.Cauchy:
                             up = _currentTemp * generator.GetCauchyNumber();
                             break;
-                        case SimulatedAnnialingMethod.VeryFast:
+                        case SimulatedAnnealingMethod.VeryFast:
                             var alpha = generator.GetPart();
-                            up = (Math.Pow(1 + 1 / _currentTemp, 2 * alpha - 1) - 1) * _currentTemp; // * Math.Sign(alpha - 0.5)
+                            up = (Math.Pow(1 + 1 / _currentTemp, 2 * alpha - 1) - 1) * _currentTemp * Math.Sign(alpha - 0.5);
                             break;
                     }
 
                     if (double.IsNaN(up))
                         continue;
 
-                    var current = state.Value;
+                    var current = state.Current;
 
-                    var parameter = (ParamSeekSet)state.Value;
+                    state.Up((int)(up / state.Step));
 
-                    var newValue = parameter.GetParamValue((int)(up / parameter.Size));
-
-                    if (_config.MethodForG == SimulatedAnnialingMethod.VeryFast && current == newValue)
+                    if (_config.MethodForG == SimulatedAnnealingMethod.VeryFast && current == state.Current)
                         continue;
-
-                    set.Add(state.Key, newValue);
 
                     break;
                 }
             }
-
-            _currentSet = set;
         }
 
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DecreaseTemperature()
         {
             switch (_config.MethodForT)
             {
-                case SimulatedAnnialingMethod.Custom:
+                case SimulatedAnnealingMethod.Custom:
                     _currentTemp -= _config.DeltaTemparature;
                     break;
-                case SimulatedAnnialingMethod.Boltzmann:
+                case SimulatedAnnealingMethod.Boltzmann:
                     _currentTemp = _config.InitialTemperature / Math.Log(1 + _currentStep);
                     break;
-                case SimulatedAnnialingMethod.Cauchy:
+                case SimulatedAnnealingMethod.Cauchy:
                     _currentTemp = _config.InitialTemperature / _currentStep;
                     break;
-                case SimulatedAnnialingMethod.VeryFast:
-                    _currentTemp = _config.InitialTemperature * Math.Exp(-_config.VeryFastTempDecrement * Math.Pow(_currentStep, 1.0 / _currentSet.Count));
+                case SimulatedAnnealingMethod.VeryFast:
+                    _currentTemp = _config.InitialTemperature *
+                                   Math.Exp(-_config.VeryFastTempDecrement * Math.Pow(_currentStep, 1.0 / Set.Count));
                     break;
             }
 
             _currentStep++;
         }
 
+
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool AcceptState()
         {
             //P = exp(-dE / T);
-            if (!_currentBestSet.Result.HasValue)
+            if (!BestSet.Result.HasValue)
                 return true;
             else
-                return Math.Exp((double)(_currentBestSet.Result - _currentSet.Result) / _currentTemp) >= generator.GetPart(); // h = e^(-deltaE/T) - при поиске минимума
+                return Math.Exp((double)(BestSet.Result - Set.Result) / _currentTemp) >= generator.GetPart(); // h = e^(-deltaE/T) - при поиске минимума
         }
     }
 }

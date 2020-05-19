@@ -10,7 +10,6 @@ namespace TickTrader.Algo.Core
     public class BruteforceStrategy : OptimizationAlgorithm
     {
         private IEnumerator<ParamsMessage> _e;
-        //private long _casesLeft;
 
         public override long CaseCount => InitParams.Values.Aggregate(1, (s, p) => s * p.Size);
 
