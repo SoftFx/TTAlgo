@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Close Positions Script", Version = "1.3", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Close Positions Script", Version = "1.4", Category = "Test Orders",
         SetupMainSymbol = false, Description = "Closes all positions for gross accounts")]
     public class CloseAll : TradeBot
     {
@@ -34,7 +34,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     positions = positions.Where(o => o.Id == PositionId).ToList();
 
                 foreach (var pos in positions)
-                    await CloseOrderAsync(pos.Id, Volume);
+                    await CloseOrderAsync(CloseOrderRequest.Template.Create().WithOrderId(pos.Id).WithSlippage(pos.Slippage).MakeRequest());
             }
             else if (Account.Type == AccountTypes.Net)
             {

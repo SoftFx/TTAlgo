@@ -156,17 +156,17 @@ namespace TickTrader.Algo.Core
             return rejectResult;
         }
 
-        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderRequest request)
+        public Task<TradeResultEntity> CloseOrder(bool isAysnc, CloseOrderCoreRequest request)
         {
             return rejectResult;
         }
 
-        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderRequest request)
+        public Task<TradeResultEntity> ModifyOrder(bool isAysnc, ReplaceOrderCoreRequest request)
         {
             return rejectResult;
         }
 
-        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderRequest request)
+        public Task<TradeResultEntity> OpenOrder(bool isAysnc, OpenOrderCoreRequest request)
         {
             return rejectResult;
         }

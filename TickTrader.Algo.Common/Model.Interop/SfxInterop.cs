@@ -432,7 +432,7 @@ namespace TickTrader.Algo.Common.Model
             _tradeHistoryProxy.DownloadTradesAsync(direction, from?.ToUniversalTime(), to?.ToUniversalTime(), skipCancelOrders, rxStream);
         }
 
-        public Task<OrderInteropResult> SendOpenOrder(OpenOrderRequest request)
+        public Task<OrderInteropResult> SendOpenOrder(OpenOrderCoreRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
@@ -449,7 +449,7 @@ namespace TickTrader.Algo.Common.Model
             return ExecuteOrderOperation(request, r => _tradeProxyAdapter.CancelOrderAsync(r.OperationId, "", r.OrderId));
         }
 
-        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderRequest request)
+        public Task<OrderInteropResult> SendModifyOrder(ReplaceOrderCoreRequest request)
         {
             if (_tradeProxy.ProtocolSpec.SupportsOrderReplaceQtyChange)
             {
@@ -464,19 +464,19 @@ namespace TickTrader.Algo.Common.Model
                 r.StopLoss, r.TakeProfit, r.Comment, r.Tag, null, GetIoCReplace(r.Options), r.Slippage));
         }
 
-        public Task<OrderInteropResult> SendCloseOrder(CloseOrderRequest request)
+        public Task<OrderInteropResult> SendCloseOrder(CloseOrderCoreRequest request)
         {
             return ExecuteOrderOperation(request, r =>
             {
                 if (request.ByOrderId != null)
                     return _tradeProxyAdapter.ClosePositionByAsync(r.OperationId, r.OrderId, r.ByOrderId);
                 else
-                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume);
+                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume, r.Slippage);
             });
         }
 
         private async Task<OrderInteropResult> ExecuteOrderOperation<TReq>(TReq request, Func<TReq, Task<List<SFX.ExecutionReport>>> operationDef)
-            where TReq : OrderRequest
+            where TReq : OrderCoreRequest
         {
             var operationId = request.OperationId;
 

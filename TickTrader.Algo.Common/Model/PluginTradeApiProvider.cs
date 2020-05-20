@@ -34,7 +34,7 @@ namespace TickTrader.Algo.Common.Model
             return result.ResultCode;
         }
 
-        private async Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderRequest request)
+        private async Task<OrderCmdResultCodes> SendCloseOrder(CloseOrderCoreRequest request)
         {
             if (!IsConnected)
                 return OrderCmdResultCodes.ConnectionError;
@@ -44,7 +44,7 @@ namespace TickTrader.Algo.Common.Model
             return result.ResultCode;
         }
 
-        private async Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderRequest request)
+        private async Task<OrderCmdResultCodes> SendModifyOrder(ReplaceOrderCoreRequest request)
         {
             if (!IsConnected)
                 return OrderCmdResultCodes.ConnectionError;
@@ -54,7 +54,7 @@ namespace TickTrader.Algo.Common.Model
             return result.ResultCode;
         }
 
-        private async Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderRequest request)
+        private async Task<OrderCmdResultCodes> SendOpenOrder(OpenOrderCoreRequest request)
         {
             if (!IsConnected)
                 return OrderCmdResultCodes.ConnectionError;
@@ -88,19 +88,19 @@ namespace TickTrader.Algo.Common.Model
                 callback.Invoke(result);
             }
 
-            public async void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderRequest request)
+            public async void SendCloseOrder(ICallback<OrderCmdResultCodes> callback, CloseOrderCoreRequest request)
             {
                 var result = await _ref.Call(a => a.SendCloseOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderRequest request)
+            public async void SendModifyOrder(ICallback<OrderCmdResultCodes> callback, ReplaceOrderCoreRequest request)
             {
                 var result = await _ref.Call(a => a.SendModifyOrder(request));
                 callback.Invoke(result);
             }
 
-            public async void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderRequest request)
+            public async void SendOpenOrder(ICallback<OrderCmdResultCodes> callback, OpenOrderCoreRequest request)
             {
                 var result = await _ref.Call(a => a.SendOpenOrder(request));
                 callback.Invoke(result);
