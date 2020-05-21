@@ -14,10 +14,6 @@ namespace TickTrader.Algo.Core
 
         public long Id { get; } = -1;
 
-        public double? Result { get; set; }
-
-        public int Count => Parameters.Count;
-
         public ParamsMessage(long id)
         {
             Id = id;
