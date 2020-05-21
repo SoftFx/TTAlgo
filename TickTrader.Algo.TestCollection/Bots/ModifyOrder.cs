@@ -55,10 +55,10 @@ namespace TickTrader.Algo.TestCollection.Bots
                 OrderId = Account.Orders.FirstOrDefault()?.Id;
 
             var request = ModifyOrderRequest.Template.Create().WithOrderId(OrderId)
-                .WithPrice(Price).WithStopLoss(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
+                .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
                 .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(Comment)
                 .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
-                .WithVolume(Volume).WithOptions(options).MakeRequest();
+                .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).MakeRequest();
 
             var result = ModifyOrder(request);
 
