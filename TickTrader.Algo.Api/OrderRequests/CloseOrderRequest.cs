@@ -67,7 +67,7 @@ namespace TickTrader.Algo.Api
                 return this;
             }
 
-            public Template WithVolume(double volume)
+            public Template WithVolume(double? volume)
             {
                 _volume = volume;
                 return this;

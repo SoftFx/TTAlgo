@@ -34,7 +34,7 @@ namespace TickTrader.Algo.TestCollection.Bots
                     positions = positions.Where(o => o.Id == PositionId).ToList();
 
                 foreach (var pos in positions)
-                    await CloseOrderAsync(CloseOrderRequest.Template.Create().WithOrderId(pos.Id).WithSlippage(pos.Slippage).MakeRequest());
+                    await CloseOrderAsync(CloseOrderRequest.Template.Create().WithOrderId(pos.Id).WithVolume(Volume).WithSlippage(pos.Slippage).MakeRequest());
             }
             else if (Account.Type == AccountTypes.Net)
             {
