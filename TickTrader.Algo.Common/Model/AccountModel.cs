@@ -312,12 +312,10 @@ namespace TickTrader.Algo.Common.Model
             {
                 order = Orders.GetOrDefault(report.OrderId);
 
-                bool typeChanged = order.OrderType != report.OrderType;
-
-                order.Update(report);
+                order?.Update(report);
 
                 // workaround: dynamic collection filter can't react on field change
-                if (typeChanged)
+                if (order != null && order.OrderType != report.OrderType)
                     orders[order.Id] = order;
             }
             else
