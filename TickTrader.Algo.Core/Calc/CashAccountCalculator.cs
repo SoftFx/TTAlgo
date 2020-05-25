@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,11 +52,11 @@ namespace TickTrader.Algo.Core.Calc
             //this.account.OrderReplaced += UpdateOrder;
         }
 
-        public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, decimal? marginMovement)
-        {
-            var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
-            return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
-        }
+        //public bool HasSufficientMarginToOpenOrder(IOrderModel2 order, decimal? marginMovement)
+        //{
+        //    var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
+        //    return HasSufficientMarginToOpenOrder(order.Type, order.Side, symbol, marginMovement);
+        //}
 
         public bool HasSufficientMarginToOpenOrder(OrderTypes type, OrderSides side, SymbolAccessor symbol, decimal? marginMovement)
         {
@@ -120,15 +121,6 @@ namespace TickTrader.Algo.Core.Calc
                 return combinedMarginFactor * amount;
         }
 
-        public IAssetModel GetMarginAsset(IOrderModel2 order)
-        {
-            //if (order.MarginCurrency == null || order.ProfitCurrency == null)
-            //    throw new MarketConfigurationException("Order must have both margin & profit currencies specified.");
-
-            var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
-            return assets.GetOrDefault(GetMarginAssetCurrency(symbol, order.Side));
-        }
-
         public IAssetModel GetMarginAsset(SymbolAccessor symbol, OrderSides side)
         {
             //if (order.MarginCurrency == null || order.ProfitCurrency == null)
@@ -160,13 +152,16 @@ namespace TickTrader.Algo.Core.Calc
 
         public void AddOrder(IOrderModel2 order)
         {
-            var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
+            var symbol = order.SymbolInfo;
+            if (symbol == null) //can be caused by server misconfiguration
+                return;
+
             order.CashMargin = CalculateMargin(order, symbol);
             //order.Margin = margin;
             //OrderLightClone clone = new OrderLightClone(order);
             //orders.Add(order.OrderId, clone);
 
-            IAssetModel marginAsset = GetMarginAsset(order);
+            IAssetModel marginAsset = GetMarginAsset(symbol, order.Side);
             if (marginAsset != null)
                 marginAsset.Margin += order.CashMargin;
 
@@ -176,9 +171,17 @@ namespace TickTrader.Algo.Core.Calc
         public void OnOrderChanged(OrderEssentialsChangeArgs args)
         {
             var order = args.Order;
-            var symbol = order.SymbolInfo ?? throw CreateNoSymbolException(order.Symbol);
+            var symbol = order.SymbolInfo;
+            if (symbol == null)
+            {
+                // theoretically impossible
+                Debug.Fail("Cash account calculator invalid!");
+                order.EssentialsChanged -= OnOrderChanged;
+                return;
+            }
+
             //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
-            IAssetModel marginAsset = GetMarginAsset(order);
+            IAssetModel marginAsset = GetMarginAsset(symbol, order.Side);
             marginAsset.Margin -= order.CashMargin;
             order.CashMargin = CalculateMargin(order, symbol);
             marginAsset.Margin += order.CashMargin;
@@ -203,7 +206,11 @@ namespace TickTrader.Algo.Core.Calc
             //OrderLightClone clone = GetOrderOrThrow(order.OrderId);
             //orders.Remove(order.OrderId);
 
-            IAssetModel marginAsset = GetMarginAsset(order);
+            var symbol = order.SymbolInfo;
+            if (symbol == null) //can be caused by server misconfiguration
+                return;
+
+            IAssetModel marginAsset = GetMarginAsset(symbol, order.Side);
             if (marginAsset != null)
                 marginAsset.Margin -= order.CashMargin;
 
@@ -231,11 +238,6 @@ namespace TickTrader.Algo.Core.Calc
                 //orders.Remove(order.OrderId);
                 order.EssentialsChanged -= OnOrderChanged;
             }
-        }
-
-        private Exception CreateNoSymbolException(string smbName)
-        {
-            return new MarketConfigurationException("Symbol not found: " + smbName);
         }
     }
 }
