@@ -101,7 +101,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         //public event Action<string> StatusUpdated;
 
-        private void WriteLog(LogEntryType type, string message)
+        private void WriteLog(LogEntryType type, string message, string details)
         {
             var msg = new LogEntry(type, message);
 
@@ -119,6 +119,8 @@ namespace TickTrader.BotAgent.BA.Models
                     break;
                 case LogEntryType.Error:
                     _logger.Error(msg.ToString());
+                    if (!string.IsNullOrEmpty(details))
+                        _logger.Error(details);
                     break;
             }
 
@@ -263,7 +265,7 @@ namespace TickTrader.BotAgent.BA.Models
                     foreach (var rec in records)
                     {
                         if (rec.Severity != LogSeverities.CustomStatus)
-                            a.WriteLog(Convert(rec.Severity), rec.Message);
+                            a.WriteLog(Convert(rec.Severity), rec.Message, rec.Details);
                     }
                 });
             }
