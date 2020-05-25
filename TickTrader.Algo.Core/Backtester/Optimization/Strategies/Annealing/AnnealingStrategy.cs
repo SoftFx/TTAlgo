@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.Core
 {
@@ -70,17 +72,17 @@ namespace TickTrader.Algo.Core
                     DecreaseTemperature();
             }
 
-            if (_currentTemp <= Error || _currentStep > _config.OutherIterationCount)
-                return 0;
-
-            if (_config.DecreaseConditionMode == DecreaseConditionMode.FullCycle && _currentStepInnerCycle++ >= _config.InnerIterationCount)
-            {
-                _currentStepInnerCycle = 0;
-                DecreaseTemperature();
-            }
-
             do
             {
+                if (_currentTemp <= Error || _currentStep > _config.OutherIterationCount)
+                    return 0;
+
+                if (_config.DecreaseConditionMode == DecreaseConditionMode.FullCycle && _currentStepInnerCycle++ >= _config.InnerIterationCount)
+                {
+                    _currentStepInnerCycle = 0;
+                    DecreaseTemperature();
+                }
+
                 int send = 0;
                 CalculateSet();
 
@@ -130,7 +132,7 @@ namespace TickTrader.Algo.Core
 
                     var current = state.Current;
 
-                    state.Up((int)(up / state.Step));
+                    state.Up(GetFirstNumberNotZero(up / state.Step));
 
                     if (_config.MethodForG == SimulatedAnnealingMethod.VeryFast && current == state.Current)
                         continue;
@@ -140,6 +142,15 @@ namespace TickTrader.Algo.Core
             }
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetFirstNumberNotZero(double val)
+        {
+            while (Math.Abs(val).Lt(1.0))
+                val *= 10;
+
+            return (int)Math.Round(val);
+        }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DecreaseTemperature()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Api.Math;
@@ -67,7 +68,7 @@ namespace TickTrader.Algo.Core
             return _casesLeft;
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void GenerateNewGeneration()
         {
             var gens = SurvivingGen();
@@ -84,7 +85,7 @@ namespace TickTrader.Algo.Core
             MutationGen();
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private List<Params> SurvivingGen()
         {
             var generation = new List<Params>(PopulationSize);
@@ -105,7 +106,7 @@ namespace TickTrader.Algo.Core
             return generation;
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Params RepropuctionGen(Params first, Params second)
         {
             var crossover = generator.GetInt(1, first.Count);
@@ -127,7 +128,7 @@ namespace TickTrader.Algo.Core
             return reproduction;
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void MutationGen()
         {
             int i = 0;
@@ -153,13 +154,13 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UniformSurviving(List<Params> gens)
         {
             gens.AddRange(_container.OrderBy(_ => generator.GetInt()).Take(SurvivingSize));
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Roulette(List<Params> gens)
         {
             var normalizeDelta = -Math.Min(-0.0, _container.Min(u => u.Result.Value));
@@ -167,7 +168,7 @@ namespace TickTrader.Algo.Core
             GiveChance(gens, (x) => x + normalizeDelta);
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SigmaClipping(List<Params> gens)
         {
             var normalizeDelta = -Math.Min(-0.0, _container.Min(u => u.Result.Value));
@@ -194,7 +195,7 @@ namespace TickTrader.Algo.Core
             }
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void StepMutation(AlgoParameter gen)
         {
             if (generator.GetBool())
@@ -203,7 +204,7 @@ namespace TickTrader.Algo.Core
                 gen.Down();
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void JumpMutation(AlgoParameter gen)
         {
             var jump = (int)((gen.Max - gen.Min) / gen.Step);
@@ -214,7 +215,15 @@ namespace TickTrader.Algo.Core
                 gen.Down(jump);
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AlphaMutation(int index, int indexParam) => _container[index][indexParam] = BestSet[indexParam].FullCopy();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AlphaMutation(int index, int indexParam)
+        {
+            _container[index][indexParam] = BestSet[indexParam].FullCopy();
+
+            if (generator.GetBool())
+                _container[index][indexParam].Up();
+            else
+                _container[index][indexParam].Down();
+        }
     }
 }

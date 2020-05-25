@@ -30,7 +30,7 @@ namespace TickTrader.Algo.Core
 
             protected set
             {
-                if (_cur.E(value) || value.Gte(Max) || IsStub)
+                if (_cur.E(value) || value.Gt(Max) || IsStub)
                     return;
 
                 _cur = Math.Max(value, Min);

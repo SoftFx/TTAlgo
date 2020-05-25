@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Windows.Forms;
 using TickTrader.Algo.Api;
 using TickTrader.Algo.Core.Lib;
 using TickTrader.Algo.Core.Repository;
@@ -163,6 +165,7 @@ namespace TickTrader.Algo.Core
         {
             //private UpdateChannel _channel;
             private int _idSeed;
+            private Stopwatch _st = new Stopwatch();
             private CancellationTokenSource _cancelSrc = new CancellationTokenSource();
             private Action<OptCaseReport, long> _repHandler;
             private TransformBlock<ParamsMessage, OptCaseReport> _workerBlock;
@@ -215,6 +218,7 @@ namespace TickTrader.Algo.Core
 
                     _workerBlock.LinkTo(_controlBlock, new DataflowLinkOptions() { PropagateCompletion = true });
 
+                    _st.Start();
                     SeekStrategy.Start(this, degreeOfP);
 
                     _controlBlock.Completion.Wait();
@@ -224,6 +228,8 @@ namespace TickTrader.Algo.Core
                 }
                 finally
                 {
+                    _st.Stop();
+                    MessageBox.Show($"Total test time: {_st.ElapsedMilliseconds}ms");
                     Feed.DeinitStorages();
                 }
             }
