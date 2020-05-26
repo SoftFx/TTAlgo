@@ -31,7 +31,10 @@ namespace TickTrader.BotTerminal
 
             SortedNumber = GetSortedNumber(order);
 
-            this.symbol.RateUpdated += UpdateDeviationPrice;
+            if (this.symbol != null) // server misconfiguration can cause unexisting symbols
+            {
+                this.symbol.RateUpdated += UpdateDeviationPrice;
+            }
         }
 
         public OrderModel Order { get; private set; }
@@ -43,7 +46,7 @@ namespace TickTrader.BotTerminal
                                                     Order.Side == OrderSide.Buy ? symbol?.AskTracker : symbol?.BidTracker :
                                                     Order.Side == OrderSide.Buy ? symbol?.BidTracker : symbol?.AskTracker;
 
-        public decimal? DeviationPrice => Order.Side == OrderSide.Buy ? (decimal)CurrentPrice.Rate - Price : Price - (decimal)CurrentPrice.Rate;
+        public decimal? DeviationPrice => Order.Side == OrderSide.Buy ? (decimal?)CurrentPrice?.Rate - Price : Price - (decimal?)CurrentPrice?.Rate;
 
 
         public string SortedNumber { get; }
