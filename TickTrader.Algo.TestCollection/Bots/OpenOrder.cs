@@ -3,9 +3,9 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.6", Category = "Test Orders",
-        Description = "Opens order for current chart symbol with specified volume, price, side, type, options, tag, SL, TP, expiration. " +
-                      "Prints order execution result to bot status window.")]
+    [TradeBot(DisplayName = "[T] Open Order Script", Version = "2.7", Category = "Test Orders",
+        Description = "Opens order for current chart symbol with specified volume, price, side, stopPrice, type, options, tag, SL," +
+        " TP, expiration, slippage, comment, maxVisibleVolume. Prints order execution result to bot status window.")]
     public class OpenOrder : TradeBotCommon
     {
         [Parameter(DefaultValue = 0.1)]
@@ -49,9 +49,18 @@ namespace TickTrader.Algo.TestCollection.Bots
 
         protected override void OnStart()
         {
-            var res = OpenOrder(Symbol.Name, Type, Side, Volume, MaxVisibleVolume, Price, StopPrice, StopLoss, TakeProfit, Comment, Options, Tag,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Slippage);
+            var request = OpenOrderRequest.Template.Create()
+                .WithSymbol(Symbol.Name).WithStopPrice(StopPrice).WithStopLoss(StopLoss)
+                .WithSide(Side).WithType(Type).WithVolume(Volume).WithPrice(Price)
+                .WithMaxVisibleVolume(MaxVisibleVolume).WithTakeProfit(TakeProfit)
+                .WithComment(Comment).WithOptions(Options).WithTag(Tag)
+                .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
+                .WithSlippage(Slippage).MakeRequest();
+
+            var res = OpenOrder(request);
+
             Status.WriteLine($"ResultCode = {res.ResultCode}");
+
             if (res.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(res.ResultingOrder));
 

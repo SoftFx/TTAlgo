@@ -6,13 +6,11 @@ namespace TickTrader.Algo.Api
 {
     internal interface TradeCommands
     {
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double price, double? sl, double? tp, string comment, OrderExecOptions options, string tag);
-        Task<OrderCmdResult> OpenOrder(bool isAysnc, string symbol, OrderType type, OrderSide side, double volume, double? maxVisibleVolume, double? price, double? stopPrice, double? sl, double? tp, string comment, OrderExecOptions options, string tag, DateTime? expiration, double? slippage);
-        Task<OrderCmdResult> CancelOrder(bool isAysnc, string orderId);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double price, double? sl, double? tp, string comment);
-        Task<OrderCmdResult> ModifyOrder(bool isAysnc, string orderId, double? price, double? stopPrice, double? maxVisibleVolume, double? sl, double? tp, string comment, DateTime? expiration, double? volume, OrderExecOptions? options, double? slippage);
-        Task<OrderCmdResult> CloseOrder(bool isAysnc, string orderId, double? volume);
-        Task<OrderCmdResult> CloseOrderBy(bool isAysnc, string orderId, string byOrderId);
+        Task<OrderCmdResult> OpenOrder(bool isAsync, OpenOrderRequest request);
+        Task<OrderCmdResult> CancelOrder(bool isAsync, string orderId);
+        Task<OrderCmdResult> ModifyOrder(bool isAsync, ModifyOrderRequest request);
+        Task<OrderCmdResult> CloseOrder(bool isAsync, CloseOrderRequest request);
+        Task<OrderCmdResult> CloseOrderBy(bool isAsync, string orderId, string byOrderId);
     }
 
     public interface OrderCmdResult
@@ -27,8 +25,8 @@ namespace TickTrader.Algo.Api
     [Flags]
     public enum OrderExecOptions
     {
-        None                = 0,
-        ImmediateOrCancel   = 1,
+        None = 0,
+        ImmediateOrCancel = 1,
     }
 
     [Flags]
@@ -42,30 +40,30 @@ namespace TickTrader.Algo.Api
 
     public enum OrderCmdResultCodes
     {
-        Ok                  = 0,
-        UnknownError        = 1,
-        InternalError       = 5,
-        ConnectionError     = 6,
-        Timeout             = 7,
-        TradeServerError    = 8,
-        DealerReject        = 100,
-        Unsupported         = 101,
-        SymbolNotFound      = 102,
-        OrderNotFound       = 103,
-        IncorrectVolume     = 104,
-        OffQuotes           = 105,
-        IncorrectOrderId    = 106,
-        IncorrectPrice      = 107,
-        IncorrectTp         = 108,
-        IncorrectSl         = 109,
-        NotEnoughMoney      = 110,
-        TradeNotAllowed     = 111,
-        IncorrectStopPrice  = 112,
+        Ok = 0,
+        UnknownError = 1,
+        InternalError = 5,
+        ConnectionError = 6,
+        Timeout = 7,
+        TradeServerError = 8,
+        DealerReject = 100,
+        Unsupported = 101,
+        SymbolNotFound = 102,
+        OrderNotFound = 103,
+        IncorrectVolume = 104,
+        OffQuotes = 105,
+        IncorrectOrderId = 106,
+        IncorrectPrice = 107,
+        IncorrectTp = 108,
+        IncorrectSl = 109,
+        NotEnoughMoney = 110,
+        TradeNotAllowed = 111,
+        IncorrectStopPrice = 112,
         IncorrectMaxVisibleVolume = 113,
         IncorrectExpiration = 114,
-        DealingTimeout      = 115,
-        Misconfiguration    = 116,
-        OrderLocked         = 117,
+        DealingTimeout = 115,
+        Misconfiguration = 116,
+        OrderLocked = 117,
         IncorrectPricePrecision = 118,
         CloseOnlyTrading = 119,
         MarketWithMaxVisibleVolume = 120,

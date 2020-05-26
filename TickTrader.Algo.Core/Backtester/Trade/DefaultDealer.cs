@@ -58,7 +58,7 @@ namespace TickTrader.Algo.Core
             request.Confirm();
         }
 
-        public void ConfirmOrderReplace(ModifyOrderRequest request)
+        public void ConfirmOrderReplace(Api.Ext.ModifyOrderRequest request)
         {
             request.Confirm();
         }

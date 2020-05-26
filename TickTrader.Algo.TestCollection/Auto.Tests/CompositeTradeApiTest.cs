@@ -271,11 +271,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await RunOpenWithModifyCloseEvent(template);
         }
 
-        private async Task RunOpenWithModifyCloseEvent(OrderTemplate template)
+        private async Task RunOpenWithModifyCloseEvent(OrderTemplate template) //rename???
         {
             await TryPerformTest(() => TestOpenOrder(template));
 
-            await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+            //await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
             await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
         }
 
@@ -864,6 +864,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (template.Type == OrderType.StopLimit)
                 template.StopPrice = CalculatePrice(template.Side, -1);
 
+            var isImmediateFill = template.IsImmediateFill; // should be redone
+
             var customVolume = 0.2 * DefaultOrderVolume * Symbol.ContractSize;
 
             var commentModel = new CommentModelManager
@@ -881,18 +883,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (template.Type == OrderType.Limit && template.Options == OrderExecOptions.ImmediateOrCancel)
                 await WaitEvent<OrderCanceledEventArgs>(CancelEventTimeout);
 
-            if (Account.Type != AccountTypes.Gross && !template.IsImmediateFill)
+            if (!isImmediateFill)
                 await TryPerformTest(() => TestEventFillOrder(template), 1);
 
             if (Account.Type == AccountTypes.Gross)
             {
-                template.Id = template.RelatedId;
+                template.Id = template.RelatedId; // should be redone
 
                 await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template));
 
-                if (!template.IsImmediateFill)
+                if (!isImmediateFill)
                 {
-                    template.Id = template.RelatedId; ;
+                    template.Id = template.RelatedId;
                     await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template));
                 }
             }

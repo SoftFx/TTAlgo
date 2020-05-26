@@ -106,6 +106,9 @@
     <Compile Include="Indicators\Volumes\IVolumes.cs" />
     <Compile Include="Math\ComparisonExtensions.cs" />
     <Compile Include="Math\RoundingExtensions.cs" />
+    <Compile Include="OrderRequests\CloseOrderRequest.cs" />
+    <Compile Include="OrderRequests\ModifyOrderRequest.cs" />
+    <Compile Include="OrderRequests\OpenOrderRequest.cs" />
     <Compile Include="OutputTargets.cs" />
     <Compile Include="RateUpdate.cs" />
     <Compile Include="StatusApi.cs" />
