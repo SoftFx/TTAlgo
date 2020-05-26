@@ -71,10 +71,12 @@ namespace TickTrader.Algo.Core
             }
             catch (Exception ex)
             {
+                _context.Builder.Logger.OnError("Failed to start account calculator", ex);
+                _context.Builder.Logger.OnError(Market.GetSnapshotString());
+                _context.Builder.Logger.OnError(acc.GetSnapshotString());
                 _marginCalc = null;
                 cashCalc = null;
                 acc = null;
-                _context.Builder.Logger.OnError("Failed to start account calculator", ex);
             }
         }
 

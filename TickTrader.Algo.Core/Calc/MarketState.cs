@@ -68,6 +68,71 @@ namespace TickTrader.Algo.Core.Calc
             }
             return calculator;
         }
+
+        internal string GetSnapshotString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Market snapshot:");
+            sb.AppendLine($"{nameof(Currencies)}");
+            if (Currencies != null)
+            {
+                foreach (var c in Currencies)
+                {
+                    sb.Append($"{nameof(c.Name)} = {c.Name}, ");
+                    sb.Append($"{nameof(c.IsNull)} = {c.IsNull}, ");
+                    sb.Append($"{nameof(c.Digits)} = {c.Digits}, ");
+                    sb.Append($"{nameof(c.SortOrder)} = {c.SortOrder}, ");
+                    sb.AppendLine();
+                }
+            }
+            else
+            {
+                sb.AppendLine("Empty");
+            }
+            sb.AppendLine($"{nameof(Symbols)}");
+            if (Symbols != null)
+            {
+                foreach (var s in Symbols)
+                {
+                    sb.Append($"{nameof(s.Name)} = {s.Name}, ");
+                    sb.Append($"{nameof(s.IsNull)} = {s.IsNull}, ");
+                    sb.Append($"{nameof(s.IsTradeAllowed)} = {s.IsTradeAllowed}, ");
+                    sb.Append($"{nameof(s.Bid)} = {s.Bid}, ");
+                    sb.Append($"{nameof(s.Ask)} = {s.Ask}, ");
+                    sb.Append($"{nameof(s.Digits)} = {s.Digits}, ");
+                    sb.Append($"{nameof(s.ContractSize)} = {s.ContractSize}, ");
+                    sb.Append($"{nameof(s.MinTradeVolume)} = {s.MinTradeVolume}, ");
+                    sb.Append($"{nameof(s.MaxTradeVolume)} = {s.MaxTradeVolume}, ");
+                    sb.Append($"{nameof(s.TradeVolumeStep)} = {s.TradeVolumeStep}, ");
+                    sb.Append($"{nameof(s.BaseCurrency)} = {s.BaseCurrency}, ");
+                    sb.Append($"{nameof(s.CounterCurrency)} = {s.CounterCurrency}, ");
+                    sb.Append($"{nameof(s.SortOrder)} = {s.SortOrder}, ");
+                    sb.Append($"{nameof(s.GroupSortOrder)} = {s.GroupSortOrder}, ");
+                    sb.Append($"{nameof(s.Commission)} = {s.Commission}, ");
+                    sb.Append($"{nameof(s.LimitsCommission)} = {s.LimitsCommission}, ");
+                    sb.Append($"{nameof(s.CommissionType)} = {s.CommissionType}, ");
+                    sb.Append($"{nameof(s.CommissionChargeType)} = {s.CommissionChargeType}, ");
+                    sb.Append($"{nameof(s.CommissionChargeMethod)} = {s.CommissionChargeMethod}, ");
+                    sb.Append($"{nameof(s.MarginFactorFractional)} = {s.MarginFactorFractional}, ");
+                    sb.Append($"{nameof(s.MarginMode)} = {s.MarginMode}, ");
+                    sb.Append($"{nameof(s.MarginHedged)} = {s.MarginHedged}, ");
+                    sb.Append($"{nameof(s.StopOrderMarginReduction)} = {s.StopOrderMarginReduction}, ");
+                    sb.Append($"{nameof(s.HiddenLimitOrderMarginReduction)} = {s.HiddenLimitOrderMarginReduction}, ");
+                    sb.Append($"{nameof(s.SwapEnabled)} = {s.SwapEnabled}, ");
+                    sb.Append($"{nameof(s.SwapSizeShort)} = {s.SwapSizeShort}, ");
+                    sb.Append($"{nameof(s.SwapSizeLong)} = {s.SwapSizeLong}, ");
+                    sb.Append($"{nameof(s.SwapType)} = {s.SwapType}, ");
+                    sb.Append($"{nameof(s.TripleSwapDay)} = {s.TripleSwapDay}, ");
+                    sb.Append($"{nameof(s.Security)} = {s.Security}, ");
+                    sb.AppendLine();
+                }
+            }
+            else
+            {
+                sb.AppendLine("Empty");
+            }
+            return sb.ToString();
+        }
     }
 
     public class MarketState : MarketStateBase
