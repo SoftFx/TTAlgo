@@ -908,6 +908,8 @@ namespace TickTrader.Algo.Common.Model
                                 return Api.OrderCmdResultCodes.InvalidAmountChange;
                             else if (message == "Account Is Readonly")
                                 return Api.OrderCmdResultCodes.ReadOnlyAccount;
+                            else if (message == "Internal server error")
+                                return Api.OrderCmdResultCodes.TradeServerError;
                         }
                         break;
                     }
