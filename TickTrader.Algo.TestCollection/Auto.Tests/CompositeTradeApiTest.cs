@@ -271,11 +271,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await RunOpenWithModifyCloseEvent(template);
         }
 
-        private async Task RunOpenWithModifyCloseEvent(OrderTemplate template) //rename???
+        private async Task RunOpenWithModifyCloseEvent(OrderTemplate template)
         {
             await TryPerformTest(() => TestOpenOrder(template));
 
-            //await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+            if (!IncludeADCases)
+                await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
+
             await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
         }
 
