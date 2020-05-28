@@ -411,13 +411,20 @@ namespace TickTrader.Algo.Core
                 {
                     iStrategy.EnqueueCustomInvoke(b =>
                     {
+                        _calcFixture.PreRestart();
                         accFixture.PreRestart();
+
                         _calcFixture.Stop();
                         accFixture.Stop();
+
                         MergeMetadata();
+
                         accFixture.Start();
                         _calcFixture.Start();
+
+                        _calcFixture.PostRestart();
                         accFixture.PostRestart();
+
                         _builder.Account.FireResetEvent();
                         _builder.FireConnectedEvent();
                     });
