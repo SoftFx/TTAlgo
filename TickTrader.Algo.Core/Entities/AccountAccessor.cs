@@ -494,13 +494,7 @@ namespace TickTrader.Algo.Core
                 {
                     foreach (var p in NetPositions)
                     {
-                        sb.Append($"{nameof(p.Side)} = {p.Side}, ");
-                        sb.Append($"{nameof(p.Symbol)} = {p.Symbol}, ");
-                        sb.Append($"{nameof(p.Volume)} = {p.Volume}, ");
-                        sb.Append($"{nameof(p.Price)} = {p.Price}, ");
-                        sb.Append($"{nameof(p.SettlementPrice)} = {p.SettlementPrice}, ");
-                        sb.Append($"{nameof(p.Commission)} = {p.Commission}, ");
-                        sb.Append($"{nameof(p.Swap)} = {p.Swap}, ");
+                        sb.Append(p.GetSnapshotString());
                         sb.AppendLine();
                     }
                 }
@@ -514,22 +508,7 @@ namespace TickTrader.Algo.Core
             {
                 foreach (var o in Orders)
                 {
-                    sb.Append($"{nameof(o.IsNull)} = {o.IsNull}, ");
-                    sb.Append($"{nameof(o.Side)} = {o.Side}, ");
-                    sb.Append($"{nameof(o.Type)} = {o.Type}, ");
-                    sb.Append($"{nameof(o.Symbol)} = {o.Symbol}, ");
-                    sb.Append($"{nameof(o.RequestedVolume)} = {o.RequestedVolume}, ");
-                    sb.Append($"{nameof(o.RemainingVolume)} = {o.RemainingVolume}, ");
-                    sb.Append($"{nameof(o.MaxVisibleVolume)} = {o.MaxVisibleVolume}, ");
-                    sb.Append($"{nameof(o.Price)} = {o.Price}, ");
-                    sb.Append($"{nameof(o.StopPrice)} = {o.StopPrice}, ");
-                    sb.Append($"{nameof(o.StopLoss)} = {o.StopLoss}, ");
-                    sb.Append($"{nameof(o.TakeProfit)} = {o.TakeProfit}, ");
-                    sb.Append($"{nameof(o.Options)} = {o.Options}, ");
-                    sb.Append($"{nameof(o.ExecPrice)} = {o.ExecPrice}, ");
-                    sb.Append($"{nameof(o.ExecVolume)} = {o.ExecVolume}, ");
-                    sb.Append($"{nameof(o.LastFillPrice)} = {o.LastFillPrice}, ");
-                    sb.Append($"{nameof(o.LastFillVolume)} = {o.LastFillVolume}, ");
+                    sb.Append(o.GetSnapshotString());
                     sb.AppendLine();
                 }
             }

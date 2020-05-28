@@ -77,11 +77,11 @@ namespace TickTrader.Algo.Core
 
                 if (acc.Type == Api.AccountTypes.Gross || acc.Type == Api.AccountTypes.Net)
                 {
-                    _marginCalc = new MarginAccountCalc(acc, Market, true);
+                    _marginCalc = new MarginAccountCalc(acc, Market, OnCalculatorError, true);
                     acc.MarginCalc = _marginCalc;
                 }
                 else
-                    cashCalc = new CashAccountCalculator(acc, Market);
+                    cashCalc = new CashAccountCalculator(acc, Market, OnCalculatorError);
                 acc.EnableBlEvents();
             }
             catch (Exception ex)
@@ -92,6 +92,18 @@ namespace TickTrader.Algo.Core
                 _marginCalc = null;
                 cashCalc = null;
                 acc = null;
+            }
+        }
+
+        private void OnCalculatorError(string msg, Exception ex)
+        {
+            if (ex != null)
+            {
+                _context.Builder.Logger.OnError(msg, ex);
+            }
+            else
+            {
+                _context.Builder.Logger.OnError(msg);
             }
         }
 

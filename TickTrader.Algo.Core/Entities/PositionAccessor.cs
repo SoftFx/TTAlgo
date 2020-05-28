@@ -115,6 +115,19 @@ namespace TickTrader.Algo.Core
 
         internal event Action<PositionAccessor> Changed;
 
+        public string GetSnapshotString()
+        {
+            var sb = new StringBuilder();
+            sb.Append($"{nameof(Side)} = {Side}, ");
+            sb.Append($"{nameof(Symbol)} = {Symbol}, ");
+            sb.Append($"{nameof(Volume)} = {Volume}, ");
+            sb.Append($"{nameof(Price)} = {Price}, ");
+            sb.Append($"{nameof(SettlementPrice)} = {SettlementPrice}, ");
+            sb.Append($"{nameof(Swap)} = {Swap}, ");
+            sb.Append($"{nameof(Commission)} = {Commission}, ");
+            return sb.ToString();
+        }
+
         private void OnChanged()
         {
             UpdateCache();
