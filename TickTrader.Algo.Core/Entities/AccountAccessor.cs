@@ -291,6 +291,13 @@ namespace TickTrader.Algo.Core
                 _positions.UpdatePosition(position.PositionInfo);
         }
 
+        internal void Deinit()
+        {
+            _orders.Clear();
+            _positions.Clear();
+            _assets.Clear();
+        }
+
         #endregion
 
         #region BO
