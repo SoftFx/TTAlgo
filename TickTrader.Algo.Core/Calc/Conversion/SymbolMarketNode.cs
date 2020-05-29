@@ -15,8 +15,9 @@ namespace TickTrader.Algo.Core.Calc.Conversion
             Rate = new QuoteEntity(smb.Name, DateTime.MinValue, (double?)null, (double?)null); // empty rate
         }
 
-        public SymbolAccessor SymbolInfo { get; }
+        public SymbolAccessor SymbolInfo { get; private set; }
         public RateUpdate Rate { get; private set; }
+        public bool IsShadowCopy { get; private set; }
 
         public double Ask => Rate.Ask;
         public double Bid => Rate.Bid;
@@ -31,5 +32,16 @@ namespace TickTrader.Algo.Core.Calc.Conversion
         }
 
         public event Action Changed;
+
+        public void Update(SymbolAccessor smb)
+        {
+            if (smb == null)
+            {
+                IsShadowCopy = true;
+                return;
+            }
+            IsShadowCopy = false;
+            SymbolInfo = smb;
+        }
     }
 }

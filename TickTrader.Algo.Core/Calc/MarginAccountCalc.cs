@@ -194,7 +194,11 @@ namespace TickTrader.Algo.Core.Calc
                 AddInternal(order);
                 GetOrAddSymbolCalculator(order.Symbol).AddOrder(order);
             }
-            catch(Exception ex)
+            catch (SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order: {snfex.Message}. {order?.GetSnapshotString()}", null);
+            }
+            catch (Exception ex)
             {
                 _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order. {order?.GetSnapshotString()}", ex);
             }
@@ -206,6 +210,10 @@ namespace TickTrader.Algo.Core.Calc
             {
                 AddInternal(order);
                 GetOrAddSymbolCalculator(order.Symbol).AddOrderWithoutCalculation(order);
+            }
+            catch (SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to add order without calculation: {snfex.Message}. {order?.GetSnapshotString()}", null);
             }
             catch (Exception ex)
             {
@@ -242,6 +250,10 @@ namespace TickTrader.Algo.Core.Calc
                 smbCalc.RemoveOrder(order);
                 RemoveIfEmpty(smbCalc);
             }
+            catch (SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to remove order: {snfex.Message}. {order?.GetSnapshotString()}", null);
+            }
             catch (Exception ex)
             {
                 _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to remove order. {order?.GetSnapshotString()}", ex);
@@ -266,9 +278,13 @@ namespace TickTrader.Algo.Core.Calc
                 Swap += dSwap;
                 Commission += dComm;
             }
+            catch(SymbolNotFoundException snfex)
+            {
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to update net position: {snfex.Message}. {position?.GetSnapshotString()}", null);
+            }
             catch (Exception ex)
             {
-                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} update net position. {position?.GetSnapshotString()}", ex);
+                _onLogError?.Invoke($"{nameof(MarginAccountCalc)} failed to update net position. {position?.GetSnapshotString()}", ex);
             }
         }
 

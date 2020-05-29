@@ -135,45 +135,45 @@ namespace TickTrader.Algo.Core.Calc
         }
     }
 
-    public class MarketState : MarketStateBase
-    {
-        private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
+    //public class MarketState : MarketStateBase
+    //{
+    //    private readonly Dictionary<string, SymbolMarketNode> _smbMap = new Dictionary<string, SymbolMarketNode>();
 
-        public void Update(RateUpdate rate)
-        {
-            var tracker = GetSymbolNodeOrNull(rate.Symbol);
-            tracker.Update(rate);
-            //RateChanged?.Invoke(rate);
-            //return RateUpdater.Update(rate.Symbol);
-        }
+    //    public void Update(RateUpdate rate)
+    //    {
+    //        var tracker = GetSymbolNodeOrNull(rate.Symbol);
+    //        tracker.Update(rate);
+    //        //RateChanged?.Invoke(rate);
+    //        //return RateUpdater.Update(rate.Symbol);
+    //    }
 
-        public void Update(IEnumerable<RateUpdate> rates)
-        {
-            if (rates == null)
-                return;
+    //    public void Update(IEnumerable<RateUpdate> rates)
+    //    {
+    //        if (rates == null)
+    //            return;
 
-            foreach (RateUpdate rate in rates)
-                Update(rate);
-        }
+    //        foreach (RateUpdate rate in rates)
+    //            Update(rate);
+    //    }
 
-        internal SymbolMarketNode GetSymbolNodeOrNull(string symbol)
-        {
-            return _smbMap.GetOrDefault(symbol);
-        }
+    //    internal SymbolMarketNode GetSymbolNodeOrNull(string symbol)
+    //    {
+    //        return _smbMap.GetOrDefault(symbol);
+    //    }
 
-        protected override void InitNodes()
-        {
-            _smbMap.Clear();
+    //    protected override void InitNodes()
+    //    {
+    //        _smbMap.Clear();
 
-            foreach (var smb in Symbols)
-                _smbMap.Add(smb.Name, new SymbolMarketNode(smb));
-        }
+    //        foreach (var smb in Symbols)
+    //            _smbMap.Add(smb.Name, new SymbolMarketNode(smb));
+    //    }
 
-        internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
-        {
-            return GetSymbolNodeOrNull(smb);
-        }
-    }
+    //    internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
+    //    {
+    //        return GetSymbolNodeOrNull(smb);
+    //    }
+    //}
 
     internal class AlgoMarketState : MarketStateBase
     {
@@ -187,15 +187,35 @@ namespace TickTrader.Algo.Core.Calc
 
         protected override void InitNodes()
         {
-            _smbMap.Clear();
+            // We have to leave deleted symbols, MarketNodes contain subscription info
+            // In case they will come back after reconnect we need to re-enable their subscription
+
+            foreach (var node in _smbMap.Values)
+            {
+                node.Update((SymbolAccessor)null);
+            }
 
             foreach (var smb in Symbols)
-                _smbMap.Add(smb.Name, new AlgoMarketNode(smb));
+
+            {
+                if (_smbMap.TryGetValue(smb.Name, out var node))
+                {
+                    node.Update(smb);
+                }
+                else
+                {
+                    _smbMap.Add(smb.Name, new AlgoMarketNode(smb));
+                }
+            }
         }
 
         public AlgoMarketNode GetSymbolNodeOrNull(string symbol)
         {
-            return _smbMap.GetOrDefault(symbol);
+            if (_smbMap.TryGetValue(symbol, out var node))
+            {
+                return node.IsShadowCopy ? null : node;
+            }
+            return null;
         }
 
         internal override SymbolMarketNode GetSymbolNodeInternal(string smb)
