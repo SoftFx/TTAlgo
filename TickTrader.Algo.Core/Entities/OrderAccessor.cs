@@ -4,6 +4,7 @@ using BO = TickTrader.BusinessObjects;
 using BL = TickTrader.BusinessLogic;
 using TickTrader.Algo.Api.Math;
 using TickTrader.Algo.Core.Calc;
+using System.Text;
 
 namespace TickTrader.Algo.Core
 {
@@ -102,6 +103,28 @@ namespace TickTrader.Algo.Core
         SymbolAccessor IOrderModel2.SymbolInfo => _symbol;
         BO.OrderSides IOrderCalcInfo.Side => Entity.GetBlOrderSide();
         BO.OrderTypes IOrderCalcInfo.Type => Entity.GetBlOrderType();
+
+        public string GetSnapshotString()
+        {
+            var sb = new StringBuilder();
+            sb.Append($"{nameof(IsNull)} = {IsNull}, ");
+            sb.Append($"{nameof(Side)} = {Side}, ");
+            sb.Append($"{nameof(Type)} = {Type}, ");
+            sb.Append($"{nameof(Symbol)} = {Symbol}, ");
+            sb.Append($"{nameof(RequestedVolume)} = {RequestedVolume}, ");
+            sb.Append($"{nameof(RemainingVolume)} = {RemainingVolume}, ");
+            sb.Append($"{nameof(MaxVisibleVolume)} = {MaxVisibleVolume}, ");
+            sb.Append($"{nameof(Price)} = {Price}, ");
+            sb.Append($"{nameof(StopPrice)} = {StopPrice}, ");
+            sb.Append($"{nameof(StopLoss)} = {StopLoss}, ");
+            sb.Append($"{nameof(TakeProfit)} = {TakeProfit}, ");
+            sb.Append($"{nameof(Options)} = {Options}, ");
+            sb.Append($"{nameof(ExecPrice)} = {ExecPrice}, ");
+            sb.Append($"{nameof(ExecVolume)} = {ExecVolume}, ");
+            sb.Append($"{nameof(LastFillPrice)} = {LastFillPrice}, ");
+            sb.Append($"{nameof(LastFillVolume)} = {LastFillVolume}, ");
+            return sb.ToString();
+        }
 
         #endregion
 

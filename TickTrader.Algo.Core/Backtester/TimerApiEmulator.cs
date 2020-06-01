@@ -27,7 +27,11 @@ namespace TickTrader.Algo.Core
         {
         }
 
-        public void Restart()
+        public void PreRestart()
+        {
+        }
+
+        public void PostRestart()
         {
         }
 

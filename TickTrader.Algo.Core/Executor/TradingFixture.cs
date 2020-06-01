@@ -19,6 +19,7 @@ namespace TickTrader.Algo.Core
         private ITradeExecutor _executor;
         private IAccountInfoProvider _dataProvider;
         private bool _isStarted;
+        private bool _isRestart;
 
         private Dictionary<string, Action<OrderExecReport>> reportListeners = new Dictionary<string, Action<OrderExecReport>>();
 
@@ -40,33 +41,43 @@ namespace TickTrader.Algo.Core
         {
             if (!_isStarted && _dataProvider != null)
             {
-                _isStarted = true;
-                _dataProvider.SyncInvoke(Init);
-                // makes all symbols in symbol list have correct rates
-                // also required for account calculator
-                // actor synchronization is broken, workaround for this case
-                context.FeedStrategy.SubscribeAll();
+                LazyInitIniternal();
             }
         }
 
-        public void Restart()
+        public void PreRestart()
         {
             if (_dataProvider != null && _isStarted)
             {
-                _dataProvider.SyncInvoke(() =>
-                {
-                    Deinit();
-                    Init();
-                });
-                // makes all symbols in symbol list have correct rates
-                // also required for account calculator
-                // actor synchronization is broken, workaround for this case
-                context.FeedStrategy.SubscribeAll();
+                _isRestart = true;
             }
+        }
+
+        public void PostRestart()
+        {
+            if (_isRestart)
+            {
+                _isRestart = false;
+                LazyInitIniternal();
+            }
+        }
+
+        private void LazyInitIniternal()
+        {
+            _dataProvider.SyncInvoke(Init);
+            // makes all symbols in symbol list have correct rates
+            // also required for account calculator
+            // actor synchronization is broken, workaround for this case
+            context.FeedStrategy.SubscribeAll();
         }
 
         private void Init()
         {
+            if (_isStarted)
+                return;
+
+            _isStarted = true;
+
             var builder = context.Builder;
 
             _account = builder.Account;
@@ -83,14 +94,24 @@ namespace TickTrader.Algo.Core
 
         public void Stop()
         {
-            _dataProvider.SyncInvoke(Deinit);
+            if (_dataProvider != null && _isStarted)
+            {
+                _dataProvider.SyncInvoke(Deinit);
+            }
         }
 
         private void Deinit()
         {
+            if (!_isStarted)
+                return;
+
+            _isStarted = false;
+
             _dataProvider.OrderUpdated -= DataProvider_OrderUpdated;
             _dataProvider.BalanceUpdated -= DataProvider_BalanceUpdated;
             _dataProvider.PositionUpdated -= DataProvider_PositionUpdated;
+
+            context.Builder.Account.Deinit();
         }
 
         private bool CallListener(OrderExecReport eReport)
