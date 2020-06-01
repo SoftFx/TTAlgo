@@ -14,31 +14,38 @@ namespace TickTrader.Algo.Core
     {
         private readonly SideProxy _buy = new SideProxy();
         private readonly SideProxy _sell = new SideProxy();
-        private readonly Symbol _symbol;
+        private readonly string _symbolName;
         private readonly double _lotSize;
         private readonly int _leverage;
         private double _volUnitsSlim;
 
-        internal PositionAccessor(PositionEntity entity, int leverage, Func<string, Symbol> symbolProvider)
-            : this(entity, symbolProvider(entity.Symbol), leverage)
-        {
-        }
-
-        internal PositionAccessor(Symbol symbol, int leverage)
-        {
-            _symbol = symbol;
-            _lotSize = symbol?.ContractSize ?? 1;
-            _leverage = leverage;
-        }
-
-        internal PositionAccessor(PositionEntity entity, Symbol symbol, int leverage)
-            : this(symbol, leverage)
+        internal PositionAccessor(PositionEntity entity, Func<string, Symbol> symbolProvider, int leverage)
+            : this(entity.Symbol, symbolProvider(entity.Symbol), leverage)
         {
             Update(entity ?? throw new ArgumentNullException("entity"));
         }
 
+        internal PositionAccessor(string symbolName, Func<string, Symbol> symbolProvider, int leverage)
+            : this(symbolName, symbolProvider(symbolName), leverage)
+        {
+        }
+
+        private PositionAccessor(string symbolName, Symbol symbol, int leverage)
+        {
+            _symbolName = symbolName;
+            _lotSize = symbol?.ContractSize ?? 1;
+            _leverage = leverage;
+        }
+
+        private PositionAccessor(string symbolName, double lotSize, int leverage)
+        {
+            _symbolName = symbolName;
+            _lotSize = lotSize;
+            _leverage = leverage;
+        }
+
         internal PositionAccessor(PositionAccessor src)
-            : this(src._symbol, src._leverage)
+            : this(src._symbolName, src._lotSize, src._leverage)
         {
             _buy.Update(src._buy.Amount, src._buy.Price);
             _sell.Update(src._sell.Amount, src._sell.Price);
@@ -76,7 +83,7 @@ namespace TickTrader.Algo.Core
 
         internal static PositionAccessor CreateEmpty(string symbol, Func<string, Symbol> symbolInfoProvider, int leverage)
         {
-            return new PositionAccessor(new PositionEntity(symbol), leverage, symbolInfoProvider);
+            return new PositionAccessor(new PositionEntity(symbol), symbolInfoProvider, leverage);
         }
 
         public PositionAccessor Clone()
@@ -92,7 +99,7 @@ namespace TickTrader.Algo.Core
         public double SettlementPrice { get; internal set; }
         public OrderSide Side => IsBuySided ? OrderSide.Buy : OrderSide.Sell;
         public decimal Swap { get; internal set; }
-        public string Symbol => _symbol.Name;
+        public string Symbol => _symbolName;
         public double Margin => CalculateMargin();
         public double Profit => CalculateProfit();
         public DateTime? Modified { get; set; }
