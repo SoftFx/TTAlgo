@@ -57,7 +57,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderTemplate() { }
 
-        public OrderTemplate(TestParamsSet test, OrderExecutionMode mode) : base(test.Type, test.Side)
+        public OrderTemplate(TestParamsSet test, OrderExecutionMode mode) : base(test.Type, test.Side, test.Async)
         {
             Mode = mode;
             Options = test.Options;
@@ -124,7 +124,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public string GetInfo(TestOrderAction action) => action != TestOrderAction.Open ? $"{action}{GetAllProperties()}" : base.GetInfo();
 
-        public string GetAction(TestPropertyAction action, string property) => $"{action} {property} to order {Id}";
+        public string GetAction(TestPropertyAction action, string property) => $"{(Async ? "Async " : "")}{action} {property} {Type} {(Options == OrderExecOptions.ImmediateOrCancel ? "IoC" : "")} {Side} to order {Id}";
 
         private bool CheckPrice(double cur)
         {
