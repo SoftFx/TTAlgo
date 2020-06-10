@@ -65,10 +65,16 @@ namespace TickTrader.Algo.Common.Model
         {
             try
             {
-                if (acc.Type == Api.AccountTypes.Cash)
-                    return new CashCalc(acc, client);
-                else
-                    return new MarginCalc(acc, client);
+                switch (acc.Type)
+                {
+                    case Api.AccountTypes.Cash:
+                        return new CashCalc(acc, client);
+                    case Api.AccountTypes.Net:
+                    case Api.AccountTypes.Gross:
+                        return new MarginCalc(acc, client);
+                    default:
+                        throw new Exception("Acc type is null");
+                }
             }
             catch (Exception ex)
             {

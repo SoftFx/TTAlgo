@@ -104,11 +104,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             test.Options = options;
 
-            if (test.Type != OrderType.Market && !(test.Type == OrderType.Limit && test.Options == OrderExecOptions.ImmediateOrCancel)) //redone
+            if (!test.IsInstantOrder)
                 await PerfomOpenModifyTests(GenerateTemplate(test));
 
             await PerformExecutionTests(test);
-//            await PerformCloseByTests(test);
+
+            if (!test.Async)
+                await PerformCloseByTests(test);
 
             if (IncludeADCases)
                 await PerformADCommentsTest(test);
@@ -118,7 +120,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await TryPerformTest(() => TestOpenOrder(template, false));
 
-            await PerformVolumeModifyTests(template, DefaultOrderVolume * 2);
             await PerformCommentModifyTests(template);
             await PerformExpirationModifyTests(template);
 
@@ -128,13 +129,16 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 await PerformStopLossModifyTests(template);
             }
 
-            if (template.Type != OrderType.Stop)
+            if (template.Type != OrderType.Position)
+                await PerformVolumeModifyTests(template, DefaultOrderVolume * 2);
+
+            if (template.Type != OrderType.Stop && template.Type != OrderType.Position)
             {
                 await PerformMaxVisibleVolumeModifyTests(template);
                 await PerformPriceModifyTests(template, CalculatePrice(template));
             }
 
-            if (template.Type != OrderType.Limit)
+            if (template.IsStopOrder)
                 await PerformStopPriceModifyTests(template, CalculatePrice(template, 4));
 
             if (template.Type == OrderType.StopLimit)
@@ -143,7 +147,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!template.IsCloseOrder)
                 await TryPerformTest(() => TestCancelOrder(template));
             else
-                await TryPerformTest(() => TestCloseOrder<OrderCanceledEventArgs>(template));
+                await TryPerformTest(() => TestCloseOrder(template));
         }
 
         private async Task PerformExecutionTests(TestParamsSet test)
@@ -159,7 +163,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 await PrepareAndRun(TestAcion.SL, PerformStopLossExecutionTest, test, OrderExecutionMode.Execution);
             }
 
-            if (!test.IsInstantOrder)
+            if (!test.IsInstantOrder && Account.Type != AccountTypes.Gross)
             {
                 await PrepareAndRun(TestAcion.FillByModify, PerformFillByModifyExecutionTest, test);
                 await PrepareAndRun(TestAcion.Expiration, PerformExpirationExecutionTest, test);
@@ -181,7 +185,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await PrepareAndRun(TestAcion.ADReject, TestCommentReject, test, OrderExecutionMode.Execution);
 
-            if (test.Type != OrderType.StopLimit && test.Options != OrderExecOptions.ImmediateOrCancel)
+            if (test.Type != OrderType.StopLimit && !(test.Type == OrderType.Limit && test.Options == OrderExecOptions.ImmediateOrCancel)) // Limit IoC incorrect behavior
                 await PrepareAndRun(TestAcion.ADPartialActivate, TestCommentPartialActivate, test);
         }
 
@@ -195,8 +199,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             if (Account.Type == AccountTypes.Gross)
             {
-                await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template, template.Volume / 4));
-                await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template));
+                await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
+                await TryPerformTest(() => TestCloseOrder(template));
             }
         }
 
@@ -222,8 +226,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             if (Account.Type == AccountTypes.Gross)
             {
-                await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template, template.Volume / 4));
-                await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template));
+                await TryPerformTest(() => TestCloseOrder(template, template.Volume / 4));
+                await TryPerformTest(() => TestCloseOrder(template));
             }
         }
 
@@ -260,7 +264,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             await TryPerformTest(() => TestOpenOrder(template));
 
-            if (!IncludeADCases)
+            if (!IncludeADCases) //protection for AD
                 await WaitEvent<OrderModifiedEventArgs>(ModifyEventTimeout);
 
             await WaitAndStoreEvent<OrderClosedEventArgs>(template, TPSLEventTimeout);
@@ -270,6 +274,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             async Task func(OrderTemplate template)
             {
+                //var template = GenerateTemplate(test, OrderExecutionMode.Execution);
                 var inversed = template.InversedCopy(closeVolume);
 
                 template.TP = CalculatePrice(template, 4);
@@ -283,7 +288,24 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 await TryPerformTest(() => TestOpenOrder(template));
                 await TryPerformTest(() => TestOpenOrder(inversed));
 
-                await TryPerformTest(() => TestCloseBy(template, inversed));
+                await TryPerformTest(() => TestCloseBy(template, inversed), 1);
+
+                //PrintLog(template.GetInfo(TestOrderAction.CloseBy));
+
+                //var resultCopy = template.Volume < inversed.Volume ? (OrderTemplate)inversed.Clone() : (OrderTemplate)template.Clone();
+
+                //var response = template.Async ? await CloseOrderByAsync(template.Id, inversed.Id) : CloseOrderBy(template.Id, inversed.Id);
+                ////await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
+                //response.ThrowIfFailed(TestOrderAction.CloseBy);
+
+                //if (template.Volume != inversed.Volume)
+                //    await WaitOpenAndUpdateTemplate(resultCopy);
+
+                //await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? inversed : template, CloseEventTimeout);
+                //await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? template : inversed, CloseEventTimeout);
+
+                //if (template.Volume != inversed.Volume)
+                //    await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(resultCopy));
             }
 
             await PrepareAndRun(action, func, test, OrderExecutionMode.Execution);
@@ -398,7 +420,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
         }
 
-        private async Task TestCloseOrder<T>(OrderTemplate template, double? volume = null) where T : class
+        private async Task TestCloseOrder(OrderTemplate template, double? volume = null)
         {
             PrintLog(template.GetInfo(TestOrderAction.Close));
 
@@ -408,18 +430,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
             template.Verification(volume == null);
 
-            await WaitAndStoreEvent<T>(template, CloseEventTimeout);
+            await WaitAndStoreEvent<OrderClosedEventArgs>(template, CloseEventTimeout);
         }
 
         private async Task TestCloseBy(OrderTemplate template, OrderTemplate inversed)
         {
             PrintLog(template.GetInfo(TestOrderAction.CloseBy));
 
+            var resultCopy = template.Volume < inversed.Volume ? (OrderTemplate)inversed.Clone() : (OrderTemplate)template.Clone();
+
             var response = template.Async ? await CloseOrderByAsync(template.Id, inversed.Id) : CloseOrderBy(template.Id, inversed.Id);
 
             response.ThrowIfFailed(TestOrderAction.CloseBy);
-
-            var resultCopy = template.Volume < inversed.Volume ? (OrderTemplate)inversed.Clone() : (OrderTemplate)template.Clone();
 
             if (template.Volume != inversed.Volume)
                 await WaitOpenAndUpdateTemplate(resultCopy);
@@ -428,7 +450,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await WaitAndStoreEvent<OrderClosedEventArgs>(template.Volume < inversed.Volume ? template : inversed, CloseEventTimeout);
 
             if (template.Volume != inversed.Volume)
-                await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(resultCopy));
+                await TryPerformTest(() => TestCloseOrder(resultCopy));
         }
 
         private async Task TestModifyOrder(OrderTemplate template, bool filled = false)
@@ -529,8 +551,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (reports.Count != verifiers.Count)
                 throw new Exception($"Report count does not match expected number! {reports.Count} vs {verifiers.Count}");
 
-            var ide = verifiers.Select(u => u.Id).ToList();
-            var idr = reports.Select(u => u.OrderId).ToList();
+            var ide = verifiers.Select(u => u.Id).ToList(); //remove
+            var idr = reports.Select(u => u.OrderId).ToList(); //remove
 
             for (int i = 0; i < reports.Count; i++)
                 verifiers[i].VerifyTradeReport(reports[i]);
@@ -571,14 +593,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await WaitAndStoreEvent<OrderFilledEventArgs>(template, FillEventTimeout, Account.Type != AccountTypes.Gross);
 
             if (Account.Type == AccountTypes.Gross)
-                await WaitOpenAndUpdateTemplate(template, true);
+            {
+                PrintLog("To Position");
+                await WaitOpenAndUpdateTemplate(template, true, true);
+            }
         }
 
-        private async Task WaitOpenAndUpdateTemplate(OrderTemplate template, bool activate = false)
+        private async Task WaitOpenAndUpdateTemplate(OrderTemplate template, bool activate = false, bool position = false)
         {
             var args = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
-            template.UpdateTemplate(args.Order, activate);
+            template.UpdateTemplate(args.Order, activate, position);
         }
 
         private async Task WaitAndStoreEvent<T>(OrderTemplate template, TimeSpan delay, bool store = true)
@@ -610,6 +635,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private void OnEventFired<TArgs>(TArgs args)
         {
+            //PrintLog($"Event received: {args.GetType().Name}");
             if (_eventWaiter != null)
             {
                 var waiterCopy = _eventWaiter;
@@ -837,10 +863,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             template.Price = CalculatePrice(template.Side, -5);
 
-            if (template.Type == OrderType.StopLimit)
-                template.StopPrice = CalculatePrice(template.Side, -1);
-
             var isImmediateFill = template.IsImmediateFill; // should be redone
+            //var isIoc = template.Type == OrderType.Limit && template.Options == OrderExecOptions.ImmediateOrCancel; //redone
 
             var customVolume = 0.2 * DefaultOrderVolume * Symbol.ContractSize;
 
@@ -849,15 +873,23 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
                 new OrderCommentActionModel(template.IsInstantOrder ? ADCases.Confirm : ADCases.Activate, customVolume)
             };
 
-            if (!template.IsImmediateFill)
+            if (!isImmediateFill)
                 commentModel.Add(new OrderCommentActionModel(ADCases.Activate, null));
 
             template.Comment = commentModel.GetComment();
 
             await TryPerformTest(() => TestOpenOrder(template));
 
-            if (template.Type == OrderType.Limit && template.Options == OrderExecOptions.ImmediateOrCancel)
-                await WaitEvent<OrderCanceledEventArgs>(CancelEventTimeout);
+            //if (isIoc)
+            //{
+            //    if (Account.Type == AccountTypes.Gross) //pzdc
+            //        template.Id = template.RelatedId;
+
+            //    await WaitAndStoreEvent<OrderCanceledEventArgs>(template, CancelEventTimeout);
+
+            //    if (Account.Type == AccountTypes.Gross) //pzdc 2
+            //        template.SetType(OrderType.Position);
+            //}
 
             if (!isImmediateFill)
                 await TryPerformTest(() => TestEventFillOrder(template), 1);
@@ -866,12 +898,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             {
                 template.Id = template.RelatedId; // should be redone
 
-                await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template));
+                await TryPerformTest(() => TestCloseOrder(template));
 
                 if (!isImmediateFill)
                 {
                     template.Id = template.RelatedId;
-                    await TryPerformTest(() => TestCloseOrder<OrderClosedEventArgs>(template));
+                    await TryPerformTest(() => TestCloseOrder(template));
                 }
             }
         }

@@ -35,7 +35,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         public OrderExecOptions Options { get; set; }
 
         
-        public bool IsInstantOrder => Type == OrderType.Market || (Type != OrderType.StopLimit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
+        public bool IsInstantOrder => (Type == OrderType.Market && AccountType != AccountTypes.Gross)
+                                    || (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel));
 
 
         public TestParamsSet() { }

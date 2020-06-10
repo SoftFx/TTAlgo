@@ -6,7 +6,7 @@ namespace TickTrader.Algo.Common.Lib
 {
     public class BotIdHelper
     {
-        public int MaxLength { get; private set; } = 30;
+        public int MaxLength { get; private set; } = 35;
         public string Pattern { get; private set; } = "[^A-Za-z0-9 ]";
 
         public void UseMaxLength(int idLength)

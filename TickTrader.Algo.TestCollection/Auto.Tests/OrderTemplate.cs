@@ -16,10 +16,13 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsCloseOrder => RealOrder.Type == OrderType.Position || RealOrder.Type == OrderType.Market;
 
+        public bool IsStopOrder => Type == OrderType.Stop || Type == OrderType.StopLimit;
+
         public bool IsImmediateFill => Type == OrderType.Market ||
                                        (Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel)) ||
                                        (Type == OrderType.Position && AccountType == AccountTypes.Gross);
 
+        public bool IsIoc { get; }
 
         public string RelatedId { get; private set; }
 
@@ -61,17 +64,22 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             Mode = mode;
             Options = test.Options;
+            IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
         }
 
-        public void UpdateTemplate(Order order, bool activate = false)
+        public void SetType(OrderType type)
+        {
+            Type = type;
+        }
+
+        public void UpdateTemplate(Order order, bool activate = false, bool position = false)
         {
             Id = order.Id;
 
-            if (activate && AccountType == AccountTypes.Gross && Type != OrderType.StopLimit)
-                Type = OrderType.Position;
-
             if (activate && Type == OrderType.StopLimit)
                 Type = OrderType.Limit;
+            else
+                Type = position ? OrderType.Position : Type;
 
             Verification();
         }
@@ -96,7 +104,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (Type != OrderType.Stop && !CheckPrice(RealOrder.Price))
                 throw new VerificationException(RealOrder.Id, nameof(RealOrder.Price), Price, RealOrder.Price);
 
-            if ((Type == OrderType.Stop || Type == OrderType.StopLimit) && !RealOrder.StopPrice.EI(StopPrice))
+            if (IsStopOrder && !RealOrder.StopPrice.EI(StopPrice))
                 throw new VerificationException(RealOrder.Id, nameof(RealOrder.StopPrice), StopPrice, RealOrder.StopPrice);
 
             if (!RealOrder.MaxVisibleVolume.EI(MaxVisibleVolume) && !(-1.0).EI(MaxVisibleVolume) && !double.IsNaN(RealOrder.MaxVisibleVolume))
@@ -176,7 +184,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public OrderTemplate InversedCopy(double? volume = null)
         {
-             var copy = (OrderTemplate)Clone();
+            var copy = (OrderTemplate)Clone();
 
             copy.Side = Side == OrderSide.Buy ? OrderSide.Sell : OrderSide.Buy;
             copy.Volume = volume ?? Volume;
