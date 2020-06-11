@@ -14,7 +14,7 @@ namespace TickTrader.BotTerminal
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is double d ? d.ToString(_template) : value;
+            return value is double d ? d.ToString(_template, CultureInfo.InvariantCulture) : value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

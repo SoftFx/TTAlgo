@@ -9,7 +9,7 @@ namespace TickTrader.BotTerminal
 {
     public static class NumberFormat
     {
-        public static readonly NumberFormatInfo AmountNumberInfo = new NumberFormatInfo() { NumberGroupSeparator = " " };
+        public static readonly NumberFormatInfo AmountNumberInfo = new NumberFormatInfo() { NumberGroupSeparator = " ", CurrencyDecimalSeparator = "." };
 
         public static char? GetCurrencySymbol(string currencyName)
         {
@@ -52,7 +52,7 @@ namespace TickTrader.BotTerminal
         private static string GetFormattedDouble(double value, string type, int precision, NumberFormatInfo info = null)
         {
             if (info == null)
-                return precision >= 0 ? value.ToString($"{type}{precision}") : value.ToString();
+                return precision >= 0 ? value.ToString($"{type}{precision}", CultureInfo.InvariantCulture) : value.ToString(CultureInfo.InvariantCulture);
             else
                 return precision >= 0 ? value.ToString($"{type}{precision}", info) : value.ToString(info);
         }
@@ -60,7 +60,7 @@ namespace TickTrader.BotTerminal
         private static string GetFormattedDecimal(decimal value, string type, int precision, NumberFormatInfo info = null)
         {
             if (info == null)
-                return precision >= 0 ? value.ToString($"{type}{precision}") : value.ToString();
+                return precision >= 0 ? value.ToString($"{type}{precision}", CultureInfo.InvariantCulture) : value.ToString(CultureInfo.InvariantCulture);
             else
                 return precision >= 0 ? value.ToString($"{type}{precision}", info) : value.ToString(info);
         }

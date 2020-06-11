@@ -12,7 +12,7 @@ namespace TickTrader.BotTerminal
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return string.Format(parameter.ToString(), values);
+            return string.Format(CultureInfo.InvariantCulture, parameter.ToString(), values);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

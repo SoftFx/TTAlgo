@@ -3,6 +3,7 @@ using TickTrader.BusinessLogic;
 using TickTrader.Algo.Core;
 using TickTrader.Algo.Common.Lib;
 using TickTrader.Algo.Api;
+using System.Globalization;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -132,7 +133,7 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        public string AmountLots => SymbolModel == null ? "" : (Amount / SymbolModel.LotSize).ToString(DefaultVolumeFormat);
+        public string AmountLots => SymbolModel == null ? "" : (Amount / SymbolModel.LotSize).ToString(DefaultVolumeFormat, CultureInfo.InvariantCulture);
 
         public double Price
         {
