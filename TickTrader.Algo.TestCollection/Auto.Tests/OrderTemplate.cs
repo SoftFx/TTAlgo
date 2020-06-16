@@ -129,6 +129,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!RealOrder.StopLoss.EI(SL) && !0.0.EI(SL) && !double.IsNaN(RealOrder.StopLoss))
                 throw new VerificationException(RealOrder.Id, nameof(RealOrder.StopLoss), SL, RealOrder.StopLoss);
 
+            var expectedSlippage = Slippage == null || Slippage > MaxSlippage ? MaxSlippage : Slippage;
+
+            if ((Type == OrderType.Stop || Type == OrderType.Market) && !RealOrder.Slippage.EI(expectedSlippage))
+                throw new VerificationException(RealOrder.Id, nameof(RealOrder.Slippage), expectedSlippage, RealOrder.Slippage);
 
             if (Comment != null && RealOrder.Comment != Comment)
                 throw new VerificationException(RealOrder.Id, nameof(RealOrder.Comment), Comment, RealOrder.Comment);

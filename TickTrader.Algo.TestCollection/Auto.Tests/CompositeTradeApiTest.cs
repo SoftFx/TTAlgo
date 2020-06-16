@@ -55,6 +55,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             TestParamsSet.AccountType = Account.Type;
             TestParamsSet.Orders = Account.Orders;
+            TestParamsSet.MaxSlippage = Symbol.Slippage;
         }
 
         protected async override void OnStart()
@@ -112,6 +113,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (!test.Async && Account.Type == AccountTypes.Gross && test.Type == OrderType.Market)
                 await PerformCloseByTests(test);
 
+            if (test.Type == OrderType.Stop || test.Type == OrderType.Market)
+                await PerformOpenSlippageTest(test);
+
             if (IncludeADCases)
                 await PerformADCommentsTest(test);
         }
@@ -147,10 +151,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (template.Type == OrderType.StopLimit)
                 await PerformOptionsModifyTests(template);
 
-            if (!template.IsCloseOrder)
-                await TryPerformTest(() => TestCancelOrder(template));
-            else
-                await TryPerformTest(() => TestCloseOrder(template));
+            await CloseWaitingOrder(template);
         }
 
         private async Task PerformExecutionTests(TestParamsSet test)
@@ -179,6 +180,14 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await PrepareCloseByTest(TestAcion.CloseBySmallBig, DefaultOrderVolume * 2, test);
             await PrepareCloseByTest(TestAcion.CloseByBigSmall, DefaultOrderVolume / 2, test);
             await PrepareCloseByTest(TestAcion.CloseByEven, null, test);
+        }
+
+        private async Task PerformOpenSlippageTest(TestParamsSet test)
+        {
+            await PrepareOpenSlippageTest(null, test);
+            await PrepareOpenSlippageTest(0, test);
+            await PrepareOpenSlippageTest(Symbol.Slippage / 2, test);
+            await PrepareOpenSlippageTest(Symbol.Slippage * 2, test);
         }
 
         private async Task PerformADCommentsTest(TestParamsSet test)
@@ -291,6 +300,21 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             }
 
             await PrepareAndRun(action, func, test, OrderExecutionMode.Execution);
+        }
+
+        private async Task PrepareOpenSlippageTest(double? slippage, TestParamsSet test)
+        {
+            async Task func(OrderTemplate template)
+            {
+                template.Slippage = slippage;
+
+                await TryPerformTest(() => TestOpenOrder(template, false));
+
+                if (!template.IsInstantOrder)
+                    await CloseWaitingOrder(template);
+            }
+
+            await PrepareAndRun(TestAcion.OpenSlippage, func, test);
         }
 
         private async Task TryCatchOrderReject(OrderTemplate template)
@@ -641,6 +665,14 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         #region Misc methods
 
+        private async Task CloseWaitingOrder(OrderTemplate template)
+        {
+            if (!template.IsCloseOrder)
+                await TryPerformTest(() => TestCancelOrder(template));
+            else
+                await TryPerformTest(() => TestCloseOrder(template));
+        }
+
         private void CleanUp()
         {
             Print("Cleaning up...");
@@ -739,8 +771,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private async Task PerformSlippageModifyTest(OrderTemplate test)
         {
-            await RunSlippageTest(test, TestPropertyAction.Add, 1e-5);
-            await RunSlippageTest(test, TestPropertyAction.Modify, 2e-5);
+            await RunSlippageTest(test, TestPropertyAction.Add, test.Slippage / 2);
+            await RunSlippageTest(test, TestPropertyAction.Modify, test.Slippage * 2);
             await RunSlippageTest(test, TestPropertyAction.Delete, 0);
         }
 

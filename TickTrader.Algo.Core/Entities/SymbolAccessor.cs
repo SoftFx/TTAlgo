@@ -52,6 +52,7 @@ namespace TickTrader.Algo.Core
         public double HedgingFactor => entity.MarginHedged;
         public NumberFormatInfo PriceFormat { get; private set; }
         public int AmountDigits { get; private set; }
+        public double? Slippage => entity.DefaultSlippage;
 
         public double ContractSizeFractional => entity.ContractSizeFractional;
         public double MarginFactorFractional => entity.MarginFactor;
@@ -149,6 +150,7 @@ namespace TickTrader.Algo.Core
         public CommissionChargeType CommissionChargeType { get { return CommissionChargeType.PerTrade; } }
         public CommissionType CommissionType { get { return CommissionType.Percent; } }
         public double HedgingFactor => double.NaN;
+        public double? Slippage => null;
 
         public void Subscribe(int depth = 1)
         {

@@ -10,7 +10,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
     public enum OrderExecutionMode { Execution, Waiting}
 
     public enum TestAcion { Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration, ADReject, ADPartialActivate,
-                            CloseByBigSmall, CloseBySmallBig, CloseByEven}
+                            CloseByBigSmall, CloseBySmallBig, CloseByEven, OpenSlippage}
 
     public enum TestOrderAction { Open, Modify, Close, Cancel, CloseBy };
 
@@ -20,6 +20,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
     {
         public const string Tag = "TAG";
 
+        public static double? MaxSlippage { get; set; }
 
         public static AccountTypes AccountType { get; set; }
 
