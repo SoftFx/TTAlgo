@@ -9,7 +9,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
     public enum OrderExecutionMode { Execution, Waiting}
 
-    public enum TestAcion { Fill, FillByModify, RejectIoC, TP, SL, Cancel, Expiration, ADReject, ADPartialActivate,
+    public enum TestAcion { Fill, FillByModify, RejectIoC, ExecutionTP, ExecutionSL, Cancel, Expiration, ADReject, ADPartialActivate,
                             CloseByBigSmall, CloseBySmallBig, CloseByEven}
 
     public enum TestOrderAction { Open, Modify, Close, Cancel, CloseBy };

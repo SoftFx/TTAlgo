@@ -37,6 +37,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             TP = template.TP;
             SL = template.SL;
             Options = template.Options;
+
+            InitOpenPrice = template.InitOpenPrice;
         }
 
         protected static HistoryOrderTemplate Create(OrderTemplate template, OrderFilledEventArgs args) =>
@@ -101,6 +103,9 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(nameof(report.ActionType), TradeReportAction, report.ActionType);
             AssertEquals(nameof(report.TradeRecordSide), Side, report.TradeRecordSide);
             AssertEquals(nameof(report.TradeRecordType), Type, report.TradeRecordType);
+
+            if (TradeReportAction != TradeExecActions.OrderCanceled && TradeReportAction != TradeExecActions.PositionClosed) //redone
+                AssertEqualsDouble(nameof(report.ReqOpenPrice), TradeReportAction == TradeExecActions.OrderActivated || Type == OrderType.Stop ? StopPrice.Value : Price.Value, report.ReqOpenPrice.Value);
         }
 
         private void AssertEquals<T>(string property, T current, T expected)

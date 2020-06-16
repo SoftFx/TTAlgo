@@ -24,6 +24,10 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsIoc { get; }
 
+        public double? InitOpenPrice { get; set; }
+
+        public double? InitOpenStopPrice { get; set; }
+
         public string RelatedId { get; private set; }
 
         public string Id
@@ -67,9 +71,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
         }
 
-        public void SetType(OrderType type)
+        public OrderTemplate SaveTemplateState()
         {
-            Type = type;
+            InitOpenPrice = Price;
+            InitOpenStopPrice = StopPrice;
+
+            return this;
+        }
+
+        public void RestoreTemplateState()
+        {
+            Price = InitOpenPrice;
+            StopPrice = InitOpenStopPrice;
         }
 
         public void UpdateTemplate(Order order, bool activate = false, bool position = false)
