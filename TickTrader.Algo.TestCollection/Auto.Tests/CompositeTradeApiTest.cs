@@ -420,8 +420,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         {
             PrintLog(template.GetInfo(TestOrderAction.Cancel));
 
-            template.RestoreTemplateState();
-
             var response = template.Async ? await CancelOrderAsync(template.Id) : CancelOrder(template.Id);
 
             response.ThrowIfFailed(TestOrderAction.Cancel);
@@ -610,6 +608,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (Account.Type == AccountTypes.Gross)
             {
                 PrintLog("To Position");
+                UpdateHistoryTemplate(template);
                 await WaitOpenAndUpdateTemplate(template, true, true);
             }
         }
@@ -619,6 +618,16 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             var args = await WaitEvent<OrderOpenedEventArgs>(OpenEventTimeout);
 
             template.UpdateTemplate(args.Order, activate, position);
+        }
+
+        private void UpdateHistoryTemplate(OrderTemplate template)
+        {
+            var hist = _historyStorage.FirstOrDefault(u => u.Id == template.Id);
+
+            if (hist == null)
+                return;
+
+            hist.FillHistoryTemplate(template);
         }
 
         private async Task WaitAndStoreEvent<T>(OrderTemplate template, TimeSpan delay, bool store = true)
@@ -769,11 +778,11 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             await RunCommentTest(test, TestPropertyAction.Delete, string.Empty);
         }
 
-        private async Task PerformSlippageModifyTest(OrderTemplate test)
+        private async Task PerformSlippageModifyTest(OrderTemplate template)
         {
-            await RunSlippageTest(test, TestPropertyAction.Add, test.Slippage / 2);
-            await RunSlippageTest(test, TestPropertyAction.Modify, test.Slippage * 2);
-            await RunSlippageTest(test, TestPropertyAction.Delete, 0);
+            await RunSlippageTest(template, TestPropertyAction.Add, TestParamsSet.MaxSlippage / 2);
+            await RunSlippageTest(template, TestPropertyAction.Modify, TestParamsSet.MaxSlippage * 2);
+            await RunSlippageTest(template, TestPropertyAction.Delete, 0);
         }
 
         private async Task PerformTakeProfitModifyTests(OrderTemplate template)

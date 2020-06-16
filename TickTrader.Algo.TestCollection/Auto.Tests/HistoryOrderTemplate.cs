@@ -8,7 +8,7 @@ using TickTrader.Algo.Api.Math;
 
 namespace TickTrader.Algo.TestCollection.Auto.Tests
 {
-    internal class HistoryOrderTemplate : OrderTemplate
+    internal sealed class HistoryOrderTemplate : OrderTemplate
     {
         ////public string OrderId { get; }
         ////public AccountTypes AccType { get; }
@@ -20,13 +20,18 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
         ////public double? Price { get; }
         ////public double? StopPrice { get; }
 
-        public TradeExecActions TradeReportAction { get; protected set; }
+        public TradeExecActions TradeReportAction { get; private set; }
 
-        public DateTime TradeReportTimestamp { get; protected set; }
+        public DateTime TradeReportTimestamp { get; private set; }
 
-        public OrderType TradeRecordType { get; protected set; }
+        public OrderType TradeRecordType { get; private set; }
 
-        protected HistoryOrderTemplate(OrderTemplate template)
+        private HistoryOrderTemplate(OrderTemplate template)
+        {
+            FillHistoryTemplate(template);
+        }
+
+        public void FillHistoryTemplate(OrderTemplate template)
         {
             Id = template.Id;
             Side = template.Side;
@@ -38,38 +43,38 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             SL = template.SL;
             Options = template.Options;
 
-            InitOpenPrice = template.InitOpenPrice;
+            InitOpenPrice = template.InitOpenPrice; //remove?
         }
 
-        protected static HistoryOrderTemplate Create(OrderTemplate template, OrderFilledEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderTemplate template, OrderFilledEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderFilled,
                 TradeReportTimestamp = args.OldOrder.Modified
             };
 
-        protected static HistoryOrderTemplate Create(OrderTemplate template, OrderActivatedEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderTemplate template, OrderActivatedEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderActivated,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        protected static HistoryOrderTemplate Create(OrderTemplate template, OrderClosedEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderTemplate template, OrderClosedEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.PositionClosed,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        protected static HistoryOrderTemplate Create(OrderTemplate template, OrderCanceledEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderTemplate template, OrderCanceledEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderCanceled,
                 TradeReportTimestamp = args.Order.Modified
             };
 
-        protected static HistoryOrderTemplate Create(OrderTemplate template, OrderExpiredEventArgs args) =>
+        private static HistoryOrderTemplate Create(OrderTemplate template, OrderExpiredEventArgs args) =>
             new HistoryOrderTemplate(template)
             {
                 TradeReportAction = TradeExecActions.OrderExpired,
@@ -104,8 +109,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(nameof(report.TradeRecordSide), Side, report.TradeRecordSide);
             AssertEquals(nameof(report.TradeRecordType), Type, report.TradeRecordType);
 
-            if (TradeReportAction != TradeExecActions.OrderCanceled && TradeReportAction != TradeExecActions.PositionClosed) //redone
-                AssertEqualsDouble(nameof(report.ReqOpenPrice), TradeReportAction == TradeExecActions.OrderActivated || Type == OrderType.Stop ? StopPrice.Value : Price.Value, report.ReqOpenPrice.Value);
+            //if (Options != OrderExecOptions.ImmediateOrCancel)
+             //   AssertEqualsDouble(nameof(report.ReqOpenPrice), TradeReportAction == TradeExecActions.OrderActivated || Type == OrderType.Stop || Type == OrderType.StopLimit ? StopPrice.Value : Price.Value, report.ReqOpenPrice.Value);
         }
 
         private void AssertEquals<T>(string property, T current, T expected)
