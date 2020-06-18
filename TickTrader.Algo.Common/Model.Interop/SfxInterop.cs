@@ -471,7 +471,7 @@ namespace TickTrader.Algo.Common.Model
                 if (request.ByOrderId != null)
                     return _tradeProxyAdapter.ClosePositionByAsync(r.OperationId, r.OrderId, r.ByOrderId);
                 else
-                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume, r.Slippage);
+                    return _tradeProxyAdapter.ClosePositionAsync(r.OperationId, r.OrderId, r.Volume, r.Slippage == null || !double.IsNaN(r.Slippage.Value) ? r.Slippage : null);
             });
         }
 

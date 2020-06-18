@@ -28,11 +28,6 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         private HistoryOrderTemplate(OrderTemplate template)
         {
-            FillHistoryTemplate(template);
-        }
-
-        public void FillHistoryTemplate(OrderTemplate template)
-        {
             Id = template.Id;
             Side = template.Side;
             Type = template.Type;
@@ -44,6 +39,12 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             Options = template.Options;
 
             InitOpenPrice = template.InitOpenPrice; //remove?
+            InitType = template.InitType;
+        }
+
+        public void FillHistoryTemplate(OrderTemplate template)
+        {
+
         }
 
         private static HistoryOrderTemplate Create(OrderTemplate template, OrderFilledEventArgs args) =>
@@ -99,6 +100,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public void VerifyTradeReport(TradeReport report)
         {
+            //try
+            //{
             HistoryVerificationException.StorageId = Id;
             HistoryVerificationException.HistoryId = Type == OrderType.Position ? report.PositionId : report.OrderId;
 
@@ -109,8 +112,21 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             AssertEquals(nameof(report.TradeRecordSide), Side, report.TradeRecordSide);
             AssertEquals(nameof(report.TradeRecordType), Type, report.TradeRecordType);
 
-            //if (Options != OrderExecOptions.ImmediateOrCancel)
-             //   AssertEqualsDouble(nameof(report.ReqOpenPrice), TradeReportAction == TradeExecActions.OrderActivated || Type == OrderType.Stop || Type == OrderType.StopLimit ? StopPrice.Value : Price.Value, report.ReqOpenPrice.Value);
+            var price = Price.Value;
+
+            if (InitType == OrderType.Stop)
+                price = StopPrice.Value;
+
+            if (InitType == OrderType.StopLimit && (TradeReportAction == TradeExecActions.OrderActivated || TradeReportAction == TradeExecActions.OrderCanceled))
+                price = StopPrice.Value;
+
+            //if (TradeReportAction != TradeExecActions.PositionClosed)
+            //AssertEqualsDouble(nameof(report.ReqOpenPrice), price, report.ReqOpenPrice.Value);
+            //}
+            //catch (Exception ex)
+            //{
+
+            //}
         }
 
         private void AssertEquals<T>(string property, T current, T expected)

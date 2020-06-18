@@ -568,7 +568,17 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             var idr = reports.Select(u => u.OrderId).ToList(); //remove
 
             for (int i = 0; i < reports.Count; i++)
-                verifiers[i].VerifyTradeReport(reports[i]);
+            {
+                try
+                {
+                    verifiers[i].VerifyTradeReport(reports[i]);
+                }
+                catch (Exception ex)
+                {
+                    PrintError(ex.Message);
+                }
+            }
+
         }
 
         private async Task<List<TradeReport>> QuerySegmentToList(DateTime from, DateTime to, bool async, ThQueryOptions options)
@@ -608,7 +618,7 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             if (Account.Type == AccountTypes.Gross)
             {
                 PrintLog("To Position");
-                UpdateHistoryTemplate(template);
+                //UpdateHistoryTemplate(template);
                 await WaitOpenAndUpdateTemplate(template, true, true);
             }
         }
@@ -620,14 +630,14 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             template.UpdateTemplate(args.Order, activate, position);
         }
 
-        private void UpdateHistoryTemplate(OrderTemplate template)
+        private void UpdateHistoryTemplate(OrderTemplate template) //remove
         {
             var hist = _historyStorage.FirstOrDefault(u => u.Id == template.Id);
 
             if (hist == null)
                 return;
 
-            hist.FillHistoryTemplate(template);
+            //hist.FillHistoryTemplate(template);
         }
 
         private async Task WaitAndStoreEvent<T>(OrderTemplate template, TimeSpan delay, bool store = true)

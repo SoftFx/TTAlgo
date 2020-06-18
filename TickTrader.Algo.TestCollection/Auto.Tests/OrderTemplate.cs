@@ -24,6 +24,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
 
         public bool IsIoc { get; }
 
+        public OrderType InitType { get; protected set; }
+
         public double? InitOpenPrice { get; set; } //remove?
 
         public double? InitOpenStopPrice { get; set; } //remove?
@@ -69,6 +71,8 @@ namespace TickTrader.Algo.TestCollection.Auto.Tests
             Mode = mode;
             Options = test.Options;
             IsIoc = Type == OrderType.Limit && Options.HasFlag(OrderExecOptions.ImmediateOrCancel);
+
+            InitType = Type;
         }
 
         public OrderTemplate SaveTemplateState() //remove?
