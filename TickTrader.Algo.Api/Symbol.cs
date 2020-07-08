@@ -30,6 +30,7 @@ namespace TickTrader.Algo.Api
         CommissionChargeType CommissionChargeType { get; }
         CommissionType CommissionType { get; }
         double HedgingFactor { get; }
+        double? Slippage { get; }
 
         void Subscribe(int depth = 1);
         void Unsubscribe();

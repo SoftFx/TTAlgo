@@ -101,7 +101,7 @@ namespace TickTrader.BotAgent.BA.Models
 
         //public event Action<string> StatusUpdated;
 
-        private void WriteLog(LogEntryType type, string message)
+        private void WriteLog(LogEntryType type, string message, string details)
         {
             var msg = new LogEntry(type, message);
 
@@ -119,6 +119,8 @@ namespace TickTrader.BotAgent.BA.Models
                     break;
                 case LogEntryType.Error:
                     _logger.Error(msg.ToString());
+                    if (!string.IsNullOrEmpty(details))
+                        _logger.Error(details);
                     break;
             }
 
@@ -258,7 +260,7 @@ namespace TickTrader.BotAgent.BA.Models
 
             public void LogMesssage(PluginLogRecord record)
             {
-                CallActor(a => a.WriteLog(Convert(record.Severity), record.Message));
+                CallActor(a => a.WriteLog(Convert(record.Severity), record.Message, record.Details));
             }
 
             public void Trace(string status) => CallActor(a => a._logger.Trace(status));

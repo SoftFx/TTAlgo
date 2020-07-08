@@ -33,8 +33,8 @@ namespace TickTrader.Algo.TestCollection.Bots
     //            this.Exit();
     //        }
 
-    //        double currentVolume = TotalNet;
-    //        double expectedVolume = currentVolume + Volume;
+    //        double BaseOrderVolume = TotalNet;
+    //        double expectedVolume = BaseOrderVolume + Volume;
     //        await OpenOrderAsync(this.Symbol.Name, OrderType.Limit, OrderSide.Buy, Volume, Ask + 1000 * Symbol.Point);
     //        do
     //        {
@@ -48,8 +48,8 @@ namespace TickTrader.Algo.TestCollection.Bots
     //            await Task.Delay(1);
     //        } while (Account.Orders.Count != 0);
 
-    //        currentVolume = TotalNet;
-    //        expectedVolume = currentVolume - Volume;
+    //        BaseOrderVolume = TotalNet;
+    //        expectedVolume = BaseOrderVolume - Volume;
     //        await OpenOrderAsync(this.Symbol.Name, OrderType.Limit, OrderSide.Sell, Volume, Bid - 1000 * Symbol.Point);
     //        do
     //        {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace TickTrader.Algo.Core
 {
     [Serializable]
-    public abstract class OrderRequest
+    public abstract class OrderCoreRequest
     {
         public string OperationId { get; set; }
     }

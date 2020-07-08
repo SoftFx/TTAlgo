@@ -312,13 +312,16 @@ namespace TickTrader.Algo.Common.Model
             {
                 order = Orders.GetOrDefault(report.OrderId);
 
-                bool typeChanged = order.OrderType != report.OrderType;
+                if (order != null)
+                {
+                    bool replaceOrder = order.OrderType != report.OrderType; //crutch should be call before order Update
 
-                order.Update(report);
+                    order.Update(report);
 
-                // workaround: dynamic collection filter can't react on field change
-                if (typeChanged)
-                    orders[order.Id] = order;
+                    // workaround: dynamic collection filter can't react on field change
+                    if (replaceOrder)
+                        orders[order.Id] = order;
+                }
             }
             else
                 order = new OrderModel(report, this);

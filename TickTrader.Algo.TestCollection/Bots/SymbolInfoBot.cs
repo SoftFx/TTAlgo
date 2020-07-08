@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using TickTrader.Algo.Api;
-using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -168,9 +168,9 @@
     <Compile Include="CoreExtentions.cs" />
     <Compile Include="Entities.Requests\CancelOrderRequest.cs" />
     <Compile Include="Entities.Requests\CloseOrderRequest.cs" />
-    <Compile Include="Entities.Requests\OpenOrderRequest.cs" />
-    <Compile Include="Entities.Requests\OrderRequest.cs" />
-    <Compile Include="Entities.Requests\ReplaceOrderRequest.cs" />
+    <Compile Include="Entities.Requests\OpenOrderCoreRequest.cs" />
+    <Compile Include="Entities.Requests\OrderCoreRequest.cs" />
+    <Compile Include="Entities.Requests\ReplaceOrderCoreRequest.cs" />
     <Compile Include="Entities\AccountAccessor.cs" />
     <Compile Include="Entities\AccountEntity.cs" />
     <Compile Include="Entities\AlgoMarketNode.cs" />

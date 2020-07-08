@@ -4,7 +4,7 @@ using TickTrader.Algo.Api;
 
 namespace TickTrader.Algo.TestCollection.Bots
 {
-    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.3", Category = "Test Orders",
+    [TradeBot(DisplayName = "[T] Modify Order Script", Version = "1.4", Category = "Test Orders",
         SetupMainSymbol = false, Description = "Modifies order by OrderId. Prints order execution result to bot status window.")]
     public class ModifyOrder : TradeBotCommon
     {
@@ -32,7 +32,7 @@ namespace TickTrader.Algo.TestCollection.Bots
         [Parameter(DisplayName = "Take Profit", DefaultValue = null, IsRequired = false)]
         public double? TakeProfit { get; set; }
 
-        [Parameter(DisplayName = "Slippage", DefaultValue = null, IsRequired = false)]
+        [Parameter(DisplayName = "Slippage (fraction)", DefaultValue = null, IsRequired = false)]
         public double? Slippage { get; set; }
 
         [Parameter(DisplayName = "Expiration Timeout(ms)", DefaultValue = null, IsRequired = false)]
@@ -54,8 +54,14 @@ namespace TickTrader.Algo.TestCollection.Bots
             if (string.IsNullOrWhiteSpace(OrderId))
                 OrderId = Account.Orders.FirstOrDefault()?.Id;
 
-            var result = ModifyOrder(OrderId, Price, StopPrice, MaxVisibleVolume, StopLoss, TakeProfit, comment,
-                ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null, Volume, options);//, Slippage);
+            var request = ModifyOrderRequest.Template.Create().WithOrderId(OrderId)
+                .WithPrice(Price).WithStopPrice(StopPrice).WithMaxVisibleVolume(MaxVisibleVolume)
+                .WithStopLoss(StopLoss).WithTakeProfit(TakeProfit).WithComment(Comment)
+                .WithExpiration(ExpirationTimeout.HasValue ? DateTime.Now + TimeSpan.FromMilliseconds(ExpirationTimeout.Value) : (DateTime?)null)
+                .WithVolume(Volume).WithOptions(options).WithSlippage(Slippage).MakeRequest();
+
+            var result = ModifyOrder(request);
+
             Status.WriteLine($"ResultCode = {result.ResultCode}");
             if (result.ResultingOrder != null)
                 Status.WriteLine(ToObjectPropertiesString(result.ResultingOrder));
