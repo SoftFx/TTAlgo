@@ -242,7 +242,7 @@ namespace TickTrader.Algo.Rpc
             {
                 return new RpcError
                 {
-                    Message = $"Failed to resolve protocol. Type={protocol.Type}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
+                    Message = $"Failed to resolve protocol. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
                     Details = resolveError,
                 };
             }
@@ -281,7 +281,7 @@ namespace TickTrader.Algo.Rpc
             {
                 return new RpcError
                 {
-                    Message = $"Failed to get handler for protocol. Type={protocol.Type}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
+                    Message = $"Failed to get handler for protocol. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
                     Details = ex.ToString(),
                 };
             }
@@ -290,7 +290,7 @@ namespace TickTrader.Algo.Rpc
             {
                 return new RpcError
                 {
-                    Message = $"Internal error: Protocol handler not found. Type={protocol.Type}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
+                    Message = $"Internal error: Protocol handler not found. Url={protocol.Url}, Version={protocol.MajorVerion}.{protocol.MinorVerion}",
                 };
             }
 

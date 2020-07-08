@@ -82,7 +82,7 @@ namespace TickTrader.Algo.Core
         internal void Start()
         {
             ConfigurateCore();
-            Launcher.ConfigureCore();
+            Launcher.ConfigureRuntime();
             Core.Start();
         }
 

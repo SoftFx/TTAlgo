@@ -327,6 +327,8 @@
     <Compile Include="Repository\ReductionCollection.cs" />
     <Compile Include="Server\AlgoServer.cs" />
     <Compile Include="Server\PluginLauncher.cs" />
+    <Compile Include="Server\ServerRuntimeV1Handler.cs" />
+    <Compile Include="Server\UnitRuntimeV1Handler.cs" />
     <Compile Include="TickTraderToAlgo.cs" />
     <Compile Include="Backtester\Trade\TradeOperationSummary.cs" />
     <Compile Include="Math\TimeVectorBase.cs" />

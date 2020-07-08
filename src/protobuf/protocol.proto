@@ -25,14 +25,8 @@ message RpcError {
 
 message Heartbeat { }
 
-enum ProtocolType {
-    REMOTE_PLUGIN = 0;
-    REMOTE_ACCOUNT = 1;
-    REMOTE_SERVER = 2;
-}
-
 message ProtocolSpec {
-    ProtocolType type = 1;
+    string url = 1;
     int32 major_verion = 2;
     int32 minor_verion = 3;
 }

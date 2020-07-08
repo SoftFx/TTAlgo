@@ -44,7 +44,6 @@ namespace TickTrader.Algo.Rpc
             ResponseHandler = responseHandler;
         }
 
-
         public bool OnNext(Any payload)
         {
             return ResponseHandler(TaskSrc, payload);
