@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package TickTrader.Algo.Protocol.Grpc.Lib;
 
-import "google_protos/timestamp.proto";
-import "keys.proto";
-import "descriptors.proto";
-import "config.proto";
+import "Grpc/Lib/google_protos/timestamp.proto";
+import "Grpc/Lib/keys.proto";
+import "Grpc/Lib/descriptors.proto";
+import "Grpc/Lib/config.proto";
 
 message PluginInfo
 {

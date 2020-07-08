@@ -24,7 +24,7 @@ namespace TickTrader.Algo.Core
             pluginRef = pluginRef ?? throw new ArgumentNullException("pluginRef");
             PluginInfo = pluginRef.Metadata.Descriptor;
             _sync = syncObj;
-            _executor = new PluginExecutor(pluginRef, syncObj);
+            _executor = new PluginExecutor("backtester-id-stub", pluginRef, syncObj);
             _executor.Core.Metadata = this;
 
             CommonSettings.EmulationPeriodStart = from;

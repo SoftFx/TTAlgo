@@ -13,6 +13,7 @@ using ActorSharp.Lib;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -26,6 +27,7 @@ namespace TickTrader.BotAgent.BA.Models
         private static readonly TimeSpan ReconnectThreshold_BadCreds = TimeSpan.FromMinutes(1);
 
         private AlertStorage _alertStorage;
+        private AlgoServer _server;
 
         private CancellationTokenSource _connectCancellation;
         private AsyncGate _requestGate;
@@ -45,21 +47,20 @@ namespace TickTrader.BotAgent.BA.Models
         private int _startedBotsCount;
         private bool _shutdownRequested => _shutdownCompletedSrc != null;
 
-        public ClientModel(string address, string username, string password, AlertStorage storage)
+        public ClientModel(string address, string username, string password)
         {
             Address = address;
             Username = username;
             Password = password;
-
-            _alertStorage = storage;
         }
 
-        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage)
+        public async Task Init(PackageStorage packageProvider, IFdkOptionsProvider fdkOptionsProvider, AlertStorage storage, AlgoServer server)
         {
             try
             {
                 _packageProvider = packageProvider;
                 _alertStorage = storage;
+                _server = server;
                 _requestGate = new AsyncGate();
                 _requestGate.OnWait += ManageConnection;
                 _requestGate.OnExit += KeepAlive;
@@ -462,7 +463,7 @@ namespace TickTrader.BotAgent.BA.Models
             bot.IsRunningChanged += OnBotIsRunningChanged;
             bot.ConfigurationChanged += OnBotConfigurationChanged;
             bot.StateChanged += OnBotStateChanged;
-            if (bot.Init(this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id), _alertStorage))
+            if (bot.Init(_server, this, _packageProvider, ServerModel.GetWorkingFolderFor(bot.Id), _alertStorage))
             {
                 BotInitialized?.Invoke(bot);
             }

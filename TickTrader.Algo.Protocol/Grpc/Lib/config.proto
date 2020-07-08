@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package TickTrader.Algo.Protocol.Grpc.Lib;
 
-import "google_protos/wrappers.proto";
-import "descriptors.proto";
-import "keys.proto";
+import "Grpc/Lib/google_protos/wrappers.proto";
+import "Grpc/Lib/descriptors.proto";
+import "Grpc/Lib/keys.proto";
 
 message Property
 {

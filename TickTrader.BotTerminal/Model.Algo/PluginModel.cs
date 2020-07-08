@@ -86,7 +86,7 @@ namespace TickTrader.BotTerminal
                 Setup.Apply(_executor.Config);
 
                 Host.UpdatePlugin(_executor);
-                _executor.Start();
+                _executor.Launch(Agent.AlgoServer.Address, Agent.AlgoServer.BoundPort);
                 //_executor.WriteConnectionInfo(Host.GetConnectionInfo());
                 return true;
             }
@@ -133,7 +133,7 @@ namespace TickTrader.BotTerminal
 
         protected virtual PluginExecutor CreateExecutor()
         {
-            var executor = new PluginExecutor(PluginRef, null);
+            var executor = Agent.AlgoServer.CreateExecutor(PluginRef, null);
 
             executor.ErrorOccurred += Executor_OnRuntimeError;
 

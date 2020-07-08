@@ -1,0 +1,58 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.rpc;
+
+option csharp_namespace = "TickTrader.Algo.Rpc";
+
+import "google/protobuf/any.proto";
+
+enum RpcFlags {
+    NOTIFICATION = 0;
+    REQUEST = 1;
+    RESPONSE = 2;
+}
+
+message RpcMessage {
+    RpcFlags flags = 1;
+    string call_id = 2;
+    google.protobuf.Any payload = 3;
+}
+
+message RpcError {
+    string message = 1;
+    string details = 2;
+}
+
+message Heartbeat { }
+
+enum ProtocolType {
+    REMOTE_PLUGIN = 0;
+    REMOTE_ACCOUNT = 1;
+    REMOTE_SERVER = 2;
+}
+
+message ProtocolSpec {
+    ProtocolType type = 1;
+    int32 major_verion = 2;
+    int32 minor_verion = 3;
+}
+
+message ConnectRequest {
+    ProtocolSpec protocol = 1;
+}
+
+message ConnectResponse {
+    ProtocolSpec protocol = 1;
+}
+
+message DisconnectRequest {
+    string reason = 1;
+}
+
+message DisconnectResponse { }
+
+message ShutdownRequest {
+    string reason = 1;
+}
+
+message ShutdownResponse { }

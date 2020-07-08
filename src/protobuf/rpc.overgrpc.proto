@@ -1,0 +1,13 @@
+﻿syntax = "proto3";
+
+package ticktrader.algo.rpc.overgrpc;
+
+option csharp_namespace = "TickTrader.Algo.Rpc.OverGrpc";
+
+message MessagePage {
+    repeated bytes messages = 1;
+}
+
+service OverGrpc {
+    rpc OpenDuplexChannel (stream MessagePage) returns (stream MessagePage);
+}

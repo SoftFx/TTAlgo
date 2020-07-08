@@ -13,6 +13,7 @@ namespace TickTrader.Algo.Core
 {
     public class PluginExecutor : CrossDomainObject, IDisposable
     {
+        private readonly string _id;
         private ISynchronizationContext _syncContext;
 
         private AlgoPluginRef _pluginRef;
@@ -21,14 +22,16 @@ namespace TickTrader.Algo.Core
         private FeedCdProxy _fProxy;
         private TradeApiProxy _tProxy;
 
-        public PluginExecutor(AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
+        internal PluginExecutor(string id, AlgoPluginRef pluginRef, ISynchronizationContext updatesSync)
         {
+            _id = id;
             _pluginRef = pluginRef;
             _syncContext = updatesSync;
             IsIsolated = pluginRef.IsIsolated;
 
             _container = PluginContainer.Load(_pluginRef.PackagePath, _pluginRef.IsIsolated);
-            Core = _container.CreateExecutor(_pluginRef.Id);
+            Launcher = _container.CreateObject<PluginLauncher>();
+            Core = Launcher.CreateExecutor(_pluginRef.Id);
 
             Core.IsGlobalMarshalingEnabled = true;
             Core.IsBunchingRequired = IsIsolated || _syncContext != null;
@@ -45,6 +48,7 @@ namespace TickTrader.Algo.Core
         }
 
         internal PluginExecutorCore Core { get; private set; }
+        internal PluginLauncher Launcher { get; private set; }
         public bool IsIsolated { get; }
         //public bool IsRunning { get; private set; }
 
@@ -70,9 +74,15 @@ namespace TickTrader.Algo.Core
 
         #region Excec control
 
-        public void Start()
+        public void Launch(string address, int port)
+        {
+            Launcher.Launch(address, port, _id);
+        }
+
+        internal void Start()
         {
             ConfigurateCore();
+            Launcher.ConfigureCore();
             Core.Start();
         }
 

@@ -88,11 +88,18 @@ namespace TickTrader.BotTerminal
         public event Action AccessLevelChanged { add { } remove { } }
 
 
+        internal AlgoServer AlgoServer { get; }
+
+
         public LocalAlgoAgent(IShell shell, TraderClientModel clientModel, PersistModel storage)
         {
             Shell = shell;
             ClientModel = clientModel;
             _preferences = storage.PreferencesStorage.StorageModel;
+
+            AlgoServer = new AlgoServer();
+            AlgoServer.Start().GetAwaiter().GetResult();
+            _logger.Info($"Started AlgoServer on port {AlgoServer.BoundPort}");
 
             _reductions = new ReductionCollection(new AlgoLogAdapter("Extensions"));
             IdProvider = new PluginIdProvider();

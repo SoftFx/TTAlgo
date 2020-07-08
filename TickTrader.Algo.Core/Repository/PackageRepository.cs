@@ -35,6 +35,9 @@ namespace TickTrader.Algo.Core.Repository
         public event Action<AlgoPackageRef> Removed;
 
 
+        public IReadOnlyDictionary<string, PackageWatcher> Packages => _packages;
+
+
         public PackageRepository(string repPath, RepositoryLocation location, IAlgoCoreLogger logger = null, bool isolation = true)
         {
             _repPath = repPath;

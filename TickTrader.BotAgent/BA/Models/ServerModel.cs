@@ -16,6 +16,7 @@ using NLog;
 using TickTrader.Algo.Common.Info;
 using TickTrader.Algo.Common.Model.Config;
 using TickTrader.Algo.Core.Repository;
+using TickTrader.Algo.Core;
 
 namespace TickTrader.BotAgent.BA.Models
 {
@@ -35,6 +36,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         private AlertStorage _alertStorage;
 
+        private AlgoServer _algoServer;
+
         public static EnvService Environment => envService;
 
         public static string GetWorkingFolderFor(string botId)
@@ -44,6 +47,10 @@ namespace TickTrader.BotAgent.BA.Models
 
         private async Task InitAsync(IFdkOptionsProvider fdkOptionsProvider)
         {
+            _algoServer = new AlgoServer();
+            await _algoServer.Start();
+            _logger.Info($"Started AlgoServer on port {_algoServer.BoundPort}");
+
             _botIdHelper = new BotIdHelper();
             _allBots = new Dictionary<string, TradeBotModel>();
             _packageStorage = new PackageStorage();
@@ -182,8 +189,8 @@ namespace TickTrader.BotAgent.BA.Models
 
         public async Task<ConnectionErrorInfo> TestCreds(AccountKey accountId, string password)
         {
-            var acc = new ClientModel(accountId.Server, accountId.Login, password, _alertStorage);
-            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage);
+            var acc = new ClientModel(accountId.Server, accountId.Login, password);
+            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage, _algoServer);
 
             var testResult = await acc.TestConnection();
 
@@ -217,7 +224,7 @@ namespace TickTrader.BotAgent.BA.Models
                 throw new DuplicateAccountException($"Account '{accountId.Login}:{accountId.Server}' already exists");
             else
             {
-                var newAcc = new ClientModel(accountId.Server, accountId.Login, password, _alertStorage);
+                var newAcc = new ClientModel(accountId.Server, accountId.Login, password);
                 _accounts.Add(newAcc);
                 AccountChanged?.Invoke(newAcc.GetInfoCopy(), ChangeAction.Added);
 
@@ -297,7 +304,7 @@ namespace TickTrader.BotAgent.BA.Models
             acc.StateChanged += OnAccountStateChanged;
             acc.BotChanged += OnBotChanged;
             acc.BotStateChanged += OnBotStateChanged;
-            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage);
+            await acc.Init(_packageStorage, _fdkOptionsProvider, _alertStorage, _algoServer);
         }
 
         private void OnBotStateChanged(TradeBotModel bot)

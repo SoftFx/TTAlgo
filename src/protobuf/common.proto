@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+enum UpdateAction {
+    Added = 0;
+    Modified = 1;
+    Deleted = 2;
+}
+
+message UrlInfo {
+    string address = 1;
+    int32 port = 2;
+}

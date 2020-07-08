@@ -21,6 +21,7 @@ namespace TickTrader.BotAgent.BA.Models
     {
         private static readonly ILogger _log = LogManager.GetLogger(nameof(ServerModel));
 
+        private AlgoServer _server;
         private ClientModel _client;
         private Task _stopTask;
         private PluginExecutor executor;
@@ -61,10 +62,11 @@ namespace TickTrader.BotAgent.BA.Models
         public event Action<TradeBotModel> IsRunningChanged;
         public event Action<TradeBotModel> ConfigurationChanged;
 
-        public bool Init(ClientModel client, PackageStorage packageRepo, string workingFolder, AlertStorage storage)
+        public bool Init(AlgoServer server, ClientModel client, PackageStorage packageRepo, string workingFolder, AlertStorage storage)
         {
             try
             {
+                _server = server;
                 _client = client;
                 _packageRepo = packageRepo;
 
@@ -234,7 +236,7 @@ namespace TickTrader.BotAgent.BA.Models
                 if (executor != null)
                     throw new InvalidOperationException("Cannot start executor: old executor instance is not disposed!");
 
-                executor = new PluginExecutor(_ref, null);
+                executor = _server.CreateExecutor(_ref, null);
 
                 var setupModel = new PluginSetupModel(_ref, new SetupMetadata((await _client.GetMetadata()).Symbols), new SetupContext(), Config.MainSymbol);
                 setupModel.Load(Config);
@@ -261,7 +263,7 @@ namespace TickTrader.BotAgent.BA.Models
                 setupModel.SetWorkingFolder(AlgoData.Folder);
                 setupModel.Apply(executor.Config);
 
-                executor.Start();
+                executor.Launch(_server.Address, _server.BoundPort);
                 _botListener.Start();
                 executor.WriteConnectionInfo(GetConnectionInfo());
 

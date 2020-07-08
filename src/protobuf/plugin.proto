@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ticktrader.algo.domain;
+
+option csharp_namespace = "TickTrader.Algo.Domain";
+
+message AttachPluginRequest {
+    string id = 1;
+}
+
+message AttachPluginResponse {
+    bool success = 1;
+}
+
+message CurrencyEntity {
+    string name = 1;
+    int32 digits = 2;
+}
+
+message CurrencyListRequest { }
+
+message CurrencyListResponse {
+    repeated CurrencyEntity currencies = 1;
+}
+
+message SymbolEntity {
+    string name = 1;
+    bool trade_allowed = 2;
+    string base_currency = 3;
+    string counter_currency = 4;
+    int32 digits = 5;
+    double lot_size = 6;
+    double min_trade_volume = 7;
+    double max_trade_volume = 8;
+    double trade_volume_step = 9;
+}
+
+message SymbolListRequest { }
+
+message SymbolListResponse {
+    repeated SymbolEntity symbols = 1;
+}
