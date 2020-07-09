@@ -70,11 +70,7 @@ namespace TickTrader.Algo.Core
             var response = new CurrencyListResponse();
             response.Currencies.Add(
                 _executor.Metadata.GetCurrencyMetadata()
-                .Select(c => new Domain.CurrencyEntity
-                {
-                    Name = c.Name,
-                    Digits = c.Digits,
-                }));
+                .Select(c => c.Info));
             return Any.Pack(response);
         }
 
@@ -83,7 +79,7 @@ namespace TickTrader.Algo.Core
             var response = new SymbolListResponse();
             response.Symbols.Add(
                 _executor.Metadata.GetSymbolMetadata()
-                .Select(s => new Domain.SymbolEntity
+                .Select(s => new SymbolInfo
                 {
                     Name = s.Name,
                     TradeAllowed = s.IsTradeAllowed,

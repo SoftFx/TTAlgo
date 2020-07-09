@@ -43,7 +43,7 @@ namespace TickTrader.Algo.Core
                     }
                     else
                     {
-                        curr.Update(currency);
+                        curr.Update(currency.Info);
                     }
                 }
             }
@@ -125,7 +125,7 @@ namespace TickTrader.Algo.Core
                 // deleted currencies will have IsNull set to true
                 foreach (var curr in sortedCurrencies)
                 {
-                    curr.IsNull = true;
+                    curr.Update(null);
                 }
                 sortedCurrencies = null;
             }

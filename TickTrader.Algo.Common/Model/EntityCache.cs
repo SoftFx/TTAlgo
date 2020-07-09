@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TickTrader.Algo.Core;
+using TickTrader.Algo.Domain;
 
 namespace TickTrader.Algo.Common.Model
 {
@@ -49,7 +50,7 @@ namespace TickTrader.Algo.Common.Model
             return updates;
         }
 
-        internal List<CurrencyUpdate> GetMergeUpdate(IEnumerable<CurrencyEntity> snapshot)
+        internal List<CurrencyUpdate> GetMergeUpdate(IEnumerable<CurrencyInfo> snapshot)
         {
             var updates = new List<CurrencyUpdate>();
 
@@ -61,7 +62,7 @@ namespace TickTrader.Algo.Common.Model
             foreach (var existingCurr in _currencies.Values)
             {
                 if (!currenciesByNAme.ContainsKey(existingCurr.Name))
-                    updates.Add(new CurrencyUpdate(existingCurr, EntityCacheActions.Remove));
+                    updates.Add(new CurrencyUpdate(existingCurr.Info, EntityCacheActions.Remove));
             }
 
             return updates;
@@ -122,19 +123,19 @@ namespace TickTrader.Algo.Common.Model
         [Serializable]
         public class CurrencyUpdate : EntityCacheUpdate
         {
-            public CurrencyUpdate(CurrencyEntity currency, EntityCacheActions action)
+            public CurrencyUpdate(CurrencyInfo currency, EntityCacheActions action)
             {
                 Currency = currency ?? throw new ArgumentNullException("currency");
                 Action = action;
             }
 
-            private CurrencyEntity Currency { get; }
+            private CurrencyInfo Currency { get; }
             private EntityCacheActions Action { get; }
 
             public void Apply(EntityCache cache)
             {
                 if (Action == EntityCacheActions.Upsert)
-                    cache._currencies[Currency.Name] = Currency;
+                    cache._currencies[Currency.Name] = new CurrencyEntity(Currency);
                 else
                     cache._currencies.Remove(Currency.Name);
             }

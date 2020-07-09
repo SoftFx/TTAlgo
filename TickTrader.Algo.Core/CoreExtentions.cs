@@ -63,12 +63,12 @@ namespace TickTrader.Algo.Core
 
         internal static Currency GetOrStub(this Dictionary<string, Currency> currencies, string key)
         {
-            return currencies.GetOrDefault(key) ?? new CurrencyEntity(key) { IsNull = true };
+            return currencies.GetOrDefault(key) ?? new CurrencyEntity(null);
         }
 
         internal static Currency GetOrStub(this Dictionary<string, CurrencyEntity> currencies, string key)
         {
-            return currencies.GetOrDefault(key) ?? new CurrencyEntity(key) { IsNull = true };
+            return currencies.GetOrDefault(key) ?? new CurrencyEntity(null);
         }
 
         public static OrderSide Revert(this OrderSide side)

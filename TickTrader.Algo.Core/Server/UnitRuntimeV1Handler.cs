@@ -33,7 +33,7 @@ namespace TickTrader.Algo.Core
             var context = new RpcResponseTaskContext<CurrencyListResponse>(CurrencyListResponseHandler);
             _session.Ask(RpcMessage.Request(new CurrencyListRequest()), context);
             var res = context.TaskSrc.Task.GetAwaiter().GetResult();
-            return res.Currencies.Select(c => new CurrencyEntity(c.Name, c.Digits));
+            return res.Currencies.Select(c => new CurrencyEntity(c));
         }
 
         IEnumerable<SymbolEntity> IPluginMetadata.GetSymbolMetadata()

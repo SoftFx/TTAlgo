@@ -262,7 +262,7 @@ namespace TickTrader.Algo.Common.Model
 
         public event Action<QuoteEntity> Tick;
 
-        public async Task<CurrencyEntity[]> GetCurrencies()
+        public async Task<Domain.CurrencyInfo[]> GetCurrencies()
         {
             var currencies = await _feedProxy.GetCurrencyListAsync();
             return currencies.Select(Convert).ToArray();
@@ -635,11 +635,13 @@ namespace TickTrader.Algo.Common.Model
             }
         }
 
-        private static CurrencyEntity Convert(SFX.CurrencyInfo info)
+        private static Domain.CurrencyInfo Convert(SFX.CurrencyInfo info)
         {
-            return new CurrencyEntity(info.Name, info.Precision)
+            return new Domain.CurrencyInfo()
             {
-                SortOrder = info.SortOrder
+                Name = info.Name,
+                Digits = info.Precision,
+                SortOrder = info.SortOrder,
             };
         }
 

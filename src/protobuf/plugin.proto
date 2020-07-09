@@ -4,6 +4,8 @@ package ticktrader.algo.domain;
 
 option csharp_namespace = "TickTrader.Algo.Domain";
 
+import "google/protobuf/wrappers.proto";
+
 message AttachPluginRequest {
     string id = 1;
 }
@@ -12,18 +14,76 @@ message AttachPluginResponse {
     bool success = 1;
 }
 
-message CurrencyEntity {
+message CurrencyInfo {
     string name = 1;
     int32 digits = 2;
+    int32 sort_order = 3;
 }
 
 message CurrencyListRequest { }
 
 message CurrencyListResponse {
-    repeated CurrencyEntity currencies = 1;
+    repeated CurrencyInfo currencies = 1;
 }
 
-message SymbolEntity {
+message CommissonInfo {
+    enum ChargeMethod {
+        ONE_WAY = 0;
+        ROUND_TURN = 1;
+    }
+
+    enum ChargeType {
+        PER_TRADE = 0;
+        PER_LOT = 1;
+    }
+
+    enum Type {
+        PER_UNIT = 0;
+        PERCENT = 1;
+        ABSOLUTE = 2;
+        PERCENTAGE_WAIVED_CASH = 3;
+        PERCENTAGE_WAIVED_ENHANCED = 4;
+        PER_BOND = 5;
+    }
+
+    double commission = 1;
+    double limits_commission = 2;
+    Type type = 3;
+    ChargeMethod charge_method = 4;
+    ChargeType charge_type = 5;
+    double min_commission = 6;
+    double min_commission_currency = 7;
+}
+
+message MarginInfo {
+    enum CalculationMode {
+        FOREX = 0;
+        CFD = 1;
+        FUTURES = 2;
+        CFD_INDEX = 3;
+        CFD_LEVERAGE = 4;
+    }
+
+    double factor = 1;
+    double hedged = 2;
+    double stop_order_reduction = 3;
+    google.protobuf.DoubleValue hidden_limit_order_reduction = 4;
+}
+
+message SwapInfo {
+    enum SwapType {
+        POINTS = 0;
+        PERCENT_PER_YEAR = 1;
+    }
+
+    bool enabled = 1;
+    SwapType type = 2;
+    float size_long = 3;
+    float size_short = 4;
+    int32 triple_swap_day = 5;
+}
+
+message SymbolInfo {
     string name = 1;
     bool trade_allowed = 2;
     string base_currency = 3;
@@ -33,10 +93,18 @@ message SymbolEntity {
     double min_trade_volume = 7;
     double max_trade_volume = 8;
     double trade_volume_step = 9;
+    google.protobuf.DoubleValue default_slippage = 10;
+    CommissonInfo commission = 11;
+    MarginInfo margin = 12;
+    SwapInfo swap = 13;
+    string description = 14;
+    string security = 16;
+    int32 sort_order = 16;
+    int32 group_sort_order = 17;
 }
 
 message SymbolListRequest { }
 
 message SymbolListResponse {
-    repeated SymbolEntity symbols = 1;
+    repeated SymbolInfo symbols = 1;
 }

@@ -1,44 +1,45 @@
-﻿using System;
-using System.Globalization;
-using System.Runtime.Serialization;
+﻿using System.Globalization;
 using TickTrader.Algo.Core.Lib;
+using TickTrader.Algo.Domain;
 using BO = TickTrader.BusinessObjects;
 
 namespace TickTrader.Algo.Core
 {
-    [Serializable]
     public class CurrencyEntity : Api.Currency, BO.ICurrencyInfo
     {
-        [NonSerialized]
-        private NumberFormatInfo _format;
-
-        public CurrencyEntity(string code, int? digits = null)
-        {
-            Name = code;
-            Digits = digits ?? 2;
-            InitFormat();
-        }
-
         public string Name { get; private set; }
-        public int Digits { get; private set; }
-        public int SortOrder { get; set; }
-        public bool IsNull { get; set; }
 
-        public NumberFormatInfo Format => _format;
+        public int Digits { get; private set; }
+
+        public int SortOrder { get; private set; }
+
+        public bool IsNull { get; private set; }
+
+        public NumberFormatInfo Format { get; private set; }
+
+        public CurrencyInfo Info { get; private set; }
+
 
         int BO.ICurrencyInfo.Precision => Digits;
         int BO.ICurrencyInfo.SortOrder => SortOrder;
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext c)
+
+        public CurrencyEntity(CurrencyInfo info)
         {
-            InitFormat();
+            Update(info);
+        }
+
+
+        public override string ToString()
+        {
+            return $"{Name} (Digits = {Digits})";
         }
 
         private void InitFormat()
         {
-            _format = FormatExtentions.CreateTradeFormatInfo(Digits);
+            Format = FormatExtentions.CreateTradeFormatInfo(Digits);
         }
+
 
         #region FDK compatibility
 
@@ -48,21 +49,20 @@ namespace TickTrader.Algo.Core
 
         #endregion
 
-        public override string ToString() { return $"{Name} (Digits = {Digits})"; }
 
-
-        public void Update(CurrencyEntity other)
+        public void Update(CurrencyInfo info)
         {
-            if (other == null)
+            if (info == null)
             {
                 IsNull = true;
             }
             else
             {
-                Name = other.Name;
-                Digits = other.Digits;
-                SortOrder = other.SortOrder;
-                IsNull = other.IsNull;
+                Info = info;
+                Name = info.Name;
+                Digits = info.Digits;
+                SortOrder = info.SortOrder;
+                IsNull = false;
                 InitFormat();
             }
         }

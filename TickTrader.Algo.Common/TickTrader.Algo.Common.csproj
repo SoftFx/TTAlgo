@@ -222,6 +222,10 @@
       <Project>{ec1a8251-119a-44be-8a8c-bc7823876763}</Project>
       <Name>Standard</Name>
     </ProjectReference>
+    <ProjectReference Include="..\src\csharp\core\TickTrader.Algo.Domain\TickTrader.Algo.Domain.csproj">
+      <Project>{6c7fc318-5848-4206-8431-3695c70143fa}</Project>
+      <Name>TickTrader.Algo.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TickTrader.Algo.Api\TickTrader.Algo.Api.csproj">
       <Project>{8901c84d-fb62-433c-a25f-4d24255b9453}</Project>
       <Name>TickTrader.Algo.Api</Name>
